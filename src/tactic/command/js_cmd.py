@@ -26,10 +26,10 @@ import os
 
 class JsCmd(PythonCmd):
 
-    def get_results(my):
-        code = my.kwargs.get("code")
-        script_path = my.kwargs.get("script_path")
-        file_path = my.kwargs.get("file_path")
+    def get_results(self):
+        code = self.kwargs.get("code")
+        script_path = self.kwargs.get("script_path")
+        file_path = self.kwargs.get("file_path")
 
 
         # if a script path is specified, then get it from the custom_script
@@ -54,7 +54,7 @@ class JsCmd(PythonCmd):
 
 
         wrapper = JsWrapper.get()
-        results = wrapper.execute_func(code, my.kwargs)
+        results = wrapper.execute_func(code, self.kwargs)
 
 
         return results

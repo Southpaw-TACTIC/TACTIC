@@ -23,19 +23,19 @@ from tactic.ui.common import BaseTableElementWdg
 
 class UnknownVersionContextWdg(BaseTableElementWdg):
     
-    def init(my):
-        my.has_data = False
-        my.is_loaded = None
+    def init(self):
+        self.has_data = False
+        self.is_loaded = None
 
-    def get_status(my):
+    def get_status(self):
         return VersionWdg.NOT_CURRENT
 
-    def get_display(my):
+    def get_display(self):
        
-        version = my.get_option('version')
+        version = self.get_option('version')
         display = 'v%0.3d' %version
         
-        status = my.get_status()
+        status = self.get_status()
         widget = VersionWdg.get(status)
         widget.add(display)
         
@@ -44,71 +44,71 @@ class UnknownVersionContextWdg(BaseTableElementWdg):
 
 class CurrentVersionContextWdg(BaseTableElementWdg):
     
-    def init(my):
-        my.has_data = False
-        my.is_loaded = None
+    def init(self):
+        self.has_data = False
+        self.is_loaded = None
 
-    def get_data(my):
-        my.is_loaded = True
-        my.session_version = my.get_option('session_version')
-        my.current_version =  my.get_option('current_version')
-        my.session_context = my.get_option('session_context')
-        my.current_context = my.get_option('current_context')
-        my.session_revision = my.get_option('session_revision')
-        my.current_revision =  my.get_option('current_revision')
+    def get_data(self):
+        self.is_loaded = True
+        self.session_version = self.get_option('session_version')
+        self.current_version =  self.get_option('current_version')
+        self.session_context = self.get_option('session_context')
+        self.current_context = self.get_option('current_context')
+        self.session_revision = self.get_option('session_revision')
+        self.current_revision =  self.get_option('current_revision')
 
-        if not my.current_version:
-            my.current_version = 0
+        if not self.current_version:
+            self.current_version = 0
         
-        if my.session_version in ['', None]:
-            my.session_version = 0
-            my.is_loaded = False
+        if self.session_version in ['', None]:
+            self.session_version = 0
+            self.is_loaded = False
                 
-        if not my.session_revision:
-            my.session_revision = 0
+        if not self.session_revision:
+            self.session_revision = 0
         else:
-            my.session_revision = int(my.session_revision)
-        if not my.current_revision:
-            my.current_revision = 0
+            self.session_revision = int(self.session_revision)
+        if not self.current_revision:
+            self.current_revision = 0
         else:
-            my.current_revision = int(my.current_revision)
-        my.has_data = True
+            self.current_revision = int(self.current_revision)
+        self.has_data = True
   
-    def get_status(my):
-        if not my.has_data:
-            my.get_data()
+    def get_status(self):
+        if not self.has_data:
+            self.get_data()
         '''
         is_loaded = False
-        if my.session_version:
+        if self.session_version:
             is_loaded = True
         '''
-        is_loaded = my.is_loaded
+        is_loaded = self.is_loaded
         if is_loaded:    
-            if my.session_context != my.current_context:
+            if self.session_context != self.current_context:
                 return VersionWdg.MISMATCHED_CONTEXT
-            elif my.session_version == my.current_version:
-                if my.session_revision == my.current_revision:
+            elif self.session_version == self.current_version:
+                if self.session_revision == self.current_revision:
                     return VersionWdg.UPDATED 
-                elif my.session_revision < my.current_revision:
+                elif self.session_revision < self.current_revision:
                     return VersionWdg.OUTDATED
                 else:
                     return VersionWdg.NOT_CURRENT
 
-            elif my.session_version < my.current_version:
+            elif self.session_version < self.current_version:
                 return VersionWdg.OUTDATED
             else: # session has a version not found in db
                 return VersionWdg.NOT_CURRENT
         else:
              return VersionWdg.NOT_LOADED
 
-    def get_display(my):
+    def get_display(self):
         
-        my.get_data()
-        display = "v%0.3d" % int(my.current_version)
-        if my.current_revision:
-            display = "%s r%0.3d" % (display, int(my.current_revision))
+        self.get_data()
+        display = "v%0.3d" % int(self.current_version)
+        if self.current_revision:
+            display = "%s r%0.3d" % (display, int(self.current_revision))
         
-        status = my.get_status()
+        status = self.get_status()
         widget = VersionWdg.get(status)
         widget.add(display)
         
@@ -141,21 +141,21 @@ class SubRefWdg(AjaxWdg):
     '''Widget that draws the hierarchical references of the asset of interest'''
     CB_NAME = "load_snapshot"
 
-    def init(my):
-        my.version_wdgs = []
+    def init(self):
+        self.version_wdgs = []
 
-    def set_info(my, snapshot, session, namespace):
-        my.session = session
-        my.snapshot = snapshot
-        my.namespace = namespace
+    def set_info(self, snapshot, session, namespace):
+        self.session = session
+        self.snapshot = snapshot
+        self.namespace = namespace
 
         # handle ajax settings
-        my.widget = DivWdg()
-        my.set_ajax_top(my.widget)
-        my.set_ajax_option("namespace", my.namespace)
-        my.set_ajax_option("snapshot_code", my.snapshot.get_code())
+        self.widget = DivWdg()
+        self.set_ajax_top(self.widget)
+        self.set_ajax_option("namespace", self.namespace)
+        self.set_ajax_option("snapshot_code", self.snapshot.get_code())
 
-    def init_cgi(my):
+    def init_cgi(self):
         web = WebContainer.get_web()
         snapshot_code = web.get_form_value("snapshot_code")
         namespace = web.get_form_value("namespace")
@@ -163,16 +163,16 @@ class SubRefWdg(AjaxWdg):
         snapshot = Snapshot.get_by_code(snapshot_code)
         session = SessionContents.get(asset_mode=True)
 
-        my.set_info(snapshot, session, namespace)
+        self.set_info(snapshot, session, namespace)
 
-    def get_version_wdgs(my):
+    def get_version_wdgs(self):
         '''get a list of version wdgs'''
-        if my.version_wdgs:
-            return my.version_wdgs
-        xml = my.snapshot.get_xml_value("snapshot")
+        if self.version_wdgs:
+            return self.version_wdgs
+        xml = self.snapshot.get_xml_value("snapshot")
         refs = xml.get_nodes("snapshot/file/ref")
         if not refs:
-            return my.version_wdgs
+            return self.version_wdgs
 
        
         # handle subreferences
@@ -182,7 +182,7 @@ class SubRefWdg(AjaxWdg):
             node_name = Xml.get_attribute(ref, "node_name")
             snapshot = Snapshot.get_ref_snapshot_by_node(ref, mode='current')
             if not snapshot:
-                print "WARNING: reference in snapshot [%s] does not exist" % my.snapshot.get_code()
+                print "WARNING: reference in snapshot [%s] does not exist" % self.snapshot.get_code()
                 wdg = UnknownVersionContextWdg()
                 context = Xml.get_attribute(ref, "context")
                 version = Xml.get_attribute(ref, "version")
@@ -194,7 +194,7 @@ class SubRefWdg(AjaxWdg):
                         'version': version}
                 wdg.set_options(data)
 
-                my.version_wdgs.append(wdg)
+                self.version_wdgs.append(wdg)
                 continue
 
             #checkin_snapshot = Snapshot.get_ref_snapshot_by_node(ref)
@@ -210,7 +210,7 @@ class SubRefWdg(AjaxWdg):
             # HACK: if node name was not specified, then try to guess it
             # (for backwards compatibility)
             if not node_name: 
-                node_name = my.get_node_name(snapshot, asset_code, my.namespace)
+                node_name = self.get_node_name(snapshot, asset_code, self.namespace)
                 # HACK
                 parts = node_name.split(":")
                 parts.insert(1, instance)
@@ -226,8 +226,8 @@ class SubRefWdg(AjaxWdg):
             '''
             if app_name == 'Maya':
                 
-                if not node_name.startswith("%s:" % my.namespace):
-                    node_name = "%s:%s" % (my.namespace, node_name)
+                if not node_name.startswith("%s:" % self.namespace):
+                    node_name = "%s:%s" % (self.namespace, node_name)
             elif app_name == "XSI":
                 pass
             ''' 
@@ -239,10 +239,10 @@ class SubRefWdg(AjaxWdg):
 
 
             # get the session information
-            my.session.set_asset_mode(False)
-            session_context = my.session.get_context(node_name, asset_code, current_snapshot_type)
-            session_version = my.session.get_version(node_name, asset_code, current_snapshot_type)
-            session_revision = my.session.get_revision(node_name, asset_code, current_snapshot_type)
+            self.session.set_asset_mode(False)
+            session_context = self.session.get_context(node_name, asset_code, current_snapshot_type)
+            session_version = self.session.get_version(node_name, asset_code, current_snapshot_type)
+            session_revision = self.session.get_revision(node_name, asset_code, current_snapshot_type)
             #print "session: ", session_version, session_context, session_revision
             # add to outdated ref list here, this is really current even though it's called current
 
@@ -259,25 +259,25 @@ class SubRefWdg(AjaxWdg):
                 'snapshot': snapshot}
 
             version_wdg.set_options(data)
-            my.version_wdgs.append(version_wdg)
+            self.version_wdgs.append(version_wdg)
 
             # This only adds when it is being drawn with the corresponding process selected
             # so not that useful, commented out for now.
             #if version_wdg.get_status() not in [ VersionWdg.NOT_LOADED, VersionWdg.UPDATED]:
             #    SubRefWdg.add_outdated_ref(version_wdg)
 
-        return my.version_wdgs
+        return self.version_wdgs
 
-    def get_display(my):
+    def get_display(self):
 
-        assert my.snapshot
-        assert my.session
-        assert my.namespace
+        assert self.snapshot
+        assert self.session
+        assert self.namespace
 
-        widget = my.widget
+        widget = self.widget
         
 
-        if not my.is_ajax():
+        if not self.is_ajax():
             return widget
  
         #widget.add_style("border-style: solid")
@@ -287,12 +287,12 @@ class SubRefWdg(AjaxWdg):
         widget.add_style("text-align: left")
         table = Table()
         
-        version_wdgs = my.get_version_wdgs()
+        version_wdgs = self.get_version_wdgs()
 
         for version_wdg in version_wdgs:
             # draw the info
             tr = table.add_row()
-            #checkbox = CheckboxWdg(my.CB_NAME)
+            #checkbox = CheckboxWdg(self.CB_NAME)
             #checkbox.set_option("value", "cow" )
             #table.add_cell( checkbox )
 
@@ -318,8 +318,8 @@ class SubRefWdg(AjaxWdg):
         return widget
 
 
-    def get_overall_status(my):
-        version_wdgs = my.get_version_wdgs()
+    def get_overall_status(self):
+        version_wdgs = self.get_version_wdgs()
         all_updated = True
         is_loaded = False
         for wdg in version_wdgs:
@@ -339,7 +339,7 @@ class SubRefWdg(AjaxWdg):
         else: 
             return VersionWdg.UPDATED
 
-    def get_node_name(my, snapshot, asset_code, namespace):
+    def get_node_name(self, snapshot, asset_code, namespace):
         ''' if possible get the node name from snapshot which is more accurate'''
         node_name = snapshot.get_node_name()
 

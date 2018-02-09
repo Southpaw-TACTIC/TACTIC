@@ -33,49 +33,49 @@ class Queue(SObject):
 
     SEARCH_TYPE = "sthpw/queue"
 
-    def get_command(my):
-        return my.command
+    def get_command(self):
+        return self.command
 
     def get_search_columns():
         return ["description", 'login', 'state']
     get_search_columns = staticmethod(get_search_columns)
 
 
-    def get_defaults(my):
+    def get_defaults(self):
         user_name = Environment.get_user_name()
         return { "login": user_name }
 
 
-    def execute(my):
-        my.command = None
+    def execute(self):
+        self.command = None
         try:
             # reload the module
             #class_name = queue.get_value("command")
             #exec("reload(%s)" % class_name)
 
-            my.command = pickle.loads( my.get_value("serialized") )
+            self.command = pickle.loads( self.get_value("serialized") )
         except Exception, e:
             print "Error: ", e.__str__()
             DbContainer.remove("sthpw")
         else:
             # execute the command
-            print "executing: ", my.get_id(), my.command
+            print "executing: ", self.get_id(), self.command
             try:
                 # refresh the environment and execute
-                Command.execute_cmd(my.command)
+                Command.execute_cmd(self.command)
             except Exception, e:
                 ExceptionLog.log(e)
                 print "Error: ", e.__str__()
-                my.set_value("state", "error")
+                self.set_value("state", "error")
 
-                description = my.get_value("description")
-                my.set_value("description", "%s : %s" % \
+                description = self.get_value("description")
+                self.set_value("description", "%s : %s" % \
                     (description, e.__str__()) )
-                my.commit()
+                self.commit()
             else:
                 print "setting to done"
-                my.set_value("state", "done")
-                my.commit()
+                self.set_value("state", "done")
+                self.commit()
 
 
 
@@ -182,7 +182,7 @@ class Queue(SObject):
 
 
 
-    def start(my):
+    def start(self):
         print "starting thread: ", thread.get_ident()
         thread.start_new_thread(Queue._start, ("Queue", 1))
 

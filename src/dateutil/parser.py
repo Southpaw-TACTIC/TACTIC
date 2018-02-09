@@ -570,7 +570,7 @@ class parser(object):
 
                     # Check for something like GMT+3, or BRST+3. Notice
                     # that it doesn't mean "I am 3 hours after GMT", but
-                    # "my time +3 is GMT". If found, we reverse the
+                    # "self time +3 is GMT". If found, we reverse the
                     # logic so that timezone parsing code will get it
                     # right.
                     if i < len_l and l[i] in ('+', '-'):

@@ -25,11 +25,11 @@ from asset_info_wdg import ShotInfoWdg
 
 class LayoutSummaryWdg(Widget):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(LayoutSummaryWdg,my).__init__()
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(LayoutSummaryWdg,self).__init__()
 
-    def init(my):
+    def init(self):
 
         thumb_cache = {}
         div = DivWdg()
@@ -74,7 +74,7 @@ class LayoutSummaryWdg(Widget):
         filter_div.add(search_filter)
 
         div.add(filter_div)
-        my.add(div)
+        self.add(div)
         if not shot_container and not search_filter_value:
             return
     
@@ -90,18 +90,18 @@ class LayoutSummaryWdg(Widget):
 
         table = TableWdg(Shot.SEARCH_TYPE, 'layout_summary')
         table.set_sobjects(shots)
-        my.add(table)
+        self.add(table)
         
 
 
 class AssetSummaryWdg(Widget):
     '''displays shot information about each asset'''
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(AssetSummaryWdg,my).__init__()
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(AssetSummaryWdg,self).__init__()
 
-    def init(my):
+    def init(self):
 
         widget = Widget()
         search = Search("prod/asset")
@@ -119,27 +119,27 @@ class AssetSummaryWdg(Widget):
         table.set_sobjects(assets)
         widget.add(table)
 
-        my.add(widget)
+        self.add(widget)
 
 
 
 class AssetsInShotWdg(BaseTableElementWdg):
 
-    def init(my):
-        my.thumb_cache = {}
+    def init(self):
+        self.thumb_cache = {}
 
-    def get_display(my):
+    def get_display(self):
 
-        shot = my.get_current_sobject()
+        shot = self.get_current_sobject()
 
         # TODO: this is highly inefficient
-        my.asset_instances = shot.get_all_children(ShotInstance.SEARCH_TYPE)
+        self.asset_instances = shot.get_all_children(ShotInstance.SEARCH_TYPE)
 
         instance_div = DivWdg()
 
         assets = []
 
-        for instance in my.asset_instances:
+        for instance in self.asset_instances:
             asset = instance.get_reference("prod/asset")
             assets.append(asset)
 
@@ -161,59 +161,59 @@ class AssetsInShotWdg(BaseTableElementWdg):
 class AssignedShotWdg(BaseTableElementWdg):
 
     """
-    def get_summary(my):
+    def get_summary(self):
         '''provides classes using this class to query how many results
         there are'''
-        return "%s" % len(my.asset_instances)
+        return "%s" % len(self.asset_instances)
     """
 
-    def init(my):
-        my.is_preprocessed = False
+    def init(self):
+        self.is_preprocessed = False
 
-    def preprocess(my):
+    def preprocess(self):
        
-        my.is_preprocessed = True
+        self.is_preprocessed = True
         # get all of the instances
 
         search = Search("prod/shot_instance")
 
         # if not used in a TableWdg, only get the shot instances for one asset
-        if not my.parent_wdg:
-            search.add_filter('asset_code', my.get_current_sobject().get_code())
+        if not self.parent_wdg:
+            search.add_filter('asset_code', self.get_current_sobject().get_code())
 
         search.add_order_by("shot_code")
         instances = search.get_sobjects()
 
-        my.asset_instances = instances
+        self.asset_instances = instances
 
-        my.instances = {}
+        self.instances = {}
         for instance in instances:
             asset_code = instance.get_value("asset_code")
             
-            list = my.instances.get(asset_code)
+            list = self.instances.get(asset_code)
             if not list:
                 list = []
-                my.instances[asset_code] = list
+                self.instances[asset_code] = list
 
             list.append(instance)
        
         search = Search("prod/shot")
         search.add_filters( "code", [x.get_value('shot_code') for x in instances] )
         shots = search.get_sobjects()
-        my.shots = SObject.get_dict(shots, ["code"])
-        my.shots_list = shots
+        self.shots = SObject.get_dict(shots, ["code"])
+        self.shots_list = shots
 
 
             
-    def get_display(my):
+    def get_display(self):
 
-        if not my.is_preprocessed:
-            my.preprocess()
+        if not self.is_preprocessed:
+            self.preprocess()
 
-        asset = my.get_current_sobject()
+        asset = self.get_current_sobject()
 
-        my.asset_instances = my.instances.get(asset.get_code())
-        if not my.asset_instances:
+        self.asset_instances = self.instances.get(asset.get_code())
+        if not self.asset_instances:
             span = SpanWdg('-- not planned --')
             span.add_style('color: #CCC')
             return span
@@ -226,14 +226,14 @@ class AssignedShotWdg(BaseTableElementWdg):
         table.set_show_header(False)
         table.set_content_width('auto')
         table.set_show_property(False)
-        table.set_sobjects(my.shots_list)
+        table.set_sobjects(self.shots_list)
         div.add(table)
         return div
 
         """
         instances_per_shot_dict = {}
         shot_codes = []
-        for instance in my.asset_instances:
+        for instance in self.asset_instances:
             
             shot_code = instance.get_value("shot_code")
             count = instances_per_shot_dict.get(shot_code)
@@ -241,7 +241,7 @@ class AssignedShotWdg(BaseTableElementWdg):
                 count = 0
             count += 1
             
-            shot = my.shots.get(shot_code)
+            shot = self.shots.get(shot_code)
             if not shot:
                 Environment.add_warning("Missing shot", "Instance has shot '%s' which does not exist or is retired" % shot_code)
                 continue
@@ -258,7 +258,7 @@ class AssignedShotWdg(BaseTableElementWdg):
         for shot_code in shot_codes:
             count = instances_per_shot_dict[shot_code]
             table.add_row()
-            shot = my.shots.get(shot_code)
+            shot = self.shots.get(shot_code)
 
             toggle = HiddenRowToggleWdg()
             toggle.set_option("dynamic", "pyasm.prod.web.AssetDetailWdg")
@@ -300,31 +300,31 @@ class AssignedShotWdg(BaseTableElementWdg):
 
 class TasksInSObjectWdg(BaseTableElementWdg):
 
-    def preprocess(my):
+    def preprocess(self):
 
         # get the tasks and reorder by search_key
-        tasks = Task.get_by_sobjects(my.sobjects)
-        my.tasks_dict = {}
+        tasks = Task.get_by_sobjects(self.sobjects)
+        self.tasks_dict = {}
         for task in tasks:
             search_type = task.get_value("search_type")
             search_id = task.get_value("search_id")
             search_key = "%s|%s" % (search_type, search_id)
 
-            sobject_tasks = my.tasks_dict.get(search_key)
+            sobject_tasks = self.tasks_dict.get(search_key)
             if not sobject_tasks:
                 sobject_tasks = []
-                my.tasks_dict[search_key] = sobject_tasks
+                self.tasks_dict[search_key] = sobject_tasks
 
             sobject_tasks.append(task)
 
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         task_table = Table(css="minimal")
         task_table.add_style("width: 300px")
         search_key = sobject.get_search_key()
-        tasks = my.tasks_dict.get(search_key)
+        tasks = self.tasks_dict.get(search_key)
         if tasks:
             for task in tasks:
                 task_table.add_row()
@@ -344,11 +344,11 @@ class TasksInSObjectWdg(BaseTableElementWdg):
 
 class DependencySummaryWdg(Widget):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(DependencySummaryWdg,my).__init__()
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(DependencySummaryWdg,self).__init__()
 
-    def init(my):
+    def init(self):
 
         search_type = "prod/shot"
 
@@ -369,10 +369,10 @@ class DependencySummaryWdg(Widget):
         span.add("Context: ")
         span.add(context_wdg)
         div.add(span)
-        my.context = context_wdg.get_value()
+        self.context = context_wdg.get_value()
 
-        if not my.context:
-            my.context = None
+        if not self.context:
+            self.context = None
 
         mode = "latest"
 
@@ -395,9 +395,9 @@ class DependencySummaryWdg(Widget):
             td.add_style("width: 300px")
 
             if mode == "latest":
-                snapshot = Snapshot.get_latest_by_sobject(sobject, my.context)
+                snapshot = Snapshot.get_latest_by_sobject(sobject, self.context)
             else:
-                snapshot = Snapshot.get_current_by_sobject(sobject, my.context)
+                snapshot = Snapshot.get_current_by_sobject(sobject, self.context)
 
             if not snapshot:
                 table.add_cell("<i>No snapshot found</i>")
@@ -409,7 +409,7 @@ class DependencySummaryWdg(Widget):
             table.add_cell(dependency)
 
         widget.add(table)
-        my.add(widget)
+        self.add(widget)
 
 
 

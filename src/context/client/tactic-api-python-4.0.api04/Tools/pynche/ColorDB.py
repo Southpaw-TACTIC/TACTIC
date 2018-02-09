@@ -253,7 +253,7 @@ if __name__ == '__main__':
     if not colordb:
         print 'No parseable color database found'
         sys.exit(1)
-    # on my system, this color matches exactly
+    # on self system, this color matches exactly
     target = 'navy'
     red, green, blue = rgbtuple = colordb.find_byname(target)
     print target, ':', red, green, blue, triplet_to_rrggbb(rgbtuple)

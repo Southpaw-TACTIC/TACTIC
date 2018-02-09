@@ -24,66 +24,66 @@ class FileUploadException(TacticException):
 
 class FileUpload(Base):
     '''utility class that handles a single file upload'''
-    def __init__(my):
-        my.field_storage = None
-        my.file_name = None
-        my.file_path = None
-        my.file_dir = None
+    def __init__(self):
+        self.field_storage = None
+        self.file_name = None
+        self.file_path = None
+        self.file_dir = None
 
         # full paths to all of the files
-        my.files = []
+        self.files = []
 
-        my.file_types = []
-        #my.tmp_dir = "%s/%s" % (Environment.get_tmp_dir(), "upload")
-        my.tmp_dir = Environment.get_upload_dir()
+        self.file_types = []
+        #self.tmp_dir = "%s/%s" % (Environment.get_tmp_dir(), "upload")
+        self.tmp_dir = Environment.get_upload_dir()
 
-        my.write_mode = "wb"
-        my.create_icon = True
-        my.default_type = 'main'
+        self.write_mode = "wb"
+        self.create_icon = True
+        self.default_type = 'main'
   
-        my.base_decode = None
+        self.base_decode = None
 
-    def set_append_mode(my, flag):
+    def set_append_mode(self, flag):
         if flag:
-            my.write_mode = "ab"
+            self.write_mode = "ab"
         else:
-            my.write_mode = "wb"
+            self.write_mode = "wb"
 
     # DEPRECATED: use set_create_icon
-    def set_create_icon_flag(my, flag):
-        my.create_icon = flag
+    def set_create_icon_flag(self, flag):
+        self.create_icon = flag
 
-    def set_create_icon(my, flag):
-        my.create_icon = flag
+    def set_create_icon(self, flag):
+        self.create_icon = flag
 
 
-    def set_field_storage(my, field_storage, file_name=None):
+    def set_field_storage(self, field_storage, file_name=None):
         '''set the field storage taken from the web adapter'''
-        my.field_storage = field_storage
+        self.field_storage = field_storage
         # if a particular file_name is given with the field_storage
-        my.file_name = file_name
+        self.file_name = file_name
 
-    def set_file_path(my, file_path):
-        my.file_path = file_path
+    def set_file_path(self, file_path):
+        self.file_path = file_path
 
-    def set_file_dir(my, file_dir):
-        my.file_dir = file_dir
+    def set_file_dir(self, file_dir):
+        self.file_dir = file_dir
 
-    def set_default_type(my, type):
-        my.default_type = type
+    def set_default_type(self, type):
+        self.default_type = type
 
-    def set_decode(my, decode):
-        my.base_decode = decode
+    def set_decode(self, decode):
+        self.base_decode = decode
     
-    def get_file_path(my):
-        if my.file_path:
-            return File.process_file_path(my.file_path)
+    def get_file_path(self):
+        if self.file_path:
+            return File.process_file_path(self.file_path)
 
-        elif my.file_dir:
-            if my.file_name:
-                filename = my.file_name
+        elif self.file_dir:
+            if self.file_name:
+                filename = self.file_name
             else:
-                filename = my.field_storage.filename
+                filename = self.field_storage.filename
             
             # depending how the file is uploaded. If it's uploaded thru Python,
             # it has been JSON dumped as unicode code points, so this decode
@@ -101,53 +101,53 @@ class FileUpload(Base):
             basename = os.path.basename(filename)
 
             # File.process_file_path() should be deprecated
-            return "%s/%s" % (my.file_dir, Common.get_filesystem_name(basename))
-            #return "%s/%s" % (my.file_dir, File.process_file_path(basename) )
+            return "%s/%s" % (self.file_dir, Common.get_filesystem_name(basename))
+            #return "%s/%s" % (self.file_dir, File.process_file_path(basename) )
 
-        elif my.field_storage != None:
-            if my.file_name:
-                filename = my.file_name
+        elif self.field_storage != None:
+            if self.file_name:
+                filename = self.file_name
             else:
-                filename = my.field_storage.filename
+                filename = self.field_storage.filename
             if filename == "":
                 return None
             filename = filename.replace("\\", "/")
             basename = os.path.basename(filename)
             # File.process_file_path() should be deprecated
-            return "%s/%s" % (my.tmp_dir,  Common.get_filesystem_name(basename))
-            #return "%s/%s" % (my.tmp_dir, File.process_file_path(basename) )
+            return "%s/%s" % (self.tmp_dir,  Common.get_filesystem_name(basename))
+            #return "%s/%s" % (self.tmp_dir, File.process_file_path(basename) )
         else:
             raise FileUploadException("No file defined")
 
 
 
-    def get_files(my):
+    def get_files(self):
         '''gets all of the resulting files'''
-        return my.files
+        return self.files
 
-    def get_file_types(my):
-        return my.file_types
+    def get_file_types(self):
+        return self.file_types
 
 
 
-    def execute(my):
+    def execute(self):
         '''main function that does all the work based on the set
         parameters'''
-        if my.field_storage == None:
+        if self.field_storage == None:
             raise FileUploadException("Field storage is None")
 
 
-        my._dump_file_to_temp()
+        self._dump_file_to_temp()
 
-        file_path = my.get_file_path()
+        file_path = self.get_file_path()
 
         if not file_path:
             return
 
-        my._add_file(my.default_type, file_path)
+        self._add_file(self.default_type, file_path)
 
         # create icons
-        if my.create_icon:
+        if self.create_icon:
             icon_creator = IconCreator(file_path)
             icon_creator.create_icons()
 
@@ -155,23 +155,23 @@ class FileUpload(Base):
             icon_path = icon_creator.get_icon_path()
 
             if web_path:
-                my._add_file("web", web_path)
+                self._add_file("web", web_path)
 
             if icon_path:
-                my._add_file("icon", icon_path)
+                self._add_file("icon", icon_path)
 
 
 
-    def _add_file(my, type, file_path):
-        my.file_types.append( type )
-        my.files.append( file_path )
+    def _add_file(self, type, file_path):
+        self.file_types.append( type )
+        self.files.append( file_path )
 
 
 
-    def _dump_file_to_temp(my):
+    def _dump_file_to_temp(self):
 
         # Create the temporary file name
-        tmp_file_path = my.get_file_path()
+        tmp_file_path = self.get_file_path()
         if not tmp_file_path:
             return
 
@@ -183,7 +183,7 @@ class FileUpload(Base):
    
         '''
         Determine if base_decode is necessary. Either base_decode
-        is set my upload_server_page on create mode, or 
+        is set self upload_server_page on create mode, or 
         an action file has been created to indicate decode is necessary.
         example decode_action_path
             /home/tactic/tactic_temp/upload/
@@ -192,11 +192,11 @@ class FileUpload(Base):
         decode_action_path = "%s.action" % tmp_file_path
         
         # Clear action file from previous any previous base64 upload
-        if my.write_mode == "wb" and os.path.exists(decode_action_path):
+        if self.write_mode == "wb" and os.path.exists(decode_action_path):
             os.remove(decode_action_path)
         
-        base_decode = my.base_decode
-        if my.write_mode == "ab":
+        base_decode = self.base_decode
+        if self.write_mode == "ab":
             # Check for base_decode indicator file
             if os.path.exists(decode_action_path):
                 base_decode = True
@@ -209,17 +209,17 @@ class FileUpload(Base):
         # Get temporary file path to read from
         # Linux uses mkstemp, while Windows uses TemporaryFile
         if os.name == 'nt':
-            data = my.field_storage.file
+            data = self.field_storage.file
         else:
-            path = my.field_storage.get_path()
+            path = self.field_storage.get_path()
             data = open(path, 'rb')
 
         # Write file to tmp directory
-        f = open("%s" % tmp_file_path, my.write_mode)
+        f = open("%s" % tmp_file_path, self.write_mode)
        
         # Use base 64 decode if necessary.
         import base64
-        if base_decode and my.write_mode == "wb":
+        if base_decode and self.write_mode == "wb":
             header = data.read(10)
             while 1:
                 char = data.read(1)

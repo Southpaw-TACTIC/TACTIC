@@ -23,96 +23,96 @@ class HandlerException(Exception):
 
 class Handler(object):
 
-    def __init__(my, process_name=None):
-        my.server = None
-        my.input = {}
-        my.output = {}
-        my.options = {}
+    def __init__(self, process_name=None):
+        self.server = None
+        self.input = {}
+        self.output = {}
+        self.options = {}
 
-        my.status = "pending"
-        my.event = None
+        self.status = "pending"
+        self.event = None
 
-        my.package = {}
-        my.pipeline = None
-        my.process_name = process_name
-        my.next_processes = []
-        my.description = ''
+        self.package = {}
+        self.pipeline = None
+        self.process_name = process_name
+        self.next_processes = []
+        self.description = ''
 
-    def get_title(my):
-        return my.__class__.__name__
+    def get_title(self):
+        return self.__class__.__name__
 
-    def get_event(my):
+    def get_event(self):
         '''get the event of this handler'''
-        return my.event
+        return self.event
 
-    def set_event(my, event):
+    def set_event(self, event):
         '''set the event of this handler'''
-        my.event = event
+        self.event = event
 
-    def get_status(my):
+    def get_status(self):
         '''get the current status of this handler'''
-        return my.status
+        return self.status
 
-    def set_status(my, status):
+    def set_status(self, status):
         '''set the current status of this handler'''
-        my.status = status
+        self.status = status
 
 
-    def set_process_name(my, process_name):
+    def set_process_name(self, process_name):
         '''sets the process name that is the parent of this handler'''
-        my.process_name = process_name
+        self.process_name = process_name
 
-    def get_process_name(my):
+    def get_process_name(self):
         '''gets the process name that is the parent of this handler'''
-        return my.process_name
+        return self.process_name
 
-    def set_description(my, description):
-        my.description = description
+    def set_description(self, description):
+        self.description = description
 
-    def get_description(my):
-        return my.description
+    def get_description(self):
+        return self.description
 
-    def set_package(my, package):
+    def set_package(self, package):
         '''set the deliverable package to this handler'''
-        my.package = package
+        self.package = package
 
 
     # DEPRECATED: This is not really useful.  It is better to use
     # TacticServerStub.get() or create your own instance if ncecessary
-    def set_server(my, server):
+    def set_server(self, server):
         '''holds a reference to the Tactic server stub'''
-        my.server = server
+        self.server = server
 
     # DEPRECATED: This is not really useful.  It is better to use
     # TacticServerStub.get() or create your own instance if ncecessary
-    def get_server(my):
-        return my.server
+    def get_server(self):
+        return self.server
 
 
-    def set_pipeline(my, pipeline):
-        my.pipeline = pipeline
+    def set_pipeline(self, pipeline):
+        self.pipeline = pipeline
 
-    def get_pipeline(my):
-        return my.pipeline
+    def get_pipeline(self):
+        return self.pipeline
 
 
-    def get_input_process_names(my):
+    def get_input_process_names(self):
         '''get the input processes as defined by the pipeline'''
-        return my.pipeline.get_input_process_names(my.process_name)
+        return self.pipeline.get_input_process_names(self.process_name)
 
-    def get_output_process_names(my):
+    def get_output_process_names(self):
         '''get the output processes as defined by the pipeline'''
-        return my.pipeline.get_output_process_names(my.process_name)
+        return self.pipeline.get_output_process_names(self.process_name)
 
 
-    def get_input(my):
-        return my.input
+    def get_input(self):
+        return self.input
 
 
 
-    def get_value(my, path):
+    def get_value(self, path):
         parts = path.split("/")
-        current = my.package
+        current = self.package
         for part in parts:
             current = current.get(part)
             # explict None comparison: empty string should go through
@@ -129,31 +129,31 @@ class Handler(object):
         else:
             return current
 
-    def get_output(my):
-        return my.output
+    def get_output(self):
+        return self.output
 
-    def set_input(my, input):
-        my.input = input
+    def set_input(self, input):
+        self.input = input
 
-    def set_output(my, output):
+    def set_output(self, output):
         # copy the data structure
-        my.output = output.copy()
+        self.output = output.copy()
 
 
-    def get_option_value(my, name):
+    def get_option_value(self, name):
         '''get the options set for this widget.  Options are set in the
         definition of the widget so that behaviour of the widget can
         be altered'''
-        return my.options.get(name)
+        return self.options.get(name)
 
-    def set_option_value(my, name, value):
+    def set_option_value(self, name, value):
         '''set the options for this widget.  This is usually set by the pipeline
         interpreter'''
-        my.options[name] = value
+        self.options[name] = value
 
-    def set_options(my, options):
+    def set_options(self, options):
         '''set all of the options explicitly'''
-        my.options = options
+        self.options = options
 
 
 
@@ -162,64 +162,64 @@ class Handler(object):
     # the flow
     #
 
-    def add_next_process(my, next_process, recurse=False):
+    def add_next_process(self, next_process, recurse=False):
         '''Method that allows a pipeline to determine what the next process is
 
         @params:
         next_process: the process name that this handler will deliver to
         
         '''
-        if not recurse and next_process == my.process_name:
-            raise HandlerException("Circular process flow not permitted for process [%s]" % my.process_name)
-        my.next_processes.append(next_process)
+        if not recurse and next_process == self.process_name:
+            raise HandlerException("Circular process flow not permitted for process [%s]" % self.process_name)
+        self.next_processes.append(next_process)
 
     
-    def get_next_processes(my):
-        return my.next_processes
+    def get_next_processes(self):
+        return self.next_processes
 
-    def stop(my):
-        my.next_processes = None
+    def stop(self):
+        self.next_processes = None
 
 
 
     #
     # Data accessor methods
     #
-    def get_input_data(my):
-        return my.input
+    def get_input_data(self):
+        return self.input
 
-    def get_input_value(my, name):
-        return my.input.get(name)
-
-
-    def get_ouput_data(my):
-        return my.ouput
-
-    def get_output_value(my, name):
-        return my.output[name]
-
-    def set_output_value(my, name, value):
-        my.output[name] = value
+    def get_input_value(self, name):
+        return self.input.get(name)
 
 
-    def clear_output(my):
+    def get_ouput_data(self):
+        return self.ouput
+
+    def get_output_value(self, name):
+        return self.output[name]
+
+    def set_output_value(self, name, value):
+        self.output[name] = value
+
+
+    def clear_output(self):
         '''clear the output package'''
-        my.output = {}
+        self.output = {}
 
 
-    def get_package_value(my, path):
-        return my.get_value(path)
+    def get_package_value(self, path):
+        return self.get_value(path)
 
 
     #
     # Implementation methods
     #
 
-    def execute(my):
+    def execute(self):
         '''method that does all of the work'''
-        my.status = "complete"
+        self.status = "complete"
 
-    def undo(my):
+    def undo(self):
         '''method that undos what execute just did'''
         pass
 

@@ -23,14 +23,14 @@ from perforce_checkin import *
 class CheckinTest(unittest.TestCase):
 
 
-    def test_all(my):
+    def test_all(self):
 
         Batch()
 
-        my._test_perforce()
+        self._test_perforce()
 
 
-    def _test_perforce(my):
+    def _test_perforce(self):
 
         perforce = PerforceTransaction()
         perforce.start()

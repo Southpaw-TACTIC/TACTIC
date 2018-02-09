@@ -33,38 +33,38 @@ class MongoDbConn(object):
     required by the Sql class'''
 
 
-    def __init__(my, database_name):
-        my.database_name = database_name
+    def __init__(self, database_name):
+        self.database_name = database_name
 
-        my.client = pymongo.MongoClient()
-        my.conn = my.client[database_name]
-
-
-    def get_client(my):
-        return my.client
-
-    def get_collection(my, table):
-        return my.conn[table]
-
-    def collection_names(my):
-        return my.conn.collection_names()
+        self.client = pymongo.MongoClient()
+        self.conn = self.client[database_name]
 
 
-    def cursor(my):
+    def get_client(self):
+        return self.client
+
+    def get_collection(self, table):
+        return self.conn[table]
+
+    def collection_names(self):
+        return self.conn.collection_names()
+
+
+    def cursor(self):
         return {}
 
-    def connect(my):
+    def connect(self):
         pass
 
-    def commit(my):
+    def commit(self):
         pass
 
-    def rollback(my):
+    def rollback(self):
         pass
 
-    def close(my):
+    def close(self):
         pass
-        #my.client.disconnect()
+        #self.client.disconnect()
 
 
 
@@ -73,19 +73,19 @@ class MongoDbConn(object):
 
 class MongoDbImpl(DatabaseImpl):
 
-    def get_database_type(my):
+    def get_database_type(self):
         return "MongoDb"
 
-    def get_id_col(my, db_resource, search_type):
+    def get_id_col(self, db_resource, search_type):
         return "_id"
 
 
-    def get_code_col(my, db_resource, search_type):
+    def get_code_col(self, db_resource, search_type):
         return "code"
 
 
 
-    def create_database(my, database):
+    def create_database(self, database):
         '''create a database
         In MongoDb, databases are dynamically created so there is no need
         for a function to create a database to do anything
@@ -97,7 +97,7 @@ class MongoDbImpl(DatabaseImpl):
         pass
 
 
-    def get_default_columns(my):
+    def get_default_columns(self):
         return ['code','name','description']
 
 
@@ -151,7 +151,7 @@ class MongoDbImpl(DatabaseImpl):
         return info_dict
 
 
-    def get_table_info(my, database):
+    def get_table_info(self, database):
 
         from pyasm.search import DbResource, DbContainer
         sql = DbContainer.get(database)
@@ -166,13 +166,13 @@ class MongoDbImpl(DatabaseImpl):
 
 
 
-    def is_column_sortable(my, db_resource, table, column):
+    def is_column_sortable(self, db_resource, table, column):
         # All columns are sortable in MongoDb
         return True
 
 
 
-    def table_exists(my, db_resource, table):
+    def table_exists(self, db_resource, table):
         sql = db_resource.get_sql()
         conn = sql.get_connection()
         collections = conn.collection_names()
@@ -182,11 +182,11 @@ class MongoDbImpl(DatabaseImpl):
             return False
 
 
-    def has_savepoint(my):
+    def has_savepoint(self):
         return False
 
 
-    def has_sequences(my):
+    def has_sequences(self):
         return False
 
 
@@ -249,7 +249,7 @@ class MongoDbImpl(DatabaseImpl):
 
 
 
-    def execute_query(my, sql, select):
+    def execute_query(self, sql, select):
         '''Takes a select object and operates
         
         NOTE: this requires a lot of internal knowledge of the Select object 
@@ -265,7 +265,7 @@ class MongoDbImpl(DatabaseImpl):
 
         collection = conn.get_collection(table)
 
-        nosql_filters = my.build_filters(filters)
+        nosql_filters = self.build_filters(filters)
         cursor = collection.find(nosql_filters)
 
         select.cursor = cursor
@@ -300,7 +300,7 @@ class MongoDbImpl(DatabaseImpl):
         return results
 
 
-    def execute_update(my, sql, update):
+    def execute_update(self, sql, update):
         conn = sql.get_connection()
 
         # select data
@@ -309,7 +309,7 @@ class MongoDbImpl(DatabaseImpl):
         filters = update.raw_filters
 
         collection = conn.get_collection(table)
-        nosql_filters = my.build_filters(filters)
+        nosql_filters = self.build_filters(filters)
         item = collection.find_one(nosql_filters)
 
 
@@ -328,7 +328,7 @@ class MongoDbImpl(DatabaseImpl):
 
 
 
-    def execute_insert(my, sql, update):
+    def execute_insert(self, sql, update):
 
         conn = sql.get_connection()
 
@@ -349,7 +349,7 @@ class MongoDbImpl(DatabaseImpl):
 
 
 
-    def execute_delete(my, sql, table, id):
+    def execute_delete(self, sql, table, id):
         conn = sql.get_connection()
 
         collection = conn.get_collection(table)
@@ -361,7 +361,7 @@ class MongoDbImpl(DatabaseImpl):
 
 
 
-    def execute_create_table(my, sql, create):
+    def execute_create_table(self, sql, create):
 
         conn = sql.get_connection()
 

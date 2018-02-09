@@ -36,7 +36,7 @@ except ValueError:
 
 class FormatValue(object):
 
-    def convert_to_float(my, num):
+    def convert_to_float(self, num):
         try:
             num = float(num)
         except:
@@ -44,13 +44,13 @@ class FormatValue(object):
         return num
 
 
-    def number_format(my, num, places=0):
+    def number_format(self, num, places=0):
         """Format a number according to locality and given places"""
         if not isinstance(num, float):
             num = float(num)
         return locale.format("%.*f", (places, num), True)
 
-    def currency_format(my, num, grouping=False, monetary=False):
+    def currency_format(self, num, grouping=False, monetary=False):
         """Format a currency according to locality and given places"""
         try:
             num = float(num)
@@ -60,7 +60,7 @@ class FormatValue(object):
 
 
 
-    def get_format_value(my, value, format, format_option=None):
+    def get_format_value(self, value, format, format_option=None):
         '''format is required. format_option is optional where applicable like fps for timecode'''
         if value == '':
             return value
@@ -80,7 +80,7 @@ class FormatValue(object):
             if not value:
                 # Case where value is '', 0, 0.0, -0.0 . 
                 value = 0
-            value = "%0.0f" % my.convert_to_float(value)
+            value = "%0.0f" % self.convert_to_float(value)
 
         elif format == '-1,234':
             if value == None:
@@ -88,14 +88,14 @@ class FormatValue(object):
             elif not value:
                 value = 0
             # Group the value into three numbers seperated by a comma.
-            value = my.number_format(value, places=0)
+            value = self.number_format(value, places=0)
 
         # ------------------------------------------------
         # Float
         elif format == '-1234.12':
             if not value:
                 value = 0
-            value = "%0.2f" % my.convert_to_float(value)
+            value = "%0.2f" % self.convert_to_float(value)
 
         elif format == '-1,234.12':
             # break the value up by 3s
@@ -105,21 +105,21 @@ class FormatValue(object):
             elif isinstance(value, basestring):
                 value = float(value)
 
-            value = my.number_format(value, places=2)
+            value = self.number_format(value, places=2)
 
         # ------------------------------------------------
         # Percentage
         elif format == '-13%':
             if not value:
                 value = 0
-            value = my.convert_to_float(value) * 100
-            value = "%0.0f" % my.convert_to_float(value) + "%"
+            value = self.convert_to_float(value) * 100
+            value = "%0.0f" % self.convert_to_float(value) + "%"
 
         elif format == '-12.95%':
             if not value:
                 value = 0
-            value = my.convert_to_float(value) * 100
-            value = "%0.2f" % my.convert_to_float(value) + "%"
+            value = self.convert_to_float(value) * 100
+            value = "%0.2f" % self.convert_to_float(value) + "%"
 
         # ------------------------------------------------
         # Currency
@@ -127,26 +127,26 @@ class FormatValue(object):
             # break the value up by 3s
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True)
+            value = self.currency_format(value, grouping=True)
             value = value[0:-3]
 
         elif format == '-$1,234.00':
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True)
+            value = self.currency_format(value, grouping=True)
 
         elif format == '-$1,234.--':
             # break the value up by 3s
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True)
+            value = self.currency_format(value, grouping=True)
             value = value[0:-3] + ".--"
 
         elif format == '-$1,234.00 CAD':
             # break the value up by 3s
             if not value:
                 value = 0
-            value = my.currency_format(value, grouping=True, monetary=True)
+            value = self.currency_format(value, grouping=True, monetary=True)
 
 
         elif format == '($1,234.00)':
@@ -154,7 +154,7 @@ class FormatValue(object):
             if not value:
                 value = "-"
             else:
-                value = my.currency_format(value, grouping=True)
+                value = self.currency_format(value, grouping=True)
                 if value.startswith("-"):
                     value = "(%s)" % value.replace("-", "")
 
@@ -401,7 +401,7 @@ class FormatValue(object):
                 value = ''
             else:
                 try:
-                    value = "%.2e" % my.convert_to_float(value)
+                    value = "%.2e" % self.convert_to_float(value)
                 except:
                     value = "0.00"
 
@@ -410,7 +410,7 @@ class FormatValue(object):
                 value = ''
             else:
                 try:
-                    value = "%.2e" % my.convert_to_float(value)
+                    value = "%.2e" % self.convert_to_float(value)
                 except:
                     value = "0.00"
 
@@ -433,7 +433,7 @@ class FormatValue(object):
         # ------------------------------------------------
         # Timecode
         elif format in ['MM:SS.FF','MM:SS:FF', 'MM:SS', 'HH:MM:SS.FF', 'HH:MM:SS:FF','HH:MM:SS']:
-            #fps = my.get_option('fps')
+            #fps = self.get_option('fps')
             fps = format_option
             if not fps:
                 fps = 24
@@ -487,7 +487,7 @@ class FormatValue(object):
                 value = int(value)
                 return "%s B" % value
 
-            value = my.currency_format(value, grouping=True)
+            value = self.currency_format(value, grouping=True)
             # HACK: remove $ and last decimal
             value = value[1:-1]
             value = "%s %s" % (value, ext)
@@ -511,8 +511,8 @@ class FormatValue(object):
 
 
     """
-    def handle_td(my, td):
-        format = my.get_option('format')
+    def handle_td(self, td):
+        format = self.get_option('format')
         if format == 'Checkbox':
             td.add_attr("spt_input_type", "inline")
             td.add_style("text-align: center")

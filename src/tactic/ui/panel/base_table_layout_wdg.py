@@ -36,24 +36,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
     GROUP_MONTHLY = "monthly"
 
 
-    def can_inline_insert(my):
+    def can_inline_insert(self):
         return True
 
-    def can_save(my):
+    def can_save(self):
         return True
 
-    def can_expand(my):
+    def can_expand(self):
         return True
-    def get_expand_behavior(my):
+    def get_expand_behavior(self):
         return None
 
-    def can_add_columns(my):
+    def can_add_columns(self):
         return True
 
-    def can_select(my):
+    def can_select(self):
         return True
 
-    def can_use_gear(my):
+    def can_use_gear(self):
         return True
 
 
@@ -61,159 +61,159 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.kwargs = kwargs
+        self.handle_args(kwargs)
+        self.kwargs = kwargs
 
-        my.help_alias = 'views-quickstart|what-are-views'
+        self.help_alias = 'views-quickstart|what-are-views'
         mode = kwargs.get("mode")
 
         # required args
-        my.table_id = kwargs.get('table_id')
-        if not my.table_id:
-            my.table_id = kwargs.get('id')
-        if not my.table_id:
+        self.table_id = kwargs.get('table_id')
+        if not self.table_id:
+            self.table_id = kwargs.get('id')
+        if not self.table_id:
             num = random.randint(0,10000)
-            my.table_id = "main_body_table_%s"%num
+            self.table_id = "main_body_table_%s"%num
         if mode == 'insert':
-            my.table_id = "%s_insert" %my.table_id
+            self.table_id = "%s_insert" %self.table_id
 
-        my.table_id = my.table_id.replace(" ", "_")
+        self.table_id = self.table_id.replace(" ", "_")
 
-        my.target_id = kwargs.get('target_id')
-        if not my.target_id:
-            my.target_id = "main_body"
+        self.target_id = kwargs.get('target_id')
+        if not self.target_id:
+            self.target_id = "main_body"
 
             
-        my.search_type = kwargs.get('search_type')
-        if not my.search_type:
+        self.search_type = kwargs.get('search_type')
+        if not self.search_type:
             raise TacticException("Must define a search type")
-        my.view = kwargs.get('view')
-        if not my.view:
-            my.view = 'table'
+        self.view = kwargs.get('view')
+        if not self.view:
+            self.view = 'table'
 
-        my.do_search = True
-        my.search = None
-        my.search_view = kwargs.get('search_view')
-        my.search_key = kwargs.get("search_key")
-        my.ingest_data_view = kwargs.get("ingest_data_view") or ""
-        my.ingest_custom_view = kwargs.get("ingest_custom_view") or ""
+        self.do_search = True
+        self.search = None
+        self.search_view = kwargs.get('search_view')
+        self.search_key = kwargs.get("search_key")
+        self.ingest_data_view = kwargs.get("ingest_data_view") or ""
+        self.ingest_custom_view = kwargs.get("ingest_custom_view") or ""
 
         # DEPRECATED: Do not use
-        if not my.view:
-            my.view = kwargs.get('config_base')
+        if not self.view:
+            self.view = kwargs.get('config_base')
 
 
-        #my.show_search_limit = kwargs.get('show_search_limit')
-        #if my.show_search_limit in ["false", False]:
-        #    my.show_search_limit = False
+        #self.show_search_limit = kwargs.get('show_search_limit')
+        #if self.show_search_limit in ["false", False]:
+        #    self.show_search_limit = False
         #else:
-        #    my.show_search_limit = True
-        my.show_search_limit = my.get_setting("search_limit")
+        #    self.show_search_limit = True
+        self.show_search_limit = self.get_setting("search_limit")
 
-        my.is_refresh = kwargs.get('is_refresh') == 'true'
-        my.aux_info = kwargs.get('aux_info')
-        my.vertical_text = kwargs.get('vertical_text') == 'true'
+        self.is_refresh = kwargs.get('is_refresh') == 'true'
+        self.aux_info = kwargs.get('aux_info')
+        self.vertical_text = kwargs.get('vertical_text') == 'true'
 
-        my.order_widget = None
-        my.group_element = ""
-        my.group_interval = ""
-        my.group_sobjects = []
-        my.order_element = ""
-        my.show_retired_element = ""
-
-
-        my.group_info = DivWdg()
-        my.group_info.add_class("spt_table_group_info")
+        self.order_widget = None
+        self.group_element = ""
+        self.group_interval = ""
+        self.group_sobjects = []
+        self.order_element = ""
+        self.show_retired_element = ""
 
 
-        my.element_names = []
+        self.group_info = DivWdg()
+        self.group_info.add_class("spt_table_group_info")
+
+
+        self.element_names = []
 
         # handle config explicitly set
-        config = my.kwargs.get("config")
-        config_xml = my.kwargs.get("config_xml")
-        my.config_xml = config_xml
+        config = self.kwargs.get("config")
+        config_xml = self.kwargs.get("config_xml")
+        self.config_xml = config_xml
         if config_xml:
             # get the base configs
-            config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
-            extra_config = WidgetConfig.get(view=my.view, xml=config_xml)
+            config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
+            extra_config = WidgetConfig.get(view=self.view, xml=config_xml)
             config.get_configs().insert(0, extra_config)
 
         elif not config:
             custom_column_configs = WidgetConfigView.get_by_type("column") 
             
             # handle element names explicitly set
-            my.element_names = my.kwargs.get("element_names")
-            if my.element_names:
-                config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
-                if type(my.element_names) in types.StringTypes:
-                    my.element_names = my.element_names.split(",")
-                    my.element_names = [x.strip() for x in my.element_names]
+            self.element_names = self.kwargs.get("element_names")
+            if self.element_names:
+                config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
+                if type(self.element_names) in types.StringTypes:
+                    self.element_names = self.element_names.split(",")
+                    self.element_names = [x.strip() for x in self.element_names]
                 
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
-                for element_name in my.element_names:
+                for element_name in self.element_names:
                     config_xml += "<element name='%s'/>" % element_name
                 config_xml += "</custom></config>"
-                # my.view is changed for a reason, since a dynamic config supercedes all here
+                # self.view is changed for a reason, since a dynamic config supercedes all here
                 # We don't want to change the overall view ... just the
                 # top level config
-                #my.view = "custom"
-                #extra_config = WidgetConfig.get(view=my.view, xml=config_xml)
+                #self.view = "custom"
+                #extra_config = WidgetConfig.get(view=self.view, xml=config_xml)
                 extra_config = WidgetConfig.get(view="custom", xml=config_xml)
                 config.get_configs().insert(0, extra_config)
 
 
 
             else:
-                config = WidgetConfigView.get_by_search_type(search_type=my.search_type, view=my.view)
+                config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
             
             config.get_configs().extend( custom_column_configs )
         #
         # FIXME: For backwards compatibility. Remove this
         #
-        my.aux_data = []
-        my.row_ids = {}
+        self.aux_data = []
+        self.row_ids = {}
 
         # there is this whole assumption that search_type is set in the
         # form values
         web = WebContainer.get_web()
-        web.set_form_value("search_type", my.search_type)
-        web.set_form_value("ref_search_type", my.search_type)
+        web.set_form_value("search_type", self.search_type)
+        web.set_form_value("ref_search_type", self.search_type)
 
-        my.attributes = []
+        self.attributes = []
 
-        super(BaseTableLayoutWdg,my).__init__(search_type=my.search_type, config_base=my.view, config=config)
+        super(BaseTableLayoutWdg,self).__init__(search_type=self.search_type, config_base=self.view, config=config)
 
-        my.view_attributes = my.config.get_view_attributes()
+        self.view_attributes = self.config.get_view_attributes()
 
-        # my.parent_key is used to determine the parent for inline add-new-items purposes
-        my.parent_key = my.kwargs.get("parent_key")
-        my.parent_path = my.kwargs.get("parent_path")
-        my.checkin_context = my.kwargs.get("checkin_context")
-        my.checkin_type = my.kwargs.get("checkin_type")
-        if not my.checkin_type:
-            my.checkin_type = 'auto'
-        my.state = my.kwargs.get("state")
-        my.state = BaseRefreshWdg.process_state(my.state)
-        my.expr_sobjects = []
-        if not my.parent_key:
-            my.parent_key = my.state.get("parent_key")
+        # self.parent_key is used to determine the parent for inline add-new-items purposes
+        self.parent_key = self.kwargs.get("parent_key")
+        self.parent_path = self.kwargs.get("parent_path")
+        self.checkin_context = self.kwargs.get("checkin_context")
+        self.checkin_type = self.kwargs.get("checkin_type")
+        if not self.checkin_type:
+            self.checkin_type = 'auto'
+        self.state = self.kwargs.get("state")
+        self.state = BaseRefreshWdg.process_state(self.state)
+        self.expr_sobjects = []
+        if not self.parent_key:
+            self.parent_key = self.state.get("parent_key")
 
-        if my.parent_key == 'self':
-            my.parent_key = my.search_key
+        if self.parent_key == 'self':
+            self.parent_key = self.search_key
 
-        if not my.parent_key:
+        if not self.parent_key:
             # generate it. parent_key could be none if the expression evaluates to None
-            expression = my.kwargs.get('expression')
+            expression = self.kwargs.get('expression')
             if expression:
-                if my.search_key and (my.search_key not in ["%s", 'None']):
-                    start_sobj = Search.get_by_search_key(my.search_key)
+                if self.search_key and (self.search_key not in ["%s", 'None']):
+                    start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
 
-                my.expr_sobjects = Search.eval(expression, start_sobj, list=True)
+                self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
 
                 parser = ExpressionParser() 
                 related = parser.get_plain_related_types(expression)
@@ -227,153 +227,153 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     else:
                         related_type = None
                 
-                if not related_type and my.search_key:
+                if not related_type and self.search_key:
                     # this is needed for single search type expression
-                    related_type = SearchKey.extract_search_type(my.search_key)
+                    related_type = SearchKey.extract_search_type(self.search_key)
                    
-                if my.expr_sobjects and related_type:
+                if self.expr_sobjects and related_type:
                     # Even if these expression driven sobjects have more than 1 parent.. we can only take 1 parent key
                     # for insert popup purpose.. This doesn't affect the search though since with expression, the search logic
                     # doesn't go through the regular Search
-                    related = my.expr_sobjects[0].get_related_sobject(related_type)
+                    related = self.expr_sobjects[0].get_related_sobject(related_type)
                     if related:
-                        my.parent_key = SearchKey.get_by_sobject(related, use_id=True)
-                elif related_type and my.search_key and related_type in my.search_key:
+                        self.parent_key = SearchKey.get_by_sobject(related, use_id=True)
+                elif related_type and self.search_key and related_type in self.search_key:
                     # the expression table could start out empty
-                    my.parent_key = my.search_key
+                    self.parent_key = self.search_key
 
                    
             else:
-                my.parent_key = my.search_key
+                self.parent_key = self.search_key
 
 
-        if my.parent_key == "__NONE__":
-            my.parent_key = ""
-            my.no_results = True
+        if self.parent_key == "__NONE__":
+            self.parent_key = ""
+            self.no_results = True
         else:
-            my.no_results = False
+            self.no_results = False
 
         # clear if it is None
-        if not my.parent_key:
-             my.parent_key = ''
+        if not self.parent_key:
+             self.parent_key = ''
 
 
 
         # handle a connect key
-        my.connect_key = my.kwargs.get("connect_key")
+        self.connect_key = self.kwargs.get("connect_key")
     
 
-        my.table = Table()
-        my.table.set_id(my.table_id)
+        self.table = Table()
+        self.table.set_id(self.table_id)
 
 
         # this unique id is used to find quickly find elements that
         # are children of this table
-        my.table.add_attr("unique_id", my.table_id)
+        self.table.add_attr("unique_id", self.table_id)
 
-        my.table.add_class("spt_table")
-        mode = my.kwargs.get("mode")
+        self.table.add_class("spt_table")
+        mode = self.kwargs.get("mode")
         
         # this makes Task edit content not refreshing properly, commented out 
         # for now
         #if mode != "insert":
-        my.table.add_class("spt_table_content")
+        self.table.add_class("spt_table_content")
 
         width = kwargs.get('width')
         if width:
-            my.table.add_style("width: %s" % width)
+            self.table.add_style("width: %s" % width)
 
-        my.min_cell_height = kwargs.get('min_cell_height')
-        if not my.min_cell_height:
-            my.min_cell_height = my.state.get("min_cell_height")
-        if not my.min_cell_height:
-            my.min_cell_height = "20"
+        self.min_cell_height = kwargs.get('min_cell_height')
+        if not self.min_cell_height:
+            self.min_cell_height = self.state.get("min_cell_height")
+        if not self.min_cell_height:
+            self.min_cell_height = "20"
 
-        my.simple_search_view = my.kwargs.get("simple_search_view")
+        self.simple_search_view = self.kwargs.get("simple_search_view")
         # Always instantiate the search limit for the pagination at the bottom
         
         from tactic.ui.app import SearchLimitWdg
-        my.search_limit = SearchLimitWdg()
+        self.search_limit = SearchLimitWdg()
 
-        my.items_found = 0
+        self.items_found = 0
 
-        my.tbodies = []
-        my.chunk_num = 0
-        my.chunk_size = 100
-        my.chunk_iterations = 0
+        self.tbodies = []
+        self.chunk_num = 0
+        self.chunk_size = 100
+        self.chunk_iterations = 0
 
-        my.search_wdg = None
+        self.search_wdg = None
 
         # Needed for MMS_COLOR_OVERRIDE ...
         web = WebContainer.get_web()
-        my.skin = web.get_skin()
+        self.skin = web.get_skin()
 
         # Set up default row looks ...
-        my.look_row = 'dg_row'
-        my.look_row_hilite = 'dg_row_hilite'
-        my.look_row_selected = 'dg_row_selected'
-        my.look_row_selected_hilite = 'dg_row_selected_hilite'
+        self.look_row = 'dg_row'
+        self.look_row_hilite = 'dg_row_hilite'
+        self.look_row_selected = 'dg_row_selected'
+        self.look_row_selected_hilite = 'dg_row_selected_hilite'
 
         # MMS_COLOR_OVERRIDE ...
-        #if my.skin == 'MMS':
-        #    my.look_row = 'mms_dg_row'
-        #    my.look_row_hilite = 'mms_dg_row_hilite'
-        #    my.look_row_selected = 'mms_dg_row_selected'
-        #    my.look_row_selected_hilite = 'mms_dg_row_selected_hilite'
+        #if self.skin == 'MMS':
+        #    self.look_row = 'mms_dg_row'
+        #    self.look_row_hilite = 'mms_dg_row_hilite'
+        #    self.look_row_selected = 'mms_dg_row_selected'
+        #    self.look_row_selected_hilite = 'mms_dg_row_selected_hilite'
 
 
-        my.palette = web.get_palette()
+        self.palette = web.get_palette()
 
-        my.search_container_wdg = DivWdg()
+        self.search_container_wdg = DivWdg()
         # a dictionary of widget class name and boolean True as they are drawn
-        my.drawn_widgets = {}
+        self.drawn_widgets = {}
 
-    def get_aux_info(my):
-        return my.aux_info
+    def get_aux_info(self):
+        return self.aux_info
 
-    def get_kwargs(my):
-        return my.kwargs
+    def get_kwargs(self):
+        return self.kwargs
 
 
 
-    def get_table_id(my):
-        return my.table_id
+    def get_table_id(self):
+        return self.table_id
 
-    def get_table(my):
-        return my.table
+    def get_table(self):
+        return self.table
 
-    def get_view(my):
-        return my.view
+    def get_view(self):
+        return self.view
 
-    def set_items_found(my, number):
-        my.items_found = number
+    def set_items_found(self, number):
+        self.items_found = number
     
-    def set_search_wdg(my, search_wdg):
-        my.search_wdg = search_wdg
+    def set_search_wdg(self, search_wdg):
+        self.search_wdg = search_wdg
 
 
-    def is_expression_element(my, element_name):
+    def is_expression_element(self, element_name):
         from tactic.ui.table import ExpressionElementWdg
-        widget = my.get_widget(element_name)
+        widget = self.get_widget(element_name)
         return isinstance(widget, ExpressionElementWdg)
 
 
 
 
 
-    def get_alias_for_search_type(my, search_type):
+    def get_alias_for_search_type(self, search_type):
         if search_type == 'config/naming':
-            my.help_alias = 'project-automation-file-naming'
+            self.help_alias = 'project-automation-file-naming'
         elif search_type == 'sthpw/clipboard':
-            my.help_alias = 'clipboard'
-        return my.help_alias
+            self.help_alias = 'clipboard'
+        return self.help_alias
 
 
 
-    def handle_args(my, kwargs):
+    def handle_args(self, kwargs):
         # verify the args
-        #args_keys = my.get_args_keys()
-        args_keys = my.ARGS_KEYS
+        #args_keys = self.get_args_keys()
+        args_keys = self.ARGS_KEYS
         for key in kwargs.keys():
             if not args_keys.has_key(key):
                 #raise TacticException("Key [%s] not in accepted arguments" % key)
@@ -381,12 +381,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_order_element(my, order_element):
+    def get_order_element(self, order_element):
         direction = 'asc'
         if order_element.find(" desc") != -1:
             tmp_order_element = order_element.replace(" desc", "")
             direction = 'desc'
-        elif my.order_element.find(" asc") != -1:
+        elif self.order_element.find(" asc") != -1:
             tmp_order_element = order_element.replace(" asc", "")
             direction = 'asc'
         else:
@@ -394,7 +394,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             
         return tmp_order_element, direction
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         '''give the table a chance to alter the search'''
        
         from tactic.ui.filter import FilterData
@@ -404,186 +404,190 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # solution for state filter grouping or what not
         # combine the 2 filters from kwarg and state
         state_filter = ''
-        if my.state.get('filter'):
-            state_filter = my.state.get('filter')
-        if my.kwargs.get('filter'): 
-            state_filter = '%s%s' %(state_filter, my.kwargs.get('filter') )
+        if self.state.get('filter'):
+            state_filter = self.state.get('filter')
+        if self.kwargs.get('filter'): 
+            state_filter = '%s%s' %(state_filter, self.kwargs.get('filter') )
 
-        if my.kwargs.get('op_filters'):
-            search.add_op_filters(my.kwargs.get("op_filters"))
+        if self.kwargs.get('op_filters'):
+            search.add_op_filters(self.kwargs.get("op_filters"))
+
+
+
+        # user-chosen order has top priority
+        order = WebContainer.get_web().get_form_value('order')
+        if order:
+            self.order_element = order
+            if not values:
+                tmp_order_element, direction = self.get_order_element(self.order_element)
+                
+                widget = self.get_widget(tmp_order_element)
+                self.order_widget = widget
+                try:
+                    widget.alter_order_by(search, direction)
+                except AttributeError:
+                    search.add_order_by(self.order_element, direction)
 
 
         # passed in filter overrides
         values = filter_data.get_values_by_prefix("group")
-        order = WebContainer.get_web().get_form_value('order')
-        
-        # user-chosen order has top priority
-        if order:
-            my.order_element = order
-            if not values:
-                tmp_order_element, direction  = my.get_order_element(my.order_element)
-                
-                widget = my.get_widget(tmp_order_element)
-                my.order_widget = widget
-                try:
-                    widget.alter_order_by(search, direction)
-                except AttributeError:
-                    search.add_order_by(my.order_element, direction)
-
+        print
+        print "values: ", values
         if values:
 
             group_values = values[0]
 
             # the group element is always ordered first
-            my.group_element = group_values.get("group")
+            self.group_element = group_values.get("group")
 
-            if my.group_element == 'true':
-                my.group_element = True
-            elif my.group_element:
+            if self.group_element == 'true':
+                self.group_element = True
+            elif self.group_element:
                 # used in Fast Table
-                my.group_interval = group_values.get("interval")
+                self.group_interval = group_values.get("interval")
                 # order by is no longer coupled with group by
                 # it can be turned on together in the context menu Group and Order by
             else:
-                my.group_element = False
+                self.group_element = False
 
-            my.order_element = group_values.get("order")
+            self.order_element = group_values.get("order")
 
-            if my.order_element:
-                tmp_order_element, direction  = my.get_order_element(my.order_element)
-                widget = my.get_widget(tmp_order_element)
-                my.order_widget = widget
+            if self.order_element:
+                tmp_order_element, direction  = self.get_order_element(self.order_element)
+                widget = self.get_widget(tmp_order_element)
+                self.order_widget = widget
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
                     search.add_order_by(tmp_order_element, direction)
 
-            my.show_retired_element = group_values.get("show_retired")
-            if my.show_retired_element == "true":
+            self.show_retired_element = group_values.get("show_retired")
+            if self.show_retired_element == "true":
                 search.set_show_retired(True)
 
 
-        order_by = my.kwargs.get('order_by')
+
+
+        order_by = self.kwargs.get('order_by')
         if order_by:
             search.add_order_by(order_by)
             # if nothing is set by user or filter data, use this kwarg
-            if not my.order_element:
-                my.order_element = order_by
+            if not self.order_element:
+                self.order_element = order_by
 
         # make sure the search limit is the last filter added so that the counts
         # are correct
-        if my.search_limit:
-            limit = my.kwargs.get("chunk_limit")
+        if self.search_limit:
+            limit = self.kwargs.get("chunk_limit")
             if not limit:
-                limit = my.kwargs.get('search_limit')
+                limit = self.kwargs.get('search_limit')
                 if limit:
                     try:
                         limit = int(limit)
-                        my.search_limit.set_limit(limit)
+                        self.search_limit.set_limit(limit)
                     except ValueError, e:
                         pass
-                stated_limit = my.search_limit.get_stated_limit()
+                stated_limit = self.search_limit.get_stated_limit()
                 if stated_limit:
                     limit = stated_limit
                 if not limit:
                     limit = 100
             """
-            my.chunk_num = my.kwargs.get("chunk_num")
+            self.chunk_num = self.kwargs.get("chunk_num")
 
-            if my.chunk_num:
-                my.chunk_num = int(my.chunk_num)
+            if self.chunk_num:
+                self.chunk_num = int(self.chunk_num)
             else:
-                my.chunk_num = 0
+                self.chunk_num = 0
 
             # if the total to be display after this chunk is greater than
             # the limit, then reduce to fit the limit
-            total = (my.chunk_num+1)*my.chunk_size
+            total = (self.chunk_num+1)*self.chunk_size
             if total > limit:
                 diff = limit - (total-my.chunk_size)
-                #my.search_limit.set_chunk(diff, my.chunk_num)
-                my.search_limit.set_chunk(my.chunk_size, my.chunk_num, diff)
+                #self.search_limit.set_chunk(diff, self.chunk_num)
+                self.search_limit.set_chunk(self.chunk_size, self.chunk_num, diff)
             else:
-                my.search_limit.set_chunk(my.chunk_size, my.chunk_num)
+                self.search_limit.set_chunk(self.chunk_size, self.chunk_num)
             """
             # alter the search
-            my.search_limit.set_search(search)
-            my.search_limit.alter_search(search)
+            self.search_limit.set_search(search)
+            self.search_limit.alter_search(search)
 
 
 
-
-    def handle_search(my):
+    def handle_search(self):
         '''method where the table handles it's own search on refresh'''
 
 
         from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
+        self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
 
 
-        if my.is_sobjects_explicitly_set():
+        if self.is_sobjects_explicitly_set():
             return
 
-        if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
+        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
             return
 
 
         expr_search = None
-        expression = my.kwargs.get('expression')
-        if my.expr_sobjects:
-            if isinstance(my.expr_sobjects[0], Search):
-                expr_search = my.expr_sobjects[0]
+        expression = self.kwargs.get('expression')
+        if self.expr_sobjects:
+            if isinstance(self.expr_sobjects[0], Search):
+                expr_search = self.expr_sobjects[0]
             else:
                 # this is not so efficient: better to use @SEARCH,
                 # but we support in anyway, just in case
-                expr_search = Search(my.search_type)
-                ids = SObject.get_values(my.expr_sobjects, 'id')
+                expr_search = Search(self.search_type)
+                ids = SObject.get_values(self.expr_sobjects, 'id')
                 expr_search.add_filters('id', ids)
 
         elif expression:
             # if the expr_sobjects is empty and there is an expression, this
             # means that the expression evaluated to no sobjects
             # which means the entire search is empty
-            my.sobjects = []
+            self.sobjects = []
             return
 
 
 
         # don't set the view here, it affects the logic in SearchWdg
         filter_json = ''
-        if my.kwargs.get('filter'):
-            filter_json = my.kwargs.get('filter')
+        if self.kwargs.get('filter'):
+            filter_json = self.kwargs.get('filter')
             
         # turn on user_override since the user probably would alter the saved search 
-        limit = my.kwargs.get('search_limit')
-        custom_search_view = my.kwargs.get('custom_search_view')
+        limit = self.kwargs.get('search_limit')
+        custom_search_view = self.kwargs.get('custom_search_view')
         if not custom_search_view:
             custom_search_view = ''
 
-        run_search_bvr = my.kwargs.get('run_search_bvr')
+        run_search_bvr = self.kwargs.get('run_search_bvr')
 
-        #my.search_wdg = None
-        if not my.search_wdg:
-            my.search_wdg = my.kwargs.get("search_wdg")
-        if not my.search_wdg:
-            search = my.kwargs.get("search")
+        #self.search_wdg = None
+        if not self.search_wdg:
+            self.search_wdg = self.kwargs.get("search_wdg")
+        if not self.search_wdg:
+            search = self.kwargs.get("search")
 
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            my.search_wdg = SearchWdg(search=search, search_type=my.search_type, state=my.state, filter=filter_json, view=my.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
+            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         
-        search = my.search_wdg.get_search()
-        my.search = search
+        search = self.search_wdg.get_search()
+        self.search = search
 
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
 
 
-        keywords = my.kwargs.get('keywords')
+        keywords = self.kwargs.get('keywords')
         if keywords:
-            keywords_columns = my.kwargs.get('keywords_columns')
+            keywords_columns = self.kwargs.get('keywords_columns')
             if not keywords_columns:
                 keywords_column = 'keywords'
                 search.add_text_search_filter(keywords_column, keywords)
@@ -600,26 +604,26 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 if keyword_value:
                     from tactic.ui.filter import KeywordFilterElementWdg
                     keyword_filter = KeywordFilterElementWdg(
-                            column=my.keyword_column,
+                            column=self.keyword_column,
                             mode="keyword",
                     )
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)
 
 
-        if my.no_results:
+        if self.no_results:
             search.set_null_filter()
 
         if expr_search:
             search.add_relationship_search_filter(expr_search)
 
 
-        if my.connect_key == "__NONE__":
+        if self.connect_key == "__NONE__":
             search.set_null_filter()
-        elif my.connect_key:
+        elif self.connect_key:
             # get all of the connections of this src
             from pyasm.biz import SObjectConnection
-            src_sobjects = Search.get_by_search_key(my.connect_key)
+            src_sobjects = Search.get_by_search_key(self.connect_key)
             dst_sobjects = src_sobjects.get_connections(context='task')
             ids = [x.get_id() for x in dst_sobjects]
             search.add_filters("id", ids)
@@ -627,31 +631,31 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # add an exposed search
-        simple_search_view = my.kwargs.get('simple_search_view')
-        simple_search_config = my.kwargs.get('simple_search_config')
+        simple_search_view = self.kwargs.get('simple_search_view')
+        simple_search_config = self.kwargs.get('simple_search_config')
         if simple_search_view:
-            my.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
+            self.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
         elif simple_search_config:
-            my.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
+            self.search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
             simple_search_view = None
         else:
             # add a custom search class
-            my.search_class = my.kwargs.get('search_class')
-            simple_search_view = my.kwargs.get("search_view")
+            self.search_class = self.kwargs.get('search_class')
+            simple_search_view = self.kwargs.get("search_view")
     
 
         
-        if my.search_class and my.search_class not in  ['None','null']:
+        if self.search_class and self.search_class not in  ['None','null']:
             kwargs = {
-                "search_type": my.search_type,
+                "search_type": self.search_type,
                 "search_view": simple_search_view,
-                "keywords": my.kwargs.get("keywords")
+                "keywords": self.kwargs.get("keywords")
             }
 
             if simple_search_config:
                 kwargs['search_config'] = simple_search_config
 
-            simple_search_wdg = Common.create_from_class_path(my.search_class, kwargs=kwargs)
+            simple_search_wdg = Common.create_from_class_path(self.search_class, kwargs=kwargs)
             simple_search_wdg.alter_search(search)
 
 
@@ -665,24 +669,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 handler = Common.create_from_class_path(class_name)
                 handler.alter_search(search)
 
-        # re-get parent key from kwargs because my.parent is retrieved
+        # re-get parent key from kwargs because self.parent is retrieved
         # This only is used if an expression is not used.  Otherwise, the
         # search_key is applied to the expression
         parent_key = None
         if not expression:
-            parent_key = my.kwargs.get("search_key")
+            parent_key = self.kwargs.get("search_key")
         if not parent_key:
-            parent_key = my.kwargs.get("parent_key")
+            parent_key = self.kwargs.get("parent_key")
         if parent_key and parent_key != "%s" and parent_key not in ["__NONE__", "None"]:
             parent = Search.get_by_search_key(parent_key)
             if not parent:
-                my.sobjects = []
-                my.items_found = 0
+                self.sobjects = []
+                self.items_found = 0
                 return
             # NOTE: this parent path is a bit of a hack to make tables that
             # are not immediate relations to still be accessed
-            if my.parent_path:
-                logs = Search.eval("@SOBJECT(%s)" % my.parent_path, parent, list=True)
+            if self.parent_path:
+                logs = Search.eval("@SOBJECT(%s)" % self.parent_path, parent, list=True)
                 if logs:
                     search.add_filters("id", [x.get_id() for x in logs] )
                 else:
@@ -692,47 +696,47 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 search.add_relationship_filter(parent)
 
         try:
-            my.alter_search(search)
-            my.items_found = search.get_count()
+            self.alter_search(search)
+            self.items_found = search.get_count()
 
-            if my.do_search == True:
-                my.sobjects = search.get_sobjects()
+            if self.do_search == True:
+                self.sobjects = search.get_sobjects()
 
-        except SqlException, e:
-            my.search_wdg.clear_search_data(search.get_base_search_type())
-
-
-    	my.element_process_sobjects(search)
+        except SqlException as e:
+            self.search_wdg.clear_search_data(search.get_base_search_type())
 
 
+    	self.element_process_sobjects(search)
 
 
 
 
-    def element_process_sobjects(my, search):
+
+
+    def element_process_sobjects(self, search):
         # give each widget a chance to alter the order post search
-        for widget in my.widgets:
+        for widget in self.widgets:
             try:
-                sobjects = widget.process_sobjects(my.sobjects, search)
-            except Exception, e:
+                sobjects = widget.process_sobjects(self.sobjects, search)
+            except Exception as e:
                 #print str(e)
                 pass
             else:
                 if sobjects:
-                    my.sobjects = sobjects
+                    self.sobjects = sobjects
 
-    def process_sobjects(my):
+    def process_sobjects(self):
         '''provides the opportunity to post-process the search'''
         class_name = 'mms.TerminalSearchWdg'
         search = Common.create_from_class_path(class_name)
-        sobjects = search.process_sobjects(my.sobjects)
+        sobjects = search.process_sobjects(self.sobjects)
         if sobjects != None:
-            my.sobjects = sobjects
+            self.sobjects = sobjects
         
-    def set_as_panel(my, widget):
+    def set_as_panel(self, widget):
         widget.add_class("spt_panel")
-        widget.add_attr("spt_class_name", Common.get_full_class_name(my) )
-        for name, value in my.kwargs.items():
+        widget.add_attr("spt_class_name", Common.get_full_class_name(self) )
+        for name, value in self.kwargs.items():
             if value == None:
                 continue
             if not isinstance(value, basestring):
@@ -742,32 +746,32 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             widget.add_attr("spt_%s" % name, value)
 
         # add view attributes
-        if my.view_attributes:
-            value = jsondumps(my.view_attributes)
+        if self.view_attributes:
+            value = jsondumps(self.view_attributes)
             # replace " with ' in case the kwargs is a dict
             value = value.replace('"', "'")
             widget.add_attr("spt_view_attrs" , value)
 
 
 
-    def get_show_insert(my):
-        show_insert = my.view_attributes.get("insert") or True
+    def get_show_insert(self):
+        show_insert = self.view_attributes.get("insert") or True
 
         # if edit_permission on the sobject is not allowed then we don't
         # allow insert
-        if my.edit_permission == False:
+        if self.edit_permission == False:
             show_insert = False
 
         if show_insert:
-            show_insert = my.get_setting("insert")
+            show_insert = self.get_setting("insert")
 
         return show_insert
 
 
 
-    def set_default_off(my):
+    def set_default_off(self):
 
-        if my.kwargs.get("set_shelf_defailt") == "off":
+        if self.kwargs.get("set_shelf_defailt") == "off":
 
             settings = {
                     "show_insert": False,
@@ -775,14 +779,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             }
 
-        shelf_elements = my.kwargs.get("shelf_elements")
+        shelf_elements = self.kwargs.get("shelf_elements")
         if shelf_elements:
             shelf_elements = shelf_elements.split(",")
 
 
 
-    def get_setting(my, name):
-        settings = my.kwargs.get("settings") or {}
+    def get_setting(self, name):
+        settings = self.kwargs.get("settings") or {}
 
         """
         settings = {
@@ -818,7 +822,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             settings = new_settings
 
         if settings.has_key("gear") and settings.get("gear") == True:
-            gear_settings = my.kwargs.get("gear_settings")
+            gear_settings = self.kwargs.get("gear_settings")
             if isinstance(gear_settings, basestring):
                 if gear_settings.startswith("{") and gear_settings.endswith("}"):
                     # HACK:
@@ -863,13 +867,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_name = "show_%s" % name
 
             if default == True:
-                if my.kwargs.get(show_name) not in ['false', False]:
+                if self.kwargs.get(show_name) not in ['false', False]:
                     value = True
                 else:
                     value = False
 
             else:
-                if my.kwargs.get(show_name) not in ['true', True]:
+                if self.kwargs.get(show_name) not in ['true', True]:
                     value = False
                 else:
                     value = True
@@ -881,13 +885,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
 
 
         # determine from the view if the insert button is visible
-        show_insert = my.get_show_insert()
-        show_retired = my.view_attributes.get("retire")
-        show_delete = my.view_attributes.get("delete")
+        show_insert = self.get_show_insert()
+        show_retired = self.view_attributes.get("retire")
+        show_delete = self.view_attributes.get("delete")
 
 
         from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg
@@ -900,7 +904,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_color("color", "color")
         
         border_color = div.get_color("table_border",  default="border")
-        if my.get_setting("header_background"):
+        if self.get_setting("header_background"):
             div.add_color("background", "background",-1)
 
 
@@ -913,9 +917,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         try:
             search = Search('config/widget_config')
             search.add_filter("view", "gear_menu_custom")
-            search.add_filter("search_type", my.search_type)
+            search.add_filter("search_type", self.search_type)
             config_sobj = search.get_sobject()
-        except Exception, e:
+        except Exception as e:
             print "WARNING: When trying to find config: ", e
             config_sobj = None
 
@@ -930,15 +934,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # add gear menu here
-        my.view_save_dialog = None
-        show_gear = my.get_setting("gear")
-        if my.can_use_gear() and show_gear:
+        self.view_save_dialog = None
+        show_gear = self.get_setting("gear")
+        if self.can_use_gear() and show_gear:
             # Handle configuration for custom script (or straight javascript script) on "post-action on delete"
             # activity ...
             cbjs_post_delete = ''
 
-            if my.kwargs.get("post_delete_script"):
-                post_delete_script = my.kwargs.get("post_delete_script")
+            if self.kwargs.get("post_delete_script"):
+                post_delete_script = self.kwargs.get("post_delete_script")
                 # get the script code from the custom_script table of the project ...
                 prj_code = Project.get_project_code()
                 script_s_key = "config/custom_script?project=%s&code=%s" % (prj_code, post_delete_script)
@@ -947,44 +951,44 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     print 'Did NOT find a code="%s" custom_script entry for post DG table save' % (post_delete_script)
                 cbjs_post_delete = custom_script_sobj.get_value('script')
 
-            if my.kwargs.get("post_delete_js"):
-                cbjs_post_delete = my.kwargs.get("post_delete_js")
+            if self.kwargs.get("post_delete_js"):
+                cbjs_post_delete = self.kwargs.get("post_delete_js")
 
-            embedded_table =  my.kwargs.get("__hidden__") == 'true'
+            embedded_table =  self.kwargs.get("__hidden__") == 'true'
 
-            gear_settings = my.get_setting("gear")
+            gear_settings = self.get_setting("gear")
             if not gear_settings:
-                gear_settings = my.get_setting("gear_settings")
+                gear_settings = self.get_setting("gear_settings")
 
            
             btn_dd = DgTableGearMenuWdg(
                 menus=gear_settings,
-                layout=my,
-                table_id=my.get_table_id(),
-                search_type=my.search_type, view=my.view,
-                parent_key=my.parent_key,
+                layout=self,
+                table_id=self.get_table_id(),
+                search_type=self.search_type, view=self.view,
+                parent_key=self.parent_key,
                 cbjs_post_delete=cbjs_post_delete,
                 show_delete=show_delete,
                 custom_menus=custom_gear_menus,
                 show_retired=show_retired, embedded_table=embedded_table,
-                ingest_data_view= my.ingest_data_view,
-                ingest_custom_view= my.ingest_custom_view
+                ingest_data_view= self.ingest_data_view,
+                ingest_custom_view= self.ingest_custom_view
             )
 
-            my.gear_menus = btn_dd.get_menu_data()
-            my.view_save_dialog = btn_dd.get_save_dialog()
+            self.gear_menus = btn_dd.get_menu_data()
+            self.view_save_dialog = btn_dd.get_save_dialog()
             div.add(btn_dd)
 
         else:
-            my.gear_menus = None
+            self.gear_menus = None
             btn_dd = Widget()
 
 
         column = "keywords"
-        simple_search_mode = my.kwargs.get("simple_search_mode")
+        simple_search_mode = self.kwargs.get("simple_search_mode")
 
         # default to true
-        show_keyword_search = my.get_setting("keyword_search")
+        show_keyword_search = self.get_setting("keyword_search")
 
         if show_keyword_search:
             from tactic.ui.filter import FilterData
@@ -996,7 +1000,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_div.add(hidden)
 
 
-            keywords = my.kwargs.get("keywords")
+            keywords = self.kwargs.get("keywords")
             if keywords:
                 values = {
                     "value": keywords
@@ -1012,19 +1016,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
             from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-            my.keyword_column = SimpleSearchWdg.get_search_col(my.search_type, my.simple_search_view)
-            my.keyword_hint_text = SimpleSearchWdg.get_hint_text(my.search_type, my.simple_search_view)
+            self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
+            self.keyword_hint_text = SimpleSearchWdg.get_hint_text(self.search_type, self.simple_search_view)
 
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(
-                    column=my.keyword_column,
+                    column=self.keyword_column,
                     mode="keyword",
-                    filter_search_type=my.search_type,
+                    filter_search_type=self.search_type,
                     icon="",
                     width="100",
                     show_partial=False,
                     show_toggle=True,
-                    hint_text=my.keyword_hint_text,
+                    hint_text=self.keyword_hint_text,
 
             )
             keyword_filter.set_values(values)
@@ -1049,11 +1053,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_view_panel_top");
                     if (top) {
-                        var simple_search = top.getElement(".spt_simple_search");
-                        if (simple_search) {
-                            simple_search.setStyle("display", "");
-                            spt.body.add_focus_element(simple_search);
-                        }
+                        var pos = bvr.src_el.getPosition(top);
+                        pos.y += 35;
+                        spt.simple_search.set_position(pos);
+                        spt.simple_search.show_all_elements();
+                        spt.simple_search.show_title();
+                        spt.simple_search.show();
                     }
 
                    
@@ -1089,20 +1094,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 7 0 7")
-            #spacing_div.add_style("border-style: solid")
-            #spacing_div.add_style("border-width: 0 0 0 1")
-            #spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
 
 
         # -- Button Rows
-        button_row_wdg = my.get_button_row_wdg()
+        button_row_wdg = self.get_button_row_wdg()
         button_row_wdg.add_style("margin-top: 0px")
         button_row_wdg.add_style("margin-left: 3px")
 
 
         # -- ITEM COUNT DISPLAY
         # add number found
-        if my.show_search_limit:
+        if self.show_search_limit:
             num_div = DivWdg()
             num_div.add_color("color", "color")
             #num_div.add_style("float: left")
@@ -1111,23 +1113,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             num_div.add_style("padding: 5px")
             
             # -- SEARCH LIMIT DISPLAY
-            if my.items_found == 0:
+            if self.items_found == 0:
                 try:
-                    if my.search:
+                    if self.search:
                         
-                        my.items_found = my.search.get_count()
-                    elif my.sobjects:
-                        my.items_found = len(my.sobjects)
+                        self.items_found = self.search.get_count()
+                    elif self.sobjects:
+                        self.items_found = len(self.sobjects)
                 except SqlException:
                     DbContainer.abort_thread_sql()
 
-                    my.items_found = 0
+                    self.items_found = 0
 
            
-            if my.items_found == 1:
-                num_div.add( "%s %s" % (my.items_found, _("item found")))
+            if self.items_found == 1:
+                num_div.add( "%s %s" % (self.items_found, _("item found")))
             else:
-                num_div.add( "%s %s" % (my.items_found, _("items found")))
+                num_div.add( "%s %s" % (self.items_found, _("items found")))
             num_div.add_style("margin-right: 0px")
             num_div.add_border(style="none")
             num_div.set_round_corners(6)
@@ -1140,7 +1142,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # -- PAGINATION TOOLS
         limit_span = DivWdg()
         limit_span.add_style("margin-top: 4px")
-        if my.show_search_limit:
+        if self.show_search_limit:
             search_limit_button = IconButtonWdg("Pagination", IconWdg.ARROWHEAD_DARK_DOWN)
             num_div.add(search_limit_button)
             from tactic.ui.container import DialogWdg
@@ -1167,35 +1169,35 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             limit_div = DivWdg()
             limit_div.add_class("spt_table_search")
-            limit_div.add(my.search_limit)
+            limit_div.add(self.search_limit)
             dialog.add(limit_div)
             limit_div.add_color("color", "color")
             limit_div.add_color("background", "background")
             limit_div.add_style("width: 300px")
             #limit_div.add_style("height: 50px")
 
-            #limit_span.add(my.search_limit)
+            #limit_span.add(self.search_limit)
 
 
 
 
-        search_button_row = my.get_search_button_row_wdg()
-        save_button = my.get_save_button()
+        search_button_row = self.get_search_button_row_wdg()
+        save_button = self.get_save_button()
         layout_wdg = None
         column_wdg = None
         
-        show_column_wdg = my.get_setting("column_manager")
-        show_layout_wdg = my.get_setting('layout_switcher') 
+        show_column_wdg = self.get_setting("column_manager")
+        show_layout_wdg = self.get_setting('layout_switcher') 
         
-        if show_column_wdg and my.can_add_columns():
-            column_wdg = my.get_column_manager_wdg()
+        if show_column_wdg and self.can_add_columns():
+            column_wdg = self.get_column_manager_wdg()
         if show_layout_wdg:
-            layout_wdg = my.get_layout_wdg()
+            layout_wdg = self.get_layout_wdg()
 
 
-        show_expand = my.get_setting("expand")
+        show_expand = self.get_setting("expand")
 
-        if not my.can_expand():
+        if not self.can_expand():
             show_expand = False
  
         expand_wdg = None
@@ -1204,7 +1206,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             button = ButtonNewWdg(title='Expand Table', icon='BS_FULLSCREEN', show_menu=False, is_disabled=False)
             
-            expand_behavior = my.get_expand_behavior()
+            expand_behavior = self.get_expand_behavior()
             if expand_behavior:
                 button.add_behavior( expand_behavior )
             else:
@@ -1261,7 +1263,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 } )
             expand_wdg = button
 
-        show_help = my.kwargs.get("show_help")
+        show_help = self.kwargs.get("show_help")
         if show_help in ["", None]:
             if Project.get().is_admin():
                 show_help = True
@@ -1272,7 +1274,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         help_wdg = None
 
         if show_help not in ['false', False]:
-            help_alias = my.get_alias_for_search_type(my.search_type)
+            help_alias = self.get_alias_for_search_type(self.search_type)
             from tactic.ui.app import HelpButtonWdg
             if HelpButtonWdg.exists():
                 help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
@@ -1282,18 +1284,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
-            keyword_div.add_style("margin-left: 20px")
+            keyword_div.add_style("margin-left: 0px")
 
 
-        if my.kwargs.get("show_refresh") != 'false':
+        if self.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
 
             search_label = 'Search'
             button = ActionButtonWdg(title=search_label)
-            my.run_search_bvr = my.kwargs.get('run_search_bvr')
-            if my.run_search_bvr:
-                button.add_behavior(my.run_search_bvr)
+            self.run_search_bvr = self.kwargs.get('run_search_bvr')
+            if self.run_search_bvr:
+                button.add_behavior(self.run_search_bvr)
             else:
                 button.add_behavior( {
                 'type': 'click_up',
@@ -1313,11 +1315,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
-        show_collection_tool = my.kwargs.get("show_collection_tool")
+        show_collection_tool = self.kwargs.get("show_collection_tool")
 
-        if show_collection_tool not in ["false", False] and SearchType.column_exists(my.search_type, "_is_collection"):
+        if show_collection_tool not in ["false", False] and SearchType.column_exists(self.search_type, "_is_collection"):
             from collection_wdg import CollectionAddWdg
-            collection_div = CollectionAddWdg(search_type=my.search_type)
+            collection_div = CollectionAddWdg(search_type=self.search_type)
             wdg_list.append( {'wdg': collection_div} )
         
 
@@ -1326,7 +1328,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': button_row_wdg } )
             wdg_list.append( { 'wdg': spacing_divs[0] } )
             
-        if my.show_search_limit:
+        if self.show_search_limit:
             
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
@@ -1343,8 +1345,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if search_button_row:
             button_row_wdg.add(search_button_row)
-            if my.filter_num_div:
-                wdg_list.append( { 'wdg': my.filter_num_div } )
+            if self.filter_num_div:
+                wdg_list.append( { 'wdg': self.filter_num_div } )
             
 
         if column_wdg:
@@ -1363,9 +1365,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        show_quick_add = my.kwargs.get("show_quick_add")
+        show_quick_add = self.kwargs.get("show_quick_add")
         if show_quick_add in ['true',True]:
-            quick_add_button_row = my.get_quick_add_wdg()
+            quick_add_button_row = self.get_quick_add_wdg()
             wdg_list.append( { 'wdg': spacing_divs[2] } )
             wdg_list.append( { 'wdg': quick_add_button_row } )
 
@@ -1376,14 +1378,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': help_wdg } )
 
 
-        shelf_wdg = my.get_shelf_wdg()
+        shelf_wdg = self.get_shelf_wdg()
         if shelf_wdg:
             wdg_list.append( { 'wdg': spacing_divs[5] } )
             wdg_list.append( { 'wdg': shelf_wdg } )
 
 
         # add a custom layout widget
-        custom_shelf_view = my.kwargs.get("shelf_view")
+        custom_shelf_view = self.kwargs.get("shelf_view")
         if custom_shelf_view:
             from tactic.ui.panel import CustomLayoutWdg
             widget = CustomLayoutWdg(view=custom_shelf_view)
@@ -1394,7 +1396,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         custom_shelf_view = "_layout_shelf"
         if custom_shelf_view:
-            config = WidgetConfigView.get_by_search_type(my.search_type, custom_shelf_view)
+            config = WidgetConfigView.get_by_search_type(self.search_type, custom_shelf_view)
             if config:
                 element_names = config.get_element_names()
                 if element_names:
@@ -1429,7 +1431,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         div.add(xx)
 
-        if my.kwargs.get("__hidden__"):
+        if self.kwargs.get("__hidden__"):
             scale = 0.8
         else:
             scale = 1
@@ -1458,10 +1460,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         outer.add(div)
-        if my.show_search_limit:
+        if self.show_search_limit:
             outer.add(dialog)
-        if my.view_save_dialog:
-            outer.add(my.view_save_dialog)
+        if self.view_save_dialog:
+            outer.add(self.view_save_dialog)
 
         outer.add_style("min-width: 750px")
         outer.add_style("white-space: nowrap")
@@ -1471,18 +1473,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_shelf_wdg(my):
+    def get_shelf_wdg(self):
         return None
 
 
 
-    def get_save_button(my):
-        show_save = my.get_setting("save")
+    def get_save_button(self):
+        show_save = self.get_setting("save")
 
-        if my.edit_permission == False or not my.view_editable:
+        if self.edit_permission == False or not self.view_editable:
             show_save = False
 
-        if not my.can_save():
+        if not self.can_save():
             show_save = False
 
         if not show_save:
@@ -1491,6 +1493,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # Save button
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
+        #save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
+        #save_button.add_style("padding: none")
+
         #save_button.add_style("display", "none")
         save_button.add_class("spt_save_button")
         # it needs to be called save_button_top for the button to re-appear after its dissapeared
@@ -1529,19 +1534,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_button_row_wdg(my):
+    def get_button_row_wdg(self):
         '''draws the button row in the shelf'''
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
 
         button_row_wdg = ButtonRowWdg(show_title=True)
 
         """
-        if my.kwargs.get("show_refresh") != 'false':
+        if self.kwargs.get("show_refresh") != 'false':
             button = ButtonNewWdg(title='Refresh', icon=IconWdg.REFRESH_GRAY)
             button_row_wdg.add(button)
-            my.run_search_bvr = my.kwargs.get('run_search_bvr')
-            if my.run_search_bvr:
-                button.add_behavior(my.run_search_bvr)
+            self.run_search_bvr = self.kwargs.get('run_search_bvr')
+            if self.run_search_bvr:
+                button.add_behavior(self.run_search_bvr)
             else:
                 button.add_behavior( {
                 'type': 'click_up',
@@ -1551,14 +1556,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # add an item button
-        show_insert = my.get_show_insert()
+        show_insert = self.get_show_insert()
         if show_insert:
-            insert_view = my.kwargs.get("insert_view")
+            insert_view = self.kwargs.get("insert_view")
             
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
-            search_type_obj = SearchType.get(my.search_type)
+            search_type_obj = SearchType.get(self.search_type)
             search_type_title = search_type_obj.get_value("title")
 
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
@@ -1569,8 +1574,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'type': 'click_up',
                 'view': insert_view,
                 'title': search_type_title,
-                'parent_key': my.parent_key,
-                'table_id': my.table_id,
+                'parent_key': self.parent_key,
+                'table_id': self.table_id,
                 #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
@@ -1592,7 +1597,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-            if my.can_inline_insert():
+            if self.can_inline_insert():
                 button.add_behavior( {
                     'type': 'click_up',
                     'modkeys': 'SHIFT',
@@ -1617,7 +1622,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     'type': 'click_up',
                     'modkeys': 'SHIFT',
                     'view': insert_view,
-                    'table_id': my.table_id,
+                    'table_id': self.table_id,
                     #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
                     'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_table_top");
@@ -1633,7 +1638,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                      
                     };
                     spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
-                    '''%my.parent_key
+                    '''%self.parent_key
                 } )
 
 
@@ -1644,7 +1649,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             menu_item = MenuItem(type='title', label='Actions')
             menu.add(menu_item)
 
-            if my.can_inline_insert():
+            if self.can_inline_insert():
                 menu_item = MenuItem(type='action', label='Add New Item (in Page)')
                 menu_item.add_behavior( {
                     'cbjs_action': '''
@@ -1667,7 +1672,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             menu_item = MenuItem(type='action', label='Add New Item (Form)')
             menu_item.add_behavior( {
-                'event_name': 'search_table_%s' % my.table_id,
+                'event_name': 'search_table_%s' % self.table_id,
                 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
                     var top = activator.getParent(".spt_table_top");
@@ -1681,7 +1686,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                       save_event: bvr.event_name,
                     };
                     spt.panel.load_popup('Single-Insert', 'tactic.ui.panel.EditWdg', kwargs);
-                '''%(my.parent_key, insert_view)
+                '''%(self.parent_key, insert_view)
             } )
 
             menu.add(menu_item)
@@ -1689,7 +1694,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #menu.add(menu_item)
             menu_item = MenuItem(type='action', label='Add Multiple Items')
             menu_item.add_behavior( {
-                'event_name': 'search_table_%s' % my.table_id,
+                'event_name': 'search_table_%s' % self.table_id,
                 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
                     var top = activator.getParent(".spt_table_top");
@@ -1704,13 +1709,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                       save_event: bvr.event_name
                     };
                     spt.panel.load_popup('Multi-Insert', 'tactic.ui.panel.EditWdg', kwargs);
-                '''%(my.parent_key, insert_view)
+                '''%(self.parent_key, insert_view)
             } )
             menu.add(menu_item)
 
 
             # collection
-            if SearchType.column_exists(my.search_type, "_is_collection"):
+            if SearchType.column_exists(self.search_type, "_is_collection"):
                 menu_item = MenuItem(type='action', label='Add New Collection')
                 menu_item.add_behavior( {
                     'cbjs_action': '''
@@ -1730,7 +1735,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                           }
                         };
                         spt.panel.load_popup('Add New Collection', 'tactic.ui.panel.EditWdg', kwargs);
-                    ''' % (my.parent_key, insert_view)
+                    ''' % (self.parent_key, insert_view)
 
                 } )
                 menu.add(menu_item)
@@ -1795,11 +1800,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        if my.can_use_gear() and my.get_setting("gear"):
+        if self.can_use_gear() and self.get_setting("gear"):
             button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row_wdg.add(button)
 
-            smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': my.gear_menus } )
+            smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
        
         return button_row_wdg
@@ -1807,17 +1812,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_search_button_row_wdg(my):
+    def get_search_button_row_wdg(self):
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg, SingleButtonWdg
 
-        my.filter_num_div = None
+        self.filter_num_div = None
         # Search button
-        search_dialog_id = my.kwargs.get("search_dialog_id")
-        show_search = my.get_setting("advanced_search")
+        search_dialog_id = self.kwargs.get("search_dialog_id")
+        show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
             div = DivWdg()
-            my.table.add_attr("spt_search_dialog_id", search_dialog_id)
+            self.table.add_attr("spt_search_dialog_id", search_dialog_id)
             #button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
             button = ButtonNewWdg(title='View Advanced Search', icon="BS_SEARCH", show_menu=False, show_arrow=False)
             #button.add_style("float: left")
@@ -1884,24 +1889,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             """
 
 
-            my.filter_num_div = DivWdg()
-            #div.add(my.filter_num_div)
-            my.filter_num_div.add_color("color", "color")
+            self.filter_num_div = DivWdg()
+            #div.add(self.filter_num_div)
+            self.filter_num_div.add_color("color", "color")
 
-            if my.search_wdg:
-                num_filters = my.search_wdg.get_num_filters_enabled()
+            if self.search_wdg:
+                num_filters = self.search_wdg.get_num_filters_enabled()
             else:
                 num_filters = 0
             icon = IconWdg( "Filters enabled", IconWdg.GREEN_LIGHT )
-            my.filter_num_div.add("&nbsp;"*4)
-            my.filter_num_div.add(icon)
+            self.filter_num_div.add("&nbsp;"*4)
+            self.filter_num_div.add(icon)
             if num_filters > 1:
-                my.filter_num_div.add("%s filters" % num_filters)
+                self.filter_num_div.add("%s filters" % num_filters)
             else:
-                my.filter_num_div.add("%s filter" % num_filters)
+                self.filter_num_div.add("%s filter" % num_filters)
 
             if not num_filters:
-                my.filter_num_div.add_style("display: none")
+                self.filter_num_div.add_style("display: none")
             else:
                 div.add_style("width: 120px")
 
@@ -1913,18 +1918,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_layout_wdg(my):
+    def get_layout_wdg(self):
 
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
         layout = ButtonNewWdg(title='Switch Layout', icon="BS_TH", show_arrow=True)
 
-        SwitchLayoutMenu(search_type=my.search_type, view=my.view, activator=layout.get_button_wdg())
+        SwitchLayoutMenu(search_type=self.search_type, view=self.view, activator=layout.get_button_wdg())
         return layout
 
 
 
-    def get_quick_add_wdg(my):
+    def get_quick_add_wdg(self):
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
 
         button_row = ButtonRowWdg()
@@ -2000,12 +2005,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_column_manager_wdg(my):
+    def get_column_manager_wdg(self):
 
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
-        access_keys = my._get_access_keys("view_column_manager",  project_code)
+        access_keys = self._get_access_keys("view_column_manager",  project_code)
 
         if not security.check_access("builtin", access_keys, "allow"):
             return None
@@ -2015,14 +2020,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
         button = ButtonNewWdg(title='Column Manager', icon="BS_TH_LIST", show_arrow=False)
 
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
 
         button.add_behavior( {
             'type': 'click_up',
             'class_name': 'tactic.ui.panel.AddPredefinedColumnWdg',
             "args": {
                 'title': 'Column Manager',
-                'search_type': my.search_type,
+                'search_type': self.search_type,
             },
             'cbjs_action': '''
                 var table = bvr.src_el.getParent('.spt_table');
@@ -2053,7 +2058,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_group_wdg(my):
+    def get_group_wdg(self):
 
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
@@ -2072,8 +2077,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # add a grouping element
         group_input = HiddenWdg("group")
         group_input.add_class("spt_search_group")
-        if my.group_element:
-            group_input.set_value(my.group_element)
+        if self.group_element:
+            group_input.set_value(self.group_element)
 
         group_interval_input = HiddenWdg("interval")
         group_interval_input.add_class("spt_search_group_interval")
@@ -2087,14 +2092,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # add an order by element
         order_input = HiddenWdg("order")
         order_input.add_class("spt_search_order")
-        if my.order_element:
-            order_input.set_value(my.order_element)
+        if self.order_element:
+            order_input.set_value(self.order_element)
         group_div.add(order_input)
 
         show_retired_input = HiddenWdg("show_retired")
         show_retired_input.add_class("spt_search_show_retired")
-        if my.show_retired_element:
-            show_retired_input.set_value(my.show_retired_element)
+        if self.show_retired_element:
+            show_retired_input.set_value(self.show_retired_element)
         group_div.add(show_retired_input)
 
 
@@ -2103,7 +2108,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_smart_header_context_menu_data(my):
+    def get_smart_header_context_menu_data(self):
 
         menu_data = []
 
@@ -2192,8 +2197,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
       
 
@@ -2226,8 +2229,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 '''
             },
-            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
  
         # Group By Week Optional menu item ...
@@ -2293,8 +2294,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             "bvr_cb": {
                 "args": {
                     'title': 'Group - Advanced',
-                    'search_type': my.search_type,
-                    'target_id': my.target_id
+                    'search_type': self.search_type,
+                    'target_id': self.target_id
                 },
 
                 'cbjs_action':
@@ -2405,7 +2406,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             
                 'args' : {'use_last_search': True,  
                           'display' : True,
-                          'search_type': my.search_type
+                          'search_type': self.search_type
                           }
             
             }
@@ -2413,7 +2414,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
        
 
         # Edit Column Definition menu item ...
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
 
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
@@ -2423,7 +2424,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "label": "Edit Column Definition",
                 "bvr_cb": {
                     #'args' : {'search_type': search_type_obj.get_base_key()},
-                    'args' : {'search_type': my.search_type},
+                    'args' : {'search_type': self.search_type},
                     'options': {
                         'class_name': 'tactic.ui.manager.ElementDefinitionWdg',
                         'popup_id': 'edit_column_defn_wdg',
@@ -2528,7 +2529,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         } )
         project_code = Project.get_project_code()
 
-        access_keys = my._get_access_keys("view_column_manager",  project_code)
+        access_keys = self._get_access_keys("view_column_manager",  project_code)
         # Column Manager menu item ...
         if security.check_access("builtin", access_keys, "allow"):
             menu_data.append( {
@@ -2537,8 +2538,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             "bvr_cb": {
                 "args": {
                     'title': 'Column Manager',
-                    'search_type': my.search_type,
-                    'target_id': my.target_id
+                    'search_type': self.search_type,
+                    'target_id': self.target_id
                 },
                 'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
@@ -2570,7 +2571,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "label": "Create New Column",
                 "bvr_cb": {
                     #'args' : {'search_type': search_type_obj.get_base_key()},
-                    'args' : {'search_type': my.search_type},
+                    'args' : {'search_type': self.search_type},
                     'options': {
                         'class_name': 'tactic.ui.manager.ElementDefinitionWdg',
                         'popup_id': 'edit_column_defn_wdg',
@@ -2597,7 +2598,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
 
-        group_columns = my.kwargs.get("group_elements")
+        group_columns = self.kwargs.get("group_elements")
         
         # Remove Grouping menu item ...
         menu_data.append( {
@@ -2655,14 +2656,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_data_row_smart_context_menu_details(my):
+    def get_data_row_smart_context_menu_details(self):
         security = Environment.get_security()
         project_code = Project.get_project_code()
         spec_list = [ { "type": "title", "label": 'Item "{display_label}"' }]
-        if my.view_editable:
-            edit_view = my.kwargs.get("edit_view")
+        if self.view_editable:
+            edit_view = self.kwargs.get("edit_view")
             
-            access_keys = my._get_access_keys("edit",  project_code)
+            access_keys = self._get_access_keys("edit",  project_code)
             if security.check_access("builtin", access_keys, "edit"):
                 if not edit_view or edit_view == 'None':
                     edit_view = "edit"
@@ -2688,12 +2689,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     "hover_bvr_cb": {
                         'activator_add_look_suffix': 'hilite',
                         'target_look_order': [
-                            'dg_row_retired_selected', 'dg_row_retired', my.look_row_selected, my.look_row ] 
+                            'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ] 
                         }
                     }
                 )
 
-            search_type = my.search_type
+            search_type = self.search_type
 
             # get the browser
             web = WebContainer.get_web()
@@ -2945,10 +2946,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             bvr_cb["description"] = "Checking in preview ..."
             bvr_cb["mode"] = "icon"
-            # set a dummy
+            # set a dumself
             if Container.get_dict("JSLibraries", "spt_html5upload"):
-                my.upload_id = '0'
-            bvr_cb["upload_id"] = my.upload_id
+                self.upload_id = '0'
+            bvr_cb["upload_id"] = self.upload_id
             spec_list.append( {
                 "type": "action",
                 "label": "Change Preview Image",
@@ -2957,27 +2958,27 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
                     'target_look_order': [
-                        'dg_row_retired_selected', 'dg_row_retired', my.look_row_selected, my.look_row ] 
+                        'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ] 
                     }
             } )
 
             bvr_cb2 = bvr_cb.copy()
             bvr_cb2["description"] = "Checking in new file ..."
             bvr_cb2["context"] = "publish",
-            bvr_cb2["checkin_context"] = my.checkin_context,
+            bvr_cb2["checkin_context"] = self.checkin_context,
             bvr_cb2["mode"] = "file"
-            bvr_cb2["checkin_type"] =  my.checkin_type
+            bvr_cb2["checkin_type"] =  self.checkin_type
             spec_list.append( {
                 "type": "action",
                 "label": "Check in New File",
-                "upload_id": my.upload_id,
+                "upload_id": self.upload_id,
                 "mode": "file",
                 #"icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
                     'target_look_order': [
-                        'dg_row_retired_selected', 'dg_row_retired', my.look_row_selected, my.look_row ] 
+                        'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ] 
                     }
             } )
 
@@ -2988,8 +2989,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         
-        access_keys = my._get_access_keys("retire_delete",  project_code)
-        if security.check_access("builtin", access_keys, "allow"):
+        access_keys = self._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
         
             spec_list.extend( [{ "type": "separator" },
                 
@@ -2999,7 +3000,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.drow_smenu_reactivate_cbk(evt,bvr);' },
                     "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                       'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                             my.look_row_selected, my.look_row ] }
+                                                             self.look_row_selected, self.look_row ] }
                 },
 
                 { "type": "action", "label": "Retire",
@@ -3009,7 +3010,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.drow_smenu_retire_cbk(evt,bvr);' },
                     "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                       'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                             my.look_row_selected, my.look_row ] }
+                                                             self.look_row_selected, self.look_row ] }
                 },
 
                 { "type": "action", "label": "Delete",
@@ -3017,13 +3018,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.drow_smenu_delete_cbk(evt,bvr);' },
                     "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                       'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                             my.look_row_selected, my.look_row ] }
+                                                             self.look_row_selected, self.look_row ] }
                 }])
 
         subscribe_label = 'Item'
-        if my.search_type in ['sthpw/task','sthpw/note','sthpw/snapshot']:
+        if self.search_type in ['sthpw/task','sthpw/note','sthpw/snapshot']:
             subscribe_label = 'Parent'
-        elif my.search_type.startswith('sthpw') or my.search_type.startswith('config'): 
+        elif self.search_type.startswith('sthpw') or self.search_type.startswith('config'): 
             subscribe_label = None
        
         if subscribe_label:
@@ -3036,7 +3037,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         "bvr_cb": { 'cbjs_action': "spt.dg_table.drow_smenu_item_audit_log_cbk(evt, bvr);" },
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                                 my.look_row_selected, my.look_row ] }
+                                                                 self.look_row_selected, self.look_row ] }
                     },
                     
                     { "type": "action", "label": "Subscribe to %s"%subscribe_label,
@@ -3082,7 +3083,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         ''' },
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                                 my.look_row_selected, my.look_row ] }
+                                                                 self.look_row_selected, self.look_row ] }
                     },
 
                     { "type": "action", "label": "Unsubscribe from %s"%subscribe_label,
@@ -3128,7 +3129,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         ''' },
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
-                                                                 my.look_row_selected, my.look_row ] }
+                                                                 self.look_row_selected, self.look_row ] }
                     }
 
                     ])   
@@ -3164,7 +3165,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        version = my.get_layout_version()
+        version = self.get_layout_version()
 
         if version == "2":
             return { 'menu_tag_suffix': 'MAIN', 'width': 200,
@@ -3182,10 +3183,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         return "tactic.ui.common.SimpleTableElementWdg"
     get_default_display_handler = classmethod(get_default_display_handler)
 
-    def get_layout_version(my):
+    def get_layout_version(self):
         return "2"
 
-    def _get_access_keys(my, key, project_code):
+    def _get_access_keys(self, key, project_code):
         '''get access keys for a builtin rule'''
         access_key1 = {
             'key': key,
@@ -3200,12 +3201,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         return access_keys
 
 
-    def handle_no_results(my, table):
+    def handle_no_results(self, table):
         ''' This creates an empty html table when the TableLayout has no entries.
         There are two helper functions, add_no_results_bvr and add_no_results_style
         which can be overridden to support custom behaviors and appearances.'''
 
-        no_results_mode = my.kwargs.get('no_results_mode')
+        no_results_mode = self.kwargs.get('no_results_mode')
 
         if no_results_mode == 'compact':
 
@@ -3222,7 +3223,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         tr, td = table.add_row_cell()
 
-        my.add_no_results_bvr(tr)
+        self.add_no_results_bvr(tr)
 
         tr.add_class("spt_table_no_items")
         td.add_style("border-style: solid")
@@ -3233,7 +3234,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         td.add_style("min-height: 250px")
         td.add_style("overflow: hidden")
 
-        my.add_no_results_style(td)
+        self.add_no_results_style(td)
 
         msg_div = DivWdg()
         td.add(msg_div)
@@ -3243,11 +3244,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div.add_style("margin-top: -260px")
 
 
-        if not my.is_refresh and my.kwargs.get("do_initial_search") in ['false', False]:
+        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
             msg = DivWdg("<i>-- Initial search set to no results --</i>")
         else:
 
-            no_results_msg = my.kwargs.get("no_results_msg")
+            no_results_msg = self.kwargs.get("no_results_msg")
 
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             #msg.set_box_shadow("0px 0px 5px")
@@ -3255,7 +3256,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 msg.add("<br/>"*2)
                 msg.add(no_results_msg)
 
-            elif my.get_show_insert():
+            elif self.get_show_insert():
                 msg.add("<br/><br/>Click on the &nbsp;")
                 icon = IconWdg("Add", "BS_PLUS")
                 msg.add(icon)
@@ -3283,7 +3284,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def add_no_results_bvr(my, tr):
+    def add_no_results_bvr(self, tr):
         ''' This adds a default drag and drop behavior to an empty table.
         Override it in classes that extend BaseTableLayoutWdg to handle
         custom drag/drop behaviors '''
@@ -3293,7 +3294,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
 
 
-    def add_no_results_style(my, td):
+    def add_no_results_style(self, td):
         ''' This adds the default styling to an empty table.
         Override it in classes that extend BaseTableLayoutWdg if you
         want something different'''

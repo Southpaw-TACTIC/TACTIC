@@ -27,15 +27,15 @@ class InstallException(Exception):
 
 class ChangeDbPassword:
 
-    def execute(my):
+    def execute(self):
 
-        my.print_header()
+        self.print_header()
 
         # install the necessary files to python directory
-        my.ask_questions()
+        self.ask_questions()
 
 
-    def print_header(my):
+    def print_header(self):
         print
         print
         print "*"*20
@@ -45,7 +45,7 @@ class ChangeDbPassword:
 
 
 
-    def ask_questions(my):
+    def ask_questions(self):
 
         # set vendor
         default_vendor = Config.get_value("database", "vendor")

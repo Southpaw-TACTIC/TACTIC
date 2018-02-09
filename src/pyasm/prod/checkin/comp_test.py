@@ -20,15 +20,15 @@ import unittest
 
 class CompTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         # intialiaze the framework as a batch process
-        my.batch = Batch()
+        self.batch = Batch()
 
-    def test_all(my):
-        my._test_fusion_parse()
+    def test_all(self):
+        self._test_fusion_parse()
 
 
-    def _test_fusion_parse(my):
+    def _test_fusion_parse(self):
 
         file_path = "./test/fusion_sample.comp"
 

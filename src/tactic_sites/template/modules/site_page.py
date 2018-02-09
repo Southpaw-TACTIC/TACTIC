@@ -20,13 +20,13 @@ from pyasm.web import WebContainer, AppServer
 
 class SitePage(AppServer):
 
-    def set_templates(my):
+    def set_templates(self):
         context = WebContainer.get_web().get_full_context_name()
         SearchType.set_global_template("project", context)
 
 
 
 class SiteXMLRPC(BaseXMLRPC):
-    def set_templates(my):
+    def set_templates(self):
         context = WebContainer.get_web().get_full_context_name()
         SearchType.set_global_template("project", context)

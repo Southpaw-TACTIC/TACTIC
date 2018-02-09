@@ -18,39 +18,39 @@ from tactic.ui.common import BaseRefreshWdg
 
 
 class ResizableTableWdg(BaseRefreshWdg):
-    def __init__(my, **kwargs):
-        my.table = Table()
-        my.table.add_style("border-collapse: collapse")
-        my.table.add_style("padding: 0px")
-        my.table.set_attr("cellpadding", "0px")
-        my.table.set_attr("cellspacing", "0px")
-        my.is_first_row = True
-        my.hilight = my.table.get_color("background", -40)
-        super(ResizableTableWdg, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        self.table = Table()
+        self.table.add_style("border-collapse: collapse")
+        self.table.add_style("padding: 0px")
+        self.table.set_attr("cellpadding", "0px")
+        self.table.set_attr("cellspacing", "0px")
+        self.is_first_row = True
+        self.hilight = self.table.get_color("background", -40)
+        super(ResizableTableWdg, self).__init__(**kwargs)
 
 
-    def set_style(my, name, value=None):
-        my.table.set_style(name, value)
+    def set_style(self, name, value=None):
+        self.table.set_style(name, value)
 
-    def set_max_width(my):
-        my.table.set_max_width()
+    def set_max_width(self):
+        self.table.set_max_width()
 
-    def add_class(my, name):
-        my.table.add_class(name)
+    def add_class(self, name):
+        self.table.add_class(name)
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
-        my.table.add_class("spt_resizable_table_top")
+        self.table.add_class("spt_resizable_table_top")
 
 
-        my.table.add_behavior( {
+        self.table.add_behavior( {
         'type': 'load',
-        'cbjs_action': my.get_onload_js()
+        'cbjs_action': self.get_onload_js()
         } )
 
 
-        my.table.add_behavior( {
+        self.table.add_behavior( {
         'type': 'load',
         'cbjs_action': '''
         var resizable_cells = bvr.src_el.getElements(".spt_resizable_cell");
@@ -70,32 +70,32 @@ class ResizableTableWdg(BaseRefreshWdg):
 
 
 
-        top.add(my.table)
+        top.add(self.table)
 
         return top
 
 
-    def set_keep_table_size(my):
-        my.table.add_class("spt_resizable_keep_size")
+    def set_keep_table_size(self):
+        self.table.add_class("spt_resizable_keep_size")
 
 
-    def add_color(my, color, modifier=0):
-        my.table.add_color(color, modifier)
+    def add_color(self, color, modifier=0):
+        self.table.add_color(color, modifier)
 
-    def add_border(my, modifier=0):
-        my.table.add_border(modifier=modifier)
+    def add_border(self, modifier=0):
+        self.table.add_border(modifier=modifier)
 
-    def add_style(my, name, value=None):
-        my.table.add_style(name, value=value)
-
-
+    def add_style(self, name, value=None):
+        self.table.add_style(name, value=value)
 
 
-    def add_row(my, resize=True):
+
+
+    def add_row(self, resize=True):
 
         # add resize row
-        if not my.is_first_row and resize == True:
-            tr, td = my.table.add_row_cell()
+        if not self.is_first_row and resize == True:
+            tr, td = self.table.add_row_cell()
             td.add_style("height: 3px")
             td.add_style("min-height: 3px")
             td.add_style("cursor: n-resize")
@@ -107,7 +107,7 @@ class ResizableTableWdg(BaseRefreshWdg):
 
             tr.add_behavior( {
             'type': 'hover',
-            'hilight': my.hilight,
+            'hilight': self.hilight,
             'cbjs_action_over': '''
             var color = bvr.src_el.getStyle("background-color");
             bvr.src_el.setStyle("background-color", bvr.hilight);
@@ -123,15 +123,15 @@ class ResizableTableWdg(BaseRefreshWdg):
             td.add(icon)
             td.add_style("text-align: center")
 
-        content_tr = my.table.add_row()
+        content_tr = self.table.add_row()
 
-        my.is_first_row = False
+        self.is_first_row = False
  
         return content_tr
 
 
-    def add_resize_row(my):
-        tr, td = my.table.add_row_cell()
+    def add_resize_row(self):
+        tr, td = self.table.add_row_cell()
         td.add_style("height: 3px")
         td.add_style("min-height: 3px")
         td.add_style("cursor: n-resize")
@@ -143,7 +143,7 @@ class ResizableTableWdg(BaseRefreshWdg):
 
         tr.add_behavior( {
         'type': 'hover',
-        'hilight': my.hilight,
+        'hilight': self.hilight,
         'cbjs_action_over': '''
         var color = bvr.src_el.getStyle("background-color");
         bvr.src_el.setStyle("background-color", bvr.hilight);
@@ -160,8 +160,8 @@ class ResizableTableWdg(BaseRefreshWdg):
         return tr, td
 
 
-    def add_cell(my, widget=None, resize=True, rowspan=1, colspan=1):
-        td_content = my.table.add_cell()
+    def add_cell(self, widget=None, resize=True, rowspan=1, colspan=1):
+        td_content = self.table.add_cell()
         td_content.add_style("vertical-align: top")
         td_content.add_class("spt_resizable_cell")
 
@@ -176,7 +176,7 @@ class ResizableTableWdg(BaseRefreshWdg):
             return td_content
 
         # add resize cell
-        td = my.table.add_cell()
+        td = self.table.add_cell()
         td.add_style("width: 4px")
         td.add_style("min-width: 4px")
         td.add_style("cursor: e-resize")
@@ -198,7 +198,7 @@ class ResizableTableWdg(BaseRefreshWdg):
 
         td.add_behavior( {
         'type': 'hover',
-        'hilight': my.hilight,
+        'hilight': self.hilight,
         'cbjs_action_over': '''
         var color = bvr.src_el.getStyle("background-color");
         bvr.src_el.setStyle("background-color", bvr.hilight);
@@ -225,7 +225,7 @@ class ResizableTableWdg(BaseRefreshWdg):
         return td_content
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
 spt.resizable_table = {}
@@ -344,7 +344,7 @@ spt.resizable_table.row_drag_motion = function( evt, bvr, mouse_411) {
 
 class TestResizableTableWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
         table = ResizableTableWdg()

@@ -17,36 +17,36 @@ from pyasm.common import TacticException
 
 class CodeNaming:
 
-    def __init__(my, sobject, code):
-        my.sobject = sobject
-        my.code = code
+    def __init__(self, sobject, code):
+        self.sobject = sobject
+        self.code = code
 
-        my.matches = None
+        self.matches = None
 
-        search_type = my.sobject.get_search_type_obj().get_base_key()
+        search_type = self.sobject.get_search_type_obj().get_base_key()
         func_name = search_type.replace("/", "_")
 
         try:
-            func = "my.%s(my.code)" % func_name
-            my.matches = eval( func )
+            func = "self.%s(self.code)" % func_name
+            self.matches = eval( func )
         except AttributeError, e:
             print "WARNING: ", e.__str__()
-            my.matches = {}
+            self.matches = {}
 
 
 
-    def get_match(my, name):
-        match = my.matches.get(name)
+    def get_match(self, name):
+        match = self.matches.get(name)
         if not match:
             raise TacticException('Failed to process this portion [%s] of the code name ' %name)
 
         return match
 
 
-    def _match(my, pattern, code, keys):
+    def _match(self, pattern, code, keys):
         # get the groups
         p = re.compile(pattern)
-        m = p.search(my.code)
+        m = p.search(self.code)
         if not m:
             raise Exception( "Code '%s' does not match pattern" % code )
         groups = m.groups()
@@ -61,10 +61,10 @@ class CodeNaming:
         return matches
 
 
-    def get_related_index(my):
-        related = my.matches['related']
+    def get_related_index(self):
+        related = self.matches['related']
         if related:
-            return int(my.matches["related"])
+            return int(self.matches["related"])
         else:
             return 1
 

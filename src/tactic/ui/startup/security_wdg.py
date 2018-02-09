@@ -35,11 +35,11 @@ from tactic.ui.panel import SideBarBookmarkMenuWdg
 class UserAssignWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("spt_groups_top")
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
 
         group = Search.get_by_search_key(search_key)
         group_name = group.get_value("login_group")
@@ -146,10 +146,10 @@ class UserAssignWdg(BaseRefreshWdg):
 
 class UserAssignCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
-        values = my.kwargs.get("values")
+        values = self.kwargs.get("values")
         login_names = values.get("login_name")
 
         search_key = values.get("search_key")[0]
@@ -186,13 +186,13 @@ class UserAssignCbk(Command):
 class GroupAssignWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("spt_groups_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
-        search_key = my.kwargs.get("search_key")
-        show_add_group = my.kwargs.get("show_add_group")
+        search_key = self.kwargs.get("search_key")
+        show_add_group = self.kwargs.get("show_add_group")
 
         login = Search.get_by_search_key(search_key)
         user = login.get_value("login")
@@ -226,7 +226,7 @@ class GroupAssignWdg(BaseRefreshWdg):
         add_button = ActionButtonWdg(title="+", size='small', tip="Add New Groups")
         top.add(add_button)
         add_button.add_style("float: left")
-        top.add( my.get_add_groups_wdg() )
+        top.add( self.get_add_groups_wdg() )
         add_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -385,7 +385,7 @@ class GroupAssignWdg(BaseRefreshWdg):
 
 
 
-    def get_add_groups_wdg(my):
+    def get_add_groups_wdg(self):
 
         div = DivWdg()
         div.add_class("spt_groups_add")
@@ -429,10 +429,10 @@ class GroupAssignWdg(BaseRefreshWdg):
 
 class GroupAssignCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
-        values = my.kwargs.get("values")
+        values = self.kwargs.get("values")
         group_names = values.get("group_name")
 
         search_key = values.get("search_key")[0]
@@ -479,7 +479,7 @@ class GroupAssignCbk(Command):
             user_defined_project_code = ""
             original_new_group = new_group
             is_project_specific = False
-            if my.kwargs.get("checked") in [True, "true", "True"]:
+            if self.kwargs.get("checked") in [True, "true", "True"]:
                 is_project_specific = True
 
             if new_group.find("/") == -1:
@@ -534,7 +534,7 @@ class GroupAssignCbk(Command):
             group.set_value("description", title)
             group.commit()
 
-            my.info = {
+            self.info = {
                 'close_popup': False
             }
 
@@ -543,14 +543,14 @@ class GroupAssignCbk(Command):
 __all__.append("GroupSummaryWdg")
 class GroupSummaryWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 10px")
         top.add_color("background", "background")
         top.add_border()
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         login = Search.get_by_search_key(search_key)
 
         xx = LoginInGroup.get_by_login_name(login.get_value("login"))
@@ -606,12 +606,12 @@ class GroupSummaryWdg(BaseRefreshWdg):
 class SecurityWdg(BaseRefreshWdg):
     '''This secuirty widget allows for the configuration of security'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_section_wdg(my, title, description, image, behavior):
+    def get_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -680,7 +680,7 @@ class SecurityWdg(BaseRefreshWdg):
         return section_wdg
 
 
-    def get_display(my):
+    def get_display(self):
 
         project = Project.get()
         project_code = project.get_code()
@@ -770,7 +770,7 @@ class SecurityWdg(BaseRefreshWdg):
         }
 
 
-        users_wdg = my.get_section_wdg(title, description, image, behavior)
+        users_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(users_wdg)
         """
 
@@ -793,7 +793,7 @@ class SecurityWdg(BaseRefreshWdg):
         spt.tab.add_new("project_security", "Project Security", class_name, kwargs);
         '''
         }
-        config_wdg = my.get_section_wdg(title, description, image, behavior)
+        config_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(config_wdg)
 
 
@@ -822,7 +822,7 @@ class SecurityWdg(BaseRefreshWdg):
 
 
         }
-        gear_menu_security_wdg = my.get_section_wdg(title, description, image, behavior)
+        gear_menu_security_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(gear_menu_security_wdg)
 
         #
@@ -847,7 +847,7 @@ class SecurityWdg(BaseRefreshWdg):
 
 
         }
-        pipeline_wdg = my.get_section_wdg(title, description, image, behavior)
+        pipeline_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(pipeline_wdg)
 
         #
@@ -871,7 +871,7 @@ class SecurityWdg(BaseRefreshWdg):
         '''
         }
 
-        stype_security_wdg = my.get_section_wdg(title, description, image, behavior)
+        stype_security_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(stype_security_wdg)
 
 
@@ -896,7 +896,7 @@ class SecurityWdg(BaseRefreshWdg):
         '''
         }
 
-        process_security_wdg = my.get_section_wdg(title, description, image, behavior)
+        process_security_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(process_security_wdg)
 
         # Adding Task Security Wdg
@@ -920,7 +920,7 @@ class SecurityWdg(BaseRefreshWdg):
         '''
         }
 
-        process_security_wdg = my.get_section_wdg(title, description, image, behavior)
+        process_security_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(process_security_wdg)
 
         #
@@ -944,7 +944,7 @@ class SecurityWdg(BaseRefreshWdg):
         '''
         }
 
-        groups_wdg = my.get_section_wdg(title, description, image, behavior)
+        groups_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(groups_wdg)
 
 
@@ -973,7 +973,7 @@ class SecurityWdg(BaseRefreshWdg):
         '''
         }
 
-        users_wdg = my.get_section_wdg(title, description, image, behavior)
+        users_wdg = self.get_section_wdg(title, description, image, behavior)
         td.add(users_wdg)
         """
 
@@ -1005,24 +1005,24 @@ class SecurityWdg(BaseRefreshWdg):
 __all__.append("SecurityGroupListWdg")
 class SecurityGroupListWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
-        view = my.kwargs.get("view")
-        expression = my.kwargs.get("expression")
-        insert_view = my.kwargs.get("custom_insert_view")
-        edit_view = my.kwargs.get("custom_edit_view")
-        show_refresh = my.kwargs.get("show_refresh")
-        show_keyword_search = my.kwargs.get("show_keyword_search")
-        show_save  = my.kwargs.get("show_save")
-        show_insert = my.kwargs.get("show_insert")
-        show_gear = my.kwargs.get("show_gear")
-        show_search_limit = my.kwargs.get("show_search_limit")
-        show_search = my.kwargs.get("show_search")
-        show_column_manager = my.kwargs.get("show_column_manager")
-        show_context_menu = my.kwargs.get("show_context_menu")
-        show_expand = my.kwargs.get("show_expand")
-        show_layout_switcher = my.kwargs.get("show_layout_switcher")
-        show_help = my.kwargs.get("show_help")
+    def get_display(self):
+        top = self.top
+        view = self.kwargs.get("view")
+        expression = self.kwargs.get("expression")
+        insert_view = self.kwargs.get("custom_insert_view")
+        edit_view = self.kwargs.get("custom_edit_view")
+        show_refresh = self.kwargs.get("show_refresh")
+        show_keyword_search = self.kwargs.get("show_keyword_search")
+        show_save  = self.kwargs.get("show_save")
+        show_insert = self.kwargs.get("show_insert")
+        show_gear = self.kwargs.get("show_gear")
+        show_search_limit = self.kwargs.get("show_search_limit")
+        show_search = self.kwargs.get("show_search")
+        show_column_manager = self.kwargs.get("show_column_manager")
+        show_context_menu = self.kwargs.get("show_context_menu")
+        show_expand = self.kwargs.get("show_expand")
+        show_layout_switcher = self.kwargs.get("show_layout_switcher")
+        show_help = self.kwargs.get("show_help")
 
         if not view:
             view = "startup"
@@ -1078,53 +1078,53 @@ __all__.append("SecurityCheckboxElementWdg")
 from tactic.ui.common import SimpleTableElementWdg
 class SecurityCheckboxElementWdg(SimpleTableElementWdg):
 
-    def preprocess(my):
-        my.all = False
+    def preprocess(self):
+        self.all = False
 
         # FIXME: should move Login
         from pyasm.security import Login
 
-        my.security_type = Container.get("SecurityWdg:security_type")
+        self.security_type = Container.get("SecurityWdg:security_type")
 
 
-    def handle_td(my, td):
-        sobject = my.get_current_sobject()
-        value = sobject.get_value(my.get_name())
+    def handle_td(self, td):
+        sobject = self.get_current_sobject()
+        value = sobject.get_value(self.get_name())
         code = sobject.get_code()
 
         if code == "*" and value:
-             my.all = True
+             self.all = True
 
 
-        name = my.get_name()
-        my.access_level = sobject.get_value("%s:access_level" % name, no_exception=True)
-        if not my.access_level:
+        name = self.get_name()
+        self.access_level = sobject.get_value("%s:access_level" % name, no_exception=True)
+        if not self.access_level:
             from pyasm.security import Login
-            my.access_level = Login.get_default_security_level()
+            self.access_level = Login.get_default_security_level()
         #Login.get_security_level_group(access_level)
-        my.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
+        self.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
 
         # FIXME: assumed knowledge of default for access_level
         is_set = False
-        if my.security_type == 'project' and my.access_level in ['min', 'low', 'medium', 'high']:
-            if my.project_code and sobject.get_value("code") == my.project_code:
+        if self.security_type == 'project' and self.access_level in ['min', 'low', 'medium', 'high']:
+            if self.project_code and sobject.get_value("code") == self.project_code:
                 is_set = True
             else:
                 is_set = False
-        elif my.security_type == 'link' and my.access_level in ['high']:
+        elif self.security_type == 'link' and self.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'gear_menu' and my.access_level in ['high']:
+        elif self.security_type == 'gear_menu' and self.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium','high']:
+        elif self.security_type == 'search_type' and self.access_level in ['min', 'low', 'medium','high']:
             is_set = True
-        elif my.security_type == 'process' and my.access_level in ['low', 'medium','high']:
+        elif self.security_type == 'process' and self.access_level in ['low', 'medium','high']:
             is_set = True
 
 
         if is_set:
             td.add_color("background", "background3", [5, 5, 5])
         else:
-            if my.all == True:
+            if self.all == True:
                 td.add_color("background", "background3")
             elif value:
                 td.add_color("background", "background3", [-20, 20, -20])
@@ -1134,12 +1134,12 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
 
 
  
-    def handle_th(my, th, index):
+    def handle_th(self, th, index):
         th.add_attr("spt_input_type", "inline")
 
 
-    def handle_layout_behaviors(my, layout):
-        name = Common.get_filesystem_name(my.get_name())
+    def handle_layout_behaviors(self, layout):
+        name = Common.get_filesystem_name(self.get_name())
         layout.add_relay_behavior( {
         'type': 'click',
         #'propagate_evt': True,
@@ -1187,45 +1187,45 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
         div.add_style("text-align: center")
         div.add_style("min-width: 40px")
 
-        safe_name = Common.get_filesystem_name(my.get_name())
+        safe_name = Common.get_filesystem_name(self.get_name())
         div.add_class('spt_format_checkbox_%s' % safe_name.replace("/","_"))
 
-        sobject = my.get_current_sobject()
-        name = my.get_name()
+        sobject = self.get_current_sobject()
+        name = self.get_name()
         value = sobject.get_value(name)
 
 
 
 
 
-        my.access_level = sobject.get_value("%s:access_level" % name, no_exception=True)
-        if not my.access_level:
+        self.access_level = sobject.get_value("%s:access_level" % name, no_exception=True)
+        if not self.access_level:
             from pyasm.security import Login
-            my.access_level = Login.get_default_security_level()
+            self.access_level = Login.get_default_security_level()
 
-        my.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
+        self.project_code = sobject.get_value("%s:project_code" % name, no_exception=True)
 
         # FIXME: assumed knowledge of default for access_level
         is_set = False
-        if my.security_type == 'project' and my.access_level in ['min', 'low', 'medium', 'high']:
-            if my.project_code and sobject.get_value("code") == my.project_code:
+        if self.security_type == 'project' and self.access_level in ['min', 'low', 'medium', 'high']:
+            if self.project_code and sobject.get_value("code") == self.project_code:
                 is_set = True
             else:
                 is_set = False
  
-        elif my.security_type == 'link' and my.access_level in ['high']:
+        elif self.security_type == 'link' and self.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'gear_menu' and my.access_level in ['high']:
+        elif self.security_type == 'gear_menu' and self.access_level in ['high']:
             is_set = True
-        elif my.security_type == 'search_type' and my.access_level in ['min', 'low', 'medium', 'high']:
+        elif self.security_type == 'search_type' and self.access_level in ['min', 'low', 'medium', 'high']:
             is_set = True
-        elif my.security_type == 'process' and my.access_level in ['low', 'medium', 'high']:
+        elif self.security_type == 'process' and self.access_level in ['low', 'medium', 'high']:
             is_set = True
 
 
@@ -1233,14 +1233,14 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         checkbox.add_class("spt_checkbox")
 
         if is_set:
-            icon = IconWdg("Set by access level [%s]" % my.access_level, IconWdg.CHECK)
+            icon = IconWdg("Set by access level [%s]" % self.access_level, IconWdg.CHECK)
             div.add(icon)
             div.add_style("padding-top: 3px")
 
         elif value:
             checkbox.set_checked()
             div.add(checkbox)
-        elif my.all:
+        elif self.all:
             icon = IconWdg("ALL is set", IconWdg.CHECK)
             div.add(icon)
             div.add_style("padding-top: 3px")
@@ -1248,7 +1248,7 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         else:
             div.add(checkbox)
 
-        #if my.get_name().find("client") != -1:
+        #if self.get_name().find("client") != -1:
         #    icon = IconWdg("All projects", IconWdg.STAR, width=8)
         #    div.add(icon)
 
@@ -1260,10 +1260,10 @@ __all__.append("SecurityAddGroupToProjectAction")
 from pyasm.widget import BaseInputWdg
 class SecurityAddGroupToProjectInputWdg(BaseInputWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
-        checkbox = CheckboxWdg(my.get_input_name())
+        checkbox = CheckboxWdg(self.get_input_name())
         checkbox.set_checked()
         div.add(checkbox)
 
@@ -1272,9 +1272,9 @@ class SecurityAddGroupToProjectInputWdg(BaseInputWdg):
 from pyasm.command import DatabaseAction
 class SecurityAddGroupToProjectAction(DatabaseAction):
 
-    def execute(my):
-        value = my.get_value()
-        sobject = my.sobject
+    def execute(self):
+        value = self.get_value()
+        sobject = self.sobject
         project = Project.get()
         project_code = project.get_code()
 
@@ -1288,27 +1288,27 @@ class SecurityAddGroupToProjectAction(DatabaseAction):
 
 class ProjectSecurityWdg(BaseRefreshWdg):
 
-    def get_security_type(my):
+    def get_security_type(self):
         return "project"
 
 
-    def get_value(my, name):
+    def get_value(self, name):
         web = WebContainer.get_web()
         value = web.get_form_value(name)
         if not value:
-            value = my.kwargs.get(name)
+            value = self.kwargs.get(name)
         return value
 
 
-    def get_groups(my):
+    def get_groups(self):
         search = Search("sthpw/login_group")
-        filter = my.kwargs.get("filter")
+        filter = self.kwargs.get("filter")
         if filter:
             search.add_filter("login_group", filter)
 
-        #if my.__class__.__name__ in ['ProjectSecurityWdg','UserSecurityWdg']:
-        if my.__class__.__name__ in ['ProjectSecurityWdg']:
-            project_only = my.kwargs.get("project_only")
+        #if self.__class__.__name__ in ['ProjectSecurityWdg','UserSecurityWdg']:
+        if self.__class__.__name__ in ['ProjectSecurityWdg']:
+            project_only = self.kwargs.get("project_only")
             project_only = True
             if project_only in [True, 'true']:
                 groups = LoginGroup.get_by_project()
@@ -1322,7 +1322,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             groups = LoginGroup.get_by_project()
 
 
-            ignore = my.kwargs.get("ignore_groups")
+            ignore = self.kwargs.get("ignore_groups")
             if ignore:
                 ignore = ignore.split(",")
             else:
@@ -1347,23 +1347,23 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_security_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         #top.add_border()
 
         top.add_color("background", "background")
 
-        Container.put("SecurityWdg:security_type", my.get_security_type())
+        Container.put("SecurityWdg:security_type", self.get_security_type())
 
         group_names = []
         groups = []
         from tactic.ui.panel import FastTableLayoutWdg
 
 
-        groups = my.get_groups()
+        groups = self.get_groups()
         group_names = [x.get_value("login_group") for x in groups]
 
         config_xml = []
@@ -1372,7 +1372,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
         filter = []
 
-        columns = my.get_display_columns()
+        columns = self.get_display_columns()
         for column in columns:
             config_xml.append('''<element name='%s' edit='false'/>''' % column)
 
@@ -1424,9 +1424,9 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         button_row.add_style("float: left")
         button_row.add_style("padding: 5px")
 
-        if my.get_security_type() in ['project', 'user']:
+        if self.get_security_type() in ['project', 'user']:
             from tactic.ui.input import LookAheadTextInputWdg
-            if my.get_security_type() == 'project':
+            if self.get_security_type() == 'project':
                 search_type = 'sthpw/project'
                 column = ['title']
             else:
@@ -1447,7 +1447,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             top.add(search_div)
             search_div.add_style("padding-top: 5px")
 
-            value = my.get_value("keyword")
+            value = self.get_value("keyword")
             if value:
                 text.set_value(value)
 
@@ -1491,7 +1491,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
 
-        show_add = my.kwargs.get("show_add")
+        show_add = self.kwargs.get("show_add")
         if show_add in [True, 'true']:
             project_code = Project.get_project_code()
 
@@ -1519,13 +1519,13 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
 
-        sobjects = my.get_sobjects(group_names)
+        sobjects = self.get_sobjects(group_names)
 
-        my.set_access_levels(sobjects, group_names)
+        self.set_access_levels(sobjects, group_names)
 
         # these are virtual sobjects, don't show search limit to avoid pagination 
 
-        group_elements = my.get_group_elements()
+        group_elements = self.get_group_elements()
 
         layout = FastTableLayoutWdg(
             search_type='sthpw/virtual', view='table',
@@ -1533,7 +1533,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
             show_search_limit="false",
             #show_select=False,
             config_xml=config_xml,
-            save_class_name=my.get_save_cbk(),
+            save_class_name=self.get_save_cbk(),
             init_load_num = -1,
             expand_on_load=True,
             show_context_menu=False,
@@ -1549,19 +1549,19 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
 
-    def get_display_columns(my):
+    def get_display_columns(self):
         return ['preview', 'title']
 
-    def get_group_elements(my):
+    def get_group_elements(self):
         return []
 
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.ProjectSecurityCbk'
 
 
 
-    def set_access_levels(my, sobjects, group_names):
+    def set_access_levels(self, sobjects, group_names):
         # set access levels
         access_levels = {}
         project_codes = {}
@@ -1585,12 +1585,12 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
         # get the project sobjects
         search = Search("sthpw/project")
         search.add_filters("code", ['sthpw','admin','unittest'], op='not in')
 
-        keyword = my.get_value("keyword")
+        keyword = self.get_value("keyword")
         if keyword:
             search.add_keyword_filter("title", keyword)
 
@@ -1634,26 +1634,26 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 class UserSecurityWdg(ProjectSecurityWdg):
 
-    def get_security_type(my):
+    def get_security_type(self):
         return "user"
 
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.UserSecurityCbk'
 
 
-    def get_display_columns(my):
+    def get_display_columns(self):
         return ['preview', 'login', 'first_name', 'last_name']
 
 
 
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
         # get the project sobjects
         search = Search("sthpw/login")
         search.add_filters("code", ['admin'], op='not in')
 
-        keyword = my.get_value('keyword')
+        keyword = self.get_value('keyword')
         if keyword:
             search.add_filter("login", keyword)
         sobjects = search.get_sobjects()
@@ -1717,15 +1717,15 @@ class UserSecurityWdg(ProjectSecurityWdg):
 
 class SearchTypeSecurityWdg(ProjectSecurityWdg):
 
-    def get_security_type(my):
+    def get_security_type(self):
         return "search_type"
 
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.SearchTypeSecurityCbk'
 
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
         # get the project sobjects
         sobjects = Project.get().get_search_types()
 
@@ -1769,16 +1769,16 @@ class SearchTypeSecurityWdg(ProjectSecurityWdg):
 
 class GearMenuSecurityWdg(ProjectSecurityWdg):
     '''Control Gear Menu visibility'''
-    def get_security_type(my):
+    def get_security_type(self):
         return "gear_menu"
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.GearMenuSecurityCbk'
 
-    def get_display_columns(my):
+    def get_display_columns(self):
         return ['submenu', 'label']
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
 
         all_gear_menu_names = GearMenuSecurityWdg.get_all_menu_names()
         rules_dict = {}
@@ -1848,17 +1848,17 @@ class GearMenuSecurityWdg(ProjectSecurityWdg):
 
 class LinkSecurityWdg(ProjectSecurityWdg):
 
-    def get_security_type(my):
+    def get_security_type(self):
         return "link"
 
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.LinkSecurityCbk'
 
 
-    def get_display_columns(my):
-        show_name = my.kwargs.get("show_name")
-        show_description = my.kwargs.get("show_description")
+    def get_display_columns(self):
+        show_name = self.kwargs.get("show_name")
+        show_description = self.kwargs.get("show_description")
 
         columns = ['title']
 
@@ -1871,11 +1871,11 @@ class LinkSecurityWdg(ProjectSecurityWdg):
         return columns
 
 
-    def get_group_elements(my):
+    def get_group_elements(self):
         return ['category']
 
 
-    def get_info(my, config, names, links, titles, descriptions, icons, level):
+    def get_info(self, config, names, links, titles, descriptions, icons, level):
 
         element_names = config.get_element_names()
         for element_name in element_names:
@@ -1924,14 +1924,14 @@ class LinkSecurityWdg(ProjectSecurityWdg):
                     folder_view = element_name
                 # usually folder_view = element_name , but it could be manually changed 
                 sub_config = SideBarBookmarkMenuWdg.get_config( "SideBarWdg", folder_view)
-                my.get_info(sub_config, names, links, titles, descriptions, icons, level+1)
+                self.get_info(sub_config, names, links, titles, descriptions, icons, level+1)
             
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
         #from pyasm.widget import WidgetConfig, WidgetConfigView
         #from pyasm.search import WidgetDbConfig
 
-        base = my.kwargs.get("base")
+        base = self.kwargs.get("base")
         if not base:
             base = "project_view"
 
@@ -1944,7 +1944,7 @@ class LinkSecurityWdg(ProjectSecurityWdg):
         categories = []
         icons = []
         level = 0
-        my.get_info(config, names, links, titles, descriptions, icons, level)
+        self.get_info(config, names, links, titles, descriptions, icons, level)
             
 
         rules_dict = {}
@@ -1972,7 +1972,7 @@ class LinkSecurityWdg(ProjectSecurityWdg):
         descriptions.insert(0, "Able to see all links")
         icons.insert(0, "")
 
-        show_icon = my.kwargs.get("show_icon")
+        show_icon = self.kwargs.get("show_icon")
         if show_icon in [False, 'false']:
             show_icon = False
         else:
@@ -2027,18 +2027,18 @@ class LinkSecurityWdg(ProjectSecurityWdg):
 
 class ProcessSecurityWdg(ProjectSecurityWdg):
 
-    def get_security_type(my):
+    def get_security_type(self):
         return "process"
 
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.ProcessSecurityCbk'
 
 
-    def get_display_columns(my):
+    def get_display_columns(self):
         return ['pipeline_code', 'process']
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
 
         pre_search = Search("sthpw/pipeline")
         sobjects = pre_search.get_sobjects()
@@ -2100,18 +2100,18 @@ class ProcessSecurityWdg(ProjectSecurityWdg):
 
 class TaskSecurityWdg(ProjectSecurityWdg):
 
-    def get_security_type(my):
+    def get_security_type(self):
         return "process"
 
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.TaskSecurityCbk'
 
 
-    def get_display_columns(my):
+    def get_display_columns(self):
         return ['pipeline_code', 'process']
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
         pre_search = Search("sthpw/pipeline")
         sobjects = pre_search.get_sobjects()
 
@@ -2196,14 +2196,14 @@ __all__.append("SearchTypeSecurityCbk")
 __all__.append("ProcessSecurityCbk")
 
 class ProjectSecurityCbk(Command):
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
-        update_data = my.kwargs.get("update_data")
+        search_keys = self.kwargs.get("search_keys")
+        update_data = self.kwargs.get("update_data")
         if isinstance(update_data, basestring):
             update_data = jsonloads(update_data)
 
-        extra_data = my.kwargs.get("extra_data")
+        extra_data = self.kwargs.get("extra_data")
         if isinstance(extra_data, basestring):
             extra_data = jsonloads(extra_data)
 
@@ -2246,14 +2246,14 @@ class ProjectSecurityCbk(Command):
 
 
 class UserSecurityCbk(Command):
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
-        update_data = my.kwargs.get("update_data")
+        search_keys = self.kwargs.get("search_keys")
+        update_data = self.kwargs.get("update_data")
         if isinstance(update_data, basestring):
             update_data = jsonloads(update_data)
 
-        extra_data = my.kwargs.get("extra_data")
+        extra_data = self.kwargs.get("extra_data")
         if isinstance(extra_data, basestring):
             extra_data = jsonloads(extra_data)
 
@@ -2295,14 +2295,14 @@ class UserSecurityCbk(Command):
 
 
 class SearchTypeSecurityCbk(Command):
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
-        update_data = my.kwargs.get("update_data")
+        search_keys = self.kwargs.get("search_keys")
+        update_data = self.kwargs.get("update_data")
         if isinstance(update_data, basestring):
             update_data = jsonloads(update_data)
 
-        extra_data = my.kwargs.get("extra_data")
+        extra_data = self.kwargs.get("extra_data")
         if isinstance(extra_data, basestring):
             extra_data = jsonloads(extra_data)
 
@@ -2346,14 +2346,14 @@ class SearchTypeSecurityCbk(Command):
             group.commit()
 
 class GearMenuSecurityCbk(Command):
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
-        update_data = my.kwargs.get("update_data")
+        search_keys = self.kwargs.get("search_keys")
+        update_data = self.kwargs.get("update_data")
         if isinstance(update_data, basestring):
             update_data = jsonloads(update_data)
 
-        extra_data = my.kwargs.get("extra_data")
+        extra_data = self.kwargs.get("extra_data")
 
         if isinstance(extra_data, basestring):
             extra_data = jsonloads(extra_data)
@@ -2391,14 +2391,14 @@ class GearMenuSecurityCbk(Command):
             group.commit()
 
 class LinkSecurityCbk(Command):
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
-        update_data = my.kwargs.get("update_data")
+        search_keys = self.kwargs.get("search_keys")
+        update_data = self.kwargs.get("update_data")
         if isinstance(update_data, basestring):
             update_data = jsonloads(update_data)
 
-        extra_data = my.kwargs.get("extra_data")
+        extra_data = self.kwargs.get("extra_data")
         if isinstance(extra_data, basestring):
             extra_data = jsonloads(extra_data)
 
@@ -2438,25 +2438,25 @@ class LinkSecurityCbk(Command):
 
 class ProcessSecurityCbk(Command):
 
-    def use_project(my):
+    def use_project(self):
         return True
 
-    def use_pipeline(my):
+    def use_pipeline(self):
         return False
 
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
-        update_data = my.kwargs.get("update_data")
+        search_keys = self.kwargs.get("search_keys")
+        update_data = self.kwargs.get("update_data")
         if isinstance(update_data, basestring):
             update_data = jsonloads(update_data)
 
-        extra_data = my.kwargs.get("extra_data")
+        extra_data = self.kwargs.get("extra_data")
         if isinstance(extra_data, basestring):
             extra_data = jsonloads(extra_data)
 
         project = Project.get()
-        if my.use_project():
+        if self.use_project():
             project_code = project.get_code()
         else:
             project_code = None
@@ -2477,7 +2477,7 @@ class ProcessSecurityCbk(Command):
             else:
                 process_sobj = Search.get_by_search_key(search_key)
                 process = process_sobj.get_value("process")
-                if my.use_pipeline():
+                if self.use_pipeline():
                     pipeline_code = process_sobj.get_value("pipeline_code")
 
             for group_name, is_insert in data.items():
@@ -2506,10 +2506,10 @@ class ProcessSecurityCbk(Command):
 
 class TaskSecurityCbk(ProcessSecurityCbk):
 
-    def use_project(my):
+    def use_project(self):
         return False
 
-    def use_pipeline(my):
+    def use_pipeline(self):
         return True
     
 
@@ -2517,104 +2517,104 @@ class TaskSecurityCbk(ProcessSecurityCbk):
 
 class SecurityBuilder(object):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        group = my.kwargs.get("group")
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        group = self.kwargs.get("group")
         if group:
-            my.xml = group.get_xml_value("access_rules")
+            self.xml = group.get_xml_value("access_rules")
 
         else:
-            my.xml = Xml()
-            my.xml.read_string("<rules/>")
+            self.xml = Xml()
+            self.xml.read_string("<rules/>")
 
-        assert my.xml
+        assert self.xml
 
-        my.root = my.xml.get_root_node()
-
-
-    def to_string(my):
-        return my.xml.to_string()
+        self.root = self.xml.get_root_node()
 
 
-    def add_project(my, project_code, access="allow"):
-        rule = my.xml.create_element("rule")
-        my.xml.set_attribute(rule, "group", "project")
-        my.xml.set_attribute(rule, "code", project_code)
-        my.xml.set_attribute(rule, "access", access)
-        my.xml.append_child(my.root, rule)
+    def to_string(self):
+        return self.xml.to_string()
 
-    def remove_project(my, project_code):
-        nodes = my.xml.get_nodes("rules/rule[@group='project']")
+
+    def add_project(self, project_code, access="allow"):
+        rule = self.xml.create_element("rule")
+        self.xml.set_attribute(rule, "group", "project")
+        self.xml.set_attribute(rule, "code", project_code)
+        self.xml.set_attribute(rule, "access", access)
+        self.xml.append_child(self.root, rule)
+
+    def remove_project(self, project_code):
+        nodes = self.xml.get_nodes("rules/rule[@group='project']")
         for node in nodes:
-            if my.xml.get_attribute(node, 'code') == project_code:
-                my.xml.remove_child(my.root, node)
+            if self.xml.get_attribute(node, 'code') == project_code:
+                self.xml.remove_child(self.root, node)
 
 
 
 
 
-    def add_gear_menu(my, submenu, label, access="allow", project_code=None):
+    def add_gear_menu(self, submenu, label, access="allow", project_code=None):
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu' and @project='%s']" % project_code)
+            nodes = self.xml.get_nodes("rules/rule[@group='gear_menu' and @project='%s']" % project_code)
 
         else:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu']")
+            nodes = self.xml.get_nodes("rules/rule[@group='gear_menu']")
 
-        submenus = [my.xml.get_attribute(node, 'submenu') for node in nodes]
-        labels = [my.xml.get_attribute(node, 'label') for node in nodes]
+        submenus = [self.xml.get_attribute(node, 'submenu') for node in nodes]
+        labels = [self.xml.get_attribute(node, 'label') for node in nodes]
 
         if label not in labels:
-            rule = my.xml.create_element("rule")
-            my.xml.set_attribute(rule, "group", "gear_menu")
-            my.xml.set_attribute(rule, "submenu", submenu)
-            my.xml.set_attribute(rule, "label", label)
+            rule = self.xml.create_element("rule")
+            self.xml.set_attribute(rule, "group", "gear_menu")
+            self.xml.set_attribute(rule, "submenu", submenu)
+            self.xml.set_attribute(rule, "label", label)
             if project_code:
-                my.xml.set_attribute(rule, "project", project_code)
-            my.xml.set_attribute(rule, "access", access)
-            my.xml.append_child(my.root, rule)
+                self.xml.set_attribute(rule, "project", project_code)
+            self.xml.set_attribute(rule, "access", access)
+            self.xml.append_child(self.root, rule)
             
-    def remove_gear_menu(my, submenu, label, project_code=None):
+    def remove_gear_menu(self, submenu, label, project_code=None):
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu' and @project='%s']" % project_code)
+            nodes = self.xml.get_nodes("rules/rule[@group='gear_menu' and @project='%s']" % project_code)
 
         else:
-            nodes = my.xml.get_nodes("rules/rule[@group='gear_menu']")
+            nodes = self.xml.get_nodes("rules/rule[@group='gear_menu']")
         for node in nodes:
-            if my.xml.get_attribute(node, 'label') == label:
-                my.xml.remove_child(my.root, node)
+            if self.xml.get_attribute(node, 'label') == label:
+                self.xml.remove_child(self.root, node)
     
 
 
-    def add_link(my, link, access="allow", project_code=None):
+    def add_link(self, link, access="allow", project_code=None):
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='link' and @project='%s']" % project_code)
+            nodes = self.xml.get_nodes("rules/rule[@group='link' and @project='%s']" % project_code)
         else:
-            nodes = my.xml.get_nodes("rules/rule[@group='link']")
-        links = [my.xml.get_attribute(node, 'element') for node in nodes] 
+            nodes = self.xml.get_nodes("rules/rule[@group='link']")
+        links = [self.xml.get_attribute(node, 'element') for node in nodes] 
 
         if link not in links:
-            rule = my.xml.create_element("rule")
-            my.xml.set_attribute(rule, "group", "link")
-            my.xml.set_attribute(rule, "element", link)
+            rule = self.xml.create_element("rule")
+            self.xml.set_attribute(rule, "group", "link")
+            self.xml.set_attribute(rule, "element", link)
             if project_code:
-                my.xml.set_attribute(rule, "project", project_code)
-            my.xml.set_attribute(rule, "access", access)
-            my.xml.append_child(my.root, rule)
+                self.xml.set_attribute(rule, "project", project_code)
+            self.xml.set_attribute(rule, "access", access)
+            self.xml.append_child(self.root, rule)
 
 
-    def remove_link(my, link, project_code=None):
+    def remove_link(self, link, project_code=None):
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='link' and @project='%s']" % project_code)
+            nodes = self.xml.get_nodes("rules/rule[@group='link' and @project='%s']" % project_code)
         else:
-            nodes = my.xml.get_nodes("rules/rule[@group='link']")
+            nodes = self.xml.get_nodes("rules/rule[@group='link']")
 
         for node in nodes:
-            if my.xml.get_attribute(node, 'element') == link:
-                my.xml.remove_child(my.root, node)
+            if self.xml.get_attribute(node, 'element') == link:
+                self.xml.remove_child(self.root, node)
 
 
 
-    def add_process(my, process, access="allow", project_code=None, pipeline_code=None):
+    def add_process(self, process, access="allow", project_code=None, pipeline_code=None):
         '''check before adding a new node since the user can uncheck and check again'''
 
         pipeline_code_expr = ''
@@ -2625,68 +2625,68 @@ class SecurityBuilder(object):
         if project_code:
             project_code_expr = "and @project='%s'"%project_code
 
-        check_node = my.xml.get_node("rules/rule[@group='process' and @process='%s' %s %s]" % (process, pipeline_code_expr, project_code_expr))
+        check_node = self.xml.get_node("rules/rule[@group='process' and @process='%s' %s %s]" % (process, pipeline_code_expr, project_code_expr))
         if check_node is None:
-            rule = my.xml.create_element("rule")
-            my.xml.set_attribute(rule, "group", "process")
-            my.xml.set_attribute(rule, "process", process)
+            rule = self.xml.create_element("rule")
+            self.xml.set_attribute(rule, "group", "process")
+            self.xml.set_attribute(rule, "process", process)
             if project_code:
-                my.xml.set_attribute(rule, "project", project_code)
+                self.xml.set_attribute(rule, "project", project_code)
             if pipeline_code:
-                my.xml.set_attribute(rule, "pipeline", pipeline_code)
-            my.xml.set_attribute(rule, "access", access)
-            my.xml.append_child(my.root, rule)
+                self.xml.set_attribute(rule, "pipeline", pipeline_code)
+            self.xml.set_attribute(rule, "access", access)
+            self.xml.append_child(self.root, rule)
 
 
-    def remove_process(my, process, project_code=None, pipeline_code=None):
+    def remove_process(self, process, project_code=None, pipeline_code=None):
         pipeline_code_expr = ''
         if pipeline_code:
             pipeline_code_expr = "and @pipeline='%s'"%pipeline_code
         
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='process' and @project='%s' %s]" % (project_code, pipeline_code_expr))
+            nodes = self.xml.get_nodes("rules/rule[@group='process' and @project='%s' %s]" % (project_code, pipeline_code_expr))
         else:
             # for backward comaptibilty when the concept of @pipeline doesn't exist at all 
-            check_node = my.xml.get_node("rules/rule[@pipeline]")
+            check_node = self.xml.get_node("rules/rule[@pipeline]")
             if check_node is not None:
-                nodes = my.xml.get_nodes("rules/rule[@group='process' %s]" % pipeline_code_expr)
+                nodes = self.xml.get_nodes("rules/rule[@group='process' %s]" % pipeline_code_expr)
             else:
-                nodes = my.xml.get_nodes("rules/rule[@group='process']")
+                nodes = self.xml.get_nodes("rules/rule[@group='process']")
                 
         if not nodes and process =='*':
-            nodes = my.xml.get_nodes("rules/rule[@group='process' and @process='*']")
+            nodes = self.xml.get_nodes("rules/rule[@group='process' and @process='*']")
 
         for node in nodes:
-            if my.xml.get_attribute(node, 'process') == process:
-                my.xml.remove_child(my.root, node)
+            if self.xml.get_attribute(node, 'process') == process:
+                self.xml.remove_child(self.root, node)
 
 
 
 
-    def add_search_type(my, search_type, access="allow", project_code=None):
-        rule = my.xml.create_element("rule")
-        my.xml.set_attribute(rule, "group", "search_type")
-        my.xml.set_attribute(rule, "code", search_type)
+    def add_search_type(self, search_type, access="allow", project_code=None):
+        rule = self.xml.create_element("rule")
+        self.xml.set_attribute(rule, "group", "search_type")
+        self.xml.set_attribute(rule, "code", search_type)
         if project_code:
-            my.xml.set_attribute(rule, "project", project_code)
-        my.xml.set_attribute(rule, "access", access)
-        my.xml.append_child(my.root, rule)
+            self.xml.set_attribute(rule, "project", project_code)
+        self.xml.set_attribute(rule, "access", access)
+        self.xml.append_child(self.root, rule)
 
 
-    def remove_search_type(my, search_type, project_code=None):
+    def remove_search_type(self, search_type, project_code=None):
         if project_code:
-            nodes = my.xml.get_nodes("rules/rule[@group='search_type' and @project='%s']" % project_code)
+            nodes = self.xml.get_nodes("rules/rule[@group='search_type' and @project='%s']" % project_code)
         else:
-            nodes = my.xml.get_nodes("rules/rule[@group='search_type']")
+            nodes = self.xml.get_nodes("rules/rule[@group='search_type']")
 
         for node in nodes:
-            if my.xml.get_attribute(node, 'code') == search_type:
-                my.xml.remove_child(my.root, node)
+            if self.xml.get_attribute(node, 'code') == search_type:
+                self.xml.remove_child(self.root, node)
 
 
 
 
-    def add_builtin(my):
+    def add_builtin(self):
         pass
 
 

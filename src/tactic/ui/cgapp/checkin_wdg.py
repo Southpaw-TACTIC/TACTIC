@@ -57,14 +57,14 @@ class CheckinWdg(BaseRefreshWdg):
         }
     }
 
-    def init(my):
+    def init(self):
         name = ""
-        my.context_select = None
-        my.current_sobject = None
-        my.search_type = my.kwargs.get('search_type')
-        my.texture_search_type = my.kwargs.get('texture_search_type')
+        self.context_select = None
+        self.current_sobject = None
+        self.search_type = self.kwargs.get('search_type')
+        self.texture_search_type = self.kwargs.get('texture_search_type')
  
-    def get_context_data(my, search_type='', process=''):
+    def get_context_data(self, search_type='', process=''):
         '''get the labels and values of contexts that can be checked in with this widget'''
 
         # TODO: this also shows input contexts ... it should only show output
@@ -124,17 +124,17 @@ class CheckinWdg(BaseRefreshWdg):
 
   
 
-    def get_process_wdg(my, search_type):
+    def get_process_wdg(self, search_type):
         '''this should appear in front of the context_filter_wdg'''
         div = FloatDivWdg()
         div.add_style('padding-right','10px')
 
         # give the opportunity to force the process
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
         if process:
             # add a dummy widget for retrieving the value later
-            my.process_select = SelectWdg("%s_process" % search_type)
-            my.process_select.set_value(process)
+            self.process_select = SelectWdg("%s_process" % search_type)
+            self.process_select.set_value(process)
             process_div = DivWdg()
             process_div.add_style("font-size: 14px")
             process_div.add("Process: %s" % process)
@@ -142,31 +142,31 @@ class CheckinWdg(BaseRefreshWdg):
             return div
             
         from pyasm.prod.web import ProcessSelectWdg
-        my.process_select = ProcessSelectWdg(label='Process: ', \
+        self.process_select = ProcessSelectWdg(label='Process: ', \
             search_type=search_type, css='', has_empty=False, \
-            name="%s_process" %my.search_type)
+            name="%s_process" %self.search_type)
 
-        my.process_select.add_empty_option('- Select -')
-        my.process_select.set_persistence()
-        my.process_select.add_behavior({'type' : 'change',
-            'cbjs_action': '%s;%s'%(my.process_select.get_save_script(),\
-                    my.process_select.get_refresh_script())
+        self.process_select.add_empty_option('- Select -')
+        self.process_select.set_persistence()
+        self.process_select.add_behavior({'type' : 'change',
+            'cbjs_action': '%s;%s'%(self.process_select.get_save_script(),\
+                    self.process_select.get_refresh_script())
            })
         
-        div.add(my.process_select)
+        div.add(self.process_select)
         return div
 
-    def get_context_filter_wdg(my):
+    def get_context_filter_wdg(self):
         '''drop down which selects which context to checkin'''
         # add a filter
         # use a regular SelectWdg with submit instead of FilterSelectWdg
         filter_div = FloatDivWdg("Context:")
-        select_name = "%s_context" %my.search_type
+        select_name = "%s_context" %self.search_type
         select = SelectWdg(select_name)
         
         select.add_behavior({'type' : 'change',
             'cbjs_action': "var top=spt.get_parent_panel(bvr.src_el); spt.panel.refresh(top, {'%s': bvr.src_el.value}, true)"%select_name})
-        labels, values = my.get_context_data()
+        labels, values = self.get_context_data()
         select.set_option("values", "|".join(values))
         select.set_option("labels", "|".join(labels))
         select.add_style("font-size: 0.8em")
@@ -182,22 +182,22 @@ class CheckinWdg(BaseRefreshWdg):
             context = ""
  
         web = WebContainer.get_web()
-        web.set_form_value("%s_context" % my.search_type, context)
+        web.set_form_value("%s_context" % self.search_type, context)
 
         select.set_value( context )
 
         # set it to a instance variable
-        my.context_select = select
+        self.context_select = select
 
         filter_div.add(select)
 
         # if specified, add a sub_context
         settings = ProdSetting.get_value_by_key("%s/sub_context" % context,\
-                my.search_type)
+                self.search_type)
         filter_div.add( "/ ")
         sub_context = None
         if settings:
-            sub_context = SelectWdg("%s_sub_context" %my.search_type)
+            sub_context = SelectWdg("%s_sub_context" %self.search_type)
             sub_context.set_option("values", settings)
             sub_context.set_submit_onchange()
             sub_context.add_empty_option("<- Select ->")
@@ -205,7 +205,7 @@ class CheckinWdg(BaseRefreshWdg):
              
         else:
             # provide a text field
-            sub_context = TextWdg("%s_sub_context" %my.search_type)
+            sub_context = TextWdg("%s_sub_context" %self.search_type)
             sub_context.set_attr('size','10') 
             help = HintWdg('Add a Project Setting with the key [%s/sub_context] to turn this into a selection list' %context)
 
@@ -216,13 +216,13 @@ class CheckinWdg(BaseRefreshWdg):
                 'cbjs_action': sub_context.get_save_script()})
         filter_div.add( sub_context )
         filter_div.add( help )
-        my.sub_context_select = sub_context
+        self.sub_context_select = sub_context
         filter_div.add_style('padding-right','10px')
 
         return filter_div
 
 
-    def get_file_type_wdg(my):
+    def get_file_type_wdg(self):
         '''drop down which selects which file type to export to'''
         # add a filter
         div = DivWdg()
@@ -251,13 +251,13 @@ class CheckinWdg(BaseRefreshWdg):
         select.add_style("font-size: 0.8em")
         select.add_style("margin-top: 5px")
         select.add_style("margin-right: 10px")
-        #select.set_value( WidgetSettings.get_wdg_value(my,"file_type") )
+        #select.set_value( WidgetSettings.get_wdg_value(self,"file_type") )
         select.set_persistence()
 
         div.add(select)
         return div
 
-    def get_connection_option(my):
+    def get_connection_option(self):
         '''display just the Connection Type select'''
         main_div = DivWdg()
         div = FloatDivWdg(width='15em')
@@ -275,11 +275,11 @@ class CheckinWdg(BaseRefreshWdg):
         main_div.add(icon_div)
         return main_div
 
-    def get_snapshot_type_wdg(my):
+    def get_snapshot_type_wdg(self):
         hidden = HiddenWdg("checkin_snapshot_type", "asset")
         return hidden
 
-    def get_export_method_wdg(my):
+    def get_export_method_wdg(self):
         '''Checkbox that determines whether to use export or file/save'''
         is_unchecked = True
         default_cb = None
@@ -318,7 +318,7 @@ class CheckinWdg(BaseRefreshWdg):
         return div
 
  
-    def get_auto_version_wdg(my):
+    def get_auto_version_wdg(self):
 
         widget = Widget()
 
@@ -352,7 +352,7 @@ class CheckinWdg(BaseRefreshWdg):
         
         return widget
 
-    def get_handoff_wdg(my):
+    def get_handoff_wdg(self):
         div = DivWdg()
         title = FloatDivWdg(HtmlElement.b('Use handoff dir:'), width = '15em')
         div.add(title)
@@ -391,7 +391,7 @@ class CheckinWdg(BaseRefreshWdg):
         return div
 
 
-    def get_save_wdg(my, sobject=None):
+    def get_save_wdg(self, sobject=None):
         '''the button which initiates a file/save in the proper directory'''
         type = "maya"
         ext = "ma"
@@ -436,13 +436,13 @@ class CheckinWdg(BaseRefreshWdg):
 
 
         # get the context and sub_context
-        context = my.context_select.get_value(for_display=True)
-        sub_context = my.sub_context_select.get_value()
+        context = self.context_select.get_value(for_display=True)
+        sub_context = self.sub_context_select.get_value()
         if sub_context:
             context = "%s/%s" % (context, sub_context)
 
         # Build sandbox_dir with a fake snapshot
-        process = my.process_select.get_value()
+        process = self.process_select.get_value()
         if not process or process.count(','):
             return HtmlElement.i("No process selected")
 
@@ -499,7 +499,7 @@ class CheckinWdg(BaseRefreshWdg):
         span.add(button)
         return span
 
-    def get_reference_option(my):
+    def get_reference_option(self):
         div = DivWdg()
         title = FloatDivWdg(HtmlElement.b('Unknown References:'), width = '15em')
         div.add(title)
@@ -518,7 +518,7 @@ class CheckinWdg(BaseRefreshWdg):
 
         return div
 
-    def get_currency_wdg(my):
+    def get_currency_wdg(self):
         '''Checkbox that determines whether this check is to be the current'''
         div = DivWdg(css='spt_input_group')
         title = FloatDivWdg(HtmlElement.b('Set as Current:'), width = '15em')
@@ -541,7 +541,7 @@ class CheckinWdg(BaseRefreshWdg):
         return div
 
 
-    def get_checkin_as_wdg(my):
+    def get_checkin_as_wdg(self):
         '''Checkbox that determines whether to use export or file/save'''
         is_unchecked = True
         default_cb = None
@@ -571,7 +571,7 @@ class CheckinWdg(BaseRefreshWdg):
             default_cb.set_checked()
         return div
 
-    def get_texture_option(my, show_texture_match=True, app='Maya'):
+    def get_texture_option(self, show_texture_match=True, app='Maya'):
         '''Checkbox that determines different texture options'''
         is_unchecked = True
         default_cb = None
@@ -642,7 +642,7 @@ class CheckinWdg(BaseRefreshWdg):
 
         return div
     
-    def get_handler_input(my, asset, process_name):
+    def get_handler_input(self, asset, process_name):
         '''get the handler input for client side operation during checkin'''
         pipeline = Pipeline.get_by_sobject(asset)
         
@@ -664,7 +664,7 @@ class CheckinWdg(BaseRefreshWdg):
             handler_hidden.set_value("|".join(handler_values) )
         return handler_hidden
 
-    def handle_unknown_instance(my, table, instance):
+    def handle_unknown_instance(self, table, instance):
         '''handle unassigned or non-tactic nodes'''
 
         table.add_row()
@@ -681,33 +681,33 @@ class CheckinWdg(BaseRefreshWdg):
 
 class AssetCheckinWdg(CheckinWdg):
 
-    def init(my):
-        super(AssetCheckinWdg, my).init()
-        my.is_refresh = my.kwargs.get('is_refresh') =='true'
+    def init(self):
+        super(AssetCheckinWdg, self).init()
+        self.is_refresh = self.kwargs.get('is_refresh') =='true'
 
-    def list_references(my):
+    def list_references(self):
         '''lists whether references can be checked in with this widget'''
         return False
     
-    def get_context_data(my):
-        process = my.process_select.get_value()
-        labels, values = super(AssetCheckinWdg,my).get_context_data(\
-            my.search_type, process)
+    def get_context_data(self):
+        process = self.process_select.get_value()
+        labels, values = super(AssetCheckinWdg,self).get_context_data(\
+            self.search_type, process)
 
         return labels, values
 
 
 
-    def get_display(my):
-        my.search_type = my.kwargs.get('search_type')
-        my.texture_search_type = my.kwargs.get('texture_search_type')
-        assert my.search_type
+    def get_display(self):
+        self.search_type = self.kwargs.get('search_type')
+        self.texture_search_type = self.kwargs.get('texture_search_type')
+        assert self.search_type
 
-        my.is_refresh = my.kwargs.get('is_refresh') =='true'
+        self.is_refresh = self.kwargs.get('is_refresh') =='true'
       
-        if not my.is_refresh:
+        if not self.is_refresh:
             top = DivWdg(css='spt_view_panel')
-            my.set_as_panel(top)
+            self.set_as_panel(top)
         else:
             top = Widget() 
 
@@ -739,8 +739,8 @@ class AssetCheckinWdg(CheckinWdg):
         process_div = DivWdg()
         process_div.add_style("padding-left: 10px")
         div.add(process_div)
-        process_div.add( my.get_process_wdg(my.search_type))
-        process_div.add( my.get_context_filter_wdg() )
+        process_div.add( self.get_process_wdg(self.search_type))
+        process_div.add( self.get_context_filter_wdg() )
         process_div.add(HtmlElement.br(clear="all")) 
 
 
@@ -756,34 +756,34 @@ class AssetCheckinWdg(CheckinWdg):
         div.add(title)
 
         app_name = WebContainer.get_web().get_selected_app()
-        checkin_options.add( my.get_file_type_wdg() )
-        checkin_options.add( my.get_snapshot_type_wdg() )
+        checkin_options.add( self.get_file_type_wdg() )
+        checkin_options.add( self.get_snapshot_type_wdg() )
         checkin_options.add(HtmlElement.br(1)) 
-        checkin_options.add( my.get_export_method_wdg() )
-        checkin_options.add( my.get_checkin_as_wdg() )
+        checkin_options.add( self.get_export_method_wdg() )
+        checkin_options.add( self.get_checkin_as_wdg() )
 
-        #my.add( my.get_render_icon_wdg() )
+        #self.add( self.get_render_icon_wdg() )
 
         # For different export methods
-        checkin_options.add( my.get_currency_wdg() )
+        checkin_options.add( self.get_currency_wdg() )
 
-        checkin_options.add( my.get_reference_option())
-        checkin_options.add( my.get_auto_version_wdg())
+        checkin_options.add( self.get_reference_option())
+        checkin_options.add( self.get_auto_version_wdg())
         
-        checkin_options.add( my.get_texture_option(app=app_name))
-        checkin_options.add( my.get_handoff_wdg())
-        checkin_options.add( my.get_connection_option())
+        checkin_options.add( self.get_texture_option(app=app_name))
+        checkin_options.add( self.get_handoff_wdg())
+        checkin_options.add( self.get_connection_option())
         checkin_options.add(HtmlElement.br())
 
-        if not my.context_select.get_value(for_display=True):
-            my.add(DivWdg('A context must be selected.', css='warning'))
+        if not self.context_select.get_value(for_display=True):
+            self.add(DivWdg('A context must be selected.', css='warning'))
             return
 
         div.add(checkin_options)
       
         
-        #my.add(HtmlElement.br())
-        top.add( my.get_introspect_wdg() )
+        #self.add(HtmlElement.br())
+        top.add( self.get_introspect_wdg() )
         top.add(HtmlElement.br(2))
         # create the interface
         table = Table()
@@ -798,29 +798,29 @@ class AssetCheckinWdg(CheckinWdg):
         table.add_header("&nbsp;")
         th = table.add_header("Instance")
         th.add_style('text-align: left')
-        table.add_header(my.get_checkin())
+        table.add_header(self.get_checkin())
         table.add_header("Sandbox")
         
 
         # get session and handle case where there is no session
-        my.session = SessionContents.get()
-        if my.session == None:
+        self.session = SessionContents.get()
+        if self.session == None:
             instance_names = []
             asset_codes = []
             node_names = []
         else:
-            instance_names = my.session.get_instance_names()
-            asset_codes = my.session.get_asset_codes()
-            node_names = my.session.get_node_names()
+            instance_names = self.session.get_instance_names()
+            asset_codes = self.session.get_asset_codes()
+            node_names = self.session.get_node_names()
 
         # get all of the possible assets based on the asset codes
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         search.add_filters("code", asset_codes)
         assets = search.get_sobjects()
         assets_dict = SObject.get_dict(assets, ["code"])
 
-        if my.session:
-            top.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        if self.session:
+            top.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
             top.add("Current Project: Please press 'Introspect'")
 
@@ -828,8 +828,8 @@ class AssetCheckinWdg(CheckinWdg):
         count = 0
         for i in range(0, len(node_names) ):
             node_name = node_names[i]
-            if not my.session.is_tactic_node(node_name) and \
-                not my.session.get_node_type(node_name) in ['transform','objectSet']:
+            if not self.session.is_tactic_node(node_name) and \
+                not self.session.get_node_type(node_name) in ['transform','objectSet']:
                     continue
             instance_name = instance_names[i]
 
@@ -840,8 +840,8 @@ class AssetCheckinWdg(CheckinWdg):
                 asset_code = instance_name
 
             # skip if this is a reference
-            if my.list_references == False and \
-                    my.session.is_reference(node_name):
+            if self.list_references == False and \
+                    self.session.is_reference(node_name):
                 continue
 
             table.add_row()
@@ -852,18 +852,18 @@ class AssetCheckinWdg(CheckinWdg):
             if not asset:
                 continue
             # list items if it is a set
-            if my.search_type =='prod/asset' and asset.get_asset_type() in ["set", "section"]:
-                my.current_sobject = asset
-                my.handle_set( table, instance_name, asset, instance_names)
+            if self.search_type =='prod/asset' and asset.get_asset_type() in ["set", "section"]:
+                self.current_sobject = asset
+                self.handle_set( table, instance_name, asset, instance_names)
                 count +=1
             # if this asset is in the database, then allow it to checked in
             if asset:
-                if my.session.get_snapshot_code(instance_name, snapshot_type='set'):
+                if self.session.get_snapshot_code(instance_name, snapshot_type='set'):
                     continue
 
                 # hack remember this
-                my.current_sobject = asset
-                my.handle_instance(table, instance_name, asset, node_name)
+                self.current_sobject = asset
+                self.handle_instance(table, instance_name, asset, node_name)
 
             else:
                 table.add_blank_cell()
@@ -877,11 +877,11 @@ class AssetCheckinWdg(CheckinWdg):
 
         top.add(table)
 
-        if not my.session:
+        if not self.session:
             return
 
 
-        non_tactic_nodes = my.session.get_instance_names(is_tactic_node=False)
+        non_tactic_nodes = self.session.get_instance_names(is_tactic_node=False)
         title = HtmlElement.b("Unknown List")
         swap = SwapDisplayWdg.get_triangle_wdg()
 
@@ -898,7 +898,7 @@ class AssetCheckinWdg(CheckinWdg):
 
         
         for instance in non_tactic_nodes:
-            my.handle_unknown_instance(unknown_table, instance)
+            self.handle_unknown_instance(unknown_table, instance)
         
         top.add(div)
         return top
@@ -906,15 +906,15 @@ class AssetCheckinWdg(CheckinWdg):
    
 
 
-    def get_checkin(my):
+    def get_checkin(self):
         '''the button which initiates the checkin'''
         # create the button with the javascript function
         widget = Widget()
-        #button = TextBtnWdg(label=my.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
-        button = ActionButtonWdg(title=my.PUBLISH_BUTTON, tip='Publish the selected assets')
+        #button = TextBtnWdg(label=self.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
+        button = ActionButtonWdg(title=self.PUBLISH_BUTTON, tip='Publish the selected assets')
         button.add_style('margin-bottom: 10px')
         #button.get_top_el().add_class('smaller')
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add( hidden )
        
         '''
@@ -930,7 +930,7 @@ class AssetCheckinWdg(CheckinWdg):
         server_cbk = "pyasm.prod.web.AssetCheckinCbk"
         #TODO: make other Publish Buttons call their own handle_input function
         exec( Common.get_import_from_class_path(server_cbk) )
-        exec( "%s.handle_input(button, my.search_type, my.texture_search_type)" % server_cbk)
+        exec( "%s.handle_input(button, self.search_type, self.texture_search_type)" % server_cbk)
 
         return widget
 
@@ -945,7 +945,7 @@ class AssetCheckinWdg(CheckinWdg):
     
 
 
-    def get_render_icon_wdg(my):
+    def get_render_icon_wdg(self):
         '''Checkbox determines whether to create icon'''
         div = DivWdg()
         div.add("Create Icon: ")
@@ -955,7 +955,7 @@ class AssetCheckinWdg(CheckinWdg):
         return div
 
 
-    def handle_set(my, table, instance_name,  asset,  session_instances):
+    def handle_set(self, table, instance_name,  asset,  session_instances):
         asset_code = asset.get_code()
         
         # get all of the reference instances from the latest published
@@ -965,7 +965,7 @@ class AssetCheckinWdg(CheckinWdg):
         if not instance_name in session_instances:
             return
         if not snapshot:
-            my.handle_instance(table, instance_name, asset)
+            self.handle_instance(table, instance_name, asset)
             return
 
 
@@ -976,7 +976,7 @@ class AssetCheckinWdg(CheckinWdg):
 
         # TODO should get it based on the set's asset code so that
         # if the sesssion's set is older, it will still work
-        session_set_items = my.session._get_data().get_nodes_attr(\
+        session_set_items = self.session._get_data().get_nodes_attr(\
             "session/node[@set_asset_code='%s']" %asset_code, 'instance')
         count = 0
 
@@ -1001,7 +1001,7 @@ class AssetCheckinWdg(CheckinWdg):
         if count == 0:
             return
 
-        my.handle_instance(table, instance_name, asset)
+        self.handle_instance(table, instance_name, asset)
     
         # display all of the set instance that are in session
         for set_instance in set_instances_in_session:
@@ -1015,7 +1015,7 @@ class AssetCheckinWdg(CheckinWdg):
                 print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                 set_instance, tmp = set_instance.split(":")
 
-            my.handle_instance(table, set_instance, ref_asset, publish=False)
+            self.handle_instance(table, set_instance, ref_asset, publish=False)
 
         widget = Widget("&nbsp;")
         if set_instances_not_in_session:
@@ -1036,13 +1036,13 @@ class AssetCheckinWdg(CheckinWdg):
                 print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                 set_instance, tmp = set_instance.split(":")
 
-            my.handle_missing_instance(table, set_instance, ref_asset)
+            self.handle_missing_instance(table, set_instance, ref_asset)
 
         if set_instances_not_in_session:
             table.add_row_cell("&nbsp;")
 
 
-    def handle_instance(my, table, instance, asset, node_name='', publish=True, allow_ref_checkin=False):
+    def handle_instance(self, table, instance, asset, node_name='', publish=True, allow_ref_checkin=False):
 
         # handle the case where asset is not defined
         if not asset:
@@ -1061,13 +1061,13 @@ class AssetCheckinWdg(CheckinWdg):
             else:
                 table.add_cell(instance)
             td = table.add_cell()
-            td.add("< %s node >" % my.session.get_node_type(instance_name))
+            td.add("< %s node >" % self.session.get_node_type(instance_name))
             table.add_blank_cell()
             return 
 
         # get the pipeline for this asset and handlers for the pipeline
-        process_name = my.process_select.get_value() 
-        handler_hidden = my.get_handler_input(asset, process_name)
+        process_name = self.process_select.get_value() 
+        handler_hidden = self.get_handler_input(asset, process_name)
         pipeline = Pipeline.get_by_sobject(asset) 
         
 
@@ -1075,9 +1075,9 @@ class AssetCheckinWdg(CheckinWdg):
 
         # TEST: switch this to using node name instead, if provided
         if node_name:
-            instance_node = my.session.get_node(node_name)
+            instance_node = self.session.get_node(node_name)
         else:
-            instance_node = my.session.get_node(instance)
+            instance_node = self.session.get_node(instance)
 
         if instance_node is None:
             return
@@ -1092,7 +1092,7 @@ class AssetCheckinWdg(CheckinWdg):
 
         asset_code = asset.get_code()
         is_set = False
-        if  my.search_type =='prod/asset' and asset.get_asset_type() in ['set','section']:
+        if  self.search_type =='prod/asset' and asset.get_asset_type() in ['set','section']:
             is_set = True
             
         tr = table.add_row()
@@ -1148,7 +1148,7 @@ class AssetCheckinWdg(CheckinWdg):
             import_button.add_event('onclick', "import_instance('%s')"  %instance)
             td.add(import_button)
             '''
-            table.add_cell(my.get_save_wdg(my.current_sobject) )
+            table.add_cell(self.get_save_wdg(self.current_sobject) )
 
         elif publish:
             textarea = TextAreaWdg()
@@ -1157,14 +1157,14 @@ class AssetCheckinWdg(CheckinWdg):
             textarea.set_attr("cols", "35")
             textarea.set_attr("rows", "2")
             table.add_cell(textarea)
-            table.add_cell(my.get_save_wdg(my.current_sobject) )
+            table.add_cell(self.get_save_wdg(self.current_sobject) )
         else:
             table.add_blank_cell()
             table.add_blank_cell()
 
 
 
-    def handle_missing_instance(my, table, instance, asset):
+    def handle_missing_instance(self, table, instance, asset):
 
         asset_code = asset.get_code()
 
@@ -1196,38 +1196,38 @@ class InstanceCheckinWdg(AssetCheckinWdg):
 
     SEARCH_TYPE = "prod/shot_instance"
    
-    def get_context_data(my):
+    def get_context_data(self):
         # may use a prod/shot_instance search_type if it gets created
-        process = my.process_select.get_value()
-        labels, values = CheckinWdg.get_context_data(my, "prod/shot", process)
+        process = self.process_select.get_value()
+        labels, values = CheckinWdg.get_context_data(self, "prod/shot", process)
         return labels, values
 
 
 
-    def list_references(my):
+    def list_references(self):
         '''lists whether references can be checked in with this widget'''
         return True
 
 
-    def get_display(my):
-        if not my.is_refresh:
+    def get_display(self):
+        if not self.is_refresh:
             widget = DivWdg()
-            my.set_as_panel(widget)
+            self.set_as_panel(widget)
         else:
             widget = Widget() 
 
         # get session and handle case where there is no session
-        my.session = SessionContents.get()
+        self.session = SessionContents.get()
         node_name_dict = {}
 
-        if my.session == None:
+        if self.session == None:
             session_instances = []
             asset_codes = []
             node_names = []
         else:
-            session_instances = my.session.get_instance_names(is_tactic_node=True)
-            asset_codes = my.session.get_asset_codes()
-            node_names = my.session.get_node_names(is_tactic_node=True)
+            session_instances = self.session.get_instance_names(is_tactic_node=True)
+            asset_codes = self.session.get_asset_codes()
+            node_names = self.session.get_node_names(is_tactic_node=True)
             for idx, node_name in enumerate(node_names):
                 node_name_dict[session_instances[idx]] = node_name
         
@@ -1238,7 +1238,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         div.add_style("margin: 5px")
         div.add_style("padding: 10px")
         div.add_style("font_style: bold")
-        shot_navigator = ShotNavigatorWdg(refresh_mode='true', shot_search_type=my.search_type, sequence_search_type=my.sequence_search_type)
+        shot_navigator = ShotNavigatorWdg(refresh_mode='true', shot_search_type=self.search_type, sequence_search_type=self.sequence_search_type)
         div.add(shot_navigator)
 
         refresh_button = IconButtonWdg("Refresh", icon=IconWdg.REFRESH)
@@ -1255,8 +1255,8 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         add_selected = SubmitWdg("Add Selected To Shot")
         add_selected.add_event("onclick", "introspect_select()")
         add_selected.add_style("float", "right")
-        my.add(add_selected)
-        my.add("<br/>")
+        self.add(add_selected)
+        self.add("<br/>")
         '''
 
 
@@ -1266,20 +1266,20 @@ class InstanceCheckinWdg(AssetCheckinWdg):
             return widget 
         
         div.add(HtmlElement.br(2))
-        div.add( my.get_process_wdg(my.search_type)) 
-        div.add( my.get_context_filter_wdg() )
+        div.add( self.get_process_wdg(self.search_type)) 
+        div.add( self.get_context_filter_wdg() )
         div.add(HtmlElement.br(2))
 
         # For different export methods
         title = SpanWdg("Check in Options")
         sub_div = DivWdg(css='spt_ui_options')
         sub_div.add_style('padding-left: 20px')
-        export_wdg = my.get_export_method_wdg()
+        export_wdg = self.get_export_method_wdg()
         sub_div.add(HtmlElement.br())
         sub_div.add(export_wdg)
 
-        sub_div.add( my.get_handoff_wdg())
-        sub_div.add( my.get_connection_option())
+        sub_div.add( self.get_handoff_wdg())
+        sub_div.add( self.get_connection_option())
         sub_div.add(HtmlElement.br(2))
 
         swap = SwapDisplayWdg()
@@ -1288,11 +1288,11 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         div.add(title)
         div.add(sub_div)
 
-        if not my.context_select.get_value(for_display=True):
+        if not self.context_select.get_value(for_display=True):
             widget.add(DivWdg('A context must be selected.', css='warning'))
             return widget
        
-        widget.add( my.get_introspect_wdg() )
+        widget.add( self.get_introspect_wdg() )
         widget.add(HtmlElement.br())
         # create the interface
         table = Table(css='')
@@ -1307,15 +1307,15 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         table.add_header("Icon")
 
         table.add_header("Instance")
-        th = table.add_header(my.get_checkin(), css='right_content')
+        th = table.add_header(self.get_checkin(), css='right_content')
 
         table.add_header("&nbsp;")
         if not shot:
             widget.add(HtmlElement.b("Please select a shot or create a shot first in the Admin area!") )
             return widget
 
-        if my.session:
-            widget.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        if self.session:
+            widget.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
             widget.add("Current Project: Please press 'Introspect'")
 
@@ -1328,7 +1328,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         for instance in instances:
 
             # HACK: remember the instance
-            my.current_sobject = instance
+            self.current_sobject = instance
                       
             asset = instance.get_asset()
             if not asset:
@@ -1346,7 +1346,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
                 if not instance_name in session_instances:
                     continue
                 if not snapshot:
-                    my.handle_instance(table, instance_name, asset, allow_ref_checkin=True)
+                    self.handle_instance(table, instance_name, asset, allow_ref_checkin=True)
                     continue
 
 
@@ -1355,7 +1355,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
                 # skip if none are in session
                 set_instances = xml.get_values("snapshot/ref/@instance")
 
-                session_set_items = my.session._get_data().get_nodes_attr("session/node[@set_snapshot_code='%s']"\
+                session_set_items = self.session._get_data().get_nodes_attr("session/node[@set_snapshot_code='%s']"\
                     %snapshot.get_code(), 'instance')
                 
                 count = 0
@@ -1405,7 +1405,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
                         print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                         set_instance, tmp = set_instance.split(":")
 
-                    my.handle_instance(table, set_instance, ref_asset, allow_ref_checkin=True)
+                    self.handle_instance(table, set_instance, ref_asset, allow_ref_checkin=True)
 
                 widget = Widget("&nbsp;")
                 if set_instances_not_in_session:
@@ -1426,7 +1426,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
                         print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                         set_instance, tmp = set_instance.split(":")
 
-                    my.handle_missing_instance(table, set_instance, ref_asset)
+                    self.handle_missing_instance(table, set_instance, ref_asset)
 
                 if set_instances_not_in_session:
                     table.add_row_cell("&nbsp;")
@@ -1438,7 +1438,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
                     continue
                 # this for regular anim publish instances
                 node_name = node_name_dict.get(instance_name)
-                my.handle_instance(table, instance_name, asset, node_name=node_name, \
+                self.handle_instance(table, instance_name, asset, node_name=node_name, \
                     allow_ref_checkin=True)
         
         widget.add(table)
@@ -1461,7 +1461,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         widget.add(div)
         for instance in session_instances:
             if instance not in shot_instance_names:
-                my.handle_unknown_instance(unknown_table, instance)
+                self.handle_unknown_instance(unknown_table, instance)
         #TODO some culling functionalities to be added
         '''
         table.add_row()
@@ -1479,14 +1479,14 @@ class InstanceCheckinWdg(AssetCheckinWdg):
     
 
 
-    def get_checkin(my):
+    def get_checkin(self):
 
         widget = Widget()
-        #button = TextBtnWdg(label=my.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
+        #button = TextBtnWdg(label=self.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
         #button.get_top_el().add_class('smaller')
-        button = ActionButtonWdg(title=my.PUBLISH_BUTTON, tip='Publish selected asset instances')
+        button = ActionButtonWdg(title=self.PUBLISH_BUTTON, tip='Publish selected asset instances')
         button.add_style('margin: 0 0 10px 0')
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add( hidden )
        
         '''
@@ -1502,7 +1502,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         server_cbk = "pyasm.prod.web.AnimCheckinCbk"
         #TODO: make other Publish Buttons call their own handle_input function
         exec( Common.get_import_from_class_path(server_cbk) )
-        exec( "%s.handle_input(button, my.search_type)" % server_cbk)
+        exec( "%s.handle_input(button, self.search_type)" % server_cbk)
 
         return widget
 
@@ -1510,7 +1510,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
 
 
 
-    def handle_introspect(my):
+    def handle_introspect(self):
         span = SpanWdg()
         button = IntrospectWdg()
         button.add_style("float", "right")
@@ -1522,11 +1522,11 @@ class InstanceCheckinWdg(AssetCheckinWdg):
         #span.add(button)
 
         span.add_style("float", "right")
-        my.add(span)
+        self.add(span)
 
 
 
-    def get_export_method_wdg(my):
+    def get_export_method_wdg(self):
         '''Checkbox that determines whether to use export or file/save'''
         is_unchecked = True
         default_cb = None
@@ -1566,27 +1566,27 @@ class InstanceCheckinWdg(AssetCheckinWdg):
 
 class InstanceNode:
 
-    def __init__(my, node_name):
-        my.node_name = node_name
+    def __init__(self, node_name):
+        self.node_name = node_name
 
         if node_name.find(":") != -1:
             # handle bad instance names safely (no crash)
             tmp = node_name.split(":")
-            my.namespace, my.asset_code = (tmp[0], tmp[1])
+            self.namespace, self.asset_code = (tmp[0], tmp[1])
         else:
-            my.namespace = ""
-            my.asset_code = node_name
+            self.namespace = ""
+            self.asset_code = node_name
 
-    def get_asset(my):
-        asset = Asset.get_by_code(my.asset_code)
+    def get_asset(self):
+        asset = Asset.get_by_code(self.asset_code)
         return asset
 
-    def get_asset_code(my):
-        return my.asset_code
+    def get_asset_code(self):
+        return self.asset_code
 
 
-    def get_instance(my):
-        return my.namespace
+    def get_instance(self):
+        return self.namespace
         
 
 
@@ -1597,40 +1597,40 @@ class ShotCheckinWdg(CheckinWdg):
     PUBLISH_BUTTON = "Publish"
     PUBLISH_SET_BUTTON = "Publish Set"
    
-    def init(my):
-        my.is_refresh = my.kwargs.get('is_refresh') =='true'
-        my.search_type = my.kwargs.get('search_type')
-        if not my.search_type:
-            my.search_type = 'prod/shot'
+    def init(self):
+        self.is_refresh = self.kwargs.get('is_refresh') =='true'
+        self.search_type = self.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = 'prod/shot'
 
-        my.sequence_search_type = my.kwargs.get('sequence_search_type')
-        if not my.sequence_search_type:
-            my.sequence_search_type = my.search_type.replace('shot','sequence')
+        self.sequence_search_type = self.kwargs.get('sequence_search_type')
+        if not self.sequence_search_type:
+            self.sequence_search_type = self.search_type.replace('shot','sequence')
 
-        my.texture_search_type = my.kwargs.get('texture_search_type')
-        assert my.search_type
+        self.texture_search_type = self.kwargs.get('texture_search_type')
+        assert self.search_type
 
-    def get_process_data(my):
+    def get_process_data(self):
         is_group_restricted = False
         from pyasm.prod.web import ProcessFilterWdg
         if ProcessFilterWdg.has_restriction():
             is_group_restricted = True
-        labels, values = Pipeline.get_process_select_data(my.search_type, \
+        labels, values = Pipeline.get_process_select_data(self.search_type, \
              project_code=Project.get_project_code(), is_group_restricted=is_group_restricted)
         return labels, values
 
-    def get_context_data(my):
+    def get_context_data(self):
         # may use a prod/shot_instance search_type if it gets created
-        process = my.process_select.get_value()
-        labels, values = CheckinWdg.get_context_data(my, my.search_type , process)
+        process = self.process_select.get_value()
+        labels, values = CheckinWdg.get_context_data(self, self.search_type , process)
         return labels, values
 
-    def get_display(my):
+    def get_display(self):
         # add an outside box
         
-        if not my.is_refresh:
+        if not self.is_refresh:
             div = DivWdg()
-            my.set_as_panel(div)
+            self.set_as_panel(div)
         else:
             div = Widget() 
 
@@ -1642,7 +1642,7 @@ class ShotCheckinWdg(CheckinWdg):
         elif WebContainer.get_web().get_selected_app() == 'Houdini':
             app = PyHoudiniInit()
 
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
 
         filter_div = DivWdg(css="filter_box")
 
@@ -1654,7 +1654,7 @@ class ShotCheckinWdg(CheckinWdg):
 
         # the load and publish function are dependent on the shot_id element
         # of this Shot Navigator
-        shot_navigator = ShotNavigatorWdg(refresh_mode='true', shot_search_type=my.search_type, sequence_search_type=my.sequence_search_type)
+        shot_navigator = ShotNavigatorWdg(refresh_mode='true', shot_search_type=self.search_type, sequence_search_type=self.sequence_search_type)
         filter_div.add(shot_navigator)
 
 
@@ -1677,12 +1677,12 @@ class ShotCheckinWdg(CheckinWdg):
       
         div.add("<br/>")
 
-        div.add(my.get_publish_wdg(shot))
+        div.add(self.get_publish_wdg(shot))
 
 
         return div
 
-    def get_texture_option(my, show_texture_match=True, app='Maya'):
+    def get_texture_option(self, show_texture_match=True, app='Maya'):
         '''Checkbox that determines different texture options'''
         is_unchecked = True
         default_cb = None
@@ -1711,7 +1711,7 @@ class ShotCheckinWdg(CheckinWdg):
 
         return div
     
-    def get_publish_wdg(my, shot):
+    def get_publish_wdg(self, shot):
         ''' get the publish area widget '''
         widget = Widget()
         
@@ -1756,8 +1756,8 @@ class ShotCheckinWdg(CheckinWdg):
         title.add( HtmlElement.br() )
         SwapDisplayWdg.create_swap_title(option_title, swap, div, is_open=False)
 
-        title.add( my.get_process_wdg(my.search_type))
-        title.add( my.get_context_filter_wdg() )
+        title.add( self.get_process_wdg(self.search_type))
+        title.add( self.get_context_filter_wdg() )
 
         title.add( HtmlElement.br() )
         title.add( HtmlElement.br() )
@@ -1767,48 +1767,48 @@ class ShotCheckinWdg(CheckinWdg):
         title.add(HtmlElement.br())
         
         div.add( HtmlElement.br() )
-        div.add( my.get_checkin_as_wdg() )
+        div.add( self.get_checkin_as_wdg() )
         #div.add( HtmlElement.br() )
-        div.add( my.get_currency_wdg() )
+        div.add( self.get_currency_wdg() )
 
-        if not my.context_select.get_value(for_display=True):
+        if not self.context_select.get_value(for_display=True):
             widget.add(DivWdg('A context must be selected.', css='warning'))
             return widget
 
         div.add(HtmlElement.br())
 
-        options_div = my.get_reference_option()
+        options_div = self.get_reference_option()
         div.add(options_div)
         
-        div.add( my.get_auto_version_wdg()) 
+        div.add( self.get_auto_version_wdg()) 
         div.add(HtmlElement.br())
-        div.add( my.get_texture_option(False, app=app_name))
+        div.add( self.get_texture_option(False, app=app_name))
 
-        div.add( my.get_handoff_wdg())
-        div.add( my.get_connection_option())
+        div.add( self.get_handoff_wdg())
+        div.add( self.get_connection_option())
 
-        widget.add( my.get_introspect_wdg())
+        widget.add( self.get_introspect_wdg())
         widget.add(HtmlElement.br(2))
         # draw shot set publish (disabled for now)
         #if app_name == 'Maya':
-        #    widget.add(my.get_shot_set_publish_wdg(shot, select.get_value()))
+        #    widget.add(self.get_shot_set_publish_wdg(shot, select.get_value()))
 
         # draw regular shot publish
-        widget.add(my.get_shot_publish_wdg(shot, select.get_value()))
+        widget.add(self.get_shot_publish_wdg(shot, select.get_value()))
 
-        process_name = my.process_select.get_value() 
-        handler_input = my.get_handler_input(shot, process_name)
+        process_name = self.process_select.get_value() 
+        handler_input = self.get_handler_input(shot, process_name)
         div.add(handler_input)
         
         return widget
         
-    def get_shot_publish_wdg(my, shot, mode):
+    def get_shot_publish_wdg(self, shot, mode):
         widget = Widget()
-        #button = TextBtnWdg(label=my.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
+        #button = TextBtnWdg(label=self.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
         #button.get_top_el().add_class('smaller')
-        button = ActionButtonWdg(title=my.PUBLISH_BUTTON, tip='Publish this shot')
+        button = ActionButtonWdg(title=self.PUBLISH_BUTTON, tip='Publish this shot')
         button.add_style('margin: 0 10px 10px 0')
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add( hidden )
        
         widget.add(button)
@@ -1817,13 +1817,13 @@ class ShotCheckinWdg(CheckinWdg):
         server_cbk = "pyasm.prod.web.ShotCheckinCbk"
         #TODO: make other Publish Buttons call their own handle_input function
         exec( Common.get_import_from_class_path(server_cbk) )
-        exec( "%s.handle_input(button, my.search_type, my.texture_search_type)" % server_cbk)
+        exec( "%s.handle_input(button, self.search_type, self.texture_search_type)" % server_cbk)
 
 
         """
-        button = ProdIconButtonWdg(my.PUBLISH_BUTTON)
+        button = ProdIconButtonWdg(self.PUBLISH_BUTTON)
         button.add_style('font-size', '1.0em')
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add(hidden)
         status_sel = SelectWdg('checkin_status', label='Status: ')
         status_sel.set_option('setting', 'checkin_status')
@@ -1855,7 +1855,7 @@ class ShotCheckinWdg(CheckinWdg):
         table.add_blank_cell()
         table.add_cell(textarea)
 
-        table.add_cell( my.get_save_wdg(shot) )
+        table.add_cell( self.get_save_wdg(shot) )
 
         div = DivWdg(id="shot_publish")
         if not mode or mode == 'shot':
@@ -1864,16 +1864,16 @@ class ShotCheckinWdg(CheckinWdg):
             div.add_style('display: none')
 
 
-        my.session = SessionContents.get()
-        if my.session:
-            div.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        self.session = SessionContents.get()
+        if self.session:
+            div.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
             div.add("Current Project: Please press 'Introspect'")
 
         div.add(table)
         return div
 
-    def get_shot_set_publish_wdg(my, shot, mode):
+    def get_shot_set_publish_wdg(self, shot, mode):
         # get session and handle case where there is no session
         widget = Widget()
         session = SessionContents.get()
@@ -1895,15 +1895,15 @@ class ShotCheckinWdg(CheckinWdg):
         div.add(title)
 
        
-        button = ProdIconButtonWdg(my.PUBLISH_SET_BUTTON)
+        button = ProdIconButtonWdg(self.PUBLISH_SET_BUTTON)
         button.add_style('font-size', '1.0em')
-        hidden = HiddenWdg(my.PUBLISH_SET_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_SET_BUTTON, '')
         button.add(hidden)
 
         # custom defined 
         server_cbk = "pyasm.prod.web.ShotSetCheckinCbk"
         exec( Common.get_import_from_class_path(server_cbk) )
-        exec( "%s.handle_input(button, my.search_type)" % server_cbk)
+        exec( "%s.handle_input(button, self.search_type)" % server_cbk)
 
         # add the command that this button executes
         '''
@@ -1932,7 +1932,7 @@ class ShotCheckinWdg(CheckinWdg):
             node_name = node_names[i]
             if session.get_node_type(node_name) in ['objectSet'] and \
                 node_name != shot.get_code():
-                    my.handle_instance(session, table, node_name, shot)
+                    self.handle_instance(session, table, node_name, shot)
 
         table.add_row()
         table.add_blank_cell()
@@ -1944,14 +1944,14 @@ class ShotCheckinWdg(CheckinWdg):
         table.add_cell(textarea)
         table.add_blank_cell()
         #table.add_blank_cell()
-        table.add_cell( my.get_save_wdg(shot) )
+        table.add_cell( self.get_save_wdg(shot) )
 
 
         div.add(table)
         widget.add(div)
         return widget
 
-    def handle_instance(my, session, table, instance, shot, publish=True, allow_ref_checkin=False):
+    def handle_instance(self, session, table, instance, shot, publish=True, allow_ref_checkin=False):
 
         instance_node = session.get_node(instance)
       
@@ -2024,47 +2024,47 @@ class ShotCheckinWdg(CheckinWdg):
 
 class SObjectCheckinWdg(CheckinWdg):
 
-    def init(my):
-        super(SObjectCheckinWdg, my).init()
+    def init(self):
+        super(SObjectCheckinWdg, self).init()
 
-    def get_display(my):
-        my.add( my.get_introspect_wdg() )
+    def get_display(self):
+        self.add( self.get_introspect_wdg() )
 
-        my.add( my.get_process_wdg(my.search_type))
-        my.add( my.get_context_filter_wdg() )
-        my.add(HtmlElement.br(2)) 
-        my.add( my.get_file_type_wdg() )
-        my.add( my.get_snapshot_type_wdg() )
-        my.add(HtmlElement.br(2)) 
-        my.add( my.get_export_method_wdg() )
-        my.add( my.get_checkin_as_wdg() )
-        #my.add( my.get_render_icon_wdg() )
+        self.add( self.get_process_wdg(self.search_type))
+        self.add( self.get_context_filter_wdg() )
+        self.add(HtmlElement.br(2)) 
+        self.add( self.get_file_type_wdg() )
+        self.add( self.get_snapshot_type_wdg() )
+        self.add(HtmlElement.br(2)) 
+        self.add( self.get_export_method_wdg() )
+        self.add( self.get_checkin_as_wdg() )
+        #self.add( self.get_render_icon_wdg() )
 
         # For different export methods
-        my.add( my.get_currency_wdg() )
+        self.add( self.get_currency_wdg() )
 
-        my.add( my.get_reference_option())
-        if not my.context_select.get_value(for_display=True):
-            my.add(DivWdg('A context must be selected.', css='warning'))
+        self.add( self.get_reference_option())
+        if not self.context_select.get_value(for_display=True):
+            self.add(DivWdg('A context must be selected.', css='warning'))
             return
         
-        my.add(HtmlElement.br())
+        self.add(HtmlElement.br())
 
 
         # add the table
-        my.add( my.get_instance_select_wdg() )
+        self.add( self.get_instance_select_wdg() )
 
-        if not my.session:
+        if not self.session:
             return
 
-        non_tactic_nodes = my.session.get_instance_names(is_tactic_node=False)
+        non_tactic_nodes = self.session.get_instance_names(is_tactic_node=False)
         title = HtmlElement.b("Unknown List")
         swap = SwapDisplayWdg.get_triangle_wdg()
 
         div = DivWdg(id="unknown list")
         
-        my.add(swap)
-        my.add(title)
+        self.add(swap)
+        self.add(title)
 
         SwapDisplayWdg.create_swap_title( title, swap, div) 
         unknown_table = Table(css='table')
@@ -2073,13 +2073,13 @@ class SObjectCheckinWdg(CheckinWdg):
 
         
         for instance in non_tactic_nodes:
-            my.handle_unknown_instance(unknown_table, instance)
+            self.handle_unknown_instance(unknown_table, instance)
         
-        my.add(div)
+        self.add(div)
 
-        return super(SObjectCheckinWdg, my).get_display()
+        return super(SObjectCheckinWdg, self).get_display()
 
-    def get_instance_select_wdg(my):
+    def get_instance_select_wdg(self):
 
         # create the interface
         table = Table()
@@ -2100,31 +2100,31 @@ class SObjectCheckinWdg(CheckinWdg):
         
 
         # get session and handle case where there is no session
-        my.session = SessionContents.get()
-        if my.session == None:
+        self.session = SessionContents.get()
+        if self.session == None:
             asset_codes = []
             node_names = []
         else:
-            sobject_codes = my.session.get_asset_codes()
-            node_names = my.session.get_node_names()
+            sobject_codes = self.session.get_asset_codes()
+            node_names = self.session.get_node_names()
 
         # get all of the possible assets based on the asset codes
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         search.add_filters("code", sobject_codes)
         sobjects = search.get_sobjects()
         sobjects_dict = SObject.get_dict(sobjects, ["code"])
 
         # show the current project
-        if my.session:
-            my.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        if self.session:
+            self.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
-            my.add("Current Project: Please press 'Introspect'")
+            self.add("Current Project: Please press 'Introspect'")
 
 
         count = 0
         for i, node_name in enumerate(node_names):
-            if not my.session.is_tactic_node(node_name) and \
-                not my.session.get_node_type(node_name) in ['transform','objectSet']:
+            if not self.session.is_tactic_node(node_name) and \
+                not self.session.get_node_type(node_name) in ['transform','objectSet']:
                     continue
 
             table.add_row()
@@ -2134,7 +2134,7 @@ class SObjectCheckinWdg(CheckinWdg):
             if not sobject:
                 continue
 
-            my.handle_instance(table, sobject, node_name)
+            self.handle_instance(table, sobject, node_name)
             count += 1
 
         if not count:
@@ -2144,7 +2144,7 @@ class SObjectCheckinWdg(CheckinWdg):
 
 
 
-    def handle_instance(my, table, sobject, node_name):
+    def handle_instance(self, table, sobject, node_name):
 
         search_key = sobject.get_search_key()
         code = sobject.get_code()
@@ -2184,7 +2184,7 @@ class SObjectCheckinWdg(CheckinWdg):
             import_button.add_event('onclick', "import_instance('%s')"  %instance)
             td.add(import_button)
             '''
-            table.add_cell(my.get_save_wdg(sobject) )
+            table.add_cell(self.get_save_wdg(sobject) )
 
         else:
             textarea = TextAreaWdg()
@@ -2193,7 +2193,7 @@ class SObjectCheckinWdg(CheckinWdg):
             textarea.set_attr("cols", "35")
             textarea.set_attr("rows", "2")
             table.add_cell(textarea)
-            table.add_cell(my.get_save_wdg(sobject) )
+            table.add_cell(self.get_save_wdg(sobject) )
 
 
 

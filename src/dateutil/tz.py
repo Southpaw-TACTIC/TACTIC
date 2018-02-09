@@ -381,7 +381,7 @@ class tzfile(datetime.tzinfo):
 
         # Now fix transition times to become relative to wall time.
         #
-        # I'm not sure about this. In my tests, the tz source file
+        # I'm not sure about this. In self tests, the tz source file
         # is setup to wall time, and in the binary file isstd and
         # isgmt are off, so it should be in wall time. OTOH, it's
         # always in gmt time. Let me know if you have comments

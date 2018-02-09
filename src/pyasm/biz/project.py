@@ -22,30 +22,30 @@ class Project(SObject):
 
     SEARCH_TYPE = "sthpw/project"
 
-    def __init__(my, search_type=None, columns=None, results=None, fast_data=None):
-        super(Project, my).__init__(search_type, columns, results, fast_data=fast_data)
+    def __init__(self, search_type=None, columns=None, results=None, fast_data=None):
+        super(Project, self).__init__(search_type, columns, results, fast_data=fast_data)
 
-        my.file_naming = None
-        my.project_type = None
+        self.file_naming = None
+        self.project_type = None
 
-        my.search_types = None
+        self.search_types = None
 
 
-    #def get_icon_context(my, context=None):
+    #def get_icon_context(self, context=None):
     #    return "publish"
 
-    def is_admin(my):
-        code = my.get_code()
+    def is_admin(self):
+        code = self.get_code()
         if code == "admin":
             return True
         else:
             return False
 
 
-    def validate(my):
+    def validate(self):
         '''The project code cannot just be an integer'''
         try:
-            int(my.get_value("code"))
+            int(self.get_value("code"))
         except ValueError:
             pass
         else:
@@ -53,16 +53,16 @@ class Project(SObject):
 
 
 
-    def get_resource(my):
-        key = "Project:resource:%s" % my
+    def get_resource(self):
+        key = "Project:resource:%s" % self
         resource = Container.get(key)
         if resource == None:
-            resource = ProjectResource(my)
+            resource = ProjectResource(self)
             Container.put(key, resource)
         return resource
 
 
-    def get_project_db_resource(my, database=None):
+    def get_project_db_resource(self, database=None):
         # get the db resource for attached to this particular project.
         # Not the db_resource for "sthpw/project" for which
         # project.get_db_resource() does
@@ -75,7 +75,7 @@ class Project(SObject):
 
         resource_dict = Container.get(key)
         if resource_dict:
-            resource = resource_dict.get( my.get_code() )
+            resource = resource_dict.get( self.get_code() )
             if resource != None:
                 return resource
         else:
@@ -85,14 +85,14 @@ class Project(SObject):
 
         # the project defines the resource
         if not database:
-            database = my.get_database_name()
+            database = self.get_database_name()
         assert database
 
         if database == 'sthpw':
             # get if from the config
             db_resource_code = None
         else:
-            db_resource_code = my.get_value("db_resource", no_exception=True)
+            db_resource_code = self.get_value("db_resource", no_exception=True)
 
         if not db_resource_code:
             # this could be any project, not just sthpw
@@ -132,8 +132,8 @@ class Project(SObject):
         return db_resource
 
 
-    def get_sql(my):
-        db_resource = my.get_project_db_resource()
+    def get_sql(self):
+        db_resource = self.get_project_db_resource()
         from pyasm.search import DbContainer
         sql = DbContainer.get(db_resource)
 
@@ -141,66 +141,66 @@ class Project(SObject):
 
 
 
-    def get_database_name(my):
+    def get_database_name(self):
         # This will cause an infinite loop.  Get the data directly to avoid
-        #database_name = my.get_value("database", no_exception=True)
-        database_name = my.get_data().get("database")
+        #database_name = self.get_value("database", no_exception=True)
+        database_name = self.get_data().get("database")
 
         if not database_name:
-            database_name = my.get_code()
+            database_name = self.get_code()
         if database_name == "admin":
             database_name = "sthpw"
         return database_name
 
 
-    def get_database_type(my):
-        db_resource = my.get_project_db_resource()
+    def get_database_type(self):
+        db_resource = self.get_project_db_resource()
         impl = DatabaseImpl.get()
         return impl.get_database_type()
 
 
-    def database_exists(my):
+    def database_exists(self):
         '''returns whether a database exists for this project'''
-        if not my.get_value("code"):
+        if not self.get_value("code"):
             return False
 
-        db_resource = my.get_project_db_resource()
+        db_resource = self.get_project_db_resource()
         impl = DatabaseImpl.get()
         return impl.database_exists(db_resource)
 
     # DEPRECATED. use get_base_type()
     # TODO: make it just return the value "type"
-    def get_type(my):
+    def get_type(self):
         '''get the string value, type of project'''
-        return my.get_base_type()
+        return self.get_base_type()
 
-    def get_base_type(my):
+    def get_base_type(self):
         '''get the string value, type of project'''
-        if my.get_code() == "admin":
+        if self.get_code() == "admin":
             return "admin"
 
-        if my.project_type:
-            return my.project_type.get_type()
+        if self.project_type:
+            return self.project_type.get_type()
         else:
-            project_type = my.get_project_type()
+            project_type = self.get_project_type()
             if project_type:
                 return project_type.get_type()
             else:
                 # special project like sthpw and admin have an empty type
                 return ''   
 
-    def get_project_type(my):
+    def get_project_type(self):
         ''' get the sobject ProjectType'''
-        if not my.project_type:
-            type = my.get_value('type')
-            my.project_type = ProjectType.get_by_code(type)
-        return my.project_type 
+        if not self.project_type:
+            type = self.get_value('type')
+            self.project_type = ProjectType.get_by_code(type)
+        return self.project_type 
 
-    def get_initials(my):
+    def get_initials(self):
         '''get the initials of project'''
-        initials = my.get_value('initials')
+        initials = self.get_value('initials')
         if not initials:
-            initials = my.get_code().upper()
+            initials = self.get_code().upper()
         return initials
 
 
@@ -343,7 +343,7 @@ class Project(SObject):
 
 
 
-    def has_table(my, search_type):
+    def has_table(self, search_type):
         if isinstance(search_type, basestring):
             search_type = SearchType.get(search_type)
 
@@ -352,7 +352,7 @@ class Project(SObject):
         project_code = search_type.get_project_code()
 
         # get the db_resource for this project
-        db_resource = my.get_project_db_resource()
+        db_resource = self.get_project_db_resource()
 
         # get the table
         table = search_type.get_table()
@@ -372,16 +372,16 @@ class Project(SObject):
         return has_table
 
 
-    def get_search_types(my, include_sthpw=False, include_config=False, include_multi_project=False):
+    def get_search_types(self, include_sthpw=False, include_config=False, include_multi_project=False):
         '''get all the search types in this project'''
-        if my.search_types != None:
-            return my.search_types
+        if self.search_types != None:
+            return self.search_types
 
-        project_type = my.get_value("type")
+        project_type = self.get_value("type")
 
         search = Search("sthpw/search_object")
 
-        project_code = my.get_code()
+        project_code = self.get_code()
         namespaces = [project_code]
         namespaces.append(project_type)
 
@@ -422,7 +422,7 @@ class Project(SObject):
         for x in search_type_objs:
             # to avoid the old ill-defined prod/custom_property defined in sthpw namespace
             if (x.get_value('namespace') == 'sthpw' and x.get_value('search_type').find('custom_property') == -1)\
-                or my.has_table(x):
+                or self.has_table(x):
                 search_types.append(x)
         return search_types
 
@@ -636,11 +636,21 @@ class Project(SObject):
                 db_resource = DbResource.get_default("sthpw")
             return db_resource
 
+
         project_code = cls.get_database_by_search_type(search_type)
         project = Project.get_by_code(project_code)
         if not project:
             raise Exception("Error: Project [%s] does not exist" % project_code)
+
+
+        if search_type.startswith("salesforce/"):
+            db_resource_code = "Salesforce"
+            db_resource = DbResource.get_by_code(db_resource_code, project_code)
+            return db_resource
+
+
         db_resource = project.get_project_db_resource()
+
         return db_resource
     get_db_resource_by_search_type = classmethod(get_db_resource_by_search_type)
 
@@ -858,11 +868,11 @@ class Project(SObject):
 class ProjectType(SObject):
     SEARCH_TYPE = 'sthpw/project_type'
 
-    def get_type(my):
-        return my.get_value('type')
+    def get_type(self):
+        return self.get_value('type')
     
-    def get_label(my):
-        return '%s (%s)' %(my.get_code(), my.get_type())
+    def get_label(self):
+        return '%s (%s)' %(self.get_code(), self.get_type())
 
 
 
@@ -872,49 +882,49 @@ class ProjectResource(object):
     '''class that stores and retrieves the data connection information
     for a particular project'''
 
-    def __init__(my, project):
-        my.project = project
+    def __init__(self, project):
+        self.project = project
 
-        my.resource = my.get_info_by_project(project)
+        self.resource = self.get_info_by_project(project)
 
-        my.protocol = my.resource.get("protocol")
-        my.host = my.resource.get("host")
-        my.project_code = my.resource.get("project")
-        if not my.project_code:
-            my.project_code = project.get_code()
+        self.protocol = self.resource.get("protocol")
+        self.host = self.resource.get("host")
+        self.project_code = self.resource.get("project")
+        if not self.project_code:
+            self.project_code = project.get_code()
 
-        #my.port = None
-        #my.ticket = ticket
-        my.ticket = my.resource.get("ticket")
-        if not my.ticket:
+        #self.port = None
+        #self.ticket = ticket
+        self.ticket = self.resource.get("ticket")
+        if not self.ticket:
             ticket_obj = Environment.get_security().get_ticket()
             if ticket_obj:
-                my.ticket = ticket_obj.get_key()
-        # What does it mean when my.ticket is None? it happens on first
-        # login_with_ticket() before my._ticket is generated
+                self.ticket = ticket_obj.get_key()
+        # What does it mean when self.ticket is None? it happens on first
+        # login_with_ticket() before self._ticket is generated
 
 
-    def get_host(my):
-        return my.host
+    def get_host(self):
+        return self.host
 
-    def get_protocol(my):
-        return my.protocol
+    def get_protocol(self):
+        return self.protocol
 
-    def get_ticket(my):
-        return my.ticket
+    def get_ticket(self):
+        return self.ticket
 
-    def get_project(my):
-        return my.project_code
+    def get_project(self):
+        return self.project_code
 
 
-    def get_server(my):
+    def get_server(self):
         # do a query for the search
         from tactic_client_lib import TacticServerStub
-        if my.protocol == 'xmlrpc':
-            stub = TacticServerStub(setup=False, protocol=my.protocol)
-            stub.set_server(my.host)
-            stub.set_project(my.project_code)
-            stub.set_ticket(my.ticket)
+        if self.protocol == 'xmlrpc':
+            stub = TacticServerStub(setup=False, protocol=self.protocol)
+            stub.set_server(self.host)
+            stub.set_project(self.project_code)
+            stub.set_ticket(self.ticket)
         else:
             stub = TacticServerStub.get()
 
@@ -922,7 +932,7 @@ class ProjectResource(object):
 
 
 
-    def get_info_by_project(my, project):
+    def get_info_by_project(self, project):
 
         if not project.has_value("resource"):
             return {}
@@ -963,8 +973,8 @@ class ProjectResource(object):
 class Repo(SObject):
     SEARCH_TYPE = "sthpw/repo"
 
-    def get_handler(my):
-        handler_class = my.get_value("handler")
+    def get_handler(self):
+        handler_class = self.get_value("handler")
         repo_handler = Common.create_from_class_path(handler_class)
         return handler
         

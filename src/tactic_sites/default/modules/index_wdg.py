@@ -23,9 +23,9 @@ import os
 
 
 class IndexWdg(Widget):
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
-        class_path = Common.get_full_class_name(my)
+        class_path = Common.get_full_class_name(self)
 
         from tactic.ui.panel import HashPanelWdg
         try:
@@ -49,7 +49,7 @@ class IndexWdg(Widget):
 
 
 class IndexWdg2(Widget):
-    def get_display(my):
+    def get_display(self):
 
 
         web = WebContainer.get_web()

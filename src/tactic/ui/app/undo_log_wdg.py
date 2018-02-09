@@ -23,26 +23,26 @@ from pyasm.biz import Project
 
 
 class UndoLogWdg(DivWdg):
-    def __init__(my, is_refresh=False):
-        super(UndoLogWdg,my).__init__()
-        my.all_users_flag = False
-        my.all_namespaces_flag = False
-        my.add_class("spt_panel")
-        my.add_attr("spt_class_name", Common.get_full_class_name(my) )
+    def __init__(self, is_refresh=False):
+        super(UndoLogWdg,self).__init__()
+        self.all_users_flag = False
+        self.all_namespaces_flag = False
+        self.add_class("spt_panel")
+        self.add_attr("spt_class_name", Common.get_full_class_name(self) )
 
-    def set_all_namespaces(my, flag=True):
-        my.all_namespaces_flag = flag
+    def set_all_namespaces(self, flag=True):
+        self.all_namespaces_flag = flag
 
-    def set_all_users(my, flag=True):
-        my.all_users_flag = flag
+    def set_all_users(self, flag=True):
+        self.all_users_flag = flag
         
 
-    def set_admin(my):
-        my.set_all_namespaces()
-        my.set_all_users()
+    def set_admin(self):
+        self.set_all_namespaces()
+        self.set_all_users()
 
 
-    def get_display(my):
+    def get_display(self):
 
         #WebContainer.register_cmd("pyasm.admin.UndoLogCbk")
 
@@ -54,7 +54,7 @@ class UndoLogWdg(DivWdg):
         div.add_border()
         project = ''
         # add a project filter
-        if my.all_namespaces_flag:
+        if self.all_namespaces_flag:
             span = SpanWdg("Project: ")
             span.add_color('color','color')
             project_select = FilterSelectWdg("project")
@@ -79,9 +79,9 @@ class UndoLogWdg(DivWdg):
 
         time_interval = select.get_value() 
 
-        my.add(div)
+        self.add(div)
 
-        if not my.all_users_flag:
+        if not self.all_users_flag:
             user = Environment.get_user_name()
         else:
             span = SpanWdg(css="med")
@@ -102,9 +102,9 @@ class UndoLogWdg(DivWdg):
         #table = TableLayoutWdg(search_type="sthpw/transaction_log", view="table", mode='simple', show_row_select="false")
         table.set_sobjects(transaction_log)
         #table.set_refresh_mode("table")
-        my.add(table)
+        self.add(table)
 
-        return super(UndoLogWdg, my).get_display()
+        return super(UndoLogWdg, self).get_display()
 
 
 # TODO: this code is commented out until such a time as a better solution is
@@ -115,14 +115,14 @@ class UndoLogWdg(DivWdg):
 """
 class UndoLogCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Undo Log Command"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         return True
 
-    def execute(my):
+    def execute(self):
         
         web = WebContainer.get_web()
         transaction_ids = web.get_form_values("transaction_log_id")
@@ -138,7 +138,7 @@ class UndoLogCbk(Command):
 
         transaction.undo()
 
-        my.description = "Undo #%s: %s" % (transaction.get_id(), transaction.get_value("description") )
+        self.description = "Undo #%s: %s" % (transaction.get_id(), transaction.get_value("description") )
 """
         
 

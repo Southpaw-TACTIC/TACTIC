@@ -545,7 +545,7 @@ class IMAP4:
         return self._untagged_response(typ, dat, name)
 
     def myrights(self, mailbox):
-        """Show my ACLs for a mailbox (i.e. the rights that I have on mailbox).
+        """Show self ACLs for a mailbox (i.e. the rights that I have on mailbox).
 
         (typ, [data]) = <instance>.myrights(mailbox)
         """

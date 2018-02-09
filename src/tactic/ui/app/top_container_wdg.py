@@ -26,12 +26,12 @@ from tactic.ui.panel import CustomLayoutWdg
 
 class TopContainerWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
 
-        hash = my.kwargs.get("hash")
-        pathname = my.kwargs.get("pathname")
+        hash = self.kwargs.get("hash")
+        pathname = self.kwargs.get("pathname")
 
         Container.put("url_hash", hash)
 
@@ -41,12 +41,12 @@ class TopContainerWdg(BaseRefreshWdg):
             hash = "/index"
 
         if not hash:
-            widget = my.get_default_wdg()
+            widget = self.get_default_wdg()
             top.add(widget)
 
         # This would provide a way to get the default index widget.
         #elif hash == "/projects":
-        #    widget = my.get_default_wdg()
+        #    widget = self.get_default_wdg()
         #    from tactic_sites.default.modules import IndexWdg
         #    top.add( IndexWdg() )
         else:
@@ -54,7 +54,7 @@ class TopContainerWdg(BaseRefreshWdg):
 
             project_code = Project.get_project_code()
             if project_code == 'admin' and hash == '/index':
-                widget = my.get_default_wdg()
+                widget = self.get_default_wdg()
 
             else:
                 from pyasm.security import Site
@@ -62,9 +62,9 @@ class TopContainerWdg(BaseRefreshWdg):
 
             if not widget:
                 if hash == "/index":
-                    widget = my.get_default_wdg()
+                    widget = self.get_default_wdg()
                 elif hash == '/admin':
-                    widget = my.get_default_wdg()
+                    widget = self.get_default_wdg()
                 else:
                     widget = HashPanelWdg.get_widget_from_hash("/index", return_none=True)
 
@@ -76,7 +76,7 @@ class TopContainerWdg(BaseRefreshWdg):
 
 
 
-    def get_default_wdg(my):
+    def get_default_wdg(self):
         top_class_name = WebEnvironment.get_top_class_name()
         kwargs = {}
         widget = Common.create_from_class_path(top_class_name, [], kwargs) 

@@ -27,39 +27,39 @@ class ModPythonException(Exception):
 class ModPython(WebEnvironment):
     """set of functions related to the web environment"""
 
-    def __init__(my,req):
+    def __init__(self,req):
         # store the request handler
-        my.request = req;
+        self.request = req;
 
         # contains all the information in a form
-        my.form = req.form
+        self.form = req.form
 
 
-    def get_site_url(my):
+    def get_site_url(self):
         url = Url("/py")
         return url
 
 
-    def get_context_name(my):
+    def get_context_name(self):
         return "pig"
 
 
 
 
-    def get_form_keys(my):
-        return my.get_field_storage().keys()
+    def get_form_keys(self):
+        return self.get_field_storage().keys()
 
 
-    def get_form_values(my, name):
+    def get_form_values(self, name):
         """ returns a string list of the values of a form element"""
-        list = my.form.getlist(name)
+        list = self.form.getlist(name)
         values = [ field.value for field in list ]
         return values
 
 
-    def get_form_value(my, name):
+    def get_form_value(self, name):
         """returns the string value of the form element"""
-        field = my.form.getfirst(name)
+        field = self.form.getfirst(name)
         if field != None:
             return field.value
         else:
@@ -67,33 +67,33 @@ class ModPython(WebEnvironment):
 
 
 
-    def get_field_storage(my):
-        return util.FieldStorage(my.request)
+    def get_field_storage(self):
+        return util.FieldStorage(self.request)
 
    
-    def get_env_keys(my):
-        env = my.request.subprocess_env
+    def get_env_keys(self):
+        env = self.request.subprocess_env
         return env.keys()
 
-    def get_env(my, env_var):
-        env = my.request.subprocess_env
+    def get_env(self, env_var):
+        env = self.request.subprocess_env
         if env.has_key(env_var):
             return env[env_var]
         else:
             return ""
 
 
-    def get_cookie(my, name):
-        cookies = Cookie.get_cookies(my.request)
+    def get_cookie(self, name):
+        cookies = Cookie.get_cookies(self.request)
         cookie = cookies[name]
         if cookie == None:
             return ""
         else:
-            my.error("cookie: "+cookie.value)
+            self.error("cookie: "+cookie.value)
             return cookie.value
 
-    def set_cookie(my, name, value):
-        Cookie.add_cookie(my.request, name, value)
+    def set_cookie(self, name, value):
+        Cookie.add_cookie(self.request, name, value)
 
 
 

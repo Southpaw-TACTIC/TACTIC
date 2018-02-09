@@ -93,24 +93,24 @@ class ButtonElementWdg(BaseTableElementWdg):
     }
 
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
 
-    def get_width(my):
+    def get_width(self):
         return 30
 
-    def init(my):
-        my.behavior = {}
+    def init(self):
+        self.behavior = {}
 
-        my.script = None
-        my.script_obj = None
-        super(ButtonElementWdg,my).init()
+        self.script = None
+        self.script_obj = None
+        super(ButtonElementWdg,self).init()
 
 
-    def get_input_by_arg_key(my, key):
+    def get_input_by_arg_key(self, key):
         if key == 'icon':
             input = SelectWdg("option_icon_select")
             input.set_option("values", IconWdg.get_icons_keys())
@@ -126,7 +126,7 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
 
-    def handle_layout_behaviors(my, layout):
+    def handle_layout_behaviors(self, layout):
 
         # Basic button behaviors
         layout.add_relay_behavior( {
@@ -175,26 +175,26 @@ class ButtonElementWdg(BaseTableElementWdg):
 
         # handle custom behavior for button
 
-        script_code = my.get_option("script_code")
+        script_code = self.get_option("script_code")
         # deprecated
         if not script_code:
-            script_code = my.get_option("script")
+            script_code = self.get_option("script")
 
 
-        path = my.get_option("path")
+        path = self.get_option("path")
         if not path:
-            path = my.get_option("script_path")
+            path = self.get_option("script_path")
 
 
-        inline = my.get_option("cbjs_action")
+        inline = self.get_option("cbjs_action")
         if not inline:
-            inline = my.get_option("javascript")
+            inline = self.get_option("javascript")
 
 
         if script_code:
             search = Search("config/custom_script")
             search.add_filter("code", script_code)
-            my.script_obj = search.get_sobject()
+            self.script_obj = search.get_sobject()
         elif path:
             parts = path.split("/")
             folder = "/".join( parts[:-1])
@@ -202,25 +202,25 @@ class ButtonElementWdg(BaseTableElementWdg):
             search = Search("config/custom_script")
             search.add_filter("folder", folder)
             search.add_filter("title", title)
-            my.script_obj = search.get_sobject()
+            self.script_obj = search.get_sobject()
         elif inline:
-            my.script = inline
+            self.script = inline
 
 
 
-        # NOTE: my.behavior can contain a lot of goodies which are
+        # NOTE: self.behavior can contain a lot of goodies which are
         # ignored here. ie: CheckinButtonElementWdg
 
-        if my.behavior.get('cbjs_action'):
-            my.script = my.behavior.get('cbjs_action')
+        if self.behavior.get('cbjs_action'):
+            self.script = self.behavior.get('cbjs_action')
 
         #behavior = {}
-        behavior = my.behavior
+        behavior = self.behavior
         behavior['type'] = 'mouseup'
-        #my.behavior['search_key'] = search_key
-        behavior['bvr_match_class'] = "spt_button_%s" % my.name
+        #self.behavior['search_key'] = search_key
+        behavior['bvr_match_class'] = "spt_button_%s" % self.name
 
-        if my.script:
+        if self.script:
             behavior['cbjs_action'] = '''
                 var layout = bvr.src_el.getParent(".spt_layout");
                 var sk;
@@ -233,8 +233,8 @@ class ButtonElementWdg(BaseTableElementWdg):
                     sk = td.getAttribute('search_key');
                 }
                 bvr.search_key = sk;
-                %s'''% my.script
-        elif my.script_obj:
+                %s'''% self.script
+        elif self.script_obj:
             behavior['cbjs_action'] = '''
                 var layout = bvr.src_el.getParent(".spt_layout");
                 var sk;
@@ -249,7 +249,7 @@ class ButtonElementWdg(BaseTableElementWdg):
                 bvr.search_key = sk;
                 spt.CustomProject.custom_script(evt,bvr);
                 '''
-            script_code = my.script_obj.get_code()
+            script_code = self.script_obj.get_code()
             behavior['script_code'] = script_code
         else:
             behavior['cbjs_action'] = '''spt.alert("No script defined for this button");'''
@@ -258,17 +258,17 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
 
-    def handle_td(my, td):
-        sobject = my.get_current_sobject()
+    def handle_td(self, td):
+        sobject = self.get_current_sobject()
         search_key = SearchKey.build_by_sobject(sobject)
         td.set_attr('search_key', search_key)
 
 
 
-    def preprocess(my):
+    def preprocess(self):
 
         # need to be able to set these globally
-        layout = my.get_layout_wdg()
+        layout = self.get_layout_wdg()
         if layout:
             layout.get_table()
         return
@@ -292,14 +292,14 @@ class ButtonElementWdg(BaseTableElementWdg):
         layout.add_smart_style( "spt_button_click", "background-image", "url(%s/MainButton_click.png)" % BASE)
 
 
-    def add_to_button_behavior(my, name, value):
-        my.behavior[name] = value
+    def add_to_button_behavior(self, name, value):
+        self.behavior[name] = value
 
 
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         search_key = SearchKey.build_by_sobject(sobject)
 
         display = DivWdg()
@@ -335,30 +335,30 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
 
-        if my.get_option('align') =='left':
+        if self.get_option('align') =='left':
             display.add_style("text-align: left")
         else:
             display.add_style("text-align: center")
 
-        icon = my.get_option("icon")
+        icon = self.get_option("icon")
         if not icon:
             icon = "create"
 
 
-        icon_tip = my.get_option("icon_tip")
+        icon_tip = self.get_option("icon_tip")
         if not icon_tip:
-            icon_tip = my.get_option("hint")
+            icon_tip = self.get_option("hint")
         if not icon_tip:
             icon_tip = ""
 
-        enable = my.get_option("enable")
+        enable = self.get_option("enable")
         if enable:
             result = ExpressionParser().eval(enable, sobject)
             if not result:
                 return "&nbsp;"
 
 
-        if not my.script_obj and not my.script:
+        if not self.script_obj and not self.script:
             icon_wdg = IconButtonWdg("No Script Found", IconWdg.ERROR)
         else:
             icon_link = icon.upper()
@@ -366,8 +366,8 @@ class ButtonElementWdg(BaseTableElementWdg):
             icon_wdg = IconButtonWdg(icon_tip, icon=icon_link)
             if not sobject.is_insert():
                 icon_wdg.add_class("hand")
-                #icon_wdg.add_behavior(my.behavior)
-                icon_wdg.add_class("spt_button_%s" % my.name)
+                #icon_wdg.add_behavior(self.behavior)
+                icon_wdg.add_class("spt_button_%s" % self.name)
 
 
         icon_div = DivWdg()
@@ -392,7 +392,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         display.add_style("margin-top: 0px")
 
 
-        expression = my.kwargs.get('expression')
+        expression = self.kwargs.get('expression')
         if expression:
             value = Search.eval(expression, sobject, single=True)
 

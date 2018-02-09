@@ -20,15 +20,15 @@ from base_example_wdg import BaseExampleWdg
 
 class PanningScrollExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Use of Drag Behavior For Panning Scroll"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Example of Panning Scroll using drag behavior (use ALT+LMB to pan inner div below) ..."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         scroll_div = DivWdg()
 

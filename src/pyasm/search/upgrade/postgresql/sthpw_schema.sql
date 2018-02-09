@@ -201,7 +201,7 @@ CREATE TABLE "login_group" (
     "s_status" character varying(256),
     "start_link" text,
     "access_level" character varying(32),
-    "is_default" char(1),
+    "is_default" boolean,
     CONSTRAINT "login_group_code_idx" UNIQUE ("code")
 );
 
@@ -237,7 +237,7 @@ CREATE TABLE "pipeline" (
     "description" text,
     "color" character varying(256),
     "s_status" character varying(30),
-    "autocreate_tasks" char(1),
+    "autocreate_tasks" boolean,
     CONSTRAINT "pipeline_code_idx" UNIQUE ("code")
 );
 
@@ -288,17 +288,17 @@ CREATE TABLE "snapshot" (
     "snapshot_type" character varying(30),
     "code" character varying(30),
     "repo" character varying(30),
-    "is_current" char(1),
+    "is_current" boolean,
     "label" character varying(100),
     "revision" integer,
     "level_type" character varying(256),
     "level_id" integer,
     "metadata" text,
-    "is_latest" char(1),
+    "is_latest" boolean,
     "status" character varying(256),
     "project_code" character varying(256),
     "search_code" character varying(256),
-    "is_synced" char(1),
+    "is_synced" boolean,
     CONSTRAINT "snapshot_code_idx" UNIQUE ("code")
 );
 

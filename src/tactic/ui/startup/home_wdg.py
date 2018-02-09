@@ -25,11 +25,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 class HomeWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
-    def get_section_wdg(my, title, description, image, behavior):
+    def get_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -82,7 +82,7 @@ class HomeWdg(BaseRefreshWdg):
 
 
 
-    def get_section_wdg2(my, title, description, image, behavior):
+    def get_section_wdg2(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -135,7 +135,7 @@ class HomeWdg(BaseRefreshWdg):
         return section_wdg
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -345,7 +345,7 @@ class HomeWdg(BaseRefreshWdg):
             '''
             }
             title_wdg = report.get("title_wdg")
-            schema_wdg = my.get_section_wdg(title_wdg, description, image, behavior)
+            schema_wdg = self.get_section_wdg(title_wdg, description, image, behavior)
             td.add(schema_wdg)
 
 
@@ -360,7 +360,7 @@ class HomeWdg(BaseRefreshWdg):
 
 
 
-    def get_totals_wdg(my):
+    def get_totals_wdg(self):
         div = DivWdg()
 
         div.add("Number of Pipelines: 3<br/>") 

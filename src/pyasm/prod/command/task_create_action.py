@@ -18,12 +18,12 @@ __all__ = ['TaskCreateAction']
 
 class TaskCreateAction(DatabaseAction):
 
-    def execute(my):
+    def execute(self):
         pass
 
-    def postprocess(my):
+    def postprocess(self):
 
-        sobject = my.sobject
+        sobject = self.sobject
 
         if not sobject.is_insert():
             return

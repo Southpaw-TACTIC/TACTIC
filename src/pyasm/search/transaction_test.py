@@ -32,29 +32,29 @@ import unittest,os
 class TransactionTest(unittest.TestCase):
 
 
-    def test_all(my):
+    def test_all(self):
         # intialiaze the framework as a batch process
         batch = Batch()
         from pyasm.web.web_init import WebInit
         WebInit().execute()
 
 
-        my.test_env = UnittestEnvironment()
-        my.test_env.create()
+        self.test_env = UnittestEnvironment()
+        self.test_env.create()
         #from pyasm.biz import Project
         #Project.set_project("unittest")
 
         try:
-            my._test_transaction()
-            my._test_undo()
-            my._test_file_undo()
-            my._test_debug_log()
+            self._test_transaction()
+            self._test_undo()
+            self._test_file_undo()
+            self._test_debug_log()
         except:
             
             Project.set_project('unittest')
-            my.test_env.delete()
+            self.test_env.delete()
 
-    def _test_transaction(my):
+    def _test_transaction(self):
         # initiate a global transaction
 
         database = "unittest"
@@ -72,7 +72,7 @@ class TransactionTest(unittest.TestCase):
 
         # check to see that one was added
         count1 = db.get_value(count_sql)
-        my.assertEquals( count1, count0+1)
+        self.assertEquals( count1, count0+1)
 
         # FIXME: cant' delete for some reason
         #person.delete()
@@ -82,7 +82,7 @@ class TransactionTest(unittest.TestCase):
 
         # check to see that one was added
         count1 = db.get_value(count_sql)
-        my.assertEquals( count1, count0+1)
+        self.assertEquals( count1, count0+1)
 
         #transaction.rollback()
         #person.delete()
@@ -96,16 +96,16 @@ class TransactionTest(unittest.TestCase):
         person = Person.create("Mr", "Dumpling", "Dumpling Land", "Burnt")
         db = DbContainer.get(db_resource)
         count2 = db.get_value(count_sql)
-        my.assertEquals( count2, count0+1)
+        self.assertEquals( count2, count0+1)
 
         transaction.rollback()
 
         # check to see that one was removed/rolled back
         count3 = db.get_value(count_sql)
-        my.assertEquals( count3, count0)
+        self.assertEquals( count3, count0)
 
 
-    def _test_undo(my):
+    def _test_undo(self):
 
         search = Search("sthpw/transaction_log")
         search.add_filter("login", Environment.get_user_name() )
@@ -132,24 +132,24 @@ class TransactionTest(unittest.TestCase):
         search.add_filter("name_first", "Mr")
         search.add_filter("name_last", "Potato Head")
         person = search.get_sobject()
-        my.assertEquals( False, person == None )
+        self.assertEquals( False, person == None )
 
         search = Search("unittest/person")
         search.add_filter("name_first", "Mr")
         search.add_filter("name_last", "Potato Head")
         rtn_person = search.get_sobject()
-        my.assertEquals( True, rtn_person != None )
+        self.assertEquals( True, rtn_person != None )
         
 
         # make sure we are no longer in transaction
-        my.assertEquals( False, transaction.is_in_transaction() )
+        self.assertEquals( False, transaction.is_in_transaction() )
 
         # check the transaction log
         search = Search("sthpw/transaction_log")
         search.add_filter("login", Environment.get_user_name() )
         num_transactions2 = search.get_count()
         results = search.do_search()
-        my.assertEquals( num_transactions2, num_transactions + 1 )
+        self.assertEquals( num_transactions2, num_transactions + 1 )
 
         # get the last transaction and undo it
         last = TransactionLog.get_last()
@@ -160,17 +160,17 @@ class TransactionTest(unittest.TestCase):
         search.add_filter("name_last", "Potato Head")
         person = search.get_sobject()
 
-        my.assertEquals( True, person == None )
+        self.assertEquals( True, person == None )
 
         search = Search("unittest/person")
         search.add_filter("name_first", "Mrs")
         search.add_filter("name_last", "Potato Head")
         person = search.get_sobject()
 
-        my.assertEquals( True, person == None )
+        self.assertEquals( True, person == None )
 
 
-    def _test_file_undo(my):
+    def _test_file_undo(self):
 
         tmpdir = Environment.get_tmp_dir()
 
@@ -209,8 +209,8 @@ class TransactionTest(unittest.TestCase):
         file.write("whatever2")
         file.close()
 
-        my.assertEquals(os.path.exists(src), True)
-        my.assertEquals(os.path.exists(src2), True)
+        self.assertEquals(os.path.exists(src), True)
+        self.assertEquals(os.path.exists(src2), True)
 
         FileUndo.move(src,dst)
         FileUndo.copy(dst,dst2)
@@ -218,25 +218,25 @@ class TransactionTest(unittest.TestCase):
 
         transaction.commit()
 
-        my.assertEquals(True, os.path.exists(dir) )
-        my.assertEquals(False, os.path.exists(src) )
-        my.assertEquals(False, os.path.exists(src2) )
-        my.assertEquals(True, os.path.exists(dst) )
-        my.assertEquals(True, os.path.exists(dst2) )
+        self.assertEquals(True, os.path.exists(dir) )
+        self.assertEquals(False, os.path.exists(src) )
+        self.assertEquals(False, os.path.exists(src2) )
+        self.assertEquals(True, os.path.exists(dst) )
+        self.assertEquals(True, os.path.exists(dst2) )
 
         TransactionLog.get_last().undo()
 
-        my.assertEquals(False, os.path.exists(dir) )
-        my.assertEquals(True, os.path.exists(src) )
-        my.assertEquals(True, os.path.exists(src2) )
-        my.assertEquals(False, os.path.exists(dst) )
-        my.assertEquals(False, os.path.exists(dst2) )
+        self.assertEquals(False, os.path.exists(dir) )
+        self.assertEquals(True, os.path.exists(src) )
+        self.assertEquals(True, os.path.exists(src2) )
+        self.assertEquals(False, os.path.exists(dst) )
+        self.assertEquals(False, os.path.exists(dst2) )
 
         os.unlink(src)
         os.unlink(src2)
 
 
-    def _test_debug_log(my):
+    def _test_debug_log(self):
         '''tests that the debug log executes outside of a transaction'''
 
         # initiate a global transaction
@@ -257,10 +257,10 @@ class TransactionTest(unittest.TestCase):
         #log = DebugLog.get_by_id(log_id)
 
         # make sure the person is undone
-        my.assertEquals(None, person)
+        self.assertEquals(None, person)
 
         # make sure the log still exists
-        my.assertNotEquals(None, log)
+        self.assertNotEquals(None, log)
 
 
 

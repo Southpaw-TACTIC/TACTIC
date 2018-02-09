@@ -26,9 +26,9 @@ import os
 
 class UpdateWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 10px")
         top.add_color("background", "background")
         top.add_style("width: 400px")
@@ -106,7 +106,7 @@ class UpdateWdg(BaseRefreshWdg):
 
 class UpdateCbk(Command):
 
-    def execute(my):
+    def execute(self):
         install_dir = Environment.get_install_dir()
         python = Environment.get_python_exec()
         upgrade = "%s %s/src/bin/upgrade_db.py -f --yes" % (python, install_dir)

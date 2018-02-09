@@ -22,9 +22,9 @@ from tactic_client_lib import TacticServerStub
 
 class LoginGroupTrigger(Trigger):
 
-    def execute(my):
+    def execute(self):
 
-        input = my.get_input()
+        input = self.get_input()
         mode = input.get("mode")
 
         if mode not in ['insert', 'update']:
@@ -83,11 +83,11 @@ class LoginGroupTrigger(Trigger):
 
         sobj.commit(triggers=False)
 
-        my.update_related(login_group, login_group_name)
+        self.update_related(login_group, login_group_name)
 
 
 
-    def update_related(my, login_group, prev_login_group):
+    def update_related(self, login_group, prev_login_group):
         '''Update related table login_in_group''' 
 
         search = Search('sthpw/login_in_group')

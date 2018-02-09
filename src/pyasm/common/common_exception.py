@@ -46,21 +46,21 @@ class SObjectSecurityException(SecurityException):
 
 class TacticWarning(Warning):
     ''' a simple Warning Class, not really using the built-in Warning much '''
-    def __init__(my, label, msg, type=''):
-        my.label = label
-        my.msg = msg
-        my.type = type
-        Warning.__init__(my)
-        #super(TacticWarning, my).__init__()
+    def __init__(self, label, msg, type=''):
+        self.label = label
+        self.msg = msg
+        self.type = type
+        Warning.__init__(self)
+        #super(TacticWarning, self).__init__()
 
-    def get_label(my):
-        return my.label
+    def get_label(self):
+        return self.label
 
-    def get_msg(my):
-        return my.msg
+    def get_msg(self):
+        return self.msg
 
-    def get_type(my):
-        return my.type
+    def get_type(self):
+        return self.type
 
 
 

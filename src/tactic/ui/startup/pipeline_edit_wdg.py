@@ -26,19 +26,19 @@ from tactic.ui.input import TextInputWdg
 
 class PipelineEditWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_color("background", "background")
         top.add_class("spt_pipelines_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
 
 
-        search_type = my.kwargs.get("search_type")
-        pipeline_code = my.kwargs.get("pipeline_code")
+        search_type = self.kwargs.get("search_type")
+        pipeline_code = self.kwargs.get("pipeline_code")
 
         if search_type:
             search = Search("sthpw/pipeline")
@@ -408,7 +408,7 @@ class PipelineEditWdg(BaseRefreshWdg):
 
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return top
@@ -418,11 +418,11 @@ class PipelineEditWdg(BaseRefreshWdg):
 
 class PipelineCreateCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
 
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
 
         project_code = Project.get_project_code()
         parts = search_type.split("/")
@@ -440,9 +440,9 @@ class PipelineCreateCbk(Command):
 
 class PipelineEditCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        data = my.kwargs.get("data")
+        data = self.kwargs.get("data")
 
         for pipeline_code, pipeline_data in data.items():
 
@@ -464,7 +464,7 @@ class PipelineEditCbk(Command):
             descriptions = pipeline_data.get("description")
 
             # go through each process and build up the xml
-            pipeline_xml = my.create_pipeline_xml(processes, process_types, process_xpos, process_ypos)
+            pipeline_xml = self.create_pipeline_xml(processes, process_types, process_xpos, process_ypos)
             pipeline.set_value("pipeline", pipeline_xml)
             pipeline.set_pipeline(pipeline_xml)
             pipeline.on_insert()
@@ -517,7 +517,7 @@ class PipelineEditCbk(Command):
 
                 status_list = status.split(",")
                 # task status pipeline
-                status_xml = my.create_pipeline_xml(status_list)
+                status_xml = self.create_pipeline_xml(status_list)
 
                 project_code = Project.get_project_code()
 
@@ -550,7 +550,7 @@ class PipelineEditCbk(Command):
             pipeline.commit()
 
 
-    def create_pipeline_xml(my, statuses, process_types=[], process_xpos=[], process_ypos=[]):
+    def create_pipeline_xml(self, statuses, process_types=[], process_xpos=[], process_ypos=[]):
         '''create regular pipeline with process_types, xpos, ypos or plain task status pipeline'''
         if not statuses:
             statuses = []
@@ -596,23 +596,23 @@ class PipelineEditCbk(Command):
 
 """
 class NewTextWdg(TextWdg):
-    def init(my):
+    def init(self):
 
-        #color = my.get_color("border", -20)
-        color2 = my.get_color("border")
-        color = my.get_color("border", -20)
+        #color = self.get_color("border", -20)
+        color2 = self.get_color("border")
+        color = self.get_color("border", -20)
 
-        my.add_event("onfocus", "this.focused=true")
-        my.add_event("onblur", "this.focused=false;$(this).setStyle('border-color','%s')" % color2)
+        self.add_event("onfocus", "this.focused=true")
+        self.add_event("onblur", "this.focused=false;$(this).setStyle('border-color','%s')" % color2)
 
-        my.add_behavior( {
+        self.add_behavior( {
         'type': 'mouseover',
         'color': color,
         'cbjs_action': '''
         bvr.src_el.setStyle("border-color", bvr.color);
         '''
         } )
-        my.add_behavior( {
+        self.add_behavior( {
         'type': 'mouseout',
         'color': color2,
         'cbjs_action': '''
@@ -622,7 +622,7 @@ class NewTextWdg(TextWdg):
         '''
         } )
 
-        super(NewTextWdg,my).init()
+        super(NewTextWdg,self).init()
 """
 
 

@@ -23,9 +23,9 @@ class UnityWdg(BaseRefreshWdg):
 
     #    Container.append_seq("Page:js", "http://webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject.js")
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
 
         unity_wdg = DivWdg()
@@ -48,7 +48,7 @@ class UnityWdg(BaseRefreshWdg):
             'cbjs_action': '''
             %s;
             %s;
-            ''' % (init_js, my.get_load_js(unique_id) )
+            ''' % (init_js, self.get_load_js(unique_id) )
         } )
 
 
@@ -56,10 +56,10 @@ class UnityWdg(BaseRefreshWdg):
         return top
 
 
-    def get_load_js(my, unique_id):
+    def get_load_js(self, unique_id):
 
 
-        path = my.kwargs.get("path")
+        path = self.kwargs.get("path")
         if not path:
             path = "/context/Example.unity3d"
 

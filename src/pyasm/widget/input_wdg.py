@@ -46,104 +46,104 @@ class BaseInputWdg(HtmlElement):
     get_args_keys = classmethod(get_args_keys)
 
 
-    #def __init__(my, name=None, type=None, label=None):
-    def __init__(my, name=None, type=None, label=None, **kwargs):
-        super(BaseInputWdg,my).__init__(type)
+    #def __init__(self, name=None, type=None, label=None):
+    def __init__(self, name=None, type=None, label=None, **kwargs):
+        super(BaseInputWdg,self).__init__(type)
 
         # the name of the input element
-        my.name = name
-        my.input_prefix = None
-        my.value = ""
-        my.options = {}
-        my.options['default'] = ""
-        my.options['persist'] = "false"
+        self.name = name
+        self.input_prefix = None
+        self.value = ""
+        self.options = {}
+        self.options['default'] = ""
+        self.options['persist'] = "false"
         if kwargs:
-            my.options = kwargs
-            my.kwargs = kwargs
+            self.options = kwargs
+            self.kwargs = kwargs
 
-        my.persistence = False
-        my.persistence_obj = None
-        my.cached_values = None
-        my.label = label
-        my.disabled_look = True
-        my.prefix = ''
-        my.change_cbjs_action = ''
+        self.persistence = False
+        self.persistence_obj = None
+        self.cached_values = None
+        self.label = label
+        self.disabled_look = True
+        self.prefix = ''
+        self.change_cbjs_action = ''
         # deprecated
-        my.element = None
+        self.element = None
 
-        my.parent_wdg = None
-        my.state = {}
+        self.parent_wdg = None
+        self.state = {}
 
-        my.title = ''
+        self.title = ''
 
-        my.related_type = None
+        self.related_type = None
 
 
     # FIXME: need to make this more elegant: these are only put here
     # to conform to the interface of BaseTableElementWdg so that these
     # elements can be put into a TableWdg.  This should be more formal
     # because the relationship here is quite tenuous
-    def get_style(my):
+    def get_style(self):
         return ""
-    def get_bottom(my):
+    def get_bottom(self):
         return ""
 
 
 
 
-    def copy(my, input):
+    def copy(self, input):
         '''copies the parameters of one widget to the other. This is useful
         for transfering the parameters specified in a config file to a contained
         widget.'''
-        my.name = input.name
-        my.input_prefix = input.input_prefix
-        my.options = input.options
-        my.sobjects = input.sobjects
-        my.current_index = input.current_index
+        self.name = input.name
+        self.input_prefix = input.input_prefix
+        self.options = input.options
+        self.sobjects = input.sobjects
+        self.current_index = input.current_index
 
-        my.set_sobject = input.get_current_sobject()
+        self.set_sobject = input.get_current_sobject()
 
 
-    def set_state(my, state):
+    def set_state(self, state):
         '''Set the state for this table element'''
-        my.state = state
+        self.state = state
 
-    def get_state(my):
+    def get_state(self):
         '''get the state for this table element'''
-        return my.state
+        return self.state
 
 
 
-    def get_related_type(my):
+    def get_related_type(self):
         '''Some input widgets will be related to a search type to define
         a list or range of parameters.  This will allow an external
         widget to discover this relationship and provide a means to add
         to this list'''
-        return my.related_type
+        return self.related_type
 
 
 
 
-    def set_title(my, title):
-        my.title = title
+    def set_title(self, title):
+        self.title = title
         
-    def get_display_title(my):
+    def get_display_title(self):
         '''Function that that gives a title represenation of this widget'''
-        if my.title:
-            return my.title
+        if self.title:
+            return self.title
 
-        name = my.get_name()
+        name = self.get_name()
         name = name.replace("_", " ")
         return name.title()
  
 
 
-    def get_title(my):
+    def get_title(self):
         '''Function that that gives a title represenation of this widget'''
-        if my.title:
-            return my.title
+        if self.title:
+            return self.title
 
-        name = my.get_name()
+        name = self.get_name()
         if not name:
             return ""
 
@@ -152,7 +152,7 @@ class BaseInputWdg(HtmlElement):
         return span
 
 
-    def _add_required(my, span, offset_x=10):
+    def _add_required(self, span, offset_x=10):
         required_span = DivWdg("*")
         required_span.add_style("position: absolute")
         required_span.add_style("margin-left: -%dpx"% offset_x)
@@ -163,96 +163,96 @@ class BaseInputWdg(HtmlElement):
         span.add(required_span)
         span.add_class("spt_required")
 
-    def set_parent_wdg(my, parent_wdg):
+    def set_parent_wdg(self, parent_wdg):
         '''method to set the parent widget.  This is typicaly the EditWdg'''
-        my.parent_wdg = parent_wdg
+        self.parent_wdg = parent_wdg
 
-    def get_parent_wdg(my):
-        return my.parent_wdg
+    def get_parent_wdg(self):
+        return self.parent_wdg
 
 
-    def set_layout_wdg(my, layout_wdg):
-        my.parent_wdg = layout_wdg
+    def set_layout_wdg(self, layout_wdg):
+        self.parent_wdg = layout_wdg
 
         
-    def get_prefs(my):
+    def get_prefs(self):
         '''Function that that gives a preference widget for this input'''
         return ""
 
 
-    def set_input_prefix(my, input_prefix):
-        my.input_prefix = input_prefix
+    def set_input_prefix(self, input_prefix):
+        self.input_prefix = input_prefix
 
-    def get_input_name(my, name=''):
-        input_name = my.name
+    def get_input_name(self, name=''):
+        input_name = self.name
         if name:
             input_name = name
-        if my.input_prefix:
-            return "%s|%s" % (my.input_prefix, input_name)
+        if self.input_prefix:
+            return "%s|%s" % (self.input_prefix, input_name)
         else:
             return input_name
 
 
-    def set_name(my, name):
+    def set_name(self, name):
         '''set the name externally'''
-        my.name = name
+        self.name = name
 
     
-    def get_name(my):
-        return my.name
+    def get_name(self):
+        return self.name
 
-    def get_label(my):
-        if my.label:
-            return my.label
+    def get_label(self):
+        if self.label:
+            return self.label
         else:
-            return my.name
+            return self.name
 
-    def set_options(my, options):
-        my.options = options
+    def set_options(self, options):
+        self.options = options
 		
-        if my.has_option('search_key'):
+        if self.has_option('search_key'):
 		    search_key = options.get('search_key')
 		    if search_key:
 				sobj = SearchKey.get_by_search_key(search_key)
-				my.set_sobjects([sobj])
+				self.set_sobjects([sobj])
 
             
 
-    def has_option(my, key):
-        return my.options.has_key(key)
+    def has_option(self, key):
+        return self.options.has_key(key)
  
-    def set_option(my, key, value):
-        my.options[key] = value
+    def set_option(self, key, value):
+        self.options[key] = value
         
-    def get_option(my, key):
+    def get_option(self, key):
         '''gets the value of the specified option'''
-        if my.options.has_key(key):
-            return my.options[key]
+        if self.options.has_key(key):
+            return self.options[key]
         else:
             return ""
 
-    def set_disabled_look(my, disable):
-        my.disabled_look = disable
+    def set_disabled_look(self, disable):
+        self.disabled_look = disable
 
-    def is_read_only(my):
+    def is_read_only(self):
         ''' if the read_only option is true, either set disabled or readonly'''
-        if my.get_option('read_only') in ['true', True]:
+        if self.get_option('read_only') in ['true', True]:
             return True
         return False
 
-    def is_edit_only(my):
-        return my.get_option('edit_only') == 'true'
+    def is_edit_only(self):
+        return self.get_option('edit_only') == 'true'
 
-    def is_simple_viewable(my):
+    def is_simple_viewable(self):
         return True
 
-    def is_editable(my):
+    def is_editable(self):
         return True
 
-    def get_timezone_value(my, value):
+    def get_timezone_value(self, value):
         '''given a datetime value, try to convert to timezone specified in the widget.
            If not specified, use the My Preferences time zone'''
-        timezone = my.get_option('timezone')
+        timezone = self.get_option('timezone')
         if not timezone:
             timezone = PrefSetting.get_value_by_key('timezone')
         
@@ -263,42 +263,42 @@ class BaseInputWdg(HtmlElement):
         
         return value
 
-    def check_persistent_values(my, cgi_values):
+    def check_persistent_values(self, cgi_values):
         web = WebContainer.get_web()
-        if my.is_form_submitted() and web.has_form_key(my.get_input_name()):
+        if self.is_form_submitted() and web.has_form_key(self.get_input_name()):
             # if the form is submitted, then always use the submitted value
-            my._set_persistent_values(cgi_values)
-            my.cached_values = cgi_values
+            self._set_persistent_values(cgi_values)
+            self.cached_values = cgi_values
             return cgi_values
         else:
             return False
 
-    def check_persistent_display(my, cgi_values):
+    def check_persistent_display(self, cgi_values):
         # no longer checking for web.get_form_keys()
         web = WebContainer.get_web()
-        if my.get_option("persist") == "true":
+        if self.get_option("persist") == "true":
             # old web implementation
-            if web.has_form_key(my.get_input_name()):
+            if web.has_form_key(self.get_input_name()):
                 values = cgi_values
-                #my._set_persistent_values(values)
+                #self._set_persistent_values(values)
                 return values
             else:
                 # try the json implementation if it has been set
                 from tactic.ui.filter import FilterData 
                 filter_data = FilterData.get()
-                values = filter_data.get_values_by_prefix(my.prefix)
+                values = filter_data.get_values_by_prefix(self.prefix)
                 if values:
                     values = values[0]
-                    value = values.get(my.get_input_name())
+                    value = values.get(self.get_input_name())
                     if value:
                         cgi_values = [value]
-                        #my._set_persistent_values(cgi_values)
+                        #self._set_persistent_values(cgi_values)
                         return cgi_values
                 return False
         else:
             return False
 
-    def get_values(my, for_display=False):
+    def get_values(self, for_display=False):
         '''gets the current value of this input element.  The order of
         importance is as follows.  If the form was submitted, this value
         will always take precedence.  Then externally set values through
@@ -306,26 +306,26 @@ class BaseInputWdg(HtmlElement):
         values = []
        
         web = WebContainer.get_web()
-        if my.has_option('search_key') and not my.get_current_sobject():
-            sobject = SearchKey.get_by_search_key(my.options.get('search_key'))
+        if self.has_option('search_key') and not self.get_current_sobject():
+            sobject = SearchKey.get_by_search_key(self.options.get('search_key'))
             if sobject:
-                my.set_sobjects([sobject])
+                self.set_sobjects([sobject])
         
         # getting the value from CGI depends on whether this is for display
         # of the widget or for getting the current value of this widget.
-        cgi_values = web.get_form_values( my.get_input_name() )
+        cgi_values = web.get_form_values( self.get_input_name() )
 
         if for_display:
 
             # get it from the sobject: this grabs the values from the
             # sobject in the db for editing
-            column = my.get_option('column')
+            column = self.get_option('column')
             if not column:
-                column = my.name
+                column = self.name
 
-            if my.get_current_sobject() and \
-                    my.get_current_sobject().has_value(column):
-                sobject = my.get_current_sobject()
+            if self.get_current_sobject() and \
+                    self.get_current_sobject().has_value(column):
+                sobject = self.get_current_sobject()
                 values = [sobject.get_value(column)]
                 if not values:
                     values = []
@@ -334,15 +334,15 @@ class BaseInputWdg(HtmlElement):
 
 
             # if set explicitly, then this is the value
-            if my.value != '':
+            if self.value != '':
                 
-                values = [my.value]
-                my._set_persistent_values(values)
+                values = [self.value]
+                self._set_persistent_values(values)
                 return values
 
 
             # the value is taken from CGI only if the input is persistent
-            values = my.check_persistent_display(cgi_values)
+            values = self.check_persistent_display(cgi_values)
             if values != False:
                 return values
             else:
@@ -350,26 +350,26 @@ class BaseInputWdg(HtmlElement):
             
             # This option will read the webstate if no explicit value is
             # present
-            if my.get_option("web_state") == "true":
+            if self.get_option("web_state") == "true":
                 # this will eventually use the WebState: for now, use cgi
                 values = cgi_values
                 if values and values[0] != "":
-                    my._set_persistent_values(values)
+                    self._set_persistent_values(values)
                     return values
 
         # if this has been called before, get the previous value
-        elif my.cached_values != None:
-            return my.cached_values
+        elif self.cached_values != None:
+            return self.cached_values
         
        
         # check for key existence only in for_display=False
-        #elif my.is_form_submitted() and web.has_form_key(my.get_input_name()):
+        #elif self.is_form_submitted() and web.has_form_key(self.get_input_name()):
         #    # if the form is submitted, then always use the submitted value
-        #    my._set_persistent_values(cgi_values)
-        #    my.cached_values = cgi_values
+        #    self._set_persistent_values(cgi_values)
+        #    self.cached_values = cgi_values
         #    return cgi_values
         else: 
-            temp_values = my.check_persistent_values(cgi_values)
+            temp_values = self.check_persistent_values(cgi_values)
             if temp_values != False:
                 return temp_values  
         # if there are values in CGI, use these
@@ -378,44 +378,44 @@ class BaseInputWdg(HtmlElement):
            
         
         # if the value has been explicitly set, then use that one
-        elif my.value != '':
-            values = [my.value]
+        elif self.value != '':
+            values = [self.value]
           
 
         
         # otherwise, get it from the sobject: this grabs the values from the
         # sobject in the db for editing
-        elif my.get_current_sobject() and \
-                my.get_current_sobject().has_value(my.name):
-            sobject = my.get_current_sobject()
-            values = [sobject.get_value(my.name)]
+        elif self.get_current_sobject() and \
+                self.get_current_sobject().has_value(self.name):
+            sobject = self.get_current_sobject()
+            values = [sobject.get_value(self.name)]
             if not values:
                 values = []
 
 
         # This option will read the webstate if no explicit value is
         # present
-        elif my.get_option("web_state") == "true":
+        elif self.get_option("web_state") == "true":
             # this will eventually use the WebState: for now, use cgi
             values = cgi_values
-            my._set_persistent_values(values)
-            my.cached_values = values
+            self._set_persistent_values(values)
+            self.cached_values = values
             return values
 
 
 
 
         # otherwise, get it from the persistence (database)
-        elif my.persistence:
-            class_path = Common.get_full_class_name(my.persistence_obj)
-            key = "%s|%s" % (class_path, my.name)
+        elif self.persistence:
+            class_path = Common.get_full_class_name(self.persistence_obj)
+            key = "%s|%s" % (class_path, self.name)
             #values = WidgetSettings.get_key_values(key, auto_create=False)
             values = WidgetSettings.get_key_values(key)
         
         # if all of the above overrides fail, then set to the default
         # the rules for persistent input is slightly different
-        if (values == None and my.persistence) or (values == [] and not my.persistence):
-            default = my.get_option("default")
+        if (values == None and self.persistence) or (values == [] and not self.persistence):
+            default = self.get_option("default")
             if default != "":
                 # default can be a list
                 if isinstance(default, list):
@@ -435,24 +435,24 @@ class BaseInputWdg(HtmlElement):
                 values = []
         
         if values:
-            #web.set_form_value(my.name, values[0])
-            web.set_form_value(my.get_input_name(), values)
-            my._set_persistent_values(values)
+            #web.set_form_value(self.name, values[0])
+            web.set_form_value(self.get_input_name(), values)
+            self._set_persistent_values(values)
       
         # only cache if it is not for display: otherwise we have to separate
         # the for display cache and the non for display cache
         if not for_display:
-            my.cached_values = values
+            self.cached_values = values
 
         return values
 
 
-    def _set_persistent_values(my, values):
+    def _set_persistent_values(self, values):
 
-        if my.persistence:
+        if self.persistence:
 
-            class_path = Common.get_full_class_name(my.persistence_obj)
-            key = "%s|%s" % (class_path, my.name)
+            class_path = Common.get_full_class_name(self.persistence_obj)
+            key = "%s|%s" % (class_path, self.name)
 
             # make sure the value is not empty
             if not values:
@@ -465,8 +465,8 @@ class BaseInputWdg(HtmlElement):
 
     
 
-    def get_value(my, for_display=False):
-        values = my.get_values(for_display)
+    def get_value(self, for_display=False):
+        values = self.get_values(for_display)
         if not values:
             return ""
         else:
@@ -474,11 +474,11 @@ class BaseInputWdg(HtmlElement):
 
 
 
-    def set_value(my, value, set_form_value=True):
-        my.value = value
+    def set_value(self, value, set_form_value=True):
+        self.value = value
 
         # some widgets do not have names (occasionally)
-        name = my.get_input_name()
+        name = self.get_input_name()
         if not name:
             return
 
@@ -490,30 +490,30 @@ class BaseInputWdg(HtmlElement):
 
 
 
-    def set_persistence(my, object=None):
-        my.persistence = True
+    def set_persistence(self, object=None):
+        self.persistence = True
         if object == None:
-            object = my
-        my.persistence_obj = object
+            object = self
+        self.persistence_obj = object
 
         # this implies persist on submit (it is also faster)
-        my.set_persist_on_submit()
+        self.set_persist_on_submit()
 
 
-    def set_persist_on_submit(my, prefix=''):
-        my.set_option("persist", "true")
-        my.prefix = prefix
+    def set_persist_on_submit(self, prefix=''):
+        self.set_option("persist", "true")
+        self.prefix = prefix
 
-    def set_submit_onchange(my, set=True):
+    def set_submit_onchange(self, set=True):
         if set:
-            my.change_cbjs_action = 'spt.panel.refresh( bvr.src_el.getParent(".spt_panel") );'
-            #my.add_behavior(behavior)
+            self.change_cbjs_action = 'spt.panel.refresh( bvr.src_el.getParent(".spt_panel") );'
+            #self.add_behavior(behavior)
 
         else:
             print("DEPRECATED: set_submit_onchange, arg set=False")
-            my.remove_event('onchange')
+            self.remove_event('onchange')
 
-    def is_form_submitted(my):
+    def is_form_submitted(self):
         web = WebContainer.get_web()
         if web.get_form_value("is_from_login") == "yes":
             return False
@@ -524,32 +524,32 @@ class BaseInputWdg(HtmlElement):
 
         return web.get_form_value("is_form_submitted") == "yes"
 
-    def set_form_submitted(my, event='onchange'):
+    def set_form_submitted(self, event='onchange'):
         '''TODO: deprecated this: to declare if a form is submitted, used primarily for FilterCheckboxWdg'''
-        my.add_event(event, "document.form.elements['is_form_submitted'].value='yes'", idx=0)
+        self.add_event(event, "document.form.elements['is_form_submitted'].value='yes'", idx=0)
 
-    def set_style(my, style):
+    def set_style(self, style):
         '''Sets the style of the top widget contained in the input widget'''
-        my.element.set_style(style)
+        self.element.set_style(style)
 
-    def get_key(my):
-        if not my.persistence_obj:
-            my.persistence_obj = my
-        key = "%s|%s"%(Common.get_full_class_name(my.persistence_obj), my.name)
+    def get_key(self):
+        if not self.persistence_obj:
+            self.persistence_obj = self
+        key = "%s|%s"%(Common.get_full_class_name(self.persistence_obj), self.name)
         return key
 
-    def get_save_script(my):
+    def get_save_script(self):
         '''get the js script to save the value to widget settings for persistence'''
-        key = my.get_key()
+        key = self.get_key()
         return "spt.api.Utility.save_widget_setting('%s', bvr.src_el.value)" %key;
 
-    def get_refresh_script(my):
+    def get_refresh_script(self):
         '''get a general refresh script. use this as a template if you need to pass in 
            bvr.src_el.value to values'''
         return "var top=spt.get_parent_panel(bvr.src_el); spt.panel.refresh(top, {}, true)"
 
 class BaseTextWdg(BaseInputWdg):
-    def handle_mode(my):
+    def handle_mode(self):
         return
 
 
@@ -584,101 +584,101 @@ class TextWdg(BaseTextWdg):
     }
  
 
-    def __init__(my,name=None, label=None):
-        super(TextWdg,my).__init__(name,"input", label=label)
-        my.css = "inputfield"
-        my.add_class("spt_input")
+    def __init__(self,name=None, label=None):
+        super(TextWdg,self).__init__(name,"input", label=label)
+        self.css = "inputfield"
+        self.add_class("spt_input")
     
    
 
-    def get_display(my):
-        input_type = my.get_option("type")
+    def get_display(self):
+        input_type = self.get_option("type")
         if not input_type:
             input_type = "text"
 
-        my.set_attr("type", input_type)
-        my.set_attr("name", my.get_input_name())
+        self.set_attr("type", input_type)
+        self.set_attr("name", self.get_input_name())
 
 
-        if my.is_read_only():
+        if self.is_read_only():
             # do not set disabled attr to disabled cuz usually we want the data to
             # get read and passed to callbacks
-            my.set_attr('readonly', 'readonly')
-            if my.disabled_look == True:
-                #my.add_class('disabled')
-                my.add_color("background", "background", -10)
-        value = my.get_value(for_display=True)
+            self.set_attr('readonly', 'readonly')
+            if self.disabled_look == True:
+                #self.add_class('disabled')
+                self.add_color("background", "background", -10)
+        value = self.get_value(for_display=True)
         # this make sure that the display
         if isinstance(value, basestring):
             value = value.replace('"', '&quot;')
-        my.set_attr("value", value)
+        self.set_attr("value", value)
 
-        size = my.get_option("size")
+        size = self.get_option("size")
         if size:
-            my.set_attr("size", size)
+            self.set_attr("size", size)
 
-        my.handle_mode()
-        required = my.get_option("required")
+        self.handle_mode()
+        required = self.get_option("required")
         if required == "true":
-            text = BaseInputWdg.get_class_display(my)
+            text = BaseInputWdg.get_class_display(self)
             wdg = SpanWdg()
 
-            my._add_required(wdg)
+            self._add_required(wdg)
             wdg.add(text)
             return wdg
 
         else:    
-            return super(TextWdg,my).get_display()
+            return super(TextWdg,self).get_display()
 
 class FilterTextWdg(TextWdg):
     '''This composite text acts as a filter and can be, for instance, 
         used in prefs area in TableWdg'''
-    def __init__(my,name=None, label=None, css=None , is_number=False, has_persistence=True):
-        super(FilterTextWdg,my).__init__(name, label=label)
+    def __init__(self,name=None, label=None, css=None , is_number=False, has_persistence=True):
+        super(FilterTextWdg,self).__init__(name, label=label)
         if is_number:
-            my.add_event('onchange',\
+            self.add_event('onchange',\
                 "val=document.form.elements['%s'].value; if (Common.validate_int(val))\
                     document.form.submit(); else \
                     {alert('[' + val + '] is not a valid integer.')}" %name)  
                 
         else:
-            my.set_submit_onchange()
+            self.set_submit_onchange()
 
         if has_persistence:
-            my.set_persistence()
+            self.set_persistence()
         else:
-            my.set_persist_on_submit()
-        my.css = css
-        my.unit = ''
+            self.set_persist_on_submit()
+        self.css = css
+        self.unit = ''
 
-    def set_unit(my, unit):
-        my.unit = unit
+    def set_unit(self, unit):
+        self.unit = unit
         
     
-    def get_display(my):
-        my.handle_behavior()
-        if not my.label:
-            return super(FilterTextWdg, my).get_display()
+    def get_display(self):
+        self.handle_behavior()
+        if not self.label:
+            return super(FilterTextWdg, self).get_display()
         else:
-            text = TextWdg.get_class_display(my)
-            span = SpanWdg(my.label, css=my.css)
+            text = TextWdg.get_class_display(self)
+            span = SpanWdg(self.label, css=self.css)
             span.add(text)
-            span.add(my.unit)
+            span.add(self.unit)
             return span
 
-    def handle_behavior(my):
-        if my.persistence:
-            key = my.get_key()
+    def handle_behavior(self):
+        if self.persistence:
+            key = self.get_key()
             value = WidgetSettings.get_value_by_key(key)
             if value:
-                my.set_value(value)
+                self.set_value(value)
 
             behavior = {"type" : "change",
                     "cbjs_preaction":\
                     "spt.api.Utility.save_widget_setting('%s',bvr.src_el.value)"%key}
-            if my.change_cbjs_action:
-                behavior['cbjs_action'] = my.change_cbjs_action
-            my.add_behavior(behavior)
+            if self.change_cbjs_action:
+                behavior['cbjs_action'] = self.change_cbjs_action
+            self.add_behavior(behavior)
 
     
 
@@ -707,17 +707,17 @@ class TextAreaWdg(BaseTextWdg):
 
     }
 
-    def __init__(my,name=None, **kwargs):
-        super(TextAreaWdg,my).__init__(name,"textarea", **kwargs)
+    def __init__(self,name=None, **kwargs):
+        super(TextAreaWdg,self).__init__(name,"textarea", **kwargs)
         
-        my.kwargs = kwargs
+        self.kwargs = kwargs
         # on OSX rows and cols flag are not respected
         width = kwargs.get("width")
         if width:
-            my.add_style("width", width)
+            self.add_style("width", width)
         height = kwargs.get("height")
         if height:
-            my.add_style("height", height)
+            self.add_style("height", height)
 
     
         web = WebContainer.get_web()
@@ -729,166 +729,166 @@ class TextAreaWdg(BaseTextWdg):
             rows = kwargs.get("rows")
             cols = kwargs.get("cols")
             if rows:
-                my.set_attr("rows", rows)
+                self.set_attr("rows", rows)
             if cols:
-                my.set_attr("cols", cols)
+                self.set_attr("cols", cols)
 
         browser = web.get_browser()
         if not width and not cols:
             width = 300
-            my.add_style("width", width)
+            self.add_style("width", width)
 
 
 
-        my.add_class("spt_input")
-        my.add_border()
+        self.add_class("spt_input")
+        self.add_border()
 
 
 
-    def get_display(my):
-        my.set_attr("name", my.get_input_name())
-        #my.add_style("font-family: Courier New")
+    def get_display(self):
+        self.set_attr("name", self.get_input_name())
+        #self.add_style("font-family: Courier New")
 
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
-        #my.add_border()
+        self.add_color("background", "background", 10)
+        self.add_color("color", "color")
+        #self.add_border()
 
 
-        rows = my.get_option("rows")
-        cols = my.get_option("cols")
+        rows = self.get_option("rows")
+        cols = self.get_option("cols")
         if not rows:
             rows = 3
-        my.set_attr("rows", rows)
+        self.set_attr("rows", rows)
 
         if not cols:
             cols = 50
 
-        my.set_attr("cols", cols)
+        self.set_attr("cols", cols)
 
-        if my.is_read_only():
-            my.set_attr('readonly', 'readonly')
-            if my.disabled_look == True:
-                #my.add_class('disabled')
-                my.add_color("background", "background", -10)
+        if self.is_read_only():
+            self.set_attr('readonly', 'readonly')
+            if self.disabled_look == True:
+                #self.add_class('disabled')
+                self.add_color("background", "background", -10)
         
         # value always overrides
-        value = my.kwargs.get("value")
+        value = self.kwargs.get("value")
         if not value:
-            value = my.get_value(for_display=True)
-        my.add(value)
+            value = self.get_value(for_display=True)
+        self.add(value)
 
-        #my.handle_mode()
-        if my.get_option("required") in [True, 'true']:
-            text_area = BaseInputWdg.get_class_display(my)
+        #self.handle_mode()
+        if self.get_option("required") in [True, 'true']:
+            text_area = BaseInputWdg.get_class_display(self)
             wdg = SpanWdg()
-            my._add_required(wdg)
+            self._add_required(wdg)
             wdg.add(text_area)
             return wdg
 
-        return super(TextAreaWdg,my).get_display()
+        return super(TextAreaWdg,self).get_display()
 
 
 
 class RadioWdg(BaseInputWdg):
-    def __init__(my,name=None, label=None):
-        super(RadioWdg,my).__init__(name,"input")
-        my.set_attr("type", "radio")
-        my.label = label
+    def __init__(self,name=None, label=None):
+        super(RadioWdg,self).__init__(name,"input")
+        self.set_attr("type", "radio")
+        self.label = label
 
-    def set_checked(my):
-        my.set_attr("checked", "1")
+    def set_checked(self):
+        self.set_attr("checked", "1")
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.set_attr("name", my.get_input_name())
-        my.add_class("spt_input")
+        self.set_attr("name", self.get_input_name())
+        self.add_class("spt_input")
 
         # This is a little confusing.  the option value is mapped to the
         # html attribute value, however, the value from get_value() is the
         # state of the element (on or off)
-        values = my.get_values(for_display=True)
+        values = self.get_values(for_display=True)
 
         # determine if this is checked
-        if my.name != None and len(values) != 0 \
-                and my.get_option("value") in values:
-            my.set_checked()
+        if self.name != None and len(values) != 0 \
+                and self.get_option("value") in values:
+            self.set_checked()
 
         # convert all of the options to attributes
-        for name, option in my.options.items():
-            my.set_attr(name,option)
+        for name, option in self.options.items():
+            self.set_attr(name,option)
 
-        if my.label:
+        if self.label:
             span = SpanWdg()
-            span.add(" %s" % my.label)
-            my.add(span)
+            span.add(" %s" % self.label)
+            self.add(span)
             span.add_style("top: 3px")
             span.add_style("position: relative")
 
-        return super(RadioWdg,my).get_display()
+        return super(RadioWdg,self).get_display()
 
 
 
 
 class CheckboxWdg(BaseInputWdg):
-    def __init__(my,name=None, label=None, css=None):
-        super(CheckboxWdg,my).__init__(name,"input", label)
-        my.set_attr("type", "checkbox")
-        my.label = label
-        my.css = css
+    def __init__(self,name=None, label=None, css=None):
+        super(CheckboxWdg,self).__init__(name,"input", label)
+        self.set_attr("type", "checkbox")
+        self.label = label
+        self.css = css
 
-        my.add_class("spt_input")
+        self.add_class("spt_input")
 
-        my.add_style("display: inline-block")
-        my.add_style("vertical-align: middle")
-        my.add_style("margin: 0")
+        self.add_style("display: inline-block")
+        self.add_style("vertical-align: middle")
+        self.add_style("margin: 0")
 
 
 
-    def set_default_checked(my):
+    def set_default_checked(self):
         ''' this is used for checkbox that has no value set'''
-        my.set_option("default", "on")
+        self.set_option("default", "on")
 
-    def set_checked(my):
-        my.set_option("checked", "1")
+    def set_checked(self):
+        self.set_option("checked", "1")
 
 
-    def is_checked(my, for_display=False):
+    def is_checked(self, for_display=False):
         # Checkbox needs special treatment when comes to getting values
-        values = my.get_values(for_display=for_display)
-        value_option = my._get_value_option()
+        values = self.get_values(for_display=for_display)
+        value_option = self._get_value_option()
         # FIXME if values is boolean, it will raise exception
         if value_option in values:
             return True
         else:
             return False
-        #return my.get_value() == my._get_value_option()
+        #return self.get_value() == self._get_value_option()
 
-    def _get_value_option(my):
-        value_option = my.get_option("value")
+    def _get_value_option(self):
+        value_option = self.get_option("value")
         if value_option == "":
             value_option = 'on'
         return value_option
 
-    def get_key(my):
-        class_path = Common.get_full_class_name(my)
-        key = "%s|%s" % (class_path, my.name)
+    def get_key(self):
+        class_path = Common.get_full_class_name(self)
+        key = "%s|%s" % (class_path, self.name)
         return key
    
-    def check_persistent_values(my, cgi_values):
+    def check_persistent_values(self, cgi_values):
         web = WebContainer.get_web()
-        if my.is_form_submitted():# and web.has_form_key(my.get_input_name):
+        if self.is_form_submitted():# and web.has_form_key(self.get_input_name):
             # if the form is submitted, then always use the submitted value
-            if not my.persistence_obj:
+            if not self.persistence_obj:
                 return False
-            class_path = Common.get_full_class_name(my.persistence_obj)
-            key = "%s|%s" % (class_path, my.name)
+            class_path = Common.get_full_class_name(self.persistence_obj)
+            key = "%s|%s" % (class_path, self.name)
             setting = WidgetSettings.get_by_key(key, auto_create=False)
             if setting == None:
                 return False
-            if not my.is_ajax(check_name=False):
-                my._set_persistent_values(cgi_values)
-            my.cached_values = cgi_values
+            if not self.is_ajax(check_name=False):
+                self._set_persistent_values(cgi_values)
+            self.cached_values = cgi_values
                 
             return cgi_values
         else:
@@ -896,20 +896,20 @@ class CheckboxWdg(BaseInputWdg):
 
    
 
-    def get_display(my):
-        my.set_attr("name", my.get_input_name())
+    def get_display(self):
+        self.set_attr("name", self.get_input_name())
 
         # This is a little confusing.  the option value is mapped to the
         # html attribute value, however, the value from get_value() is the
         # state of the element (on or off) or the "value" option
-        values = my.get_values(for_display=True)
+        values = self.get_values(for_display=True)
         # for multiple checkboxes using the same name
 
-        my.add_style("width", "16px", override=False)
-        my.add_style("height", "16px", override=False)
+        self.add_style("width", "16px", override=False)
+        self.add_style("height", "16px", override=False)
 
-        if my.is_read_only():
-            my.set_attr('disabled', 'disabled')
+        if self.is_read_only():
+            self.set_attr('disabled', 'disabled')
 
         if len(values) == 1:
             # skip boolean
@@ -917,60 +917,60 @@ class CheckboxWdg(BaseInputWdg):
             if value and not isinstance(value, bool) and '||' in value:
                 values = value.split('||')
         # determine if this is checked
-        value_option = my._get_value_option()
+        value_option = self._get_value_option()
         if values and len(values) != 0:
             if value_option in values:
-                my.set_checked()
+                self.set_checked()
             elif True in values: # for boolean columns
-                my.set_checked()
+                self.set_checked()
 
         # convert all of the options to attributes
-        for name, option in my.options.items():
-            my.set_attr(name,option)
+        for name, option in self.options.items():
+            self.set_attr(name,option)
 
-        my.handle_behavior()
+        self.handle_behavior()
 
-        if not my.label:
-            return super(CheckboxWdg, my).get_display()
+        if not self.label:
+            return super(CheckboxWdg, self).get_display()
         else:
-            cb = BaseInputWdg.get_class_display(my)
-            span = SpanWdg(cb, css=my.css)
-            span.add(my.label)
+            cb = BaseInputWdg.get_class_display(self)
+            span = SpanWdg(cb, css=self.css)
+            span.add(self.label)
             return span
 
-        return super(CheckboxWdg,my).get_display()
+        return super(CheckboxWdg,self).get_display()
 
-    def handle_behavior(my):
-        if my.persistence:
-            key = "%s|%s"%(Common.get_full_class_name(my.persistence_obj), my.name)
+    def handle_behavior(self):
+        if self.persistence:
+            key = "%s|%s"%(Common.get_full_class_name(self.persistence_obj), self.name)
             value = WidgetSettings.get_value_by_key(key)
      
             if value:
-                my.set_value(value)
+                self.set_value(value)
 
             behavior = {"type" : "click_up",
                     'propagate_evt': True,
                     "cbjs_preaction":
-                    "spt.input.save_selected(bvr, '%s','%s')"%(my.name, key)}
+                    "spt.input.save_selected(bvr, '%s','%s')"%(self.name, key)}
                     #"spt.api.Utility.save_widget_setting('%s',bvr.src_el.value)"%key}
-            #if my.change_cbjs_action:
-            #    behavior['cbjs_action'] = my.change_cbjs_action
-            my.add_behavior(behavior)
+            #if self.change_cbjs_action:
+            #    behavior['cbjs_action'] = self.change_cbjs_action
+            self.add_behavior(behavior)
 
 class FilterCheckboxWdg(CheckboxWdg):
     '''This composite checkbox acts as a filter and can be, for instance, 
         used in prefs area in TableWdg'''
-    def __init__(my,name=None, label=None, css=None ):
-        super(FilterCheckboxWdg,my).__init__(name, label=label, css=css)
-        #my.set_submit_onchange()
+    def __init__(self,name=None, label=None, css=None ):
+        super(FilterCheckboxWdg,self).__init__(name, label=label, css=css)
+        #self.set_submit_onchange()
         
-        my.set_persistence()
+        self.set_persistence()
        
     
 
-    def get_display(my):
+    def get_display(self):
         # order matters here
-        return super(FilterCheckboxWdg, my).get_display()
+        return super(FilterCheckboxWdg, self).get_display()
         
 
        
@@ -994,46 +994,51 @@ class SelectWdg(BaseInputWdg):
     ARGS_KEYS = {
     'values': {
         'description': 'A list of values separated by | that determine the actual values of the selection',
-        'order': 0,
+        'order': 1,
         'category': 'Options'
 
     },
     'labels': {
         'description': 'A list of values separated by | that determine the label of the selection',
 
-        'order': 1,
+        'order': 2,
         'category': 'Options'
     },
-     'values_expr': {
+
+
+    'values_expr': {
         'description': 'A list of values retrieved through an expression. e.g. @GET(prod/shot.code)',
         'type': 'TextAreaWdg',
-        'order': 2
+        'order': 3,
+        'category': 'Misc',
     },
     'labels_expr': {
         'description': 'A list of labels retrieved through an expression. e.g. @GET(prod/shot.name)',
         'type': 'TextAreaWdg',
-        'order': 3
+        'order': 2,
+        'category': 'Misc',
     },
     'mode_expr': {
         'description': 'Specify if it uses the current sObject as a starting point',
         'type': 'SelectWdg',
         'values': 'relative',
         'empty': 'true',
-        'order': 4,
+        'order': 3,
+        'category': 'Misc',
     },
     'empty': {
         'description': 'The label for an empty selection',
         #'default': '-- Select --',
         'type': 'SelectWdg',
         'values': 'true|false',
-        'order': 3,
+        'order': 4,
         'category': 'Options'
     },
     'default': {
         'description': 'The default selection value in an edit form. Can be a TEL variable.',
         'type': 'TextWdg',
         'category': 'Options',
-        'order': 2,
+        'order': 5,
     },
     'query': {
         'description': 'Query shorthand in the form of <search_type>|<value_column>|<label_column>"'
@@ -1050,87 +1055,87 @@ class SelectWdg(BaseInputWdg):
     }
 
 
-    def __init__(my, name=None, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, name=None, **kwargs):
+        self.kwargs = kwargs
         css = kwargs.get('css')
         label = kwargs.get('label')
         bs = kwargs.get('bs')
 
-        my.sobjects_for_options = None
-        my.empty_option_flag = False
-        my.empty_option_label, my.empty_option_value = (my.SELECT_LABEL, "")
-        my.append_list = []
-        my.values = []
-        my.labels = []
-        my.has_set_options = False
-        my.css = css
-        my.append_widget = None
-        super(SelectWdg,my).__init__(name, type="select", **kwargs)
+        self.sobjects_for_options = None
+        self.empty_option_flag = False
+        self.empty_option_label, self.empty_option_value = (self.SELECT_LABEL, "")
+        self.append_list = []
+        self.values = []
+        self.labels = []
+        self.has_set_options = False
+        self.css = css
+        self.append_widget = None
+        super(SelectWdg,self).__init__(name, type="select", **kwargs)
         
         # add the standard style class
-        my.add_class("inputfield")
-        my.add_class("spt_input")
+        self.add_class("inputfield")
+        self.add_class("spt_input")
 
         # BOOTSTRAP
         if bs != False:
-            my.add_class("form-control")
-            my.add_class("input-sm")
+            self.add_class("form-control")
+            self.add_class("input-sm")
 
 
 
-    def get_related_type(my):
+    def get_related_type(self):
         # In order to get the related type, the dom options need to have
         # been processed
-        if not my.has_set_options:
-            my.set_dom_options(is_run=False)
+        if not self.has_set_options:
+            self.set_dom_options(is_run=False)
 
-        return my.related_type
+        return self.related_type
 
 
-    def add_empty_option(my, label='---', value= ''):
+    def add_empty_option(self, label='---', value= ''):
         '''convenience function to an option with no value'''
-        my.empty_option_flag = True
-        my.empty_option_label, my.empty_option_value = label, value
+        self.empty_option_flag = True
+        self.empty_option_label, self.empty_option_value = label, value
 
-    def add_none_option(my):
-        my.append_option("-- %s --" %SelectWdg.NONE_MODE,\
+    def add_none_option(self):
+        self.append_option("-- %s --" %SelectWdg.NONE_MODE,\
                 SelectWdg.NONE_MODE)
 
-    def remove_empty_option(my):
-        my.empty_option_flag = False
+    def remove_empty_option(self):
+        self.empty_option_flag = False
 
-    def append_option(my, label, value):
-        my.append_list.append((label, value))
+    def append_option(self, label, value):
+        self.append_list.append((label, value))
 
-    def set_search_for_options(my, search, value_column=None, label_column=None):
+    def set_search_for_options(self, search, value_column=None, label_column=None):
         assert value_column != ""
         assert label_column != ""
         sobjects = search.do_search()
-        my.set_sobjects_for_options(sobjects,value_column,label_column)
+        self.set_sobjects_for_options(sobjects,value_column,label_column)
 
 
-    def set_sobjects_for_options(my,sobjects,value_column=None,label_column=None):
+    def set_sobjects_for_options(self,sobjects,value_column=None,label_column=None):
         if value_column == None:
-            my.value_column = my.name
+            self.value_column = self.name
         else:
-            my.value_column = value_column
+            self.value_column = value_column
 
         if label_column == None:
-            my.label_column = my.value_column
+            self.label_column = self.value_column
         else:
-            my.label_column = label_column
+            self.label_column = label_column
 
-        assert my.value_column
-        assert my.label_column
+        assert self.value_column
+        assert self.label_column
 
-        my.sobjects_for_options = sobjects
+        self.sobjects_for_options = sobjects
 
 
-    def _get_setting(my):
+    def _get_setting(self):
         ''' this check setting and add warnings if it's empty'''
         values_option = [] 
         labels_option = []
-        setting = my.get_option("setting")
+        setting = self.get_option("setting")
         if setting:
             from pyasm.prod.biz import ProdSetting
 
@@ -1140,7 +1145,7 @@ class SelectWdg(BaseInputWdg):
                 data_dict = {'key': setting}
                 prod_setting = ProdSetting.get_by_key(setting)
                 search_id = -1
-                setting_value = my.DEFAULT_SETTING.get(setting)
+                setting_value = self.DEFAULT_SETTING.get(setting)
                 if prod_setting:
                     if setting_value:
                         # use the default if available
@@ -1150,7 +1155,7 @@ class SelectWdg(BaseInputWdg):
                         labels_option = values_option
                     else:
                         # prompt the user to do it instead
-                        my._set_append_widget(prod_setting.get_id(), data_dict)
+                        self._set_append_widget(prod_setting.get_id(), data_dict)
                      
                 
                 # if it is a new insert
@@ -1162,7 +1167,7 @@ class SelectWdg(BaseInputWdg):
                         values_option = ProdSetting.get_seq_by_key(setting)
                         labels_option = values_option
                     else:
-                       my._set_append_widget(search_id, data_dict)
+                       self._set_append_widget(search_id, data_dict)
                 
             else:
                 # check if it is map
@@ -1178,7 +1183,7 @@ class SelectWdg(BaseInputWdg):
         return values_option, labels_option
   
 
-    def _set_append_widget(my, search_id, data_dict):
+    def _set_append_widget(self, search_id, data_dict):
         from web_wdg import ProdSettingLinkWdg
         prod_setting_link = ProdSettingLinkWdg(search_id)
         prod_setting_link.set_value_dict(data_dict) 
@@ -1186,66 +1191,66 @@ class SelectWdg(BaseInputWdg):
         # HACK: usually when there is an iframe, there is a widget value
         #if WebContainer.get_web().get_form_value('widget'):
         #    prod_setting_link.set_layout('plain')
-        my.append_widget = prod_setting_link
+        self.append_widget = prod_setting_link
 
-    def set_dom_options(my, is_run=True):
+    def set_dom_options(self, is_run=True):
         ''' set the dom options for the Select. It should only be called once
         or there will be some unexpected behaviour'''
         # get the values
-        my.values = []
-        labels_option = my.get_option("labels")
-        values_option = my.get_option("values")
+        self.values = []
+        labels_option = self.get_option("labels")
+        values_option = self.get_option("values")
         
         # if there are no values, check if there is a project setting
         # which will provide both values_option and labels_option
         if not values_option:
-            values_option, labels_option = my._get_setting()
+            values_option, labels_option = self._get_setting()
         
         if type(values_option) == types.ListType:
-            my.values.extend(values_option)
+            self.values.extend(values_option)
             
             
-        elif my.values != "":
-            my.values = string.split( my.get_option("values"), "|" )
+        elif self.values != "":
+            self.values = string.split( self.get_option("values"), "|" )
         else:
-            my.values = ["None"]
+            self.values = ["None"]
 
         # get the labels for the select options
         
-        my.labels = []
+        self.labels = []
         if type(labels_option) == types.ListType:
-            my.labels = labels_option[:]
+            self.labels = labels_option[:]
         elif labels_option != "":
-            my.labels = string.split( labels_option, "|" )
-            if len(my.values) != len(my.labels):
+            self.labels = string.split( labels_option, "|" )
+            if len(self.values) != len(self.labels):
                 raise InputException("values [%s] does not have the same number of elements as [%s]" % (`my.values`, `my.labels`))
 
         else:
-            my.labels = my.values[:]
+            self.labels = self.values[:]
 
-        query = my.get_option("query")
+        query = self.get_option("query")
         if query and query != "" and query.find("|") != -1:
             search_type, value, label = query.split("|")
             project_code = None
             search = None
 
-            current_sobj = my.get_current_sobject()
+            current_sobj = self.get_current_sobject()
             if current_sobj:
                 project_code = current_sobj.get_project_code()
             try:
                 search = Search(search_type, project_code=project_code)
-            except SearchException, e:
+            except SearchException as e:
                 # skip if there is an unregistered sType or the table does not exist in the db
                 if e.__str__().find('does not exist for database') != -1 or 'not registered' != -1:
-                    my.values = ['ERROR in query option. Remove it in Edit Mode > Other Options']
-                    my.labels =  my.values[:]
+                    self.values = ['ERROR in query option. Remove it in Edit Mode > Other Options']
+                    self.labels =  self.values[:]
                     return
         
 
-            query_filter = my.get_option("query_filter")
+            query_filter = self.get_option("query_filter")
             if query_filter:
                 search.add_where(query_filter)
-            query_limit = my.get_option("query_limit")
+            query_limit = self.get_option("query_limit")
             if query_limit:
                 search.add_limit(int(query_limit))
 
@@ -1258,35 +1263,35 @@ class SelectWdg(BaseInputWdg):
                 raise InputException("Query string for SelectWdg is malformed [%s]" % query)
 
             # store the related type
-            my.related_type = search_type
+            self.related_type = search_type
 
-            my.set_search_for_options(search,value,label)
+            self.set_search_for_options(search,value,label)
 
 
 
-        values_expr = my.get_option("values_expr")
+        values_expr = self.get_option("values_expr")
         if not values_expr:
-            values_expr = my.kwargs.get("values_expr")
+            values_expr = self.kwargs.get("values_expr")
 
-        labels_expr = my.get_option("labels_expr")
+        labels_expr = self.get_option("labels_expr")
         if not labels_expr:
-            labels_expr = my.kwargs.get("labels_expr")
+            labels_expr = self.kwargs.get("labels_expr")
 
-        mode_expr = my.get_option("mode_expr")
+        mode_expr = self.get_option("mode_expr")
         if not mode_expr:
-            mode_expr = my.kwargs.get("mode_expr")
+            mode_expr = self.kwargs.get("mode_expr")
         if values_expr:
             if mode_expr == 'relative':
-                sobjects = my.sobjects
+                sobjects = self.sobjects
                 if not sobjects:
-                    parent_wdg = my.get_parent_wdg()
+                    parent_wdg = self.get_parent_wdg()
                     if parent_wdg:
                         # use the search_key as a starting point if applicable
                         sk = parent_wdg.kwargs.get('search_key')
                         if sk:
                             sobjects = [Search.get_by_search_key(sk)]
                     else:
-                        sk = my.kwargs.get('search_key')
+                        sk = self.kwargs.get('search_key')
                         if sk:
                             sobjects = [Search.get_by_search_key(sk)]
 
@@ -1294,116 +1299,121 @@ class SelectWdg(BaseInputWdg):
                 sobjects = []
             try:
                 parser = ExpressionParser()
-                my.values = parser.eval(values_expr, sobjects=sobjects)
-            except Exception, e:
+                self.values = parser.eval(values_expr, sobjects=sobjects)
+            except Exception as e:
                 print "Expression error: ", str(e)
-                my.values = ['Error in values expression']
-                my.labels = my.values[:]
+                self.values = ['Error in values expression']
+                self.labels = self.values[:]
                 # don't raise anything yet until things are properly drawn
 				#raise InputException(e) 
 
             
             if labels_expr:
                 try:
-                    my.labels = parser.eval(labels_expr, sobjects=sobjects)
+                    self.labels = parser.eval(labels_expr, sobjects=sobjects)
                     # expression may return it as a string when doing concatenation is done on a 1-item list
-                    if isinstance(my.labels, basestring):
-                        my.labels = [my.labels]
-                except Exception, e:
+                    if isinstance(self.labels, basestring):
+                        self.labels = [self.labels]
+                except Exception as e:
                     print "Expression error: ", str(e)
-                    my.labels = ['Error in labels expression']
+                    self.labels = ['Error in labels expression']
             else:
-                my.labels = my.values[:]
+                self.labels = self.values[:]
 
             # create a tuple for sorting by label if it's a list
-            if my.values:
-                zipped = zip(my.values, my.labels)
+            if self.values:
+                zipped = zip(self.values, self.labels)
                 zipped = sorted(zipped, key=itemgetter(1))
                 unzipped = zip(*zipped)
-                my.values = list(unzipped[0])
-                my.labels = list(unzipped[1])
+                self.values = list(unzipped[0])
+                self.labels = list(unzipped[1])
            
         # if there is a search for options stored, then use these
-        if my.sobjects_for_options != None:
-            my.values = []
-            my.labels = [] 
-            for sobject in my.sobjects_for_options:
+        if self.sobjects_for_options != None:
+            self.values = []
+            self.labels = [] 
+            for sobject in self.sobjects_for_options:
                 # if there was a function call, use it
-                if my.value_column.find("()") != -1:
-                    my.values.append( eval("sobject.%s" % my.value_column ) )
+                if self.value_column.find("()") != -1:
+                    self.values.append( eval("sobject.%s" % self.value_column ) )
                 else:
-                    my.values.append(sobject.get_value(my.value_column, no_exception=True))
+                    self.values.append(sobject.get_value(self.value_column, no_exception=True))
 
 
-                if my.label_column.find("()") != -1:
-                    my.labels.append( eval("sobject.%s" % my.label_column ) )
+                if self.label_column.find("()") != -1:
+                    self.labels.append( eval("sobject.%s" % self.label_column ) )
                 else:
-                    my.labels.append(sobject.get_value(my.label_column, no_exception=True))
+                    self.labels.append(sobject.get_value(self.label_column, no_exception=True))
 
         # manually add extra values and labes
-        extra_values = my.get_option("extra_values") 
+        extra_values = self.get_option("extra_values") 
         if extra_values:
             extra_values = extra_values.split("|")
-            my.values.extend(extra_values)
+            self.values.extend(extra_values)
 
-            extra_labels = my.get_option("extra_labels") 
+            extra_labels = self.get_option("extra_labels") 
             if extra_labels:
                 extra_labels = "|".split(extra_labels)
-                my.labels.extend(extra_labels)
+                self.labels.extend(extra_labels)
             else:
-                my.labels.extend(extra_values)
+                self.labels.extend(extra_values)
 
         
         # add empty option
-        is_empty = my.get_option("empty") not in ['','false'] or my.get_option("empty_label")
-        if my.empty_option_flag or is_empty:
-            my.values.insert(0, my.empty_option_value)
+        is_empty = self.get_option("empty") not in ['','false'] or self.get_option("empty_label")
+        if self.empty_option_flag or is_empty:
+            self.values.insert(0, self.empty_option_value)
             # empty_label takes prescedence over empty (boolean)
             
-            if my.get_option("empty_label"):
-                my.labels.insert(0, my.get_option("empty_label"))
+            if self.get_option("empty_label"):
+                self.labels.insert(0, self.get_option("empty_label"))
             else:
-                my.labels.insert(0, my.empty_option_label)
+                self.labels.insert(0, self.empty_option_label)
 
         # append any custom ones
-        if my.append_list:
-            for label, value in my.append_list:
-                my.values.append(value)
-                my.labels.append(label)
+        if self.append_list:
+            for label, value in self.append_list:
+                self.values.append(value)
+                self.labels.append(label)
                 
         if is_run:
-            my.has_set_options = True
+            self.has_set_options = True
                 
-    def get_select_values(my):
-        if not my.has_set_options:
-            my.set_dom_options()
-        return my.labels, my.values
+    def get_select_values(self):
+        if not self.has_set_options:
+            self.set_dom_options()
+        return self.labels, self.values
 
 
-    def init(my):
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
+    def init(self):
+        self.add_color("background", "background", 10)
+        self.add_color("color", "color")
 
 
-    def get_display(my):
-        class_name = my.kwargs.get('class')
+    def get_display(self):
+        class_name = self.kwargs.get('class')
         if class_name:
-            my.add_class(class_name)
+            self.add_class(class_name)
 
-        if my.is_read_only():
+        if self.is_read_only():
             # don't disable it, just have to look disabled
-            my.set_attr('disabled', 'disabled')
-            my.add_class('disabled')
-        assert my.get_input_name() != None
+            self.set_attr('disabled', 'disabled')
+            self.add_class('disabled')
+        assert self.get_input_name() != None
 
-        my.set_attr("name", my.get_input_name())
+        self.set_attr("name", self.get_input_name())
 
-        width = my.get_option("width")
+        width = self.get_option("width")
         if width:
-            my.add_style("width: %s" % width)
+            self.add_style("width: %s" % width)
 
-        my.add_border()
-        #my.add_style("margin: 0px 5px")
+        border_mode = self.get_option("border_mode") or "box"
+        if border_mode == "box":
+            self.add_border()
+        else:
+            self.add_style("border", "none")
+
+        #self.add_style("margin: 0px 5px")
 
         # default select element size to max of 20 ...
         sz = '20'
@@ -1415,86 +1425,86 @@ class SelectWdg(BaseInputWdg):
             sz = select_element_size
 
         # see if the configuration of this widget specified a SELECT size (local config overrides site-wide) ...
-        wdg_config_select_size = my.get_option("select_size")
+        wdg_config_select_size = self.get_option("select_size")
         if wdg_config_select_size:
             sz = wdg_config_select_size
 
         # store configured size of SELECT to be used later on the client side to set the
         # SELECT drop down size ...
-        my.set_attr('spt_select_size',sz)
+        self.set_attr('spt_select_size',sz)
 
 
         # assign all the labels and values
-        if not my.has_set_options:
-            my.set_dom_options()
+        if not self.has_set_options:
+            self.set_dom_options()
 
         # get the current value for this element
-        current_values = my.get_values(for_display=True)
-        #if not current_value and my.has_option("default"):
-            #current_value = my.get_option("default")
+        current_values = self.get_values(for_display=True)
+        #if not current_value and self.has_option("default"):
+            #current_value = self.get_option("default")
         # go through each value and set the select options
         selection_found = False
-        for i in range(0, len(my.values)):
-            if i >= len(my.labels): break
-            value = my.values[i]
-            label = my.labels[i]
+        for i in range(0, len(self.values)):
+            if i >= len(self.labels): break
+            value = self.values[i]
+            label = self.labels[i]
             option = HtmlElement("option")
 
             # always compare string values.  Not sure if this is a good
             # idea, but it should work for most cases
-            if my._is_selected(value, current_values):
+            if self._is_selected(value, current_values):
                 option.set_attr("selected", "selected")
                 selection_found = True
 
             option.set_attr("value", value)
             option.add(label)
 
-            my.add(option)
+            self.add(option)
 
         # if no valid values are found, then show the current value in red
-        show_missing = my.get_option("show_missing")
+        show_missing = self.get_option("show_missing")
         if show_missing in ['false', False]:
             show_missing = False
         else:
             show_missing = True
 
-        if show_missing and not selection_found: #and (my.empty_option_flag or my.get_option("empty") != ""):
+        if show_missing and not selection_found: #and (self.empty_option_flag or self.get_option("empty") != ""):
             option = HtmlElement("option")
-            value = my.get_value()
+            value = self.get_value()
             # this converts potential int to string
-            my.values = [Common.process_unicode_string(x) for x in my.values]
-            if value and value not in my.values:
+            self.values = [Common.process_unicode_string(x) for x in self.values]
+            if value and value not in self.values:
                 option.add("%s" % value)
                 option.set_attr("value", value)
                 option.add_style("color", "red")
                 option.set_attr("selected", "selected")
-                my.add_style("color", "#f44")
-                my.add(option)
+                self.add_style("color", "#f44")
+                self.add(option)
             
 
-        my.handle_behavior()
+        self.handle_behavior()
         
 
        
-        if not my.label and not my.append_widget:
-            if my.kwargs.get("required") in [True, 'true']:
-                sel = BaseInputWdg.get_class_display(my)
+        if not self.label and not self.append_widget:
+            if self.kwargs.get("required") in [True, 'true']:
+                sel = BaseInputWdg.get_class_display(self)
                 wdg = SpanWdg()
-                my._add_required(wdg, offset_x=6)
+                self._add_required(wdg, offset_x=6)
                 wdg.add(sel)
                 return wdg
             else:
-                return super(SelectWdg, my).get_display()
+                return super(SelectWdg, self).get_display()
         else:
-            sel = BaseInputWdg.get_class_display(my)
-            span = SpanWdg(my.label, css=my.css)
+            sel = BaseInputWdg.get_class_display(self)
+            span = SpanWdg(self.label, css=self.css)
             span.add(sel)
-            span.add(my.append_widget)
+            span.add(self.append_widget)
             return span
             
 
 
-    def _is_selected(my, value, current_values):
+    def _is_selected(self, value, current_values):
         if current_values:
 
             if not isinstance(value, basestring):
@@ -1508,26 +1518,26 @@ class SelectWdg(BaseInputWdg):
             return False
 
 
-    def handle_behavior(my):
+    def handle_behavior(self):
         # if this interferes with something else, please leave a comment so it can be fixed.. Similar logic is found in FilterCheckboxWdg and FilterTextWdg
 
-        if my.persistence:
-            key = my.get_key()
+        if self.persistence:
+            key = self.get_key()
             value = WidgetSettings.get_value_by_key(key)
             if value:
-                my.set_value(value)
+                self.set_value(value)
 
             behavior = {"type" : "change",
                     "cbjs_preaction":\
                     "spt.api.Utility.save_widget_setting('%s',bvr.src_el.value)"%key}
-            if my.change_cbjs_action:
-                behavior['cbjs_action'] = my.change_cbjs_action
-            my.add_behavior(behavior)
+            if self.change_cbjs_action:
+                behavior['cbjs_action'] = self.change_cbjs_action
+            self.add_behavior(behavior)
 
 
-        onchange = my.get_option("onchange")
+        onchange = self.get_option("onchange")
         if onchange:
-            my.add_behavior( {
+            self.add_behavior( {
                 'type': 'change',
                 'cbjs_action': onchange
             } )
@@ -1536,29 +1546,29 @@ class SelectWdg(BaseInputWdg):
 
 
 class FilterSelectWdg(SelectWdg):
-    def __init__(my, name=None, label='', css=None):
-        super(FilterSelectWdg,my).__init__(name, label=label, css=css)
+    def __init__(self, name=None, label='', css=None):
+        super(FilterSelectWdg,self).__init__(name, label=label, css=css)
         
-        my.set_submit_onchange()
-        my.set_persistence()
+        self.set_submit_onchange()
+        self.set_persistence()
        
-    def get_display(my):
-        return super(FilterSelectWdg, my).get_display()
+    def get_display(self):
+        return super(FilterSelectWdg, self).get_display()
       
 class ActionSelectWdg(SelectWdg):
-    def __init__(my,name=None):
-        super(ActionSelectWdg,my).__init__(name)
-        my.add_class("action")
+    def __init__(self,name=None):
+        super(ActionSelectWdg,self).__init__(name)
+        self.add_class("action")
        
 
 
 class MultiSelectWdg(SelectWdg):
-    def __init__(my,name=None, label='', css=None):
-        super(MultiSelectWdg,my).__init__(name, label=label, css=css)
-        my.set_attr("multiple", "1")
-        my.set_attr("size", "6")
+    def __init__(self,name=None, label='', css=None):
+        super(MultiSelectWdg,self).__init__(name, label=label, css=css)
+        self.set_attr("multiple", "1")
+        self.set_attr("size", "6")
 
-    def _is_selected(my, value, current_values):
+    def _is_selected(self, value, current_values):
         if not current_values:
             return False
         # if there is only one value, then try and make the assumption that
@@ -1581,193 +1591,193 @@ class ItemsNavigatorWdg(HtmlElement):
     DETAIL = "detail_style"
     LESS_DETAIL = "less_detail_style"
 
-    def __init__(my, label, max_length, step, refresh=True, max_items=100):
+    def __init__(self, label, max_length, step, refresh=True, max_items=100):
         assert isinstance(max_length, int) and step > 0
         if max_length < 0:
             max_length = 0
-        my.max_length = max_length
-        my.step = step
-        my.label = label
-        my.show_label = True
-        my.style = my.DETAIL
-        my.refresh = refresh
-        my.refresh_script = ''
-        my.select = SelectWdg(my.label)
-        my.select.add_color("background-color", "background", -8)
-        my.select.add_style("font-size: 0.9em")
-        my.select.add_style("margin-top: 3px")
-        my.select.set_persist_on_submit()
-        my.max_items = max_items
-        super(ItemsNavigatorWdg, my).__init__('span')
+        self.max_length = max_length
+        self.step = step
+        self.label = label
+        self.show_label = True
+        self.style = self.DETAIL
+        self.refresh = refresh
+        self.refresh_script = ''
+        self.select = SelectWdg(self.label)
+        self.select.add_color("background-color", "background", -8)
+        self.select.add_style("font-size: 0.9em")
+        self.select.add_style("margin-top: 3px")
+        self.select.set_persist_on_submit()
+        self.max_items = max_items
+        super(ItemsNavigatorWdg, self).__init__('span')
 
-    def set_style(my, style):
-        my.style = style
+    def set_style(self, style):
+        self.style = style
     
-    def set_refresh_script(my, script):
-        my.refresh_script = script
+    def set_refresh_script(self, script):
+        self.refresh_script = script
 
-    def get_display(my):
-        if not my.refresh:
-            my.select.add_event('onchange', my.refresh_script)
+    def get_display(self):
+        if not self.refresh:
+            self.select.add_event('onchange', self.refresh_script)
 
-        list_num = int(my.max_length / my.step)
+        list_num = int(self.max_length / self.step)
         value_list = []
         label_list = []
 
         # set limit
-        if list_num > my.max_items:
-            past_max = list_num - my.max_items
-            list_num = my.max_items 
+        if list_num > self.max_items:
+            past_max = list_num - self.max_items
+            list_num = self.max_items 
         else:
             past_max = 0
        
         for x in xrange(list_num):
-            value_list.append("%s - %s" %(x* my.step + 1, (x+1) * my.step))
+            value_list.append("%s - %s" %(x* self.step + 1, (x+1) * self.step))
 
         # handle the last item
         if not past_max:
-            if list_num  * my.step + 1 <= my.max_length:
-                value_list.append("%s - %s" %(list_num * my.step + 1,\
-                    my.max_length ))
+            if list_num  * self.step + 1 <= self.max_length:
+                value_list.append("%s - %s" %(list_num * self.step + 1,\
+                    self.max_length ))
         else:
             value_list.append( "+ %s more" % past_max)
 
 
-        if my.style == my.DETAIL:
+        if self.style == self.DETAIL:
             label_list = value_list
         else:
             for x in xrange(list_num):
                 label_list.append("Page %s" %(x+1) )
-            if list_num  * my.step + 1 <= my.max_length:
+            if list_num  * self.step + 1 <= self.max_length:
                 label_list.append("Page %s" % (list_num+1))
            
-        my.select.add_empty_option(my.select.SELECT_LABEL, '')
-        my.select.set_option("values", value_list)
-        my.select.set_option("labels", label_list)
-        if my.max_length < my.step:
-            my.step = my.max_length
-        my.select.set_option("default", "%s - %s" %(1, my.step))
+        self.select.add_empty_option(self.select.SELECT_LABEL, '')
+        self.select.set_option("values", value_list)
+        self.select.set_option("labels", label_list)
+        if self.max_length < self.step:
+            self.step = self.max_length
+        self.select.set_option("default", "%s - %s" %(1, self.step))
 
-        if my.show_label:
-            my.add("%s:" %my.label)
+        if self.show_label:
+            self.add("%s:" %self.label)
 
-        my.add(my.select)
-        return super(ItemsNavigatorWdg, my).get_display() 
+        self.add(self.select)
+        return super(ItemsNavigatorWdg, self).get_display() 
    
-    def set_display_label(my, visible=True):
-        my.show_label = visible
+    def set_display_label(self, visible=True):
+        self.show_label = visible
         
-    def set_value(my, value):
-        my.select.set_value(value)
+    def set_value(self, value):
+        self.select.set_value(value)
 
-    def get_value(my):
-        return my.select.get_value()
+    def get_value(self):
+        return self.select.get_value()
 
 
 
 class ButtonWdg(BaseInputWdg):
-    def __init__(my,name=None):
-        super(ButtonWdg,my).__init__(name,"input")
-        #my.add_style("background-color: #f0f0f0")
+    def __init__(self,name=None):
+        super(ButtonWdg,self).__init__(name,"input")
+        #self.add_style("background-color: #f0f0f0")
 
-    def get_display(my):
-        my.set_attr("type", "button")
-        my.set_attr("name", my.get_input_name())
+    def get_display(self):
+        self.set_attr("type", "button")
+        self.set_attr("name", self.get_input_name())
 
-        value = my.name
-        my.set_attr("value",value)
-        return super(ButtonWdg,my).get_display()
+        value = self.name
+        self.set_attr("value",value)
+        return super(ButtonWdg,self).get_display()
 
 
 class SubmitWdg(BaseInputWdg):
-    def __init__(my,name=None,value=None):
-        super(SubmitWdg,my).__init__(name, "input")
-        my.add_style("background-color: #f0f0f0")
-        my.value = value
+    def __init__(self,name=None,value=None):
+        super(SubmitWdg,self).__init__(name, "input")
+        self.add_style("background-color: #f0f0f0")
+        self.value = value
 
-    def get_display(my):
-        my.set_attr("type", "submit")
-        my.set_attr("name", my.get_input_name())
+    def get_display(self):
+        self.set_attr("type", "submit")
+        self.set_attr("name", self.get_input_name())
 
-        if my.value == None:
-            my.value = my.name
+        if self.value == None:
+            self.value = self.name
 
-        my.set_attr("value",my.value)
-        return super(SubmitWdg,my).get_display()
+        self.set_attr("value",self.value)
+        return super(SubmitWdg,self).get_display()
 
 
 class ResetWdg(BaseInputWdg):
-    def __init__(my,name=None):
-        super(ResetWdg,my).__init__(name, "input")
+    def __init__(self,name=None):
+        super(ResetWdg,self).__init__(name, "input")
 
-    def get_display(my):
-        my.set_attr("type", "reset")
-        my.set_attr("name", my.get_input_name())
+    def get_display(self):
+        self.set_attr("type", "reset")
+        self.set_attr("name", self.get_input_name())
 
-        return super(ResetWdg,my).get_display()
+        return super(ResetWdg,self).get_display()
 
 
 
 class PasswordWdg(BaseInputWdg):
-    def __init__(my,name=None):
-        super(PasswordWdg,my).__init__(name,"input")
-        my.css = "inputfield"
-        my.add_class(my.css)
-        my.add_class("spt_input")
-        my.add_color("background", "background", 10)
-        my.add_color("color", "color")
-        my.add_style("border: solid 1px %s" % my.get_color("border_color") )
-        #my.add_style("width: 200px") 
+    def __init__(self,name=None):
+        super(PasswordWdg,self).__init__(name,"input")
+        self.css = "inputfield"
+        self.add_class(self.css)
+        self.add_class("spt_input")
+        self.add_color("background", "background", 10)
+        self.add_color("color", "color")
+        self.add_style("border: solid 1px %s" % self.get_color("border_color") )
+        #self.add_style("width: 200px") 
 
-    def get_display(my):
-        my.set_attr("type", "password")
-        my.set_attr("name", my.get_input_name())
+    def get_display(self):
+        self.set_attr("type", "password")
+        self.set_attr("name", self.get_input_name())
 
-        my.add_class(my.css)
-        return super(PasswordWdg,my).get_display()
+        self.add_class(self.css)
+        return super(PasswordWdg,self).get_display()
 
 
 
 
 
 class HiddenWdg(BaseInputWdg):
-    def __init__(my,name=None, value=''):
-        super(HiddenWdg,my).__init__(name,"input")
-        my.value = value
+    def __init__(self,name=None, value=''):
+        super(HiddenWdg,self).__init__(name,"input")
+        self.value = value
 
-    def get_title(my):
+    def get_title(self):
         return None
 
-    def get_display(my):
-        if my.options.get("value"):
-            my.value = my.options.get("value")
+    def get_display(self):
+        if self.options.get("value"):
+            self.value = self.options.get("value")
 
-        my.set_attr("type", "hidden")
-        my.set_attr("name", my.get_input_name())
-        my.set_attr("value", my.get_value(for_display=True))
+        self.set_attr("type", "hidden")
+        self.set_attr("name", self.get_input_name())
+        self.set_attr("value", self.get_value(for_display=True))
 
-        my.add_class("spt_input")
+        self.add_class("spt_input")
 
-        return super(HiddenWdg,my).get_display()
+        return super(HiddenWdg,self).get_display()
 
 
 class NoneWdg(BaseInputWdg):
     '''An empty widget'''
-    def __init__(my,name=None):
-        super(NoneWdg,my).__init__(name)
+    def __init__(self,name=None):
+        super(NoneWdg,self).__init__(name)
 
-    def get_title(my):
-        if my.is_read_only():
+    def get_title(self):
+        if self.is_read_only():
             
-            return super(NoneWdg, my).get_title()
+            return super(NoneWdg, self).get_title()
         else:
             return ''
 
-    def get_display(my):
-        if my.is_read_only():
-            my.set_attr('readonly', 'readonly')
-            my.add(my.get_value())
-            return super(NoneWdg, my).get_display() 
+    def get_display(self):
+        if self.is_read_only():
+            self.set_attr('readonly', 'readonly')
+            self.add(self.get_value())
+            return super(NoneWdg, self).get_display() 
         else:
             return ''
 
@@ -1775,15 +1785,15 @@ class NoneWdg(BaseInputWdg):
 class ThumbInputWdg(BaseInputWdg):
     '''Wrapper around the thumb widget, so that it can be display in the
     input form'''
-    def __init__(my,name=None):
-        super(ThumbInputWdg,my).__init__(name)
+    def __init__(self,name=None):
+        super(ThumbInputWdg,self).__init__(name)
 
-    def get_title(my):
+    def get_title(self):
         return '&nbsp;'
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             icon_path = IconWdg.get_icon_path("NO_IMAGE")
             img= "<img src="+icon_path+"></img>"
@@ -1805,9 +1815,9 @@ class ThumbInputWdg(BaseInputWdg):
         icon.set_name(column)
         icon.set_show_orig_icon(True)
         icon.set_show_filename(True)
-        if my.get_option('latest_icon') == 'true':
+        if self.get_option('latest_icon') == 'true':
             icon.set_show_latest_icon(True)
-        icon.set_sobject( my.get_current_sobject() )
+        icon.set_sobject( self.get_current_sobject() )
         return icon.get_display()
 
 
@@ -1816,37 +1826,37 @@ class ThumbInputWdg(BaseInputWdg):
 
 
 class SimpleUploadWdg(BaseInputWdg):
-    def __init__(my,name=None):
-        super(SimpleUploadWdg,my).__init__(name)
+    def __init__(self,name=None):
+        super(SimpleUploadWdg,self).__init__(name)
 
-    def get_display(my):
+    def get_display(self):
        
         input = HtmlElement.input()
         input.set_attr("type","file")
-        input.set_attr("name",my.get_input_name())
+        input.set_attr("name",self.get_input_name())
         input.add_class("inputfield")
-        my.add(input)
+        self.add(input)
 
 
-        context = my.get_option("context")
+        context = self.get_option("context")
         if context == "":
             context = Snapshot.get_default_context()
-        context_input = HiddenWdg("%s|context" % my.get_input_name(), context)
-        my.add(context_input)
+        context_input = HiddenWdg("%s|context" % self.get_input_name(), context)
+        self.add(context_input)
 
 
         # override the column
-        column = my.get_option("column")
+        column = self.get_option("column")
         if column != "":
-            column_input = HiddenWdg("%s|column" % my.get_input_name(), column)
-            my.add(column_input)
+            column_input = HiddenWdg("%s|column" % self.get_input_name(), column)
+            self.add(column_input)
 
         # create an event that will trigger a copy to handoff
         """
         web = WebContainer.get_web()
         handoff_dir = web.get_client_handoff_dir()
-        path_hidden = HiddenWdg("%s|path" % my.get_input_name(), "")
-        my.add(path_hidden)
+        path_hidden = HiddenWdg("%s|path" % self.get_input_name(), "")
+        self.add(path_hidden)
         script = HtmlElement.script('''
         function foo() {
             var handoff_dir = '%s'
@@ -1869,64 +1879,64 @@ class SimpleUploadWdg(BaseInputWdg):
             //alert('move: ' + to_path)
             //Applet.move_file(path, to_path)
         }
-        ''' % (handoff_dir, my.get_input_name(), my.get_input_name() ) )
-        my.add(script)
+        ''' % (handoff_dir, self.get_input_name(), self.get_input_name() ) )
+        self.add(script)
         from pyasm.widget import GeneralAppletWdg
-        my.add(GeneralAppletWdg())
+        self.add(GeneralAppletWdg())
 
         event_container = WebContainer.get_event_container()
         event_container.add_listener('sthpw:submit', 'foo()')
         """
 
 
-        return super(SimpleUploadWdg,my).get_display()
+        return super(SimpleUploadWdg,self).get_display()
 
 
 
 
 
 class UploadWdg(BaseInputWdg):
-    def __init__(my,name=None):
-        super(UploadWdg,my).__init__(name)
+    def __init__(self,name=None):
+        super(UploadWdg,self).__init__(name)
 
-    def add_upload(my, table, name, is_required=False):
+    def add_upload(self, table, name, is_required=False):
         span = SpanWdg()
         if is_required:
-            my._add_required(span)
+            self._add_required(span)
         
         table.add_row()
         span.add("File (%s)" %name)
         table.add_cell(span)
         input = HtmlElement.input()
         input.set_attr("type","file")
-        input.set_attr("name", my.get_input_name(name))
+        input.set_attr("name", self.get_input_name(name))
         input.set_attr("size", "40")
         
         table.add_cell(input)
     
 
-    def get_display(my):
+    def get_display(self):
 
         icon_id = 'upload_div'
         div = DivWdg()
 
-        if my.get_option('upload_type') == 'arbitrary':
+        if self.get_option('upload_type') == 'arbitrary':
             counter = HiddenWdg('upload_counter','0')
             div.add(counter)
             icon = IconButtonWdg('add upload', icon=IconWdg.ADD)
             icon.set_id(icon_id)
             icon.add_event('onclick', "Common.add_upload_input('%s','%s','upload_counter')" \
-                %(icon_id, my.get_input_name()))
+                %(icon_id, self.get_input_name()))
             div.add(icon)
         
         table = Table()
         table.set_class("minimal")
         table.add_style("font-size: 0.8em")
 
-        names = my.get_option('names')
-        required = my.get_option('required')
+        names = self.get_option('names')
+        required = self.get_option('required')
         if not names:
-            my.add_upload(table, my.name)
+            self.add_upload(table, self.name)
         else:
             names = names.split('|')
             if required:
@@ -1943,15 +1953,15 @@ class UploadWdg(BaseInputWdg):
                      is_required = required[idx] == 'true'
                  else:
                      is_required = False
-                 my.add_upload(table, name, is_required)
+                 self.add_upload(table, name, is_required)
 
         table.add_row()
         
 
-        context_option = my.get_option('context')
-        pipeline_option = my.get_option('pipeline')
-        setting_option = my.get_option('setting')
-        context_name = "%s|context" % my.get_input_name()
+        context_option = self.get_option('context')
+        pipeline_option = self.get_option('pipeline')
+        setting_option = self.get_option('setting')
+        context_name = "%s|context" % self.get_input_name()
         text = None 
         span1 = SpanWdg("Context", id='context_mode')
         span2 = SpanWdg("Context<br/>/Subcontext", id='subcontext_mode')
@@ -1964,7 +1974,7 @@ class UploadWdg(BaseInputWdg):
             swap = SwapDisplayWdg()
             table.add_data(SpanWdg(swap, css='small'))
             swap.set_display_widgets(StringWdg('[+]'), StringWdg('[-]'))
-            subcontext_name = "%s|subcontext" % my.get_input_name()
+            subcontext_name = "%s|subcontext" % self.get_input_name()
             subcontext = SpanWdg('/ ', css='small')
             subcontext.add(TextWdg(subcontext_name))
             subcontext.add_style('display','none')
@@ -1984,7 +1994,7 @@ class UploadWdg(BaseInputWdg):
             table.add_data(subcontext)
             
         elif pipeline_option:
-            sobject = my.sobjects[0]
+            sobject = self.sobjects[0]
             pipeline = Pipeline.get_by_sobject(sobject)
             context_names = []
             process_names = pipeline.get_process_names(recurse=True)
@@ -2001,12 +2011,12 @@ class UploadWdg(BaseInputWdg):
             hint = HintWdg('If not specified, the default is [publish]')
             table.add_data(hint)
       
-        revision_cb = CheckboxWdg('%s|is_revision' %my.get_input_name(),\
+        revision_cb = CheckboxWdg('%s|is_revision' %self.get_input_name(),\
             label='is revision', css='med')
         table.add_data(revision_cb)
         table.add_row()
         table.add_cell("Comment")
-        textarea = TextAreaWdg("%s|description"% my.get_input_name())
+        textarea = TextAreaWdg("%s|description"% self.get_input_name())
         table.add_cell(textarea)
         div.add(table)
 
@@ -2017,15 +2027,15 @@ class UploadWdg(BaseInputWdg):
 class MultiUploadWdg(BaseInputWdg):
     UPLOAD_ID = "upload"
     
-    def __init__(my,name=None):
-        super(MultiUploadWdg,my).__init__(name)
+    def __init__(self,name=None):
+        super(MultiUploadWdg,self).__init__(name)
 
 
-    def get_display(my):
+    def get_display(self):
 
         # put in a default name
-        if my.name == None:
-            my.name = "upload_files"
+        if self.name == None:
+            self.name = "upload_files"
        
         widget = Widget()
 
@@ -2043,7 +2053,7 @@ class MultiUploadWdg(BaseInputWdg):
                 return true
             }
             
-            ''' % (my.UPLOAD_ID,my.name) ))
+            ''' % (self.UPLOAD_ID,self.name) ))
        
         # bind this to the edit button
         event = WebContainer.get_event("sthpw:submit")
@@ -2059,7 +2069,7 @@ class MultiUploadWdg(BaseInputWdg):
         applet.set_attr("archive", "Upload-latest.jar")
         applet.set_attr("width", "450")
         applet.set_attr("height", "120")
-        applet.set_attr("id", my.UPLOAD_ID)
+        applet.set_attr("id", self.UPLOAD_ID)
         
         # create param for applet
         param = HtmlElement("param")
@@ -2072,8 +2082,8 @@ class MultiUploadWdg(BaseInputWdg):
 
         # hidden element which fills in the file names that were
         # uploaded
-        hidden = HiddenWdg(my.name)
-        hidden.set_attr('id', my.name)
+        hidden = HiddenWdg(self.name)
+        hidden.set_attr('id', self.name)
         widget.add(hidden)
 
         return widget
@@ -2083,10 +2093,10 @@ class MultiUploadWdg(BaseInputWdg):
 
 class DownloadWdg(BaseInputWdg):
 
-    def __init__(my,name=None):
-        super(DownloadWdg,my).__init__(name)
+    def __init__(self,name=None):
+        super(DownloadWdg,self).__init__(name)
 
-    def get_display(my):
+    def get_display(self):
 
         context_url = WebContainer.get_web().get_context_url()
 
@@ -2107,14 +2117,14 @@ class DownloadWdg(BaseInputWdg):
         param.set_attr("value","true")
 
         applet.add(param)
-        my.add(applet)
+        self.add(applet)
 
-        my.do_download()
+        self.do_download()
 
-        return super(DownloadWdg,my).get_display()
+        return super(DownloadWdg,self).get_display()
 
 
-    def do_download(my):
+    def do_download(self):
 
         # get all of the files to download
         web = WebContainer.get_web()
@@ -2136,7 +2146,7 @@ class DownloadWdg(BaseInputWdg):
                 sub_dir = ""
 
 
-            my._download_sobject(sobject,sub_dir)
+            self._download_sobject(sobject,sub_dir)
 
             # for each shot download all of the dependent files
             if search_type.startswith("flash/shot"):
@@ -2147,10 +2157,10 @@ class DownloadWdg(BaseInputWdg):
 
                     asset_sub_dir = "%s/design" % sub_dir
 
-                    my._download_sobject(asset, asset_sub_dir)
+                    self._download_sobject(asset, asset_sub_dir)
 
 
-    def _download_sobject(my, sobject, sub_dir):
+    def _download_sobject(self, sobject, sub_dir):
 
         web = WebContainer.get_web()
         to_dir = web.get_local_dir()
@@ -2169,35 +2179,35 @@ class DownloadWdg(BaseInputWdg):
             script = HtmlElement.script("download.do_download('%s','%s')"%\
                 (web_path,to_path))
 
-            my.add(script)
+            self.add(script)
 
 
 # DEPRECATED
 class CalendarWdg(BaseInputWdg):
     ''' this can be instantiated multiple times in a page'''
-    def __init__(my,name=None,id=None):
+    def __init__(self,name=None,id=None):
 
-        my.id = id
-        my.cal_options = {}
-        my.on_wdg = None
-        my.trigger = my.generate_unique_id("f_trigger_c")
+        self.id = id
+        self.cal_options = {}
+        self.on_wdg = None
+        self.trigger = self.generate_unique_id("f_trigger_c")
 
-        super(CalendarWdg,my).__init__(name,"div")
+        super(CalendarWdg,self).__init__(name,"div")
 
-    def set_cal_option(my, name, value):
-        my.cal_options[name] = value
+    def set_cal_option(self, name, value):
+        self.cal_options[name] = value
 
-    def set_on_wdg(my, widget):
-        my.on_wdg = widget
-        my.on_wdg.set_id(my.trigger)
-        my.on_wdg.add_class("hand")
+    def set_on_wdg(self, widget):
+        self.on_wdg = widget
+        self.on_wdg.set_id(self.trigger)
+        self.on_wdg.add_class("hand")
         
         
 
-    def class_init(my):
+    def class_init(self):
         
         if WebContainer.get_web().is_IE():
-            my.add( '''
+            self.add( '''
             <!-- main calendar program -->
             <script src="/context/javascript/jscalendar/calendar.js"></script>
 
@@ -2211,9 +2221,9 @@ lines of code. -->
             ''' )
             return
 
-        my.add("<!-- main script for calendar -->")
-        my.add("<!-- language for the calendar -->")
-        my.add("<!-- the following script defines the Calendar.setup helper function -->")
+        self.add("<!-- main script for calendar -->")
+        self.add("<!-- language for the calendar -->")
+        self.add("<!-- the following script defines the Calendar.setup helper function -->")
         script = []
         script.append("var js=new Script()")
         script.append("js.include_once('/context/javascript/jscalendar/calendar.js')")
@@ -2221,14 +2231,14 @@ lines of code. -->
         script.append("js.include_once('/context/javascript/jscalendar/calendar-setup.js')")
         init_script = HtmlElement.script(";".join(script))
         init_script.set_attr('mode','dynamic')
-        my.add(init_script)
+        self.add(init_script)
 
 
-    def get_id(my):
-        return my.id
+    def get_id(self):
+        return self.id
 
-    def get_display(my):
-        value = my.get_value(for_display=True)
+    def get_display(self):
+        value = self.get_value(for_display=True)
 
         if value == "":
             display_date = ""
@@ -2240,13 +2250,13 @@ lines of code. -->
             hidden_value = value
 
         input_field = None
-        if my.id:
-            input_field = my.id
+        if self.id:
+            input_field = self.id
         else:
-            input_field = my.get_input_name()
+            input_field = self.get_input_name()
         hidden = HiddenWdg(input_field, hidden_value)
         hidden.set_id(input_field)
-        my.add(hidden)
+        self.add(hidden)
 
 
         display_area = "%s|display_area" % input_field
@@ -2255,7 +2265,7 @@ lines of code. -->
         text.add( display_date )
         text.add_style("padding: 3px")
         text.set_id(display_area)
-        my.add(text)
+        self.add(text)
 
 
         #shows_time = "true"
@@ -2263,17 +2273,17 @@ lines of code. -->
         da_format = "%b %e, %Y"
         if_format = "%Y-%m-%e %H:%M"
 
-        cal_options_str = ", ".join( [ "%s\t: %s" % (x,my.cal_options[x]) for x in my.cal_options.keys() ] )
+        cal_options_str = ", ".join( [ "%s\t: %s" % (x,self.cal_options[x]) for x in self.cal_options.keys() ] )
         if cal_options_str != "":
             comma = ","
         else:
             comma = ""
 
         # set a default widget if it hasn't been defined
-        if not my.on_wdg:
+        if not self.on_wdg:
             img = HtmlElement.img("/context/javascript/jscalendar/img.gif")
-            my.set_on_wdg(img)
-            my.add(my.on_wdg)
+            self.set_on_wdg(img)
+            self.add(self.on_wdg)
 
 
 
@@ -2287,29 +2297,29 @@ lines of code. -->
         align           : 'Br', /* alignment (defaults to 'Bl') */
         singleClick     : true,
         showsTime       : %s
-        })'''% (cal_options_str, comma, input_field, display_area, if_format, da_format, my.trigger, shows_time))
+        })'''% (cal_options_str, comma, input_field, display_area, if_format, da_format, self.trigger, shows_time))
         script.set_attr('mode', 'dynamic')
-        my.add(script)
+        self.add(script)
 
-        return super(CalendarWdg,my).get_display()
+        return super(CalendarWdg,self).get_display()
 
   
 class CalendarInputWdg(BaseInputWdg):
     ''' this one is the newer version with or without a TextWdg''' 
-    def __init__(my, name=None, label=None, css=None, show_week=False):
-        my.show_on_wdg = True
-        my.show_value = True
-        #my.cal_name = my.generate_unique_id()
-        my.show_warning = True
-        my.onchange_script = ''
-        my.hidden = HiddenWdg(name)
-        my.show_week = show_week
-        my.css = css 
-        super(CalendarInputWdg,my).__init__(name, "span", label=label)
+    def __init__(self, name=None, label=None, css=None, show_week=False):
+        self.show_on_wdg = True
+        self.show_value = True
+        #self.cal_name = self.generate_unique_id()
+        self.show_warning = True
+        self.onchange_script = ''
+        self.hidden = HiddenWdg(name)
+        self.show_week = show_week
+        self.css = css 
+        super(CalendarInputWdg,self).__init__(name, "span", label=label)
 
-    def class_init(my):
+    def class_init(self):
         if WebContainer.get_web().is_IE():
-            my.add('''
+            self.add('''
 <!-- main calendar program -->
 <script type="text/javascript" src="/context/javascript/jscalendar/calendar.js"></script>
 
@@ -2320,15 +2330,15 @@ class CalendarInputWdg(BaseInputWdg):
 
             ''')
             show_week = "false"
-            if my.show_week :#or my.get_option('show_week') == 'true':
+            if self.show_week :#or self.get_option('show_week') == 'true':
                 show_week = "true"
             script = HtmlElement.script('''
                 var calendar_tactic = new TacticCalendar(%s)
                 ''' % (show_week) )
-            my.add(script)
+            self.add(script)
             return
 
-        my.add('''
+        self.add('''
 <!-- main calendar program -->
 <script type="text/javascript" src="/context/javascript/jscalendar/calendar.js"></script>
 
@@ -2343,33 +2353,33 @@ lines of code. -->
 <script type="text/javascript" src="/context/javascript/TacticCalendar.js"></script>
             ''')
         show_week = "false"
-        if my.show_week :#or my.get_option('show_week') == 'true':
+        if self.show_week :#or self.get_option('show_week') == 'true':
             show_week = "true"
         script = HtmlElement.script('''
             var calendar_tactic = new TacticCalendar(%s)
             ''' % (show_week) )
-        my.add(script)
+        self.add(script)
 
 
     
-    def get_hidden_wdg(my):
-        if my.get_option('show_warning') =='false':
-            my.show_warning = False
-        value = super(CalendarInputWdg, my).get_value(for_display=True)
+    def get_hidden_wdg(self):
+        if self.get_option('show_warning') =='false':
+            self.show_warning = False
+        value = super(CalendarInputWdg, self).get_value(for_display=True)
          
         if value == "":
             display_date = ""
             hidden_value = ""
         else:
             # In some cases the user is allowed to append chars after it
-            date = Date( db_date=value, show_warning=my.show_warning )
+            date = Date( db_date=value, show_warning=self.show_warning )
             # display date format is not used for now
             # but date is instantiated to issue warning where applicable
             # display_date = date.get_display_date()
             hidden_value = value
 
-        hidden_name = my.get_input_name()
-        if my.show_value:
+        hidden_name = self.get_input_name()
+        if self.show_value:
             hidden = TextWdg(hidden_name)
             hidden.set_persist_on_submit()
             hidden.set_attr("size", "15")
@@ -2381,75 +2391,75 @@ lines of code. -->
         return hidden
 
 
-    def set_onchange_script(my, script):
+    def set_onchange_script(self, script):
         ''' script that runs when the user clicks on a date '''
-        my.onchange_script = script
+        self.onchange_script = script
 
     '''
-    def get_value(my):
-        return my.hidden.get_value()
+    def get_value(self):
+        return self.hidden.get_value()
     
 
-    def get_js_name(my):
-        name = my.cal_name
+    def get_js_name(self):
+        name = self.cal_name
         return "calendar_%s" % name
     '''
 
-    def get_on_script(my, date=None):
+    def get_on_script(self, date=None):
         if not date:
             date = ''
-        name = my.get_input_name() 
+        name = self.get_input_name() 
         script = "calendar_tactic.show_calendar('%s', null,'%s')" % (name, date)
         return script
 
 
-    def set_show_on_wdg(my, flag):
-        my.show_on_wdg = flag
+    def set_show_on_wdg(self, flag):
+        self.show_on_wdg = flag
 
-    def set_show_value(my, flag):
-        my.show_value = flag
+    def set_show_value(self, flag):
+        self.show_value = flag
 
-    def set_show_warning(my, show):
-        my.show_warning = show
+    def set_show_warning(self, show):
+        self.show_warning = show
 
-    def get_on_wdg(my):
+    def get_on_wdg(self):
         widget = HtmlElement.img("/context/javascript/jscalendar/img.gif")
-        widget.add_event("onclick", my.get_on_script() )
+        widget.add_event("onclick", self.get_on_script() )
         widget.add_class("hand")
         return widget
 
         
 
-    def get_display(my):
+    def get_display(self):
         widget = Widget()
 
-        name = my.get_input_name()
+        name = self.get_input_name()
         # set a default widget if it hasn't been defined
-        if my.show_on_wdg:
-            widget.add(my.get_on_wdg() )
+        if self.show_on_wdg:
+            widget.add(self.get_on_wdg() )
 
-        my.hidden = my.get_hidden_wdg() 
-        widget.add(my.hidden)
+        self.hidden = self.get_hidden_wdg() 
+        widget.add(self.hidden)
 
         show_week = "false"
-        if my.show_week or my.get_option('show_week') == 'true':
+        if self.show_week or self.get_option('show_week') == 'true':
             show_week = "true"
        
         
         # on choosing a date, it executes this js
-        if my.onchange_script:
+        if self.onchange_script:
             script = "calendar_tactic.init('%s');\
                 calendar_tactic.cal.onClose = function() { if (!calendar_tactic.check('%s')) return; %s }"\
-                %(name, name, my.onchange_script)
+                %(name, name, self.onchange_script)
             from pyasm.web import AppServer
             AppServer.add_onload_script(script)
-        my.add(widget)
+        self.add(widget)
 
-        if not my.label:
-            return super(CalendarInputWdg, my).get_display()
+        if not self.label:
+            return super(CalendarInputWdg, self).get_display()
         else:
-            sel = BaseInputWdg.get_class_display(my)
-            span = SpanWdg(my.label, css=my.css)
+            sel = BaseInputWdg.get_class_display(self)
+            span = SpanWdg(self.label, css=self.css)
             span.add(sel)
             return span
 
@@ -2458,31 +2468,31 @@ lines of code. -->
 
 class PopupWdg(BaseInputWdg):
 
-    def __init__(my, name=None, type=None, label=None):
-        super(PopupWdg,my).__init__(name,type,label)
-        my.title = ''
-        my.offset_x = 10
-        my.offset_y = 0
-        my.is_auto_hide = True
+    def __init__(self, name=None, type=None, label=None):
+        super(PopupWdg,self).__init__(name,type,label)
+        self.title = ''
+        self.offset_x = 10
+        self.offset_y = 0
+        self.is_auto_hide = True
 
-    def set_auto_hide(my, hide):
-        my.is_auto_hide = hide
+    def set_auto_hide(self, hide):
+        self.is_auto_hide = hide
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg(css="popup_wdg")
-        div.set_id(my.name)
-        hidden_name = '%s_hidden' % my.name
+        div.set_id(self.name)
+        hidden_name = '%s_hidden' % self.name
         div.add(HiddenWdg(hidden_name))
         div.add_style("display: none")
         div.add_style("margin", "15px 0 0 0px")
         div.add_style("position", "absolute")
 
         from web_wdg import CloseWdg
-        div.add(CloseWdg(my.get_off_script()))
+        div.add(CloseWdg(self.get_off_script()))
         div.add( HtmlElement.br(clear="all") )
 
-        for widget in my.widgets:
+        for widget in self.widgets:
             div.add(widget)
 
         div.add( HtmlElement.br(clear="all") )
@@ -2492,16 +2502,16 @@ class PopupWdg(BaseInputWdg):
   
 
 
-    def get_on_script(my):
+    def get_on_script(self):
         script = "Common.follow_click(event, '%s', %d, %d); Effects.fade_in('%s', 200);"\
-            %(my.get_name(),my.offset_x, my.offset_y, my.get_name()) 
-        if my.is_auto_hide:
-            script += "Common.overlay_setup('mouseup',function(){%s})" %my.get_off_script()
+            %(self.get_name(),self.offset_x, self.offset_y, self.get_name()) 
+        if self.is_auto_hide:
+            script += "Common.overlay_setup('mouseup',function(){%s})" %self.get_off_script()
              
         return script
 
-    def get_off_script(my):
-        return "Effects.fade_out('%s', 200); document.removeEvents('mouseup')" % my.get_name()
+    def get_off_script(self):
+        return "Effects.fade_out('%s', 200); document.removeEvents('mouseup')" % self.get_name()
 
 
 
@@ -2510,7 +2520,7 @@ class PopupWdg(BaseInputWdg):
 
 class PopupMenuWdg(BaseInputWdg):
 
-    def __init__(my,name=None, type=None, label=None, action_name=None, \
+    def __init__(self,name=None, type=None, label=None, action_name=None, \
             multi=False, height='', width=''):
         '''
         Creates a popup widget
@@ -2524,47 +2534,47 @@ class PopupMenuWdg(BaseInputWdg):
         multi: adds checkbox (optional)
         '''
         
-        super(PopupMenuWdg,my).__init__(name,type,label)
+        super(PopupMenuWdg,self).__init__(name,type,label)
         if action_name:
-            my.action_name = action_name
+            self.action_name = action_name
         else:
-            my.action_name = name
-        my.multi = multi
-        my.title = ''
-        my.offset_x = 10
-        my.offset_y = 0
-        my.height = height
-        my.menu_width = width
-        my.monitor = None
-        my.is_submit = True
-        my.is_auto_hide = True
+            self.action_name = name
+        self.multi = multi
+        self.title = ''
+        self.offset_x = 10
+        self.offset_y = 0
+        self.height = height
+        self.menu_width = width
+        self.monitor = None
+        self.is_submit = True
+        self.is_auto_hide = True
         # this is the group name
-        my.item_name = '%s_item' %my.get_input_name()
+        self.item_name = '%s_item' %self.get_input_name()
 
 
     
-    def set_auto_hide(my, hide):
-        my.is_auto_hide = hide
+    def set_auto_hide(self, hide):
+        self.is_auto_hide = hide
 
-    def add_monitor(my, widget):
+    def add_monitor(self, widget):
         ''' add a monitor div on the right side'''
-        my.monitor = widget
+        self.monitor = widget
 
-    def add_separator(my):
+    def add_separator(self):
         widget = "<hr/>"
-        super(PopupMenuWdg,my).add(widget)
+        super(PopupMenuWdg,self).add(widget)
 
-    def add_title(my, title):
+    def add_title(self, title):
         if isinstance(title, basestring):
             widget = FloatDivWdg("<b>%s</b>" % title)
         else:
             widget = "<b>%s</b>" % title.get_buffer_display()
         
-        my.title = widget
+        self.title = widget
 
-        my.title.add_style('border-bottom','1px dotted #ccc')
+        self.title.add_style('border-bottom','1px dotted #ccc')
     
-    def add(my, widget, name=None):
+    def add(self, widget, name=None):
         if type(widget) in types.StringTypes:
             tmp = widget
             widget = StringWdg(widget)
@@ -2575,28 +2585,28 @@ class PopupMenuWdg(BaseInputWdg):
             if name:
                 widget.set_name(name)
 
-        super(PopupMenuWdg,my).add(widget,name)
+        super(PopupMenuWdg,self).add(widget,name)
 
 
-    def set_offset(my, x, y):
-        my.offset_x = x
-        my.offset_y = y
+    def set_offset(self, x, y):
+        self.offset_x = x
+        self.offset_y = y
 
-    def set_submit(my, submit):
-        my.is_submit = submit
+    def set_submit(self, submit):
+        self.is_submit = submit
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg(css="popup_wdg")
-        div.set_id(my.name)
-        select_name = '%s_hidden' % my.action_name
-        if not my.multi:
+        div.set_id(self.name)
+        select_name = '%s_hidden' % self.action_name
+        if not self.multi:
             hidden = HiddenWdg(select_name)
             hidden.set_id(select_name)
             div.add(hidden)
         """
-        hidden_name = '%s_hidden' % my.name
+        hidden_name = '%s_hidden' % self.name
         div.add(HiddenWdg(hidden_name))
         """
         div.add_style("display: none")
@@ -2605,14 +2615,14 @@ class PopupMenuWdg(BaseInputWdg):
 
         from web_wdg import CloseWdg
         
-        div.add(my.title)
-        div.add(CloseWdg(my.get_off_script()))
+        div.add(self.title)
+        div.add(CloseWdg(self.get_off_script()))
         div.add(HtmlElement.br())
 
 
         content_div = FloatDivWdg()
-        if my.height:
-            content_div.add_style('height', my.height)
+        if self.height:
+            content_div.add_style('height', self.height)
         content_div.add_style('clear', 'left')
         content_div.add_style('padding-top','8px')
         div.add(content_div)
@@ -2620,27 +2630,27 @@ class PopupMenuWdg(BaseInputWdg):
 
 
        
-        for widget in my.widgets:
+        for widget in self.widgets:
             if not widget.get_name():
                 item = DivWdg(css='hand')
                 item.add(widget)
-                if my.menu_width:
-                    item.add_style('width', my.menu_width)
+                if self.menu_width:
+                    item.add_style('width', self.menu_width)
                 content_div.add(item)
                 continue
-            id='%s_%s' %(my.get_input_name(), widget.get_name())
+            id='%s_%s' %(self.get_input_name(), widget.get_name())
             item = DivWdg(css="hand")
-            item.set_attr('name', my.item_name)
+            item.set_attr('name', self.item_name)
             item.set_attr('tab', id)
-            if my.menu_width:
-                item.add_style('width', my.menu_width)
+            if self.menu_width:
+                item.add_style('width', self.menu_width)
             item.add_style('padding-left','3px')
             
             
             # checkbox and extra logic is added for named widgets only
-            if my.multi:
+            if self.multi:
                 span = SpanWdg(widget, css='small')
-                #checkbox = CheckboxWdg("%s_select" % my.name)
+                #checkbox = CheckboxWdg("%s_select" % self.name)
                 checkbox = CheckboxWdg(select_name)
                 cb_id = '%s|%s' %(select_name, widget.get_name())
                 checkbox.set_id(cb_id)
@@ -2659,50 +2669,50 @@ class PopupMenuWdg(BaseInputWdg):
             item.add_event("onmouseover", "this.style.fontWeight='600'")
             item.add_event("onmouseout", "this.style.fontWeight='100'")
             """
-            if not my.multi:
+            if not self.multi:
                 item.add_event("onclick", "el=document.form.elements['%s'];el.value='%s';document.form.submit()" % (select_name,widget.get_name()) )
             else:
                 pass
 
             """
             
-            if not my.multi: 
+            if not self.multi: 
                 item.add_event("onclick", "get_elements('%s').tab_me('%s','active_menu_item',\
                 'inactive_menu_item'); get_elements('%s').set_value('%s')" \
-                % ( my.item_name, id, select_name,widget.get_name()) )
-            if my.is_submit:
+                % ( self.item_name, id, select_name,widget.get_name()) )
+            if self.is_submit:
                  item.add_event("onclick", "document.form.submit()")
             content_div.add(item)
 
-        if my.monitor:
-            mon_div = FloatDivWdg(my.monitor, id='%s_monitor' %my.get_input_name(),float='left')
-            mon_div.add_style('height', my.height)
+        if self.monitor:
+            mon_div = FloatDivWdg(self.monitor, id='%s_monitor' %self.get_input_name(),float='left')
+            mon_div.add_style('height', self.height)
             mon_div.add_style('display', 'none')
             mon_div.add_class('monitor')
             div.add(mon_div)
         return div
 
 
-    def get_on_script(my):
+    def get_on_script(self):
 
         #script = "Common.follow_click(event, '%s', %d, %d); set_display_on('%s');"\
-        #    %(my.get_name(),my.offset_x, my.offset_y, my.get_name())
-        script = "Effects.fade_in('%s', 30);"%my.get_name()
-        if my.is_auto_hide:
-            script += "Common.overlay_setup('mouseup',function(){%s})" %my.get_off_script()
+        #    %(self.get_name(),self.offset_x, self.offset_y, self.get_name())
+        script = "Effects.fade_in('%s', 30);"%self.get_name()
+        if self.is_auto_hide:
+            script += "Common.overlay_setup('mouseup',function(){%s})" %self.get_off_script()
              
         return script
 
-    def get_off_script(my):
-        return "Effects.fade_out('%s', 200); document.removeEvents('mouseup')" % my.get_name()
+    def get_off_script(self):
+        return "Effects.fade_out('%s', 200); document.removeEvents('mouseup')" % self.get_name()
 
-    def get_monitor_on_script(my):
-        return "Effects.fade_in('%s_monitor', 50)" % my.get_input_name()
+    def get_monitor_on_script(self):
+        return "Effects.fade_in('%s_monitor', 50)" % self.get_input_name()
 
-    def get_monitor_off_script(my):
-        return "set_display_off('%s_monitor')" % my.get_input_name()
+    def get_monitor_off_script(self):
+        return "set_display_off('%s_monitor')" % self.get_input_name()
 
 
-    def get_clear_css_script(my):
+    def get_clear_css_script(self):
         ''' clears the css of the menu buttons, make them inactive'''
-        return "$$('div[name=%s]').each(function(elem) {elem.className='inactive_menu_item';})" %my.item_name
+        return "$$('div[name=%s]').each(function(elem) {elem.className='inactive_menu_item';})" %self.item_name

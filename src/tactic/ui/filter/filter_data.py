@@ -28,10 +28,10 @@ class FilterData(object):
     Also because the data structure is relatively flat, it can be annoying
     to extract data manually'''
 
-    def __init__(my, data=[]):
+    def __init__(self, data=[]):
 
         if not data:
-            my.data = []
+            self.data = []
         elif type(data) in types.StringTypes:
             try:
                 # optimize the loading of json data
@@ -40,31 +40,31 @@ class FilterData(object):
                     json_data = {}
                     Container.put("json_data", json_data)
 
-                my.data = json_data.get(data)
-                if my.data == None:
-                    my.data = jsonloads(data)
-                    json_data[data] = my.data
+                self.data = json_data.get(data)
+                if self.data == None:
+                    self.data = jsonloads(data)
+                    json_data[data] = self.data
 
             except ValueError, e:
                 if e.__str__().find('No JSON object') != -1:
                     raise SetupException('Data is not decodable as JSON.')
                 # try a straight eval
-                my.data = eval(data)
+                self.data = eval(data)
 
             except Exception, e:
                  if e.__str__().find('cannot parse JSON description') != -1:
                     raise SetupException('Data is not valid JSON.')
 
         else:
-            my.data = data
+            self.data = data
 
-        # it takes care of different conditions that re-eval data as my.data
-        if isinstance(my.data, dict):
-            my.data = [my.data]
+        # it takes care of different conditions that re-eval data as self.data
+        if isinstance(self.data, dict):
+            self.data = [self.data]
 
-    def set_data(my, data):
+    def set_data(self, data):
         '''add data dictionary or a JSON string'''
-        my.data = []
+        self.data = []
         # protect against empty spaces/lines from xml
         if isinstance(data, basestring):
             data = data.strip()
@@ -83,12 +83,12 @@ class FilterData(object):
 
         if type(data) == types.ListType:
             for part in data:
-                my.set_data(part)
+                self.set_data(part)
         else:
-            my.data.append(data)
+            self.data.append(data)
 
 
-    def add_data(my, data):
+    def add_data(self, data):
         '''add data dictionary.'''
         if type(data) in types.StringTypes:
             try:
@@ -100,48 +100,48 @@ class FilterData(object):
                 # try a straight eval
                 data = eval(data)
 
-        my.data.append(data)
+        self.data.append(data)
 
 
-    def set_to_cgi(my):
+    def set_to_cgi(self):
         web = WebContainer.get_web()
-        data = jsondumps(my.data)
+        data = jsondumps(self.data)
         web.set_form_value('json', data)
-        Container.put("FilterData", my)
+        Container.put("FilterData", self)
 
 
-    def is_empty(my):
+    def is_empty(self):
         '''serialize the data into a string'''
-        if not my.data:
+        if not self.data:
             return True
         return False
 
 
 
-    def serialize(my):
+    def serialize(self):
         '''serialize the data into a string'''
-        value = jsondumps(my.data)
+        value = jsondumps(self.data)
         return value
 
-    def get_data(my):
-        return my.data
+    def get_data(self):
+        return self.data
         
 
-    def get_values_by_prefix(my, prefix):
+    def get_values_by_prefix(self, prefix):
         '''get data values for a specific prefix'''
         data = [] 
-        for values in my.data:
+        for values in self.data:
             if values.get('prefix') == prefix:
                 data.append(values)
 
         return data
             
-    def get_values_by_index(my, prefix, filter_index=0):
+    def get_values_by_index(self, prefix, filter_index=0):
         '''get data values for a specific prefix and index.
            The index refers to the index of the list that shares the
            same prefix'''
         count = 0
-        for values in my.data:
+        for values in self.data:
             if not values.get('prefix') == prefix:
                 continue
 
@@ -154,11 +154,11 @@ class FilterData(object):
         return {}
 
 
-    def get_values(my, prefix, name):
+    def get_values(self, prefix, name):
         '''Method to get the value from a certain prefix, regardless of
         index'''
         ret_values = []
-        for values in my.data:
+        for values in self.data:
             if not values.get('prefix') == prefix:
                 continue
 

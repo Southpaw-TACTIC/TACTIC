@@ -23,9 +23,9 @@ from tactic.ui.common import SimpleTableElementWdg
 class ForeignKeyElementWdg(SimpleTableElementWdg):
 
 
-    def init(my):
-        my.parents_dict = {}
-        my.td = None
+    def init(self):
+        self.parents_dict = {}
+        self.td = None
 
 
     def get_args_keys(cls):
@@ -35,25 +35,25 @@ class ForeignKeyElementWdg(SimpleTableElementWdg):
 
 
 
-    def is_editable(my):
+    def is_editable(self):
         return True
 
 
 
-    def get_column(my):
-        column = my.get_option('column')
+    def get_column(self):
+        column = self.get_option('column')
         if not column:
-            column = my.get_name()
+            column = self.get_name()
 
         return column
 
 
-    def get_relations(my, sobjects):
+    def get_relations(self, sobjects):
 
         if not sobjects:
             return {}
 
-        column = my.get_column()
+        column = self.get_column()
         
         if not column.endswith('_id'):
             return {}
@@ -69,7 +69,7 @@ class ForeignKeyElementWdg(SimpleTableElementWdg):
         search_type_obj = sobject.get_search_type_obj()
         namespace = search_type_obj.get_value("namespace")
 
-        parent_type = my.get_option('search_type')
+        parent_type = self.get_option('search_type')
         if not parent_type:
             parent_type = "%s/%s" % (namespace, table)
             # parent_type = "%s/%s" % (project_code, table)
@@ -93,36 +93,36 @@ class ForeignKeyElementWdg(SimpleTableElementWdg):
 
 
 
-    def preprocess(my):
+    def preprocess(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        my.parents_dict = my.get_relations(my.sobjects)
-
-
-    def set_td(my, td):
-        my.td = td
+        self.parents_dict = self.get_relations(self.sobjects)
 
 
-    def get_text_value(my):
+    def set_td(self, td):
+        self.td = td
+
+
+    def get_text_value(self):
         '''for csv export'''
-        my.preprocess()
-        sobject = my.get_current_sobject()
-        result = my._get_result(sobject)
+        self.preprocess()
+        sobject = self.get_current_sobject()
+        result = self._get_result(sobject)
         return result
 
 
-    def _get_result(my, sobject):
+    def _get_result(self, sobject):
 
         # get the parent or relation
-        column = my.get_column()
+        column = self.get_column()
         parent_id = sobject.get_value(column)
-        parent = my.parents_dict.get(parent_id)
+        parent = self.parents_dict.get(parent_id)
         if not parent:
-            return super(ForeignKeyElementWdg,my).get_display()
+            return super(ForeignKeyElementWdg,self).get_display()
 
 
-        template = my.get_option('template')
+        template = self.get_option('template')
         # if not set, then look at the schema
         if not template:
             schema = Schema.get_by_project_code( Project.get_project_code() )
@@ -142,20 +142,20 @@ class ForeignKeyElementWdg(SimpleTableElementWdg):
         return value
 
 
-    def handle_td(my, td):
-        td.set_attr("spt_input_value",my.value)
+    def handle_td(self, td):
+        td.set_attr("spt_input_value",self.value)
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
-        my.value = my._get_result(sobject)
-        my.set_value(my.value)
+    def get_display(self):
+        sobject = self.get_current_sobject()
+        self.value = self._get_result(sobject)
+        self.set_value(self.value)
 
 
-        #print "setting: ", my.get_value()
+        #print "setting: ", self.get_value()
         div = DivWdg()
-        display_value = WikiUtil().convert(my.value)
-        div.add(my.value)
+        display_value = WikiUtil().convert(self.value)
+        div.add(self.value)
         return div
 
 

@@ -20,47 +20,47 @@ from Crypto.PublicKey import RSA
 
 
 class CryptoKey(object):
-    def __init__(my):
-        my.key = None
-        my.private_key = None
-        my.public_key = None
+    def __init__(self):
+        self.key = None
+        self.private_key = None
+        self.public_key = None
 
-    def generate(my, size=1024):
-        my.key = RSA.generate(size, os.urandom)
-        my.private_key = (my.key.n, my.key.e, my.key.d)
-        my.public_key = (my.key.n, my.key.e)
+    def generate(self, size=1024):
+        self.key = RSA.generate(size, os.urandom)
+        self.private_key = (self.key.n, self.key.e, self.key.d)
+        self.public_key = (self.key.n, self.key.e)
 
-    def get_private_key(my):
-        return my.private_key
+    def get_private_key(self):
+        return self.private_key
 
-    def get_public_key(my):
-        return my.public_key
+    def get_public_key(self):
+        return self.public_key
 
-    def set_private_key(my, private_key):
-        my.private_key = private_key
-        my.key = RSA.construct(private_key)
-        my.public_key = (my.key.n, my.key.e)
+    def set_private_key(self, private_key):
+        self.private_key = private_key
+        self.key = RSA.construct(private_key)
+        self.public_key = (self.key.n, self.key.e)
 
-    def set_public_key(my, public_key):
-        my.private_key = None
-        my.public_key = public_key
-        my.key = RSA.construct(public_key)
+    def set_public_key(self, public_key):
+        self.private_key = None
+        self.public_key = public_key
+        self.key = RSA.construct(public_key)
 
 
-    def get_signature(my, msg):
+    def get_signature(self, msg):
         hash = MD5.new(msg).digest()
-        signature = my.key.sign(hash, "")
+        signature = self.key.sign(hash, "")
         return signature
 
 
-    def verify(my, msg, signature):
+    def verify(self, msg, signature):
         hash = MD5.new(msg).digest()
-        return my.key.verify(hash, signature)
+        return self.key.verify(hash, signature)
 
 
 
-    def encrypt(my, msg):
-        coded = my.key.encrypt(msg, "x1y2y3")
+    def encrypt(self, msg):
+        coded = self.key.encrypt(msg, "x1y2y3")
         hex = binascii.hexlify(str(coded))
         return hex
      
@@ -70,7 +70,7 @@ class CryptoKey(object):
 
 
 
-    def decrypt(my, hex):
+    def decrypt(self, hex):
         #f2 = open("password", "r")
         #hex = f2.read()
         uncoded = binascii.unhexlify(hex)
@@ -79,7 +79,7 @@ class CryptoKey(object):
         except:
             return ""
 
-        decrypt = my.key.decrypt(xx2)
+        decrypt = self.key.decrypt(xx2)
         return decrypt
 
 

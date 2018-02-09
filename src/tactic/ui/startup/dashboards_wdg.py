@@ -27,12 +27,12 @@ class DashboardsWdg(ReportsWdg):
     project
     '''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_section_wdg_old(my, title, description, image, behavior):
+    def get_section_wdg_old(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -81,7 +81,7 @@ class DashboardsWdg(ReportsWdg):
 
         return section_wdg
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -240,7 +240,7 @@ class DashboardsWdg(ReportsWdg):
             spt.tab.add_new(bvr.title, bvr.title, bvr.class_name, bvr.kwargs);
             '''
             }
-            schema_wdg = my.get_section_wdg(title, description, image, behavior)
+            schema_wdg = self.get_section_wdg(title, description, image, behavior)
 
 
             schema_wdg.add_behavior( {
@@ -272,7 +272,7 @@ class DashboardsWdg(ReportsWdg):
 
 
 
-    def get_totals_wdg(my):
+    def get_totals_wdg(self):
         div = DivWdg()
 
         div.add("Number of Pipelines: 3<br/>") 

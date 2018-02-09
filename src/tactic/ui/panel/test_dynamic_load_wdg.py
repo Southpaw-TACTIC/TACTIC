@@ -20,23 +20,23 @@ from tactic.ui.common import BaseRefreshWdg
 
 class TestDynamicLoadWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         do_single_on_load_bvr = True
 
         if do_single_on_load_bvr:
-            return my.get_display_single_on_load_bvr()
+            return self.get_display_single_on_load_bvr()
         else:
-            return my.get_display_on_load_bvr_on_each_widget()
+            return self.get_display_on_load_bvr_on_each_widget()
 
 
-    def get_display_single_on_load_bvr(my):
-        class_path = Common.get_full_class_name(my)
+    def get_display_single_on_load_bvr(self):
+        class_path = Common.get_full_class_name(self)
 
         top = DivWdg()
         top.add_styles("border: 1px solid black;")
 
-        count = my.kwargs.get('count')
+        count = self.kwargs.get('count')
         print "count: ", count
         if count:
             count = int(count)
@@ -77,13 +77,13 @@ class TestDynamicLoadWdg(BaseRefreshWdg):
         return top
 
 
-    def get_display_on_load_bvr_on_each_widget(my):
-        class_path = Common.get_full_class_name(my)
+    def get_display_on_load_bvr_on_each_widget(self):
+        class_path = Common.get_full_class_name(self)
 
         top = DivWdg()
         top.add_styles("border: 1px solid black;")
 
-        count = my.kwargs.get('count')
+        count = self.kwargs.get('count')
         print "count: ", count
         if count:
             count = int(count)

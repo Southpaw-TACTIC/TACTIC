@@ -31,16 +31,16 @@ from tactic.ui.common import BaseRefreshWdg
 
 class DynamicUpdateWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         interval = 5000
 
         top.add_behavior( {
             'type': 'load',
             'interval': interval,
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
         top.add_behavior( {
@@ -56,7 +56,7 @@ class DynamicUpdateWdg(BaseRefreshWdg):
         return top
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
 spt.update = {};
@@ -393,7 +393,7 @@ class DynamicUpdateCmd(Command):
         
         '''
 
-    def execute(my):
+    def execute(self):
   
         start = time.time()
 
@@ -404,14 +404,14 @@ class DynamicUpdateCmd(Command):
         format = '%Y-%m-%d %H:%M:%S'
         timestamp = timestamp.strftime(format)
         
-        updates = my.kwargs.get("updates")
+        updates = self.kwargs.get("updates")
         
         if isinstance(updates, basestring):
             updates = jsonloads(updates)
-        last_timestamp = my.kwargs.get("last_timestamp")
+        last_timestamp = self.kwargs.get("last_timestamp")
         #assert last_timestamp
         if not last_timestamp:
-            my.info = {
+            self.info = {
                 "updates": {},
                 "timestamp": timestamp
             }
@@ -532,7 +532,7 @@ class DynamicUpdateCmd(Command):
 
                 results[id] = value
 
-        my.info = {
+        self.info = {
             "updates": results,
             "timestamp": timestamp
         }
@@ -548,16 +548,16 @@ import unittest
 
 class UpdateTest(unittest.TestCase):
 
-    def __init__(my, *args):
-        unittest.TestCase.__init__(my, *args)
+    def __init__(self, *args):
+        unittest.TestCase.__init__(self, *args)
    
-        my.updates = None
-        my.last_timestamp = None
+        self.updates = None
+        self.last_timestamp = None
 
-        my.search_key = None
-        my.task_sk = None
+        self.search_key = None
+        self.task_sk = None
 
-    def test_all(my):
+    def test_all(self):
         '''entry point function'''
 
         Batch(site="demo")
@@ -577,19 +577,19 @@ class UpdateTest(unittest.TestCase):
         #transaction.commit()
    
         # Get updates - creates shots and tasks
-        my.updates = my._get_updates()
+        self.updates = self._get_updates()
         
         try:
-            my._test_no_updates()
-            my._test_insert()
-            my._test_status_change()
-            my._test_compare()
-            my._test_empty_update()
-            #my._test_time()
+            self._test_no_updates()
+            self._test_insert()
+            self._test_status_change()
+            self._test_compare()
+            self._test_empty_update()
+            #self._test_time()
         finally:
             test_env.delete()
    
-    def _get_updates(my):
+    def _get_updates(self):
         '''Create sObject and tasks that we will test to receive updates on.
         Current transaction is commited in _test_insert.'''
        
@@ -600,14 +600,14 @@ class UpdateTest(unittest.TestCase):
         sobj.set_defaults()
         sobj.commit()
         search_key = sobj.get_search_key()
-        my.search_key = search_key
+        self.search_key = search_key
         search_type = sobj.get_search_type()
         search_code = sobj.get_value('code')
 
         tasks = Task.add_initial_tasks(sobj, pipeline_code='__default__')
         first_task = tasks[0]
         task_sk = first_task.get_search_key()
-        my.task_sk = task_sk
+        self.task_sk = task_sk
 
         script = '''console.log('hello world.')'''
         
@@ -639,20 +639,20 @@ class UpdateTest(unittest.TestCase):
 
         return updates
 
-    def _test_no_updates(my): 
+    def _test_no_updates(self): 
         '''Test no updates and set the initial timestamp'''
         transaction = Transaction.get(create=True)
         transaction.commit()
         
         from pyasm.command import Command
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates") 
 
-        my.assertEquals(updates, {})
+        self.assertEquals(updates, {})
 
-    def _test_insert(my):
+    def _test_insert(self):
         '''Test insertion of tasks and shots.'''
 
         # Commit creation of asset and tasks
@@ -661,33 +661,33 @@ class UpdateTest(unittest.TestCase):
         time.sleep(3)
         
         # Test initial insert of shot and tasks
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")  
        
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         num_tasks = Search.eval("@COUNT(@SOBJECT(sthpw/task))", sobject)
-        my.assertEquals(updates["001"], num_tasks)
+        self.assertEquals(updates["001"], num_tasks)
         
-        task = Search.get_by_search_key(my.task_sk)
+        task = Search.get_by_search_key(self.task_sk)
         status = task.get_value("status")
-        my.assertEquals(updates["002"], status)
+        self.assertEquals(updates["002"], status)
         
-        my.assertEquals(updates["003"], "Loading ...")
-        my.assertEquals(updates["004"], True)
-        my.assertEquals(updates["005"], "Loading ...")
-        my.assertEquals(updates["006"], num_tasks)
+        self.assertEquals(updates["003"], "Loading ...")
+        self.assertEquals(updates["004"], True)
+        self.assertEquals(updates["005"], "Loading ...")
+        self.assertEquals(updates["006"], num_tasks)
   
   
-    def _test_status_change(my):
+    def _test_status_change(self):
         '''Test a change to a single task.'''
         
         # Clear expression cache
         ExpressionParser.clear_cache()
         
         transaction = Transaction.get(create=True)
-        task = Search.get_by_search_key(my.task_sk) 
+        task = Search.get_by_search_key(self.task_sk) 
         new_status = 'pending'
         task.set_value("status", new_status)
         task.commit()
@@ -695,21 +695,21 @@ class UpdateTest(unittest.TestCase):
         
         time.sleep(3)
 
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")
         
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         num_tasks = Search.eval("@COUNT(@SOBJECT(sthpw/task))", sobject)
-        my.assertEquals(updates["001"], num_tasks)
-        my.assertEquals(updates["002"], new_status)
-        my.assertEquals(updates["003"], "Loading ...")
-        my.assertEquals(updates["004"], True)
-        my.assertEquals(updates["005"], "Loading ...")
-        my.assertEquals(updates["006"], num_tasks)
+        self.assertEquals(updates["001"], num_tasks)
+        self.assertEquals(updates["002"], new_status)
+        self.assertEquals(updates["003"], "Loading ...")
+        self.assertEquals(updates["004"], True)
+        self.assertEquals(updates["005"], "Loading ...")
+        self.assertEquals(updates["006"], num_tasks)
 
-    def _test_compare(my):
+    def _test_compare(self):
         '''Test early exiting of compare statements.'''
  
         # Clear expression cache
@@ -717,7 +717,7 @@ class UpdateTest(unittest.TestCase):
 
         transaction = Transaction.get(create=True)
 
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         tasks = Search.eval("@SOBJECT(sthpw/task)", sobject)
         new_status = 'complete'
         for task in tasks:
@@ -728,31 +728,31 @@ class UpdateTest(unittest.TestCase):
         
         time.sleep(3)
 
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")
  
-        my.assertEquals(updates["001"], 0)
-        my.assertEquals(updates["002"], new_status)
-        my.assertEquals(updates.get("003"), None)
-        my.assertEquals(updates["004"], True)
-        my.assertEquals(updates.get("005"), None)
-        my.assertEquals(updates["006"], 0)
+        self.assertEquals(updates["001"], 0)
+        self.assertEquals(updates["002"], new_status)
+        self.assertEquals(updates.get("003"), None)
+        self.assertEquals(updates["004"], True)
+        self.assertEquals(updates.get("005"), None)
+        self.assertEquals(updates["006"], 0)
 
 
-    def _test_empty_update(my):
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+    def _test_empty_update(self):
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")
 
-        my.assertEquals(updates["001"], 0)
-        my.assertEquals(updates.get("002"), None)
-        my.assertEquals(updates.get("003"), None)
-        my.assertEquals(updates.get("004"), None)
-        my.assertEquals(updates.get("005"), None)
-        my.assertEquals(updates.get("006"), None)
+        self.assertEquals(updates["001"], 0)
+        self.assertEquals(updates.get("002"), None)
+        self.assertEquals(updates.get("003"), None)
+        self.assertEquals(updates.get("004"), None)
+        self.assertEquals(updates.get("005"), None)
+        self.assertEquals(updates.get("006"), None)
 
 
     def _test_time():

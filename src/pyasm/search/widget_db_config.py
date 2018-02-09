@@ -22,22 +22,22 @@ class WidgetDbConfig(SObject):
     SEARCH_TYPE = "config/widget_config"
 
     # NOTE: search_type is not used here!!! Fix
-    def __init__(my, search_type=None, columns=None, result=None, **kwargs):
+    def __init__(self, search_type=None, columns=None, result=None, **kwargs):
 
         if not search_type:
-            search_type = my.SEARCH_TYPE
+            search_type = self.SEARCH_TYPE
 
-        super(WidgetDbConfig,my).__init__(search_type, columns, result, **kwargs)
+        super(WidgetDbConfig,self).__init__(search_type, columns, result, **kwargs)
 
-        my._init()
+        self._init()
 
 
 
     """
-    def get_value(my, name, no_exception=False, auto_convert=True):
-        value = super(WidgetDbConfig, my).get_value(name, no_exception, auto_convert)
+    def get_value(self, name, no_exception=False, auto_convert=True):
+        value = super(WidgetDbConfig, self).get_value(name, no_exception, auto_convert)
         if name == "config" and value.startswith("PATH"):
-            path = "/tmp/config_test-%s" % my.get_id()
+            path = "/tmp/config_test-%s" % self.get_id()
 
             import os
             if not os.path.exists(path):
@@ -50,9 +50,9 @@ class WidgetDbConfig(SObject):
         return value
 
 
-    def set_value(my, name, value, quoted=1, temp=False):
-        if name == "config" and my.data.get("config").startswith("PATH"):
-            path = "/tmp/config_test-%s" % my.get_id()
+    def set_value(self, name, value, quoted=1, temp=False):
+        if name == "config" and self.data.get("config").startswith("PATH"):
+            path = "/tmp/config_test-%s" % self.get_id()
             f = open(path, "w")
             f.write(value)
             f.close()
@@ -60,7 +60,7 @@ class WidgetDbConfig(SObject):
             value = "PATH"
 
 
-        return super(WidgetDbConfig, my).set_value(name, value, quoted, temp)
+        return super(WidgetDbConfig, self).set_value(name, value, quoted, temp)
     """
 
 
@@ -69,75 +69,90 @@ class WidgetDbConfig(SObject):
 
 
 
-    def _init(my):
-        test = my.get_value("config", no_exception=True)
-        my.view = my.get_value("view")
-        my.view_xpath = my.view
-        my.view_as_attr = False 
+    def _init(self):
+        test = self.get_value("config", no_exception=True)
+        self.view = self.get_value("view")
+        self.view_xpath = self.view
+        self.view_as_attr = False 
         if not test:
-            if my.view:
-                my.set_value("config", '''
+            if self.view:
+                self.set_value("config", '''
                 <config>
                 <%s/>
                 </config>
-                ''' % my.view)
+                ''' % self.view)
 
 
         # cache this value so it doesn't have to be parsed every time
         if test.startswith("html"):
-            my.html = test
-            my.xml = None
-            my.type = "html"
+            self.html = test
+            self.xml = None
+            self.type = "html"
         else:
-            my.html = None
+            self.html = None
 
             # try getting the xml value:
-            my.xml = my.get_xml_value("config", "config")
-
-            my.type = "xml"
+            category = self.get_value("category", no_exception=True)
+            search_type = self.get_value("search_type", no_exception=True)
             
-            if my.view.find('@') != -1:
-                my.view_as_attr = True
-                my.view_xpath = "view[@name='%s']"%my.view
+            if not category and search_type:
+                config_xml = self.get_value("config")
+                config_xml = config_xml.replace("&lt;", "<")
+                config_xml = config_xml.replace("&gt;", ">")
+                config_xml = Common.run_mako(config_xml)
+
+                self.xml = Xml()
+                self.xml.read_string(config_xml)
+            else:
+                self.xml = self.get_xml_value("config")
+
+
+
+
+            self.type = "xml"
+            
+            if self.view.find('@') != -1:
+                self.view_as_attr = True
+                self.view_xpath = "view[@name='%s']"%self.view
             # if config is empty, then this is a newly created xml, so have to
             # add the view node
-            if my.view and not test:
+            if self.view and not test:
                 try:
-                    view_node = my.xml.create_element(my.view)
-                except Exception, e:
+                    view_node = self.xml.create_element(self.view)
+                except Exception as e:
                     if e.__str__().find('tag name') != -1:
                         
-                        view_node = my.xml.create_element('view', attrs={'name': my.view})
-                        my.view_as_attr = True 
+                        view_node = self.xml.create_element('view', attrs={'name': self.view})
+                        self.view_as_attr = True 
                         
                     else:
-                        raise TacticException('Cannot create view node with name [%s]'%my.view)
+                        raise TacticException('Cannot create view node with name [%s]'%self.view)
 
-                root_node = my.xml.get_root_node()
-                my.xml.append_child(root_node, view_node)
+                root_node = self.xml.get_root_node()
+                self.xml.append_child(root_node, view_node)
 
 
 
-    def validate(my):
-        if my.get_view() == 'definition':
+    def validate(self):
+        if self.get_view() == 'definition':
             # renew the cached xml first
-            my.xml = my.get_xml_value('config','config')
-            element_names = my.get_element_names()
+            self.xml = self.get_xml_value('config','config')
+            element_names = self.get_element_names()
             unique_element_names = Common.get_unique_list(element_names)
             if len(element_names) > len(unique_element_names):
                 for x in unique_element_names:
                     element_names.remove(x)
                 raise SObjectException('This element [%s] is not unique in definition view.'  %','.join(element_names))
 
-        xml = my.get_xml_value('config')
+        xml = self.get_xml_value('config')
         node = xml.get_node("config")
         if node is None:
             raise SObjectException('It has to begin and end with the <config> </config> tag')
 
         # insert may involve get_unique_sobject's <config/> which we want to ignore now
-        view = my.update_data.get('view')
+        view = self.update_data.get('view')
         if not view:
-            view = my.get_view()
+            view = self.get_view()
       
         if xml.to_string().strip() != '<config/>':
 
@@ -155,9 +170,9 @@ class WidgetDbConfig(SObject):
 
 
 
-    def get_defaults(my):
+    def get_defaults(self):
         defaults = {}
-        search_type = my.get_value("search_type")
+        search_type = self.get_value("search_type")
         if search_type == "SideBarWdg":
             defaults['category'] = 'SideBarWdg'
 
@@ -167,49 +182,49 @@ class WidgetDbConfig(SObject):
 
 
     # for backwards compatibility
-    def has_view(my, view=None):
+    def has_view(self, view=None):
         # check that this view actually exists in this file
 
         if not view:
-            view = my.view
+            view = self.view
 
-        node = my.xml.get_node("config/%s" % view)
+        node = self.xml.get_node("config/%s" % view)
         if node is not None:
             return True
         else:
             return False
 
 
-    def set_view(my, view):
-        my.view = view
+    def set_view(self, view):
+        self.view = view
 
-    def get_view(my):
-        return my.view
+    def get_view(self):
+        return self.view
 
-    def get_xml(my):
-        return my.xml
+    def get_xml(self):
+        return self.xml
 
 
-    def get_view_node(my, view=None):
+    def get_view_node(self, view=None):
         if not view:
-            view = my.view
+            view = self.view
         if view.find('@') != -1:
-            return my.get_view_attr_node(view)
+            return self.get_view_attr_node(view)
 
         xpath = "config/%s" % view
-        node = my.xml.get_node(xpath)
+        node = self.xml.get_node(xpath)
         return node
 
-    def get_view_attr_node(my, view=None):
+    def get_view_attr_node(self, view=None):
         if not view:
-            view = my.view
+            view = self.view
 
         xpath = "config/view[@name='%s']" %view 
-        return my.xml.get_node(xpath)
+        return self.xml.get_node(xpath)
 
 
-    def get_view_attributes(my):
-        node = my.get_view_node()
+    def get_view_attributes(self):
+        node = self.get_view_node()
         if node is not None:
             # get all of the attributes
             node_attrs = Xml.get_attributes(node)
@@ -218,41 +233,41 @@ class WidgetDbConfig(SObject):
             return {}
 
 
-    def get_view_attribute(my, name):
-        attrs = my.get_view_attributes()
+    def get_view_attribute(self, name):
+        attrs = self.get_view_attributes()
         return attrs.get(name)
 
 
 
-    def get_element_attributes(my, element_name):
+    def get_element_attributes(self, element_name):
         '''get the name of each element in a list '''
         # we have a list of configs ... go through each to find the element
         attrs = {}
-        node = my.get_element_node(element_name)
+        node = self.get_element_node(element_name)
         if node is None:
             return {}
         node_attrs = Xml.get_attributes(node)
         return node_attrs
 
 
-    def get_element_attribute(my, element_name, name):
-        attrs = my.get_ellement_attributes(element_name)
+    def get_element_attribute(self, element_name, name):
+        attrs = self.get_ellement_attributes(element_name)
         return attrs.get(name)
 
 
 
-    def get_element_title(my, element_name):
-        return my.get_element_attributes(element_name).get("title")
+    def get_element_title(self, element_name):
+        return self.get_element_attributes(element_name).get("title")
 
 
 
-    def get_element_names(my, type=None, attrs=[]):
+    def get_element_names(self, type=None, attrs=[]):
         '''get all of the element names'''
-        if my.view.find("@") != -1:
-            xpath = "config/view[@name='%s']/element" % my.view
+        if self.view.find("@") != -1:
+            xpath = "config/view[@name='%s']/element" % self.view
         else:
-            xpath = "config/%s/element" % my.view
-        nodes = my.xml.get_nodes(xpath)
+            xpath = "config/%s/element" % self.view
+        nodes = self.xml.get_nodes(xpath)
 
         ordered_nodes = []
 
@@ -263,60 +278,60 @@ class WidgetDbConfig(SObject):
         return ordered_nodes
 
 
-    def get_element_xml(my, element_name):
-        node = my.get_element_node(element_name)
+    def get_element_xml(self, element_name):
+        node = self.get_element_node(element_name)
         if node is None:
             return ''
-        return my.xml.to_string(node)
+        return self.xml.to_string(node)
 
 
 
-    def get_element_node(my, element_name):
-        xpath = "config/%s/element[@name='%s']" % (my.view_xpath, element_name)
-        node = my.xml.get_node(xpath)
+    def get_element_node(self, element_name):
+        xpath = "config/%s/element[@name='%s']" % (self.view_xpath, element_name)
+        node = self.xml.get_node(xpath)
         return node
 
-    def create_element(my, elem_name):
+    def create_element(self, elem_name):
         '''create a new element or replace the existing one'''
-        view_node = my.xml.get_node("config/%s" % my.view_xpath)
-        old_element_node = my.xml.get_node("config/%s/element[@name='%s']" % (my.view_xpath, elem_name))
+        view_node = self.xml.get_node("config/%s" % self.view_xpath)
+        old_element_node = self.xml.get_node("config/%s/element[@name='%s']" % (self.view_xpath, elem_name))
         assert view_node != None
 
 
         # create the element
-        element_node = my.xml.create_element("element")
-        my.xml.set_attribute(element_node, "name", elem_name)
+        element_node = self.xml.create_element("element")
+        self.xml.set_attribute(element_node, "name", elem_name)
         if old_element_node is not None:
-            my.xml.replace_child(view_node, old_element_node, element_node)
+            self.xml.replace_child(view_node, old_element_node, element_node)
         else:
-            my.xml.append_child(view_node, element_node)
+            self.xml.append_child(view_node, element_node)
         return element_node
     
 
-    def import_element_node(my, element_name, deep=True):
-        node = my.get_element_node(element_name)
+    def import_element_node(self, element_name, deep=True):
+        node = self.get_element_node(element_name)
         imported_node = None
         if node is not None:
-            imported_node = my.xml.import_node(node, deep=deep)
+            imported_node = self.xml.import_node(node, deep=deep)
         return imported_node 
 
 
     # convenience access functions
-    def get_widget_key(my, element_name, type='display'):
+    def get_widget_key(self, element_name, type='display'):
         assert element_name != None
 
-        xpath = "config/%s/element[@name='%s']/%s/@widget" % (my.view, type, element_name)
-        return my.xml.get_value(xpath)
+        xpath = "config/%s/element[@name='%s']/%s/@widget" % (self.view, type, element_name)
+        return self.xml.get_value(xpath)
 
 
-    def get_display_handler(my, element_name):
+    def get_display_handler(self, element_name):
         assert element_name != None
         
-        xpath = "config/%s/element[@name='%s']/display/@class" % (my.view_xpath, element_name)
-        value = my.xml.get_value(xpath)
+        xpath = "config/%s/element[@name='%s']/display/@class" % (self.view_xpath, element_name)
+        value = self.xml.get_value(xpath)
         if not value:
-            xpath = "config/%s/element[@name='%s']/display/@widget" % (my.view_xpath, element_name)
-            key = my.xml.get_value(xpath)
+            xpath = "config/%s/element[@name='%s']/display/@widget" % (self.view_xpath, element_name)
+            key = self.xml.get_value(xpath)
             if key:
                 from tactic.ui.common import WidgetClassHandler
                 handler = WidgetClassHandler()
@@ -325,62 +340,62 @@ class WidgetDbConfig(SObject):
 
         return value
 
-    def get_handler(my, element_name, type):
+    def get_handler(self, element_name, type):
         # get the display handler regardless of type
-        return my.get_display_handler(element_name)
+        return self.get_display_handler(element_name)
 
 
 
 
-    def get_action_handler(my, element_name):
+    def get_action_handler(self, element_name):
         xpath = "config/%s/element[@name='%s']/action/@class" \
-            % (my.view,element_name)
-        return my.xml.get_value(xpath)
+            % (self.view,element_name)
+        return self.xml.get_value(xpath)
 
 
-    def get_type(my, element_name):
-        xpath = "config/%s/element[@name='%s']/@type" % (my.view_xpath, element_name)
-        type = my.xml.get_value(xpath)
+    def get_type(self, element_name):
+        xpath = "config/%s/element[@name='%s']/@type" % (self.view_xpath, element_name)
+        type = self.xml.get_value(xpath)
         if not type:
             xpath = "config/%s/element[@name='%s']/@type" % ("definition", element_name)
-            type = my.xml.get_value(xpath)
+            type = self.xml.get_value(xpath)
 
         return type
 
 
-    def get_action_options(my, element_name):
-        return my.get_options(element_name, 'action')
+    def get_action_options(self, element_name):
+        return self.get_options(element_name, 'action')
 
-    def get_web_options(my, element_name):
-        return my.get_options(element_name, 'web')
+    def get_web_options(self, element_name):
+        return self.get_options(element_name, 'web')
 
-    def get_display_options(my, element_name):
-        return my.get_options(element_name, 'display')
+    def get_display_options(self, element_name):
+        return self.get_options(element_name, 'display')
 
-    def get_options(my, element_name, element_child_name):
+    def get_options(self, element_name, element_child_name):
         xpath = "config/%s/element[@name='%s']/%s/*" \
-            % (my.view_xpath, element_name, element_child_name)
-        option_nodes = my.xml.get_nodes(xpath)
+            % (self.view_xpath, element_name, element_child_name)
+        option_nodes = self.xml.get_nodes(xpath)
 
         values = {}
 
         for node in option_nodes:
-            value = my.xml.get_node_value(node)
-            name = my.xml.get_node_name(node)
-            #first_child = my.xml.get_first_child(node)
+            value = self.xml.get_node_value(node)
+            name = self.xml.get_node_name(node)
+            #first_child = self.xml.get_first_child(node)
             #if not first_child:
             #    continue
-            #value = my.xml.get_node_value(first_child)
-            #name = my.xml.get_node_name(node)
+            #value = self.xml.get_node_value(first_child)
+            #name = self.xml.get_node_name(node)
             values[name] = value
 
         return values
 
 
 
-    def get_display_widget(my, element_name, extra_options={}):
-        display_handler = my.get_display_handler(element_name)
-        display_options = my.get_display_options(element_name)
+    def get_display_widget(self, element_name, extra_options={}):
+        display_handler = self.get_display_handler(element_name)
+        display_options = self.get_display_options(element_name)
 
         if not display_handler:
             raise Exception("No display handler found for [%s]" % element_name)
@@ -403,128 +418,128 @@ class WidgetDbConfig(SObject):
 
 
 
-    def append_xml_element(my, element_name, config_xml):
+    def append_xml_element(self, element_name, config_xml):
         '''append an element with the config_xml to current doc's view'''
         xml = Xml()
         xml.read_string(config_xml)
         new_root_node = xml.get_root_node()
        
-        view_node = my.get_view_node()
+        view_node = self.get_view_node()
         if view_node is None:
-            print "View Node does not exist"
+            print("View Node does not exist")
             return
-        node = my.get_element_node(element_name)
+        node = self.get_element_node(element_name)
         if node is not None:
             xml.replace_child(view_node, node, new_root_node)
         else:
-            element = my.get_element_node("code")
+            element = self.get_element_node("code")
             if element is None:
-                element = my.get_element_node("name")
+                element = self.get_element_node("name")
             if element is not None:
                 xml.insert_before(new_root_node, element)
             else:
                 xml.append_child(view_node, new_root_node)
-        #print my.xml.to_string()
+        #print(self.xml.to_string())
 
 
 
-    def insert_xml_element(my, element_name, config_xml, ref_element_name):
+    def insert_xml_element(self, element_name, config_xml, ref_element_name):
         '''append an element with the config_xml to current doc's view'''
         xml = Xml()
         xml.read_string(config_xml)
         new_root_node = xml.get_root_node()
        
-        view_node = my.get_view_node()
+        view_node = self.get_view_node()
         if view_node is None:
-            print "View Node does not exist"
+            print("View Node does not exist")
             return
-        node = my.get_element_node(element_name)
+        node = self.get_element_node(element_name)
         if node is not None:
             xml.replace_child(view_node, node, new_root_node)
         else:
-            element = my.get_element_node(ref_element_name)
+            element = self.get_element_node(ref_element_name)
             if element is not None:
                 xml.insert_before(view_node, new_root_node)
             else:
                 xml.append_child(view_node, new_root_node)
 
-        #print my.xml.to_string()
+        #print(self.xml.to_string())
 
 
 
 
-    def append_display_element(my, elem_name, cls_name=None, options=None, element_attrs=None, action_cls_name=None, action_options=None, view_as_attr=False):
+    def append_display_element(self, elem_name, cls_name=None, options=None, element_attrs=None, action_cls_name=None, action_options=None, view_as_attr=False):
         '''create and manipulate the config file. It handles display and action node as well.'''
        
         if view_as_attr:
-            view_node = my.xml.get_node("config/view[@name='%s']" % my.view)
-            old_element_node = my.xml.get_node("config/view[@name='%s']/element[@name='%s']" % (my.view, elem_name))
+            view_node = self.xml.get_node("config/view[@name='%s']" % self.view)
+            old_element_node = self.xml.get_node("config/view[@name='%s']/element[@name='%s']" % (self.view, elem_name))
         else:
-            view_node = my.xml.get_node("config/%s" % my.view)
+            view_node = self.xml.get_node("config/%s" % self.view)
             # find out if the element already exists
-            old_element_node = my.xml.get_node("config/%s/element[@name='%s']" % (my.view, elem_name))
+            old_element_node = self.xml.get_node("config/%s/element[@name='%s']" % (self.view, elem_name))
         
         assert view_node != None
 
 
         # create the element
-        element_node = my.xml.create_element("element")
-        my.xml.set_attribute(element_node, "name", elem_name)
+        element_node = self.xml.create_element("element")
+        self.xml.set_attribute(element_node, "name", elem_name)
         if old_element_node is not None:
-            my.xml.replace_child(view_node, old_element_node, element_node)
+            self.xml.replace_child(view_node, old_element_node, element_node)
         else:
-            my.xml.append_child(view_node, element_node)
+            self.xml.append_child(view_node, element_node)
       
         if element_attrs:
             for name, value in element_attrs.items():
                 if value:
-                    my.xml.set_attribute(element_node, name, value)
+                    self.xml.set_attribute(element_node, name, value)
 
 
         # add the class name
         if cls_name:
-            display_node = my.xml.create_element("display")
-            my.xml.set_attribute(display_node, "class", cls_name)
-            my.xml.append_child(element_node, display_node)
+            display_node = self.xml.create_element("display")
+            self.xml.set_attribute(display_node, "class", cls_name)
+            self.xml.append_child(element_node, display_node)
 
             # add any display options
             if options:
                 for name, value in options.items():
-                    option_node = my.xml.create_text_element(name, value)
-                    my.xml.append_child(display_node, option_node)
+                    option_node = self.xml.create_text_element(name, value)
+                    self.xml.append_child(display_node, option_node)
 
         if action_cls_name:
-            action_node = my.xml.create_element("action")
-            my.xml.set_attribute(action_node, "class", action_cls_name)
-            my.xml.append_child(element_node, action_node)
+            action_node = self.xml.create_element("action")
+            self.xml.set_attribute(action_node, "class", action_cls_name)
+            self.xml.append_child(element_node, action_node)
 
             # add any display options
             if action_options:
                 for name, value in action_options.items():
-                    option_node = my.xml.create_text_element(name, value)
-                    my.xml.append_child(action_node, option_node)
+                    option_node = self.xml.create_text_element(name, value)
+                    self.xml.append_child(action_node, option_node)
 
 
 
 
 
-    def remove_display_element(my, elem_name, cls_name=None, options=None):
+    def remove_display_element(self, elem_name, cls_name=None, options=None):
         '''FIXME: this one is badly named.. pretty much doing remove_node(), I suggest removing this method'''
-        view_node = my.xml.get_node("config/%s" % my.view)
+        view_node = self.xml.get_node("config/%s" % self.view)
 
         # find out if the element already exists
-        element_node = my.xml.get_node("config/%s/element[@name='%s']" % (my.view,elem_name))
+        element_node = self.xml.get_node("config/%s/element[@name='%s']" % (self.view,elem_name))
         if element_node is not None:
             #view_node.removeChild(element_node)
-            my.xml.remove_child(view_node, element_node)
+            self.xml.remove_child(view_node, element_node)
 
-    def remove_node(my, element_name):
-        view_node = my.get_view_node()
-        element_node = my.get_element_node(element_name)
+    def remove_node(self, element_name):
+        view_node = self.get_view_node()
+        element_node = self.get_element_node(element_name)
         if element_node is not None:
-            my.xml.remove_child(view_node, element_node)
+            self.xml.remove_child(view_node, element_node)
 
-    def alter_xml_element(my, element_name, config_xml=None, node=None):
+    def alter_xml_element(self, element_name, config_xml=None, node=None):
         '''alter an element with the config_xml to current doc's view.  If it
         does not exist, append it. Alternatively, pass in an actual node
         '''
@@ -535,33 +550,33 @@ class WidgetDbConfig(SObject):
             new_root_node = node
         else:
             raise SetupException()
-        view_node = my.get_view_node()
+        view_node = self.get_view_node()
         if view_node == None:
-            raise SetupException("The view node is not found for [%s]" %my.view)
+            raise SetupException("The view node is not found for [%s]" %self.view)
 
-        target_node = my.get_element_node(element_name)
+        target_node = self.get_element_node(element_name)
      
         if target_node is not None:
             #view_node.replaceChild(new_root_node, target_node )
-            my.xml.replace_child(view_node, target_node, new_root_node)
+            self.xml.replace_child(view_node, target_node, new_root_node)
         else:
             #view_node.appendChild(new_root_node)
-            my.xml.append_child(view_node, new_root_node)
+            self.xml.append_child(view_node, new_root_node)
 
 
-    def move_element_left(my, elem_name):
-        nodes = my.xml.get_nodes("config/%s/element" % my.view)
+    def move_element_left(self, elem_name):
+        nodes = self.xml.get_nodes("config/%s/element" % self.view)
         node = None
         index = -1
         for i, node in enumerate(nodes):
-            print i, node
+            print(i, node)
             if Xml.get_attribute(node, "name") == elem_name:
                 node = node
                 index = i
                 break
 
         if node is None:
-            raise Exception("Node [%s] does not exist" % my.elem_name)
+            raise Exception("Node [%s] does not exist" % self.elem_name)
 
         if index == 0:
             return
@@ -570,16 +585,16 @@ class WidgetDbConfig(SObject):
 
         #parent = node.parentNode
         #parent.removeChild(node)
-        parent = my.xml.get_parent(node)
-        my.xml.remove_child(parent, node)
+        parent = self.xml.get_parent(node)
+        self.xml.remove_child(parent, node)
 
         # FIXME: this does not use XML class
         parent.insertBefore(node, prev)
 
 
 
-    def move_element_right(my, elem_name):
-        nodes = my.xml.get_nodes("config/%s/element" % my.view)
+    def move_element_right(self, elem_name):
+        nodes = self.xml.get_nodes("config/%s/element" % self.view)
         node = None
         index = -1
         for i, node in enumerate(nodes):
@@ -589,16 +604,16 @@ class WidgetDbConfig(SObject):
                 break
 
         if node is None:
-            raise Exception("Node [%s] does not exist" % my.elem_name)
+            raise Exception("Node [%s] does not exist" % self.elem_name)
 
         #parent = node.parentNode
         #parent.removeChild(node)
-        parent = my.xml.get_parent(node)
-        my.xml.remove_child(parent, node)
+        parent = self.xml.get_parent(node)
+        self.xml.remove_child(parent, node)
         
         if index+2 >= len(nodes):
             #parent.appendChild(node)
-            my.xml.append_child(parent, node)
+            self.xml.append_child(parent, node)
         else:
             next = nodes[index+2]
 
@@ -607,21 +622,21 @@ class WidgetDbConfig(SObject):
 
 
 
-    def clear(my):
+    def clear(self):
         # make a basic xml document for configs
-        my.xml = Xml()
-        my.xml.create_doc("config")
-        root = my.xml.get_root_node()
-        view_node = my.xml.create_element(my.view)
+        self.xml = Xml()
+        self.xml.create_doc("config")
+        root = self.xml.get_root_node()
+        view_node = self.xml.create_element(self.view)
         #root.appendChild(view_node)
-        my.xml.append_child(root, view_node)
+        self.xml.append_child(root, view_node)
 
 
 
-    def commit_config(my):
+    def commit_config(self):
         '''commits the current config xml to the database'''
-        my.set_value("config", my.xml.to_string() )
-        my.commit()
+        self.set_value("config", self.xml.to_string() )
+        self.commit()
 
 
     # static methods
@@ -646,7 +661,7 @@ class WidgetDbConfig(SObject):
         try:
             search = Search( WidgetDbConfig.SEARCH_TYPE, project_code=project_code )
         # if there is no Widget config table
-        except SearchException, e:
+        except SearchException as e:
             return None
 
 
@@ -682,8 +697,8 @@ class WidgetDbConfig(SObject):
                     parts = orig_search_type.split("=")
                     project_code = parts[-1]
                     widget_db_config = cls.get_by_search_type(search_type, view, project_code=project_code)
-                except Exception, e:
-                    print "ERROR: ", e
+                except Exception as e:
+                    print("ERROR: ", e)
                     # No widget config found in the other project of the stype
                     pass
 
@@ -806,7 +821,7 @@ class WidgetDbConfig(SObject):
 
         # clear previous caches
         #key = '%s:%s' %(search_type, view)
-        #print "clearing cache: ", key
+        #print("clearing cache: ", key)
         cls.clear_cache()
         return sobject
     create = classmethod(create)
@@ -905,34 +920,34 @@ class WidgetDbConfig(SObject):
 
 class WidgetDbConfigCache(Base):
 
-    def __init__(my, search_type, view):
-        my.view = view
+    def __init__(self, search_type, view):
+        self.view = view
 
         # cache this value so it doesn't have to be parsed every time
-        my.config = WidgetDbConfig.get_by_search_type(search_type, view)
-        if my.config == None:
-            my.xml = Xml()
-            my.xml.create_doc()
-            my.view_xpath = view
+        self.config = WidgetDbConfig.get_by_search_type(search_type, view)
+        if self.config == None:
+            self.xml = Xml()
+            self.xml.create_doc()
+            self.view_xpath = view
         else:
-            my.xml = my.config.get_xml_value("config")
-            my.view_xpath = my.config.view_xpath
+            self.xml = self.config.get_xml_value("config")
+            self.view_xpath = self.config.view_xpath
 
         # get the default sobject corresponding to this view
-        my.default_config = WidgetDbConfig.get_global_default(my.view)
-        if not my.default_config:
-            my.default_xml = Xml()
-            my.default_xml.read_string("<config/>")
+        self.default_config = WidgetDbConfig.get_global_default(self.view)
+        if not self.default_config:
+            self.default_xml = Xml()
+            self.default_xml.read_string("<config/>")
         else:
-            my.default_xml = my.default_config.get_xml_value("config")
+            self.default_xml = self.default_config.get_xml_value("config")
         
 
 
 
-    def get_element_names(my):
+    def get_element_names(self):
         '''get all of the element names'''
-        xpath = "config/%s/element" % my.view
-        nodes = my.xml.get_nodes(xpath)
+        xpath = "config/%s/element" % self.view
+        nodes = self.xml.get_nodes(xpath)
 
         ordered_nodes = []
 
@@ -945,51 +960,51 @@ class WidgetDbConfigCache(Base):
 
 
     # convenience functions
-    def get_display_handler(my, element_name):
+    def get_display_handler(self, element_name):
         xpath = "config/%s/element[@name='%s']/display/@class" \
-            % (my.view_xpath, element_name)
-        display_handler = my.xml.get_value(xpath)
+            % (self.view_xpath, element_name)
+        display_handler = self.xml.get_value(xpath)
 
         if display_handler == "":
             xpath = "config/default/element[@name='%s']/display/@class" \
                 % (element_name)
-            display_handler = my.default_xml.get_value(xpath)
+            display_handler = self.default_xml.get_value(xpath)
 
         return display_handler
 
 
 
-    def get_action_handler(my, element_name):
+    def get_action_handler(self, element_name):
         xpath = "config/%s/element[@name='%s']/action/@class" \
-            % (my.view_xpath, element_name)
+            % (self.view_xpath, element_name)
 
-        handler = my.xml.get_value(xpath)
+        handler = self.xml.get_value(xpath)
 
         if handler == "":
             xpath = "config/default/element[@name='%s']/action/@class" \
                 % (element_name)
-            handler = my.default_xml.get_value(xpath)
+            handler = self.default_xml.get_value(xpath)
 
         return handler
 
 
     """
-    def get_display_options(my, element_name):
+    def get_display_options(self, element_name):
         
         xpath = "config/default/element[@name='%s']/display/*" \
             % (element_name)
         # get the default options and add
-        option_nodes = my.default_xml.get_nodes(xpath)
+        option_nodes = self.default_xml.get_nodes(xpath)
         values = {}
         for node in option_nodes:
             value = node.firstChild.nodeValue
             values[node.nodeName] = value
 
         xpath = "config/%s/element[@name='%s']/display/*" \
-            % (my.view,element_name)
+            % (self.view,element_name)
         # get the override options and add
        
-        option_nodes = my.xml.get_nodes(xpath)
+        option_nodes = self.xml.get_nodes(xpath)
         values = {}
         for node in option_nodes:
             value = node.firstChild.nodeValue

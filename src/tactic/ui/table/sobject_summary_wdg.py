@@ -28,22 +28,22 @@ class SObjectSummaryElementWdg(SimpleTableElementWdg):
     ARGS_KEYS = {
     }
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def get_required_columns(my):
+    def get_required_columns(self):
         return []
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("min-width: 110px")
 
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         
         if isinstance(sobject, Project):
             num_tasks = Search.eval("@COUNT(sthpw/task['project_code','%s'])"%sobject.get_code())
@@ -167,17 +167,17 @@ class SObjectFilesElementWdg(ButtonElementWdg):
     is_editable = classmethod(is_editable)
 
 
-    def init(my):
+    def init(self):
         # FIXME: this dos not work here yet .. do it in javascript
-        #layout = my.get_layout_wdg()
+        #layout = self.get_layout_wdg()
         #print "layout: ", layout
 
-        mode = my.get_option("mode")
+        mode = self.get_option("mode")
         if not mode:
             mode = 'popup'
 
-        my.set_option('icon', "FOLDER")
-        my.kwargs['cbjs_action'] = '''
+        self.set_option('icon', "FOLDER")
+        self.kwargs['cbjs_action'] = '''
             var class_name = 'tactic.ui.checkin.SObjectDirListWdg';
             var row = bvr.src_el.getParent(".spt_table_row");
 
@@ -213,6 +213,6 @@ class SObjectFilesElementWdg(ButtonElementWdg):
 
 
 
-        super(SObjectFilesElementWdg, my).init()
+        super(SObjectFilesElementWdg, self).init()
 
 

@@ -31,7 +31,7 @@ from chart_data import ChartData, ChartElement
 
 class SampleChartWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_class("spt_sample_chart_top")

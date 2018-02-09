@@ -27,17 +27,17 @@ from tactic.ui.widget import ActionButtonWdg
 
 class PanelWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_panel_layout_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
 
 
-        my.view = my.kwargs.get("view")
+        self.view = self.kwargs.get("view")
 
 
         # Define some views that are pages.  Pages are views that are self
@@ -48,14 +48,14 @@ class PanelWdg(BaseRefreshWdg):
         search.add_filter("category", "CustomLayoutWdg")
         search.add_filter("view", "pages.%", op="like")
         sobjects = search.get_sobjects()
-        my.pages = SObject.get_values(sobjects, "view")
+        self.pages = SObject.get_values(sobjects, "view")
 
         config = None
         is_test = False
-        if my.view:
+        if self.view:
             search = Search("config/widget_config")
             search.add_filter("category", "PanelLayoutWdg")
-            search.add_filter("view", my.view)
+            search.add_filter("view", self.view)
             config = search.get_sobject()
 
         elif is_test:
@@ -108,7 +108,7 @@ class PanelWdg(BaseRefreshWdg):
             config = WidgetConfig.get(view="elements", xml=config_xml)
 
 
-        grid = my.kwargs.get("grid")
+        grid = self.kwargs.get("grid")
         if not grid:
             grid = config.get_view_attribute("grid")
 
@@ -130,7 +130,7 @@ class PanelWdg(BaseRefreshWdg):
 
 
         if is_owner:
-            menu = my.get_action_menu()
+            menu = self.get_action_menu()
             #SmartMenu.add_smart_menu_set( top, { 'BUTTON_MENU': menu } )
 
         element_names = config.get_element_names()
@@ -220,14 +220,14 @@ class PanelWdg(BaseRefreshWdg):
 
                 index += 1
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return top
 
 
 
-    def get_action_menu(my):
+    def get_action_menu(self):
 
         from menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
@@ -288,7 +288,7 @@ class PanelWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click',
-            'view': my.view,
+            'view': self.view,
             'cbjs_action': '''
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_panel_layout_top");
@@ -322,7 +322,7 @@ class PanelWdg(BaseRefreshWdg):
 
 
 
-        if len(my.pages) > 5:
+        if len(self.pages) > 5:
 
 
             menu_item = MenuItem(type='action', label='Load Page')
@@ -347,7 +347,7 @@ class PanelWdg(BaseRefreshWdg):
             menu_item = MenuItem(type='title', label='Pages')
             menu.add(menu_item)
 
-            for page in my.pages:
+            for page in self.pages:
                 menu_item = MenuItem(type='action', label=page)
                 menu_item.add_behavior( {
                     'page': page,
@@ -390,9 +390,9 @@ class PanelWdg(BaseRefreshWdg):
 
 class UserPageSelectWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("margin: 10px")
 
 
@@ -401,7 +401,7 @@ class UserPageSelectWdg(BaseRefreshWdg):
         search.add_filter("category", "CustomLayoutWdg")
         search.add_filter("view", "pages.%", op="like")
         sobjects = search.get_sobjects()
-        my.pages = SObject.get_values(sobjects, "view")
+        self.pages = SObject.get_values(sobjects, "view")
 
 
         top.add("<div style='font-size: 16px'>Select page to load</div>")
@@ -438,14 +438,14 @@ class UserPageSelectWdg(BaseRefreshWdg):
             '''
         } )
 
-        if my.pages:
-            last_parts = my.pages[0].split(".")[:-1]
+        if self.pages:
+            last_parts = self.pages[0].split(".")[:-1]
 
 
-        my.pages.sort()
+        self.pages.sort()
 
         last_parts = []
-        for count, page in enumerate(my.pages):
+        for count, page in enumerate(self.pages):
 
             page = page.replace(".", "/")
 
@@ -487,9 +487,9 @@ class UserPageSelectWdg(BaseRefreshWdg):
 
 class UserPageCreatorWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("width: 600px")
         top.add_style("height: 600px")
         top.add_style("margin: 20px")
@@ -562,14 +562,14 @@ class UserPageCreatorWdg(BaseRefreshWdg):
 
 class UserPageCreatorCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
-        print "kwargs: ", my.kwargs
+        print "kwargs: ", self.kwargs
 
         options = {}
         class_name = "tactic.ui.panel.CustomLayoutWdg"
         widget_key = ""
-        for key, value in my.kwargs.items():
+        for key, value in self.kwargs.items():
             if value == '':
                 continue
 
@@ -593,8 +593,8 @@ class UserPageCreatorCmd(Command):
 
         print "options: ", options
 
-        name = my.kwargs.get("name")
-        description = my.kwargs.get("description") or " "
+        name = self.kwargs.get("name")
+        description = self.kwargs.get("description") or " "
 
         if not name:
             raise Exception("No name provided")

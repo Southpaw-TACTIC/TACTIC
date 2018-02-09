@@ -61,8 +61,8 @@ DEFAULTS['SQLServer'] = {
 class DbConfigPanelWdg(BaseRefreshWdg):
     '''Container with a nice border and centered'''
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
         top.set_round_corners()
         top.add_style("margin: 20px")
@@ -88,8 +88,8 @@ class DbConfigWdg(BaseRefreshWdg):
     '''Container with a nice border and centered'''
 
     
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
         top.add_border()
         top.add_color("background", "background")
@@ -108,9 +108,9 @@ class DbConfigWdg(BaseRefreshWdg):
 
 class DbConfigContentWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_db_config_top")
         top.add_style("width: 430px")
         top.add_style("min-height: 500")
@@ -134,7 +134,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         checkin_keys=Config.get_section_values('checkin')
         checkin_keys=checkin_keys.keys()
-        save_button = my.get_save_button(checkin_keys)
+        save_button = self.get_save_button(checkin_keys)
         top.add(save_button)
         vendor = Config.get_value("database", "vendor")
 
@@ -185,11 +185,11 @@ class DbConfigContentWdg(BaseRefreshWdg):
         option_div.add(db_select)
         option_div.add_style("margin: 20px")
 
-        sqlite_wdg = my.get_sqlite_wdg()
+        sqlite_wdg = self.get_sqlite_wdg()
         option_div.add(sqlite_wdg)
-        mysql_wdg = my.get_mysql_wdg()
+        mysql_wdg = self.get_mysql_wdg()
         option_div.add(mysql_wdg)        
-        otherdb_wdg = my.get_otherdb_wdg()
+        otherdb_wdg = self.get_otherdb_wdg()
         option_div.add(otherdb_wdg)
 
         if vendor == 'Sqlite':
@@ -249,7 +249,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
 
 
-        top.add( my.configure_category(title, category, options) )
+        top.add( self.configure_category(title, category, options) )
 
         top.add("<hr/>")
 
@@ -262,8 +262,8 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         options=checkin_keys[:]
 
-        my._remove_item_from_list(options,'win32_server_handoff_dir')
-        my._remove_item_from_list(options,'linux_server_handoff_dir')
+        self._remove_item_from_list(options,'win32_server_handoff_dir')
+        self._remove_item_from_list(options,'linux_server_handoff_dir')
 
         if os.name == "nt":
             options.append('win32_server_handoff_dir')
@@ -271,7 +271,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
             options.append('linux_server_handoff_dir')
 
 
-        top.add( my.configure_category(title, category, options) )
+        top.add( self.configure_category(title, category, options) )
 
         top.add("<hr/>")
         top.add("<br/>")
@@ -280,7 +280,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         category = "services"
         options = ['mailserver', 'mail_user', 'mail_password', 'mail_port', 
             'mail_tls_enabled', 'mail_sender_disabled']
-        top.add( my.configure_category(title, category, options) )
+        top.add( self.configure_category(title, category, options) )
 
         top.add("<hr/>")
 
@@ -288,14 +288,14 @@ class DbConfigContentWdg(BaseRefreshWdg):
         category = "services"
         options = ['process_count', 'process_time_alive', 'thread_count', 
             'python_path','rsync']
-        top.add( my.configure_category(title, category, options) )
+        top.add( self.configure_category(title, category, options) )
 
         top.add("<hr/>")
 
         title = "Look and Feel"
         category = "look"
         options = ['palette']
-        top.add( my.configure_category(title, category, options) )
+        top.add( self.configure_category(title, category, options) )
 
         top.add("<hr/>")
 
@@ -311,7 +311,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
             'api_require_password':'bool','api_password':'string',
             'max_login_attempt':'number','account_logout_duration':'number',
             'allow_guest':'bool','guest_mode':'string'}
-        top.add( my.configure_category(title, category, options,options_type) )
+        top.add( self.configure_category(title, category, options,options_type) )
 
 
         #wizard_wdg = WizardWdg()
@@ -321,7 +321,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         #wizard_wdg.add(DivWdg("dog"), "dog")
         return top
 
-    def configure_category(my, title, category, options, options_type = {}):
+    def configure_category(self, title, category, options, options_type = {}):
         div = DivWdg()
 
         title_wdg = DivWdg()
@@ -382,7 +382,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
 
 
-    def get_sqlite_wdg(my):
+    def get_sqlite_wdg(self):
         div = DivWdg()
         div.add_class("spt_db_options")
         div.add_attr("spt_vendor", "Sqlite")
@@ -402,15 +402,15 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         return div
 
-    def get_mysql_wdg(my):
-        div = my.common_wdg(vendor='MySQL')
+    def get_mysql_wdg(self):
+        div = self.common_wdg(vendor='MySQL')
         return div
 
-    def get_otherdb_wdg(my):
-        div = my.common_wdg(vendor='')
+    def get_otherdb_wdg(self):
+        div = self.common_wdg(vendor='')
         return div
 
-    def common_wdg(my,vendor):
+    def common_wdg(self,vendor):
         div = DivWdg()
         div.add_class("spt_db_options")
         div.add_style("margin: 20px")
@@ -476,15 +476,15 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
         return div
 
-    def get_asset_dir_wdg(my):
+    def get_asset_dir_wdg(self):
         div = DivWdg()
         return div
 
-    def _remove_item_from_list(my,the_list,val):
+    def _remove_item_from_list(self,the_list,val):
         if val in the_list:
             the_list.remove(val)
 
-    def get_save_button(my,checkin_keys):
+    def get_save_button(self,checkin_keys):
         save_button = ActionButtonWdg(title="Save >>", tip="Save configuration and start using TACTIC")
    
         save_button.add_style("float: right")
@@ -550,7 +550,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
 class DbConfigCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
         # make sure tmp config is unset.
         Config.unset_tmp_config()
@@ -569,21 +569,21 @@ class DbConfigCbk(Command):
                 return
 
         elif vendor == 'PostgreSQL':
-            my.test_postgres(vendor)
+            self.test_postgres(vendor)
             return
 
         elif vendor in ['MySQL','SQLServer','Oracle']:
-            my.test_postgres(vendor)
+            self.test_postgres(vendor)
             return
 
-        my.info['error'] = "Cannot connect to database"
+        self.info['error'] = "Cannot connect to database"
 
 
-    def check_database_schema(my):
+    def check_database_schema(self):
         pass
 
 
-    def test_postgres(my, vendor):
+    def test_postgres(self, vendor):
         web = WebContainer.get_web()
 
         defaults = DEFAULTS[vendor]
@@ -615,7 +615,7 @@ class DbConfigCbk(Command):
 
         if not create:
             if not exists:
-                my.info['error'] = "Database [sthpw] does not exist.  This is required for TACTIC to function."
+                self.info['error'] = "Database [sthpw] does not exist.  This is required for TACTIC to function."
 
                 return
 
@@ -642,17 +642,17 @@ class DbConfigCbk(Command):
             # attempt
             sql.connect()
             sql.do_query("select id from transaction_log limit 1")
-        except Exception, e:
-            my.info['error'] = "Could not connect to database with (vendor=%s, server=%s, user=%s, port=%s)" % (vendor, server, user, port)
-            my.info['message'] = str(e)
+        except Exception as e:
+            self.info['error'] = "Could not connect to database with (vendor=%s, server=%s, user=%s, port=%s)" % (vendor, server, user, port)
+            self.info['message'] = str(e)
             print e
 
 
 
 class DbConfigSaveCbk(Command):
 
-    def execute(my):
-        my.section = None
+    def execute(self):
+        self.section = None
 
         # make sure tmp config is unset.
         Config.unset_tmp_config()
@@ -683,21 +683,21 @@ class DbConfigSaveCbk(Command):
             shutil.copy(install_config_path, dirname)
 
         try:
-            my.configure_db()
-            my.configure_install()
-            my.configure_mail_services()
-            my.configure_gen_services()
-            my.configure_asset_dir()
-            my.configure_palette()
-            my.configure_security()
-        except Exception, e:
-            raise TacticException('Error in [%s]: %s'%(my.section, e.__str__()))
+            self.configure_db()
+            self.configure_install()
+            self.configure_mail_services()
+            self.configure_gen_services()
+            self.configure_asset_dir()
+            self.configure_palette()
+            self.configure_security()
+        except Exception as e:
+            raise TacticException('Error in [%s]: %s'%(self.section, e.__str__()))
         # FIXME: if this all fails, then revert back
         
-        my.save_config()
+        self.save_config()
 
         # after saving the config, test the database
-        my.load_bootstrap()
+        self.load_bootstrap()
 
         # remove the first run file
         data_dir = Environment.get_data_dir()
@@ -706,12 +706,12 @@ class DbConfigSaveCbk(Command):
             os.unlink(path)
 
 
-        my.restart_program()
+        self.restart_program()
 
 
     
 
-    def restart_program(my):
+    def restart_program(self):
         '''Restarts the current program.'''
         import sys
         python = sys.executable
@@ -728,7 +728,7 @@ class DbConfigSaveCbk(Command):
 
 
 
-    def load_bootstrap(my):
+    def load_bootstrap(self):
         impl = DatabaseImpl.get()
         exists = impl.database_exists("sthpw")
         print "exists: ", exists
@@ -753,8 +753,8 @@ class DbConfigSaveCbk(Command):
 
 
 
-    def configure_install(my):
-        my.section = 'Installation'
+    def configure_install(self):
+        self.section = 'Installation'
         web = WebContainer.get_web()
 
         default_project = web.get_form_value("install/default_project")
@@ -771,9 +771,9 @@ class DbConfigSaveCbk(Command):
             Config.set_value("install", "tmp_dir", '')
 
 
-    def configure_db(my):
+    def configure_db(self):
 
-        my.section = 'Database Setup'
+        self.section = 'Database Setup'
         web = WebContainer.get_web()
 
         vendor = web.get_form_value("database/vendor")
@@ -882,8 +882,8 @@ class DbConfigSaveCbk(Command):
 
 
 
-    def configure_asset_dir(my):
-        my.section = 'Asset Management Setup'
+    def configure_asset_dir(self):
+        self.section = 'Asset Management Setup'
 
         web = WebContainer.get_web()
         keys = web.get_form_keys()
@@ -909,8 +909,8 @@ class DbConfigSaveCbk(Command):
             else:
                 Config.set_value("checkin", '%s'%item_dir, "")
 
-    def configure_palette(my):
-        my.section = 'Look and Feel'
+    def configure_palette(self):
+        self.section = 'Look and Feel'
         web = WebContainer.get_web()
         palette = web.get_form_value("look/palette")
 
@@ -921,8 +921,8 @@ class DbConfigSaveCbk(Command):
             #Config.remove("look", "palette")
 
 
-    def configure_mail_services(my):
-        my.section = 'Mail Server'
+    def configure_mail_services(self):
+        self.section = 'Mail Server'
         web = WebContainer.get_web()
 
         options = ['server', '_user', '_password', '_port', '_tls_enabled','_sender_disabled']
@@ -935,8 +935,8 @@ class DbConfigSaveCbk(Command):
                 #Config.remove("services", "mail%s"%option)
                 Config.set_value("services", "mail%s"%option,  "")
 
-    def configure_gen_services(my):
-        my.section = 'Services'
+    def configure_gen_services(self):
+        self.section = 'Services'
         web = WebContainer.get_web()
 
         options = ['process_count', 'process_time_alive', 'thread_count', 'python_path','rsync']
@@ -951,8 +951,8 @@ class DbConfigSaveCbk(Command):
 
 
 
-    def configure_security(my):
-        my.section = 'Security'
+    def configure_security(self):
+        self.section = 'Security'
         web = WebContainer.get_web()
 
         options = ['allow_guest','ticket_expiry','authenticate_mode',
@@ -968,23 +968,23 @@ class DbConfigSaveCbk(Command):
 
 
 
-    def save_config(my):
+    def save_config(self):
         Config.save_config()
         Config.reload_config()
 
 class KillProcessThread(threading.Thread):
     '''Kill a Windows process'''
-    def __init__(my, pid):
-        super(KillProcessThread, my).__init__()
-        my.pid = pid
+    def __init__(self, pid):
+        super(KillProcessThread, self).__init__()
+        self.pid = pid
 
-    def run(my):
+    def run(self):
         """kill function for Win32 prior to Python2.7"""
         import time
         # pause for the DbConfigSaveCbk to finish first
         time.sleep(2)
         import ctypes
         kernel32 = ctypes.windll.kernel32
-        handle = kernel32.OpenProcess(1, 0, my.pid)
+        handle = kernel32.OpenProcess(1, 0, self.pid)
         return (0 != kernel32.TerminateProcess(handle, 0))
 

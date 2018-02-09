@@ -54,29 +54,29 @@ class BaseSectionWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
-        my.config_search_type = my.kwargs.get("config_search_type")
-        if not my.config_search_type:
-            my.config_search_type = "SideBarWdg"
+    def get_display(self):
+        self.config_search_type = self.kwargs.get("config_search_type")
+        if not self.config_search_type:
+            self.config_search_type = "SideBarWdg"
 
-        title = my.kwargs.get('title')
-        config = my.kwargs.get('config')
-        view = my.kwargs.get('view')
-        width = my.kwargs.get('width')
-        #sortable = my.kwargs.get('sortable')
+        title = self.kwargs.get('title')
+        config = self.kwargs.get('config')
+        view = self.kwargs.get('view')
+        width = self.kwargs.get('width')
+        #sortable = self.kwargs.get('sortable')
         if not width:
             width = "175"
 
-        my.prefix = my.kwargs.get("prefix")
-        if not my.prefix:
-            my.prefix = "side_bar"
+        self.prefix = self.kwargs.get("prefix")
+        if not self.prefix:
+            self.prefix = "side_bar"
 
-        my.mode = my.kwargs.get("mode")
-        if not my.mode:
-            my.mode = 'view'
+        self.mode = self.kwargs.get("mode")
+        if not self.mode:
+            self.mode = 'view'
 
 
-        my.default = my.kwargs.get('default') == 'True'
+        self.default = self.kwargs.get('default') == 'True'
 
         div = DivWdg()
         div.add_class("spt_section_top")
@@ -90,8 +90,8 @@ class BaseSectionWdg(BaseRefreshWdg):
         section_div = LabeledHidableWdg(label=label)
         div.add(section_div)
 
-        section_div.set_attr('spt_class_name', Common.get_full_class_name(my))
-        for name, value in my.kwargs.items():
+        section_div.set_attr('spt_class_name', Common.get_full_class_name(self))
+        for name, value in self.kwargs.items():
             if name == "config":
                 continue
             section_div.set_attr("spt_%s" % name, value)
@@ -117,7 +117,7 @@ class BaseSectionWdg(BaseRefreshWdg):
 
         web = WebContainer.get_web()
         for viewx in view:
-            config = my.get_config(my.config_search_type, viewx, default=my.default)
+            config = self.get_config(self.config_search_type, viewx, default=self.default)
             if not config:
                 continue
 
@@ -144,7 +144,7 @@ class BaseSectionWdg(BaseRefreshWdg):
             view_attrs = config.get_view_attributes()
             title_str = view_attrs.get("title")
             if not title_str:
-                if viewx.startswith("my_view_"):
+                if viewx.startswith("self_view_"):
                     title_str = "My Views"
                 else:
                     title_str = viewx
@@ -160,21 +160,21 @@ class BaseSectionWdg(BaseRefreshWdg):
             content_div.add( title )
 
             info = { 'counter' : 10, 'view': viewx }
-            my.generate_section( config, content_div, info )
-            error_list = Container.get_seq(my.ERR_MSG)
+            self.generate_section( config, content_div, info )
+            error_list = Container.get_seq(self.ERR_MSG)
             if error_list: 
                 span = SpanWdg()
                 span.add_style('background', 'red')
                 span.add('<br/>'.join(error_list))
                 content_div.add(span)
-                Container.clear_seq(my.ERR_MSG)
-            my.add_dummy(config, content_div) 
+                Container.clear_seq(self.ERR_MSG)
+            self.add_dummy(config, content_div) 
 
         return div
 
 
   
-    def _get_title(my, config, element_name):
+    def _get_title(self, config, element_name):
         attributes = config.get_element_attributes(element_name)
         title = attributes.get("title")
         if not title:
@@ -191,20 +191,20 @@ class BaseSectionWdg(BaseRefreshWdg):
 
 
 
-    def add_dummy(my, config, subsection_div):
+    def add_dummy(self, config, subsection_div):
         div = DivWdg()
         div.add_attr("spt_view", config.get_view() )
         div.add_class("spt_side_bar_element")
         div.add_class("spt_side_bar_dummy")
-        div.add( my.get_drop_wdg() )
+        div.add( self.get_drop_wdg() )
         subsection_div.add(div)
 
 
 
-    def generate_section( my, config, subsection_div, info, base_path="" ):
+    def generate_section( self, config, subsection_div, info, base_path="" ):
 
-        title = my.kwargs.get('title')
-        view = my.kwargs.get('view')
+        title = self.kwargs.get('title')
+        view = self.kwargs.get('view')
 
         base_path_flag = True
         if not base_path:
@@ -225,14 +225,14 @@ class BaseSectionWdg(BaseRefreshWdg):
         
         # if there are no elements, then just add a drop widget
         if not element_names:
-            if my.mode == 'view':
+            if self.mode == 'view':
                 item_div = DivWdg()
                 item_div.add_style("margin: 3px")
                 item_div.add_style("color: #555")
                 item_div.add("<i>-- No items --</i>")
                 subsection_div.add(item_div)
             else:
-                my.add_dummy(config, subsection_div)
+                self.add_dummy(config, subsection_div)
             return
 
         for element_name in element_names:
@@ -252,7 +252,7 @@ class BaseSectionWdg(BaseRefreshWdg):
                 subsection_div.add(div)
 
                 options = config.get_display_options(element_name)
-                my.add_separator_behavior(div, element_name, config, options)
+                self.add_separator_behavior(div, element_name, config, options)
 
                 continue
 
@@ -263,7 +263,7 @@ class BaseSectionWdg(BaseRefreshWdg):
                 if not security.check_access("side_bar", element_name, "view", default=default_access):
                     continue
 
-                title = my._get_title(config, element_name)
+                title = self._get_title(config, element_name)
                 
 
                 paths = []
@@ -291,7 +291,7 @@ class BaseSectionWdg(BaseRefreshWdg):
                 #    outer_div.add_attr("spt_login", info.get('login')) 
 
                 # add an invisible drop widget
-                outer_div.add(my.get_drop_wdg())
+                outer_div.add(self.get_drop_wdg())
 
 
                 # Create the link
@@ -336,14 +336,14 @@ class BaseSectionWdg(BaseRefreshWdg):
 
 
                 # add the behaviors
-                my.add_folder_behavior(s_link_div, element_name, config, options)
+                self.add_folder_behavior(s_link_div, element_name, config, options)
 
                 # then get view name from options in order to read a new
                 # config and recurse ...
                 options_view_name = options.get('view')
                 if options_view_name:
-                    sub_config = my.get_config( my.config_search_type, options_view_name, default=my.default)
-                    my.generate_section( sub_config, s_content_div, info, current_path )
+                    sub_config = self.get_config( self.config_search_type, options_view_name, default=self.default)
+                    self.generate_section( sub_config, s_content_div, info, current_path )
 
                 outer_div.add(s_link_div)
                 outer_div.add(s_content_div)
@@ -359,10 +359,10 @@ class BaseSectionWdg(BaseRefreshWdg):
                     options['class_name'] = "tactic.ui.panel.ViewPanelWdg"
                     #FIXME: this cause an error in xmlrpc
                     #options['haha'] = False
-                link_wdg = my.get_link_wdg(element_name, config, options)
+                link_wdg = self.get_link_wdg(element_name, config, options)
 
                 if link_wdg:
-                    my.add_link_behavior(link_wdg, element_name, config, options)
+                    self.add_link_behavior(link_wdg, element_name, config, options)
                     subsection_div.add(link_wdg)
 
         # ------------------------------------------
@@ -378,8 +378,8 @@ class BaseSectionWdg(BaseRefreshWdg):
 
 
 
-    def get_drop_wdg(my):
-        if my.mode == 'view':
+    def get_drop_wdg(self):
+        if self.mode == 'view':
             return SpanWdg()
         hr = DivWdg()
         hr.set_attr("SPT_ACCEPT_DROP", "manageSideBar")
@@ -392,9 +392,9 @@ class BaseSectionWdg(BaseRefreshWdg):
         hr.add("<hr style='margin-top: 2px; size: 1px; color: #222; display: none'/>")
         return hr
 
-    def get_link_wdg(my, element_name, config, options):
+    def get_link_wdg(self, element_name, config, options):
         attributes = config.get_element_attributes(element_name)
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
 
         default_access = "view"
         path = options.get('path')
@@ -433,7 +433,7 @@ class BaseSectionWdg(BaseRefreshWdg):
 
 
         # add an invisible drop widget
-        drop_wdg = my.get_drop_wdg()
+        drop_wdg = self.get_drop_wdg()
         drop_wdg.add_style("margin-top: -3px")
         link_wdg.add(drop_wdg)
 
@@ -462,15 +462,15 @@ class BaseSectionWdg(BaseRefreshWdg):
     #
     # behavior functions
     #
-    def add_separator_behavior(my, separator_wdg, element_name, config, options):
+    def add_separator_behavior(self, separator_wdg, element_name, config, options):
         pass
 
-    def add_folder_behavior(my, folder_wdg, element_name, config, options):
+    def add_folder_behavior(self, folder_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a folder'''
         pass
 
 
-    def add_link_behavior(my, link_wdg, element_name, config, options):
+    def add_link_behavior(self, link_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a link'''
         pass
 
@@ -596,10 +596,10 @@ class SideBarSectionWdg(BaseSectionWdg):
 
 
 
-    def add_separator_behavior(my, separator_wdg, element_name, config, options):
+    def add_separator_behavior(self, separator_wdg, element_name, config, options):
         pass
 
-    def add_folder_behavior(my, folder_wdg, element_name, config, options):
+    def add_folder_behavior(self, folder_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a folder'''
 
         # determines whether the folder opens on click
@@ -610,16 +610,16 @@ class SideBarSectionWdg(BaseSectionWdg):
         folder_wdg.add_behavior( behavior )
 
 
-    def add_link_behavior(my, link_wdg, element_name, config, options):
+    def add_link_behavior(self, link_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a link'''
 
 
         # if a parent key filter is specified, use it
-        parent_key = my.kwargs.get("parent_key")
+        parent_key = self.kwargs.get("parent_key")
         if parent_key:
             options['parent_key'] = parent_key
 
-        state = my.kwargs.get("state")
+        state = self.kwargs.get("state")
         if state:
             options['state'] = state
 
@@ -627,7 +627,7 @@ class SideBarSectionWdg(BaseSectionWdg):
         options['element_name'] = element_name
 
         # send the title through
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
 
         header_title = options.get('header_title')
         if not header_title:

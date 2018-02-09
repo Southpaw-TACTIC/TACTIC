@@ -28,38 +28,38 @@ ALPHA = "1.0"
 
 class ButtonRowWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.top = DivWdg(css='spt_button_row')
+    def init(self):
+        self.top = DivWdg(css='spt_button_row')
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
-    def get_num_buttons(my):
-        return len(my.widgets)
+    def get_num_buttons(self):
+        return len(self.widgets)
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("SPT_DTS")
         # make it focusable
         top.set_attr('tabIndex','-1')
         buttons = []
 
-        show_title = my.kwargs.get("show_title")
+        show_title = self.kwargs.get("show_title")
         show_title = show_title in ['True', True]
 
-        for button in my.widgets:
+        for button in self.widgets:
             if isinstance(button, ButtonNewWdg):
                 button.set_show_title(show_title)
             buttons.append(button)
 
-        #top.add( my.get_row_wdg(buttons, show_title=show_title) )
-        top.add( my.get_row_wdg_new(buttons, show_title=show_title) )
-        #top.add( my.get_row_wdgXX(buttons, show_title=show_title) )
+        #top.add( self.get_row_wdg(buttons, show_title=show_title) )
+        top.add( self.get_row_wdg_new(buttons, show_title=show_title) )
+        #top.add( self.get_row_wdgXX(buttons, show_title=show_title) )
         return top
 
 
-    def get_row_wdg_new(my, buttons, show_title=False):
+    def get_row_wdg_new(self, buttons, show_title=False):
 
         div = DivWdg()
 
@@ -106,7 +106,7 @@ class ButtonRowWdg(BaseRefreshWdg):
 
 
 
-        base = "%s/%s" % (BASE, my.top.get_theme() )
+        base = "%s/%s" % (BASE, self.top.get_theme() )
 
         for count, button in enumerate(buttons):
             td = table.add_cell()
@@ -130,7 +130,7 @@ class ButtonRowWdg(BaseRefreshWdg):
 
 
 
-    def get_row_wdg(my, buttons, show_title=False):
+    def get_row_wdg(self, buttons, show_title=False):
 
         table = Table()
         table.set_round_corners(20)
@@ -139,7 +139,7 @@ class ButtonRowWdg(BaseRefreshWdg):
         table.add_attr("cellpadding", "0px")
         table.add_row()
 
-        base = "%s/%s" % (BASE, my.top.get_theme() )
+        base = "%s/%s" % (BASE, self.top.get_theme() )
 
         img = "<img src='%s/MainButtonSlices_left.png'/>" % base
         left = DivWdg(img)
@@ -181,7 +181,7 @@ class ButtonRowWdg(BaseRefreshWdg):
 
 
 
-    def get_row_wdgXX(my, buttons, show_title=False):
+    def get_row_wdgXX(self, buttons, show_title=False):
 
         top = DivWdg()
         #top.add_style("-moz-transform: scale(1.0)")
@@ -254,20 +254,20 @@ class ButtonWdg(BaseRefreshWdg):
         },
     }
 
-    def init(my):
-        #my.inner = DivWdg()
-        my.dialog = None
-        my.button = DivWdg()
-        my.hit_wdg = DivWdg()
-        my.hit_wdg.add_class("spt_button_hit_wdg")
-        my.arrow_div = DivWdg()
-        my.arrow_menu = IconButtonWdg(title="More Options", icon=IconWdg.ARROWHEAD_DARK_DOWN)
+    def init(self):
+        #self.inner = DivWdg()
+        self.dialog = None
+        self.button = DivWdg()
+        self.hit_wdg = DivWdg()
+        self.hit_wdg.add_class("spt_button_hit_wdg")
+        self.arrow_div = DivWdg()
+        self.arrow_menu = IconButtonWdg(title="More Options", icon=IconWdg.ARROWHEAD_DARK_DOWN)
 
-        my.show_arrow_menu = False
+        self.show_arrow_menu = False
         # for icon decoration
-        my.icon_div = DivWdg()
+        self.icon_div = DivWdg()
 
-        my.is_disabled = my.kwargs.get("is_disabled") in [True,"true"]
+        self.is_disabled = self.kwargs.get("is_disabled") in [True,"true"]
 
 
         if not Container.get_dict("JSLibraries", "spt_button"):
@@ -281,7 +281,7 @@ class ButtonWdg(BaseRefreshWdg):
                 } )
                 bvr_wdg = doc_top
             else:
-                bvr_wdg = my.top
+                bvr_wdg = self.top
 
             # change to a relay behavior
             bvr_wdg.add_relay_behavior( {
@@ -336,66 +336,66 @@ class ButtonWdg(BaseRefreshWdg):
 
 
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
-    def add_behavior(my, behavior):
-        my.hit_wdg.add_behavior(behavior)
+    def add_behavior(self, behavior):
+        self.hit_wdg.add_behavior(behavior)
 
-    def add_class(my, class_name):
-        my.hit_wdg.add_class(class_name)
+    def add_class(self, class_name):
+        self.hit_wdg.add_class(class_name)
 
-    def set_attr(my, attr, name):
-        my.hit_wdg.set_attr(attr, name)
+    def set_attr(self, attr, name):
+        self.hit_wdg.set_attr(attr, name)
 
 
     
 
-    def add_arrow_behavior(my, behavior):
-        my.arrow_menu.add_behavior(behavior)
-        my.show_arrow_menu = True
+    def add_arrow_behavior(self, behavior):
+        self.arrow_menu.add_behavior(behavior)
+        self.show_arrow_menu = True
 
-    def set_show_arrow_menu(my, flag):
-        my.show_arrow_menu = flag
+    def set_show_arrow_menu(self, flag):
+        self.show_arrow_menu = flag
 
-    def get_arrow_wdg(my):
-        return my.arrow_menu
+    def get_arrow_wdg(self):
+        return self.arrow_menu
 
-    def get_show_arrow_menu(my):
-        return my.show_arrow_menu
+    def get_show_arrow_menu(self):
+        return self.show_arrow_menu
 
-    def set_show_title(my, flag):
-        my.kwargs['show_title' ] = flag
+    def set_show_title(self, flag):
+        self.kwargs['show_title' ] = flag
 
-    def add_dialog(my, dialog):
-        my.dialog = dialog
-
-
-    def get_button_wdg(my):
-        return my.hit_wdg
-
-    def get_icon_wdg(my):
-        return my.icon_div
+    def add_dialog(self, dialog):
+        self.dialog = dialog
 
 
-    def get_display(my):
+    def get_button_wdg(self):
+        return self.hit_wdg
 
-        top = my.top
+    def get_icon_wdg(self):
+        return self.icon_div
+
+
+    def get_display(self):
+
+        top = self.top
         top.add_style("white-space: nowrap")
         #top.add_style("position: relative")
 
-        base = "%s/%s" % (BASE, my.top.get_theme() )
+        base = "%s/%s" % (BASE, self.top.get_theme() )
 
 
-        show_menu = my.kwargs.get("show_menu")
-        is_disabled = my.kwargs.get("is_disabled")
+        show_menu = self.kwargs.get("show_menu")
+        is_disabled = self.kwargs.get("is_disabled")
 
         button = DivWdg()
         button.add_style("float: left")
         
-        my.inner = button
+        self.inner = button
         top.add(button)
-        my.inner.add_class("hand")
+        self.inner.add_class("hand")
 
         button.add_class("spt_button_top")
         button.add_style("position: relative")
@@ -434,16 +434,16 @@ class ButtonWdg(BaseRefreshWdg):
         click_div.add_style("display: none")
 
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
        
-        tip = my.kwargs.get("tip")
+        tip = self.kwargs.get("tip")
         if not tip:
             tip = title
 
-        icon_div = my.icon_div
+        icon_div = self.icon_div
         button.add(icon_div)
         #icon_div.add_class("spt_button_click")
-        icon_str = my.kwargs.get("icon")
+        icon_str = self.kwargs.get("icon")
         icon = IconWdg(tip, icon_str, right_margin=0, width=16)
         icon.add_class("spt_button_icon")
         icon_div.add(icon)
@@ -452,13 +452,13 @@ class ButtonWdg(BaseRefreshWdg):
         icon_div.add_style("top: 12px")
         icon_div.add_style("left: 6px")
 
-        if my.is_disabled:
+        if self.is_disabled:
             icon_div.add_style("opacity: 0.5")
         
 
-        my.icon_div = icon_div
+        self.icon_div = icon_div
 
-        sub_icon = my.kwargs.get("sub_icon")
+        sub_icon = self.kwargs.get("sub_icon")
         if sub_icon:
             sub_icon = IconWdg(icon=sub_icon, size="8")
             button.add(sub_icon)
@@ -468,8 +468,8 @@ class ButtonWdg(BaseRefreshWdg):
         
        
 
-        my.show_arrow = my.kwargs.get("show_arrow") in [True, 'true']
-        if my.show_arrow or my.dialog:
+        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
+        if self.show_arrow or self.dialog:
             arrow_div = DivWdg()
             button.add(arrow_div)
             arrow_div.add_style("position: absolute")
@@ -483,29 +483,29 @@ class ButtonWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         is_IE = web.is_IE()
 
-        #my.hit_wdg.add_style("height: 100%")
-        my.hit_wdg.add_style("width: 100%")
+        #self.hit_wdg.add_style("height: 100%")
+        self.hit_wdg.add_style("width: 100%")
         if is_IE:
-            my.hit_wdg.add_style("filter: alpha(opacity=0)")
-            my.hit_wdg.add_style("height: 40px")
+            self.hit_wdg.add_style("filter: alpha(opacity=0)")
+            self.hit_wdg.add_style("height: 40px")
         else:
-            my.hit_wdg.add_style("height: 100%")
-            my.hit_wdg.add_style("opacity: 0.0")
+            self.hit_wdg.add_style("height: 100%")
+            self.hit_wdg.add_style("opacity: 0.0")
 
-        if my.is_disabled:
-            my.hit_wdg.add_style("display: none")
+        if self.is_disabled:
+            self.hit_wdg.add_style("display: none")
 
-        button.add(my.hit_wdg)
+        button.add(self.hit_wdg)
 
 
-        my.hit_wdg.add_style("position: absolute")
-        my.hit_wdg.add_style("top: 0px")
-        my.hit_wdg.add_style("left: 0px")
-        my.hit_wdg.add_attr("title", tip)
+        self.hit_wdg.add_style("position: absolute")
+        self.hit_wdg.add_style("top: 0px")
+        self.hit_wdg.add_style("left: 0px")
+        self.hit_wdg.add_attr("title", tip)
 
 
         """
-        my.hit_wdg.add_behavior( {
+        self.hit_wdg.add_behavior( {
         'type': 'hover',
         'cbjs_action_over': '''
             var top = bvr.src_el.getParent(".spt_button_top")
@@ -527,23 +527,23 @@ class ButtonWdg(BaseRefreshWdg):
 
 
         # add a second arrow widget
-        if my.show_arrow_menu:
-            my.inner.add(my.arrow_div)
-            my.arrow_div.add_attr("title", "More Options")
-            my.arrow_div.add_style("position: absolute")
-            my.arrow_div.add_style("top: 11px")
-            my.arrow_div.add_style("left: 20px")
-            my.arrow_div.add(my.arrow_menu)
+        if self.show_arrow_menu:
+            self.inner.add(self.arrow_div)
+            self.arrow_div.add_attr("title", "More Options")
+            self.arrow_div.add_style("position: absolute")
+            self.arrow_div.add_style("top: 11px")
+            self.arrow_div.add_style("left: 20px")
+            self.arrow_div.add(self.arrow_menu)
 
 
 
 
 
 
-        if my.dialog:
-            top.add(my.dialog)
-            dialog_id = my.dialog.get_id()
-            my.hit_wdg.add_behavior( {
+        if self.dialog:
+            top.add(self.dialog)
+            dialog_id = self.dialog.get_id()
+            self.hit_wdg.add_behavior( {
             'type': 'click_up',
             'dialog_id': dialog_id,
             'cbjs_action': '''
@@ -566,12 +566,12 @@ class ButtonWdg(BaseRefreshWdg):
 
 
 
-    def get_displayxx(my):
+    def get_displayxx(self):
 
-        show_menu = my.kwargs.get("show_menu")
-        is_disabled = my.kwargs.get("is_disabled")
+        show_menu = self.kwargs.get("show_menu")
+        is_disabled = self.kwargs.get("is_disabled")
 
-        show_title = my.kwargs.get("show_title")
+        show_title = self.kwargs.get("show_title")
         show_title = show_title in ['True', True]
 
         width = 35 
@@ -581,7 +581,7 @@ class ButtonWdg(BaseRefreshWdg):
             height = 20
         height = 30
 
-        top = my.top
+        top = self.top
         top.add_class("spt_button_top")
         top.add_style("overflow: hidden")
 
@@ -594,13 +594,13 @@ class ButtonWdg(BaseRefreshWdg):
         top.add_style("border-color: %s" % top.get_color('border'))
         #top.add_style("margin-left: -1px")
 
-        inner = my.inner
+        inner = self.inner
         top.add(inner)
         inner.add_color("color", "color3")
         inner.add_style("padding-top: 3px")
         inner.add_style("overflow: hidden")
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
 
         inner.add_class("hand")
         inner.add_style("z-index: 20")
@@ -608,15 +608,15 @@ class ButtonWdg(BaseRefreshWdg):
         #inner.add_style("opacity: 0.5")
         inner.add_attr("title", title)
 
-        my.button.add_style("margin-top: 5px")
-        inner.add(my.button)
-        icon_str = my.kwargs.get("icon")
+        self.button.add_style("margin-top: 5px")
+        inner.add(self.button)
+        icon_str = self.kwargs.get("icon")
         icon = IconWdg(title, icon_str)
-        my.button.add(icon)
+        self.button.add(icon)
         icon.add_class("spt_button_icon")
 
-        my.show_arrow = my.kwargs.get("show_arrow") in [True, 'true']
-        if my.show_arrow or my.dialog:
+        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
+        if self.show_arrow or self.dialog:
             arrow = IconWdg(title, IconWdg.ARROW_MORE_INFO)
             inner.add(arrow)
             arrow.add_style("position: absolute")
@@ -725,7 +725,7 @@ class ButtonWdg(BaseRefreshWdg):
      
             } )
 
-            my.add_menu_wdg(arrow_div)
+            self.add_menu_wdg(arrow_div)
 
 
 
@@ -745,9 +745,9 @@ class ButtonWdg(BaseRefreshWdg):
 
 
 
-        if my.dialog:
-            top.add(my.dialog)
-            dialog_id = my.dialog.get_id()
+        if self.dialog:
+            top.add(self.dialog)
+            dialog_id = self.dialog.get_id()
             inner.add_behavior( {
             'type': 'load',
             'height': height,
@@ -760,7 +760,7 @@ class ButtonWdg(BaseRefreshWdg):
             '''
             } )
 
-            my.inner.add_behavior( {
+            self.inner.add_behavior( {
             'type': 'click_up',
             'dialog_id': dialog_id,
             'cbjs_action': '''
@@ -774,14 +774,14 @@ class ButtonWdg(BaseRefreshWdg):
 
 
 
-    def add_menu_wdg(my, button, menus):
+    def add_menu_wdg(self, button, menus):
 
         from tactic.ui.container import SmartMenu
 
-        my.menus = []
-        my.menus.append(menu.get_data())
+        self.menus = []
+        self.menus.append(menu.get_data())
 
-        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': my.menus } )
+        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': self.menus } )
         SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
  
 
@@ -829,30 +829,30 @@ class ActionButtonWdgOld(DivWdg):
     }
     }
  
-    def __init__(my, **kwargs):
-        #my.top = DivWdg()
-        my.kwargs = kwargs
-        my.text_wdg = DivWdg()
-        my.table = Table()
-        my.table.add_row()
-        my.table.add_style("color", "#333")
-        my.td = my.table.add_cell()
-        my.td.add_class("spt_action_button")
-        super(ActionButtonWdgOld,my).__init__()
+    def __init__(self, **kwargs):
+        #self.top = DivWdg()
+        self.kwargs = kwargs
+        self.text_wdg = DivWdg()
+        self.table = Table()
+        self.table.add_row()
+        self.table.add_style("color", "#333")
+        self.td = self.table.add_cell()
+        self.td.add_class("spt_action_button")
+        super(ActionButtonWdgOld,self).__init__()
 
         web = WebContainer.get_web() 
-        my.browser = web.get_browser()
+        self.browser = web.get_browser()
         
 
-    def add_behavior(my, behavior):
-        my.td.add_behavior(behavior)
+    def add_behavior(self, behavior):
+        self.td.add_behavior(behavior)
 
     """
-    def add_style(my, name, value=None):
-        my.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.add_style(name, value)
     """
 
-    def add_top_behaviors(my, top):
+    def add_top_behaviors(self, top):
         top.add_relay_behavior( {
         'type': 'mouseenter',
         'bvr_match_class': 'spt_action_button_hit',
@@ -900,20 +900,20 @@ class ActionButtonWdgOld(DivWdg):
 
 
 
-    def get_display(my):
-        my.add_class("spt_button_top")
+    def get_display(self):
+        self.add_class("spt_button_top")
         # no need to define top
-        #my.add(top)
+        #self.add(top)
 
-        opacity = my.kwargs.get("opacity")
+        opacity = self.kwargs.get("opacity")
         if not opacity:
             opacity = 1.0 
-        my.add_style("opacity: %s" % opacity)
+        self.add_style("opacity: %s" % opacity)
 
-        base = "%s/%s" % (BASE, my.get_theme() )
+        base = "%s/%s" % (BASE, self.get_theme() )
 
         # medium or large only
-        size = my.kwargs.get("size")
+        size = self.kwargs.get("size")
         if not size:
             size = 'medium'
         size = size[:1]
@@ -926,13 +926,13 @@ class ActionButtonWdgOld(DivWdg):
         
         if size == 'm':
             top_width = 83
-            my.add_style("width: %spx"%top_width)
+            self.add_style("width: %spx"%top_width)
         if size == 'l':
             top_width = 127
-            my.add_style("width: %spx"%top_width)
+            self.add_style("width: %spx"%top_width)
 
-        my.add(my.table)
-        td = my.td
+        self.add(self.table)
+        td = self.td
         button_div = DivWdg()
         td.add(button_div)
         button_div.add_style("position: relative")
@@ -946,19 +946,19 @@ class ActionButtonWdgOld(DivWdg):
 
         #request_top_wdg = Container.get("request_top_wdg")
         #if not request_top_wdg:
-        #    request_top_wdg = my.table
-        request_top_wdg = my.table
+        #    request_top_wdg = self.table
+        request_top_wdg = self.table
 
         try:
             button_bvr = request_top_wdg.has_class("spt_button_behaviors")
             if not button_bvr:
-                my.add_top_behaviors(request_top_wdg)
+                self.add_top_behaviors(request_top_wdg)
                 request_top_wdg.add_class("spt_button_behaviors")
-        except Exception, e:
+        except Exception as e:
             print "WARNING: ", e
 
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title:
             title = "No Title"
 
@@ -977,13 +977,13 @@ class ActionButtonWdgOld(DivWdg):
         if not title:
             title = "(No title)"
         #title = "Search"
-        tip = my.kwargs.get("tip")
+        tip = self.kwargs.get("tip")
         if not tip:
             tip = title
-        my.add_attr("title", tip)
+        self.add_attr("title", tip)
 
 
-        title2 = my.kwargs.get("title2")
+        title2 = self.kwargs.get("title2")
         if title2:
             td.add_behavior( {
             'type': 'click_up',
@@ -1003,14 +1003,14 @@ class ActionButtonWdgOld(DivWdg):
             } )
 
 
-        text_div = my.text_wdg
+        text_div = self.text_wdg
         button_div.add(text_div)
         text_div.add_class("spt_label")
         text_div.add_style("position: absolute")
         text_div.add("<b>%s</b>" % title)
         text_div.add_style("width: 100%")
 
-	if my.browser == 'Qt' and os.name != 'nt':
+	if self.browser == 'Qt' and os.name != 'nt':
             text_div.add_style("top: 8px")
         else:
 	    text_div.add_style("top: 6px")
@@ -1029,7 +1029,7 @@ class ActionButtonWdgOld(DivWdg):
         text_div.add_class("hand")
 
 
-        return super(ActionButtonWdgOld,my).get_display()
+        return super(ActionButtonWdgOld,self).get_display()
 
 
 
@@ -1065,100 +1065,100 @@ class ActionButtonWdg(DivWdg):
     }
     }
  
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         web = WebContainer.get_web() 
         is_Qt_OSX = web.is_Qt_OSX()
-        my.browser = web.get_browser()
+        self.browser = web.get_browser()
 
         #is_Qt_OSX = False
         if is_Qt_OSX:
-            my.redirect = ActionButtonWdgOld(**kwargs)
+            self.redirect = ActionButtonWdgOld(**kwargs)
         else:
-            my.redirect = None
+            self.redirect = None
 
-        #my.top = DivWdg()
-        my.kwargs = kwargs
-        my.text_wdg = DivWdg()
-        my.table = Table()
-        my.table.add_row()
-        my.table.add_style("color", "#333")
-        my.td = my.table.add_cell()
-        my.td.add_class("spt_action_button")
-        super(ActionButtonWdg,my).__init__()
-
-
-    def add_behavior(my, behavior):
-        if my.redirect:
-            return my.redirect.add_behavior(behavior)
-
-        my.td.add_behavior(behavior)
+        #self.top = DivWdg()
+        self.kwargs = kwargs
+        self.text_wdg = DivWdg()
+        self.table = Table()
+        self.table.add_row()
+        self.table.add_style("color", "#333")
+        self.td = self.table.add_cell()
+        self.td.add_class("spt_action_button")
+        super(ActionButtonWdg,self).__init__()
 
 
-    def add_style(my, name, value=None, override=True):
-        if my.redirect:
-            return my.redirect.add_style(name, value, override=override)
+    def add_behavior(self, behavior):
+        if self.redirect:
+            return self.redirect.add_behavior(behavior)
 
-        super(ActionButtonWdg,my).add_style(name, value, override=override)
-
-    def add_class(my, value):
-        if my.redirect:
-            return my.redirect.add_class(value)
-
-        super(ActionButtonWdg,my).add_class(value)
+        self.td.add_behavior(behavior)
 
 
+    def add_style(self, name, value=None, override=True):
+        if self.redirect:
+            return self.redirect.add_style(name, value, override=override)
+
+        super(ActionButtonWdg,self).add_style(name, value, override=override)
+
+    def add_class(self, value):
+        if self.redirect:
+            return self.redirect.add_class(value)
+
+        super(ActionButtonWdg,self).add_class(value)
 
 
 
-    def add_top_behaviors(my, top):
-        if my.redirect:
-            return my.redirect.add_top_behavior(top)
 
 
-    def get_display(my):
-        if my.redirect:
-            return my.redirect.get_display()
+    def add_top_behaviors(self, top):
+        if self.redirect:
+            return self.redirect.add_top_behavior(top)
 
 
-        my.add_class("spt_button_top")
+    def get_display(self):
+        if self.redirect:
+            return self.redirect.get_display()
+
+
+        self.add_class("spt_button_top")
         # no need to define top
-        #my.add(top)
+        #self.add(top)
 
-        my.add_style("margin: 0px 3px", override=False)
+        self.add_style("margin: 0px 3px", override=False)
 
-        opacity = my.kwargs.get("opacity")
+        opacity = self.kwargs.get("opacity")
         if not opacity:
             opacity = 1.0 
-        my.add_style("opacity: %s" % opacity)
+        self.add_style("opacity: %s" % opacity)
 
-        base = "%s/%s" % (BASE, my.get_theme() )
+        base = "%s/%s" % (BASE, self.get_theme() )
 
-        my.add(my.table)
-        td = my.td
+        self.add(self.table)
+        td = self.td
         td.add_style("text-align: center")
 
-        size = my.kwargs.get("size")
+        size = self.kwargs.get("size")
         if not size:
             size = 'medium'
         size = size[:1]
 
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if width:
             top_width = int(width)
-            my.add_style("width: %s"%top_width)
+            self.add_style("width: %s"%top_width)
         else:
             top_width = 40
             if size == 'm':
                 top_width = 83
-                my.add_style("width: %spx"%top_width)
+                self.add_style("width: %spx"%top_width)
             if size == 'l':
                 top_width = 127
-                my.add_style("width: %spx"%top_width)
+                self.add_style("width: %spx"%top_width)
             if size == 'b':
                 top_width = "100%"
-                my.add_style("width: %spx"%top_width)
-                my.table.add_style("width: 100%")
+                self.add_style("width: %spx"%top_width)
+                self.table.add_style("width: 100%")
 
 
         
@@ -1167,19 +1167,19 @@ class ActionButtonWdg(DivWdg):
 
         #request_top_wdg = Container.get("request_top_wdg")
         #if not request_top_wdg:
-        #    request_top_wdg = my.table
-        request_top_wdg = my.table
+        #    request_top_wdg = self.table
+        request_top_wdg = self.table
 
         try:
             button_bvr = request_top_wdg.has_class("spt_button_behaviors")
             if not button_bvr:
-                my.add_top_behaviors(request_top_wdg)
+                self.add_top_behaviors(request_top_wdg)
                 request_top_wdg.add_class("spt_button_behaviors")
-        except Exception, e:
+        except Exception as e:
             print "WARNING: ", e
 
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title:
             title = "No Title"
 
@@ -1195,13 +1195,13 @@ class ActionButtonWdg(DivWdg):
             title = "(No title)"
 
         #title = "Search"
-        tip = my.kwargs.get("tip")
+        tip = self.kwargs.get("tip")
         if not tip:
             tip = title
-        my.add_attr("title", tip)
+        self.add_attr("title", tip)
 
         
-        title2 = my.kwargs.get("title2")
+        title2 = self.kwargs.get("title2")
         if title2:
             td.add_behavior( {
             'type': 'click_up',
@@ -1226,13 +1226,13 @@ class ActionButtonWdg(DivWdg):
         button.add_style("width: %s" % top_width)
         button.add_class('spt_label')
 
-        icon = my.kwargs.get("icon")
+        icon = self.kwargs.get("icon")
         if icon:
             icon_div = DivWdg() 
             icon = IconWdg(title, icon, width=16 )
             icon_div.add(icon)
             button.add(icon_div)
-            my.table.add_style("position: relative")
+            self.table.add_style("position: relative")
             icon_div.add_style("position: absolute")
             icon_div.add_style("left: 5px")
             icon_div.add_style("top: 6px")
@@ -1247,13 +1247,13 @@ class ActionButtonWdg(DivWdg):
 
 
 
-        if my.browser == 'Qt' and os.name != 'nt':
+        if self.browser == 'Qt' and os.name != 'nt':
             button.add_style("top: 8px")
         else:
             button.add_style("top: 6px")
 
         # BOOTSTRAP
-        color = my.kwargs.get("color")
+        color = self.kwargs.get("color")
         button.add_class('btn')
         if color:
             if color.startswith("#"):
@@ -1274,7 +1274,7 @@ class ActionButtonWdg(DivWdg):
         td.add_class("spt_action_button_hit")
         button.add_class("hand")
 
-        return super(ActionButtonWdg,my).get_display()
+        return super(ActionButtonWdg,self).get_display()
 
 
 
@@ -1284,15 +1284,15 @@ class ActionButtonWdg(DivWdg):
 
 
 class IconButtonWdg(DivWdg):
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(IconButtonWdg, my).__init__()
-        my.base = "%s/%s" % (BASE, my.get_theme() )
-        my.height = 20
-        my.width = 28
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(IconButtonWdg, self).__init__()
+        self.base = "%s/%s" % (BASE, self.get_theme() )
+        self.height = 20
+        self.width = 28
 
 
-    def init(my):
+    def init(self):
         if not Container.get_dict("JSLibraries", "spt_icon_button"):
             doc_top = Container.get("TopWdg::top")
             if doc_top:
@@ -1304,7 +1304,7 @@ class IconButtonWdg(DivWdg):
                 } )
                 bvr_wdg = doc_top
             else:
-                bvr_wdg = my
+                bvr_wdg = self
 
 
             bvr_wdg.add_relay_behavior( {
@@ -1362,43 +1362,43 @@ class IconButtonWdg(DivWdg):
 
 
 
-    def get_out_img(my):
+    def get_out_img(self):
         return None
 
-    def get_over_img(my):
-        return "<img src='%s/icon_button_over_bg.png'/>" % my.base
+    def get_over_img(self):
+        return "<img src='%s/icon_button_over_bg.png'/>" % self.base
 
-    def get_click_img(my):
-        return "<img src='%s/icon_button_click_bg.png'/>" % my.base
+    def get_click_img(self):
+        return "<img src='%s/icon_button_click_bg.png'/>" % self.base
         
-    def get_offset(my):
+    def get_offset(self):
         return (2, 0)
 
 
-    def get_height(my):
-        return my.height
+    def get_height(self):
+        return self.height
 
-    def get_width(my):
-        return my.width
+    def get_width(self):
+        return self.width
 
 
-    def get_display(my):
-        my.add_style("position: relative")
-        my.add_class("spt_button_top")
-        my.add_style("height: %spx" % my.get_height() )
-        my.add_style("width: %spx" % my.get_width() )
+    def get_display(self):
+        self.add_style("position: relative")
+        self.add_class("spt_button_top")
+        self.add_style("height: %spx" % self.get_height() )
+        self.add_style("width: %spx" % self.get_width() )
 
         display = DivWdg()
-        my.add(display)
+        self.add(display)
         display.add_class("spt_icon_button_top")
 
-        offset = my.get_offset()
+        offset = self.get_offset()
 
 
         out_div = DivWdg()
         display.add(out_div)
         out_div.add_class("spt_button_out")
-        out_img = my.get_out_img()
+        out_img = self.get_out_img()
         out_div.add_style("left: %spx" % offset[0])
         out_div.add_style("top: %spx" % offset[1])
         if out_img:
@@ -1409,7 +1409,7 @@ class IconButtonWdg(DivWdg):
         over_div = DivWdg()
         display.add(over_div)
         over_div.add_class("spt_button_over")
-        over_img = my.get_over_img()
+        over_img = self.get_over_img()
         over_div.add_style("left: %spx" % offset[0])
         over_div.add_style("top: %spx" % offset[1])
         over_div.add(over_img)
@@ -1420,7 +1420,7 @@ class IconButtonWdg(DivWdg):
         click_div = DivWdg()
         display.add(click_div)
         click_div.add_class("spt_button_click")
-        click_img = my.get_click_img()
+        click_img = self.get_click_img()
         click_div.add_style("left: %spx" % offset[0])
         click_div.add_style("top: %spx" % offset[1])
         click_div.add(click_img)
@@ -1429,9 +1429,9 @@ class IconButtonWdg(DivWdg):
 
 
 
-        icon_str = my.kwargs.get("icon")
-        title = my.kwargs.get("title")
-        tip = my.kwargs.get("tip")
+        icon_str = self.kwargs.get("icon")
+        title = self.kwargs.get("title")
+        tip = self.kwargs.get("tip")
         if not tip:
             tip = title
 
@@ -1441,7 +1441,7 @@ class IconButtonWdg(DivWdg):
         icon_div.add_style("left: 5px")
         display.add(icon_div)
         icon_div.add_style("position: absolute")
-        if my.get_width() < 30:
+        if self.get_width() < 30:
             width = 16
         else:
             width = None
@@ -1452,9 +1452,9 @@ class IconButtonWdg(DivWdg):
             display.add_attr("title", tip)
 
 
-        my.show_arrow = my.kwargs.get("show_arrow") in [True, 'true']
-        #if my.show_arrow or my.dialog:
-        if my.show_arrow:
+        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
+        #if self.show_arrow or self.dialog:
+        if self.show_arrow:
             arrow_div = DivWdg()
             icon_div.add(arrow_div)
             arrow_div.add_style("position: absolute")
@@ -1471,34 +1471,34 @@ class IconButtonWdg(DivWdg):
         spacer.add("")
 
 
-        return super(IconButtonWdg, my).get_display()
+        return super(IconButtonWdg, self).get_display()
 
 
 from tactic.ui.common import BaseTableElementWdg
 class IconButtonElementWdg(BaseTableElementWdg):
-    def get_display(my):
-        return IconButtonWdg(**my.options)
+    def get_display(self):
+        return IconButtonWdg(**self.options)
 
 
 
 class SingleButtonWdg(IconButtonWdg):
 
-    def get_out_img(my):
-        if my.kwargs.get("show_out") in [False, "false"]:
+    def get_out_img(self):
+        if self.kwargs.get("show_out") in [False, "false"]:
             return None
-        img = "<img src='%s/Opaque_MainButton_out.png'/>" % my.base
+        img = "<img src='%s/Opaque_MainButton_out.png'/>" % self.base
         return img
 
-    def get_over_img(my):
-        return "<img src='%s/Opaque_MainButton_over.png'/>" % my.base
+    def get_over_img(self):
+        return "<img src='%s/Opaque_MainButton_over.png'/>" % self.base
 
-    def get_click_img(my):
-        return "<img src='%s/Opaque_MainButton_click.png'/>" % my.base
+    def get_click_img(self):
+        return "<img src='%s/Opaque_MainButton_click.png'/>" % self.base
 
-    def get_offset(my):
+    def get_offset(self):
         return (-1, -9)
 
-    def get_height(my):
+    def get_height(self):
         #return 30 
         return 20
 

@@ -22,19 +22,19 @@ from tactic.ui.common import BaseRefreshWdg
 
 class STypeReportWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         #top.add_color("background", "background" )
         top.add_gradient("background", "background", 0, -10 )
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         assert(search_type)
 
         search_type_obj = SearchType.get(search_type)
 
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title:
             title = search_type_obj.get_title()
 

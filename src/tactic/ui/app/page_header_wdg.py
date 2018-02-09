@@ -27,19 +27,19 @@ from tactic.ui.input import UploadButtonWdg
 
 class PageHeaderWdg(Widget):
 
-    def __init__(my, title='page_header', show_project=True):
-        super(PageHeaderWdg,my).__init__(title)
-        my.title = title
+    def __init__(self, title='page_header', show_project=True):
+        super(PageHeaderWdg,self).__init__(title)
+        self.title = title
 
-        my.show_project = show_project
-        if my.show_project in ['false', False]:
-            my.show_project = False
+        self.show_project = show_project
+        if self.show_project in ['false', False]:
+            self.show_project = False
         else:
-            my.show_project = True
+            self.show_project = True
       
 
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
 
@@ -80,7 +80,7 @@ class PageHeaderWdg(Widget):
         # add the project thumb and title
         project = Project.get()
 
-        if my.show_project:
+        if self.show_project:
             thumb_div = DivWdg()
             td = tactic_header.add_cell( thumb_div )
             thumb_div.add_style("height: 28px")
@@ -156,7 +156,7 @@ class PageHeaderWdg(Widget):
         td = tactic_header.add_cell(button_div)
     
 
-        menus = my.get_smart_menu()
+        menus = self.get_smart_menu()
         # TODO: this part seems redundant to attach to both
         SmartMenu.add_smart_menu_set(user_div, [menus])
         SmartMenu.assign_as_local_activator(user_div, None, True)
@@ -231,7 +231,7 @@ class PageHeaderWdg(Widget):
 
         main_div.add(tactic_header_div)
 
-        main_div.add( my.get_js_popup() )
+        main_div.add( self.get_js_popup() )
 
 
         """
@@ -308,7 +308,7 @@ class PageHeaderWdg(Widget):
     get_smart_menu = classmethod(get_smart_menu)
 
 
-    def get_js_popup(my):
+    def get_js_popup(self):
 
         # Add in javascript logger console pop-up ...
         # This is particularly useful for being able to print out debug info in javascript when testing
@@ -354,7 +354,7 @@ class PageHeaderWdg(Widget):
 
 class ProjectSelectWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         menus = []
 
@@ -365,7 +365,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
 
         from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
 
-        icon = my.kwargs.get("icon")
+        icon = self.kwargs.get("icon")
         if icon:
             button = IconButtonWdg(title='Open Project', icon=icon)
         else:
@@ -400,7 +400,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
         menus.append(menu)
         menu.set_allow_icons(False)
 
-        show_create = my.kwargs.get("show_create")
+        show_create = self.kwargs.get("show_create")
         if show_create in [False, 'false']:
             show_create = False
         else:
@@ -615,9 +615,9 @@ class ProjectSelectWdg(BaseRefreshWdg):
 
 class ProjectCreateWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
-        my.set_as_panel(top)
+    def get_display(self):
+        top = self.top
+        self.set_as_panel(top)
         top.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -1178,7 +1178,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
         # Disabling for now ... advanced feature and may not be necessary
-        #stypes_div = my.get_stypes_div()
+        #stypes_div = self.get_stypes_div()
         #is_template_div.add(stypes_div)
 
 
@@ -1386,7 +1386,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         })
 
 
-        cancel_script = my.kwargs.get("cancel_script")
+        cancel_script = self.kwargs.get("cancel_script")
         if cancel_script:
             cancel_button = ActionButtonWdg(title="Cancel")
             cancel_button.add_style("float: left")
@@ -1412,7 +1412,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         return top
 
 
-    def get_stypes_div(my):
+    def get_stypes_div(self):
         div = DivWdg()
         #div.add("<hr/>")
         div.add_style("margin-top: 15px")
@@ -1452,7 +1452,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 class AppBusyWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
         div.add_class( "SPT_PUW" )
@@ -1520,10 +1520,10 @@ class PasswordEditWdg(BaseRefreshWdg):
     PASSWORD = 'password'
     OLD_PASSWORD = 'old password'    
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg(id='password_edit')
-        my.set_as_panel(div)
+        self.set_as_panel(div)
 
         div.add_style("padding: 10px")
         div.add_border()
@@ -1541,12 +1541,12 @@ class PasswordEditWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell( "Old Password:" )
         td.add_style('padding-left: 30px')
-        password = PasswordWdg(my.OLD_PASSWORD)
+        password = PasswordWdg(self.OLD_PASSWORD)
         table.add_cell( password )
         table.add_row()
         td = table.add_cell( "New Password:" )
         td.add_style('padding-left: 30px')
-        password = PasswordWdg(my.PASSWORD)
+        password = PasswordWdg(self.PASSWORD)
         table.add_cell( password )
         table.add_row()
         td = table.add_cell( "Re-enter Password:" )

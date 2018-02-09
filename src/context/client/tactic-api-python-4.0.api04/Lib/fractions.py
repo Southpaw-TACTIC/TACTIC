@@ -530,7 +530,7 @@ class Fraction(Rational):
 
     def __copy__(self):
         if type(self) == Fraction:
-            return self     # I'm immutable; therefore I am my own clone
+            return self     # I'm immutable; therefore I am self own clone
         return self.__class__(self._numerator, self._denominator)
 
     def __deepcopy__(self, memo):

@@ -59,40 +59,40 @@ class CalendarWdg(BaseRefreshWdg):
                
     }
 
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
 
-        my.is_refresh = False
+        self.is_refresh = False
         is_refresh = web.get_form_value("is_refresh")
         if not is_refresh:
-            is_refresh = my.kwargs.get('is_refresh')
+            is_refresh = self.kwargs.get('is_refresh')
         if is_refresh in  ["true", True]:
-            my.is_refresh = True
+            self.is_refresh = True
 
         
-        my.top_wdg = DivWdg()
-        my.top_wdg.add_style("z-index: 100")
-        css_class = my.kwargs.get('css_class')
+        self.top_wdg = DivWdg()
+        self.top_wdg.add_style("z-index: 100")
+        css_class = self.kwargs.get('css_class')
         if not css_class:
             css_class = "spt_calendar_top"
-        my.top_wdg.add_class(css_class)
-        my.top_wdg.add_style("-moz-user-select: none")
+        self.top_wdg.add_class(css_class)
+        self.top_wdg.add_style("-moz-user-select: none")
 
-        #my.top_wdg.add_style("background: #444")
-        my.top_wdg.add_color("background", "background")
-        my.top_wdg.add_color("color", "color")
-        #my.top_wdg.add_style("padding: 3px")
-        my.top_wdg.set_id('calendar')
-        my.set_as_panel(my.top_wdg)
+        #self.top_wdg.add_style("background: #444")
+        self.top_wdg.add_color("background", "background")
+        self.top_wdg.add_color("color", "color")
+        #self.top_wdg.add_style("padding: 3px")
+        self.top_wdg.set_id('calendar')
+        self.set_as_panel(self.top_wdg)
 
-        if my.kwargs.get("show_border") not in ['false', False]:
-            my.top_wdg.add_border()
-            my.top_wdg.set_box_shadow()
+        if self.kwargs.get("show_border") not in ['false', False]:
+            self.top_wdg.add_border()
+            self.top_wdg.set_box_shadow()
 
-        my.day_cbks = []
-        day_cbk = my.kwargs.get("day_cbk")
+        self.day_cbks = []
+        day_cbk = self.kwargs.get("day_cbk")
         if day_cbk:
-            my.day_cbks.insert(0, day_cbk)
+            self.day_cbks.insert(0, day_cbk)
 
 
 
@@ -100,96 +100,96 @@ class CalendarWdg(BaseRefreshWdg):
         
 
         # the 3 cbk_values are search_key, tbody_id, col_name
-        my.search_key = web.get_form_value("search_key")
-        my.top_id = web.get_form_value("top_id")
-        my.col_name = web.get_form_value("col_name")
-        my.date = web.get_form_value("date")
+        self.search_key = web.get_form_value("search_key")
+        self.top_id = web.get_form_value("top_id")
+        self.col_name = web.get_form_value("col_name")
+        self.date = web.get_form_value("date")
 
-        if not my.date:
-            my.date = my.kwargs.get("date")
+        if not self.date:
+            self.date = self.kwargs.get("date")
 
-        my.year, my.month = '', ''
-        if my.date:
-            date = Date(my.date)
-            my.year = date.get_year()
-            my.month = date.get_month()
-        if not my.year:    
-            my.year = web.get_form_value("year")
-        if not my.year:
-            my.year = my.kwargs.get('year')
-        if not my.year:
-            my.year = date.get_year()
+        self.year, self.month = '', ''
+        if self.date:
+            date = Date(self.date)
+            self.year = date.get_year()
+            self.month = date.get_month()
+        if not self.year:    
+            self.year = web.get_form_value("year")
+        if not self.year:
+            self.year = self.kwargs.get('year')
+        if not self.year:
+            self.year = date.get_year()
         
         
-        if not my.month:
-            my.month = web.get_form_value("month")
-        if not my.month:
-            my.month = my.kwargs.get('month')
-        if not my.month:
-            # PREV (this caused bug of cal wdg being a month in the future):  my.month = int(date.get_month())+1
-            my.month = int(date.get_month())
+        if not self.month:
+            self.month = web.get_form_value("month")
+        if not self.month:
+            self.month = self.kwargs.get('month')
+        if not self.month:
+            # PREV (this caused bug of cal wdg being a month in the future):  self.month = int(date.get_month())+1
+            self.month = int(date.get_month())
         
-        my.year = int(my.year)    
-        my.month = int(my.month)
+        self.year = int(self.year)    
+        self.month = int(self.month)
 
-        my.weeks = my.get_weeks(my.year, my.month)
-
-
-
-    def add_style(my, style):
-        my.top_wdg.add_style(style)
+        self.weeks = self.get_weeks(self.year, self.month)
 
 
-    def add_day_cbk(my, cbk):
-        my.day_cbks.append(cbk)
+
+    def add_style(self, style):
+        self.top_wdg.add_style(style)
+
+
+    def add_day_cbk(self, cbk):
+        self.day_cbks.append(cbk)
 
 
     # HACK to get it to be an input!!
-    def get_option(my, name):
-        return my.kwargs.get(name)
+    def get_option(self, name):
+        return self.kwargs.get(name)
 
-    def get_title(my):
-        return my.get_name()
+    def get_title(self):
+        return self.get_name()
 
 
    
 
-    def get_display(my):
+    def get_display(self):
         # handle size
-        size_str = my.kwargs.get("size")
+        size_str = self.kwargs.get("size")
         if size_str == "full":
-            my.size = 0
+            self.size = 0
         elif size_str == 'abbr':
-            my.size = 2
+            self.size = 2
         elif size_str == 'letter':
-            my.size = 1
+            self.size = 1
         else:
-            my.size = 2
+            self.size = 2
 
 
         # add some boundary conditions
-        if my.month < 1:
-            my.month = 12
-            my.year -= 1
+        if self.month < 1:
+            self.month = 12
+            self.year -= 1
 
-        elif my.month > 12:
-            my.month = 1
-            my.year += 1
+        elif self.month > 12:
+            self.month = 1
+            self.year += 1
 
         # remember the new values
-        my.kwargs['year'] = my.year
-        my.kwargs['month'] = my.month
-        calendar = my.get_calendar_wdg(my.year, my.month)
-        if my.is_refresh:
+        self.kwargs['year'] = self.year
+        self.kwargs['month'] = self.month
+        calendar = self.get_calendar_wdg(self.year, self.month)
+        if self.is_refresh:
             return calendar
 
         inner = DivWdg()
-        my.top_wdg.add(inner)
+        self.top_wdg.add(inner)
       
         inner.add( calendar )
 
         if not Container.get_dict("JSLibraries", "spt_calendar"):
-            my.top_wdg.add_behavior( {
+            self.top_wdg.add_behavior( {
                 'type': 'load',
                 'cbjs_action': '''
             spt.calendar = {}
@@ -221,7 +221,7 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         """NOTE: comment this out for now, doesn't seem to be used
-        my.top_wdg.add_relay_behavior( {
+        self.top_wdg.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'spt_calendar_day',
             'cbjs_action': '''
@@ -240,18 +240,18 @@ class CalendarWdg(BaseRefreshWdg):
         """
 
 
-        if my.kwargs.get("is_refresh") in [True, 'true']:
+        if self.kwargs.get("is_refresh") in [True, 'true']:
             return inner
         else:
-            return my.top_wdg
+            return self.top_wdg
 
 
 
 
-    def get_weeks(my, year, month):
+    def get_weeks(self, year, month):
         #HAS_CALENDAR = False
         if HAS_CALENDAR:
-            first_day_of_week = my.kwargs.get("first_day_of_week")
+            first_day_of_week = self.kwargs.get("first_day_of_week")
             if first_day_of_week or first_day_of_week == 0:
                 first_day_of_week = int(first_day_of_week)
             else:
@@ -261,18 +261,18 @@ class CalendarWdg(BaseRefreshWdg):
                 else:
                     first_day_of_week = int(first_day_of_week)
 
-            my.cal = Calendar(first_day_of_week)
-            weeks = my.cal.monthdatescalendar(my.year, month)
+            self.cal = Calendar(first_day_of_week)
+            weeks = self.cal.monthdatescalendar(self.year, month)
         else:
             # for Python 2.4, build it up manually
             class Day(object):
-                def weekday(my):
-                    if my.day == 0:
+                def weekday(self):
+                    if self.day == 0:
                         return 0
-                    weekday = my.day - 1
+                    weekday = self.day - 1
                     return weekday
 
-            weeks_old = calendar.monthcalendar(my.year, month)
+            weeks_old = calendar.monthcalendar(self.year, month)
             weeks = []
             for week_old in weeks_old:
                 week = []
@@ -292,25 +292,25 @@ class CalendarWdg(BaseRefreshWdg):
         return weeks
 
 
-    def get_legend_wdg(my):
+    def get_legend_wdg(self):
         return None
 
 
-    def get_calendar_wdg(my, year, month):
-        my.year = year
-        my.month = month
+    def get_calendar_wdg(self, year, month):
+        self.year = year
+        self.month = month
 
-        weeks = my.weeks
+        weeks = self.weeks
 
         widget = DivWdg()
 
         # add the header widget
-        if my.kwargs.get("show_header") not in ['false', False]:
-            header = my.get_header_wdg()
+        if self.kwargs.get("show_header") not in ['false', False]:
+            header = self.get_header_wdg()
             widget.add(header)
 
 
-        legend_wdg = my.get_legend_wdg()
+        legend_wdg = self.get_legend_wdg()
         if legend_wdg:
             widget.add(legend_wdg)
             legend_wdg.add_border()
@@ -329,7 +329,7 @@ class CalendarWdg(BaseRefreshWdg):
         #table.add_style("margin-left: auto")
         #table.add_style("margin-right: auto")
 
-        if my.kwargs.get("show_header") not in ['false', False]:
+        if self.kwargs.get("show_header") not in ['false', False]:
             table.add_style("margin-top: -1px")
 
 
@@ -340,7 +340,7 @@ class CalendarWdg(BaseRefreshWdg):
         left_wdgs = []
         has_left_wdgs = False
         for week in weeks:
-            left_wdg = my.get_week_left_wdg(week)
+            left_wdg = self.get_week_left_wdg(week)
             if left_wdg:
                 has_left_wdgs = True
             left_wdgs.append(left_wdg)
@@ -349,7 +349,7 @@ class CalendarWdg(BaseRefreshWdg):
         right_wdgs = []
         has_right_wdgs = False
         for week in weeks:
-            right_wdg = my.get_week_right_wdg(week)
+            right_wdg = self.get_week_right_wdg(week)
             if right_wdg:
                 has_right_wdgs = True
             right_wdgs.append(right_wdg)
@@ -362,25 +362,25 @@ class CalendarWdg(BaseRefreshWdg):
             table.add_cell("&nbsp;")
         for day in week:
             td = table.add_cell()
-            td.add(my.get_day_header_wdg(day) )
+            td.add(self.get_day_header_wdg(day) )
             td.add_border()
 
         if has_right_wdgs:
             table.add_cell("&nbsp;")
 
-        border_type = my.kwargs.get("border_type")
+        border_type = self.kwargs.get("border_type")
         if not border_type:
             border_type = 'bottom'
 
         # add day_cbks
-        for cbk in my.day_cbks:
+        for cbk in self.day_cbks:
             behavior = {
                 'type': 'click_up',
                 'cbjs_action': cbk, 
                 'bvr_match_class': 'spt_calendar_day', 
-                'search_key' : my.search_key,
-                'top_id' : my.top_id,
-                'col_name': my.col_name
+                'search_key' : self.search_key,
+                'top_id' : self.top_id,
+                'col_name': self.col_name
             }
             table.add_relay_behavior(behavior)
         
@@ -399,7 +399,7 @@ class CalendarWdg(BaseRefreshWdg):
             for day in week:
                 td = table.add_cell()
                 td.add_style("padding: 0px")
-                td.add(my.get_day_wdg(month, day))
+                td.add(self.get_day_wdg(month, day))
                 td.add_style("vertical-align: top")
                 td.add_style("overflow: hidden")
 
@@ -425,10 +425,10 @@ class CalendarWdg(BaseRefreshWdg):
 
 
 
-    def get_header_wdg(my):
+    def get_header_wdg(self):
 
-        month = my.month
-        year = my.year
+        month = self.month
+        year = self.year
 
         header = Table()
         header.add_style("width: 100%")
@@ -437,18 +437,18 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         # add the month navigators
-        prev_month_wdg = my.get_prev_month_wdg()
-        next_month_wdg = my.get_next_month_wdg()
+        prev_month_wdg = self.get_prev_month_wdg()
+        next_month_wdg = self.get_next_month_wdg()
 
 
         # add the today icon
         header.add_row()
-        today_icon = my.get_today_icon()
+        today_icon = self.get_today_icon()
         td = header.add_cell( today_icon )
 
 
 
-        date_str = "%s, %s" % (my.MONTHS[month-1], my.year)
+        date_str = "%s, %s" % (self.MONTHS[month-1], self.year)
         month_wdg = DivWdg()
         month_wdg.add_color("color", "color")
         month_wdg.add(date_str)
@@ -456,9 +456,9 @@ class CalendarWdg(BaseRefreshWdg):
 
         month_wdg.add_behavior({
             'type': 'click_up',
-            'name': my.col_name,
-            'year': my.year,
-            'month': my.month,
+            'name': self.col_name,
+            'year': self.year,
+            'month': self.month,
             'cbjs_action': '''
             var el = bvr.src_el.getParent('.spt_calendar_top');
             var class_name = 'tactic.ui.widget.CalendarMonthWdg';
@@ -492,7 +492,7 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         # add the close icon
-        close_icon = my.get_close_icon()
+        close_icon = self.get_close_icon()
         td = header.add_cell( close_icon )
         td.add_style("padding-right: 3px")
 
@@ -500,9 +500,9 @@ class CalendarWdg(BaseRefreshWdg):
 
 
 
-    def get_prev_month_wdg(my):
-        prev_month = my.month - 1
-        prev_year = my.year
+    def get_prev_month_wdg(self):
+        prev_month = self.month - 1
+        prev_year = self.year
         if prev_month < 1:
             prev_month = 12
             prev_year -= 1
@@ -518,14 +518,14 @@ class CalendarWdg(BaseRefreshWdg):
                 spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true', 
                         'search_key': '%s', 'top_id': '%s',
                     'col_name': '%s'}, kwargs );
-            ''' % (prev_year, prev_month, my.search_key, my.top_id, my.col_name )
+            ''' % (prev_year, prev_month, self.search_key, self.top_id, self.col_name )
         })
         return prev_month_wdg
 
 
-    def get_next_month_wdg(my):
-        next_month = my.month + 1
-        next_year = my.year
+    def get_next_month_wdg(self):
+        next_month = self.month + 1
+        next_year = self.year
         if next_month > 12:
             next_month = 1
             next_year += 1
@@ -541,12 +541,12 @@ class CalendarWdg(BaseRefreshWdg):
                 spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true', 
                         'search_key': '%s', 'top_id': '%s',
                     'col_name': '%s'}, kwargs);
-            ''' % (next_year, next_month, my.search_key, my.top_id, my.col_name )
+            ''' % (next_year, next_month, self.search_key, self.top_id, self.col_name )
         })
         return next_month_wdg
        
 
-    def get_today_icon(my):
+    def get_today_icon(self):
 
         today_icon = IconWdg("Today", icon="BS_CALENDAR")
         today_icon.add_class('hand')
@@ -591,7 +591,7 @@ class CalendarWdg(BaseRefreshWdg):
         return today_icon
         
 
-    def get_close_icon(my):
+    def get_close_icon(self):
 
         close_icon = IconWdg("Close", IconWdg.G_CLOSE_BLACK, right_margin='0px', width=16)
         close_icon.add_class('hand')
@@ -624,18 +624,18 @@ class CalendarWdg(BaseRefreshWdg):
 
 
 
-    def get_week_left_wdg(my, week):
+    def get_week_left_wdg(self, week):
         return None
 
-    def get_week_right_wdg(my, week):
+    def get_week_right_wdg(self, week):
         return None
 
 
-    def get_day_header_wdg(my, day):
-        if my.size:
-            weekday = my.WEEKDAYS[day.weekday()][0:my.size]
+    def get_day_header_wdg(self, day):
+        if self.size:
+            weekday = self.WEEKDAYS[day.weekday()][0:self.size]
         else:
-            weekday = my.WEEKDAYS[day.weekday()]
+            weekday = self.WEEKDAYS[day.weekday()]
 
         div = DivWdg()
         #div.add_style("border-bottom: solid 1px %s" % div.get_color("border"))
@@ -647,7 +647,7 @@ class CalendarWdg(BaseRefreshWdg):
         return div
 
 
-    def get_day_wdg(my, month, day):
+    def get_day_wdg(self, month, day):
         div = DivWdg()
         div.add_class("SPT_DAY_CBK")
         div.add( day.day )
@@ -659,13 +659,13 @@ class CalendarWdg(BaseRefreshWdg):
         # NOTE: The bvr below is now added thru relay behavior
 
         """
-        for cbk in my.day_cbks:
+        for cbk in self.day_cbks:
             behavior = {
                 'type': 'click_up',
                 'cbjs_action': cbk, 
-                'search_key' : my.search_key,
-                'top_id' : my.top_id,
-                'col_name': my.col_name
+                'search_key' : self.search_key,
+                'top_id' : self.top_id,
+                'col_name': self.col_name
             }
             div.add_behavior(behavior)
         """
@@ -793,55 +793,55 @@ class CalendarInputWdg(BaseInputWdg):
  
     }
 
-    def init(my):
-        my.top = DivWdg()
-        my.value = ''
-        my.cbjs_validation = ''
-        my.validation_warning = ''
+    def init(self):
+        self.top = DivWdg()
+        self.value = ''
+        self.cbjs_validation = ''
+        self.validation_warning = ''
 
-        my.day_cbks = []
-
-
-    def get_top(my):
-        return my.top
+        self.day_cbks = []
 
 
+    def get_top(self):
+        return self.top
 
-    def add_day_cbk(my, cbk):
-        my.day_cbks.append(cbk)
 
 
-    def set_validation(my, validation, validation_warning):
-        my.cbjs_validation = validation
-        my.validation_warning = validation_warning
+    def add_day_cbk(self, cbk):
+        self.day_cbks.append(cbk)
+
+
+    def set_validation(self, validation, validation_warning):
+        self.cbjs_validation = validation
+        self.validation_warning = validation_warning
    
      
 
-    def get_display(my):
+    def get_display(self):
 
         # should not have float by default
-        #my.top.add_style("float: left")
-        my.top.add_class("calendar_input_top")
-        my.top.add_class("spt_calendar_input_top")
+        #self.top.add_style("float: left")
+        self.top.add_class("calendar_input_top")
+        self.top.add_class("spt_calendar_input_top")
         # TODO: start week with Sunday
         # May want to globalize in config for all calendars?
-        first_day_of_week = my.get_option('first_day_of_week')
+        first_day_of_week = self.get_option('first_day_of_week')
         if first_day_of_week == '':
             first_day_of_week = 6
 
 
-        #state = my.get_state()
-        #state['calendar'] = my.get_value()
+        #state = self.get_state()
+        #state['calendar'] = self.get_value()
 
         from tactic.ui.panel import EditWdg
-        show_activator = my.get_option('show_activator')
+        show_activator = self.get_option('show_activator')
 
         if show_activator in [True, 'true']:
             show_activator = True
         else:
             show_activator = False
         
-        if isinstance(my.parent_wdg, EditWdg):
+        if isinstance(self.parent_wdg, EditWdg):
             if show_activator != 'false':
                 show_activator = True
             else:
@@ -855,23 +855,23 @@ class CalendarInputWdg(BaseInputWdg):
 
 
 
-        show_calendar = my.get_option('show_calendar')
+        show_calendar = self.get_option('show_calendar')
         if show_calendar in [True, 'true']:
             show_calendar = True
         else:
             show_calendar = False
 
 
-        name = my.get_input_name()
-        read_only = my.get_option('read_only')
-        required = my.get_option('required')
+        name = self.get_input_name()
+        read_only = self.get_option('read_only')
+        required = self.get_option('required')
 
 
-        width = my.get_option('width')
+        width = self.get_option('width')
         if not width:
             width = 100
 
-        title = my.get_display_title()
+        title = self.get_display_title()
         
         from tactic.ui.input import TextInputWdg
         # read_only is passed in so it gets darker bg color
@@ -882,7 +882,7 @@ class CalendarInputWdg(BaseInputWdg):
             text = input
         else:
             # TODO: add a kwarg - hint_text
-            hint_text = my.get_option('hint_text')
+            hint_text = self.get_option('hint_text')
             if not hint_text:
                 hint_text = None
             input = TextInputWdg( name=name, read_only=read_only, hint_text=hint_text, required=required, icon=activator, width=width)
@@ -894,17 +894,17 @@ class CalendarInputWdg(BaseInputWdg):
         elif read_only == False:
             read_only = 'false'
 
-        show_time = my.get_option("show_time") in [True, 'true']
-        time_input_default = my.get_option('time_input_default')
+        show_time = self.get_option("show_time") in [True, 'true']
+        time_input_default = self.get_option('time_input_default')
         if show_time:
             if not width:
                 input.add_style("width: 130px")
-            my.top.add_attr("show_time", "true")
+            self.top.add_attr("show_time", "true")
             show_time = True
         else:
             if not width:
                 input.add_style("width: 100px")
-            my.top.add_attr("show_time", "false")
+            self.top.add_attr("show_time", "false")
             show_time = False
             if time_input_default:
                 input.add_style("width: 120px")
@@ -914,12 +914,12 @@ class CalendarInputWdg(BaseInputWdg):
 
         input_div = DivWdg()
         input_div.add(input)
-        my.top.add(input_div)
+        self.top.add(input_div)
 
         offset_x = 0
         offset_y = 0
 
-        offset = my.get_option('offset')
+        offset = self.get_option('offset')
         offsets = offset.split(",")
         if len(offsets) > 1:
             offset_x = offsets[0]
@@ -975,27 +975,27 @@ class CalendarInputWdg(BaseInputWdg):
             #spt.show(el);'''
             #} )
 
-        # has to use my.value instead of my.get_value() 
+        # has to use self.value instead of self.get_value() 
         # to avoid a display bug with multiple inputs
-        default = my.get_option("default")
+        default = self.get_option("default")
 
         value = ""
-        if not my.value and default:
+        if not self.value and default:
             default_value = NamingUtil.eval_template(default)
             value = default_value
             if value:
                 value = parser.parse(value)
                 # NOTE: it's better not to do auto-convert for passed in value 
                 # since it could be already in local time
-                #if not SObject.is_day_column(my.get_name()):
+                #if not SObject.is_day_column(self.get_name()):
                 #    value = SPTDate.convert_to_local(value)
 
-        current = my.get_current_sobject()
+        current = self.get_current_sobject()
         
         if current and not current.is_insert():
-            column = my.get_option("column")
+            column = self.get_option("column")
             if not column:
-                column = my.get_name()
+                column = self.get_name()
 
             db_date = current.get_value(column, no_exception=True)
             
@@ -1009,8 +1009,8 @@ class CalendarInputWdg(BaseInputWdg):
 
                 #from pyasm.common import SPTDate
                 #from pyasm.search import SObject
-                if not SObject.is_day_column(my.get_name()):
-                    date = my.get_timezone_value(value)
+                if not SObject.is_day_column(self.get_name()):
+                    date = self.get_timezone_value(value)
                     
                 try:
                     encoding = locale.getlocale()[1]		
@@ -1025,11 +1025,11 @@ class CalendarInputWdg(BaseInputWdg):
             key = 'DATE'
        
         if not value:
-            value = my.value
+            value = self.value
 
             
         if value:
-            format = my.get_option("display_format")
+            format = self.get_option("display_format")
 
             if not format:
                 format = key
@@ -1047,13 +1047,13 @@ class CalendarInputWdg(BaseInputWdg):
         }
         input.add_behavior( kbd_bvr )
 
-        if my.cbjs_validation:
-            if my.validation_warning:
-                v_warning = my.validation_warning
+        if self.cbjs_validation:
+            if self.validation_warning:
+                v_warning = self.validation_warning
             else:
                 v_warning = "Date entry is not valid"
             from tactic.ui.app import ValidationUtil
-            v_util = ValidationUtil( direct_cbjs=my.cbjs_validation, warning=v_warning )
+            v_util = ValidationUtil( direct_cbjs=self.cbjs_validation, warning=v_warning )
             v_bvr = v_util.get_validation_bvr()
             if v_bvr:
                 input.add_behavior( v_bvr )
@@ -1063,7 +1063,7 @@ class CalendarInputWdg(BaseInputWdg):
 
 
         cbks = []
-        date_format = my.get_option('date_format')
+        date_format = self.get_option('date_format')
       
         if not date_format:
             setting = ProdSetting.get_value_by_key(key)
@@ -1156,7 +1156,7 @@ class CalendarInputWdg(BaseInputWdg):
             '''
             cbks.append(day_cbk)
 
-            for more_cbk in my.day_cbks:
+            for more_cbk in self.day_cbks:
                 day_cbk = "%s\n%s" % (day_cbk, more_cbk)
                 cbks.append(day_cbk)
 
@@ -1245,7 +1245,7 @@ class CalendarInputWdg(BaseInputWdg):
             }
             '''
             cbks.append(day_cbk)
-            for more_cbk in my.day_cbks:
+            for more_cbk in self.day_cbks:
                 day_cbk = "%s\n%s" % (day_cbk, more_cbk)
                 cbks.append(day_cbk)
 
@@ -1254,7 +1254,7 @@ class CalendarInputWdg(BaseInputWdg):
 
         # add all of the callbacks to the top widget
         for day_cbk in cbks:
-            my.top.add_relay_behavior( {
+            self.top.add_relay_behavior( {
                 'type': 'click',
                 'bvr_match_class': 'spt_calendar_day',
                 'cbjs_action': day_cbk,
@@ -1269,9 +1269,9 @@ class CalendarInputWdg(BaseInputWdg):
             calendar.add_style("display: none")
         """
         #calendar.add_style("position: absolute")
-        #my.top.add(calendar)
-        #my.top.add_class("spt_no_alter")
-        return my.top
+        #self.top.add(calendar)
+        #self.top.add_class("spt_no_alter")
+        return self.top
 
 
 
@@ -1279,11 +1279,11 @@ class CalendarInputWdg(BaseInputWdg):
 class CalendarMonthWdg(BaseRefreshWdg):
     MONTHS = ['January','Febuary','March','April','May','June','July','August','September','October','November','December']
 
-    def get_display(my):
+    def get_display(self):
 
-        cur_year = my.kwargs.get("year")
-        cur_month = my.kwargs.get("month")
-        name = my.kwargs.get('name')
+        cur_year = self.kwargs.get("year")
+        cur_month = self.kwargs.get("month")
+        name = self.kwargs.get('name')
 
 
         if not cur_year:
@@ -1291,7 +1291,7 @@ class CalendarMonthWdg(BaseRefreshWdg):
             cur_year = now.year
             cur_month = now.month
 
-        top = my.top
+        top = self.top
         top.add_style("width: 180px")
         top.add_style("height: 150px")
         top.add_class("spt_month_top")
@@ -1377,7 +1377,7 @@ class CalendarMonthWdg(BaseRefreshWdg):
 
 
 
-        for i, month in enumerate(my.MONTHS):
+        for i, month in enumerate(self.MONTHS):
             month_div = DivWdg()
             month_div.add(month[:3])
             month_div.add_class("spt_date")
@@ -1396,14 +1396,14 @@ class CalendarMonthWdg(BaseRefreshWdg):
 
 class CalendarTimeWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_style("width: 180px")
         top.add_style("height: 150px")
         top.add_style("padding: 5px")
         top.add_class("spt_time_top")
 
-        date_format = my.kwargs.get('date_format')
+        date_format = self.kwargs.get('date_format')
         if not date_format:
             setting = ProdSetting.get_value_by_key('DATE')
             if setting:
@@ -1412,8 +1412,8 @@ class CalendarTimeWdg(BaseRefreshWdg):
                 date_format = "%Y-%m-%d"
 
         
-        date = my.kwargs.get("date")
-        time = my.kwargs.get("time")
+        date = self.kwargs.get("date")
+        time = self.kwargs.get("time")
 
 
         if time:
@@ -1454,14 +1454,14 @@ class CalendarTimeWdg(BaseRefreshWdg):
             minutes = date.minute
 
         else:
-            hours = my.kwargs.get("hours")
+            hours = self.kwargs.get("hours")
             if not hours:
                 hours = 0
-            minutes = my.kwargs.get("minutes")
+            minutes = self.kwargs.get("minutes")
             if not minutes:
                 minutes = 0
 
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
         if not mode:
             mode = "12 hour"
         if mode == "12 hour":
@@ -1502,7 +1502,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
 
 
 
-        name = my.kwargs.get("name")
+        name = self.kwargs.get("name")
         """
         if not name:
             # generate a random name
@@ -1795,17 +1795,17 @@ __all__.extend(["DateDatabaseAction", "TimeDatabaseAction"])
 from pyasm.command import DatabaseAction
 class DateDatabaseAction(DatabaseAction):
 
-    def execute(my):
-        name = my.get_name()
+    def execute(self):
+        name = self.get_name()
 
-        column = my.get_option("column")
+        column = self.get_option("column")
         if not column:
             column = name
 
         columns = column.split("|")
         for column in columns:
 
-            value = my.get_value()
+            value = self.get_value()
             if value:
                 value = parser.parse(value)
                 day = value.day
@@ -1816,7 +1816,7 @@ class DateDatabaseAction(DatabaseAction):
                 return
 
 
-            sobject = my.sobject
+            sobject = self.sobject
             cur_value = sobject.get_value(column)
 
             if cur_value and isinstance(cur_value, basestring):
@@ -1840,14 +1840,14 @@ class DateDatabaseAction(DatabaseAction):
 
 class TimeDatabaseAction(DatabaseAction):
 
-    def execute(my):
-        name = my.get_name()
+    def execute(self):
+        name = self.get_name()
 
-        column = my.get_option("column")
+        column = self.get_option("column")
         if not column:
             column = name
 
-        value = my.get_value()
+        value = self.get_value()
         if value:
             value = parser.parse(value)
             hour = value.hour
@@ -1856,7 +1856,7 @@ class TimeDatabaseAction(DatabaseAction):
             hour = 12
             minute = 0
 
-        sobject = my.sobject
+        sobject = self.sobject
         cur_value = sobject.get_value(column)
         if cur_value:
             if isinstance(cur_value, basestring):
@@ -1896,15 +1896,15 @@ class TimeInputWdg(BaseInputWdg):
  
     }
 
-    def init(my):
-        my.top = DivWdg()
+    def init(self):
+        self.top = DivWdg()
 
  
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("calendar_input_top")
 
-        name = my.get_input_name()
+        name = self.get_input_name()
 
 
         from tactic.ui.input import TextInputWdg
@@ -1929,15 +1929,15 @@ class TimeInputWdg(BaseInputWdg):
         div.add_color("background", "background")
         div.add_color("color", "color")
 
-        mode = my.get_option("mode")
+        mode = self.get_option("mode")
         if not mode:
             mode = "24 hour"
         mode = "12 hour"
 
 
-        time = my.get_option("time")
+        time = self.get_option("time")
         if not time:
-            time = my.get_option("default")
+            time = self.get_option("default")
         if not time:
             time = "12:00 PM"
         time_input = CalendarTimeWdg(name=name, date="", mode=mode, time=time)

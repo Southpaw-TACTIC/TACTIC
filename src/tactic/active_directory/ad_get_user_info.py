@@ -20,7 +20,7 @@ import os, sys, getopt
 
 try: 
     import active_directory
-except Exception, e:
+except Exception as e:
     print "WARNING: cannot import active_directory"
     print
     #class active_directory:
@@ -142,7 +142,7 @@ def main(argv):
             elif opt == '-u':
                 try:
                     print get_user_info(arg, domain)
-                except Exception, e:
+                except Exception as e:
                     print "ERROR: ", str(e)
                     raise
 

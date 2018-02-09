@@ -18,34 +18,34 @@ import types
 
 class TimeCode(object):
 
-    def __init__(my, **kwargs):
-        my.frames = kwargs.get("frames")
-        my.frames = float(my.frames)
+    def __init__(self, **kwargs):
+        self.frames = kwargs.get("frames")
+        self.frames = float(self.frames)
 
-        my.fps = kwargs.get("fps")
-        if not my.fps:
+        self.fps = kwargs.get("fps")
+        if not self.fps:
             from pyasm.prod.biz import ProdSetting
-            my.fps = ProdSetting.get_value_by_key("fps")
-            my.fps = int(my.fps)
-        if not my.fps:
-            my.fps = 24
+            self.fps = ProdSetting.get_value_by_key("fps")
+            self.fps = int(self.fps)
+        if not self.fps:
+            self.fps = 24
 
-        if not my.frames:
+        if not self.frames:
             timecode = kwargs.get("timecode")
-            my.frames = my.calculate_frames(timecode, my.fps)
+            self.frames = self.calculate_frames(timecode, self.fps)
 
         # handle cases where frames has a decimal: ie: 400.4
-        my.frames = int(float(my.frames))
+        self.frames = int(float(self.frames))
 
 
-    def get_frames(my):
-        return my.frames
+    def get_frames(self):
+        return self.frames
 
 
-    def get_timecode(my, format='MM:SS:FF', fps=None):
-        frames = my.frames
+    def get_timecode(self, format='MM:SS:FF', fps=None):
+        frames = self.frames
         if not fps:
-            fps = my.fps
+            fps = self.fps
 
         hours = frames // (60*60*fps)
         minutes = (frames // (60*fps)) % 60
@@ -68,7 +68,7 @@ class TimeCode(object):
         return timecode
 
 
-    def calculate_frames(my, timecode, fps):
+    def calculate_frames(self, timecode, fps):
         if not timecode:
             return 0
 
@@ -106,20 +106,20 @@ class TimeCode(object):
         return frames
 
 
-    def __add__(my, timecode):
+    def __add__(self, timecode):
 
         if isinstance(timecode, TimeCode):
             t = timecode
         else:
-            t = TimeCode(timecode=timecode, fps=my.fps)
-        frames = t.get_frames() + my.get_frames()
+            t = TimeCode(timecode=timecode, fps=self.fps)
+        frames = t.get_frames() + self.get_frames()
 
-        t2 = TimeCode(frames=frames, fps=my.fps)
+        t2 = TimeCode(frames=frames, fps=self.fps)
         return t2
 
 
 
-    def __add__(my, timecode):
+    def __add__(self, timecode):
 
         if type(timecode) == types.IntType:
             frames = timecode
@@ -127,17 +127,17 @@ class TimeCode(object):
             if isinstance(timecode, TimeCode):
                 t = timecode
             else:
-                t = TimeCode(timecode=timecode, fps=my.fps)
+                t = TimeCode(timecode=timecode, fps=self.fps)
             frames = t.get_frames()
             
-        frames = frames + my.get_frames()
+        frames = frames + self.get_frames()
 
-        t2 = TimeCode(frames=frames, fps=my.fps)
+        t2 = TimeCode(frames=frames, fps=self.fps)
         return t2
 
 
 
-    def __sub__(my, timecode):
+    def __sub__(self, timecode):
 
         if type(timecode) == types.IntType:
             frames = timecode
@@ -145,73 +145,73 @@ class TimeCode(object):
             if isinstance(timecode, TimeCode):
                 t = timecode
             else:
-                t = TimeCode(timecode=timecode, fps=my.fps)
+                t = TimeCode(timecode=timecode, fps=self.fps)
             frames = t.get_frames()
 
-        frames = my.get_frames() - frames
+        frames = self.get_frames() - frames
 
-        t2 = TimeCode(frames=frames, fps=my.fps)
+        t2 = TimeCode(frames=frames, fps=self.fps)
         return t2
 
 # FIXME: this should be a separate file: produces a dependency error
 """
 import unittest
 class TimeCodeTest(unittest.TestCase):
-    def test_all(my):
+    def test_all(self):
 
         timecode = "00:01:12"
         fps = 24
         t1 = TimeCode(timecode=timecode, fps=fps)
         frames = t1.get_frames()
-        my.assertEquals(36, frames)
+        self.assertEquals(36, frames)
 
         timecode2 = t1.get_timecode()
-        my.assertEquals(timecode, timecode2)
+        self.assertEquals(timecode, timecode2)
 
         timecode = "00:02:00"
         fps = 24
         t2 = TimeCode(timecode=timecode, fps=fps)
         frames = t2.get_frames()
-        my.assertEquals(48, frames)
+        self.assertEquals(48, frames)
 
 
         # try changing fps
         timecode = t2.get_timecode(fps=12)
-        my.assertEquals("00:04:00", timecode)
+        self.assertEquals("00:04:00", timecode)
 
         timecode = t2.get_timecode(fps=60)
-        my.assertEquals("00:00:48", timecode)
+        self.assertEquals("00:00:48", timecode)
 
 
 
         # try adding
         t3 = t1 + t2
-        my.assertEquals(84, t3.get_frames())
+        self.assertEquals(84, t3.get_frames())
         timecode = t3.get_timecode()
-        my.assertEquals("00:03:12", timecode)
+        self.assertEquals("00:03:12", timecode)
 
         t3 = t3 + "00:02:20"
         timecode = t3.get_timecode()
-        my.assertEquals("00:06:08", timecode)
+        self.assertEquals("00:06:08", timecode)
 
         t3 = t1 + 24
         timecode = t3.get_timecode()
-        my.assertEquals("00:02:12", timecode)
+        self.assertEquals("00:02:12", timecode)
 
 
         # try subtracting
         t3 = t2 - t1
         timecode = t3.get_timecode()
-        my.assertEquals("00:00:12", timecode)
+        self.assertEquals("00:00:12", timecode)
 
 
 
         timecode2 = TimeCode(timecode="01:15:12")
         timecode1 = TimeCode(timecode="01:12:15")
         timecode = timecode1 + timecode2
-        my.assertEquals("02:28:03", timecode.get_timecode() )
+        self.assertEquals("02:28:03", timecode.get_timecode() )
         timecode = timecode2 - timecode1
-        my.assertEquals("00:02:21", timecode.get_timecode() )
+        self.assertEquals("00:02:21", timecode.get_timecode() )
 
 
 

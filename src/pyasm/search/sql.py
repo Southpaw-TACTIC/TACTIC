@@ -88,6 +88,15 @@ except ImportError, e:
     pass
 
 
+# Salesforce
+"""
+try:
+    import simple_salesforce
+    DATABASE_DICT["Salesforce"] = simple_salesforce
+except ImportError, e:
+    pass
+"""
+
 
 
 # TACTIC Database
@@ -121,10 +130,13 @@ def set_default_vendor(vendor=None):
     assert DATABASE in VENDORS
     pgdb = DATABASE_DICT.get(DATABASE)
     if not pgdb:
-        raise TacticException("ERROR: database library for [%s] is not installed" % DATABASE)
+        raise TacticException("WARNING: database library for default database [%s] is not installed" % DATABASE)
 
 
-set_default_vendor()
+try:
+    set_default_vendor()
+except TacticException as e:
+    print(e)
 
 
 from pyasm.common import *
@@ -144,7 +156,8 @@ class Sql(Base):
 
     DO_QUERY_ERR = "do_query error"
 
-    def __init__(my, database_name, host=None, user=None, password=None, vendor=None, port=None):
+    def __init__(self, database_name, host=None, user=None, password=None, vendor=None, port=None):
+
         if DbResource.is_instance(database_name):
             db_resource = database_name
             host = db_resource.get_host()
@@ -157,53 +170,53 @@ class Sql(Base):
             #assert type(database_name) in types.StringTypes
             # allow unicode
             assert isinstance(database_name, basestring) 
-        my.database_name = database_name
-        #my.database_name = "schema_test"
+        self.database_name = database_name
+        #self.database_name = "schema_test"
 
         # get the database from the config file
         if host:
-            my.host = host
+            self.host = host
         else:
-            my.host = Config.get_value("database", "server")
+            self.host = Config.get_value("database", "server")
 
         if user:
-            my.user = user
+            self.user = user
         else:
-            my.user = Config.get_value("database", "user")
-        if port: my.port = port
-        else: my.port = Config.get_value("database", "port")
+            self.user = Config.get_value("database", "user")
+        if port: self.port = port
+        else: self.port = Config.get_value("database", "port")
        
         if password:
-            my.password = password
+            self.password = password
         # get from encrypted file
         else:
-            my.password = DbPasswordUtil.get_password()
+            self.password = DbPasswordUtil.get_password()
 
-        if not my.host:
-            my.host = "localhost"
+        if not self.host:
+            self.host = "localhost"
 
-        my.vendor = vendor
-        if not my.vendor:
-            my.vendor = Config.get_value("database", "vendor")
+        self.vendor = vendor
+        if not self.vendor:
+            self.vendor = Config.get_value("database", "vendor")
 
-        my.database_impl = DatabaseImpl.get(my.vendor)
-        my.pgdb = DATABASE_DICT.get(my.vendor)
-        if not my.pgdb:
-            raise TacticException("ERROR: database library for [%s] is not installed" % my.vendor)
-
-
-        my.cursor = None
-        my.results = ()
-        my.conn = None
-        my.last_query = None
-        my.row_count = -1
-
-        my.transaction_count = 0
-        my.description = None
+        self.database_impl = DatabaseImpl.get(self.vendor)
+        self.pgdb = DATABASE_DICT.get(self.vendor)
+        if not self.pgdb:
+            raise TacticException("ERROR: database library for [%s] is not installed" % self.vendor)
 
 
-    def get_db_resource(my):
-        db_resource = DbResource(my.database_name, host=my.host, port=my.port, vendor=my.vendor, user=my.user, password=my.password)
+        self.cursor = None
+        self.results = ()
+        self.conn = None
+        self.last_query = None
+        self.row_count = -1
+
+        self.transaction_count = 0
+        self.description = None
+
+
+    def get_db_resource(self):
+        db_resource = DbResource(self.database_name, host=self.host, port=self.port, vendor=self.vendor, user=self.user, password=self.password)
         return db_resource
 
 
@@ -213,8 +226,8 @@ class Sql(Base):
 
 
 
-    #def __del__(my):
-    #    print "CONNECT: delete: ", my
+    #def __del__(self):
+    #    print("CONNECT: delete: ", self)
 
 
     ### These are for the default .. most often for the sthpw database
@@ -250,52 +263,52 @@ class Sql(Base):
 
 
     #####
-    def get_database_version(my):
-        return my.get_database_impl().get_version()
+    def get_database_version(self):
+        return self.get_database_impl().get_version()
 
-    def get_database_type(my):
-        return my.vendor
+    def get_database_type(self):
+        return self.vendor
 
-    def get_database_impl(my):
-        return my.database_impl
-
-
-    def get_timestamp_now(my):
-        return my.database_impl.get_timestamp_now()
+    def get_database_impl(self):
+        return self.database_impl
 
 
-
-
-    def get_table_description(my):
-        return my.description
-
-
-    def get_database_name(my):
-        return my.database_name
-
-    def get_host(my):
-        return my.host
-
-    def get_user(my):
-        return my.user
-
-    def get_password(my):
-        return my.password
-
-    def get_vendor(my):
-        return my.vendor
+    def get_timestamp_now(self):
+        return self.database_impl.get_timestamp_now()
 
 
 
-    def get_connection(my):
+
+    def get_table_description(self):
+        return self.description
+
+
+    def get_database_name(self):
+        return self.database_name
+
+    def get_host(self):
+        return self.host
+
+    def get_user(self):
+        return self.user
+
+    def get_password(self):
+        return self.password
+
+    def get_vendor(self):
+        return self.vendor
+
+
+
+    def get_connection(self):
         '''get the underlying database connection'''
-        return my.conn
+        return self.conn
 
 
 
-    def get_columns_from_description(my):
+    def get_columns_from_description(self):
         columns = []
-        for description in my.description:
+        for description in self.description:
             columns.append( description[0] )
 
         # In some versions of sqlite, the full name is returned with quotes
@@ -312,11 +325,11 @@ class Sql(Base):
 
 
 
-    def get_columns(my,table=None,use_cache=True):
+    def get_columns(self,table=None,use_cache=True):
         '''Returns a list of string ordered columns contained in this table
         '''
-        db_resource = my.get_db_resource()
-        database = my.get_database_name()
+        db_resource = self.get_db_resource()
+        database = self.get_database_name()
 
         from pyasm.security import Site
         #use_cache = False
@@ -343,7 +356,7 @@ class Sql(Base):
                         return columns[:]
                         #return columns
 
-        impl = my.get_database_impl()
+        impl = self.get_database_impl()
         columns = impl.get_columns(db_resource, table)
 
         if use_cache:
@@ -352,113 +365,113 @@ class Sql(Base):
         return columns[:]
 
 
-    def get_table_info(my):
-        impl = my.get_database_impl()
-        info = impl.get_table_info(my.get_db_resource()) 
+    def get_table_info(self):
+        impl = self.get_database_impl()
+        info = impl.get_table_info(self.get_db_resource()) 
         return info
 
 
  
-    def get_column_info(my, table, column=None, use_cache=True):
-        impl = my.get_database_impl()
-        info = impl.get_column_info(my.get_db_resource(), table)
+    def get_column_info(self, table, column=None, use_cache=True):
+        impl = self.get_database_impl()
+        info = impl.get_column_info(self.get_db_resource(), table)
         if not column:
             return info
         else:
             return info.get(column)
 
   
-    def get_column_types(my, table):
-        impl = my.get_database_impl()
-        return impl.get_column_types(my.get_db_resource(), table) 
+    def get_column_types(self, table):
+        impl = self.get_database_impl()
+        return impl.get_column_types(self.get_db_resource(), table) 
 
-    def get_column_nullables(my, table):
-        impl = my.get_database_impl()
-        return impl.get_column_nullables(my.get_db_resource(), table) 
+    def get_column_nullables(self, table):
+        impl = self.get_database_impl()
+        return impl.get_column_nullables(self.get_db_resource(), table) 
 
 
-    def is_in_transaction(my):
+    def is_in_transaction(self):
         '''Returns a boolean showing whether the database is in transaction
         or not'''
-        if my.transaction_count <= 0:
+        if self.transaction_count <= 0:
             return False
         else:
             return True
 
-    def get_row_count(my):
+    def get_row_count(self):
         '''returns the number of rows effected in the last update'''
-        return my.row_count
+        return self.row_count
 
 
-    def start(my):
+    def start(self):
         '''start a transaction'''
-        my.transaction_count += 1
+        self.transaction_count += 1
 
-    def set_savepoint(my, name='save_pt'):
+    def set_savepoint(self, name='save_pt'):
         '''set a savepoint'''
-        stmt = my.database_impl.set_savepoint(name)
+        stmt = self.database_impl.set_savepoint(name)
         if stmt:
-            cursor = my.conn.cursor()
+            cursor = self.conn.cursor()
             cursor.execute(stmt)
 
-    def rollback_savepoint(my, name='save_pt', release=True):
+    def rollback_savepoint(self, name='save_pt', release=True):
         '''rollback to a savepoint'''
-        my.cursor = my.conn.cursor()
-        stmt = my.database_impl.rollback_savepoint(name)
+        self.cursor = self.conn.cursor()
+        stmt = self.database_impl.rollback_savepoint(name)
         if not stmt:
             return
-        my.cursor.execute(stmt)
+        self.cursor.execute(stmt)
         if release:
-            my.release_savepoint(name)
+            self.release_savepoint(name)
 
-    def release_savepoint(my, name='save_pt'):
-        release_stmt = my.database_impl.release_savepoint(name)
+    def release_savepoint(self, name='save_pt'):
+        release_stmt = self.database_impl.release_savepoint(name)
         if not release_stmt:
             return
         if release_stmt:
-            my.cursor.execute(release_stmt)
+            self.cursor.execute(release_stmt)
         
 
     
-    def commit(my):
+    def commit(self):
         '''commit the transaction'''
-        my.transaction_count -= 1
+        self.transaction_count -= 1
 
         # only commit if transaction count = 0 to support embedded
         # transactions
-        #if my.transaction_count == 0:
-        if my.transaction_count <= 0:
+        #if self.transaction_count == 0:
+        if self.transaction_count <= 0:
             try:
-                my.transaction_count = 0
+                self.transaction_count = 0
 
                 # NOTE: protect against database being already closed.
                 # Note sure why it is being closed, but there are some
                 # extreme circumstances where this will occur
-                if not my.conn:
+                if not self.conn:
                     # reconnect
-                    my.connect()
+                    self.connect()
                 else:
-                    my.conn.commit()
+                    self.conn.commit()
                     
                 sql_dict = DbContainer._get_sql_dict()
-                database_name = my.get_database_name()
-                sql_dict[database_name] = my
+                database_name = self.get_database_name()
+                sql_dict[database_name] = self
 
-            except my.pgdb.OperationalError, e:
+            except self.pgdb.OperationalError, e:
                 raise SqlException(e.__str__())
             
 
 
-    def rollback(my, force=False):
+    def rollback(self, force=False):
         '''rollback the transaction'''
-        if force or my.transaction_count > 0:
-            if my.conn:
-                my.conn.rollback()
-                my.transaction_count = 0
+        if force or self.transaction_count > 0:
+            if self.conn:
+                self.conn.rollback()
+                self.transaction_count = 0
 
-    def connect(my):
+    def connect(self):
         '''connect to the database'''
-        if not my.host:
+        if not self.host:
             raise DatabaseException("Server setting is empty")
 
         # pgdb connection code
@@ -469,23 +482,23 @@ class Sql(Base):
             # get olson timezone name as opposed to abv. tz name 
             tz_name = tzlocal_olson.get_localzone().zone
             
-            if my.vendor == "PostgreSQL":
+            if self.vendor == "PostgreSQL":
                 # psycopg connection code
-                if my.password == "" or my.password == "none":
+                if self.password == "" or self.password == "none":
                     password_str = ""
                 else:
-                    password_str = "password=%s" % my.password
-                if not my.port:
-                    my.port = 5432
+                    password_str = "password=%s" % self.password
+                if not self.port:
+                    self.port = 5432
                 sslmode = "require"
                 sslmode = "disable"
                 auth = "host=%s port=%s dbname=%s sslmode=%s user=%s %s" % \
-                    (my.host, my.port, my.database_name, sslmode, my.user, password_str)
-                my.conn = my.pgdb.connect(auth)
+                    (self.host, self.port, self.database_name, sslmode, self.user, password_str)
+                self.conn = self.pgdb.connect(auth)
 
                 #TODO: check other db impl on timezone impl
-                my.do_update("SET timezone='%s'"%tz_name)
-            elif my.vendor == "Sqlite":
+                self.do_update("SET timezone='%s'"%tz_name)
+            elif self.vendor == "Sqlite":
 
                 db_dir = Config.get_value("database", "sqlite_db_dir")
                 if not db_dir:
@@ -495,19 +508,19 @@ class Sql(Base):
                     db_dir = "%s/db" % data_dir
 
                 # DEBUG: this -1 database seems to popup
-                if my.database_name in [-1, '-1']:
+                if self.database_name in [-1, '-1']:
                     raise DatabaseException("Database '-1' is not valid")
-                auth = "%s/%s.db" % (db_dir, my.database_name)
-                my.conn = sqlite.connect(auth, isolation_level="DEFERRED" )
+                auth = "%s/%s.db" % (db_dir, self.database_name)
+                self.conn = sqlite.connect(auth, isolation_level="DEFERRED" )
 
                 # immediately cache all of the columns in the database.  This
                 # is because get_column_info in Sqlite requires a PRAGMA
                 # statement which forces a transaction to commit
                 from database_impl import SqliteImpl
-                SqliteImpl.cache_database_info(my)
+                SqliteImpl.cache_database_info(self)
 
 
-            elif my.vendor == "MySQL":
+            elif self.vendor == "MySQL":
                 encoding = Config.get_value("database", "encoding")
                 charset = Config.get_value("database", "charset")
                 if not encoding:
@@ -515,122 +528,129 @@ class Sql(Base):
                     encoding = 'utf8'
                 if not charset:
                     charset = 'utf8'
-                if not my.port:
-                    my.port = 3306
-                int_port = int(my.port)
-                my.conn = MySQLdb.connect(  db=my.database_name,
-                                            host=my.host,
-                                            user=my.user,
+                if not self.port:
+                    self.port = 3306
+                int_port = int(self.port)
+                self.conn = MySQLdb.connect(  db=self.database_name,
+                                            host=self.host,
+                                            user=self.user,
                                             port=int_port,
                                             charset=charset,
                                             use_unicode=True,
-                                            passwd=my.password )
-                my.do_query("SET sql_mode='ANSI_QUOTES';SET NAMES %s"%encoding)
+                                            passwd=self.password )
+                self.do_query("SET sql_mode='ANSI_QUOTES';SET NAMES %s"%encoding)
 
-            elif my.vendor == "Oracle":
+            elif self.vendor == "Oracle":
                 # if we connect as a single user (like most databases, then
                 # use the user name), otherwise if we connect by schema,
                 # we use the database name.  This is determined by whether
                 # or not the user field is empty
-                if not my.user:
-                    auth = '%s/%s@%s' % (my.database_name, my.password, my.host)
+                if not self.user:
+                    auth = '%s/%s@%s' % (self.database_name, self.password, self.host)
                 else:
-                    auth = '%s/%s@%s' % (my.user, my.password, my.host)
-                my.conn = my.pgdb.connect(str(auth))
+                    auth = '%s/%s@%s' % (self.user, self.password, self.host)
+                self.conn = self.pgdb.connect(str(auth))
 
-            elif my.vendor == "SQLServer":
+            elif self.vendor == "SQLServer":
                 sqlserver_driver = '{SQL Server}'
                 # pyodbc connection code
-                if my.password == "" or my.password == "none":
+                if self.password == "" or self.password == "none":
                     password_str = ""
                 else:
-                    password_str = my.password
+                    password_str = self.password
                 # >>> cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER=localhost,1433;DATABASE=my_db;UID=tactic;PWD=south123paw')
 # 
                 auth = "DRIVER=%s; SERVER=%s,%s; DATABASE=%s; UID=%s; PWD=%s" % \
-                    (sqlserver_driver, my.host, my.port, my.database_name, my.user, password_str)
-                my.conn = pyodbc.connect(auth)
+                    (sqlserver_driver, self.host, self.port, self.database_name, self.user, password_str)
+                self.conn = pyodbc.connect(auth)
                 # set isolation level to prevent excessive read lock on tables
-                my.do_update("SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
+                self.do_update("SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
                 
-            elif my.vendor == "MongoDb":
+            elif self.vendor == "MongoDb":
 
                 from mongodb import MongoDbConn
-                my.conn = MongoDbConn(my.database_name)
+                self.conn = MongoDbConn(self.database_name)
 
+            elif self.vendor == "Salesforce":
 
-            elif my.vendor == "TACTIC":
+                database_impl = DatabaseImpl.get(self.vendor)
+                #self.conn = database_impl.get_connection()
+
+                from spt.tools.salesforce import SalesforceConn
+                self.conn = SalesforceConn(self.database_name)
+
+            elif self.vendor == "TACTIC":
                 from pyasm.search import TacticImpl
-                my.conn = TacticImpl()
+                self.conn = TacticImpl()
                 #raise DatabaseException("Database TACTIC not yet implemented")
                 
             else:
-                raise DatabaseException("Unsupported Database [%s]" % my.vendor)
+                raise DatabaseException("Unsupported Database [%s]" % self.vendor)
 
-        except Exception, e:
-            #print "ERROR: connecting to database [%s, %s]" % (my.host, my.database_name), e.__str__()
+        except Exception as e:
+            #print("ERROR: connecting to database [%s, %s]" % (self.host, self.database_name), e.__str__())
             raise
             raise DatabaseException(e)
 
-        assert my.conn
+        assert self.conn
 
-        return my
+        return self
 
 
 
     # Resets sequence so that the next available ID number is exactly one greater than the highest existing ID
     # number of the given table
     #
-    def reset_sequence_for_table(my, table, database=None):
+    def reset_sequence_for_table(self, table, database=None):
 
         # FIXME: currently only available for the Oracle database 
 
-        impl = my.get_database_impl()
+        impl = self.get_database_impl()
         stmt = impl.get_reset_table_sequence_statement(table, database)
         from sql import DbContainer
-        sql = DbContainer.get(my.get_database_name())
+        sql = DbContainer.get(self.get_database_name())
         results = sql.do_update(stmt)
 
 
 
-    def modify_column(my, table, column, type, not_null=None):
-        impl = my.get_database_impl()
+    def modify_column(self, table, column, type, not_null=None):
+        impl = self.get_database_impl()
         statements = impl.get_modify_column(table, column, type, not_null)
         from sql import DbContainer
-        sql = DbContainer.get(my.get_database_name())
+        sql = DbContainer.get(self.get_database_name())
         for statement in statements:
             sql.do_update(statement)
 
 
-    def clear_results(my):
+    def clear_results(self):
         # MySQL uses tuples
-        impl = my.get_database_impl()
+        impl = self.get_database_impl()
         if impl.get_database_type() not in ['MySQL']:
-            for i in range(0, len(my.results)):
-                my.results[i] = None
+            for i in range(0, len(self.results)):
+                self.results[i] = None
 
-        my.results = []
+        self.results = []
 
 
     # FIXME: is there any reason to have this function.  This should be 
     # incorporated into do_query.
     """
-    def execute(my, query, num_attempts=0):
+    def execute(self, query, num_attempts=0):
         '''execute a query'''
 
         #raise SqlException("FIXME: Incorporate into do_query")
 
         try:
             # in case of accidental loss of connection
-            if not my.conn:
+            if not self.conn:
                 # reconnect
-                my.connect()
+                self.connect()
 
-            my.query = query
-            my.cursor = my.conn.cursor()
-            my.cursor.execute(query)
+            self.query = query
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(query)
 
-            my.description = my.cursor.description
+            self.description = self.cursor.description
             return
 
         except pgdb.OperationalError, e:
@@ -638,130 +658,129 @@ class Sql(Base):
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
             #
-            first_query = Container.get("Sql::%s::first_query" % my.database_name)
+            first_query = Container.get("Sql::%s::first_query" % self.database_name)
             if first_query == False:
-                raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
+                raise SqlException("%s: %s\n%s" % (self.DO_QUERY_ERR, query,e.__str__()) )
 
             if num_attempts >= 3:
-                print "ERROR: three failed attempts have been made to access [%s]" % my.database_name
-                raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
+                print("ERROR: three failed attempts have been made to access [%s]" % self.database_name)
+                raise SqlException("%s: %s\n%s" % (self.DO_QUERY_ERR, query,e.__str__()) )
 
             Container.put("Sql::first_query", False)
 
             # try to reconnect
-            print "WARNING: a database error [%s] has been encountered: " % e.__class__.__name__
-            print str(e)
-            print "Attempting to reconnect and reissue query"
+            print("WARNING: a database error [%s] has been encountered: " % e.__class__.__name__)
+            print(str(e))
+            print("Attempting to reconnect and reissue query")
             # try closing: oracle throws an exception if you try to close
             # on an already closed connection
             try:
-                my.close()
+                self.close()
             except:
                 pass
-            my.connect()
-            return my.do_query(query, num_attempts=num_attempts+1)
+            self.connect()
+            return self.do_query(query, num_attempts=num_attempts+1)
 
         except pgdb.Error, e:
             error_msg = str(e)
-            print "ERROR: %s: "%my.DO_QUERY_ERR, error_msg, str(query)
+            print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error 
-            raise SqlException("%s: %s\n" % (my.DO_QUERY_ERR, query))
+            raise SqlException("%s: %s\n" % (self.DO_QUERY_ERR, query))
     """
 
 
 
 
 
-    def do_query(my, query, num_attempts=0):
+    def do_query(self, query, num_attempts=0):
         '''execute a query'''
 
-        my.clear_results()
+        self.clear_results()
 
         try:
             # in case of accidental loss of connection
-            if not my.conn:
+            if not self.conn:
                 # reconnect
-                my.connect()
+                self.connect()
 
 
-            vendor = my.get_vendor()
-            #if vendor == "MongoDb":
+            vendor = self.get_vendor()
             if isinstance(query, Select):
-                my.results = query.execute(my)
+                self.results = query.execute(self)
             else:
 
                 #import time
                 #start = time.time()
-                #print my.database_name, query
-                my.query = query
-                my.cursor = my.conn.cursor()
+                #print(self.database_name, query)
+                self.query = query
+                self.cursor = self.conn.cursor()
                 #import time
                 #start = time.time()
-                my.cursor.execute(query)
+                self.cursor.execute(query)
 
-                my.description = my.cursor.description
+                self.description = self.cursor.description
 
                 # copy the data structure because LOBs in Oracle become stale
-                if my.get_database_type() == "Oracle":
+                if self.get_database_type() == "Oracle":
                     import cx_Oracle
-                    my.results = []
-                    for x in my.cursor:
+                    self.results = []
+                    for x in self.cursor:
                         result = []
                         for y in x:
                             if isinstance(y, cx_Oracle.LOB):
                                 result.append(str(y))
                             else:
                                 result.append(y)
-                        my.results.append(result)
+                        self.results.append(result)
                 else:
-                    my.results = my.cursor.fetchall()
+                    self.results = self.cursor.fetchall()
 
-                my.cursor.close()
-                #print time.time() - start
-
-
-            return my.results
+                self.cursor.close()
+                #print(time.time() - start)
 
 
-        except my.pgdb.OperationalError, e:
+            return self.results
+
+
+        except self.pgdb.OperationalError, e:
             # A reconnect will only be attempted on the first query.
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
             #
-            key = "Sql::%s::%s::first_query" % (my.vendor, my.database_name)
+            key = "Sql::%s::%s::first_query" % (self.vendor, self.database_name)
             first_query = Container.get(key)
             if first_query == False:
-                raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
+                raise SqlException("%s: %s\n%s" % (self.DO_QUERY_ERR, query,e.__str__()) )
 
             if num_attempts >= 3:
-                print "ERROR: three failed attempts have been made to access [%s]" % my.database_name
-                raise SqlException("%s: %s\n%s" % (my.DO_QUERY_ERR, query,e.__str__()) )
+                print("ERROR: three failed attempts have been made to access [%s]" % self.database_name)
+                raise SqlException("%s: %s\n%s" % (self.DO_QUERY_ERR, query,e.__str__()) )
 
             Container.put("Sql::first_query", False)
 
             # try to reconnect
-            print "WARNING: a database error [%s] has been encountered: " % e.__class__.__name__
-            print str(e)
-            print "Attempting to reconnect and reissue query"
+            print("WARNING: a database error [%s] has been encountered: " % e.__class__.__name__)
+            print(str(e))
+            print("Attempting to reconnect and reissue query")
             # try closing: oracle throws an exception if you try to close
             # on an already closed connection
             try:
-                my.close()
+                self.close()
             except:
                 pass
-            my.connect()
-            return my.do_query(query, num_attempts=num_attempts+1)
+            self.connect()
+            return self.do_query(query, num_attempts=num_attempts+1)
 
-        except my.pgdb.Error, e:
+        except self.pgdb.Error, e:
             error_msg = str(e)
-            print "ERROR: %s: "%my.DO_QUERY_ERR, error_msg, str(query)
+            print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error 
-            raise SqlException("%s: %s\n" % (my.DO_QUERY_ERR, query))
+            raise SqlException("%s: %s\n" % (self.DO_QUERY_ERR, query))
 
 
-    def get_value(my, query):
+    def get_value(self, query):
         '''convenience function when you know there will be only one result'''
-        result = my.do_query(query)
+        result = self.do_query(query)
         if len(result) > 0:
             value = result[0][0]
             if value == None:
@@ -770,49 +789,49 @@ class Sql(Base):
             value = ""
         return value
 
-    def get_int(my, query):
-        return int(my.get_value(query))
+    def get_int(self, query):
+        return int(self.get_value(query))
 
 
 
-    def do_update(my, query, quiet=False):
+    def do_update(self, query, quiet=False):
         """execute an update. If quiet = True, it doesn't print error causing sql"""
         if query =="":
             return
 
         try:
-            if not my.conn:
-                my.connect()
+            if not self.conn:
+                self.connect()
 
             # store the last query
-            #print "[%s]" % my.database_name, query
+            #print("[%s]" % self.database_name, query)
 
-            my.query = query
-            my.cursor = my.conn.cursor()
+            self.query = query
+            self.cursor = self.conn.cursor()
 
-            #my.execute(query)
+            #self.execute(query)
             from pyasm.security import Site
-            my.cursor.execute(query)
+            self.cursor.execute(query)
 
             # remember the row count
-            my.row_count = my.cursor.rowcount
+            self.row_count = self.cursor.rowcount
 
-            if my.vendor == 'Sqlite':
-                my.last_row_id = my.cursor.lastrowid
-            elif my.vendor == 'MySQL':
-                my.last_row_id = my.conn.insert_id()
+            if self.vendor == 'Sqlite':
+                self.last_row_id = self.cursor.lastrowid
+            elif self.vendor == 'MySQL':
+                self.last_row_id = self.conn.insert_id()
             else:
-                my.last_row_id = 0
+                self.last_row_id = 0
 
-            my.cursor.close()
+            self.cursor.close()
 
 
             # commit the transaction if there is no transaction
-            if my.transaction_count == 0:
-                my.transaction_count = 1
-                my.commit()
+            if self.transaction_count == 0:
+                self.transaction_count = 1
+                self.commit()
 
-        except my.pgdb.ProgrammingError, e:
+        except self.pgdb.ProgrammingError, e:
             if str(e).find("already exists") != -1:
                 return
             if isinstance(query, unicode):
@@ -820,21 +839,21 @@ class Sql(Base):
             else:
                 wrong_query = unicode(query, errors='ignore').encode('utf-8')
 
-            print "Error with query (ProgrammingError): ", my.database_name, wrong_query
-            print str(e)
+            print("Error with query (ProgrammingError): ", self.database_name, wrong_query)
+            print(str(e))
             raise SqlException(str(e))
-        except my.pgdb.Error, e:
+        except self.pgdb.Error, e:
             if not quiet:
                 if isinstance(query, unicode):
                     wrong_query = query.encode('utf-8')
                 else:
                     wrong_query = unicode(query, errors='ignore').encode('utf-8')
-                print "Error with query (Error): ", my.database_name, wrong_query
+                print("Error with query (Error): ", self.database_name, wrong_query)
             raise SqlException(e.__str__())
 
 
 
-    def update_single(my, statement_obj):
+    def update_single(self, statement_obj):
         '''insert/updates a single statement.  This is a convenience function
         which returns the id of the update row.  It also checks that
         only one row was actually affected'''
@@ -852,25 +871,25 @@ class Sql(Base):
         # get the update id
         if not is_insert:
             id_statement = statement_obj.get_id_statement()
-            id = my.get_value(id_statement)
+            id = self.get_value(id_statement)
 
 
         # do the update
         statement = statement_obj.get_statement()
-        my.do_update(statement)
+        self.do_update(statement)
 
 
         # check that one row and only one raw was affected
-        if my.row_count == 0:
+        if self.row_count == 0:
             raise SqlException("Statement [%s] did not affect any rows")
 
-        if my.row_count > 1:
-            raise SqlException("Statement [%s] affected any [%s] rows" % (statement, my.row_count) )
+        if self.row_count > 1:
+            raise SqlException("Statement [%s] affected any [%s] rows" % (statement, self.row_count) )
 
         # get the insert id
         if is_insert:
             id_statement = statement_obj.get_id_statement()
-            id = my.get_value(id_statement)
+            id = self.get_value(id_statement)
 
         if id > 0:
             return id
@@ -880,17 +899,17 @@ class Sql(Base):
 
 
 
-    def close(my):
-        if my.conn == None:
+    def close(self):
+        if self.conn == None:
             return
 
-        my.conn.close()
-        my.conn = None
+        self.conn.close()
+        self.conn = None
 
 
 
-    def dump(my):
-        print(my.results)
+    def dump(self):
+        print(self.results)
 
 
     # static functions
@@ -944,8 +963,8 @@ class Sql(Base):
                 value = value.replace("'", "''")
             except Exception:
                 #raise SqlException("Error with quoting [%s]" % value)
-                print "WARNING: set_value(): ", value
-                print "type: ", type(value)
+                print("WARNING: set_value(): ", value)
+                print("type: ", type(value))
                 raise
 
         if has_outside_quotes:
@@ -962,11 +981,11 @@ class Sql(Base):
 
 
     # FIXME: this is highly PostgreSQL dependent
-    def copy_table_schema(my, from_table, to_table):
+    def copy_table_schema(self, from_table, to_table):
         '''dump the table to a file.  This is pretty messy, but I couldn't
         find a better way to do this'''
         tmp_dir = Environment.get_tmp_dir()
-        file_path = "%s/temp/%s__%s.sql" % (tmp_dir,my.database_name,from_table)
+        file_path = "%s/temp/%s__%s.sql" % (tmp_dir,self.database_name,from_table)
         if os.path.exists(file_path):
             os.unlink(file_path)
         if os.path.exists(file_path+".tmp"):
@@ -985,8 +1004,8 @@ class Sql(Base):
 
         # dump the table to a file
         cmd ="pg_dump -h %s -U %s -p %s -s --schema %s -t %s %s > %s" % \
-            (my.host, my.user, my.port, from_schema, from_table, \
-            my.database_name, file_path)
+            (self.host, self.user, self.port, from_schema, from_table, \
+            self.database_name, file_path)
 
         os.system(cmd)
 
@@ -1005,7 +1024,7 @@ class Sql(Base):
 
         # read the file back in
         os.system("psql -e -h %s -U %s -p %s %s < %s" % \
-              (my.host, my.user, my.port, my.database_name, file_path+".tmp") )
+              (self.host, self.user, self.port, self.database_name, file_path+".tmp") )
 
         os.unlink(file_path)
         os.unlink(file_path+".tmp")
@@ -1015,14 +1034,14 @@ class Sql(Base):
     # some database introspection tools: note that a different module
     # is used here because it appears that pgdb (which is DB-API 2.0 compliant)
     # does not support database introspection (not sure why not)
-    def get_tables(my):
-        db_resource = my.get_db_resource()
+    def get_tables(self):
+        db_resource = self.get_db_resource()
         #key = "Sql:%s:tables"% db_resource
         #tables = Container.get(key)
         #if tables != None:
         #    return tables
 
-        table_info = my.database_impl.get_table_info(db_resource)
+        table_info = self.database_impl.get_table_info(db_resource)
 
         tables = table_info.keys()
         #Container.put(key, tables)
@@ -1039,9 +1058,9 @@ class Sql(Base):
     clear_table_cache = classmethod(clear_table_cache) 
 
 
-    def table_exists(my, table):
-        db_resource = my.get_db_resource()
-        return my.database_impl.table_exists(db_resource, table)
+    def table_exists(self, table):
+        db_resource = self.get_db_resource()
+        return self.database_impl.table_exists(db_resource, table)
 
 
 
@@ -1053,90 +1072,98 @@ class DbResource(Base):
     DBRESOURCE_ID = 'DbResource'
 
 
-    def __init__(my, database, host=None, port=None, vendor=None, user=None, password=None, **options):
+    def __init__(self, database, host=None, port=None, vendor=None, user=None, password=None, **options):
         # MySQL does allow empty.  This is needed to create a database
         if vendor != "MySQL":
             assert database
-        my.database = database
-        my.host = host
-        my.port = port
-        my.vendor = vendor
-        if not my.vendor:
-            my.vendor = Sql.get_default_database_type()
+        self.database = database
+        self.host = host
+        self.port = port
+        self.vendor = vendor
+        if not self.vendor:
+            self.vendor = Sql.get_default_database_type()
 
-        assert my.vendor in VENDORS
 
-        my.user = user
-        my.password = password
+        # check to see if vendor is supported
+        try:
+            impl = DatabaseImpl.get(self.vendor)
+            if self.vendor not in VENDORS:
+                VENDORS.append(self.vendor)
+                DATABASE_DICT[self.vendor] = impl.get_module()
+        except Excetpion, e:
+            assert self.vendor in VENDORS
+
+        self.user = user
+        self.password = password
 
         # database specific extra options
-        my.options = options
+        self.options = options
 
-        if not my.host:
-            my.host = Config.get_value("database", "server")
-        if not my.host:
-            my.host = 'localhost'
+        if not self.host:
+            self.host = Config.get_value("database", "server")
+        if not self.host:
+            self.host = 'localhost'
 
 
         # Fill in the defaults
-        if my.vendor == 'MySQL':
-            if not my.user:
-                my.user = "root" 
-        elif my.vendor == 'PostgreSQL':
-            if not my.user:
-                my.user = "postgres" 
-            if not my.port:
-                my.port = '5432'
+        if self.vendor == 'MySQL':
+            if not self.user:
+                self.user = "root" 
+        elif self.vendor == 'PostgreSQL':
+            if not self.user:
+                self.user = "postgres" 
+            if not self.port:
+                self.port = '5432'
         
 
 
-    def __str__(my):
-        return "DbResource:%s:%s:%s:%s" % (my.vendor, my.host, my.port, my.database)
+    def __str__(self):
+        return "DbResource:%s:%s:%s:%s" % (self.vendor, self.host, self.port, self.database)
 
-    def get_database(my):
-        return my.database
+    def get_database(self):
+        return self.database
 
-    def get_host(my):
-        return my.host
+    def get_host(self):
+        return self.host
 
-    def get_port(my):
-        return my.port
+    def get_port(self):
+        return self.port
 
-    def get_vendor(my):
-        return my.vendor
+    def get_vendor(self):
+        return self.vendor
 
-    def get_user(my):
-        return my.user
+    def get_user(self):
+        return self.user
 
-    def get_password(my):
-        return my.password
+    def get_password(self):
+        return self.password
 
-    def get_key(my):
-        if my.host:
-            return "%s:%s:%s:%s" % (my.vendor, my.host, my.port, my.database)
+    def get_key(self):
+        if self.host:
+            return "%s:%s:%s:%s" % (self.vendor, self.host, self.port, self.database)
         else:
-            return my.database
+            return self.database
 
-    def get_database_type(my):
-        return my.vendor
+    def get_database_type(self):
+        return self.vendor
 
 
-    def get_database_impl(my):
-        impl = DatabaseImpl.get(my.vendor)
+    def get_database_impl(self):
+        impl = DatabaseImpl.get(self.vendor)
         return impl
 
     
-    def exists(my):
-        return my.get_database_impl().database_exists(my)
+    def exists(self):
+        return self.get_database_impl().database_exists(self)
 
 
-    def get_sql(my):
-        return DbContainer.get(my)
+    def get_sql(self):
+        return DbContainer.get(self)
 
 
-    def get_search(my, table):
+    def get_search(self, table):
         from pyasm.search import Search
-        search = Search.get_search_by_db_resource(my, table)
+        search = Search.get_search_by_db_resource(self, table)
         return search
 
 
@@ -1274,7 +1301,7 @@ class DbContainer(Base):
         from sql import DbResource
         assert db_resource != None
         if db_resource != "sthpw":
-            #print "DBCONTAINER what is", db_resource, type(db_resource)
+            #print("DBCONTAINER what is", db_resource, type(db_resource))
             assert DbResource.is_instance(db_resource)
         else:
             db_resource = DbResource.get_default("sthpw")
@@ -1401,7 +1428,7 @@ class DbContainer(Base):
                 # otherwise reuse one from the pool
                 sql = global_pool.pop()
                 #import thread as xx
-                #print "CONNECT: reuse: ", database_key, sql, xx.get_ident()
+                #print("CONNECT: reuse: ", database_key, sql, xx.get_ident())
 
 
             # remember for this thread
@@ -1438,8 +1465,8 @@ class DbContainer(Base):
             try:
                 sql.commit()
                 
-            except Exception, e:
-                print "WARNING: When trying to commit: ", e
+            except Exception as e:
+                print("WARNING: When trying to commit: ", e)
                 del(thread_pool[database_key])
             finally:
                 sql.close()
@@ -1467,7 +1494,7 @@ class DbContainer(Base):
 
     def release_thread_sql(cls):
         # release all of the open connections back to the pool
-        #print "releasing: ", thread.get_ident()
+        #print("releasing: ", thread.get_ident())
 
 
         lock = Lock()
@@ -1483,8 +1510,8 @@ class DbContainer(Base):
                 # NOTE: implemented in 4.0
                 try:
                     sql.commit()
-                except SqlException, e:
-                    print "WARNING: ", e.__str__()
+                except SqlException as e:
+                    print("WARNING: ", e.__str__())
                 # Do not pool sqlite. SQLite does not like sharing connection
                 # amongst threads
                 if sql.get_database_type() == 'Sqlite':
@@ -1573,7 +1600,7 @@ class DbPasswordUtil(object):
 
         """
         if Config.get_value("database", "vendor") == 'SQLServer':
-            print "WARNING: SQLServer implementation does not support encoded keys for database passwords"
+            print("WARNING: SQLServer implementation does not support encoded keys for database passwords")
             return coded
         """
         if not coded or coded == "none":
@@ -1618,115 +1645,117 @@ class DbPasswordUtil(object):
 class Select(object):
     '''A class to non-linearly build up an sql select statement'''
 
-    def __init__(my):
-        my.tables = []
-        my.id_col = 'id'
-        my.columns = []
-        my.as_columns = []
-        my.column_tables = []
-        my.wheres = []
-        my.filters = {}
-        my.raw_filters = []
-        my.filter_mode = "AND"
-        my.group_bys = []
-        my.havings = []
-        my.order_bys = []
-        my.order_by_columns = []
-        my.limit = None
-        my.offset = 0
-        my.distinct = False
-        my.distinct_col = None
-        my.joins = []
-        my.join_tables = set()
+    def __init__(self):
+        self.tables = []
+        self.id_col = 'id'
+        self.columns = []
+        self.as_columns = []
+        self.column_tables = []
+        self.wheres = []
+        self.filters = {}
+        self.raw_filters = []
+        self.filter_mode = "AND"
+        self.group_bys = []
+        self.havings = []
+        self.order_bys = []
+        self.order_by_columns = []
+        self.limit = None
+        self.offset = 0
+        self.distinct = False
+        self.distinct_col = None
+        self.joins = []
+        self.join_tables = set()
 
         # optional database knowledge
-        my.sql = None
-        my.database = None
-        my.db_resource = None
-        my.column_types = {}
-        my.impl = DatabaseImpl.get()
+        self.sql = None
+        self.database = None
+        self.db_resource = None
+        self.column_types = {}
+        self.impl = DatabaseImpl.get()
 
-        my.statement = None
+        self.statement = None
         
-        my.set_statement = None
+        self.set_statement = None
 
-        my.schema = ""
+        self.schema = ""
+
+        self.quoted_mode = None
 
 
-    def copy(my):
+    def copy(self):
         select = Select()
 
-        select.tables = my.tables[:]
-        select.id_col = my.id_col
-        select.columns = my.as_columns[:]
-        select.column_tables = my.column_tables[:]
-        select.wheres = my.wheres[:]
-        select.filters = my.filters.copy()
-        select.raw_filters = my.raw_filters[:]
-        select.filter_mode = my.filter_mode
-        select.group_bys = my.group_bys[:]
-        select.havings = my.havings[:]
-        select.order_bys = my.order_bys[:]
-        select.order_by_columns = my.order_by_columns[:]
-        select.limit = my.limit
-        select.offset = my.offset
-        select.distinct = my.distinct
-        select.distinct_col = my.distinct_col
-        select.joins = my.joins
-        select.join_tables = my.join_tables.copy()
+        select.tables = self.tables[:]
+        select.id_col = self.id_col
+        select.columns = self.as_columns[:]
+        select.column_tables = self.column_tables[:]
+        select.wheres = self.wheres[:]
+        select.filters = self.filters.copy()
+        select.raw_filters = self.raw_filters[:]
+        select.filter_mode = self.filter_mode
+        select.group_bys = self.group_bys[:]
+        select.havings = self.havings[:]
+        select.order_bys = self.order_bys[:]
+        select.order_by_columns = self.order_by_columns[:]
+        select.limit = self.limit
+        select.offset = self.offset
+        select.distinct = self.distinct
+        select.distinct_col = self.distinct_col
+        select.joins = self.joins
+        select.join_tables = self.join_tables.copy()
 
-        select.schema = my.schema
-        select.sql = my.sql
-        select.database = my.database
-        select.db_resource = my.db_resource
-        select.impl = my.impl
-        select.set_statement = my.set_statement
+        select.schema = self.schema
+        select.sql = self.sql
+        select.database = self.database
+        select.db_resource = self.db_resource
+        select.impl = self.impl
+        select.set_statement = self.set_statement
 
 
         return select
 
 
-    def dumps(my):
+    def dumps(self):
 
         select = {}
 
-        select['tables'] = my.tables[:]
-        select['id_col'] = my.id_col
-        select['columns'] = my.as_columns[:]
-        select['column_tables'] = my.column_tables[:]
-        select['wheres'] = my.wheres[:]
-        select['filters'] = my.filters.copy()
-        select['raw_filters'] = my.raw_filters[:]
-        select['filter_mode'] = my.filter_mode
-        select['group_bys'] = my.group_bys[:]
-        select['havings'] = my.havings[:]
-        select['order_bys'] = my.order_bys[:]
-        select['order_by_columns'] = my.order_by_columns[:]
-        select['limit'] = my.limit
-        select['offset'] = my.offset
-        select['distinct'] = my.distinct
-        select['distinct_col'] = my.distinct_col
-        select['joins'] = my.joins
+        select['tables'] = self.tables[:]
+        select['id_col'] = self.id_col
+        select['columns'] = self.as_columns[:]
+        select['column_tables'] = self.column_tables[:]
+        select['wheres'] = self.wheres[:]
+        select['filters'] = self.filters.copy()
+        select['raw_filters'] = self.raw_filters[:]
+        select['filter_mode'] = self.filter_mode
+        select['group_bys'] = self.group_bys[:]
+        select['havings'] = self.havings[:]
+        select['order_bys'] = self.order_bys[:]
+        select['order_by_columns'] = self.order_by_columns[:]
+        select['limit'] = self.limit
+        select['offset'] = self.offset
+        select['distinct'] = self.distinct
+        select['distinct_col'] = self.distinct_col
+        select['joins'] = self.joins
 
         # This is a set ... cannot be json
-        #select['join_tables'] = my.join_tables.copy()
+        #select['join_tables'] = self.join_tables.copy()
 
-        select['schema'] = my.schema
-        #select['sql'] = my.sql
-        select['database'] = my.database
-        #select['db_resource'] = my.db_resource
-        #select['impl'] = my.impl
-        select['set_statement'] = my.set_statement
+        select['schema'] = self.schema
+        #select['sql'] = self.sql
+        select['database'] = self.database
+        #select['db_resource'] = self.db_resource
+        #select['impl'] = self.impl
+        select['set_statement'] = self.set_statement
 
         return jsondumps(select)
 
 
 
-    def loads(my, data):
+    def loads(self, data):
 
         data = jsonloads(data)
 
-        select = my
+        select = self
 
         select.tables = data.get("tables") or []
         select.id_col = data.get("id_col")
@@ -1759,10 +1788,10 @@ class Select(object):
 
 
 
-    def execute(my, sql=None):
+    def execute(self, sql=None):
         '''Actually execute the statement'''
         if not sql:
-            sql = my.sql
+            sql = self.sql
         if not sql:
             raise SqlException("No connector found to execute query")
 
@@ -1772,50 +1801,25 @@ class Select(object):
 
         if vendor == "MongoDb":
             impl = db_resource.get_database_impl()
-            results = impl.execute_query(sql, my)
-            """
-            table = my.tables[0]
-            collection = conn.get_collection(table)
-            my.cursor = collection.find(my.raw_filters)
-            if my.order_bys:
-                sort_list = []
-                for order_by in my.order_bys:
-                    parts = order_by.split(" ")
-                    order_by = parts[0]
-                    if len(parts) == 2:
-                        direction = parts[1]
-                    else:
-                        direction = "asc"
-
-                    if direction == "desc":
-                        sort_list.append( [order_by, -1] )
-                    else:
-                        sort_list.append( [order_by, 1] )
-
-                    my.cursor.sort(sort_list)
-
-            results = []
-            for result in my.cursor:
-                results.append(result)
-            """
+            results = impl.execute_query(sql, self)
 
         else:
 
-            statement = my.get_statement()
+            statement = self.get_statement()
     
             # remember the cursor (needed for savepoints)
-            my.cursor = conn.cursor()
-            my.cursor.execute(statement)
+            self.cursor = conn.cursor()
+            self.cursor.execute(statement)
 
-            results = my.cursor.fetchall()
-            my.cursor.close()
+            results = self.cursor.fetchall()
+            self.cursor.close()
 
         return results
 
 
-    def execute_count(my, sql=None):
+    def execute_count(self, sql=None):
         if not sql:
-            sql = my.sql
+            sql = self.sql
         if not sql:
             raise SqlException("No connector found to execute query")
 
@@ -1825,11 +1829,11 @@ class Select(object):
 
         if vendor == "MongoDb":
             # TODO: slow
-            results = my.execute()
+            results = self.execute()
             results = len(results)
 
         else:
-            statement = my.get_count()
+            statement = self.get_count()
             results = sql.do_query(statement)
             if results:
                 results = int(results[0][0])
@@ -1842,71 +1846,71 @@ class Select(object):
 
 
 
-    def __str__(my):
-        return my.get_statement()
+    def __str__(self):
+        return self.get_statement()
 
 
-    def set_database(my, database):
+    def set_database(self, database):
 
         assert database == "sthpw" or not isinstance(database, basestring)
 
         if isinstance(database, basestring):
-            my.sql = DbContainer.get(database)
-            my.db_resource = DbResource.get_default(database)
+            self.sql = DbContainer.get(database)
+            self.db_resource = DbResource.get_default(database)
         #elif isinstance(database, DbResource):
         elif DbResource.is_instance(database):
-            my.sql = DbContainer.get(database)
-            my.db_resource = database
+            self.sql = DbContainer.get(database)
+            self.db_resource = database
             # set to database string internally
             database = database.get_database()
         elif isinstance(database, Sql):
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = my.sql.get_db_resource()
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = self.sql.get_db_resource()
         else:
             # NOTE: sometimes an object that is sql.Sql is not detected
             # by the above condition.  Note sure why, but this warning
             # becomes intrusive
-            #print "WARNING: it should be Sql instance, but it is not detected as such"
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = DbResource.get_default(database)
+            #print("WARNING: it should be Sql instance, but it is not detected as such")
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = DbResource.get_default(database)
             
 
-        my.database = database
-        my.impl = my.sql.get_database_impl()
+        self.database = database
+        self.impl = self.sql.get_database_impl()
 
-        database_type = my.impl.get_database_type()
+        database_type = self.impl.get_database_type()
         if database_type == 'PostgreSQL':
-            my.schema = "public"
+            self.schema = "public"
         elif database_type == 'SQLServer':
-            my.schema = "dbo"
+            self.schema = "dbo"
         elif database_type == 'Sqlite':
-            my.database = None
+            self.database = None
 
-    def set_statement(my, statement):
+    def set_statement(self, statement):
         '''special function which allows you to put in an arbitrary sql
         statement and dynamically add operations to it.  There are limitations
         to this'''
-        my.tables.append("( %s )" % statement)
-        my.set_statement = statement
+        self.tables.append("( %s )" % statement)
+        self.set_statement = statement
 
 
     
-    def add_table(my, table):
+    def add_table(self, table):
         if table == "": return
-        my.tables.append(table)
+        self.tables.append(table)
 
-    def get_tables(my):
-        return my.tables
+    def get_tables(self):
+        return self.tables
         
-    def get_table(my):
-        return my.tables[0]
+    def get_table(self):
+        return self.tables[0]
     
-    def set_id_col(my, id_col):
-        my.id_col = id_col
+    def set_id_col(self, id_col):
+        self.id_col = id_col
 
-    def add_join(my, table1, table2=None, column=None, column2=None, join="LEFT OUTER", database=None, database2=None):
+    def add_join(self, table1, table2=None, column=None, column2=None, join="LEFT OUTER", database=None, database2=None):
         '''
         SELECT *
         FROM "job"
@@ -1919,19 +1923,19 @@ class Select(object):
 
         if not table2:
             table2 = table1
-            table1 = my.tables[0]
+            table1 = self.tables[0]
 
         # ensure that the join only occurs once
-        if table1 in my.join_tables:
+        if table1 in self.join_tables:
             return
-        my.join_tables.add(table1)
+        self.join_tables.add(table1)
 
 
         if column and column2:
             column1 = column
         elif not column:
             column1 = "%s_id" % table2
-            columns =  my.impl.get_column_info(my.db_resource, table1).keys()
+            columns =  self.impl.get_column_info(self.db_resource, table1).keys()
             if column1 not in columns:
                 column1 = "id"
                 column2 = "%s_id" % table1
@@ -1943,14 +1947,14 @@ class Select(object):
 
         # handle the database scoping
         if not database:
-            database1 = my.database
+            database1 = self.database
         else:
             database1 = database
         parts = []
         if database1:
             parts.append('"%s"' % database1)
-        if my.schema:
-            parts.append('"%s"' % my.schema)
+        if self.schema:
+            parts.append('"%s"' % self.schema)
         prefix1 = ".".join(parts)
 
         if prefix1:
@@ -1959,12 +1963,12 @@ class Select(object):
 
         # handle the database scoping
         if not database2:
-            database2 = my.database
+            database2 = self.database
         parts = []
         if database2:
             parts.append('"%s"' % database2)
-        if my.schema:
-            parts.append('"%s"' % my.schema)
+        if self.schema:
+            parts.append('"%s"' % self.schema)
         prefix2 = ".".join(parts)
  
         # add a trailing point.  this is needed so that implementations with
@@ -1975,17 +1979,17 @@ class Select(object):
 
         expr = '''%s JOIN %s"%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
 
-        if my.impl.get_database_type() == 'SQLServer':
+        if self.impl.get_database_type() == 'SQLServer':
             expr = '''%s JOIN %s"%s" ON "%s"."%s" = %s"%s"."%s"''' % (join, prefix2, table2, table1, column1, prefix2, table2, column2)
         # NOTE: there should be no need to database specfic joins
         """
-        if my.impl.get_database_type() == 'Oracle':
+        if self.impl.get_database_type() == 'Oracle':
             # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed
             # for use with set-ups that use a service user to access the Oracle DB
-            schema = my.database
+            schema = self.database
             expr = '''%s JOIN %s."%s" ON %s."%s"."%s" = %s."%s"."%s"''' % \
                     (join, schema, table2, schema, table1, column1, schema, table2, column2)
-        elif my.impl.get_database_type() == 'SQLServer':
+        elif self.impl.get_database_type() == 'SQLServer':
             expr = '''%s JOIN [%s] ON [%s].[%s] = [%s].[%s]''' % \
                 (join, table2, \
                 table1, column1, \
@@ -1994,41 +1998,44 @@ class Select(object):
             expr = '''%s JOIN "%s" ON "%s"."%s" = "%s"."%s"''' % (join, table2, table1, column1, table2, column2)
         """
 
-        my.joins.append(expr)
+        self.joins.append(expr)
 
 
+    def set_quoted_mode(self, mode):
+        self.quoted_mode = mode
 
-    def add_column(my, column, distinct=False, table=None, as_column=None):
-        if (column == "" or column in my.columns) and column != '*':
+
+    def add_column(self, column, distinct=False, table=None, as_column=None):
+        if (column == "" or column in self.columns) and column != '*':
             return
         # This doesn't make sense, comment out for now
         # SQL Server specific: We automatically add the ID column as the sequence.
         # Prevent adding the ID column again.
         #if column == 'id':
         #    return
-        my.columns.append(column)
-        my.as_columns.append(as_column)
+        self.columns.append(column)
+        self.as_columns.append(as_column)
 
         if table:
-            my.column_tables.append(table)
+            self.column_tables.append(table)
         else:
-            my.column_tables.append(my.tables[0])
+            self.column_tables.append(self.tables[0])
 
         if distinct:
-            my.distinct_col = column
+            self.distinct_col = column
 
-        my.distinct = distinct
-
-
-    def set_distinct_col(my, column):
-        my.distinct = True
-        my.distinct_col = column
+        self.distinct = distinct
 
 
+    def set_distinct_col(self, column):
+        self.distinct = True
+        self.distinct_col = column
 
-    def get_columns(my):
+
+
+    def get_columns(self):
         columns = []
-        for column, as_column in zip(my.columns, my.as_columns):
+        for column, as_column in zip(self.columns, self.as_columns):
             if as_column:
                 columns.append(as_column)
             else:
@@ -2037,42 +2044,42 @@ class Select(object):
         return columns
 
 
-    def set_filter_mode(my, mode):
+    def set_filter_mode(self, mode):
         assert mode in ['and', 'or']
-        my.filter_mode = mode.upper()
+        self.filter_mode = mode.upper()
 
 
 
-    def add_where(my, where):
-        my.wheres.append(where)
+    def add_where(self, where):
+        self.wheres.append(where)
 
 
 
-    def add_op(my, op, idx=None):
+    def add_op(self, op, idx=None):
         assert op in ['and', 'or', 'begin']
         if idx == None:
             # TODO: determine if this is needed later
-            #if my.wheres and op != "begin" and my.wheres[-1] == "begin":
-            #    my.wheres.pop()
+            #if self.wheres and op != "begin" and self.wheres[-1] == "begin":
+            #    self.wheres.pop()
             #else:
-            #    my.wheres.append(op)
-            my.wheres.append(op)
+            #    self.wheres.append(op)
+            self.wheres.append(op)
         else:
-            my.wheres.insert(idx, op)
+            self.wheres.insert(idx, op)
 
 
-    def get_wheres(my):
-        return my.wheres
+    def get_wheres(self):
+        return self.wheres
 
-    def remove_where(my, where):
+    def remove_where(self, where):
         try:
-            my.wheres.remove(where)
+            self.wheres.remove(where)
         except:
             pass
 
 
-    def _convert_to_database_boolean(my, value):
-        if not my.impl.get_database_type() == 'SQLServer':
+    def _convert_to_database_boolean(self, value):
+        if not self.impl.get_database_type() == 'SQLServer':
             return value
 
         if value == 'true' or value == 'TRUE':
@@ -2082,11 +2089,11 @@ class Select(object):
                 return '0'
         return value
 
-    def add_filter(my, column, value, column_type="", op='=', quoted=None, table=''):
-        assert my.tables
+    def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
+        assert self.tables
 
         # store all the raw filter data
-        my.raw_filters.append( {
+        self.raw_filters.append( {
                 'column': column,
                 'value': value,
                 'column_type': column_type,
@@ -2096,17 +2103,26 @@ class Select(object):
         } )
 
 
+
+        if self.quoted_mode == "none":
+            where = "%s %s '%s'" % (column, op, value)
+            self.add_where(where)
+            return
+
+
+
+
         if not table:
-            table = my.tables[0]
+            table = self.tables[0]
 
         if column == 'id' and value == None:
             where = "\"%s\".\"%s\" is NULL" % (table, column)
-            my.add_where(where)
+            self.add_where(where)
             return
 
         if value == None:
             where = "\"%s\".\"%s\" is NULL" % (table, column)
-            my.add_where(where)
+            self.add_where(where)
             return
 
         if quoted == "column":
@@ -2120,15 +2136,15 @@ class Select(object):
         # case that the intended value is NULL
         if type(value) == types.ListType and len(value) == 0:
             where = "\"%s\" is NULL" % column
-            my.add_where(where)
+            self.add_where(where)
             return
 
 
         # on simple building of select statements, db_resource could be null
-        if not my.db_resource:
+        if not self.db_resource:
             column_type = "varchar"
         elif not column_type:
-            column_types = my.impl.get_column_types(my.db_resource, my.tables[0])
+            column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
             column_type = column_types.get(column)
 
 
@@ -2136,16 +2152,16 @@ class Select(object):
         if quoted == None:
             quoted = True
 
-            if not column_type and my.sql:
+            if not column_type and self.sql:
                 # get column type from database
-                column_types = my.impl.get_column_types(my.db_resource, my.tables[0])
+                column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
                 column_type = column_types.get(column)
 
-                info = my.impl.process_value(column, value, column_type)
+                info = self.impl.process_value(column, value, column_type)
 
                 if info:
                     value = info.get("value")
-                    value = my._convert_to_database_boolean(value)
+                    value = self._convert_to_database_boolean(value)
                     quoted = info.get("quoted")
             else:
                 quoted = True
@@ -2158,17 +2174,17 @@ class Select(object):
             where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
         else:
             where = "\"%s\" %s %s" % (column, op, value)
-        my.add_where(where)
+        self.add_where(where)
 
 
 
-    def add_filters(my, column, values, table='', op='in'):
+    def add_filters(self, column, values, table='', op='in'):
 
         quoted = False
         column_type = ''
 
         # store all the raw filter data
-        my.raw_filters.append( {
+        self.raw_filters.append( {
                 'column': column,
                 'value': values,
                 'column_type': column_type,
@@ -2182,24 +2198,34 @@ class Select(object):
 
         if op == "@@":
             # full text search requires that the filters be added one by one
-            my.add_op("begin")
+            self.add_op("begin")
             for value in values:
-                my.add_filter(column, value, table, op)
-            my.add_op("or")
+                self.add_filter(column, value, table, op)
+            self.add_op("or")
+            return
+
+
+
+        if op == "@@":
+            # full text search requires that the filters be added one by one
+            self.add_op("begin")
+            for value in values:
+                self.add_filter(column, value, table, op)
+            self.add_op("or")
             return
 
 
 
         if not table:
-            table = my.tables[0]
+            table = self.tables[0]
 
 
         filter = ''
         if not values or values == ['']:
             if table:
-                where = '"%s"."%s" is NULL' % (table, my.id_col)
+                where = '"%s"."%s" is NULL' % (table, self.id_col)
             else:
-                where = "%s is NULL" %my.id_col
+                where = "%s is NULL" %self.id_col
         else:
             list = [ Sql.quote(value) for value in values ]
             if table:
@@ -2207,11 +2233,11 @@ class Select(object):
             else:
                 where = '"%s" %s (%s)' % ( column, op, ", ".join(list) )
 
-        my.add_where(where)
+        self.add_where(where)
 
 
 
-    def add_group_aggregate_filter(my, group_cols, column='id', aggregate='max'):
+    def add_group_aggregate_filter(self, group_cols, column='id', aggregate='max'):
         '''This does a co-related subselect which finds the result of an
         aggregate function over a list of grouped columns
 
@@ -2234,7 +2260,7 @@ class Select(object):
         if isinstance(group_cols, basestring):
             group_cols = [group_cols]
 
-        table = my.get_table()
+        table = self.get_table()
 
         # have to build the sql from scratch because Select can't handle
         # the complexity required
@@ -2245,7 +2271,7 @@ class Select(object):
         subselect.append( '%s("%s")' % (aggregate, column) )
         subselect.append( "FROM")
 
-        if my.impl.get_database_type() == 'SQLServer':
+        if self.impl.get_database_type() == 'SQLServer':
             subselect.append( '[%s] as xxx' % table)
         else:
             subselect.append( '"%s" as xxx' % table)
@@ -2255,8 +2281,8 @@ class Select(object):
         wheres = []
         for group_col in group_cols:
             
-            if my.impl.get_database_type() == 'SQLServer':
-                #wheres.append( 'xxx."%s" = %s.[%s].[%s]' % (group_col, my.database, table, group_col))
+            if self.impl.get_database_type() == 'SQLServer':
+                #wheres.append( 'xxx."%s" = %s.[%s].[%s]' % (group_col, self.database, table, group_col))
                 wheres.append( 'xxx."%s" = [%s].[%s]' % (group_col, table, group_col))
             else:
                 wheres.append( 'xxx."%s" = "%s"."%s"' % (group_col, table, group_col))
@@ -2267,31 +2293,31 @@ class Select(object):
 
         statement = " ".join(subselect)
 
-        if  my.impl.get_database_type() == 'SQLServer':
-            my.add_where('[%s].[%s] = (%s)' % (table, column, statement))
+        if  self.impl.get_database_type() == 'SQLServer':
+            self.add_where('[%s].[%s] = (%s)' % (table, column, statement))
         else:
-            my.add_where('"%s"."%s" = (%s)' % (table, column, statement))
+            self.add_where('"%s"."%s" = (%s)' % (table, column, statement))
 
     # Full text search filtering
     # NOTE: Only Postgres and SQLServer impl so far.  This likely will not work
     # on any other database
     #
-    def add_text_search_filter(my, column, keywords, table=None, op='&'):
+    def add_text_search_filter(self, column, keywords, table=None, op='&'):
         '''This will do full text searching on any column.  It is pretty
         brute force as it will convert each row to a ts_vector.
         '''
         if not table:
             # usually it's the only table in the list
-            table = my.tables[0]
-        column_types = my.impl.get_column_types(my.db_resource, table)
+            table = self.tables[0]
+        column_types = self.impl.get_column_types(self.db_resource, table)
         column_type = column_types.get(column)
         
-        where = my.impl.get_text_search_filter(column, keywords, column_type, table=table, op=op)
-        my.add_where(where)
+        where = self.impl.get_text_search_filter(column, keywords, column_type, table=table, op=op)
+        self.add_where(where)
 
 
 
-    def add_select_filter(my, column, select, op='in', table=''):
+    def add_select_filter(self, column, select, op='in', table=''):
         '''combines results of one search filter with another search filter
         as a subselect
 
@@ -2301,18 +2327,18 @@ class Select(object):
         '''
         assert op in ['in','not in']
         statement = select.get_statement()
-        my.add_filter(column, "( %s )" % statement, op=op, quoted=False, table=table)
+        self.add_filter(column, "( %s )" % statement, op=op, quoted=False, table=table)
 
 
-    def add_group_by(my, group_by):
+    def add_group_by(self, group_by):
         if group_by == "": return
-        my.group_bys.append(group_by)
+        self.group_bys.append(group_by)
 
-    def add_having(my, having):
+    def add_having(self, having):
         if having == "": return
-        my.havings.append(having)
+        self.havings.append(having)
         
-    def add_order_by(my, order_by, direction='', table=''):
+    def add_order_by(self, order_by, direction='', table=''):
         if order_by == "": return
 
         if order_by.find("->") != -1:
@@ -2326,30 +2352,30 @@ class Select(object):
 
         # we need to store the order_by_column name to maintain uniqueness so MS SQL doesn't error 
         if direction and not order_by.endswith(' desc') and not order_by.endswith(' asc'):
-            if order_by not in my.order_by_columns:
-                my.order_by_columns.append(order_by)
+            if order_by not in self.order_by_columns:
+                self.order_by_columns.append(order_by)
             else:
                 return
             order_by = '%s %s' % (order_by, direction)
         
         elif order_by.endswith(' desc') or order_by.endswith(' asc'):
             tmps = order_by.split(' ')
-            if tmps[0] not in my.order_by_columns:
-                my.order_by_columns.append(tmps[0])
+            if tmps[0] not in self.order_by_columns:
+                self.order_by_columns.append(tmps[0])
             else:
                 return
         else: # for cases when asc is not specified (implied)
-            if order_by not in my.order_by_columns:
-                my.order_by_columns.append(order_by)
+            if order_by not in self.order_by_columns:
+                self.order_by_columns.append(order_by)
             else:
                 return
 
 
-        if order_by not in my.order_bys:
-            my.order_bys.append(order_by)
+        if order_by not in self.order_bys:
+            self.order_bys.append(order_by)
 
 
-    def add_enum_order_by(my, column, values, table=''):
+    def add_enum_order_by(self, column, values, table=''):
         '''orders by a list of values.
         takes a list of values and creates a case statement out of it'''
         if not values:
@@ -2368,25 +2394,25 @@ class Select(object):
             expr.append( "WHEN %s THEN %d " % (value, count) )
             count += 1
         expr.append("ELSE %d END )" % count )
-        my.add_order_by( "\n".join(expr) )
+        self.add_order_by( "\n".join(expr) )
 
 
-    def add_limit(my, limit):
+    def add_limit(self, limit):
         '''deprecated: use set_limit'''
-        my.limit = limit
+        self.limit = limit
 
-    def set_limit(my, limit):
-        my.limit = limit
+    def set_limit(self, limit):
+        self.limit = limit
 
-    def set_offset(my, offset):
-        my.offset = offset
+    def set_offset(self, offset):
+        self.offset = offset
 
-    def get_statement(my, mode="normal"):
-        if my.set_statement:
-            return my.set_statement
+    def get_statement(self, mode="normal"):
+        if self.set_statement:
+            return self.set_statement
 
-        if my.impl:
-            database_type = my.impl.get_database_type()
+        if self.impl:
+            database_type = self.impl.get_database_type()
         else:
             database_type = Sql.get_default_database_type()
 
@@ -2400,83 +2426,88 @@ class Select(object):
 
 
         is_oracle = False
-        if database_type == 'Oracle' and my.tables[0] not in ['USER_OBJECTS','ALL_TABLES']:
+        if database_type == 'Oracle' and self.tables[0] not in ['USER_OBJECTS','ALL_TABLES']:
             is_oracle = True
 
         if mode == "count":
-            if database_type=='PostgreSQL' and my.distinct_col:
-                statement.append("count(DISTINCT %s)"%my.distinct_col)
+            if database_type=='PostgreSQL' and self.distinct_col:
+                statement.append("count(DISTINCT %s)"%self.distinct_col)
             else:
                 statement.append("count(*)")
         elif mode == "normal":
-            if database_type =='SQLServer' and my.limit != None:
-                total = int(my.limit) + my.offset
+            if database_type =='SQLServer' and self.limit != None:
+                total = int(self.limit) + self.offset
                 statement.append("TOP %s " %total)
-            if not my.columns:
+            if not self.columns:
                 if is_oracle:
-                    expr = '%s."%s".*' % (my.database, my.tables[0])
+                    expr = '%s."%s".*' % (self.database, self.tables[0])
                     statement.append(expr)
                 else:
-                    if database_type=='PostgreSQL' and my.distinct_col:
-                        statement.append("DISTINCT ON(%s) *"%my.distinct_col)
+                    if database_type=='PostgreSQL' and self.distinct_col:
+                        statement.append("DISTINCT ON(%s) *"%self.distinct_col)
                     else:
-                        #expr = '"%s".*' % (my.tables[0])
+                        #expr = '"%s".*' % (self.tables[0])
                         column_parts = []
-                        if my.database:
-                            column_parts.append('"%s"' % my.database)
-                        if my.schema:
-                            column_parts.append('"%s"' % my.schema)
-                        column_parts.append('"%s"' % my.tables[0])
+                        if self.database:
+                            column_parts.append('"%s"' % self.database)
+                        if self.schema:
+                            column_parts.append('"%s"' % self.schema)
+                        column_parts.append('"%s"' % self.tables[0])
                         column_parts.append("*")
                         expr = ".".join(column_parts)
 
                         statement.append(expr)
             else:
                 quoted_cols = []
-                for i, column in enumerate(my.columns):
+                for i, column in enumerate(self.columns):
                     #FIXME: distinct in SQLServer should only appear once before the column names
-                    if column == my.distinct_col:
+                    if column == self.distinct_col:
 
                         parts = []
-                        if my.database:
-                            parts.append('"%s"' % my.database)
-                        if my.schema:
-                            parts.append('"%s"' % my.schema)
-                        parts.append('"%s"' % my.column_tables[i])
+                        if self.database:
+                            parts.append('"%s"' % self.database)
+                        if self.schema:
+                            parts.append('"%s"' % self.schema)
+                        parts.append('"%s"' % self.column_tables[i])
                         prefix = ".".join(parts)
                         quoted_col = 'distinct %s."%s"' % (prefix, column)
 
-                        #quoted_col = 'distinct "%s"."%s"' % (my.column_tables[i],column)
+                        #quoted_col = 'distinct "%s"."%s"' % (self.column_tables[i],column)
+
+                    elif self.quoted_mode == "none":
+                        quoted_col = column
+
                     else:
                         #if column == '*':
-                        #    quoted_col ='"%s".*' % (my.column_tables[i])
+                        #    quoted_col ='"%s".*' % (self.column_tables[i])
                         #else:
-                        #    quoted_col = '"%s"."%s"' % (my.column_tables[i],column)
+                        #    quoted_col = '"%s"."%s"' % (self.column_tables[i],column)
                         parts = []
-                        if my.database:
-                            parts.append('"%s"' % my.database)
-                        if my.schema:
-                            parts.append('"%s"' % my.schema)
-                        parts.append('"%s"' % my.column_tables[i])
+                        if self.database:
+                            parts.append('"%s"' % self.database)
+                        if self.schema:
+                            parts.append('"%s"' % self.schema)
+                        parts.append('"%s"' % self.column_tables[i])
                         if column == '*':
                             parts.append(column)
                         else:
                             parts.append('"%s"' % column)
                         quoted_col = ".".join(parts)
 
+
                     # handle columns that have different names specified
-                    if my.as_columns[i]:
-                        quoted_col = "%s as \"%s\"" % (quoted_col, my.as_columns[i])
+                    if self.as_columns[i]:
+                        quoted_col = "%s as \"%s\"" % (quoted_col, self.as_columns[i])
 
                     quoted_cols.append(quoted_col)
 
 
                 statement.append(", ".join(quoted_cols) )
 
-            if database_type =='SQLServer' and my.limit != None:
+            if database_type =='SQLServer' and self.limit != None:
                 order_by = 'ORDER BY id'
                 order_bys = []
-                for order_by in my.order_bys:
+                for order_by in self.order_bys:
                     if order_by.startswith("( CASE"):
                         order_bys.append(order_by)
                     elif regex_asc.search(order_by) or regex_desc.search(order_by) :
@@ -2490,30 +2521,34 @@ class Select(object):
 
                 if order_bys:
                     order_by = "ORDER BY %s" % ", ".join( order_bys )
-                statement.append(", ROW_NUMBER() over(%s) as %s " %(order_by, my.impl.get_temp_column_name()))
+                statement.append(", ROW_NUMBER() over(%s) as %s " %(order_by, self.impl.get_temp_column_name()))
 
-        if not my.tables:
+        if not self.tables:
             raise SqlException("No tables defined")
 
         clauses = []
-        if my.tables[0].startswith('('):
-            clauses.append('FROM %s' % my.tables[0] )
-        elif my.database and is_oracle:
-            clauses.append("FROM " + ", ".join( ['"%s"."%s"' % (my.database,x) for x in my.tables] ))
+        if self.tables[0].startswith('('):
+            clauses.append('FROM %s' % self.tables[0] )
+        elif self.database and is_oracle:
+            clauses.append("FROM " + ", ".join( ['"%s"."%s"' % (self.database,x) for x in self.tables] ))
         # NOTE: There really is no reason for SQLServer to be different here.
-        #elif my.database and database_type == 'SQLServer':
-        #    clauses.append("FROM " + ", ".join( ['[%s]' % x for x in my.tables] ))
+        #elif self.database and database_type == 'SQLServer':
+        #    clauses.append("FROM " + ", ".join( ['[%s]' % x for x in self.tables] ))
         else:
-            #clauses.append("FROM " + ", ".join( ['"%s"."%s"."%s"' % (my.database,my.schema,x) for x in my.tables] ))
+            #clauses.append("FROM " + ", ".join( ['"%s"."%s"."%s"' % (self.database,self.schema,x) for x in self.tables] ))
 
             # build full table string
             tables = []
-            for table in my.tables:
+            for table in self.tables:
+                if self.quoted_mode == "none":
+                   tables.append(table)
+                   continue
+
                 parts = []
-                if my.database:
-                    parts.append(my.database)
-                if my.schema:
-                    parts.append(my.schema)
+                if self.database:
+                    parts.append(self.database)
+                if self.schema:
+                    parts.append(self.schema)
                 parts.append(table)
                 table = ".".join( ['"%s"' % x for x in parts] )
                 tables.append(table)
@@ -2521,52 +2556,52 @@ class Select(object):
             clauses.append("FROM " + ", ".join(tables) )
 
 
-        if my.joins:
-            clauses.extend(my.joins)
+        if self.joins:
+            clauses.extend(self.joins)
 
-        if len(my.filters):
-            #my.wheres = my.filters.values()
-            filters = my.filters.values()
+        if len(self.filters):
+            #self.wheres = self.filters.values()
+            filters = self.filters.values()
             expanded = []
             for filter in filters:
                 if len(filter) == 1:
                     expr = filter[0]
                 else:
-                    expr = '(%s)' % (' %s ' % my.filter_mode).join(filter)
+                    expr = '(%s)' % (' %s ' % self.filter_mode).join(filter)
                 expanded.append(expr)
                 
-            my.wheres = expanded
+            self.wheres = expanded
 
        
-        if len(my.wheres) > 0:
-            wheres_copy = my.wheres[:]
-            new_expr = my.process_wheres(wheres_copy)
+        if len(self.wheres) > 0:
+            wheres_copy = self.wheres[:]
+            new_expr = self.process_wheres(wheres_copy)
             if new_expr:
                 clauses.append("WHERE %s" % new_expr)
        
         #order_bys = []
         if mode == "normal":
-            if len(my.group_bys) > 0:
-                for item in my.order_bys:
+            if len(self.group_bys) > 0:
+                for item in self.order_bys:
                     if regex_asc.search(item) or regex_desc.search(item):
                         parts = order_by.split(" ")
                         item = parts[0]
                         
-                    if item not in my.group_bys:
-                        my.group_bys.append(item)
+                    if item not in self.group_bys:
+                        self.group_bys.append(item)
 
-                group_by_stmt = ", ".join( ['"%s"' % x for x in my.group_bys] )
+                group_by_stmt = ", ".join( ['"%s"' % x for x in self.group_bys] )
                 
                 clauses.append("GROUP BY %s" %group_by_stmt )
 
-            if len(my.havings) > 0:
+            if len(self.havings) > 0:
                 # these are having expressions, no double quotes
-                clauses.append("HAVING %s" % " AND ".join( my.havings ) )
-                #clauses.append("HAVING %s" % ", ".join( ['"%s"' % x for x in my.havings] ))
+                clauses.append("HAVING %s" % " AND ".join( self.havings ) )
+                #clauses.append("HAVING %s" % ", ".join( ['"%s"' % x for x in self.havings] ))
                
-            if not my.distinct and len(my.order_bys) > 0:
+            if not self.distinct and len(self.order_bys) > 0:
                 order_bys = []
-                for order_by in my.order_bys:
+                for order_by in self.order_bys:
                     if order_by.startswith("( CASE"):
                         order_bys.append(order_by)
                     elif regex_asc.search(order_by) or regex_desc.search(order_by) and order_by.find("->") == -1:
@@ -2580,28 +2615,28 @@ class Select(object):
 
                     else:
                         if order_by.find("->") != -1:
-                            order_bys.append('"%s".%s' % (my.tables[0],order_by))
+                            order_bys.append('"%s".%s' % (self.tables[0],order_by))
                         elif order_by.find(".") == -1:
-                            order_bys.append('"%s"."%s"' % (my.tables[0],order_by))
+                            order_bys.append('"%s"."%s"' % (self.tables[0],order_by))
                         else:
                             order_bys.append(order_by)
                 
                 clauses.append("ORDER BY %s" % ", ".join( order_bys ))
             
             #if database_type == "PostgreSQL":
-            #   page = my.impl.get_page(my.limit, my.offset, my.tables[0]) 
+            #   page = self.impl.get_page(self.limit, self.offset, self.tables[0]) 
             #   if page:
             #       clauses.append(page)
 
             if database_type not in ["Oracle", "SQLServer"]:
-                page = my.impl.get_page(my.limit, my.offset) 
+                page = self.impl.get_page(self.limit, self.offset) 
                 if page:
                     clauses.append(page)
 
-                #if my.limit != 0:
-                #    clauses.append("LIMIT %s" % my.limit )
-                #if my.offset != 0:
-                #    clauses.append("OFFSET %s" % my.offset )
+                #if self.limit != 0:
+                #    clauses.append("LIMIT %s" % self.limit )
+                #if self.offset != 0:
+                #    clauses.append("OFFSET %s" % self.offset )
  
 
         clause = " ".join(clauses)
@@ -2611,15 +2646,15 @@ class Select(object):
 
         # NOTE: oracle and SQLServer uses the limit in the "where" clause
         # pre-orderg in, so have to do a subselect
-        if mode != "count" and my.limit != None:
+        if mode != "count" and self.limit != None:
             if database_type in  ["Oracle",'SQLServer']:
-                statement = my.impl.handle_pagination(statement, my.limit, my.offset)
+                statement = self.impl.handle_pagination(statement, self.limit, self.offset)
         return statement
 
 
 
 
-    def process_wheres(my, wheres):
+    def process_wheres(self, wheres):
         if not wheres:
             return
 
@@ -2648,9 +2683,9 @@ class Select(object):
 
         cur_stack = []
 
-        my.stack_index = 0
-        while my.stack_index < len(wheres):
-            expr = my._handle_stack_item(cur_stack, wheres)
+        self.stack_index = 0
+        while self.stack_index < len(wheres):
+            expr = self._handle_stack_item(cur_stack, wheres)
             cur_stack = [expr]
 
         # strip out the outside brackets
@@ -2666,17 +2701,17 @@ class Select(object):
 
 
 
-    def _handle_stack_item(my, cur_stack, wheres):
+    def _handle_stack_item(self, cur_stack, wheres):
 
         while 1:
-            if my.stack_index >= len(wheres):
+            if self.stack_index >= len(wheres):
                 #op = " AND " 
                 #expr = "( %s )" % op.join(cur_stack)
                 #return expr
                 return " AND ".join(cur_stack)
 
-            item = wheres[my.stack_index]
-            my.stack_index += 1
+            item = wheres[self.stack_index]
+            self.stack_index += 1
 
             if item == "begin":
 
@@ -2686,7 +2721,7 @@ class Select(object):
                 cur_stack.append(new_stack)
 
                 # go down a level
-                expr = my._handle_stack_item(new_stack, wheres)
+                expr = self._handle_stack_item(new_stack, wheres)
 
                 cur_stack.pop()
                 if expr:
@@ -2712,10 +2747,10 @@ class Select(object):
 
 
 
-    def get_count(my):
+    def get_count(self):
         '''special statement that counts how many rows this query would
         return if executed.  This ignores the limit and offset tags'''
-        statement = my.get_statement(mode="count")
+        statement = self.get_statement(mode="count")
         return statement
 
 
@@ -2792,28 +2827,28 @@ class Select(object):
 class Insert(object):
     '''A class to non-linearly build up an sql insert statement'''
 
-    def __init__(my):
-        my.table = None
-        my.data = {}
-        my.unquoted_cols = []
-        my.escape_quoted_cols = []
+    def __init__(self):
+        self.table = None
+        self.data = {}
+        self.unquoted_cols = []
+        self.escape_quoted_cols = []
         # optional database knowledge
-        my.sql = None
-        my.database = None
-        my.column_types = {}
-        my.impl = DatabaseImpl.get()
+        self.sql = None
+        self.database = None
+        self.column_types = {}
+        self.impl = DatabaseImpl.get()
 
-        my.schema = ""
+        self.schema = ""
 
-    def __str__(my):
-        return my.get_statement()
+    def __str__(self):
+        return self.get_statement()
 
 
 
-    def execute(my, sql=None):
+    def execute(self, sql=None):
         '''Actually execute the statement'''
         if not sql:
-            sql = my.sql
+            sql = self.sql
         if not sql:
             raise SqlException("No connector found to execute query")
 
@@ -2822,52 +2857,52 @@ class Insert(object):
         vendor = db_resource.get_vendor()
         if vendor == "MongoDb":
             impl = db_resource.get_database_impl()
-            impl.execute_insert(sql, my)
+            impl.execute_insert(sql, self)
 
 
 
 
-    def set_database(my, database):
+    def set_database(self, database):
 
         assert database == "sthpw" or not isinstance(database, basestring)
 
         if isinstance(database, basestring):
-            my.sql = DbContainer.get(database)
-            my.db_resource = DbResource.get_default(database)
+            self.sql = DbContainer.get(database)
+            self.db_resource = DbResource.get_default(database)
         elif DbResource.is_instance(database):
         #elif isinstance(database, DbResource):
-            my.sql = DbContainer.get(database)
-            my.db_resource = database
+            self.sql = DbContainer.get(database)
+            self.db_resource = database
             # set to database string internally
             database = database.get_database()
         elif isinstance(database, Sql):
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = my.sql.get_db_resource()
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = self.sql.get_db_resource()
         else:
-            print "WARNING: it should be Sql instance, but it is not detected as such"
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = DbResource.get_default(database)
+            print("WARNING: it should be Sql instance, but it is not detected as such")
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = DbResource.get_default(database)
             
 
-        my.database = database
-        my.impl = my.sql.get_database_impl()
+        self.database = database
+        self.impl = self.sql.get_database_impl()
 
-        database_type = my.impl.get_database_type()
+        database_type = self.impl.get_database_type()
         if database_type == 'PostgreSQL':
-            my.schema = "public"
+            self.schema = "public"
         elif database_type == 'SQLServer':
-            my.schema = "dbo"
+            self.schema = "dbo"
         elif database_type == 'Sqlite':
-            my.database = None
+            self.database = None
 
 
 
-    def set_table(my, table):
-        my.table = table
+    def set_table(self, table):
+        self.table = table
 
-    def set_value(my, column, value, quoted=True, column_type="", escape_quoted=False):
+    def set_value(self, column, value, quoted=True, column_type="", escape_quoted=False):
         '''@params:
             quoted - determines whether the value needs to be quoted
         in the sql statement. 
@@ -2876,59 +2911,59 @@ class Insert(object):
             value = 'NULL'
             quoted = False
 
-        if not column_type and my.sql:
+        if not column_type and self.sql:
             # get column type from database
-            column_types = my.impl.get_column_types(my.db_resource, my.table)
+            column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
 
           
-            info = my.impl.process_value(column, value, column_type)
+            info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
                 quoted = info.get("quoted")
 
-        my.data[column] = value;
+        self.data[column] = value;
 
        
         if escape_quoted == True:
-            my.escape_quoted_cols.append(column)
+            self.escape_quoted_cols.append(column)
         elif not quoted:
-            my.unquoted_cols.append(column)
+            self.unquoted_cols.append(column)
 
-    def get_data(my):
-        return my.data
+    def get_data(self):
+        return self.data
 
 
-    def get_statement(my):
-        database_type = my.impl.get_database_type()
+    def get_statement(self):
+        database_type = self.impl.get_database_type()
 
-        my.impl.preprocess_sql(my.data, my.unquoted_cols)
+        self.impl.preprocess_sql(self.data, self.unquoted_cols)
 
         # quote the values
-        values = my.data.values()
-        cols = my.data.keys()
+        values = self.data.values()
+        cols = self.data.keys()
 
         #if not cols:
         #    # add an empty row
         #    # FIXME: what is this??
-        #    statement = "INSERT INTO \"%s\" (\"id\") values (default)" % my.table
+        #    statement = "INSERT INTO \"%s\" (\"id\") values (default)" % self.table
         #    return statement
 
         statement = []
 
 
-        if my.database and database_type == "Oracle":
-            statement.append('INSERT INTO %s."%s"' % (my.database, my.table))
+        if self.database and database_type == "Oracle":
+            statement.append('INSERT INTO %s."%s"' % (self.database, self.table))
         #elif database_type == "SQLServer":
-        #    statement.append('INSERT INTO [%s]' % my.table)
+        #    statement.append('INSERT INTO [%s]' % self.table)
         else:
-            #statement.append('INSERT INTO "%s"' % my.table)
+            #statement.append('INSERT INTO "%s"' % self.table)
             parts = []
-            if my.database:
-                parts.append('"%s"' % my.database)
-            if my.schema:
-                parts.append('"%s"' % my.schema)
-            parts.append('"%s"' % my.table)
+            if self.database:
+                parts.append('"%s"' % self.database)
+            if self.schema:
+                parts.append('"%s"' % self.schema)
+            parts.append('"%s"' % self.table)
             table = ".".join(parts)
 
             statement.append('INSERT INTO %s' % table)
@@ -2940,9 +2975,9 @@ class Insert(object):
             unicode_escape = False
             value = values[i]
 
-            if cols[i] in my.unquoted_cols:
+            if cols[i] in self.unquoted_cols:
                 quoted_values.append( str(values[i]) )
-            elif cols[i] in my.escape_quoted_cols:
+            elif cols[i] in self.escape_quoted_cols:
                 quoted_values.append(Sql.quote(values[i], has_outside_quotes=False, escape=True))
             else:
 
@@ -2953,8 +2988,8 @@ class Insert(object):
         # without creating triggers all over the place.
         if database_type == "Oracle" and "id" not in cols:
             cols.insert(0, "id")
-            sequence_name = my.impl.get_sequence_name(my.table, my.database)
-            #quoted_values.insert(0, '%s."%s".nextval' % (my.database,sequence_name))
+            sequence_name = self.impl.get_sequence_name(self.table, self.database)
+            #quoted_values.insert(0, '%s."%s".nextval' % (self.database,sequence_name))
             quoted_values.insert(0, '%s.nextval' % (sequence_name))
 
         statement.append( "(%s)" % ", ".join(['"%s"'%x for x in cols]) )
@@ -2983,16 +3018,16 @@ class Insert(object):
                  
         statement = " ".join(encoded_statements)
 
-        statement = my.impl.postprocess_sql(statement)
+        statement = self.impl.postprocess_sql(statement)
 
         return statement
 
 
-    def get_id_statement(my):
+    def get_id_statement(self):
         '''get the id from the last update. This should be called after
         the insert'''
-        sequence = my.impl.get_sequence_name(my.table)
-        return my.impl.get_currval_select(sequence)
+        sequence = self.impl.get_sequence_name(self.table)
+        return self.impl.get_currval_select(sequence)
 
  
 
@@ -3000,34 +3035,34 @@ class Insert(object):
 class Update(object):
     '''class that non-linearly builds up an update statement'''
 
-    def __init__(my):
-        my.table = None
-        my.data = {}
-        my.filters = {}
-        my.raw_filters = []
-        my.wheres = []
-        my.unquoted_cols = []
-        my.escape_quoted_cols = []
+    def __init__(self):
+        self.table = None
+        self.data = {}
+        self.filters = {}
+        self.raw_filters = []
+        self.wheres = []
+        self.unquoted_cols = []
+        self.escape_quoted_cols = []
 
         # optional database knowledge
-        my.sql = None
-        my.database = None
-        my.column_types = {}
+        self.sql = None
+        self.database = None
+        self.column_types = {}
 
-        my.impl = DatabaseImpl.get()
+        self.impl = DatabaseImpl.get()
 
-        my.schema = ""
+        self.schema = ""
 
-    def __str__(my):
-        return my.get_statement()
-
-
+    def __str__(self):
+        return self.get_statement()
 
 
-    def execute(my, sql=None):
+
+
+    def execute(self, sql=None):
         '''Actually execute the statement'''
         if not sql:
-            sql = my.sql
+            sql = self.sql
         if not sql:
             raise SqlException("No connector found to execute query")
 
@@ -3036,50 +3071,50 @@ class Update(object):
         vendor = db_resource.get_vendor()
         if vendor == "MongoDb":
             impl = db_resource.get_database_impl()
-            impl.execute_update(sql, my)
+            impl.execute_update(sql, self)
 
 
 
-    def set_database(my, database):
+    def set_database(self, database):
 
         assert database == "sthpw" or not isinstance(database, basestring)
 
         if isinstance(database, basestring):
-            my.sql = DbContainer.get(database)
-            my.db_resource = DbResource.get_default(database)
+            self.sql = DbContainer.get(database)
+            self.db_resource = DbResource.get_default(database)
         #elif isinstance(database, DbResource):
         elif DbResource.is_instance(database):
-            my.sql = DbContainer.get(database)
-            my.db_resource = database
+            self.sql = DbContainer.get(database)
+            self.db_resource = database
             # set to database string internally
             database = database.get_database()
         elif isinstance(database, Sql):
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = my.sql.get_db_resource()
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = self.sql.get_db_resource()
         else:
-            print "WARNING: it should be Sql instance, but it is not detected as such"
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = DbResource.get_default(database)
+            print("WARNING: it should be Sql instance, but it is not detected as such")
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = DbResource.get_default(database)
             
 
-        my.database = database
-        my.impl = my.sql.get_database_impl()
+        self.database = database
+        self.impl = self.sql.get_database_impl()
 
-        database_type = my.impl.get_database_type()
+        database_type = self.impl.get_database_type()
         if database_type == 'PostgreSQL':
-            my.schema = "public"
+            self.schema = "public"
         elif database_type == 'SQLServer':
-            my.schema = "dbo"
+            self.schema = "dbo"
         elif database_type == 'Sqlite':
-            my.database = None
+            self.database = None
 
 
-    def set_table(my, table):
-        my.table = table
+    def set_table(self, table):
+        self.table = table
 
-    def set_value(my, column, value, quoted = True, column_type="", escape_quoted=False):
+    def set_value(self, column, value, quoted = True, column_type="", escape_quoted=False):
         '''quoted determines whether the value needs to be quoted
         in the sql statement. escape_quoted is more for PostgreSQL for now to do the E'' style quote'''
 
@@ -3087,41 +3122,41 @@ class Update(object):
             value = 'NULL'
             quoted = False
 
-        if not column_type and my.sql:
+        if not column_type and self.sql:
             # get column type from database
-            column_types = my.impl.get_column_types(my.db_resource, my.table)
+            column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
 
-            info = my.impl.process_value(column, value, column_type)
+            info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
                 quoted = info.get("quoted")
-        my.data[column] = value;
+        self.data[column] = value;
         if escape_quoted == True:
-            my.escape_quoted_cols.append(column)
+            self.escape_quoted_cols.append(column)
         elif quoted == False:
-            my.unquoted_cols.append(column)
+            self.unquoted_cols.append(column)
 
-    def get_data(my):
-        return my.data
+    def get_data(self):
+        return self.data
 
-    def add_where(my, where):
+    def add_where(self, where):
         if where == "":
             return
-        my.filters[where] = where
+        self.filters[where] = where
 
-    def remove_filter(my, name):
+    def remove_filter(self, name):
         #raise Exception("Sql.add_filter() is deprecated")
-        if my.filters.get(name):
-            my.filters.pop(name)
+        if self.filters.get(name):
+            self.filters.pop(name)
 
 
-    def add_filter(my, column, value, column_type="", table="", quoted=None):
-        assert my.table
+    def add_filter(self, column, value, column_type="", table="", quoted=None):
+        assert self.table
 
 
         # store all the raw filter data
-        my.raw_filters.append( {
+        self.raw_filters.append( {
                 'column': column,
                 'value': value,
                 'column_type': column_type,
@@ -3131,12 +3166,12 @@ class Update(object):
         } )
 
 
-        if not column_type and my.sql:
+        if not column_type and self.sql:
             # get column type from database
-            column_types = my.impl.get_column_types(my.db_resource, my.table)
+            column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
 
-            info = my.impl.process_value(column, value, column_type)
+            info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
                 quoted = info.get("quoted")
@@ -3151,34 +3186,34 @@ class Update(object):
         else:
             where = "\"%s\" = %s" % (column, value)
 
-        my.add_where(where)
+        self.add_where(where)
 
 
-    def get_statement(my):
-        impl = my.impl
+    def get_statement(self):
+        impl = self.impl
         database_type = impl.get_database_type()
 
-        impl.preprocess_sql(my.data, my.unquoted_cols)
+        impl.preprocess_sql(self.data, self.unquoted_cols)
 
 
-        if isinstance(my.db_resource, basestring):
-            database_name = my.db_resource
+        if isinstance(self.db_resource, basestring):
+            database_name = self.db_resource
         else:
-            database_name = my.db_resource.get_database()
+            database_name = self.db_resource.get_database()
 
         statement = []
-        if my.database and database_type == "Oracle":
-            statement.append('UPDATE "%s"."%s" SET' % (database_name, my.table))
-        #elif my.database and database_type == "SQLServer":
-        #    statement.append('UPDATE [%s] SET' % my.table)
+        if self.database and database_type == "Oracle":
+            statement.append('UPDATE "%s"."%s" SET' % (database_name, self.table))
+        #elif self.database and database_type == "SQLServer":
+        #    statement.append('UPDATE [%s] SET' % self.table)
         else:
-            #statement.append('UPDATE "%s" SET' % my.table)
+            #statement.append('UPDATE "%s" SET' % self.table)
             parts = []
-            if my.database:
-                parts.append('"%s"' % my.database)
-            if my.schema:
-                parts.append('"%s"' % my.schema)
-            parts.append('"%s"' % my.table)
+            if self.database:
+                parts.append('"%s"' % self.database)
+            if self.schema:
+                parts.append('"%s"' % self.schema)
+            parts.append('"%s"' % self.table)
             table = ".".join(parts)
 
             statement.append('UPDATE %s SET' % table)
@@ -3187,17 +3222,17 @@ class Update(object):
 
 
         # quote the values
-        values = my.data.values()
-        cols = my.data.keys()
+        values = self.data.values()
+        cols = self.data.keys()
 
         quoted_values = []
 
 
         for i in range(0, len(cols)):
             unicode_escape = False
-            if cols[i] in my.unquoted_cols:
+            if cols[i] in self.unquoted_cols:
                 quoted_values.append(values[i])
-            elif cols[i] in my.escape_quoted_cols:
+            elif cols[i] in self.escape_quoted_cols:
                 quoted_values.append(Sql.quote(values[i], has_outside_quotes=False, escape=True))
             else:
                 if database_type == 'SQLServer':
@@ -3215,9 +3250,9 @@ class Update(object):
         statement.append(", ".join(pairs))
 
 
-        if len(my.filters):
-            my.wheres = my.filters.values()
-            statement.append("WHERE %s" % ", ".join( my.wheres ))
+        if len(self.filters):
+            self.wheres = self.filters.values()
+            statement.append("WHERE %s" % ", ".join( self.wheres ))
 
 
         statement = " ".join(statement)
@@ -3226,14 +3261,14 @@ class Update(object):
         return statement
 
 
-    def get_id_statement(my):
+    def get_id_statement(self):
         select = Select()
         select.add_column("id")
-        select.add_table(my.table)
+        select.add_table(self.table)
 
-        if my.filters:
-            my.wheres = my.filters.values()
-            for where in my.wheres:
+        if self.filters:
+            self.wheres = self.filters.values()
+            for where in self.wheres:
                 select.add_where(where)
 
         return select.get_statement()
@@ -3243,65 +3278,65 @@ class Update(object):
 
 class Delete(object):
 
-    def __init__(my):
-        my.impl = None
-        my.database = None
-        my.table = ""
+    def __init__(self):
+        self.impl = None
+        self.database = None
+        self.table = ""
 
-        my.raw_filters = []
+        self.raw_filters = []
 
 
-    def set_database(my, database):
+    def set_database(self, database):
 
         assert database == "sthpw" or not isinstance(database, basestring)
 
         if isinstance(database, basestring):
-            my.sql = DbContainer.get(database)
-            my.db_resource = DbResource.get_default(database)
+            self.sql = DbContainer.get(database)
+            self.db_resource = DbResource.get_default(database)
         #elif isinstance(database, DbResource):
         elif DbResource.is_instance(database):
-            my.sql = DbContainer.get(database)
-            my.db_resource = database
+            self.sql = DbContainer.get(database)
+            self.db_resource = database
             # set to database string internally
             database = database.get_database()
         elif isinstance(database, Sql):
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = my.sql.get_db_resource()
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = self.sql.get_db_resource()
         else:
-            print "WARNING: it should be Sql instance, but it is not detected as such"
-            my.sql = database
-            database = my.sql.get_database_name()
-            my.db_resource = DbResource.get_default(database)
+            print("WARNING: it should be Sql instance, but it is not detected as such")
+            self.sql = database
+            database = self.sql.get_database_name()
+            self.db_resource = DbResource.get_default(database)
             
 
-        my.database = database
-        my.impl = my.sql.get_database_impl()
+        self.database = database
+        self.impl = self.sql.get_database_impl()
 
         #sql.do_update('DELETE from "ticket" where "code" is NULL;')
 
 
-    def set_table(my, table):
-        my.table = table
+    def set_table(self, table):
+        self.table = table
 
 
-    def add_filter(my, name, value, op='='):
-        my.raw_filters.append( {
+    def add_filter(self, name, value, op='='):
+        self.raw_filters.append( {
             'name': name,
             'value': value,
             'op': op
         })
 
 
-    def get_statement(my):
+    def get_statement(self):
 
         parts = []
 
         parts.append("DELETE FROM")
-        parts.append('''"%s"''' % my.table)
+        parts.append('''"%s"''' % self.table)
         parts.append("WHERE")
 
-        for filter in my.raw_filters:
+        for filter in self.raw_filters:
             expr = '"%s" %s \'%s\'' % (filter.get("name"), filter.get("op"), filter.get("value"))
             parts.append(expr)
             parts.append("AND")
@@ -3315,7 +3350,7 @@ class Delete(object):
 class CreateTable(Base):
     '''Class to nonlinearly build up a create table statement'''
 
-    def __init__(my, search_type=None):
+    def __init__(self, search_type=None):
 
         from pyasm.biz import Project
         if search_type:
@@ -3323,66 +3358,69 @@ class CreateTable(Base):
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)
-            my.db_resource = project.get_project_db_resource()
+            self.db_resource = project.get_project_db_resource()
 
-            my.table = search_type_sobj.get_table()
+            self.table = search_type_sobj.get_table()
 
-            sql = DbContainer.get(my.db_resource)
-            my.impl = sql.get_database_impl()
+            sql = DbContainer.get(self.db_resource)
+            self.impl = sql.get_database_impl()
         else:
-            my.table = None
+            self.table = None
             from pyasm.search import DatabaseImpl
-            my.impl = DatabaseImpl.get()
+            self.impl = DatabaseImpl.get()
 
             project = Project.get()
-            my.db_resource = project.get_project_db_resource()
+            self.db_resource = project.get_project_db_resource()
 
-        my.database = my.db_resource.get_database()
+        self.database = self.db_resource.get_database()
 
-        my.columns = []
-        my.primary_key = None
-        my.constraints = []
+        self.columns = []
+        self.primary_key = None
+        self.constraints = []
 
-        my.data = {}
-
-
-    def set_table(my, table):
-        my.table = table
-
-    def get_table(my):
-        return my.table
+        self.data = {}
 
 
-    def get_database(my):
-        return my.db_resource.get_database()
+    def set_table(self, table):
+        self.table = table
+
+    def get_table(self):
+        return self.table
 
 
-    def add(my, name, type, length=None, not_null=False, primary_key=False):
+    def get_database(self):
+        return self.db_resource.get_database()
+
+
+    def add(self, name, type, length=None, not_null=False, primary_key=False):
         if type == "text":
-            expr = my.impl.get_text(not_null=not_null)
+            expr = self.impl.get_text(not_null=not_null)
         elif type == "char":
-            expr = my.impl.get_char(length=length, not_null=not_null)
+            expr = self.impl.get_char(length=length, not_null=not_null)
         elif type == "varchar":
-            expr = my.impl.get_varchar(length=length, not_null=not_null)
+            expr = self.impl.get_varchar(length=length, not_null=not_null)
         elif type == "int":
-            expr = my.impl.get_int(not_null=not_null)
+            expr = self.impl.get_int(not_null=not_null)
         elif type == "timestamp":
-            expr = my.impl.get_timestamp(not_null=not_null)
+            expr = self.impl.get_timestamp(not_null=not_null)
         elif type == "boolean":
-            expr = my.impl.get_boolean(not_null=not_null)
+            expr = self.impl.get_boolean(not_null=not_null)
         elif type == "serial":
-            expr = my.impl.get_serial(not_null=not_null)
+            expr = self.impl.get_serial(not_null=not_null)
+        elif type in ["json", "jsonb"]:
+            expr = self.impl.get_json(not_null=not_null)
+
 
             
         # SQL Server
         elif type == "uniqueidentifier":
-            expr = my.impl.get_text(not_null=not_null)
+            expr = self.impl.get_text(not_null=not_null)
         elif type in ["datetime", "datetime2"]:
-            expr = my.impl.get_timestamp(not_null=not_null)
+            expr = self.impl.get_timestamp(not_null=not_null)
         elif type.startswith("datetimeoffset"):
-            expr = my.impl.get_timestamp(not_null=not_null, timezone=True)
+            expr = self.impl.get_timestamp(not_null=not_null, timezone=True)
         elif type == "nvarchar":
-            expr = my.impl.get_nvarchar(length=length, not_null=not_null)
+            expr = self.impl.get_nvarchar(length=length, not_null=not_null)
 
         else:
             expr = type
@@ -3393,41 +3431,41 @@ class CreateTable(Base):
             'not_null': not_null,
             'primary_key': primary_key
         }
-        my.data[name] = col_data
+        self.data[name] = col_data
         if primary_key:
-            my.primary_key = name
+            self.primary_key = name
 
 
-    def add_column(my, name, type, length=None, not_null=False, primary_key=False):
-        return my.add(name, type, length, not_null, primary_key=primary_key)
+    def add_column(self, name, type, length=None, not_null=False, primary_key=False):
+        return self.add(name, type, length, not_null, primary_key=primary_key)
 
 
-    def set_primary_key(my, name):
-        if my.primary_key:
+    def set_primary_key(self, name):
+        if self.primary_key:
             raise TacticException("Primary key is already set")
-        my.data[name]['primary_key'] = True
-        my.primary_key = name
+        self.data[name]['primary_key'] = True
+        self.primary_key = name
 
 
 
-    def add_constraint(my, columns, mode="UNIQUE"):
+    def add_constraint(self, columns, mode="UNIQUE"):
         constraint = {
             'columns': columns,
             'mode': mode
         }
-        my.constraints.append(constraint)
+        self.constraints.append(constraint)
 
 
 
     
-    def get_statement(my):
-        if my.impl.get_database_type() == 'SQLServer':
-            statement = 'CREATE TABLE [%s] (\n' % my.table
+    def get_statement(self):
+        if self.impl.get_database_type() == 'SQLServer':
+            statement = 'CREATE TABLE [%s] (\n' % self.table
         else:
-            statement = 'CREATE TABLE "%s" (\n' % my.table
+            statement = 'CREATE TABLE "%s" (\n' % self.table
 
         expressions = []
-        for column, col_data in my.data.items():
+        for column, col_data in self.data.items():
 
             type = col_data.get('type')
             length = col_data.get('length')
@@ -3435,37 +3473,37 @@ class CreateTable(Base):
             primary_key = col_data.get('primary_key')
 
             if type == "text":
-                expr = my.impl.get_text(not_null=not_null)
+                expr = self.impl.get_text(not_null=not_null)
             elif type == "varchar":
-                expr = my.impl.get_varchar(length=length, not_null=not_null)
+                expr = self.impl.get_varchar(length=length, not_null=not_null)
             elif type == "nvarchar":
-                expr = my.impl.get_nvarchar(length=length, not_null=not_null)
+                expr = self.impl.get_nvarchar(length=length, not_null=not_null)
             elif type == "int":
-                expr = my.impl.get_int(not_null=not_null)
+                expr = self.impl.get_int(not_null=not_null)
             elif type == "timestamp":
-                expr = my.impl.get_timestamp(not_null=not_null,default='now')
+                expr = self.impl.get_timestamp(not_null=not_null,default='now')
             elif type == "boolean":
-                expr = my.impl.get_boolean(not_null=not_null)
+                expr = self.impl.get_boolean(not_null=not_null)
             elif type == "serial":
-                expr = my.impl.get_serial()
+                expr = self.impl.get_serial()
             else:
                 expr = type
 
             if primary_key:
                 expr = "%s PRIMARY KEY" % expr
 
-                if my.impl.get_database_type() in ['Sqlite']:
+                if self.impl.get_database_type() in ['Sqlite']:
                     expr = "%s AUTOINCREMENT" % expr
 
 
             expression = '    "%s" %s' % (column, expr)
             expressions.append(expression)
 
-        #if my.primary_key != None:
-        #    expressions.append('    PRIMARY KEY ("%s")' % my.primary_key)
+        #if self.primary_key != None:
+        #    expressions.append('    PRIMARY KEY ("%s")' % self.primary_key)
 
 
-        for constraint in my.constraints:
+        for constraint in self.constraints:
             columns = constraint.get("columns")
             mode = constraint.get("mode")
             suffix = 'idx'
@@ -3474,14 +3512,14 @@ class CreateTable(Base):
             # could be a dangling constraint
             if not columns:
                 continue
-            name = "%s_%s_%s" % (my.table, "_".join(columns), suffix )
+            name = "%s_%s_%s" % (self.table, "_".join(columns), suffix )
             expr = '    CONSTRAINT "%s" %s (%s)' % (name, mode, ", ".join(columns))
             expressions.append(expr)
 
             # FIXME: not sure about this. Bad merge?  Besides, this is handled
             # above
-            #primary_key_stmt = my.impl.get_constraint('PRIMARY KEY', columns=[my.primary_key], table=my.table)
-            #expressions.append('    PRIMARY KEY ("%s")' % my.primary_key)
+            #primary_key_stmt = self.impl.get_constraint('PRIMARY KEY', columns=[self.primary_key], table=self.table)
+            #expressions.append('    PRIMARY KEY ("%s")' % self.primary_key)
             #expressions.append('   %s' %primary_key_stmt)
 
         statement += ",\n".join(expressions)
@@ -3492,102 +3530,102 @@ class CreateTable(Base):
 
 
 
-    def commit(my, sql=None):
+    def commit(self, sql=None):
         '''create a standard tactic table'''
-        assert sql or my.database
+        assert sql or self.database
 
         if sql:
-            my.database = sql.get_database_name()
+            self.database = sql.get_database_name()
             db_resource = sql.get_db_resource()
 
         else:
-            sql = DbContainer.get(my.db_resource)
-            db_resource = my.db_resource
+            sql = DbContainer.get(self.db_resource)
+            db_resource = self.db_resource
 
         impl = sql.get_database_impl()
-        exists = impl.table_exists(db_resource, my.table)
+        exists = impl.table_exists(db_resource, self.table)
         if not exists:
 
             if sql.get_vendor() == "MongoDb":
-                impl.execute_create_table(sql, my)
+                impl.execute_create_table(sql, self)
             else:
-                statement = my.get_statement()
+                statement = self.get_statement()
                 sql.do_update(statement)
 
-            sql.clear_table_cache(my.database)
+            sql.clear_table_cache(self.database)
 
         else:
-            print "WARNING: table [%s] exists ... skipping" % my.table
-            defined_cols = set( sql.get_column_info(my.table).keys() )
-            desired_cols = set( [x[0] for x in my.columns] )
+            print("WARNING: table [%s] exists ... skipping" % self.table)
+            defined_cols = set( sql.get_column_info(self.table).keys() )
+            desired_cols = set( [x[0] for x in self.columns] )
             diff1 = defined_cols.difference(desired_cols)
             if diff1:
-                print "... extra columns in database: ", diff1
+                print("... extra columns in database: ", diff1)
             diff2 = desired_cols.difference(defined_cols)
             if diff2:
-                print "... new columns in definition: ", diff2
+                print("... new columns in definition: ", diff2)
             if not diff1 and not diff2:
-                print "... definition the same as in the database"
+                print("... definition the same as in the database")
 
         # create a sequence for the id
         try:
             if impl.__class__.__name__ == 'OracleImpl': 
-                sequence = impl.get_sequence_name(my.table)
-                statement = my.impl.get_create_sequence(sequence)
+                sequence = impl.get_sequence_name(self.table)
+                statement = self.impl.get_create_sequence(sequence)
                 sql.do_update(statement)
-        except Exception, e:
-            print "WARNING: ", str(e)
+        except Exception as e:
+            print("WARNING: ", str(e))
 
 
 
 class DropTable(Base):
-    def __init__(my, search_type=None):
-        my.search_type = search_type
+    def __init__(self, search_type=None):
+        self.search_type = search_type
         # derive db from search_type_obj
         from search import SearchType
         from pyasm.biz import Project
-        my.db_resource = Project.get_db_resource_by_search_type(my.search_type)
-        my.database = my.db_resource.get_database()
+        self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
+        self.database = self.db_resource.get_database()
 
         search_type_obj = SearchType.get(search_type)
-        assert my.database
-        my.table = search_type_obj.get_table()
-        my.statement = my.get_statement()
+        assert self.database
+        self.table = search_type_obj.get_table()
+        self.statement = self.get_statement()
 
-    def get_statement(my):
-        sql = DbContainer.get(my.db_resource)
+    def get_statement(self):
+        sql = DbContainer.get(self.db_resource)
         if sql.get_database_type() == 'SQLServer':
-            statement = 'DROP TABLE [%s]' % my.table
+            statement = 'DROP TABLE [%s]' % self.table
         else:        
-            statement = 'DROP TABLE "%s"' % my.table
+            statement = 'DROP TABLE "%s"' % self.table
 
         return statement
 
-    def commit(my):
-        sql = DbContainer.get(my.db_resource)
-        if not sql.table_exists(my.table):
-            print "WARNING: table [%s] does not exist in database [%s]" % (my.table, my.database)
+    def commit(self):
+        sql = DbContainer.get(self.db_resource)
+        if not sql.table_exists(self.table):
+            print("WARNING: table [%s] does not exist in database [%s]" % (self.table, self.database))
             return
 
         # dump table into sql first
         tmp_dir = Environment.get_tmp_dir()
         schema_path = "%s/cache/drop_%s_%s.sql" % \
-            (tmp_dir, my.database, my.table)
+            (tmp_dir, self.database, self.table)
 
         if os.path.exists(schema_path):
             os.unlink(schema_path)
 
         # dump the table to a file and store it in cache
         from sql_dumper import TableSchemaDumper
-        dumper = TableSchemaDumper(my.search_type)
+        dumper = TableSchemaDumper(self.search_type)
         try:
             # should i use mode='sobject'? it defaults to 'sql'
             dumper.dump_to_tactic(path=schema_path)
-        except SqlException, e:
-            print "SqlException: ", e
+        except SqlException as e:
+            print("SqlException: ", e)
             raise
 
-        sql.do_update(my.statement)
+        sql.do_update(self.statement)
         sql.clear_table_cache()
 
 
@@ -3596,80 +3634,80 @@ class DropTable(Base):
 class AlterTable(CreateTable):
     '''Class to nonlinearly build up an alter table statement'''
 
-    def __init__(my, search_type=None):
-        super(AlterTable, my).__init__(search_type)
+    def __init__(self, search_type=None):
+        super(AlterTable, self).__init__(search_type)
         """
-        my.search_type = search_type
+        self.search_type = search_type
         # derive db from search_type_obj
         from search import SearchType
         search_type_obj = SearchType.get(search_type)
-        my.database = search_type_obj.get_database()
+        self.database = search_type_obj.get_database()
         """
-        assert my.database
-        my.drop_columns = []
+        assert self.database
+        self.drop_columns = []
 
-    def drop(my, name):
+    def drop(self, name):
         #TODO: check if this column exists
-        #print "COL NAME ", name
-        my.drop_columns.append(name)
+        #print("COL NAME ", name)
+        self.drop_columns.append(name)
 
-    def verify_table(my):
+    def verify_table(self):
         from search import SearchType
-        if not my.table and my.search_type:
-            search_type_obj = SearchType.get(my.search_type)
-            my.table = search_type_obj.get_table()
+        if not self.table and self.search_type:
+            search_type_obj = SearchType.get(self.search_type)
+            self.table = search_type_obj.get_table()
 
-    def modify(my, name, type, length=256, not_null=False):
+    def modify(self, name, type, length=256, not_null=False):
         # must store not_null separately,
         is_not_null = not_null
         if type == "text":
-            expr = my.impl.get_text(not_null=False)
+            expr = self.impl.get_text(not_null=False)
         elif type == "varchar":
-            expr = my.impl.get_varchar(length=length, not_null=False)
+            expr = self.impl.get_varchar(length=length, not_null=False)
         elif type == "int":
-            expr = my.impl.get_int(not_null=False)
+            expr = self.impl.get_int(not_null=False)
         elif type == "float":
-            expr = my.impl.get_float(not_null=False)
+            expr = self.impl.get_float(not_null=False)
         elif type == "timestamp":
-            if my.impl.get_database_type() == 'SQLServer':
-                expr = my.impl.get_timestamp(not_null=False, default=None)
+            if self.impl.get_database_type() == 'SQLServer':
+                expr = self.impl.get_timestamp(not_null=False, default=None)
             else:
-                expr = my.impl.get_timestamp(not_null=False)
+                expr = self.impl.get_timestamp(not_null=False)
         elif type == "boolean":
-            expr = my.impl.get_boolean(not_null=False)
+            expr = self.impl.get_boolean(not_null=False)
         else:
             expr = type
 
-        my.columns.append( (name, expr, is_not_null) )
+        self.columns.append( (name, expr, is_not_null) )
 
-    def get_statements(my):
-        my.verify_table()
+    def get_statements(self):
+        self.verify_table()
 
         statements = []
-        for value in my.columns:
-            statement = my.impl.get_modify_column(my.table, value[0], value[1], value[2])
+        for value in self.columns:
+            statement = self.impl.get_modify_column(self.table, value[0], value[1], value[2])
             statements.extend(statement)
 
-        for value in my.drop_columns:
+        for value in self.drop_columns:
 
             # TODO: The following should be decided in DatabaseImpl()
             from pyasm.search.sql import Sql
-            if my.impl.get_database_type() == 'SQLServer':
+            if self.impl.get_database_type() == 'SQLServer':
                 statement = 'ALTER TABLE [%s] DROP COLUMN [%s]' \
-                    % (my.table, value)
+                    % (self.table, value)
             else:
                 statement = 'ALTER TABLE "%s" DROP "%s"' \
-                    % (my.table, value)
+                    % (self.table, value)
 
             statements.append(statement)
         return statements
 
 
     # TEST
-    def xxx_drop_column(my, column):
+    def xxx_drop_column(self, column):
 
         sql = DbContainer.get("sthpw")
-        columns = sql.get_columns(my.table)
+        columns = sql.get_columns(self.table)
         columns.remove(column)
         columns_str = ", ".join(columns)
 
@@ -3683,25 +3721,25 @@ class AlterTable(CreateTable):
         INSERT INTO __%(table)s_new SELECT %(columns)s FROM %(table)s;
         DROP TABLE %(table)s;
         ALTER TABLE __%(table)s_new RENAME TO %(table)s;
-        ''' % {'table': my.table, 'columns': columns_str}
+        ''' % {'table': self.table, 'columns': columns_str}
 
         return statement
 
 
 
-    def commit(my):
+    def commit(self):
         '''Commit one or more alter table statements'''
-        sql = DbContainer.get(my.db_resource)
+        sql = DbContainer.get(self.db_resource)
         impl = sql.get_database_impl()
         #database = sql.get_database_name()
-        exists = impl.table_exists(my.db_resource, my.table)
+        exists = impl.table_exists(self.db_resource, self.table)
         
         if exists:
-            statements = my.get_statements()
+            statements = self.get_statements()
             for statement in statements:
                 sql.do_update(statement)
         else:
-            print "WARNING: table [%s] does not exist ... skipping" % my.table
+            print("WARNING: table [%s] does not exist ... skipping" % self.table)
 
 
 
@@ -3710,86 +3748,86 @@ class AlterTable(CreateTable):
 class CreateView(Base):
 
 
-    def __init__(my, search_type=None, query=None, search=None):
+    def __init__(self, search_type=None, query=None, search=None):
 
         if query:
-            my.query = query
+            self.query = query
         else:
-            my.query = search.get_statement()
+            self.query = search.get_statement()
 
-        assert my.query
+        assert self.query
 
         from pyasm.biz import Project
         if search_type:
             from search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
-            my.view = search_type_sobj.get_table()
+            self.view = search_type_sobj.get_table()
 
             from search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)
-            my.db_resource = project.get_project_db_resource()
+            self.db_resource = project.get_project_db_resource()
 
-            my.table = search_type_sobj.get_table()
+            self.table = search_type_sobj.get_table()
 
-            sql = DbContainer.get(my.db_resource)
-            my.impl = sql.get_database_impl()
+            sql = DbContainer.get(self.db_resource)
+            self.impl = sql.get_database_impl()
         else:
-            my.view = None
+            self.view = None
 
             from pyasm.search import DatabaseImpl
-            my.impl = DatabaseImpl.get()
+            self.impl = DatabaseImpl.get()
 
             project = Project.get()
-            my.db_resource = project.get_project_db_resource()
+            self.db_resource = project.get_project_db_resource()
 
-        my.database = my.db_resource.get_database()
-
-
-
-    def set_view(my, view):
-        my.view = view
+        self.database = self.db_resource.get_database()
 
 
 
+    def set_view(self, view):
+        self.view = view
 
-    def get_statement(my):
+
+
+
+    def get_statement(self):
 
         statement = []
 
-        #if my.impl.get_database_type() == 'SQLServer':
+        #if self.impl.get_database_type() == 'SQLServer':
 
-        statement.append( 'CREATE VIEW "%s"' % my.view )
+        statement.append( 'CREATE VIEW "%s"' % self.view )
 
         statement.append( 'AS' )
         
-        statement.append( my.query )
+        statement.append( self.query )
 
         statement = " ".join(statement)
 
         return statement
 
  
-    def commit(my, sql=None):
+    def commit(self, sql=None):
         '''Commit one or more alter table statements'''
 
         if sql:
-            my.database = sql.get_database_name()
+            self.database = sql.get_database_name()
             db_resource = sql.get_db_resource()
 
         else:
-            sql = DbContainer.get(my.db_resource)
-            db_resource = my.db_resource
+            sql = DbContainer.get(self.db_resource)
+            db_resource = self.db_resource
 
         impl = sql.get_database_impl()
 
         
-        statement = my.get_statement()
+        statement = self.get_statement()
         sql.do_update(statement)
 
-        sql.clear_table_cache(my.database)
+        sql.clear_table_cache(self.database)
 
 
 

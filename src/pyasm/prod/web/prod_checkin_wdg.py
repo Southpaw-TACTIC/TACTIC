@@ -31,19 +31,19 @@ from tactic.ui.common import BaseRefreshWdg
 
 class MayaCheckinWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
         name = ""
-        my.context_select = None
-        my.current_sobject = None
-        #super(MayaCheckinWdg, my).__init__(name)
+        self.context_select = None
+        self.current_sobject = None
+        #super(MayaCheckinWdg, self).__init__(name)
         
-    def get_context_data(my,search_type='', process=''):
+    def get_context_data(self,search_type='', process=''):
         '''get the labels and values of contexts that can be checked in with this widget'''
 
         # TODO: this also shows input contexts ... it should only show output
         # contexts
         if not search_type:
-            search_type = my.SEARCH_TYPE
+            search_type = self.SEARCH_TYPE
 
         pipelines = Pipeline.get_by_search_type(search_type, Project.get_project_code() )
 
@@ -108,48 +108,48 @@ class MayaCheckinWdg(BaseRefreshWdg):
     get_introspect_wdg = staticmethod(get_introspect_wdg)
 
 
-    def get_process_wdg(my, search_type):
+    def get_process_wdg(self, search_type):
         '''this should appear in front of the context_filter_wdg'''
         div = FloatDivWdg()
         div.add_style('padding-right','10px')
 
         # give the opportunity to force the process
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
         if process:
-            my.process_select = SelectWdg("%s_process" % my.PUBLISH_TYPE)
-            my.process_select.set_value(process)
+            self.process_select = SelectWdg("%s_process" % self.PUBLISH_TYPE)
+            self.process_select.set_value(process)
             div.add("Process: %s" % process)
             return div
             
 
-        my.process_select = ProcessSelectWdg(label='Process: ', \
+        self.process_select = ProcessSelectWdg(label='Process: ', \
             search_type=search_type, css='', has_empty=False, \
-            name="%s_process" %my.PUBLISH_TYPE)
+            name="%s_process" %self.PUBLISH_TYPE)
 
-        my.process_select.add_empty_option('- Select -')
-        my.process_select.set_persistence()
-        my.process_select.add_behavior({'type' : 'change',
-            'cbjs_action': '%s;%s'%(my.process_select.get_save_script(),\
-                    my.process_select.get_refresh_script())
+        self.process_select.add_empty_option('- Select -')
+        self.process_select.set_persistence()
+        self.process_select.add_behavior({'type' : 'change',
+            'cbjs_action': '%s;%s'%(self.process_select.get_save_script(),\
+                    self.process_select.get_refresh_script())
            })
         # this is only applicable in Shot Tab
         filter = Container.get('process_fitter')
         if filter:
-            my.process_select.set_value(filter.get_value())
-        div.add(my.process_select)
+            self.process_select.set_value(filter.get_value())
+        div.add(self.process_select)
         return div
 
-    def get_context_filter_wdg(my):
+    def get_context_filter_wdg(self):
         '''drop down which selects which context to checkin'''
         # add a filter
         # use a regular SelectWdg with submit instead of FilterSelectWdg
         filter_div = FloatDivWdg("Context:")
-        select_name = "%s_context" %my.PUBLISH_TYPE
+        select_name = "%s_context" %self.PUBLISH_TYPE
         select = SelectWdg(select_name)
         
         select.add_behavior({'type' : 'change',
             'cbjs_action': "var top=spt.get_parent_panel(bvr.src_el); spt.panel.refresh(top, {'%s': bvr.src_el.value}, true)"%select_name})
-        labels, values = my.get_context_data()
+        labels, values = self.get_context_data()
         select.set_option("values", "|".join(values))
         select.set_option("labels", "|".join(labels))
         select.add_style("font-size: 0.8em")
@@ -165,28 +165,28 @@ class MayaCheckinWdg(BaseRefreshWdg):
             context = ""
  
         web = WebContainer.get_web()
-        web.set_form_value("%s_context" % my.PUBLISH_TYPE, context)
+        web.set_form_value("%s_context" % self.PUBLISH_TYPE, context)
 
         select.set_value( context )
 
         # set it to a instance variable
-        my.context_select = select
+        self.context_select = select
 
         filter_div.add(select)
 
         # if specified, add a sub_context
         settings = ProdSetting.get_value_by_key("%s/sub_context" % context,\
-                my.SEARCH_TYPE)
+                self.SEARCH_TYPE)
         filter_div.add( "/ ")
         sub_context = None
         if settings:
-            sub_context = SelectWdg("%s_sub_context" %my.PUBLISH_TYPE)
+            sub_context = SelectWdg("%s_sub_context" %self.PUBLISH_TYPE)
             sub_context.set_option("values", settings)
             sub_context.set_submit_onchange()
             sub_context.add_empty_option("<- Select ->")
         else:
             # provide a text field
-            sub_context = TextWdg("%s_sub_context" %my.PUBLISH_TYPE)
+            sub_context = TextWdg("%s_sub_context" %self.PUBLISH_TYPE)
             sub_context.set_attr('size','10') 
             
         sub_context.set_persistence()
@@ -194,19 +194,19 @@ class MayaCheckinWdg(BaseRefreshWdg):
         sub_context.add_behavior({'type': 'change',
                 'cbjs_action': sub_context.get_save_script()})
         filter_div.add( sub_context )
-        my.sub_context_select = sub_context
+        self.sub_context_select = sub_context
         filter_div.add_style('padding-right','10px')
 
         return filter_div
 
 
-    def get_snapshot_type_wdg(my):
+    def get_snapshot_type_wdg(self):
         hidden = HiddenWdg("checkin_snapshot_type", "asset")
         return hidden
 
 
  
-    def get_auto_version_wdg(my):
+    def get_auto_version_wdg(self):
 
         widget = Widget()
 
@@ -240,7 +240,7 @@ class MayaCheckinWdg(BaseRefreshWdg):
         
         return widget
 
-    def get_handoff_wdg(my):
+    def get_handoff_wdg(self):
         div = DivWdg()
         div.add_style('float','right')
         hidden = HiddenWdg('use_handoff_dir')
@@ -267,7 +267,7 @@ class MayaCheckinWdg(BaseRefreshWdg):
         return div
 
 
-    def get_save_wdg(my, sobject=None):
+    def get_save_wdg(self, sobject=None):
         '''the button which initiates a file/save in the proper directory'''
         type = "maya"
         ext = "ma"
@@ -312,13 +312,13 @@ class MayaCheckinWdg(BaseRefreshWdg):
 
 
         # get the context and sub_context
-        context = my.context_select.get_value(for_display=True)
-        sub_context = my.sub_context_select.get_value()
+        context = self.context_select.get_value(for_display=True)
+        sub_context = self.sub_context_select.get_value()
         if sub_context:
             context = "%s/%s" % (context, sub_context)
 
         # Build sandbox_dir with a fake snapshot
-        process = my.process_select.get_value()
+        process = self.process_select.get_value()
         if not process or process.count(','):
             return HtmlElement.i("No process selected")
 
@@ -373,7 +373,7 @@ class MayaCheckinWdg(BaseRefreshWdg):
         span.add(button)
         return span
 
-    def get_reference_option(my):
+    def get_reference_option(self):
         div = DivWdg()
         title = FloatDivWdg(HtmlElement.b('Unknown References:'), width = '15em')
         div.add(title)
@@ -392,7 +392,7 @@ class MayaCheckinWdg(BaseRefreshWdg):
 
         return div
 
-    def get_currency_wdg(my):
+    def get_currency_wdg(self):
         '''Checkbox that determines whether this check is to be the current'''
         div = DivWdg()
         title = FloatDivWdg(HtmlElement.b('Set as Current:'), width = '15em')
@@ -426,7 +426,7 @@ class MayaCheckinWdg(BaseRefreshWdg):
         return div
 
 
-    def get_checkin_as_wdg(my):
+    def get_checkin_as_wdg(self):
         '''Checkbox that determines whether to use export or file/save'''
         is_unchecked = True
         default_cb = None
@@ -458,7 +458,7 @@ class MayaCheckinWdg(BaseRefreshWdg):
             default_cb.set_checked()
         return div
 
-    def get_texture_option(my, show_texture_match=True):
+    def get_texture_option(self, show_texture_match=True):
         '''Checkbox that determines different texture options'''
         is_unchecked = True
         default_cb = None
@@ -526,7 +526,7 @@ class MayaCheckinWdg(BaseRefreshWdg):
 
         return div
     
-    def get_handler_input(my, asset, process_name):
+    def get_handler_input(self, asset, process_name):
         '''get the handler input for client side operation during checkin'''
         pipeline = Pipeline.get_by_sobject(asset)
         
@@ -556,25 +556,25 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
     
    
 
-    def list_references(my):
+    def list_references(self):
         '''lists whether references can be checked in with this widget'''
         return False
     
-    def get_context_data(my):
-        process = my.process_select.get_value()
-        labels, values = super(MayaAssetCheckinWdg,my).get_context_data(\
+    def get_context_data(self):
+        process = self.process_select.get_value()
+        labels, values = super(MayaAssetCheckinWdg,self).get_context_data(\
             "prod/asset", process)
 
         return labels, values
 
 
 
-    def init(my):
+    def init(self):
         #help = HelpItemWdg('Checkin', 'The Checkin tab lets you publish assets in the session of their 3D applications. Among many options, you can choose to [Export] or [Save] the assets checked in the list. You can also perform incremental saves or access your sandbox for individual assets from here.')
 
         # add an outside box
         div = DivWdg(css="maq_search_bar")
-        my.add(div)
+        self.add(div)
         div.add_style("margin: 5px")
 
         div.add_style("padding: 10px")
@@ -587,8 +587,8 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         process_div = DivWdg()
         process_div.add_style("padding-left: 10px")
         div.add(process_div)
-        process_div.add( my.get_process_wdg('prod/asset'))
-        process_div.add( my.get_context_filter_wdg() )
+        process_div.add( self.get_process_wdg('prod/asset'))
+        process_div.add( self.get_context_filter_wdg() )
         process_div.add(HtmlElement.br(clear="all")) 
 
 
@@ -604,32 +604,32 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         div.add(title)
 
 
-        checkin_options.add( my.get_file_type_wdg() )
-        checkin_options.add( my.get_snapshot_type_wdg() )
+        checkin_options.add( self.get_file_type_wdg() )
+        checkin_options.add( self.get_snapshot_type_wdg() )
         checkin_options.add(HtmlElement.br(1)) 
-        checkin_options.add( my.get_export_method_wdg() )
-        checkin_options.add( my.get_checkin_as_wdg() )
+        checkin_options.add( self.get_export_method_wdg() )
+        checkin_options.add( self.get_checkin_as_wdg() )
 
-        #my.add( my.get_render_icon_wdg() )
+        #self.add( self.get_render_icon_wdg() )
 
         # For different export methods
-        checkin_options.add( my.get_currency_wdg() )
+        checkin_options.add( self.get_currency_wdg() )
 
-        checkin_options.add( my.get_reference_option())
-        checkin_options.add( my.get_auto_version_wdg())
-        checkin_options.add( my.get_texture_option())
+        checkin_options.add( self.get_reference_option())
+        checkin_options.add( self.get_auto_version_wdg())
+        checkin_options.add( self.get_texture_option())
        
-        if not my.context_select.get_value(for_display=True):
-            my.add(DivWdg('A context must be selected.', css='warning'))
+        if not self.context_select.get_value(for_display=True):
+            self.add(DivWdg('A context must be selected.', css='warning'))
             return
 
         div.add(checkin_options)
       
         
-        #my.add(HtmlElement.br())
-        my.add( my.get_introspect_wdg() )
-        my.add( my.get_handoff_wdg())
-        my.add(HtmlElement.br(2))
+        #self.add(HtmlElement.br())
+        self.add( self.get_introspect_wdg() )
+        self.add( self.get_handoff_wdg())
+        self.add(HtmlElement.br(2))
         # create the interface
         table = Table()
         table.set_max_width()
@@ -639,20 +639,20 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         table.add_header("&nbsp;")
         table.add_header("&nbsp;")
         table.add_header("Instance")
-        table.add_header(my.get_checkin())
+        table.add_header(self.get_checkin())
         table.add_header("Sandbox")
         
 
         # get session and handle case where there is no session
-        my.session = SessionContents.get()
-        if my.session == None:
+        self.session = SessionContents.get()
+        if self.session == None:
             instance_names = []
             asset_codes = []
             node_names = []
         else:
-            instance_names = my.session.get_instance_names()
-            asset_codes = my.session.get_asset_codes()
-            node_names = my.session.get_node_names()
+            instance_names = self.session.get_instance_names()
+            asset_codes = self.session.get_asset_codes()
+            node_names = self.session.get_node_names()
 
         # get all of the possible assets based on the asset codes
         search = Search("prod/asset")
@@ -660,17 +660,17 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         assets = search.get_sobjects()
         assets_dict = SObject.get_dict(assets, ["code"])
 
-        if my.session:
-            my.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        if self.session:
+            self.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
-            my.add("Current Project: Please press 'Introspect'")
+            self.add("Current Project: Please press 'Introspect'")
 
 
         count = 0
         for i in range(0, len(node_names) ):
             node_name = node_names[i]
-            if not my.session.is_tactic_node(node_name) and \
-                not my.session.get_node_type(node_name) in ['transform','objectSet']:
+            if not self.session.is_tactic_node(node_name) and \
+                not self.session.get_node_type(node_name) in ['transform','objectSet']:
                     continue
             instance_name = instance_names[i]
 
@@ -681,8 +681,8 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
                 asset_code = instance_name
 
             # skip if this is a reference
-            if my.list_references == False and \
-                    my.session.is_reference(node_name):
+            if self.list_references == False and \
+                    self.session.is_reference(node_name):
                 continue
 
             table.add_row()
@@ -695,18 +695,18 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
            
             # list items if it is a set
             if asset.get_asset_type() in ["set", "section"]:
-                my.current_sobject = asset
-                my.handle_set( table, instance_name, asset, instance_names)
+                self.current_sobject = asset
+                self.handle_set( table, instance_name, asset, instance_names)
                 count +=1
             # if this asset is in the database, then allow it to checked in
             if asset:
-                if my.session.get_snapshot_code(instance_name, snapshot_type='set'):
+                if self.session.get_snapshot_code(instance_name, snapshot_type='set'):
                     continue
 
                 # hack remember this
-                my.current_sobject = asset
+                self.current_sobject = asset
 
-                my.handle_instance(table, instance_name, asset, node_name)
+                self.handle_instance(table, instance_name, asset, node_name)
 
             else:
                 table.add_blank_cell()
@@ -718,20 +718,20 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         if count == 0:
             table.add_row_cell("<center><h2>No assets in session to checkin</h2></center>")
 
-        my.add(table)
+        self.add(table)
 
-        if not my.session:
+        if not self.session:
             return
 
 
-        non_tactic_nodes = my.session.get_instance_names(is_tactic_node=False)
+        non_tactic_nodes = self.session.get_instance_names(is_tactic_node=False)
         title = HtmlElement.b("Unknown List")
         swap = SwapDisplayWdg.get_triangle_wdg()
 
         div = DivWdg(id="unknown list")
         
-        my.add(swap)
-        my.add(title)
+        self.add(swap)
+        self.add(title)
 
         SwapDisplayWdg.create_swap_title( title, swap, div) 
         unknown_table = Table(css='table')
@@ -740,12 +740,12 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
 
         
         for instance in non_tactic_nodes:
-            my.handle_unknown_instance(unknown_table, instance)
+            self.handle_unknown_instance(unknown_table, instance)
         
-        my.add(div)
+        self.add(div)
 
 
-    def get_file_type_wdg(my):
+    def get_file_type_wdg(self):
         '''drop down which selects which file type to export to'''
         # add a filter
         div = DivWdg()
@@ -775,19 +775,19 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         select.add_style("font-size: 0.8em")
         select.add_style("margin-top: 5px")
         select.add_style("margin-right: 10px")
-        select.set_value( WidgetSettings.get_wdg_value(my,"file_type") )
+        select.set_value( WidgetSettings.get_wdg_value(self,"file_type") )
 
         div.add(select)
         return div
 
 
 
-    def get_checkin(my):
+    def get_checkin(self):
         '''the button which initiates the checkin'''
         # create the button with the javascript function
         widget = Widget()
-        button = ProdIconButtonWdg(my.PUBLISH_BUTTON)
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+        button = ProdIconButtonWdg(self.PUBLISH_BUTTON)
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add( hidden )
         button.add_style('font-size', '1.0em')
        
@@ -823,7 +823,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
 
       
 
-    def get_export_method_wdg(my):
+    def get_export_method_wdg(self):
         '''Checkbox that determines whether to use export or file/save'''
         is_unchecked = True
         default_cb = None
@@ -867,7 +867,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
     
 
 
-    def get_render_icon_wdg(my):
+    def get_render_icon_wdg(self):
         '''Checkbox determines whether to create icon'''
         div = DivWdg()
         div.add("Create Icon: ")
@@ -877,7 +877,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         return div
 
 
-    def handle_set(my, table, instance_name,  asset,  session_instances):
+    def handle_set(self, table, instance_name,  asset,  session_instances):
         asset_code = asset.get_code()
         
         # get all of the reference instances from the latest published
@@ -887,7 +887,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         if not instance_name in session_instances:
             return
         if not snapshot:
-            my.handle_instance(table, instance_name, asset)
+            self.handle_instance(table, instance_name, asset)
             return
 
 
@@ -898,7 +898,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
 
         # TODO should get it based on the set's asset code so that
         # if the sesssion's set is older, it will still work
-        session_set_items = my.session._get_data().get_nodes_attr(\
+        session_set_items = self.session._get_data().get_nodes_attr(\
             "session/node[@set_asset_code='%s']" %asset_code, 'instance')
         count = 0
 
@@ -923,7 +923,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
         if count == 0:
             return
 
-        my.handle_instance(table, instance_name, asset)
+        self.handle_instance(table, instance_name, asset)
     
         # display all of the set instance that are in session
         for set_instance in set_instances_in_session:
@@ -937,7 +937,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
                 print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                 set_instance, tmp = set_instance.split(":")
 
-            my.handle_instance(table, set_instance, ref_asset, publish=False)
+            self.handle_instance(table, set_instance, ref_asset, publish=False)
 
         widget = Widget("&nbsp;")
         if set_instances_not_in_session:
@@ -958,13 +958,13 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
                 print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                 set_instance, tmp = set_instance.split(":")
 
-            my.handle_missing_instance(table, set_instance, ref_asset)
+            self.handle_missing_instance(table, set_instance, ref_asset)
 
         if set_instances_not_in_session:
             table.add_row_cell("&nbsp;")
 
 
-    def handle_instance(my, table, instance, asset, node_name='', publish=True, allow_ref_checkin=False):
+    def handle_instance(self, table, instance, asset, node_name='', publish=True, allow_ref_checkin=False):
 
         # handle the case where asset is not defined
         if not asset:
@@ -983,13 +983,13 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
             else:
                 table.add_cell(instance)
             td = table.add_cell()
-            td.add("< %s node >" % my.session.get_node_type(instance_name))
+            td.add("< %s node >" % self.session.get_node_type(instance_name))
             table.add_blank_cell()
             return 
 
         # get the pipeline for this asset and handlers for the pipeline
-        process_name = my.process_select.get_value() 
-        handler_hidden = my.get_handler_input(asset, process_name)
+        process_name = self.process_select.get_value() 
+        handler_hidden = self.get_handler_input(asset, process_name)
         pipeline = Pipeline.get_by_sobject(asset) 
         
 
@@ -997,9 +997,9 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
 
         # TEST: switch this to using node name instead, if provided
         if node_name:
-            instance_node = my.session.get_node(node_name)
+            instance_node = self.session.get_node(node_name)
         else:
-            instance_node = my.session.get_node(instance)
+            instance_node = self.session.get_node(instance)
 
         if not instance_node:
             return
@@ -1069,7 +1069,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
             import_button.add_event('onclick', "import_instance('%s')"  %instance)
             td.add(import_button)
             '''
-            table.add_cell(my.get_save_wdg(my.current_sobject) )
+            table.add_cell(self.get_save_wdg(self.current_sobject) )
 
         elif publish:
             textarea = TextAreaWdg()
@@ -1078,14 +1078,14 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
             textarea.set_attr("cols", "35")
             textarea.set_attr("rows", "2")
             table.add_cell(textarea)
-            table.add_cell(my.get_save_wdg(my.current_sobject) )
+            table.add_cell(self.get_save_wdg(self.current_sobject) )
         else:
             table.add_blank_cell()
             table.add_blank_cell()
 
 
 
-    def handle_missing_instance(my, table, instance, asset):
+    def handle_missing_instance(self, table, instance, asset):
 
         asset_code = asset.get_code()
 
@@ -1108,7 +1108,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
 
         table.add_blank_cell()
 
-    def handle_unknown_instance(my, table, instance):
+    def handle_unknown_instance(self, table, instance):
         '''handle unassigned or non-tactic nodes'''
 
         table.add_row()
@@ -1132,34 +1132,34 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
     PUBLISH_TYPE = "anim"
     SEARCH_TYPE = "prod/shot_instance"
    
-    def get_context_data(my):
+    def get_context_data(self):
         # may use a prod/shot_instance search_type if it gets created
-        process = my.process_select.get_value()
-        labels, values = MayaCheckinWdg.get_context_data(my, "prod/shot", process)
+        process = self.process_select.get_value()
+        labels, values = MayaCheckinWdg.get_context_data(self, "prod/shot", process)
         return labels, values
 
 
 
-    def list_references(my):
+    def list_references(self):
         '''lists whether references can be checked in with this widget'''
         return True
 
 
-    def init(my):
+    def init(self):
 
 
         # get session and handle case where there is no session
-        my.session = SessionContents.get()
+        self.session = SessionContents.get()
         node_name_dict = {}
 
-        if my.session == None:
+        if self.session == None:
             session_instances = []
             asset_codes = []
             node_names = []
         else:
-            session_instances = my.session.get_instance_names(is_tactic_node=True)
-            asset_codes = my.session.get_asset_codes()
-            node_names = my.session.get_node_names(is_tactic_node=True)
+            session_instances = self.session.get_instance_names(is_tactic_node=True)
+            asset_codes = self.session.get_asset_codes()
+            node_names = self.session.get_node_names(is_tactic_node=True)
             for idx, node_name in enumerate(node_names):
                 node_name_dict[session_instances[idx]] = node_name
 
@@ -1178,7 +1178,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
             'cbjs_action':  "var top=bvr.src_el.getParent('.spt_main_panel');spt.panel.refresh(top, {}, true)"})
         
         div.add(SpanWdg(refresh_button, css='small'))
-        my.add(div)
+        self.add(div)
         shot = shot_navigator.get_shot()
 
         # TODO: add selected to shot
@@ -1186,26 +1186,26 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
         add_selected = SubmitWdg("Add Selected To Shot")
         add_selected.add_event("onclick", "introspect_select()")
         add_selected.add_style("float", "right")
-        my.add(add_selected)
-        my.add("<br/>")
+        self.add(add_selected)
+        self.add("<br/>")
         '''
 
 
         if not session_instances:
             # it only warns if there is nothing loaded at all
-            my.add(DivWdg("No shot instances found in session!", css='warning'))
+            self.add(DivWdg("No shot instances found in session!", css='warning'))
             return 
         
         div.add(HtmlElement.br(2))
-        div.add( my.get_process_wdg('prod/shot')) 
-        div.add( my.get_context_filter_wdg() )
+        div.add( self.get_process_wdg('prod/shot')) 
+        div.add( self.get_context_filter_wdg() )
         div.add(HtmlElement.br(2))
 
         # For different export methods
         title = SpanWdg("Check in Options")
         sub_div = DivWdg()
         sub_div.add_style('padding-left: 20px')
-        export_wdg = my.get_export_method_wdg()
+        export_wdg = self.get_export_method_wdg()
         sub_div.add(export_wdg)
         swap = SwapDisplayWdg()
         SwapDisplayWdg.create_swap_title(title, swap, sub_div, is_open=False)
@@ -1213,13 +1213,13 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
         div.add(title)
         div.add(sub_div)
 
-        if not my.context_select.get_value(for_display=True):
-            my.add(DivWdg('A context must be selected.', css='warning'))
+        if not self.context_select.get_value(for_display=True):
+            self.add(DivWdg('A context must be selected.', css='warning'))
             return
        
-        my.add( my.get_introspect_wdg() )
-        my.add( my.get_handoff_wdg())
-        my.add(HtmlElement.br())
+        self.add( self.get_introspect_wdg() )
+        self.add( self.get_handoff_wdg())
+        self.add(HtmlElement.br())
         # create the interface
         table = Table(css='table')
         table.set_max_width()
@@ -1229,17 +1229,17 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
         table.add_header("Icon")
 
         table.add_header("Instance", css='right_content')
-        th = table.add_header(my.get_checkin(), css='right_content')
+        th = table.add_header(self.get_checkin(), css='right_content')
 
         table.add_header("&nbsp;")
         if not shot:
-            my.add (HtmlElement.b("Please create a shot first in the Admin area!") )
-            return super(MayaAnimCheckinWdg,my).get_display()
+            self.add (HtmlElement.b("Please create a shot first in the Admin area!") )
+            return super(MayaAnimCheckinWdg,self).get_display()
 
-        if my.session:
-            my.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        if self.session:
+            self.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
-            my.add("Current Project: Please press 'Introspect'")
+            self.add("Current Project: Please press 'Introspect'")
 
 
         # go through the instances in the shot
@@ -1250,7 +1250,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
         for instance in instances:
 
             # HACK: remember the instance
-            my.current_sobject = instance
+            self.current_sobject = instance
                       
             asset = instance.get_asset()
             asset_code = asset.get_code()
@@ -1266,7 +1266,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
                 if not instance_name in session_instances:
                     continue
                 if not snapshot:
-                    my.handle_instance(table, instance_name, asset, allow_ref_checkin=True)
+                    self.handle_instance(table, instance_name, asset, allow_ref_checkin=True)
                     continue
 
 
@@ -1275,7 +1275,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
                 # skip if none are in session
                 set_instances = xml.get_values("snapshot/ref/@instance")
 
-                session_set_items = my.session._get_data().get_nodes_attr("session/node[@set_snapshot_code='%s']"\
+                session_set_items = self.session._get_data().get_nodes_attr("session/node[@set_snapshot_code='%s']"\
                     %snapshot.get_code(), 'instance')
                 
                 count = 0
@@ -1325,7 +1325,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
                         print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                         set_instance, tmp = set_instance.split(":")
 
-                    my.handle_instance(table, set_instance, ref_asset, allow_ref_checkin=True)
+                    self.handle_instance(table, set_instance, ref_asset, allow_ref_checkin=True)
 
                 widget = Widget("&nbsp;")
                 if set_instances_not_in_session:
@@ -1346,7 +1346,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
                         print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                         set_instance, tmp = set_instance.split(":")
 
-                    my.handle_missing_instance(table, set_instance, ref_asset)
+                    self.handle_missing_instance(table, set_instance, ref_asset)
 
                 if set_instances_not_in_session:
                     table.add_row_cell("&nbsp;")
@@ -1358,10 +1358,10 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
                     continue
                 # this for regular anim publish instances
                 node_name = node_name_dict.get(instance_name)
-                my.handle_instance(table, instance_name, asset, node_name=node_name, \
+                self.handle_instance(table, instance_name, asset, node_name=node_name, \
                     allow_ref_checkin=True)
         
-        my.add(table)
+        self.add(table)
 
         shot_instance_names = [ instance.get_code() for instance in instances]
 
@@ -1370,18 +1370,18 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
 
         div = DivWdg(id="unknown list")
         
-        my.add(swap)
-        my.add(title)
+        self.add(swap)
+        self.add(title)
 
         SwapDisplayWdg.create_swap_title( title, swap, div) 
         unknown_table = Table(css='table')
         unknown_table.set_max_width()
         div.add(unknown_table)
 
-        my.add(div)
+        self.add(div)
         for instance in session_instances:
             if instance not in shot_instance_names:
-                my.handle_unknown_instance(unknown_table, instance)
+                self.handle_unknown_instance(unknown_table, instance)
         #TODO some culling functionalities to be added
         '''
         table.add_row()
@@ -1399,9 +1399,9 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
     
 
 
-    def get_checkin(my):
-        button = ProdIconButtonWdg(my.PUBLISH_BUTTON)
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+    def get_checkin(self):
+        button = ProdIconButtonWdg(self.PUBLISH_BUTTON)
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add(hidden)
         button.add_style('font-size', '1.0em')
         
@@ -1423,7 +1423,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
 
 
 
-    def handle_introspect(my):
+    def handle_introspect(self):
         span = SpanWdg()
         button = IntrospectWdg()
         button.add_style("float", "right")
@@ -1435,11 +1435,11 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
         #span.add(button)
 
         span.add_style("float", "right")
-        my.add(span)
+        self.add(span)
 
 
 
-    def get_export_method_wdg(my):
+    def get_export_method_wdg(self):
         '''Checkbox that determines whether to use export or file/save'''
         is_unchecked = True
         default_cb = None
@@ -1480,27 +1480,27 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
 
 class MayaInstanceNode:
 
-    def __init__(my, node_name):
-        my.node_name = node_name
+    def __init__(self, node_name):
+        self.node_name = node_name
 
         if node_name.find(":") != -1:
             # handle bad instance names safely (no crash)
             tmp = node_name.split(":")
-            my.namespace, my.asset_code = (tmp[0], tmp[1])
+            self.namespace, self.asset_code = (tmp[0], tmp[1])
         else:
-            my.namespace = ""
-            my.asset_code = node_name
+            self.namespace = ""
+            self.asset_code = node_name
 
-    def get_asset(my):
-        asset = Asset.get_by_code(my.asset_code)
+    def get_asset(self):
+        asset = Asset.get_by_code(self.asset_code)
         return asset
 
-    def get_asset_code(my):
-        return my.asset_code
+    def get_asset_code(self):
+        return self.asset_code
 
 
-    def get_instance(my):
-        return my.namespace
+    def get_instance(self):
+        return self.namespace
         
 
 
@@ -1514,38 +1514,38 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
     LOAD_TYPE = "shot"
     SEARCH_TYPE = "prod/shot"
    
-    def init(my):
-        my.is_refresh = my.kwargs.get('is_refresh') =='true'
-        my.search_type = my.kwargs.get('search_type')
-        if not my.search_type:
-            my.search_type = 'prod/shot'
+    def init(self):
+        self.is_refresh = self.kwargs.get('is_refresh') =='true'
+        self.search_type = self.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = 'prod/shot'
 
-    def get_process_data(my):
+    def get_process_data(self):
         is_group_restricted = False
         if ProcessFilterWdg.has_restriction():
             is_group_restricted = True
-        labels, values = Pipeline.get_process_select_data(my.SEARCH_TYPE, \
+        labels, values = Pipeline.get_process_select_data(self.SEARCH_TYPE, \
              project_code=Project.get_project_code(), is_group_restricted=is_group_restricted)
         return labels, values
 
-    def get_context_data(my):
+    def get_context_data(self):
         # may use a prod/shot_instance search_type if it gets created
-        process = my.process_select.get_value()
-        labels, values = MayaCheckinWdg.get_context_data(my, "prod/shot", process)
+        process = self.process_select.get_value()
+        labels, values = MayaCheckinWdg.get_context_data(self, "prod/shot", process)
         return labels, values
 
-    def get_display(my):
+    def get_display(self):
         # add an outside box
         
         
-        if not my.is_refresh:
+        if not self.is_refresh:
             div = DivWdg()
             
-            my.set_as_panel(div)
+            self.set_as_panel(div)
         else:
             div = Widget() 
 
-        my.add(div)
+        self.add(div)
         
 
 
@@ -1563,7 +1563,7 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
         shot_navigator = ShotNavigatorWdg()
         filter_div.add(shot_navigator)
 
-        process_filter = ProcessFilterWdg(my.get_process_data(), my.LOAD_TYPE)
+        process_filter = ProcessFilterWdg(self.get_process_data(), self.LOAD_TYPE)
         process_filter.get_value()
 
         refresh_button = IconButtonWdg("Refresh", icon=IconWdg.REFRESH)
@@ -1582,7 +1582,7 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
 
         if not shot:
             filter_div.add("No shots have been created.")
-            return super(MayaShotCheckinWdg,my).get_display()
+            return super(MayaShotCheckinWdg,self).get_display()
 
         
         # HACK: set the hidden so that it contains the shot_code
@@ -1600,15 +1600,15 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
         
         widget = Widget()
         div.add(widget)
-        widget.add( my.get_introspect_wdg() ) 
-        widget.add( my.get_handoff_wdg())
+        widget.add( self.get_introspect_wdg() ) 
+        widget.add( self.get_handoff_wdg())
         
         # try the old WarningReport here
         #widget.add( WarningReportWdg())
         # create the asset table
         shot_div = DivWdg() 
         shot_div.add_style("margin: 0px 0px 0px 20px")
-        shot_table = TableWdg(my.SEARCH_TYPE, "load")
+        shot_table = TableWdg(self.SEARCH_TYPE, "load")
         shot_table.set_sobject(shot)
         shot_div.add(shot_table)
         widget.add(shot_div)
@@ -1650,12 +1650,12 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
 
         widget.add("<hr/><br/>")
 
-        widget.add(my.get_publish_wdg(shot))
+        widget.add(self.get_publish_wdg(shot))
 
         
         return div
 
-    def get_texture_option(my, show_texture_match=True, app='Maya'):
+    def get_texture_option(self, show_texture_match=True, app='Maya'):
         '''Checkbox that determines different texture options'''
         is_unchecked = True
         default_cb = None
@@ -1682,7 +1682,7 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
 
         return div
     
-    def get_publish_wdg(my, shot):
+    def get_publish_wdg(self, shot):
         ''' get the publish area widget '''
         widget = Widget()
         
@@ -1721,45 +1721,45 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
 
         widget.add(div)
 
-        div.add( my.get_process_wdg('prod/shot'))
-        div.add( my.get_context_filter_wdg() )
+        div.add( self.get_process_wdg('prod/shot'))
+        div.add( self.get_context_filter_wdg() )
 
         
         div.add( HtmlElement.br(2) )
-        div.add( my.get_checkin_as_wdg() )
-        div.add( my.get_currency_wdg() )
+        div.add( self.get_checkin_as_wdg() )
+        div.add( self.get_currency_wdg() )
 
-        if not my.context_select.get_value(for_display=True):
+        if not self.context_select.get_value(for_display=True):
             widget.add(DivWdg('A context must be selected.', css='warning'))
             return widget
 
         div.add(HtmlElement.br())
 
-        options_div = my.get_reference_option()
+        options_div = self.get_reference_option()
         div.add(options_div)
         
-        div.add( my.get_auto_version_wdg()) 
+        div.add( self.get_auto_version_wdg()) 
         div.add(HtmlElement.br(2))
-        div.add( my.get_texture_option(False, app=app_name))
+        div.add( self.get_texture_option(False, app=app_name))
 
 
         # draw shot set publish
         if app_name == 'Maya':
-            div.add(my.get_shot_set_publish_wdg(shot, select.get_value()))
+            div.add(self.get_shot_set_publish_wdg(shot, select.get_value()))
 
         # draw regular shot publish
-        div.add(my.get_shot_publish_wdg(shot, select.get_value()))
+        div.add(self.get_shot_publish_wdg(shot, select.get_value()))
 
-        process_name = my.process_select.get_value() 
-        handler_input = my.get_handler_input(shot, process_name)
+        process_name = self.process_select.get_value() 
+        handler_input = self.get_handler_input(shot, process_name)
         div.add(handler_input)
         
         return widget
         
-    def get_shot_publish_wdg(my, shot, mode):
-        button = ProdIconButtonWdg(my.PUBLISH_BUTTON)
+    def get_shot_publish_wdg(self, shot, mode):
+        button = ProdIconButtonWdg(self.PUBLISH_BUTTON)
         button.add_style('font-size', '1.0em')
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add(hidden)
         """
         status_sel = SelectWdg('checkin_status', label='Status: ')
@@ -1770,7 +1770,7 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
         # custom defined 
         server_cbk = "pyasm.prod.web.ShotCheckinCbk"
         exec( Common.get_import_from_class_path(server_cbk) )
-        exec( "%s.handle_input(button, my.search_type)" % server_cbk)
+        exec( "%s.handle_input(button, self.search_type)" % server_cbk)
 
         # add the command that this button executes
         '''
@@ -1802,7 +1802,7 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
         table.add_blank_cell()
         table.add_cell(textarea)
 
-        table.add_cell( my.get_save_wdg(shot) )
+        table.add_cell( self.get_save_wdg(shot) )
 
         div = DivWdg(id="shot_publish")
         if not mode or mode == 'shot':
@@ -1811,16 +1811,16 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
             div.add_style('display: none')
 
 
-        my.session = SessionContents.get()
-        if my.session:
-            div.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        self.session = SessionContents.get()
+        if self.session:
+            div.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
             div.add("Current Project: Please press 'Introspect'")
 
         div.add(table)
         return div
 
-    def get_shot_set_publish_wdg(my, shot, mode):
+    def get_shot_set_publish_wdg(self, shot, mode):
         # get session and handle case where there is no session
         widget = Widget()
         session = SessionContents.get()
@@ -1842,15 +1842,15 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
         div.add(title)
 
        
-        button = ProdIconButtonWdg(my.PUBLISH_SET_BUTTON)
+        button = ProdIconButtonWdg(self.PUBLISH_SET_BUTTON)
         button.add_style('font-size', '1.0em')
-        hidden = HiddenWdg(my.PUBLISH_SET_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_SET_BUTTON, '')
         button.add(hidden)
 
         # custom defined 
         server_cbk = "pyasm.prod.web.ShotSetCheckinCbk"
         exec( Common.get_import_from_class_path(server_cbk) )
-        exec( "%s.handle_input(button, my.search_type)" % server_cbk)
+        exec( "%s.handle_input(button, self.search_type)" % server_cbk)
 
         # add the command that this button executes
         '''
@@ -1878,7 +1878,7 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
             node_name = node_names[i]
             if session.get_node_type(node_name) in ['objectSet'] and \
                 node_name != shot.get_code():
-                    my.handle_instance(session, table, node_name, shot)
+                    self.handle_instance(session, table, node_name, shot)
 
         table.add_row()
         table.add_blank_cell()
@@ -1890,14 +1890,14 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
         table.add_cell(textarea)
         table.add_blank_cell()
         #table.add_blank_cell()
-        table.add_cell( my.get_save_wdg(shot) )
+        table.add_cell( self.get_save_wdg(shot) )
 
 
         div.add(table)
         widget.add(div)
         return widget
 
-    def handle_instance(my, session, table, instance, shot, publish=True, allow_ref_checkin=False):
+    def handle_instance(self, session, table, instance, shot, publish=True, allow_ref_checkin=False):
 
         instance_node = session.get_node(instance)
       
@@ -1970,46 +1970,46 @@ class MayaShotCheckinWdg(MayaCheckinWdg):
 
 class SObjectCheckinWdg(MayaAssetCheckinWdg):
 
-    def init(my):
-        my.search_type = "prod/asset"
+    def init(self):
+        self.search_type = "prod/asset"
 
-        my.add( my.get_introspect_wdg() )
+        self.add( self.get_introspect_wdg() )
 
-        my.add( my.get_process_wdg(my.search_type))
-        my.add( my.get_context_filter_wdg() )
-        my.add(HtmlElement.br(2)) 
-        my.add( my.get_file_type_wdg() )
-        my.add( my.get_snapshot_type_wdg() )
-        my.add(HtmlElement.br(2)) 
-        my.add( my.get_export_method_wdg() )
-        my.add( my.get_checkin_as_wdg() )
-        #my.add( my.get_render_icon_wdg() )
+        self.add( self.get_process_wdg(self.search_type))
+        self.add( self.get_context_filter_wdg() )
+        self.add(HtmlElement.br(2)) 
+        self.add( self.get_file_type_wdg() )
+        self.add( self.get_snapshot_type_wdg() )
+        self.add(HtmlElement.br(2)) 
+        self.add( self.get_export_method_wdg() )
+        self.add( self.get_checkin_as_wdg() )
+        #self.add( self.get_render_icon_wdg() )
 
         # For different export methods
-        my.add( my.get_currency_wdg() )
+        self.add( self.get_currency_wdg() )
 
-        my.add( my.get_reference_option())
-        if not my.context_select.get_value(for_display=True):
-            my.add(DivWdg('A context must be selected.', css='warning'))
+        self.add( self.get_reference_option())
+        if not self.context_select.get_value(for_display=True):
+            self.add(DivWdg('A context must be selected.', css='warning'))
             return
         
-        my.add(HtmlElement.br())
+        self.add(HtmlElement.br())
 
 
         # add the table
-        my.add( my.get_instance_select_wdg() )
+        self.add( self.get_instance_select_wdg() )
 
-        if not my.session:
+        if not self.session:
             return
 
-        non_tactic_nodes = my.session.get_instance_names(is_tactic_node=False)
+        non_tactic_nodes = self.session.get_instance_names(is_tactic_node=False)
         title = HtmlElement.b("Unknown List")
         swap = SwapDisplayWdg.get_triangle_wdg()
 
         div = DivWdg(id="unknown list")
         
-        my.add(swap)
-        my.add(title)
+        self.add(swap)
+        self.add(title)
 
         SwapDisplayWdg.create_swap_title( title, swap, div) 
         unknown_table = Table(css='table')
@@ -2018,14 +2018,14 @@ class SObjectCheckinWdg(MayaAssetCheckinWdg):
 
         
         for instance in non_tactic_nodes:
-            my.handle_unknown_instance(unknown_table, instance)
+            self.handle_unknown_instance(unknown_table, instance)
         
-        my.add(div)
+        self.add(div)
 
 
 
 
-    def get_instance_select_wdg(my):
+    def get_instance_select_wdg(self):
 
         # create the interface
         table = Table()
@@ -2046,31 +2046,31 @@ class SObjectCheckinWdg(MayaAssetCheckinWdg):
         
 
         # get session and handle case where there is no session
-        my.session = SessionContents.get()
-        if my.session == None:
+        self.session = SessionContents.get()
+        if self.session == None:
             asset_codes = []
             node_names = []
         else:
-            sobject_codes = my.session.get_asset_codes()
-            node_names = my.session.get_node_names()
+            sobject_codes = self.session.get_asset_codes()
+            node_names = self.session.get_node_names()
 
         # get all of the possible assets based on the asset codes
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         search.add_filters("code", sobject_codes)
         sobjects = search.get_sobjects()
         sobjects_dict = SObject.get_dict(sobjects, ["code"])
 
         # show the current project
-        if my.session:
-            my.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        if self.session:
+            self.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
-            my.add("Current Project: Please press 'Introspect'")
+            self.add("Current Project: Please press 'Introspect'")
 
 
         count = 0
         for i, node_name in enumerate(node_names):
-            if not my.session.is_tactic_node(node_name) and \
-                not my.session.get_node_type(node_name) in ['transform','objectSet']:
+            if not self.session.is_tactic_node(node_name) and \
+                not self.session.get_node_type(node_name) in ['transform','objectSet']:
                     continue
 
             table.add_row()
@@ -2080,7 +2080,7 @@ class SObjectCheckinWdg(MayaAssetCheckinWdg):
             if not sobject:
                 continue
 
-            my.handle_instance(table, sobject, node_name)
+            self.handle_instance(table, sobject, node_name)
             count += 1
 
         if not count:
@@ -2091,7 +2091,7 @@ class SObjectCheckinWdg(MayaAssetCheckinWdg):
 
 
 
-    def handle_instance(my, table, sobject, node_name):
+    def handle_instance(self, table, sobject, node_name):
 
         search_key = sobject.get_search_key()
         code = sobject.get_code()
@@ -2131,7 +2131,7 @@ class SObjectCheckinWdg(MayaAssetCheckinWdg):
             import_button.add_event('onclick', "import_instance('%s')"  %instance)
             td.add(import_button)
             '''
-            table.add_cell(my.get_save_wdg(sobject) )
+            table.add_cell(self.get_save_wdg(sobject) )
 
         else:
             textarea = TextAreaWdg()
@@ -2140,37 +2140,37 @@ class SObjectCheckinWdg(MayaAssetCheckinWdg):
             textarea.set_attr("cols", "35")
             textarea.set_attr("rows", "2")
             table.add_cell(textarea)
-            table.add_cell(my.get_save_wdg(sobject) )
+            table.add_cell(self.get_save_wdg(sobject) )
 
 
 
 class CustomCheckinWdg(SObjectCheckinWdg):
 
-    def init(my):
-        my.search_type = "prod/asset"
+    def init(self):
+        self.search_type = "prod/asset"
 
-        my.add( my.get_introspect_wdg() )
-        my.add( my.get_process_wdg(my.search_type))
-        my.add( my.get_context_filter_wdg() )
-        my.add(HtmlElement.br(2)) 
+        self.add( self.get_introspect_wdg() )
+        self.add( self.get_process_wdg(self.search_type))
+        self.add( self.get_context_filter_wdg() )
+        self.add(HtmlElement.br(2)) 
 
-        my.add( my.get_snapshot_type_wdg() )
-        my.add(HtmlElement.br(3)) 
+        self.add( self.get_snapshot_type_wdg() )
+        self.add(HtmlElement.br(3)) 
 
         # add the table
-        my.add( my.get_instance_select_wdg() )
+        self.add( self.get_instance_select_wdg() )
 
-        if not my.session:
+        if not self.session:
             return
 
-        non_tactic_nodes = my.session.get_instance_names(is_tactic_node=False)
+        non_tactic_nodes = self.session.get_instance_names(is_tactic_node=False)
         title = HtmlElement.b("Unknown List")
         swap = SwapDisplayWdg.get_triangle_wdg()
 
         div = DivWdg(id="unknown list")
         
-        my.add(swap)
-        my.add(title)
+        self.add(swap)
+        self.add(title)
 
         SwapDisplayWdg.create_swap_title( title, swap, div) 
         unknown_table = Table(css='table')
@@ -2179,9 +2179,9 @@ class CustomCheckinWdg(SObjectCheckinWdg):
 
         
         for instance in non_tactic_nodes:
-            my.handle_unknown_instance(unknown_table, instance)
+            self.handle_unknown_instance(unknown_table, instance)
         
-        my.add(div)
+        self.add(div)
 
 
 

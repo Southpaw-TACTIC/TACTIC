@@ -21,28 +21,28 @@ import hashlib
 class SignOutCmd(Command):
     '''Sign out command'''
 
-    def __init__(my, **kwargs):
-        my.login_name = ''
-        super(SignOutCmd, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        self.login_name = ''
+        super(SignOutCmd, self).__init__(**kwargs)
 
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
 
-    def get_title(my):
+    def get_title(self):
         return "Sign Out Command"
 
 
-    def set_login_name(my, login_name):
-        my.login_name = login_name
+    def set_login_name(self, login_name):
+        self.login_name = login_name
 
-    def check(my):
+    def check(self):
         return True
 
-    def execute(my):
+    def execute(self):
 
-        if not my.login_name:
-            my.login_name = my.kwargs.get('login');
+        if not self.login_name:
+            self.login_name = self.kwargs.get('login');
 
         # invalidate the ticket
         security = Environment.get_security()
@@ -73,7 +73,7 @@ class SignOutCmd(Command):
 
 
 
-    def check_security(my):
+    def check_security(self):
         '''give the command a callback that allows it to check security'''
         return True
 
@@ -81,59 +81,59 @@ class SignOutCmd(Command):
 class PasswordEditCmd(Command):
     '''encrypts the entered password with md5 encryption'''
 
-    def get_title(my):
+    def get_title(self):
         return "Password Change"
 
-    def init(my):
-        my.old_password = ''
-        my.password = ''
-        my.re_enter = ''
+    def init(self):
+        self.old_password = ''
+        self.password = ''
+        self.re_enter = ''
 
-    def check(my):
-        search_key = my.kwargs.get('search_key')
-        my.sobject = SearchKey.get_by_search_key(search_key)
+    def check(self):
+        search_key = self.kwargs.get('search_key')
+        self.sobject = SearchKey.get_by_search_key(search_key)
         
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
 
-        my.old_password = web.get_form_value("old password")
-        if isinstance(my.old_password, list):
-            my.old_password = my.old_password[0]
-        #encrypted = md5.new(my.old_password).hexdigest()
-        encrypted = hashlib.md5(my.old_password).hexdigest()
+        self.old_password = web.get_form_value("old password")
+        if isinstance(self.old_password, list):
+            self.old_password = self.old_password[0]
+        #encrypted = md5.new(self.old_password).hexdigest()
+        encrypted = hashlib.md5(self.old_password).hexdigest()
         
-        if encrypted != my.sobject.get_value('password'):
+        if encrypted != self.sobject.get_value('password'):
             raise UserException('Old password is incorrect.')
-        my.password = web.get_form_value("password")
-        if isinstance(my.password, list):
-            my.password = my.password[0]
+        self.password = web.get_form_value("password")
+        if isinstance(self.password, list):
+            self.password = self.password[0]
 
 
-        if my.sobject == None:
+        if self.sobject == None:
             return UserException("Current user cannot be determined.")
 
-        my.re_enter = web.get_form_value("password re-enter")
-        if isinstance(my.re_enter, list):
-            my.re_enter = my.re_enter[0]
-        if my.re_enter != "" and my.re_enter != my.password:
+        self.re_enter = web.get_form_value("password re-enter")
+        if isinstance(self.re_enter, list):
+            self.re_enter = self.re_enter[0]
+        if self.re_enter != "" and self.re_enter != self.password:
             raise UserException( "Passwords must match. Please fill in the re-enter.")
 
         return True
 
-    def execute(my):
-        assert my.sobject != None
+    def execute(self):
+        assert self.sobject != None
 
-        if my.password == "":
-            if my.sobject.is_insert():
+        if self.password == "":
+            if self.sobject.is_insert():
                 raise UserException("Empty password.  Go back and re-enter")
             else:
                 return
         
         # encrypt the password
-        #encrypted = md5.new(my.password).hexdigest()
-        encrypted = hashlib.md5.new(my.password).hexdigest()
-        my.sobject.set_value("password", encrypted)
+        #encrypted = md5.new(self.password).hexdigest()
+        encrypted = hashlib.md5.new(self.password).hexdigest()
+        self.sobject.set_value("password", encrypted)
 
-        my.sobject.commit()
+        self.sobject.commit()
 
-        my.description = "Password changed for [%s]." %my.sobject.get_value('login')
+        self.description = "Password changed for [%s]." %self.sobject.get_value('login')

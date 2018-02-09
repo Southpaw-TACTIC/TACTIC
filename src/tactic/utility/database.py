@@ -14,7 +14,7 @@ from pyasm.common import Config, Common
 
 class DatabaseBackup(object):
 
-    def execute(my):
+    def execute(self):
         base_dir = "/tmp"
         root = 'tacticdb'
 

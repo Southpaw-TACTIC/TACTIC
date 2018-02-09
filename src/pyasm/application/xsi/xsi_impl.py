@@ -31,43 +31,43 @@ except ImportError:
 class XSIImpl(object):
     '''class which holds the specifics for an example XSI implementation.
     '''
-    def __init__(my):
-        my.env = XSIEnvironment.get()
-        my.app = XSI.get()
+    def __init__(self):
+        self.env = XSIEnvironment.get()
+        self.app = XSI.get()
 
 
-    def dump_interface(my, node_name):
+    def dump_interface(self, node_name):
         '''Dump animation from an node '''
         # export the selected node
-        file_path = "%s/%s.tmp.cmd" % (my.env.get_tmpdir(),node_name)
-        my.app.export_anim(file_path, node_name)
+        file_path = "%s/%s.tmp.cmd" % (self.env.get_tmpdir(),node_name)
+        self.app.export_anim(file_path, node_name)
         return file_path
 
-    def get_save_dir(my):
-        dir = my.app.get_save_dir()
+    def get_save_dir(self):
+        dir = self.app.get_save_dir()
         return dir
 
-    def start_progress(my, title, visible, step):
-        bar = ProgressBar(my.app, title, visible, step)
+    def start_progress(self, title, visible, step):
+        bar = ProgressBar(self.app, title, visible, step)
         return bar
 
-    def get_snapshot_code(my, node_name, snapshot_type):
+    def get_snapshot_code(self, node_name, snapshot_type):
         '''This function gets the snapshot_code that was used to load this
         asset'''
-        node_data = my.app.get_node_data(node_name)
+        node_data = self.app.get_node_data(node_name)
         snapshot_code = node_data.get_attr("%s_snapshot" % snapshot_type,"code")
         return snapshot_code
 
 
-    def get_snapshot_attr(my, node_name, snapshot_type, attr):
+    def get_snapshot_attr(self, node_name, snapshot_type, attr):
         '''This function gets the snapshot_code that was used to load this
         asset'''
-        node_data = my.app.get_node_data(node_name)
+        node_data = self.app.get_node_data(node_name)
         snapshot_code = node_data.get_attr("%s_snapshot" % snapshot_type, attr)
         return snapshot_code
 
 
-    def get_textures_from_instance(my, node_name):
+    def get_textures_from_instance(self, node_name):
         '''extracts external file path references from a maya file'''
         '''NOTE: this is not currently used because there is no simple
         way in Maya to determine which file node belongs to which assets'''
@@ -79,7 +79,7 @@ class XSIImpl(object):
 
     
 
-    def get_textures_from_path(my, path):
+    def get_textures_from_path(self, path):
         # find all of the textures in the extracted file
         # can only do this with dotXSI files
         if path.endswith(".dotXSI"):
@@ -92,7 +92,7 @@ class XSIImpl(object):
 
             # parse the xsi file
             parser = XSIParser(path)
-            parser.set_app(my.app)
+            parser.set_app(self.app)
             filter = XSIParserTextureFilter()
             parser.add_filter( filter )
             parser.parse()
@@ -103,7 +103,7 @@ class XSIImpl(object):
         else:
             return [],[],[]
 
-    def get_texture_code(my, parent_code, node_name):
+    def get_texture_code(self, parent_code, node_name):
         '''TODO: remove this. Not needed. get a derived texture code. This corresponds to logic in TextureCheckin'''
         tmp = node_name.split(".")
         try:
@@ -117,49 +117,49 @@ class XSIImpl(object):
         texture_code = "%s-%s" % (parent_code, node_name)
         return texture_code
 
-    def get_textures_from_session(my, node_name):
+    def get_textures_from_session(self, node_name):
         texture_nodes = []
         texture_paths = []
         texture_attrs = []
 
-        my.app.xsi.LogMessage("get_textures_from_session")
+        self.app.xsi.LogMessage("get_textures_from_session")
 
-        root = my.app.xsi.ActiveProject.ActiveScene.Root
+        root = self.app.xsi.ActiveProject.ActiveScene.Root
 
         node = root.FindChild(node_name)
         # skip if it is not a Model node
         if not node or node.Type != '#model':
             return [], [], []
 
-        my.app.xsi.LogMessage("node: [%s]" % node)
+        self.app.xsi.LogMessage("node: [%s]" % node)
         try:
             fs = node.ExternalFiles
-            tex_node_dict = my._get_texture_node_dict(node_name)
+            tex_node_dict = self._get_texture_node_dict(node_name)
             for f in fs:
                 if not f:
                     continue
                 path = f.ResolvedPath
-                if my.is_file_group(path):
+                if self.is_file_group(path):
                     group_exists = True
-                    file_path = my.get_tactic_file_group_path(path)
-                    file_range = my.get_file_range(path)
+                    file_path = self.get_tactic_file_group_path(path)
+                    file_range = self.get_file_range(path)
                     file_group = Common.expand_paths(file_path, file_range)
                     for item in file_group:
                         if not os.path.exists(item):
-                            my.app.message("WARNING: one of the file groups does not exist")
+                            self.app.message("WARNING: one of the file groups does not exist")
                             group_exists = False
                             break
                     if not group_exists:
                         continue
-                #TODO: add a my.impl.path_exists()
+                #TODO: add a self.impl.path_exists()
                 else:
                     if not os.path.exists(path):
                         continue
-                #my.app.xsi.LogMessage("f.PATH " + path)
+                #self.app.xsi.LogMessage("f.PATH " + path)
                 owner = f.Owners[0]
 
                 if not path:
-                    my.app.message("WARNING: external file for node [%s] is empty" % node_name)
+                    self.app.message("WARNING: external file for node [%s] is empty" % node_name)
                     continue
 
                 # check if this is a reference. if so, ignore
@@ -179,7 +179,7 @@ class XSIImpl(object):
                 # texture node contains the mesh node in the model node
                 texture_node_list = tex_node_dict.get(path)
                 if not texture_node_list:
-                    my.app.message('WARNING: [%s] does not have a corresponding node'%path) 
+                    self.app.message('WARNING: [%s] does not have a corresponding node'%path) 
                     continue
                 for texture_node in texture_node_list:
                     # texture node should be unique
@@ -189,14 +189,14 @@ class XSIImpl(object):
                         texture_attrs.append('SourceFileName')
 
         except AppException, e:
-            my.app.xsi.LogMessage("WARNING: %s" % e.__str__())
+            self.app.xsi.LogMessage("WARNING: %s" % e.__str__())
         return texture_nodes, texture_paths, texture_attrs
 
 
-    def _get_texture_node_dict(my, node_name):
+    def _get_texture_node_dict(self, node_name):
         '''get the texture node dict and add prefix(asset_code) to the texture first
             if nececssary'''
-        root = my.app.xsi.ActiveProject.ActiveScene.Root
+        root = self.app.xsi.ActiveProject.ActiveScene.Root
         # extract asset_code
         naming = XSINodeNaming(node_name)
         asset_code = naming.get_asset_code()
@@ -204,16 +204,16 @@ class XSIImpl(object):
         info = {}
         children = node.FindChildren('','', ['Mesh Geometries','Clusters'], True)
         image_attr = "AllImageClips"
-        if my.app.xsi.Version() < "7":
+        if self.app.xsi.Version() < "7":
             image_attr = "ImageClips"
         clip_dict = {} 
         for i in children:
             clips = eval('i.Material.%s' % image_attr)
             
             for clip in clips:
-                if my._is_light_map(clip):
+                if self._is_light_map(clip):
                     continue
-                if my._is_clip_referenced(clip):
+                if self._is_clip_referenced(clip):
                     continue
                 clip_name = str(clip.Name)
                 
@@ -236,9 +236,9 @@ class XSIImpl(object):
                     if nested_clips:
                         all_clips.extend(nested_clips)
                     for clip in all_clips:
-                        if my._is_light_map(clip):
+                        if self._is_light_map(clip):
                             continue
-                        if my._is_clip_referenced(clip):
+                        if self._is_clip_referenced(clip):
                             continue
                         clip_name = str(clip.Name)
                         # add prefix if it does not exist
@@ -271,13 +271,13 @@ class XSIImpl(object):
 
         return info
                 
-    def _is_light_map(my, clip):
+    def _is_light_map(self, clip):
         if clip.Type == "WritableImageSource":
             return True
         else:
             return False
 
-    def _is_clip_referenced(my, clip):
+    def _is_clip_referenced(self, clip):
         '''returns True if a clip is referenced'''
         owners = clip.Owners
         if len(owners) < 2:
@@ -295,15 +295,15 @@ class XSIImpl(object):
         else:
             return False
          
-    def get_global_texture_dirs(my):
+    def get_global_texture_dirs(self):
         return []
 
-    def get_geo_paths(my):
+    def get_geo_paths(self):
         return []
 
-    def set_user_environment(my, sandbox_dir, basename):
+    def set_user_environment(self, sandbox_dir, basename):
        
-        progress = my.start_progress('Setting Project', True, 1)
+        progress = self.start_progress('Setting Project', True, 1)
         dirs = sandbox_dir.split("/")
         # TODO: this is weird code, it should have been truncated in the server side
         if dirs[-1] in ["Scenes", 'scenes']:
@@ -312,18 +312,18 @@ class XSIImpl(object):
         else:
             project_dir = sandbox_dir
 
-        my.app.set_project(project_dir)
+        self.app.set_project(project_dir)
         progress.increment()
         progress.stop()
       
     # File group functions
-    def is_file_group(my, path):
+    def is_file_group(self, path):
         xsi_pat = re.compile('\[\d+\.\.\d+(;\d+)?\]')
         if xsi_pat.search(path):
             return True
         return False
 
-    def get_file_range(my, path):
+    def get_file_range(self, path):
         start = 0
         end = 0
         by = 1
@@ -339,7 +339,7 @@ class XSIImpl(object):
         return '%s-%s/%s' %(start, end, by)
 
 
-    def get_tactic_file_group_path(my, path):
+    def get_tactic_file_group_path(self, path):
         '''get TACTIC compatible notation ####.jpg given app's path'''
         new_str = path
         def replace_str(m):
@@ -358,7 +358,7 @@ class XSIImpl(object):
 
         return new_str
 
-    def get_app_file_group_path(my, file_name, file_range):
+    def get_app_file_group_path(self, file_name, file_range):
         '''get the group path notation specific for the application'''
         pat = re.compile('\.(#+)\.')
         m = pat.search(file_name)
@@ -373,44 +373,44 @@ class XSIImpl(object):
 
 class ProgressBar(object):
     ''' A progress bar used in XSI '''
-    def __init__(my, app, title, visible, max): 
+    def __init__(self, app, title, visible, max): 
         ''' @params
             progress_bar- XSI's progress bar in the XSIUIToolkit module
             title- title
             visible- visibility
             step- number of steps in this process '''
-        my.bar = app.toolkit.ProgressBar
-        my.interactive = app.xsi.Interactive
+        self.bar = app.toolkit.ProgressBar
+        self.interactive = app.xsi.Interactive
         if max <= 0:
             max = 1
-        my.bar.Maximum = max
+        self.bar.Maximum = max
         """
         if step > 0:
-            my.bar.Step = int(100 / step)
+            self.bar.Step = int(100 / step)
         else:
-            my.bar.Step = 100
+            self.bar.Step = 100
         """
-        my.bar.Step = 1
-        my.bar.Caption = title
-        my.bar.Visible = visible
-        my.bar.CancelEnabled = False
+        self.bar.Step = 1
+        self.bar.Caption = title
+        self.bar.Visible = visible
+        self.bar.CancelEnabled = False
         
-    def increment(my):
-        if not my.interactive:
+    def increment(self):
+        if not self.interactive:
             sys.stdout.write('.')
             return
-        if my.bar.Value < my.bar.Maximum:
-            my.bar.Increment()
+        if self.bar.Value < self.bar.Maximum:
+            self.bar.Increment()
 
-    def set_message(my, message):
-        if not my.interactive:
+    def set_message(self, message):
+        if not self.interactive:
             print message
             return
-        my.bar.Caption = message
+        self.bar.Caption = message
 
-    def stop(my):
-        if not my.interactive:
+    def stop(self):
+        if not self.interactive:
             return
-        my.bar.Visible = False
+        self.bar.Visible = False
 
 

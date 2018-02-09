@@ -22,7 +22,7 @@ import unittest
 
 class TestHandler:
 
-    def handle_node(my, name, node):
+    def handle_node(self, name, node):
 
         if name == "special":
             print "special"
@@ -32,15 +32,15 @@ class TestHandler:
 
 class LoaderTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         batch = Batch()
 
-    def test_all(my):
-        #my._test_execute_parser()
-        my._test_loader()
+    def test_all(self):
+        #self._test_execute_parser()
+        self._test_loader()
 
 
-    def _test_execute_parser(my):
+    def _test_execute_parser(self):
 
         xml = '''<execute>
           <file type="maya" path="./test.ma"/>
@@ -55,7 +55,7 @@ class LoaderTest(unittest.TestCase):
         parser.execute()
 
 
-    def _test_loader(my):
+    def _test_loader(self):
 
         xml = '''
         <snapshot>
@@ -78,7 +78,7 @@ class LoaderTest(unittest.TestCase):
 
 
     """
-    def test_maya_load(my):
+    def test_maya_load(self):
         # get the test sequence and shot
         sequence = Sequence.get_by_code("001SHO")
         shot = sequence.get_shot_by_code("0001")

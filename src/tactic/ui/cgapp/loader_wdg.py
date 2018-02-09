@@ -23,7 +23,7 @@ from tactic.ui.widget import ActionButtonWdg
 class CGAppLoaderWdg(BaseRefreshWdg):
     '''Main loader class for CG apps'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         '''external settings which populate the widget'''
         return {
         'view': 'view that this widget is making use of',
@@ -33,19 +33,19 @@ class CGAppLoaderWdg(BaseRefreshWdg):
         'load_script_path': 'custom load script path',
         }
 
-    def init(my):
-        my.view = my.kwargs.get('view')
-        my.search_type = my.kwargs.get('search_type')
-        my.load_options_class = my.kwargs.get('load_options_class')
-        my.load_script = my.kwargs.get('load_script')
-        my.load_script_path = my.kwargs.get('load_script_path')
+    def init(self):
+        self.view = self.kwargs.get('view')
+        self.search_type = self.kwargs.get('search_type')
+        self.load_options_class = self.kwargs.get('load_options_class')
+        self.load_script = self.kwargs.get('load_script')
+        self.load_script_path = self.kwargs.get('load_script_path')
 
-        my.state = Container.get_full_dict("global_state")
+        self.state = Container.get_full_dict("global_state")
 
     
-    def get_display(my):
+    def get_display(self):
         # specially made for "load" view
-        if not my.view.endswith("load"):
+        if not self.view.endswith("load"):
             return DivWdg()
 
 
@@ -62,21 +62,21 @@ class CGAppLoaderWdg(BaseRefreshWdg):
         # this is used by get_process() in LoaderWdg
         filter_top.add(HiddenWdg('prefix', 'view_action_option'))
 
-        for name, value in my.kwargs.items():
+        for name, value in self.kwargs.items():
             filter_top.set_attr("spt_%s" % name, value)
 
 
         from tactic.ui.cgapp import SObjectLoadWdg, LoaderButtonWdg, LoaderElementWdg, IntrospectWdg
 
         # this contains the process filter and load options
-        sobject_load = SObjectLoadWdg(search_type=my.search_type, load_options_class = my.load_options_class)
+        sobject_load = SObjectLoadWdg(search_type=self.search_type, load_options_class = self.load_options_class)
         filter_top.add(sobject_load)
 
        
 
         # set the process
         #class foo:
-        #    def get_value(my):
+        #    def get_value(self):
         #        return "texture"
         #Container.put("process_filter", foo())
 
@@ -94,7 +94,7 @@ class CGAppLoaderWdg(BaseRefreshWdg):
 
         # -------------
         # test an event mechanism
-        event_name = '%s|load_snapshot' % my.search_type
+        event_name = '%s|load_snapshot' % self.search_type
         #event_name = 'load_snapshot'
 
         # get triggers with this event
@@ -114,7 +114,7 @@ class CGAppLoaderWdg(BaseRefreshWdg):
                 bvr['script'] = script;
                 spt.CustomProject.exec_custom_script(evt, bvr);
                 spt.app_busy.hide();
-                ''' % (my.search_type, callback)
+                ''' % (self.search_type, callback)
 
                 loader_script = '''spt.named_events.fire_event('%s', {})''' % event_name
                 table.add_behavior( {
@@ -124,11 +124,11 @@ class CGAppLoaderWdg(BaseRefreshWdg):
                 } )
 
         # test a passed in script path
-        elif my.load_script_path:
+        elif self.load_script_path:
 
             # an event is called
             event_name = 'load_snapshot'
-            event_script = '''var script = spt.CustomProject.get_script_by_path("%s");spt.CustomProject.exec_script(script)''' % my.load+script_path
+            event_script = '''var script = spt.CustomProject.get_script_by_path("%s");spt.CustomProject.exec_script(script)''' % self.load+script_path
 
             loader_script = '''spt.named_events.fire_event('%s', {})''' % event_name
             table.add_behavior( {
@@ -142,12 +142,12 @@ class CGAppLoaderWdg(BaseRefreshWdg):
 
 
 
-        elif my.load_script:
-            loader_script = my.load_script
+        elif self.load_script:
+            loader_script = self.load_script
         else:
-            loader_script = LoaderElementWdg.get_load_script(my.search_type)
+            loader_script = LoaderElementWdg.get_load_script(self.search_type)
 
-        #print LoaderElementWdg.get_load_script(my.search_type)
+        #print LoaderElementWdg.get_load_script(self.search_type)
         
         # add the introspect button
         introspect_button = IntrospectWdg()
@@ -156,7 +156,7 @@ class CGAppLoaderWdg(BaseRefreshWdg):
         td.add(introspect_button)
 
         # to be attached
-        smart_menu = LoaderElementWdg.get_smart_menu(my.search_type)
+        smart_menu = LoaderElementWdg.get_smart_menu(self.search_type)
         button.set_load_script(loader_script)
         button.set_smart_menu(smart_menu)
 
@@ -173,7 +173,7 @@ class IntrospectWdg(ActionButtonWdg):
     '''a widget that does introspection to analyze/update what 
         assets(versions) are loaded in the session of the app'''
 
-    def __init__(my):
-        super(IntrospectWdg, my).__init__(title='Introspect', tip='Introspect the current session')
-        my.add_behavior({'type': "click", 'cbjs_action': "introspect(bvr)"})
+    def __init__(self):
+        super(IntrospectWdg, self).__init__(title='Introspect', tip='Introspect the current session')
+        self.add_behavior({'type': "click", 'cbjs_action': "introspect(bvr)"})
 

@@ -48,12 +48,12 @@ def create(set_name, cat_name, context):
 #OLD CODE   
 class CreateSetAsset:
 
-    def __init__(my, set_code):
-        my.set_code = set_code
-        my.info = TacticInfo.get()
-        my.ticket = my.info.get_ticket()
+    def __init__(self, set_code):
+        self.set_code = set_code
+        self.info = TacticInfo.get()
+        self.ticket = self.info.get_ticket()
         
-    def execute(my):
+    def execute(self):
 
         # get all of the top level assets
         selected = mel("ls -sl -as")
@@ -70,13 +70,13 @@ class CreateSetAsset:
             p = re.compile(r'\.mb$')
             path = p.sub('.ma', path)
 
-            my.upload(path)
+            self.upload(path)
         
         mel("select %s" % " ".join(selected) )
 
         # now create all of the assets through xmlrpc
-        server = my.info.get_xmlrpc_server()
-        asset_codes = server.create_assets(my.ticket, my.set_code, selected)
+        server = self.info.get_xmlrpc_server()
+        asset_codes = server.create_assets(self.ticket, self.set_code, selected)
 
         # rename nodes
         count = 0
@@ -85,8 +85,8 @@ class CreateSetAsset:
             count += 1
 
 
-    def upload(my, from_path):
-        my.info.upload(from_path)
+    def upload(self, from_path):
+        self.info.upload(from_path)
 
 
 

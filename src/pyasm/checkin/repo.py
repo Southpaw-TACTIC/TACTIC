@@ -21,10 +21,10 @@ from checkin import CheckinException
 
 class BaseRepo(object):
     '''abstract class defining repositories'''
-    def has_file_codes(my):
+    def has_file_codes(self):
         return True
 
-    def handle_system_commands(my, snapshot, files, file_objects, mode, md5s, source_paths=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[]):
         pass
 
 
@@ -32,7 +32,7 @@ class BaseRepo(object):
 
 class TacticRepo(BaseRepo):
 
-    def handle_system_commands(my, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[]):
         '''move the tmp files in the appropriate directory'''
 
         # if mode is local then nothing happens here

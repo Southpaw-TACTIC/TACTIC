@@ -113,6 +113,14 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'type': 'SelectWdg',
         'values': 'true|false',
         'order': 10
+    },
+
+    'mode': {
+        'description': 'Determine if the table shows small icons or process names',
+        'values': 'default|icon',
+        'type': 'SelectWdg',
+        'category': 'Options',
+        'order': 10
     }
 
     }
@@ -123,16 +131,16 @@ class DiscussionElementWdg(BaseTableElementWdg):
         return False
     is_editable = classmethod(is_editable)
 
-    def handle_th(my, th, wdg_idx=None):
+    def handle_th(self, th, wdg_idx=None):
 
         #edit_wdg = DiscussionEditWdg()
-        #my.menu = edit_wdg.get_menu()
+        #self.menu = edit_wdg.get_menu()
         #th.add(edit_wdg)
         pass
 
 
-    def get_width(my):
-        mode = my.kwargs.get("mode")
+    def get_width(self):
+        mode = self.kwargs.get("mode")
         if mode == "icon":
             return 75
         else:
@@ -140,13 +148,13 @@ class DiscussionElementWdg(BaseTableElementWdg):
        
    
 
-    def handle_layout_behaviors(my, layout):
+    def handle_layout_behaviors(self, layout):
         # in case the note widget appears more than once in a table
-        if my.parent_wdg:
-            if my.parent_wdg.drawn_widgets.get(my.__class__.__name__) == True:
+        if self.parent_wdg:
+            if self.parent_wdg.drawn_widgets.get(self.__class__.__name__) == True:
                 return
 
-            version = my.parent_wdg.get_layout_version()
+            version = self.parent_wdg.get_layout_version()
             if version == "2":
                 pass
             else:
@@ -163,64 +171,64 @@ class DiscussionElementWdg(BaseTableElementWdg):
             '''
 
         # disable the default activator
-        # my.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
+        # self.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
 
         # add action triggle for context itself
-        #my.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
-        #my.menu.set_activator_out(layout, 'spt_discussion_top')
+        #self.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
+        #self.menu.set_activator_out(layout, 'spt_discussion_top')
 
 
-        DiscussionWdg.add_layout_behaviors(layout, my.hidden, my.allow_email, my.show_task_process)
+        DiscussionWdg.add_layout_behaviors(layout, self.hidden, self.allow_email, self.show_task_process)
         
 
 
-    def init(my):
-        my.hidden = False
-        my.allow_email = my.kwargs.get('allow_email') != 'false'
-        my.show_task_process = my.kwargs.get('show_task_process') == 'true'
-        my.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,**my.kwargs)
+    def init(self):
+        self.hidden = False
+        self.allow_email = self.kwargs.get('allow_email') != 'false'
+        self.show_task_process = self.kwargs.get('show_task_process') == 'true'
+        self.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,**self.kwargs)
         
 
-    def get_required_columns(my):
+    def get_required_columns(self):
         '''method to get the require columns for this'''
         return []
 
-    def preprocess(my):
-        parent =  my.get_parent_wdg()
+    def preprocess(self):
+        parent =  self.get_parent_wdg()
         if parent and parent.kwargs.get('__hidden__') in [True, 'True']:
-            my.discussion.kwargs['hidden'] = True
-            my.hidden = True
+            self.discussion.kwargs['hidden'] = True
+            self.hidden = True
            
-        my.discussion.set_sobjects(my.sobjects)
+        self.discussion.set_sobjects(self.sobjects)
 
-    def set_sobjects(my, sobjects, search=None):
-        my.discussion.set_sobjects(sobjects)
-        my.discussion.notes_dict = None
-        super(DiscussionElementWdg, my).set_sobjects(sobjects)
+    def set_sobjects(self, sobjects, search=None):
+        self.discussion.set_sobjects(sobjects)
+        self.discussion.notes_dict = None
+        super(DiscussionElementWdg, self).set_sobjects(sobjects)
 
       
-    def get_display(my):
+    def get_display(self):
         # setting the index so that the proper key is used for note retrieval
-        idx = my.get_current_index()
-        my.discussion.set_current_index(idx)
+        idx = self.get_current_index()
+        self.discussion.set_current_index(idx)
         top = DivWdg()
         top.add_class("spt_discussion_element_top")
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         # this is usually not necessary since we call set_sobjects() in preprocess already
         # but on Edit of a note thru FingerMenu, it is needed
-        my.discussion.kwargs['search_key'] = sobject.get_search_key()
+        self.discussion.kwargs['search_key'] = sobject.get_search_key()
 
         top.force_default_context_menu()
-        top.add(my.discussion)
+        top.add(self.discussion)
 
 
         return top
 
 
 
-    def get_header_option_wdg(my):
+    def get_header_option_wdg(self):
         #div = DivWdg()
         #button = ActionButtonWdg(title="Expand")
         #div.add(button)
@@ -228,18 +236,18 @@ class DiscussionElementWdg(BaseTableElementWdg):
         return None
 
 
-    def get_text_value(my):
+    def get_text_value(self):
         '''for csv export'''
 
         from dateutil import parser
         comment_area = []
         
-        idx = my.get_current_index()
-        my.discussion.set_current_index(idx)
+        idx = self.get_current_index()
+        self.discussion.set_current_index(idx)
 
-        my.discussion.preprocess_notes()
+        self.discussion.preprocess_notes()
 
-        notes = my.discussion.get_notes()
+        notes = self.discussion.get_notes()
         
         if not notes:
             return ''
@@ -278,30 +286,30 @@ class DiscussionWdg(BaseRefreshWdg):
 
     HELP = "discussion-wdg"
 
-    def init(my):
-        my.process = my.kwargs.get("process") or ""
-        my.contexts = []
-        my.use_parent = my.kwargs.get('use_parent') 
-        my._load_js = False
+    def init(self):
+        self.process = self.kwargs.get("process") or ""
+        self.contexts = []
+        self.use_parent = self.kwargs.get('use_parent') 
+        self._load_js = False
 
-        my.notes_dict = None
+        self.notes_dict = None
         
         # we need to collect all the parents of the notes for preprocess search
-        my.parent_dict = {}
-        my.parents = []
-        my.parent_processes = []
-        my.append_processes = my.kwargs.get('append_process')
-        my.custom_processes = my.kwargs.get('custom_processes')
-        my.show_task_process = my.kwargs.get('show_task_process')
+        self.parent_dict = {}
+        self.parents = []
+        self.parent_processes = []
+        self.append_processes = self.kwargs.get('append_process')
+        self.custom_processes = self.kwargs.get('custom_processes')
+        self.show_task_process = self.kwargs.get('show_task_process')
         
-        my.allow_email = my.kwargs.get('allow_email')
+        self.allow_email = self.kwargs.get('allow_email')
         
 
 
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return '''
         spt.discussion = {};
         spt.discussion.refresh = function(src_el) {
@@ -312,7 +320,7 @@ class DiscussionWdg(BaseRefreshWdg):
             var default_contexts_open = [];
             for (var i = 0; i < contexts.length; i++) {
                 if (contexts[i].getAttribute("spt_state") == 'open') {
-                    var context = contexts[i].getAttribute("my_context");
+                    var context = contexts[i].getAttribute("self_context");
                     if (context.strip())
                         default_contexts_open.push(context);
                 }
@@ -591,7 +599,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def _get_parent(my, sobject):
+    def _get_parent(self, sobject):
         '''caching is automatically done in SObject level''' 
         parent = sobject.get_parent()
         return parent
@@ -605,107 +613,107 @@ class DiscussionWdg(BaseRefreshWdg):
 
     get_note_class = classmethod(get_note_class)
 
-    def preprocess_notes(my):
+    def preprocess_notes(self):
         '''this call get_all_notes once by design to build the dict''' 
         # this check stops this method from being called more than once per table
         insert_mode = False
-        if len(my.sobjects) == 1 and my.sobjects[0].is_insert():
+        if len(self.sobjects) == 1 and self.sobjects[0].is_insert():
             insert_mode = True
-            my.notes_dict = {}
+            self.notes_dict = {}
 
-        if my.notes_dict != None or insert_mode:
-            return my.notes_dict 
-        # collect my.parents 
+        if self.notes_dict != None or insert_mode:
+            return self.notes_dict 
+        # collect self.parents 
         # use_parent and sobject option are mutually exclusive for now 
         # I think this is only used for a single object view with notes
-        my.parent = my.kwargs.get("sobject")
-        if not my.parent:
-            if my.sobjects:
-                has_process = my.sobjects[0].has_value('process')
-                if my.use_parent == 'true':
+        self.parent = self.kwargs.get("sobject")
+        if not self.parent:
+            if self.sobjects:
+                has_process = self.sobjects[0].has_value('process')
+                if self.use_parent == 'true':
 
-                    for sobject in my.sobjects:
+                    for sobject in self.sobjects:
                         process = ''
                         if has_process:
                             process = sobject.get_value('process')
                         # this is used in the key for note_dict
-                        my.parent_processes.append(process)
-                        parent = my._get_parent(sobject)
+                        self.parent_processes.append(process)
+                        parent = self._get_parent(sobject)
                         # must append even if it is None
-                        my.parents.append(parent)
+                        self.parents.append(parent)
                 else:
-                    my.parents = my.sobjects
+                    self.parents = self.sobjects
             else: # indiviual update     
-                search_key = my.kwargs.get("search_key")
+                search_key = self.kwargs.get("search_key")
                 assert search_key
-                my.parent = Search.get_by_search_key(search_key)
+                self.parent = Search.get_by_search_key(search_key)
                 # this is required for refresh
-                has_process = my.parent.has_value('process')
-                my.sobjects = [my.parent]
-                if my.use_parent == 'true':
+                has_process = self.parent.has_value('process')
+                self.sobjects = [self.parent]
+                if self.use_parent == 'true':
                     process = ''
                     if has_process:
-                        process = my.parent.get_value('process')
+                        process = self.parent.get_value('process')
                     # this is used in the key for note_dict
-                    my.parent_processes.append(process)
+                    self.parent_processes.append(process)
                     
-                    parent = my.parent.get_parent()
+                    parent = self.parent.get_parent()
                     # must append even if it is None
-                    my.parents.append(parent)
+                    self.parents.append(parent)
                 else:
-                    my.parents = [my.parent]
+                    self.parents = [self.parent]
         else:
-            my.parents = [my.parent]
+            self.parents = [self.parent]
 
 
         # append processes can't be used in conjuntion with use_parent when it has_process
         # in this case since this is meant for task or snapshot notes
-        if has_process and my.use_parent =='true':
-           my.append_processes = ''
-           my.custom_processes = ''
+        if has_process and self.use_parent =='true':
+           self.append_processes = ''
+           self.custom_processes = ''
 
        
 
-        if my.use_parent == 'true':
+        if self.use_parent == 'true':
             pass
           
         else:
-            my.process = my.kwargs.get("process")
+            self.process = self.kwargs.get("process")
 
             # TODO: this needs to be eval to be a list if it's a comma separated string
-            my.contexts = my.kwargs.get("context")
-            if my.contexts and isinstance(my.contexts, basestring):
-                my.contexts = my.contexts.split(',')
-                my.contexts =[x.strip() for x in my.contexts if x.strip()]
+            self.contexts = self.kwargs.get("context")
+            if self.contexts and isinstance(self.contexts, basestring):
+                self.contexts = self.contexts.split(',')
+                self.contexts =[x.strip() for x in self.contexts if x.strip()]
 
         
-        my.get_all_notes()
+        self.get_all_notes()
 
 
-    def get_all_notes(my):
+    def get_all_notes(self):
         ''' this is called by get_notes() in the very first get_display() since we dont have preprocess for BaseRefreshWdg'''
        
 
-        my.notes_dict = {}
+        self.notes_dict = {}
 
         # maintain index but we want to filter out deleted parents (None)
-        my.filtered_parents = [p for p in my.parents if p]
+        self.filtered_parents = [p for p in self.parents if p]
         search = Search("sthpw/note") 
-        search.add_relationship_filters(my.filtered_parents, type='hierarchy')
+        search.add_relationship_filters(self.filtered_parents, type='hierarchy')
         search.add_order_by("process")
         search.add_order_by("timestamp desc")
 
-        if my.process:
+        if self.process:
             search.add_op("begin")
-            search.add_filter("process", my.process)
-            search.add_filter("process", "%s/%%" % my.process, op="like")
+            search.add_filter("process", self.process)
+            search.add_filter("process", "%s/%%" % self.process, op="like")
             search.add_op("or")
 
-        if my.contexts:
-            search.add_filters("context", my.contexts)
+        if self.contexts:
+            search.add_filters("context", self.contexts)
 
         notes = search.get_sobjects()
-        has_process = my.sobjects[0].has_value('process')
+        has_process = self.sobjects[0].has_value('process')
         schema = Schema.get()
 
         for note in notes:
@@ -714,14 +722,14 @@ class DiscussionWdg(BaseRefreshWdg):
             search_type = note.get_value("search_type")
             #search_id = note.get_value("search_id")
             search_code = note.get_value("search_code")
-            if my.use_parent == 'true' and has_process:
+            if self.use_parent == 'true' and has_process:
                 process = note.get_value("process")
                 key = "%s|%s|%s" % (search_type, search_code, process)
             else:
                 key = "%s|%s" % (search_type, search_code)
             """
 
-            if my.use_parent in ['true', True] and has_process:
+            if self.use_parent in ['true', True] and has_process:
                 process = note.get_value("process")
             else:
                 process = "publish"
@@ -744,40 +752,40 @@ class DiscussionWdg(BaseRefreshWdg):
                 continue
 
 
-            notes_list = my.notes_dict.get(key)
+            notes_list = self.notes_dict.get(key)
             if notes_list == None:
                 notes_list = []
-                my.notes_dict[key] = notes_list
+                self.notes_dict[key] = notes_list
             notes_list.append(note)
 
 
-        my.attachments = {}
+        self.attachments = {}
 
 
-        return my.notes_dict
+        return self.notes_dict
   
     
            
    
-    def get_notes(my):
-        my.preprocess_notes()
+    def get_notes(self):
+        self.preprocess_notes()
         # this is -1 for a single sobject refresh like after an edit, which works like 0
-        idx = my.get_current_index()
+        idx = self.get_current_index()
 
-        # getting sobj here instead of using my.parent since my.parent could change with the use_parent option
-        my.sobject = my.sobjects[idx]
-        my.parent = None
-        if my.sobject.is_insert():
+        # getting sobj here instead of using self.parent since self.parent could change with the use_parent option
+        self.sobject = self.sobjects[idx]
+        self.parent = None
+        if self.sobject.is_insert():
             return []
 
 
-        my.parent = my.parents[idx]
-        has_process = my.sobject.has_value('process')
+        self.parent = self.parents[idx]
+        has_process = self.sobject.has_value('process')
 
-        if not my.parent:
+        if not self.parent:
             key = ""
         else:
-            search_type = my.parent.get_search_type()
+            search_type = self.parent.get_search_type()
 
             from pyasm.biz import Schema
             schema = Schema.get()
@@ -785,16 +793,16 @@ class DiscussionWdg(BaseRefreshWdg):
             attrs = schema.resolve_relationship_attrs(attrs, "sthpw/note", search_type)
             from_col = attrs.get("from_col")
             to_col = attrs.get("to_col")
-            search_code = my.parent.get_value(to_col)
+            search_code = self.parent.get_value(to_col)
 
-            #database_type = my.parent.get_database_type()
+            #database_type = self.parent.get_database_type()
             #if database_type == "MongoDb":
-            #    search_code = my.parent.get_id()
+            #    search_code = self.parent.get_id()
             #else:
-            #    search_code = my.parent.get_code()
+            #    search_code = self.parent.get_code()
 
-            if my.use_parent == 'true':
-                parent_process = my.parent_processes[idx]
+            if self.use_parent == 'true':
+                parent_process = self.parent_processes[idx]
                 if has_process:
                     key = "%s|%s|%s" % (search_type, search_code, parent_process)
                 else:
@@ -803,7 +811,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 key = "%s|%s|publish" % (search_type, search_code)
 
 
-        notes = my.notes_dict.get(key)
+        notes = self.notes_dict.get(key)
         if not notes:
             notes = []
 
@@ -830,100 +838,100 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
     
-    def load_js(my, ele):
+    def load_js(self, ele):
         '''add load bvr to the widget at startup or refresh'''
         ele.add_behavior({'type': 'load',
-            'cbjs_action': my.get_onload_js()})
-        my._load_js = True
+            'cbjs_action': self.get_onload_js()})
+        self._load_js = True
 
 
 
 
 
-    def get_display(my):
+    def get_display(self):
         
-        my.is_refresh = my.kwargs.get("is_refresh")
+        self.is_refresh = self.kwargs.get("is_refresh")
 
-        my.hidden = my.kwargs.get('hidden') == True 
+        self.hidden = self.kwargs.get('hidden') == True 
         
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
 
-        my.show_border = my.kwargs.get("show_border")
-        if my.show_border in ['false', False]:
-            my.show_border = False
+        self.show_border = self.kwargs.get("show_border")
+        if self.show_border in ['false', False]:
+            self.show_border = False
         else:
-            my.show_border = True
+            self.show_border = True
 
 
-        my.contexts_checked = my.kwargs.get("contexts_checked")
-        if my.contexts_checked in ['false', False]:
-            my.contexts_checked = False
+        self.contexts_checked = self.kwargs.get("contexts_checked")
+        if self.contexts_checked in ['false', False]:
+            self.contexts_checked = False
         else:
-            my.contexts_checked = True
+            self.contexts_checked = True
 
 
         # explicitly set the contexts
-        my.contexts = my.kwargs.get("context")
+        self.contexts = self.kwargs.get("context")
 
         # this should be maintained as a list
-        if not my.contexts:
-            my.contexts = []
-        if my.contexts:
-            my.contexts = my.contexts.split(",")
+        if not self.contexts:
+            self.contexts = []
+        if self.contexts:
+            self.contexts = self.contexts.split(",")
             # remove any spaces
-            my.contexts = [x.strip() for x in my.contexts]
+            self.contexts = [x.strip() for x in self.contexts]
        
 
 
         # show context header
-        my.show_context_header = my.kwargs.get("show_context_header")
-        if my.show_context_header in ['true', True]:
-            my.show_context_header = True
+        self.show_context_header = self.kwargs.get("show_context_header")
+        if self.show_context_header in ['true', True]:
+            self.show_context_header = True
         else:
-            my.show_context_header = False
+            self.show_context_header = False
 
             
 
         # show the number of notes that will start open.  default is 0
-        my.default_num_notes = my.kwargs.get("default_num_notes")
-        if my.default_num_notes:
-            my.default_num_notes = int(my.default_num_notes)
+        self.default_num_notes = self.kwargs.get("default_num_notes")
+        if self.default_num_notes:
+            self.default_num_notes = int(self.default_num_notes)
         else:
-            my.default_num_notes = 0
+            self.default_num_notes = 0
 
-        show_fullscreen_button = my.kwargs.get("show_fullscreen_button")
+        show_fullscreen_button = self.kwargs.get("show_fullscreen_button")
         if show_fullscreen_button in ['true', True]:
             show_fullscreen_button = True
         else:
             show_fullscreen_button = False
 
-        my.note_expandable = my.kwargs.get("note_expandable")
+        self.note_expandable = self.kwargs.get("note_expandable")
         
-        my.note_format = my.kwargs.get("note_format")
+        self.note_format = self.kwargs.get("note_format")
 
-        if my.note_format in ['', None]:
-            #my.note_format = 'compact'
-            my.note_format = 'full'
+        if self.note_format in ['', None]:
+            #self.note_format = 'compact'
+            self.note_format = 'full'
 
-        my.show_note_status = my.kwargs.get("show_note_status")
-        if my.show_note_status in ['true', True]:
-            my.show_note_status = True
-            my.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
+        self.show_note_status = self.kwargs.get("show_note_status")
+        if self.show_note_status in ['true', True]:
+            self.show_note_status = True
+            self.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
-            my.show_note_status = False
+            self.show_note_status = False
 
-        #my.default_contexts_open = my.kwargs.get("default_contexts_open")
+        #self.default_contexts_open = self.kwargs.get("default_contexts_open")
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
-        my.default_contexts_open = web.get_form_values("default_contexts_open")
-        if not my.default_contexts_open:
-            my.default_contexts_open = my.kwargs.get("default_contexts_open")
-        if not my.default_contexts_open:
-            my.default_contexts_open = []
+        self.default_contexts_open = web.get_form_values("default_contexts_open")
+        if not self.default_contexts_open:
+            self.default_contexts_open = self.kwargs.get("default_contexts_open")
+        if not self.default_contexts_open:
+            self.default_contexts_open = []
 
 
 
-        notes = my.get_notes()
+        notes = self.get_notes()
 
         # group notes under contexts
         contexts = []
@@ -955,25 +963,25 @@ class DiscussionWdg(BaseRefreshWdg):
             last_process = process
 
 
-        if my.is_refresh =='true':
+        if self.is_refresh =='true':
             top = DivWdg()
         else:
             top = DivWdg()
-            if not my._load_js:
-                my.load_js(top)
+            if not self._load_js:
+                self.load_js(top)
             
-                if my.kwargs.get("add_behaviors") != False:
-                    my.add_layout_behaviors(top, allow_email=my.allow_email, show_task_process=my.show_task_process)
+                if self.kwargs.get("add_behaviors") != False:
+                    self.add_layout_behaviors(top, allow_email=self.allow_email, show_task_process=self.show_task_process)
 
 
             # add a refresh listener
             top.add_class("spt_discussion_top")
-            my.set_as_panel(top)
+            self.set_as_panel(top)
             if mode != "icon":
                 top.add_style("min-width: 300px")
 
 
-            max_height = my.kwargs.get("max_height")
+            max_height = self.kwargs.get("max_height")
             if max_height:
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
@@ -988,7 +996,7 @@ class DiscussionWdg(BaseRefreshWdg):
         update_div = DivWdg()
         top.add(update_div)
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         # check for changes in the context_str
         update_div.add_update( {
             'search_key': search_key,
@@ -1002,11 +1010,11 @@ class DiscussionWdg(BaseRefreshWdg):
         
         stype = 'sthpw/note'
         expr_key = None
-        if my.use_parent == 'true':
-            idx = my.get_current_index()
+        if self.use_parent == 'true':
+            idx = self.get_current_index()
             # when the sobject is in insert mode, it doesn't have parent
-            if my.parent:
-                expr_key = my.parent.get_search_key()
+            if self.parent:
+                expr_key = self.parent.get_search_key()
         else:
             expr_key = search_key
 
@@ -1050,9 +1058,9 @@ class DiscussionWdg(BaseRefreshWdg):
             })
 
 
-        if my.use_parent == 'true' and not notes and not my.parent:
-            sobj = my.parent
-            if my.sobject.is_insert():
+        if self.use_parent == 'true' and not notes and not self.parent:
+            sobj = self.parent
+            if self.sobject.is_insert():
                 return top
             if sobj:
                 st_obj = sobj.get_search_type_obj()
@@ -1063,14 +1071,14 @@ class DiscussionWdg(BaseRefreshWdg):
             top.add_style("padding: 5px")
             return top
 
-        if my.sobject.is_insert():
+        if self.sobject.is_insert():
             return top
 
-        code = my.parent.get_code()
+        code = self.parent.get_code()
        
-        sobj = my.sobject
-        has_process = my.sobject.has_value('process')
-        has_context = my.sobject.has_value('context')
+        sobj = self.sobject
+        has_process = self.sobject.has_value('process')
+        has_context = self.sobject.has_value('context')
 
         if notes:
             expand_div = DivWdg()
@@ -1088,7 +1096,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 expand_div.add(expand_wdg)
 
                 expand_div.add_attr('code', code)
-                expand_div.add_attr('search_key', my.parent.get_search_key())
+                expand_div.add_attr('search_key', self.parent.get_search_key())
 
 
 
@@ -1098,13 +1106,13 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_div = DivWdg()
 
             top.add(no_notes_div)
-            if my.show_border:
+            if self.show_border:
                 no_notes_div.add_color("background", "background")
                 no_notes_div.add_color("color", "color")
             no_notes_div.add_style("padding", "0px 5px")
 
   
-            add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
+            add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
 
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
@@ -1134,21 +1142,21 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg.add_attr("force_show", "true")
           
             # only pass in the context choices if has_process is true e.g. for Task and Snapshot notes
-            if my.contexts:
-                context_choices = my.contexts
+            if self.contexts:
+                context_choices = self.contexts
             elif has_process and has_context:
                 context_choices = [sobj.get_value('context')]
             else:
                 context_choices = []
 
             process_choice = ''
-            if my.process:
-                process_choice = my.process
+            if self.process:
+                process_choice = self.process
             elif has_process:
                 process_choice = sobj.get_value('process')
 
             
-            sk = my.parent.get_search_key(use_id=True)
+            sk = self.parent.get_search_key(use_id=True)
             if isinstance(sk, unicode):
                 sk = sk.encode('utf-8')
             
@@ -1156,9 +1164,9 @@ class DiscussionWdg(BaseRefreshWdg):
                     'search_key': sk,
                     'context': context_choices,
                     'process': process_choice,
-                    'use_parent': my.use_parent,
-                    'append_process': my.append_processes,
-                    'custom_processes': my.custom_processes
+                    'use_parent': self.use_parent,
+                    'append_process': self.append_processes,
+                    'custom_processes': self.custom_processes
             }
 
 
@@ -1182,42 +1190,42 @@ class DiscussionWdg(BaseRefreshWdg):
             return top
 
         # calculate the number for each context
-        my.context_counts = {}
-        my.process_counts = {}
+        self.context_counts = {}
+        self.process_counts = {}
         for note in notes:
             process = note.get_value("process")
             context = note.get_value("context")
-            count = my.context_counts.get(context)
+            count = self.context_counts.get(context)
             if count == None:
                 count = 1
             else:
                 count += 1 
-            my.context_counts[context] = count
+            self.context_counts[context] = count
 
-            count = my.process_counts.get(process)
+            count = self.process_counts.get(process)
             if count == None:
                 count = 1
             else:
                 count += 1 
-            my.process_counts[process] = count
+            self.process_counts[process] = count
 
 
 
 
 
-        if my.show_context_header:
+        if self.show_context_header:
             contexts = set()
             for note in notes:
                 context = note.get_value("context")
                 contexts.add(context)
             contexts_div = DivWdg()
             contexts_div.add_color("color", "color")
-            if my.show_border:
+            if self.show_border:
                 contexts_div.add_border()
             top.add(contexts_div)
             for context in contexts:
                 checkbox = CheckboxWdg("context")
-                #if my.contexts_checked:
+                #if self.contexts_checked:
                 checkbox.set_checked()
                 checkbox.add_behavior( {
                 'type': 'change',
@@ -1228,7 +1236,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_discussion_top");
                 var contexts = top.getElements(".my_context");
                 for (var i = 0; i < contexts.length; i++) {
-                    if (contexts[i].getAttribute("my_context") == bvr.context) {
+                    if (contexts[i].getAttribute("self_context") == bvr.context) {
                         if (value == true) {
                             spt.show(contexts[i]);
                         }
@@ -1240,7 +1248,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
                 var notes = top.getElements(".spt_note");
                 for (var i = 0; i < notes.length; i++) {
-                    if (notes[i].getAttribute("my_context") == bvr.context) {
+                    if (notes[i].getAttribute("self_context") == bvr.context) {
                         if (value == true) {
                             spt.show(notes[i]);
                         }
@@ -1289,13 +1297,13 @@ class DiscussionWdg(BaseRefreshWdg):
 
             context_top = DivWdg()
             context_top.add_class("spt_discussion_context_top")
-            context_top.add_class("my_context")
+            context_top.add_class("self_context")
             context_top.add_class("hand")
             #context_top.add_class("hand")
-            context_top.add_attr("my_context", context.encode('utf-8'))
+            context_top.add_attr("self_context", context.encode('utf-8'))
             top.add(context_top)
 
-            if context not in my.default_contexts_open:
+            if context not in self.default_contexts_open:
                 context_top.add_attr("spt_state", 'closed')
 
             if mode == "icon":
@@ -1320,7 +1328,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 context_wdg.add_style("float: left")
 
                 # process arg is meaningless
-                context_wdg = my.get_context_wdg(process, context, count)
+                context_wdg = self.get_context_wdg(process, context, count)
 
                 context_top.add(context_wdg)
                 context_top.add_style("min-width: 300px")
@@ -1328,16 +1336,16 @@ class DiscussionWdg(BaseRefreshWdg):
                     context_wdg.add_style("color: #F00")
 
 
-            if my.contexts:
-                context_choices = my.contexts
+            if self.contexts:
+                context_choices = self.contexts
             elif has_process and has_context:
                 context_choices = [sobj.get_value('context')]
             else:
                 context_choices = []
 
             process_choice = ''
-            if my.process:
-                process_choice = my.process
+            if self.process:
+                process_choice = self.process
             elif has_process:
                 process_choice = sobj.get_value('process')
                        
@@ -1356,7 +1364,7 @@ class DiscussionWdg(BaseRefreshWdg):
             note_dialog.set_as_activator(context_wdg, position="right")
 
 
-            show_add = my.kwargs.get("show_add")
+            show_add = self.kwargs.get("show_add")
             if show_add not in ['false', False]:
 
                 shelf_wdg = DivWdg()
@@ -1371,10 +1379,10 @@ class DiscussionWdg(BaseRefreshWdg):
 
                 add_wdg.add_attr("spt_process", process)
                 add_wdg.add_attr("spt_context", context)
-                add_class = my.get_note_class(my.hidden, 'spt_discussion_add') 
+                add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
                 add_wdg.add_class(add_class)
 
-                sk = my.parent.get_search_key(use_id=True)
+                sk = self.parent.get_search_key(use_id=True)
                 if isinstance(sk, unicode):
                     sk = sk.encode('utf-8')
 
@@ -1383,9 +1391,9 @@ class DiscussionWdg(BaseRefreshWdg):
                         'search_key': sk,
                         'context': context_choices,
                         'process': process_choice,
-                        'use_parent': my.use_parent,
-                        'append_process': my.append_processes,
-                        'custom_processes': my.custom_processes
+                        'use_parent': self.use_parent,
+                        'append_process': self.append_processes,
+                        'custom_processes': self.custom_processes
                 }
 
                 add_note_wdg = DivWdg()
@@ -1395,7 +1403,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
                 from tactic.ui.panel import ThumbWdg2
                 thumb_wdg = ThumbWdg2()
-                thumb_wdg.set_sobject(my.sobject)
+                thumb_wdg.set_sobject(self.sobject)
                 thumb_wdg.add_style("width: 60px")
                 thumb_wdg.add_style("margin: 0px 5px")
                 shelf_wdg.add(thumb_wdg)
@@ -1413,11 +1421,11 @@ class DiscussionWdg(BaseRefreshWdg):
             context_wdg.add_behavior( {
                 'type': 'click',
                 'note_keys': note_keys,
-                'default_num_notes': my.default_num_notes,
-                'note_expandable': my.note_expandable,
-                'note_format': my.note_format,
+                'default_num_notes': self.default_num_notes,
+                'note_expandable': self.note_expandable,
+                'note_format': self.note_format,
                 'context': context,
-                'parent_key': my.parent.get_search_key(),
+                'parent_key': self.parent.get_search_key(),
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_discussion_context_top");
                 if (top.getAttribute("spt_is_loaded") == "true") {
@@ -1446,7 +1454,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def get_context_wdg(my, process, context, count):
+    def get_context_wdg(self, process, context, count):
         ''' this is drawn per process/context group of notes'''
         div = DivWdg()
         div.add_class("hand")
@@ -1493,7 +1501,7 @@ class DiscussionWdg(BaseRefreshWdg):
         count_div.add_style("margin-left: 3px")
 
         #count_div.add_update( {
-        #    'search_key': my.kwargs.get("search_key"),
+        #    'search_key': self.kwargs.get("search_key"),
         #    'expression': "({@COUNT(sthpw/note['context','%s'])})" % context,
         #} )
 
@@ -1504,12 +1512,12 @@ class DiscussionWdg(BaseRefreshWdg):
 
 class NoteCollectionWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        notes = my.kwargs.get("notes")
-        note_keys = my.kwargs.get("note_keys")
-        parent_key = my.kwargs.get("parent_key")
-        context = my.kwargs.get("context")
-        process = my.kwargs.get("process")
+    def get_display(self):
+        notes = self.kwargs.get("notes")
+        note_keys = self.kwargs.get("note_keys")
+        parent_key = self.kwargs.get("parent_key")
+        context = self.kwargs.get("context")
+        process = self.kwargs.get("process")
 
         if note_keys:
             notes = Search.get_by_search_keys(note_keys)
@@ -1526,28 +1534,28 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
             
         if not notes:
-            return my.top
+            return self.top
 
-        my.default_num_notes = my.kwargs.get("default_num_notes")
-        my.note_expandable = my.kwargs.get("note_expandable")
-        my.show_note_status = my.kwargs.get("show_note_status")
+        self.default_num_notes = self.kwargs.get("default_num_notes")
+        self.note_expandable = self.kwargs.get("note_expandable")
+        self.show_note_status = self.kwargs.get("show_note_status")
 
-        my.attachments = my.kwargs.get("attachments")
+        self.attachments = self.kwargs.get("attachments")
 
 
-        if my.attachments == None:
+        if self.attachments == None:
 
             from pyasm.biz import Snapshot
 
-            my.attachments = {}
+            self.attachments = {}
 
             snapshots = Snapshot.get_by_sobjects(notes)
             for snapshot in snapshots:
                 note_key = snapshot.get_parent_search_key()
-                xx = my.attachments.get(note_key)
+                xx = self.attachments.get(note_key)
                 if not xx:
                     xx = []
-                    my.attachments[note_key] = xx
+                    self.attachments[note_key] = xx
                 xx.append(snapshot)
 
 
@@ -1571,11 +1579,11 @@ class NoteCollectionWdg(BaseRefreshWdg):
                     parent_snapshots = note.get_connections(context="attachment")
 
                     note_key = note.get_search_key()
-                    xx = my.attachments.get(note_key)
+                    xx = self.attachments.get(note_key)
 
                     if not xx:
                         xx = []
-                        my.attachments[note_key] = xx
+                        self.attachments[note_key] = xx
 
                     for snapshot in parent_snapshots:
                         if snapshot:
@@ -1583,21 +1591,21 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 
 
-        elif not my.attachments or my.attachments == "{}":
-            my.attachments = {}
+        elif not self.attachments or self.attachments == "{}":
+            self.attachments = {}
 
 
 
 
-        if my.show_note_status:
-            my.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
+        if self.show_note_status:
+            self.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
-            my.note_status_dict = {}
+            self.note_status_dict = {}
 
-        my.note_format = my.kwargs.get("note_format")
+        self.note_format = self.kwargs.get("note_format")
 
 
-        div = my.top
+        div = self.top
         
         context_count = 0
 
@@ -1613,14 +1621,14 @@ class NoteCollectionWdg(BaseRefreshWdg):
             note_content.add_style("overflow-y: auto")
             note_content.add_style("overflow-x: hidden")
 
-            if my.default_num_notes == -1:
+            if self.default_num_notes == -1:
                 note_hidden = True
-            elif context_count >= my.default_num_notes:
+            elif context_count >= self.default_num_notes:
                 note_hidden = True
             else:
                 note_hidden = False
 
-            note_wdg = my.get_note_wdg(note, note_hidden=note_hidden)
+            note_wdg = self.get_note_wdg(note, note_hidden=note_hidden)
 
 
             """
@@ -1643,15 +1651,15 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 
 
-    def get_note_wdg(my, note, note_hidden=False):
+    def get_note_wdg(self, note, note_hidden=False):
         div = DivWdg()
         widget = NoteWdg(
             note=note,
             note_hidden=note_hidden,
-            note_expandable=my.note_expandable,
-            show_note_status=my.show_note_status,
-            note_format=my.note_format,
-            attachments=my.attachments,
+            note_expandable=self.note_expandable,
+            show_note_status=self.show_note_status,
+            note_format=self.note_format,
+            attachments=self.attachments,
 
         )
 
@@ -1664,36 +1672,36 @@ class NoteCollectionWdg(BaseRefreshWdg):
 class NoteWdg(BaseRefreshWdg):
     """Display of a single note.  Used by NoteCollectionWdg."""
 
-    def get_display(my):
-        note = my.kwargs.get("note")
-        note_key = my.kwargs.get("note_key")
+    def get_display(self):
+        note = self.kwargs.get("note")
+        note_key = self.kwargs.get("note_key")
         if note_key:
             note = Search.get_by_search_key(note_key)
-        my.kwargs['note_key'] = note.get_search_key()
+        self.kwargs['note_key'] = note.get_search_key()
 
 
-        note_hidden = my.kwargs.get("note_hidden")
+        note_hidden = self.kwargs.get("note_hidden")
 
-        my.note_expandable = my.kwargs.get("note_expandable")
-        my.show_note_status = my.kwargs.get("show_note_status")
+        self.note_expandable = self.kwargs.get("note_expandable")
+        self.show_note_status = self.kwargs.get("show_note_status")
 
-        my.attachments = my.kwargs.get("attachments")
-        if not my.attachments or my.attachments == "{}":
-            my.attachments = {}
+        self.attachments = self.kwargs.get("attachments")
+        if not self.attachments or self.attachments == "{}":
+            self.attachments = {}
 
 
-        if my.show_note_status:
-            my.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
+        if self.show_note_status:
+            self.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
-            my.note_status_dict = {}
+            self.note_status_dict = {}
 
-        my.note_format = my.kwargs.get("note_format")
+        self.note_format = self.kwargs.get("note_format")
 
-        return my.get_note_wdg(note, note_hidden)
+        return self.get_note_wdg(note, note_hidden)
 
 
 
-    def get_note_menu(my):
+    def get_note_menu(self):
  
         menu = Menu(width=120)
         menu_item = MenuItem(type='title', label='Actions...')
@@ -1815,14 +1823,14 @@ class NoteWdg(BaseRefreshWdg):
 
 
 
-    def get_note_wdg(my, note, note_hidden=False):
+    def get_note_wdg(self, note, note_hidden=False):
         context = note.get_value("context")
 
         mode = "dialog"
 
         div = DivWdg()
         # this is not meant to be refreshed
-        #my.set_as_panel(div)
+        #self.set_as_panel(div)
         div.add_class("spt_note")
         div.add_attr('note_search_key', note.get_search_key())
         div.add_class("spt_note_top")
@@ -1833,7 +1841,7 @@ class NoteWdg(BaseRefreshWdg):
         date = note.get_value("timestamp")
         context = note.get_value("context")
 
-        div.add_attr("my_context", context.encode("UTF-8"))
+        div.add_attr("self_context", context.encode("UTF-8"))
 
         from pyasm.security import Login
         user = Login.get_by_code(login)
@@ -1894,7 +1902,7 @@ class NoteWdg(BaseRefreshWdg):
             icon.add_style("margin-left: 3px")
 
 
-            menus = [my.get_note_menu()]
+            menus = [self.get_note_menu()]
             SmartMenu.add_smart_menu_set( icon, { 'NOTE_EDIT_CTX': menus } )
             SmartMenu.assign_as_local_activator( icon, "NOTE_EDIT_CTX", True )
 
@@ -1907,7 +1915,7 @@ class NoteWdg(BaseRefreshWdg):
 
         tbody = content.add_tbody()
 
-        if my.note_expandable in ['true', True]:
+        if self.note_expandable in ['true', True]:
             title.add_class("hand")
             swap = SwapDisplayWdg.get_triangle_wdg()
             if note_hidden in ['true', True]:
@@ -1926,7 +1934,7 @@ class NoteWdg(BaseRefreshWdg):
 
 
 
-        if my.note_expandable in ['true', True]:
+        if self.note_expandable in ['true', True]:
             if len(note_value) > 30:
                 short_note = "%s ..." % note_value[:28]
             else:    
@@ -1954,9 +1962,9 @@ class NoteWdg(BaseRefreshWdg):
         title.add("<div style='float: right; padding-right: 2px'>%s</div>" % display_date)
         title.add_attr("title", display_date_full)
 
-        if my.show_note_status:
+        if self.show_note_status:
             status = note.get_value('status')
-            status_label = my.note_status_dict.get(status)
+            status_label = self.note_status_dict.get(status)
             if status_label:
                 title.add (' - %s ' %status_label)
 
@@ -1965,7 +1973,7 @@ class NoteWdg(BaseRefreshWdg):
 
         # Paper clip button code
         key = note.get_search_key()
-        attachments = my.attachments.get(key)
+        attachments = self.attachments.get(key)
         if attachments:
             bubble = 'View Attachments'
             if len(attachments) > 1:
@@ -1996,19 +2004,19 @@ class NoteWdg(BaseRefreshWdg):
         if mode == "dialog":
             tbody.add_style("display", "")
 
-        elif note_hidden in ['true', True] and my.note_expandable in ['true', True]:
+        elif note_hidden in ['true', True] and self.note_expandable in ['true', True]:
             tbody.add_style("display: none")
         else:
             tbody.add_style("display", "")
         
         # don't draw the detailed attachment and user info
         '''
-        if my.note_format == 'compact':
+        if self.note_format == 'compact':
             content.close_tbody()
             return div
         '''
         content.add_row()
-        if my.note_format == 'full':
+        if self.note_format == 'full':
             left = content.add_cell()
             left.add_style("padding: 10px")
             left.add_style("width: 55px")
@@ -2106,38 +2114,38 @@ class NoteWdg(BaseRefreshWdg):
 class DiscussionAddNoteWdg(BaseRefreshWdg):
     '''This widget draws the UI that user clicks to add note'''
         
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
-    def init(my):
-        my.hidden = my.kwargs.get("hidden")
-        my.append_processes = my.kwargs.get("append_process")
-        if my.append_processes:
-            my.append_processes = my.append_processes.split(",")
+    def init(self):
+        self.hidden = self.kwargs.get("hidden")
+        self.append_processes = self.kwargs.get("append_process")
+        if self.append_processes:
+            self.append_processes = self.append_processes.split(",")
             # remove any spaces
-            my.append_processes = [x.strip() for x in my.append_processes if x]
+            self.append_processes = [x.strip() for x in self.append_processes if x]
 
 
-        my.custom_processes = my.kwargs.get("custom_processes")
-        if my.custom_processes:
-            my.custom_processes = my.custom_processes.split(",")
+        self.custom_processes = self.kwargs.get("custom_processes")
+        if self.custom_processes:
+            self.custom_processes = self.custom_processes.split(",")
             # remove any spaces
-            my.custom_processes = [x.strip() for x in my.custom_processes if x]
+            self.custom_processes = [x.strip() for x in self.custom_processes if x]
 
 
-        my.upload_id = my.kwargs.get("upload_id")
+        self.upload_id = self.kwargs.get("upload_id")
         
-        my.allow_email = my.kwargs.get("allow_email") not in ['false', False]
-        my.show_task_process = my.kwargs.get('show_task_process') in ['true', True]
+        self.allow_email = self.kwargs.get("allow_email") not in ['false', False]
+        self.show_task_process = self.kwargs.get('show_task_process') in ['true', True]
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        parent = my.kwargs.get("parent")
+        parent = self.kwargs.get("parent")
         if not parent:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             parent = Search.get_by_search_key(search_key)
         elif isinstance(parent, basestring):
             search_key = parent
@@ -2147,18 +2155,18 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
         # explicitly set the contexts
-        my.contexts = my.kwargs.get("context")
+        self.contexts = self.kwargs.get("context")
         # need the process to predict the notification to and cc
-        my.process = my.kwargs.get('process')
+        self.process = self.kwargs.get('process')
 
       
-        content_div = my.top
+        content_div = self.top
         content_div.add_style("min-width: 300px")
 
-        my.set_as_panel(content_div)
+        self.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")
 
-        display = my.kwargs.get("display")
+        display = self.kwargs.get("display")
         if not display:
             display = "none"
         content_div.add_style("display: %s" % display)
@@ -2187,22 +2195,22 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
         # figure out which processes to show
-        if my.process:
+        if self.process:
             process_names = []
             if pipeline:
-                process_obj = pipeline.get_process(my.process)
+                process_obj = pipeline.get_process(self.process)
                 if process_obj:
                     process_type = process_obj.get_type()
                 else:
                     process_type = ""
                 if process_type == "approval":
-                    input_processes = pipeline.get_input_processes(my.process)
+                    input_processes = pipeline.get_input_processes(self.process)
                     process_names.extend( [x.get_name() for x in input_processes] )
-                    process_obj = pipeline.get_process(my.process)
+                    process_obj = pipeline.get_process(self.process)
 
-            process_names.append(my.process)
+            process_names.append(self.process)
         
-        elif my.show_task_process:
+        elif self.show_task_process:
             task_expr = "@GET(sthpw/task.process)"
             task_processes = Search.eval(task_expr, sobjects=[parent])
             
@@ -2216,11 +2224,11 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
                 process_names = ["publish"] 
 
 
-        if my.append_processes:
-            process_names.extend(my.append_processes)
+        if self.append_processes:
+            process_names.extend(self.append_processes)
 
-        if my.custom_processes:
-            process_names = my.custom_processes
+        if self.custom_processes:
+            process_names = self.custom_processes
         
         security = Environment.get_security()
         project_code = Project.get_project_code()
@@ -2253,8 +2261,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             hidden = HiddenWdg("add_process", 'publish')
             #hidden.set_value("publish")
             content_div.add(hidden)
-            if my.contexts:
-                content_div.add("Warning: You should define %s in process display option. 'publish' will override." % my.contexts)
+            if self.contexts:
+                content_div.add("Warning: You should define %s in process display option. 'publish' will override." % self.contexts)
         
             # context is optional, only drawn if it's different from process
         elif len(process_names) == 1:
@@ -2282,12 +2290,12 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         # add the context label if it is different from process in use_parent mode
         # this is a special case where we explicitly use processs/context for note
-        if my.contexts:
+        if self.contexts:
             hidden = HiddenWdg("add_context")
-            hidden.set_value(my.contexts[0])
+            hidden.set_value(self.contexts[0])
             content_div.add(hidden)
-            if my.contexts[0] != my.process:
-                context_span = SpanWdg(my.contexts[0], css='small')
+            if self.contexts[0] != self.process:
+                context_span = SpanWdg(self.contexts[0], css='small')
                 content_div.add(context_span)
 
         content_div.add("<br/>")
@@ -2310,7 +2318,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add(add_button)
         add_button.add_style("float: right")
 
-        submit_class = DiscussionWdg.get_note_class(my.hidden, 'spt_discussion_submit') 
+        submit_class = DiscussionWdg.get_note_class(self.hidden, 'spt_discussion_submit') 
         add_button.add_class(submit_class)
 
 
@@ -2360,7 +2368,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
        
         spt.app_busy.hide();
         '''
-        table_upload_id = my.upload_id
+        table_upload_id = self.upload_id
       
 
         upload_init = ''' 
@@ -2388,7 +2396,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         attach_list.add_class("spt_attachment_list")
 
 
-        if not my.allow_email:
+        if not self.allow_email:
             return content_div
 
         content_div.add( HtmlElement.br() )
@@ -2479,17 +2487,17 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 class DiscussionAddNoteCmd(Command):
     ''' this is the UI to add note when someone clicks on the + button. It does not contain the + button'''
-    def get_title(my):
+    def get_title(self):
         return "Added a note"
 
-    def execute(my):
-        search_key = my.kwargs.get("search_key")
+    def execute(self):
+        search_key = self.kwargs.get("search_key")
         sobject = Search.get_by_search_key(search_key)
 
-        ticket = my.kwargs.get('ticket')
-        note = my.kwargs.get("note")
-        mail_cc = my.kwargs.get("mail_cc")
-        mail_bcc = my.kwargs.get("mail_bcc")
+        ticket = self.kwargs.get('ticket')
+        note = self.kwargs.get("note")
+        mail_cc = self.kwargs.get("mail_cc")
+        mail_bcc = self.kwargs.get("mail_bcc")
         if mail_cc:
             mail_cc = mail_cc.split(',')
         else:
@@ -2498,8 +2506,8 @@ class DiscussionAddNoteCmd(Command):
             mail_bcc = mail_bcc.split(',')
         else:
             mail_bcc = []
-        process = my.kwargs.get("process")
-        context = my.kwargs.get("context")
+        process = self.kwargs.get("process")
+        context = self.kwargs.get("context")
         if not context:
             context = process
         elif context.find("/"):
@@ -2529,7 +2537,7 @@ class DiscussionAddNoteCmd(Command):
         
 
         from pyasm.checkin import FileCheckin
-        files = my.kwargs.get("files")
+        files = self.kwargs.get("files")
 
         upload_dir = Environment.get_upload_dir(ticket)
         for i, path in enumerate(files):
@@ -2582,21 +2590,21 @@ class DiscussionAddNoteCmd(Command):
                 checkin.execute()
 
 
-        my.call_triggers(note_sobj)
+        self.call_triggers(note_sobj)
 
-        my.info = {
+        self.info = {
                 "note": note_sobj.get_sobject_dict()
         }
 
 
-    def call_triggers(my, note_sobj):
+    def call_triggers(self, note_sobj):
 
         prefix = "note"
         sobject = note_sobj.get_parent()
         context = note_sobj.get("context")
         process = note_sobj.get("process")
 
-        my.sobjects = [sobject]
+        self.sobjects = [sobject]
 
         # call the done trigger for checkin
         from pyasm.command import Trigger
@@ -2604,19 +2612,19 @@ class DiscussionAddNoteCmd(Command):
         output['search_key'] = SearchKey.build_by_sobject(note_sobj)
         output['update_data'] = note_sobj.data.copy()
         output['note'] = note_sobj.get_sobject_dict()
-        #output['files'] = [x.get_sobject_dict() for x in my.file_objects]
+        #output['files'] = [x.get_sobject_dict() for x in self.file_objects]
 
 
         # Add the checkin triggers
         base_search_type = sobject.get_base_search_type()
-        Trigger.call(my, prefix, output)
-        Trigger.call(my, "%s|%s" % (prefix, base_search_type), output)
-        Trigger.call(my, "%s|%s|%s" % (prefix, base_search_type, context), output)
+        Trigger.call(self, prefix, output)
+        Trigger.call(self, "%s|%s" % (prefix, base_search_type), output)
+        Trigger.call(self, "%s|%s|%s" % (prefix, base_search_type, context), output)
         
         # get the process (assumption here) and call both on process and process code
         pipeline = None
         if process:
-            Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=process)
+            Trigger.call(self, "%s|%s" % (prefix, base_search_type), output, process=process)
         
             pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
             if pipeline_code:
@@ -2629,14 +2637,14 @@ class DiscussionAddNoteCmd(Command):
                 process_sobj = search.get_sobject()
                 if process_sobj:
                     process_code = process_sobj.get_code()
-                    Trigger.call(my, "%s|%s" % (prefix, base_search_type), output, process=process_code)
+                    Trigger.call(self, "%s|%s" % (prefix, base_search_type), output, process=process_code)
 
 
 
 class NoteStatusEditWdg(BaseRefreshWdg):
     ''' Custom widget used in the prompt for changing note status'''
 
-    def get_display(my):
+    def get_display(self):
         values_map = ProjectSetting.get_map_by_key('note_status')
         if not values_map:
             # put in a default
@@ -2660,7 +2668,7 @@ class NoteStatusEditWdg(BaseRefreshWdg):
         select.set_option('labels', labels)
         div.add(select)
 
-        sk = my.kwargs.get('search_key')
+        sk = self.kwargs.get('search_key')
         note = SearchKey.get_by_search_key(sk)
         if note:
             current_status = note.get_value('status')
@@ -2673,9 +2681,9 @@ class NoteStatusEditWdg(BaseRefreshWdg):
 #Testing of using the gear menu code 
 class NoteEditMenuWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         from tactic.ui.container import SmartMenu, SmartMenuButtonDropdownWdg
-        menus = [ my.get_main_menu(), my.get_status_menu() ]
+        menus = [ self.get_main_menu(), self.get_status_menu() ]
 
     
         #from tactic.ui.widget import SingleButtonWdg
@@ -2693,7 +2701,7 @@ class NoteEditMenuWdg(BaseRefreshWdg):
         return btn_set
 
 
-    def get_main_menu(my):
+    def get_main_menu(self):
         return { 'menu_tag_suffix': 'MAIN', 'width': 100, 'opt_spec_list': [
             { "type": "action", "label": "Edit",  "bvr_cb": {'cbjs_action': "alert('Edt')"} },
             { "type": "action", "label": "Delete" },
@@ -2701,7 +2709,7 @@ class NoteEditMenuWdg(BaseRefreshWdg):
         ] }
 
 
-    def get_status_menu(my):
+    def get_status_menu(self):
         return {
             'menu_tag_suffix': 'STATUS', 'width': 80, 'opt_spec_list': [
 

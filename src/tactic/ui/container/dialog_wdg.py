@@ -19,7 +19,7 @@ from tactic.ui.common import BaseRefreshWdg
 import random
 
 class TestDialogWdg(BaseRefreshWdg):
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_top")
 
@@ -95,38 +95,38 @@ class TestDialogWdg(BaseRefreshWdg):
 
 class DialogWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.name = my.kwargs.get('id')
-        if not my.name:
+    def init(self):
+        self.name = self.kwargs.get('id')
+        if not self.name:
             num = random.randint(0, 10000)
-            my.name = 'dialog%s' % num
+            self.name = 'dialog%s' % num
 
         # NOTE: not yet implemented. Refer to PopupWdg
-        my.allow_page_activity = False
-        if my.kwargs.get('allow_page_activity'):
-            my.allow_page_activity = True
+        self.allow_page_activity = False
+        if self.kwargs.get('allow_page_activity'):
+            self.allow_page_activity = True
 
-        my.content_wdg = DivWdg()
+        self.content_wdg = DivWdg()
         # spt_dialog_id is already set at the spt_dialog_top level
-        #my.content_wdg.set_attr("spt_dialog_id", my.name)
-        my.title_wdg = Widget()
+        #self.content_wdg.set_attr("spt_dialog_id", self.name)
+        self.title_wdg = Widget()
 
-        my.offset = {'x':0, 'y':0}
+        self.offset = {'x':0, 'y':0}
 
-        my.widget = DivWdg()
+        self.widget = DivWdg()
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if title:
-            my.title_wdg.add(title)
+            self.title_wdg.add(title)
 
 
 
 
-    def get_id(my):
-        return my.name
+    def get_id(self):
+        return self.name
 
 
-    def get_cancel_script(my):
+    def get_cancel_script(self):
 
         #TODO: when the add_named_listener is fixed, will add these closing function into the listener
         cbjs_action = '''
@@ -138,23 +138,23 @@ class DialogWdg(BaseRefreshWdg):
         
         return cbjs_action
 
-    def get_show_script(my):
+    def get_show_script(self):
         cbjs_action = 'spt.popup.open( spt.popup.get_popup( bvr.src_el ) );'
         return cbjs_action
 
 
-    def add_title(my, widget):
-        my.title_wdg.add(widget)
+    def add_title(self, widget):
+        self.title_wdg.add(widget)
 
-    def add(my, widget, name=None):
+    def add(self, widget, name=None):
         if name == 'content':
-            my.content_wdg = widget
+            self.content_wdg = widget
         elif name == 'title':
-            my.title_wdg = widget
+            self.title_wdg = widget
         else:
-            my.content_wdg.add(widget, name)
+            self.content_wdg.add(widget, name)
 
-    def set_as_activator(my, widget, offset=None, position=None):
+    def set_as_activator(self, widget, offset=None, position=None):
 
         if isinstance(widget, BaseRefreshWdg):
             try:
@@ -165,17 +165,17 @@ class DialogWdg(BaseRefreshWdg):
         # add class to state it's an activator
         widget.add_class('spt_activator')
         if offset:
-            my.offset = offset
+            self.offset = offset
 
 
-        dialog_id = my.get_id()
+        dialog_id = self.get_id()
 
 
         widget.add_behavior( {
         'type': 'click_up',
         'dialog_id': dialog_id,
         'position': position,
-        'offset': my.offset,
+        'offset': self.offset,
         'cbjs_action': '''
             var pos = bvr.src_el.getPosition();
             var size = bvr.src_el.getSize();
@@ -243,21 +243,21 @@ class DialogWdg(BaseRefreshWdg):
         } )
 
 
-    def get_unique_id(my):
-        return my.name
+    def get_unique_id(self):
+        return self.name
 
 
-    def add_class(my, class_name):
-        my.widget.add_class(class_name)
+    def add_class(self, class_name):
+        self.widget.add_class(class_name)
 
 
-    def add_attr(my, name, value):
-        my.widget.add_attr(name, value)
+    def add_attr(self, name, value):
+        self.widget.add_attr(name, value)
 
 
-    def get_display(my):
+    def get_display(self):
 
-        widget = my.widget
+        widget = self.widget
         widget.set_box_shadow()
 
         widget.add_class("spt_dialog_top")
@@ -267,7 +267,7 @@ class DialogWdg(BaseRefreshWdg):
 
 
 
-        z_index = my.kwargs.get("z_index")
+        z_index = self.kwargs.get("z_index")
         if not z_index:
             z_index = "1000"
         widget.add_style("z-index: %s" % z_index)
@@ -275,23 +275,23 @@ class DialogWdg(BaseRefreshWdg):
 
         web = WebContainer.get_web()
 
-        widget.set_id(my.name)
-        widget.add_attr("spt_dialog_id", my.name);
-        if my.kwargs.get("display") not in [True, "true"]:
+        widget.set_id(self.name)
+        widget.add_attr("spt_dialog_id", self.name);
+        if self.kwargs.get("display") not in [True, "true"]:
             widget.add_style("display: none")
 
         widget.add_style("position: absolute")
 
         widget.add_behavior( {
         'type': 'listen',
-        'event_name': '%s|dialog_close' % my.name,
-        'cbjs_action': my.get_cancel_script()
+        'event_name': '%s|dialog_close' % self.name,
+        'cbjs_action': self.get_cancel_script()
         } )
 
 
-        offset = my.kwargs.get("offset")
+        offset = self.kwargs.get("offset")
         if not offset:
-            offset = my.offset
+            offset = self.offset
 
 
 
@@ -309,7 +309,7 @@ class DialogWdg(BaseRefreshWdg):
 
 
 
-        show_pointer = my.kwargs.get("show_pointer")
+        show_pointer = self.kwargs.get("show_pointer")
         if not show_header:
             show_pointer = False
 
@@ -336,13 +336,13 @@ class DialogWdg(BaseRefreshWdg):
 
         close_wdg.add_behavior({
             'type': 'click_up',
-            'cbjs_action': my.get_cancel_script()
+            'cbjs_action': self.get_cancel_script()
         })
 
         drag_div.add(close_wdg)
 
 
-        show_anchor = my.kwargs.get("show_anchor")
+        show_anchor = self.kwargs.get("show_anchor")
         if show_anchor in [True, 'true']:
             anchor_wdg = SpanWdg()
             drag_div.add(anchor_wdg)
@@ -373,7 +373,7 @@ class DialogWdg(BaseRefreshWdg):
 
 
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = "100px"
         if width:
@@ -389,7 +389,7 @@ class DialogWdg(BaseRefreshWdg):
         #drag_div.add_style("border-size: 0 0 1 0")
 
 
-        drag_handle_div = DivWdg(id='%s_title' %my.name)
+        drag_handle_div = DivWdg(id='%s_title' %self.name)
         drag_div.add( drag_handle_div )
         #drag_handle_div.add_gradient("background", "background", +10)
         drag_handle_div.add_color("background", "background", -5)
@@ -398,7 +398,7 @@ class DialogWdg(BaseRefreshWdg):
 
         drag_handle_div.add_behavior({
             'type': 'double_click',
-            'cbjs_action': my.get_cancel_script()
+            'cbjs_action': self.get_cancel_script()
         })
 
 
@@ -420,11 +420,11 @@ class DialogWdg(BaseRefreshWdg):
         # add the content
         content_div = DivWdg()
         
-        title_wdg = my.title_wdg
+        title_wdg = self.title_wdg
         if not title_wdg:
             title_wdg = "No Title"
             # if the title is empty, just don't show
-        if my.kwargs.get("show_title") in [False, 'false']:
+        if self.kwargs.get("show_title") in [False, 'false']:
             drag_div.add_style("display: none")
 
 
@@ -437,25 +437,25 @@ class DialogWdg(BaseRefreshWdg):
         content_div.add_color("color", "color")
         content_div.add_color( "background", "background" )
 
-        content_div.set_id("%s_content" % my.name)
+        content_div.set_id("%s_content" % self.name)
         content_div.add_class("spt_popup_content")
         content_div.add_class("spt_dialog_content")
         content_div.add_style("overflow: hidden")
         content_div.add_style("display: block")
         #content_div.add_style("padding: 5px")
 
-        view = my.kwargs.get("view")
-        view_kwargs = my.kwargs.get("view_kwargs")
+        view = self.kwargs.get("view")
+        view_kwargs = self.kwargs.get("view_kwargs")
         if not view_kwargs:
             view_kwargs = {}
         if view:
             from tactic.ui.panel import CustomLayoutWdg
-            my.add( CustomLayoutWdg(view=view,view_kwargs=view_kwargs) )
+            self.add( CustomLayoutWdg(view=view,view_kwargs=view_kwargs) )
 
-        if not my.content_wdg:
-            my.content_wdg = "No Content"
+        if not self.content_wdg:
+            self.content_wdg = "No Content"
 
-        content_div.add(my.content_wdg)
+        content_div.add(self.content_wdg)
 
 
         # add the resize icon

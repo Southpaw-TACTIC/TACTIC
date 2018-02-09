@@ -22,12 +22,12 @@ from command import Command
 
 class ColumnAddCmd(Command):
     '''Add a column'''
-    def __init__(my, search_type, attr_name, attr_type, nullable=True):
-        my.search_type = search_type
-        my.attr_name = attr_name
-        my.attr_type = attr_type
-        my.nullable = nullable
-        super(ColumnAddCmd,my).__init__()
+    def __init__(self, search_type, attr_name, attr_type, nullable=True):
+        self.search_type = search_type
+        self.attr_name = attr_name
+        self.attr_type = attr_type
+        self.nullable = nullable
+        super(ColumnAddCmd,self).__init__()
 
 
 
@@ -90,37 +90,37 @@ class ColumnAddCmd(Command):
     get_data_type = classmethod(get_data_type)
 
 
-    def execute(my):
+    def execute(self):
 
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
 
-        db_resource = Project.get_db_resource_by_search_type(my.search_type)
+        db_resource = Project.get_db_resource_by_search_type(self.search_type)
         sql = DbContainer.get(db_resource)
         impl = sql.get_database_impl()
 
-        data_type = my.get_data_type(my.search_type, my.attr_type)
+        data_type = self.get_data_type(self.search_type, self.attr_type)
 
 
         # if there is no type, then no column is created for widget_config
-        if my.attr_type == "Date Range":
-            column1 = "%s_start_date" % my.attr_name
-            column2 = "%s_end_date" % my.attr_name
-            my._add_column(column1, data_type)
-            my._add_column(column2, data_type)
+        if self.attr_type == "Date Range":
+            column1 = "%s_start_date" % self.attr_name
+            column2 = "%s_end_date" % self.attr_name
+            self._add_column(column1, data_type)
+            self._add_column(column2, data_type)
         elif type != "":
-            my._add_column(my.attr_name, data_type)
+            self._add_column(self.attr_name, data_type)
 
 
-        my.add_description("Added attribute '%s' of type '%s'" % (my.attr_name, my.attr_type) )
+        self.add_description("Added attribute '%s' of type '%s'" % (self.attr_name, self.attr_type) )
 
 
-    def _add_column(my, column, type):
+    def _add_column(self, column, type):
 
         # if there is no type, then no column is created for widget_config
         if type != "":
             # alter the table
-            search_type_obj = SearchType.get(my.search_type)
-            db_resource = Project.get_db_resource_by_search_type(my.search_type)
+            search_type_obj = SearchType.get(self.search_type)
+            db_resource = Project.get_db_resource_by_search_type(self.search_type)
             sql = DbContainer.get(db_resource)
             impl = sql.get_database_impl()
             table = search_type_obj.get_table()
@@ -154,7 +154,7 @@ class ColumnAddCmd(Command):
                     (table, column, type)
 
             if statement:
-                if not my.nullable:
+                if not self.nullable:
                     statement = '%s NOT NULL' %statement
                 sql.do_update(statement)
                 AlterTableUndo.log_add(db_resource,table,column,type)
@@ -164,82 +164,82 @@ class ColumnAddCmd(Command):
 
 class ColumnDropCmd(Command):
     '''Drop a column'''
-    def __init__(my, search_type, attr_name):
+    def __init__(self, search_type, attr_name):
         # this should be a full search_type
-        super(ColumnDropCmd,my).__init__()
-        my.search_type = search_type
-        my.attr_name = attr_name
+        super(ColumnDropCmd,self).__init__()
+        self.search_type = search_type
+        self.attr_name = attr_name
 
-    def check(my):
-        #search_type_obj = SearchType.get(my.search_type)
-        columns =  SearchType.get_columns(my.search_type)
-        if my.attr_name not in columns:
-            raise TacticException('[%s] does not exist in this table [%s]'%(my.attr_name, my.search_type))
+    def check(self):
+        #search_type_obj = SearchType.get(self.search_type)
+        columns =  SearchType.get_columns(self.search_type)
+        if self.attr_name not in columns:
+            raise TacticException('[%s] does not exist in this table [%s]'%(self.attr_name, self.search_type))
         return True
 
-    def execute(my):    
-        search_type_obj = SearchType.get(my.search_type)
+    def execute(self):    
+        search_type_obj = SearchType.get(self.search_type)
         database = search_type_obj.get_database()
         table = search_type_obj.get_table()
 
-        alter = AlterTable(my.search_type)
-        alter.drop(my.attr_name)
+        alter = AlterTable(self.search_type)
+        alter.drop(self.attr_name)
 
         # log it first before committing
-        AlterTableUndo.log_drop(database,table, my.attr_name)
+        AlterTableUndo.log_drop(database,table, self.attr_name)
         alter.commit()  
         
 
 class ColumnAlterCmd(Command):
     '''Alter a column'''
-    def __init__(my, search_type, attr_name, data_type=None, nullable=True):
+    def __init__(self, search_type, attr_name, data_type=None, nullable=True):
         # this should be a full search_type
-        my.search_type = search_type
-        my.attr_name = attr_name    
-        my.data_type = data_type
-        my.nullable = nullable
+        self.search_type = search_type
+        self.attr_name = attr_name    
+        self.data_type = data_type
+        self.nullable = nullable
         
-        super(ColumnAlterCmd,my).__init__()
+        super(ColumnAlterCmd,self).__init__()
 
-    def execute(my):    
-        search_type_obj = SearchType.get(my.search_type)
+    def execute(self):    
+        search_type_obj = SearchType.get(self.search_type)
         database = search_type_obj.get_database()
         table = search_type_obj.get_table()
 
-        alter = AlterTable(my.search_type)
+        alter = AlterTable(self.search_type)
         #TODO: check the varchar length and put it in
-        alter.modify(my.attr_name, my.data_type, not_null=not my.nullable)
+        alter.modify(self.attr_name, self.data_type, not_null=not self.nullable)
 
         # log it first before committing to get the corrent from and to data type
-        AlterTableUndo.log_modify(database,table, my.attr_name, \
-             my.data_type, not my.nullable)
+        AlterTableUndo.log_modify(database,table, self.attr_name, \
+             self.data_type, not self.nullable)
         alter.commit()
 
 
 
 class ColumnAddIndexCmd(Command):
 
-    def __init__(my, **kwargs):
-        my.search_type = kwargs.get("search_type")
-        my.column = kwargs.get("column")
-        my.constraint = kwargs.get("constraint")
+    def __init__(self, **kwargs):
+        self.search_type = kwargs.get("search_type")
+        self.column = kwargs.get("column")
+        self.constraint = kwargs.get("constraint")
 
 
-    def execute(my):
-        search_type_obj = SearchType.get(my.search_type)
+    def execute(self):
+        search_type_obj = SearchType.get(self.search_type)
         table = search_type_obj.get_table()
 
-        db_resource = Project.get_db_resource_by_search_type(my.search_type)
+        db_resource = Project.get_db_resource_by_search_type(self.search_type)
         sql = DbContainer.get(db_resource)
 
        
         
-        if my.constraint == "unique":
-            index_name = "%s_%s_unique" % (table, my.column)
-            statement = 'ALTER TABLE "%s" add constraint "%s" UNIQUE ("%s")' % (table, index_name, my.column)
+        if self.constraint == "unique":
+            index_name = "%s_%s_unique" % (table, self.column)
+            statement = 'ALTER TABLE "%s" add constraint "%s" UNIQUE ("%s")' % (table, index_name, self.column)
         else:
-            index_name = "%s_%s_idx" % (table, my.column)
-            statement = 'CREATE INDEX "%s" ON "%s" ("%s")' % (index_name, table, my.column)
+            index_name = "%s_%s_idx" % (table, self.column)
+            statement = 'CREATE INDEX "%s" ON "%s" ("%s")' % (index_name, table, self.column)
 
         sql.do_update(statement)
         sql.commit() 

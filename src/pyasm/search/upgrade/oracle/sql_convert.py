@@ -28,22 +28,22 @@ def convert_oracle_upgrade(namespace):
 
 class OracleConverter(BaseSQLConverter):
 
-    def __init__(my):
-        my.vendor = 'Oracle'
-        my.namespace = None
+    def __init__(self):
+        self.vendor = 'Oracle'
+        self.namespace = None
 
 
 
-    def handle_line(my, line):
+    def handle_line(self, line):
         #if line.find("now()") != -1:
         #    line = line.replace("now()", "CURRENT_TIMESTAMP")
 
-        # FIXME: this could be genealized with my.vendor
+        # FIXME: this could be genealized with self.vendor
         if line.startswith("class "):
-            line = "class %s%sUpgrade(BaseUpgrade):\n" % (my.vendor, my.namespace.capitalize())
+            line = "class %s%sUpgrade(BaseUpgrade):\n" % (self.vendor, self.namespace.capitalize())
 
         elif line.startswith("__all__ "):
-            line = "__all__ = ['%s%sUpgrade']\n" % (my.vendor, my.namespace.capitalize())
+            line = "__all__ = ['%s%sUpgrade']\n" % (self.vendor, self.namespace.capitalize())
 
         line = line.replace("without time zone", "")
         line = line.replace("with time zone", "")

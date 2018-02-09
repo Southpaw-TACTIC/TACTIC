@@ -22,29 +22,29 @@ import math, random, types, cgi
 
 class HeaderWdg(Widget):
     '''A widget that occupies the header area of a regular Tactic page'''
-    def __init__(my, title='header'):
-        super(HeaderWdg,my).__init__(title)
-        my.title = title
+    def __init__(self, title='header'):
+        super(HeaderWdg,self).__init__(title)
+        self.title = title
 
-    def extend(my):
+    def extend(self):
         from tab_wdg import TabExtendWdg 
         extend_tab = TabExtendWdg()
-        extend_tab.set_tab(my)
+        extend_tab.set_tab(self)
         extend_tab.get_display()
 
 
         
-    def get_display(my):
-        #my.extend()
+    def get_display(self):
+        #self.extend()
 
         try:
-            return my._get_display()
+            return self._get_display()
         except TacticException, e:
             from web_wdg import ExceptionWdg
             widget = ExceptionWdg(e)
             return widget
 
-    def _get_display(my):
+    def _get_display(self):
         login = WebContainer.get_login()
         login_name = login.get_login()
 
@@ -56,10 +56,10 @@ class HeaderWdg(Widget):
         
         
         project = Project.get()
-        if not my.title:
-            my.title = project.get_value('title')
+        if not self.title:
+            self.title = project.get_value('title')
 
-        title_data = HtmlElement.h4(my.title)
+        title_data = HtmlElement.h4(self.title)
         
         link_width = '400'
         if web.get_app_name() != 'Browser':
@@ -154,7 +154,7 @@ class HeaderWdg(Widget):
 
        
         # add the custom widgets
-        #for widget in my.widgets:
+        #for widget in self.widgets:
         #    control.add(widget)
        
         div.add(control)
@@ -176,21 +176,21 @@ class HeaderWdg(Widget):
             title_div.add(link_div)
 
             if not web.is_IE():
-                trail_div = my.get_trail()
+                trail_div = self.get_trail()
                 title_div.add(trail_div)
             title_div.add(HtmlElement.br())
             div.add(title_div)
 
 
         else:
-            my.add_logo(div, skin) 
+            self.add_logo(div, skin) 
 
 
         return div
 
 
 
-    def add_logo(my, div, skin):
+    def add_logo(self, div, skin):
         '''add a logo that matches the skin'''
         logo_div = FloatDivWdg(css='')
         logo_div.add(HtmlElement.img(src='/context/skins/%s/images/tactic_logo.gif'% skin))
@@ -205,7 +205,7 @@ class HeaderWdg(Widget):
             project_icon_div.add_style('margin-top: 3px')
             div.add(project_icon_div)
 
-    def get_trail(my):
+    def get_trail(self):
         ''' draws a trail'''
         trail_div = DivWdg()
         trail_div.add_style('margin','0px')
@@ -231,15 +231,15 @@ class ProjectSwitchWdg(Widget):
     ''' this is a popup widget for switching between project'''
     WDG_ID = "project_switch_wdg_id"
     
-    def get_display(my):
+    def get_display(self):
         widget = Widget()
         span = SpanWdg('[ projects ]', css='hand')
         span.add_style('color','white')
-        span.add_event('onclick',"spt.show_block('%s')" %my.WDG_ID)
+        span.add_event('onclick',"spt.show_block('%s')" %self.WDG_ID)
         widget.add(span)
         
         # add the popup
-        div = DivWdg(id=my.WDG_ID, css='popup_wdg')
+        div = DivWdg(id=self.WDG_ID, css='popup_wdg')
         widget.add(div)
         div.add_style('width', '80px')
         div.add_style('display', 'none')
@@ -249,7 +249,7 @@ class ProjectSwitchWdg(Widget):
         title.add_style('margin-right','2px')
         title_div.add_style('padding-bottom', '4px')
         title_div.add(title)
-        title_div.add(CloseWdg(my.get_off_script(), is_absolute=False))
+        title_div.add(CloseWdg(self.get_off_script(), is_absolute=False))
 
 
         div.add(HtmlElement.br())
@@ -297,7 +297,7 @@ class ProjectSwitchWdg(Widget):
 class DocMapping(object):
     '''class which maps the Tactic documentation to a specific tab'''
 
-    def get_mapping(my,title):
+    def get_mapping(self,title):
 
         project = Project.get()
 

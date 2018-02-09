@@ -24,23 +24,23 @@ from pyasm.admin.creator import SObjectCreatorWdg
 
 class CustomProjectTabWdg(BaseTabWdg):
 
-    def init(my):
-        my.add(HelpItemWdg('Customize Project', 'Customze Project contains a collection of tabs that allow for the creation of new container types, new tabs and new interfaces', False))
-        my.setup_tab("customize_project_tab", css=TabWdg.SMALL)
+    def init(self):
+        self.add(HelpItemWdg('Customize Project', 'Customze Project contains a collection of tabs that allow for the creation of new container types, new tabs and new interfaces', False))
+        self.setup_tab("customize_project_tab", css=TabWdg.SMALL)
 
 
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
        
         tab.add( CustomizeTabWdg, _("Tab Visibility") )
         tab.add( SObjectCreatorWdg, _("Search Type Creation") )
         tab.add( CustomViewAppWdg, _("Manage Views" ) )
-        tab.add(my.get_extend_wdg, _("Extend Widgets") )
-        tab.add(my.get_config_wdg, _("Configure Widgets") )
-        tab.add( my.get_naming_wdg, _("Naming") )
+        tab.add(self.get_extend_wdg, _("Extend Widgets") )
+        tab.add(self.get_config_wdg, _("Configure Widgets") )
+        tab.add( self.get_naming_wdg, _("Naming") )
 
 
-    def get_extend_wdg(my):
+    def get_extend_wdg(self):
         widget = Widget()
         search = Search("sthpw/widget_extend")
 
@@ -86,7 +86,7 @@ class CustomProjectTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_config_wdg(my):
+    def get_config_wdg(self):
         widget = Widget()
 
         search = Search("sthpw/widget_config")
@@ -133,7 +133,7 @@ class CustomProjectTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_naming_wdg(my):
+    def get_naming_wdg(self):
         widget = Widget()
         #div = DivWdg(css="filter_box")
         #widget.add(div)

@@ -23,31 +23,31 @@ class SmartMenuWdg(BaseRefreshWdg):
     @usage
     '''
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.kwargs = kwargs
+        self.handle_args(kwargs)
+        self.kwargs = kwargs
 
         # required args
-        my.menu_tag_suffix = kwargs['menu_tag_suffix']
-        my.width = kwargs['width']
-        if not my.width or my.width < 250:
-            my.width = 250
+        self.menu_tag_suffix = kwargs['menu_tag_suffix']
+        self.width = kwargs['width']
+        if not self.width or self.width < 250:
+            self.width = 250
 
 
-        my.opt_spec_list = kwargs['opt_spec_list']
+        self.opt_spec_list = kwargs['opt_spec_list']
 
-        my.allow_icons = True
+        self.allow_icons = True
         if kwargs.has_key('allow_icons'):
-            my.allow_icons = kwargs['allow_icons']
-            if my.allow_icons in [ '', None ]:
-                my.allow_icons = True
+            self.allow_icons = kwargs['allow_icons']
+            if self.allow_icons in [ '', None ]:
+                self.allow_icons = True
 
-        my.setup_cbfn = kwargs.get('setup_cbfn')
+        self.setup_cbfn = kwargs.get('setup_cbfn')
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'menu_tag_suffix': 'This is one of "MAIN", "SUB_1", "SUB_2", etc. ... to distinguish between main ' \
                                'menu and submenus -- these only have to be unique within a sub-set of smart menus',
@@ -59,13 +59,13 @@ class SmartMenuWdg(BaseRefreshWdg):
         }
 
 
-    def _add_spacer_row(my, menu_table, height, icon_width, icon_col_width, label_width):
+    def _add_spacer_row(self, menu_table, height, icon_width, icon_col_width, label_width):
         tbody = menu_table.add_tbody()
         tbody.add_style("display","table-row-group")
         tr = menu_table.add_row()
         #tr.add_looks( "smenu" )
 
-        if my.allow_icons:
+        if self.allow_icons:
             td = menu_table.add_cell()
             td.add_styles("text-align: center; vertical-align: middle; height: %spx; width: %spx;" %
                             (height, icon_col_width) )
@@ -82,11 +82,11 @@ class SmartMenuWdg(BaseRefreshWdg):
         td.add_style("width", ("%spx" % icon_width))
 
 
-    def get_display(my):
+    def get_display(self):
 
         smenu_div = DivWdg()
         smenu_div.add_class( "SPT_SMENU" )
-        smenu_div.add_class( "SPT_SMENU_%s" % my.menu_tag_suffix )
+        smenu_div.add_class( "SPT_SMENU_%s" % self.menu_tag_suffix )
         smenu_div.set_box_shadow()
         smenu_div.add_border()
         smenu_div.add_color("background", "background")
@@ -103,21 +103,21 @@ class SmartMenuWdg(BaseRefreshWdg):
             '''
         } )
 
-        if my.setup_cbfn:
-            smenu_div.set_attr( "SPT_SMENU_SETUP_CBFN", my.setup_cbfn )
+        if self.setup_cbfn:
+            smenu_div.set_attr( "SPT_SMENU_SETUP_CBFN", self.setup_cbfn )
 
         smenu_div.set_z_start( 300 )
         #smenu_div.add_looks( "smenu border curs_default" )
         # smenu_div.add_styles( "padding-top: 3px; padding-bottom: 5px;" )
 
-        m_width = my.width - 2
+        m_width = self.width - 2
         smenu_div.add_style( ("width: %spx" % m_width) )
 
         smenu_div.add_style("overflow-x: hidden")
 
         icon_width = 16
         icon_col_width = 0
-        if my.allow_icons:
+        if self.allow_icons:
             icon_col_width = icon_width + 2
         label_width = m_width - icon_col_width - icon_width
 
@@ -126,11 +126,11 @@ class SmartMenuWdg(BaseRefreshWdg):
         #menu_table.add_color("background", "background")
         menu_table.add_color("color", "color")
 
-        options = my.opt_spec_list
+        options = self.opt_spec_list
         opt_count = 0
 
         if options and options[0].get('type') != 'title':
-            my._add_spacer_row(menu_table, 3, icon_width, icon_col_width, label_width)
+            self._add_spacer_row(menu_table, 3, icon_width, icon_col_width, label_width)
 
 
 
@@ -138,7 +138,7 @@ class SmartMenuWdg(BaseRefreshWdg):
 
             # if entry is a title, then add a spacer before
             if opt.get('type') == 'title' and opt_count:
-                my._add_spacer_row(menu_table, 6, icon_width, icon_col_width, label_width)
+                self._add_spacer_row(menu_table, 6, icon_width, icon_col_width, label_width)
 
             tbody = menu_table.add_tbody()
             tbody.add_style("display","table-row-group")
@@ -189,7 +189,7 @@ class SmartMenuWdg(BaseRefreshWdg):
             tr.add_looks( "curs_default" )
 
             # Left icon cell ...
-            if my.allow_icons:
+            if self.allow_icons:
                 td = menu_table.add_cell()
                 td.add_styles("text-align: center; vertical-align: middle; width: %spx;" % icon_col_width)
                 #td.add_looks("smenu_icon_column")
@@ -253,7 +253,7 @@ class SmartMenuWdg(BaseRefreshWdg):
                 td.add_color("color", "color2")
                 td.add_style("font-weight", "bold")
                 td.add_style("padding", "3px")
-                my._add_spacer_row(menu_table, 3, icon_width, icon_col_width, label_width)
+                self._add_spacer_row(menu_table, 3, icon_width, icon_col_width, label_width)
 
             #   if disabled:
             #       td.add_style( "opacity: .4" )
@@ -262,7 +262,7 @@ class SmartMenuWdg(BaseRefreshWdg):
             opt_count += 1
 
 
-        my._add_spacer_row(menu_table, 5, icon_width, icon_col_width, label_width)
+        self._add_spacer_row(menu_table, 5, icon_width, icon_col_width, label_width)
 
         smenu_div.add( menu_table )
         smenu_div.add_style( "display: none" )
@@ -273,38 +273,38 @@ class SmartMenuWdg(BaseRefreshWdg):
 
 class SmartMenuSetWdg(BaseRefreshWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
-        my.match_subset = False
+        self.match_subset = False
 
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.kwargs = kwargs
+        self.handle_args(kwargs)
+        self.kwargs = kwargs
 
-        my.menu_specs_map = {}
+        self.menu_specs_map = {}
         if kwargs.get('default_menu_specs'):
-            my.menu_specs_map['SPT_SMENU_SUBSET__DEFAULT'] = kwargs.get('default_menu_specs')
+            self.menu_specs_map['SPT_SMENU_SUBSET__DEFAULT'] = kwargs.get('default_menu_specs')
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'default_menu_specs': 'List of menu specifcation maps for the default menu sub-set for the menu set.'
         }
 
 
-    def add_subset_menu_specs(my, subset_tag_suffix, subset_menu_specs):
-        my.menu_specs_map[ 'SPT_SMENU_SUBSET__%s' % subset_tag_suffix ] = subset_menu_specs
-        my.match_subset = True
+    def add_subset_menu_specs(self, subset_tag_suffix, subset_menu_specs):
+        self.menu_specs_map[ 'SPT_SMENU_SUBSET__%s' % subset_tag_suffix ] = subset_menu_specs
+        self.match_subset = True
 
 
-    def get_display(my):
+    def get_display(self):
 
         smenu_set_div = DivWdg()
         smenu_set_div.add_class("SPT_SMENU_SET")
         smenu_set_div.add_class("SPT_PUW")
 
 
-        if my.match_subset:
+        if self.match_subset:
             smenu_set_div.set_attr("SPT_SMENU_MATCH_SUBSET","true")
 
         # ??? div.set_attr("SPT_CONTEXT_CLASS_TAG", "spt_dg_row")
@@ -316,7 +316,7 @@ class SmartMenuSetWdg(BaseRefreshWdg):
         # -- this needs to be added to activator element ...
         # subset_div.set_attr("SPT_SMENU_SUBSET_TAG", "SPT_SMENU_SUBSET__DEFAULT")
 
-        menu_spec_list = my.menu_specs_map.get('SPT_SMENU_SUBSET__DEFAULT')
+        menu_spec_list = self.menu_specs_map.get('SPT_SMENU_SUBSET__DEFAULT')
         if menu_spec_list:
             for menu_spec in menu_spec_list:
                 smenu_wdg = SmartMenuWdg( menu_tag_suffix = menu_spec.get('menu_tag_suffix'),
@@ -330,9 +330,9 @@ class SmartMenuSetWdg(BaseRefreshWdg):
 
 
 
-        if my.match_subset:
+        if self.match_subset:
         #{
-            for subset_tag, menu_spec_list in my.menu_specs_map.iteritems():
+            for subset_tag, menu_spec_list in self.menu_specs_map.iteritems():
                 if subset_tag != 'SPT_SMENU_SUBSET__DEFAULT':
                     subset_div = DivWdg()
                     subset_div.add_class("SPT_SMENU_SUBSET %s" % subset_tag)
@@ -356,32 +356,32 @@ class SmartMenuSetWdg(BaseRefreshWdg):
 
 class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.kwargs = kwargs
+        self.handle_args(kwargs)
+        self.kwargs = kwargs
                
         # required args
-        my.title = kwargs.get('title')
-        my.icon_path = kwargs.get('icon_path')
-        my.menus = kwargs.get('menus')
-        my.width = kwargs.get('width')
-        my.style = kwargs.get('style')
+        self.title = kwargs.get('title')
+        self.icon_path = kwargs.get('icon_path')
+        self.menus = kwargs.get('menus')
+        self.width = kwargs.get('width')
+        self.style = kwargs.get('style')
 
-        my.match_width = False
+        self.match_width = False
         if kwargs.has_key('match_width'):
-            my.match_width = kwargs.get('match_width')
+            self.match_width = kwargs.get('match_width')
 
-        my.nudge_menu_horiz = 0;
+        self.nudge_menu_horiz = 0;
         if kwargs.get('nudge_menu_horiz'):
-            my.nudge_menu_horiz = int( kwargs.get('nudge_menu_horiz') )
+            self.nudge_menu_horiz = int( kwargs.get('nudge_menu_horiz') )
 
-        my.nudge_menu_vert = 0;
+        self.nudge_menu_vert = 0;
         if kwargs.get('nudge_menu_vert'):
-            my.nudge_menu_vert = int( kwargs.get('nudge_menu_vert') )
+            self.nudge_menu_vert = int( kwargs.get('nudge_menu_vert') )
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'title': 'Text for Button Title',
             'icon_path': 'path to icon image to use instead of text; the title in this case becomes the tool-tip. ' \
@@ -396,21 +396,21 @@ class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
         dd_activator = DivWdg()
 
-        if my.style:
-            dd_activator.add_styles( my.style )
+        if self.style:
+            dd_activator.add_styles( self.style )
 
-        dd_activator.add_style( "width: %spx" % my.width )
+        dd_activator.add_style( "width: %spx" % self.width )
         dd_activator.add_class("SPT_DTS");
 
-        if my.nudge_menu_horiz != 0:
-            dd_activator.set_attr("spt_nudge_menu_horiz", my.nudge_menu_horiz)
+        if self.nudge_menu_horiz != 0:
+            dd_activator.set_attr("spt_nudge_menu_horiz", self.nudge_menu_horiz)
 
-        if my.nudge_menu_vert != 0:
-            dd_activator.set_attr("spt_nudge_menu_vert", my.nudge_menu_vert)
+        if self.nudge_menu_vert != 0:
+            dd_activator.set_attr("spt_nudge_menu_vert", self.nudge_menu_vert)
 
         # Generate button ...
         #
@@ -423,15 +423,15 @@ class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
         title_div.add_styles( "padding: 0px; margin-left: 4px; margin-top: 1px;" )
-        if my.icon_path:
+        if self.icon_path:
             img = HtmlElement.img()
-            img.set_attr("src", my.icon_path)
-            img.set_attr("title", my.title)
+            img.set_attr("src", self.icon_path)
+            img.set_attr("title", self.title)
             img.add_styles("padding: 0px; padding-bottom: 1px; margin: 0px; text-decoration: none;")
             title_div.add(img)
             title_div.add_looks("menu")
         else:
-            title_div.add(my.title)
+            title_div.add(self.title)
             title_div.add_looks("menu fnt_text")
 
         td.add( title_div )
@@ -450,7 +450,7 @@ class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
 
         dd_activator.add(table)
 
-        dd_activator.add( my.kwargs.get("smart_menu_set") )
+        dd_activator.add( self.kwargs.get("smart_menu_set") )
         dd_activator.add_class("SPT_SMENU_ACTIVATOR")
         dd_activator.add_behavior( { 'type': 'click_up', 'activator_type' : 'smart_menu',
                                      'cbjs_action': 'spt.smenu.show_on_dropdown_click_cbk( evt, bvr )' } )

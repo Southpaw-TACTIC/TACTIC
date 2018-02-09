@@ -17,6 +17,7 @@ import os, shutil, re
 from pyasm.common import *
 from pyasm.command import CommandException
 from pyasm.search import Search
+
 from pyasm.application.perforce import Perforce
 
 from file_checkin import *
@@ -31,40 +32,40 @@ class PerforceException(SetupException):
 
 class PerforceTransaction(object):
 
-    def __init__(my):
-        my.perforce = Perforce()
+    def __init__(self):
+        self.perforce = Perforce()
 
-        my.description = "None"
-        my.changelist = -1
+        self.description = "None"
+        self.changelist = -1
 
-        my.opened = []
-
-
-    def get_perforce(my):
-        return my.perforce
+        self.opened = []
 
 
-    def set_description(my, description):
-        my.description = description
+    def get_perforce(self):
+        return self.perforce
+
+
+    def set_description(self, description):
+        self.description = description
 
 
     # FIXME: not sure if the should be here.
-    def get_sync_path(my):
-        return my.perforce.get_root()
+    def get_sync_path(self):
+        return self.perforce.get_root()
         #return Config.get_value("perforce", "sync")
 
 
-    def start(my):
+    def start(self):
         pass
 
 
-    def commit(my):
-        return my.perforce.commit(my.description)
+    def commit(self):
+        return self.perforce.commit(self.description)
 
 
-    def checkin(my, from_path, sub_dir):
+    def checkin(self, from_path, sub_dir):
         file_name = os.path.basename(from_path)
-        repo_path = my.get_sync_path()
+        repo_path = self.get_sync_path()
 
 
         # get the path to put this into the repo
@@ -75,29 +76,29 @@ class PerforceTransaction(object):
 
 
         if os.path.exists(to_path):
-            my.edit_file(from_path, to_path)
+            self.edit_file(from_path, to_path)
         else:
-            my.add_file(from_path, to_path)
+            self.add_file(from_path, to_path)
 
 
-    def add_opened_file(my, path):
+    def add_opened_file(self, path):
         '''add a file that is already opened (by the perforce client)'''
-        my.opened.append(path)
+        self.opened.append(path)
 
 
 
-    def edit_file(my, from_path, to_path):
+    def edit_file(self, from_path, to_path):
         # make sure the to_paths have no null directories
         to_path = to_path.replace("//", "/")
 
         # edit the file
         file_name = os.path.basename(from_path)
-        repo_path = my.get_sync_path()
-        my.perforce.edit(to_path)
+        repo_path = self.get_sync_path()
+        self.perforce.edit(to_path)
         shutil.copy(from_path, to_path)
 
 
-    def add_file(my, from_path, to_path):
+    def add_file(self, from_path, to_path):
         '''add a new external file to the repository
         (that is not in the sync)'''
 
@@ -106,9 +107,9 @@ class PerforceTransaction(object):
 
         # add the file
         file_name = os.path.basename(from_path)
-        repo_path = my.get_sync_path()
+        repo_path = self.get_sync_path()
         shutil.copy(from_path, to_path)
-        my.perforce.add_file(to_path)
+        self.perforce.add_file(to_path)
 
 
 
@@ -120,7 +121,7 @@ class PerforceTransaction(object):
 class PerforceRepo(BaseRepo):
     '''Checks in files into perforce instead of copy to the sthpw repo'''
 
-    def __init__(my, repo_code=None):
+    def __init__(self, repo_code=None):
         if repo_code == None:
             repo_code = "perforce"
 
@@ -129,16 +130,16 @@ class PerforceRepo(BaseRepo):
             repos = {}
             Container.put("PerforceRepo", repos)
         try:
-            my.repo = repos[repo_code]
+            self.repo = repos[repo_code]
         except KeyError:
             search = Search("sthpw/repo")
             search.add_filter("code", repo_code)
-            my.repo = search.get_sobject()
-            repos[repo_code] = my.repo
+            self.repo = search.get_sobject()
+            repos[repo_code] = self.repo
 
 
 
-    def handle_system_commands(my, snapshot, files, file_objects):
+    def handle_system_commands(self, snapshot, files, file_objects):
         '''check into perforce'''
         transaction = PerforceTransaction()
 
@@ -215,27 +216,27 @@ class Perforce:
     '''class that abstracts out perforce commands'''
     PORT = "1666"
 
-    def __init__(my):
+    def __init__(self):
         port = Config.get_value("perforce", "port")
         os.putenv("P4PORT", port )
 
-        #exec_path = my.get_exec_path()
+        #exec_path = self.get_exec_path()
         #if not os.path.exists(exec_path):
         #    raise SetupException( "Executable '%s' does not exist" % exec_path )
 
-    def get_exec_path(my):
+    def get_exec_path(self):
         return Config.get_value("perforce", "p4")
 
-    def get_repo_path(my):
+    def get_repo_path(self):
         return Config.get_value("perforce", "repo")
 
-    def get_sync_path(my):
+    def get_sync_path(self):
         return Config.get_value("perforce", "sync")
 
 
 
-    def execute(my, cmd, input=None):
-        cmd = '%s %s' % (my.get_exec_path(), cmd)
+    def execute(self, cmd, input=None):
+        cmd = '%s %s' % (self.get_exec_path(), cmd)
         print "--> %s" % cmd
 
         # use popen3
@@ -269,53 +270,53 @@ class Perforce:
         return output
 
 
-    def add_file(my, path):
+    def add_file(self, path):
         path = path.replace("//", "/")
         cmd = 'add "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         print ret_val
 
 
-    def edit_file(my, path):
+    def edit_file(self, path):
         path = path.replace("//", "/")
         cmd = 'edit "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         print ret_val
 
-    def delete_file(my, path):
+    def delete_file(self, path):
         cmd = 'delete "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         print ret_val
 
 
 
-    def get_log(my, path):
+    def get_log(self, path):
         cmd = 'filelog "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return ret_val
 
 
-    def submit(my, path):
+    def submit(self, path):
         cmd = 'submit -r "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return ret_val
 
 
-    def get_opened(my):
+    def get_opened(self):
         cmd = 'opened'
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return ret_val
 
 
-    def files(my, paths):
+    def files(self, paths):
         cmd = 'files %s' % " ".join( ['"%s"' % x for x in paths] )
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return ret_val
 
 
-    def have(my, paths):
+    def have(self, paths):
         cmd = 'files %s' % " ".join( ['"%s"' % x for x in paths] )
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return ret_val
 """
 

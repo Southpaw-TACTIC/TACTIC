@@ -24,19 +24,19 @@ import unittest
 class ProcessTest(unittest.TestCase):
 
 
-    def setUp(my):
+    def setUp(self):
         Batch()
 
 
 
 
-    def test_all(my):
+    def test_all(self):
 
-        my._test_process()
+        self._test_process()
 
 
 
-    def _test_process(my):
+    def _test_process(self):
 
 
         pipeline_xml = '''
@@ -60,36 +60,36 @@ class ProcessTest(unittest.TestCase):
 
         # outputs
         processes = pipeline.get_output_processes("a")
-        my.assertEquals(1, len(processes))
+        self.assertEquals(1, len(processes))
 
         processes = pipeline.get_output_processes("b")
-        my.assertEquals(3, len(processes))
-        my.assertEquals("c", processes[0].get_name())
-        my.assertEquals("d", processes[1].get_name())
+        self.assertEquals(3, len(processes))
+        self.assertEquals("c", processes[0].get_name())
+        self.assertEquals("d", processes[1].get_name())
 
         # inputs
         processes = pipeline.get_input_processes("b")
-        my.assertEquals("a", processes[0].get_name())
+        self.assertEquals("a", processes[0].get_name())
 
 
         # output with attr
         processes = pipeline.get_output_processes("b", from_attr="success")
-        my.assertEquals(1, len(processes))
-        my.assertEquals("c", processes[0].get_name())
+        self.assertEquals(1, len(processes))
+        self.assertEquals("c", processes[0].get_name())
 
         processes = pipeline.get_output_processes("b", from_attr="fail")
-        my.assertEquals(2, len(processes))
-        my.assertEquals("d", processes[0].get_name())
+        self.assertEquals(2, len(processes))
+        self.assertEquals("d", processes[0].get_name())
 
 
         # input with attr
         processes = pipeline.get_input_processes("e", to_attr="revise")
-        my.assertEquals("b", processes[0].get_name())
+        self.assertEquals("b", processes[0].get_name())
 
 
 
 
-    def _test_pipeline(my):
+    def _test_pipeline(self):
 
         pipeline = Pipeline()
 
