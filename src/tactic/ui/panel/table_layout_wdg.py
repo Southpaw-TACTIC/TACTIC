@@ -1974,6 +1974,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             show_border = self.kwargs.get("show_border")
             if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border: solid 1px %s" % border_color)
+            elif show_border == 'horizontal':
+                th.add_style("border-width: 0px 0px 1px 0px")
+                th.add_style("border-style: solid")
+                th.add_style("border-color: %s" % border_color)
 
             edit_wdg = self.edit_wdgs.get(name)
             if edit_wdg:
@@ -2178,13 +2182,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         label = '---'
                     else:
                         group_label_expr = self.kwargs.get("group_label_expr")
+                        group_label_link = self.kwargs.get("group_label_link")
+                        group_label_view = self.kwargs.get("group_label_view")
+
                         if group_label_expr:
                             label = Search.eval(group_label_expr, sobjects, single=True)
+                        elif group_label_view:
+                            from tactic.ui.panel import CustomLayoutWdg
+                            label = CustomLayoutWdg(
+                                    view=group_label_view,
+                                    group_value=group_value,
+                                    sobjects=sobjects,
+
+                            )
                         else:
                             label = Common.process_unicode_string(group_value)
 
-                    title = label
 
+                    title = DivWdg()
+                    title.add_style("display: inline-block")
+                    title.add(label)
                     group_div.add(title)
 
 
@@ -2608,7 +2625,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # remember the original background colors
         bgcolor1 = table.get_color("background")
-        bgcolor2 = table.get_color("background", -1)
+        #bgcolor2 = table.get_color("background", -1)
+        bgcolor2 = bgcolor1
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
 
@@ -2938,10 +2956,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border", "solid 1px %s" % border_color)
+            elif show_border == 'horizontal':
+                th.add_style("border-width: 0px 0px 1px 0px")
+                th.add_style("border-style: solid")
+                th.add_style("border-color: %s" % border_color)
+
+
 
         th = table.add_cell()
         if show_border not in [False, "false", 'horizontal']:
             th.add_style("border", "solid 1px %s" % border_color)
+        elif show_border == 'horizontal':
+            th.add_style("border-width: 0px 0px 1px 0px")
+            th.add_style("border-style: solid")
+            th.add_style("border-color: %s" % border_color)
+
+
+
 
         th.add_looks( 'dg_row_select_box' )
         th.add_class( 'spt_table_header_select' )

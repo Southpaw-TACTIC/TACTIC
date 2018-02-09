@@ -70,7 +70,13 @@ class Batch(Environment):
 
         self.initialize_python_path()
 
+
+        # start workflow engine
+        #from pyasm.command import Workflow
+        #Workflow().init()
+
         DbContainer.commit_thread_sql()
+
 
 
     def _do_login(self):

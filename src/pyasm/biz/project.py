@@ -636,11 +636,21 @@ class Project(SObject):
                 db_resource = DbResource.get_default("sthpw")
             return db_resource
 
+
         project_code = cls.get_database_by_search_type(search_type)
         project = Project.get_by_code(project_code)
         if not project:
             raise Exception("Error: Project [%s] does not exist" % project_code)
+
+
+        if search_type.startswith("salesforce/"):
+            db_resource_code = "Salesforce"
+            db_resource = DbResource.get_by_code(db_resource_code, project_code)
+            return db_resource
+
+
         db_resource = project.get_project_db_resource()
+
         return db_resource
     get_db_resource_by_search_type = classmethod(get_db_resource_by_search_type)
 

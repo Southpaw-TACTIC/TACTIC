@@ -92,7 +92,22 @@ class WidgetDbConfig(SObject):
             self.html = None
 
             # try getting the xml value:
-            self.xml = self.get_xml_value("config", "config")
+            category = self.get_value("category", no_exception=True)
+            search_type = self.get_value("search_type", no_exception=True)
+            
+            if not category and search_type:
+                config_xml = self.get_value("config")
+                config_xml = config_xml.replace("&lt;", "<")
+                config_xml = config_xml.replace("&gt;", ">")
+                config_xml = Common.run_mako(config_xml)
+
+                self.xml = Xml()
+                self.xml.read_string(config_xml)
+            else:
+                self.xml = self.get_xml_value("config")
+
+
+
 
             self.type = "xml"
             

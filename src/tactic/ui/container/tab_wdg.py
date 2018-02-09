@@ -2272,11 +2272,16 @@ spt.tab.close = function(src_el) {
 
 
 
-        title_div.add_style("min-width: 100px")
-        title_div.add_style("text-align: left")
-        title_div.add_style("overflow: hidden")
-        title_div.add_attr("nowrap", "nowrap")
-        title_div.add_style("float: left")
+
+        #if self.use_default_style:
+        if True:
+            title_div.add_style("min-width: 100px")
+            title_div.add_style("text-align: left")
+            title_div.add_style("overflow: hidden")
+            title_div.add_attr("nowrap", "nowrap")
+            title_div.add_style("float: left")
+
+
         title_div.add_class("spt_tab_header_label");
         #title_div.add_style("text-overflow: ellipsis")
         if len(title) > 20:
@@ -2291,11 +2296,35 @@ spt.tab.close = function(src_el) {
         title_div.add_attr("title", "%s (%s)" % (title, element_name))
 
         remove_wdg = DivWdg()
+        remove_wdg.add_class("spt_tab_remove")
 
         show_remove = self.kwargs.get("show_remove")
         if is_template or show_remove not in [False, 'false']:
             header.add(remove_wdg)
         #header.add(remove_wdg)
+
+        if show_remove == "hover":
+            remove_wdg.add_style("opacity: 0.0")
+
+            header.add_behavior( {
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                var el = bvr.src_el.getElement(".spt_tab_remove");
+                el.setStyle("opacity", 1);
+                '''
+
+            } )
+
+            header.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                var el = bvr.src_el.getElement(".spt_tab_remove");
+                el.setStyle("opacity", 0);
+                '''
+
+            } )
+
+
 
 
 

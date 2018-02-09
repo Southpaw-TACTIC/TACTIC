@@ -47,11 +47,11 @@ class Workflow(object):
 
     def init(self, startup=False):
 
-        #workflow = Config.get_value("services", "workflow")
-        #if workflow not in [True, 'true']:
-        #    return
+        is_initialized = Container.get("Workflow::is_initialized")
+        if is_initialized == "true":
+            return
 
-        print("Starting Workflow Engine")
+        print("Initializing Workflow Engine")
 
         # initialize the triggers for the workflow
         event = "process|pending"
@@ -90,7 +90,6 @@ class Workflow(object):
         trigger.set_value("class_name", ProcessRejectTrigger)
         trigger.set_value("mode", "same process,same transaction")
         Trigger.append_static_trigger(trigger, startup=startup)
-
 
         event = "process|revise"
         trigger = SearchType.create("sthpw/trigger")
@@ -144,6 +143,8 @@ class Workflow(object):
         trigger.set_value("mode", "same process,same transaction")
         Trigger.append_static_trigger(trigger, startup=startup)
 
+
+        Container.put("Workflow::is_initialized", "true")
 
 
 
@@ -363,7 +364,7 @@ class BaseProcessTrigger(Trigger):
 
     def set_all_tasks(self, sobject, process, status):
 
-        full_process_name = my.get_full_process_name(process)
+        full_process_name = self.get_full_process_name(process)
         tasks = Task.get_by_sobject(sobject, process=full_process_name)
 
         # prevent TaskStatusChangeTrigger from setting a custom task status back to complete
@@ -371,7 +372,7 @@ class BaseProcessTrigger(Trigger):
             self.internal = self.input.get("internal") or False
 
         if self.internal:
-            return
+            return tasks
 
         title = status.replace("-", " ")
         title = title.replace("_", " ")
@@ -970,7 +971,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process_obj = self.pipeline.get_process(self.process)
 
         error = self.input.get("error")
-
 
         # send revise single to previous processes
         input_processes = self.pipeline.get_input_processes(self.process)
