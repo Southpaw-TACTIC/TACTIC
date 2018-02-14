@@ -117,7 +117,12 @@ class BaseConfigWdg(BaseRefreshWdg):
 
         self.extra_data = self.kwargs.get("extra_data")
         if self.extra_data and isinstance(self.extra_data, basestring):
-            self.extra_data = jsonloads(self.extra_data)
+            try:
+                self.extra_data = jsonloads(self.extra_data)
+            except:
+                self.extra_data = self.extra_data.replace("'", '"')
+                self.extra_data = jsonloads(self.extra_data)
+
 
 
         # go through each element name and construct the handlers

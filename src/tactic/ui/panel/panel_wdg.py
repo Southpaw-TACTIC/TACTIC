@@ -3315,6 +3315,9 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['run_search_bvr'] = run_search_bvr
 
 
+        kwargs['config_xml'] = self.kwargs.get("config_xml")
+
+
         if layout == 'tile':
             from tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = self.kwargs.get("top_view")

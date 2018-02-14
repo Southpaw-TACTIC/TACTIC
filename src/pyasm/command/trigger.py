@@ -130,8 +130,29 @@ class Trigger(Command):
     append_trigger = staticmethod(append_trigger)
 
 
+    def serialize_data(cls, data):
+        try:
+            data = jsondumps(data)
+            return data
 
-    def call_all_triggers():
+        except Exception as e:
+
+            new_data = {}
+
+            for name, value in data.items():
+
+                if isinstance(value, SObject):
+                    value = value.get_sobject_dict()
+
+                new_data[name] = value
+
+            return new_data
+
+    serialize_data = classmethod(serialize_data)
+
+
+
+    def call_all_triggers(cls):
         '''calls all triggers for events that have occurred'''
         triggers = Container.get("Trigger:called_triggers")
         Container.remove("Trigger:called_triggers")
@@ -149,7 +170,7 @@ class Trigger(Command):
                 
                     # prevent recursive triggers shutting down the system
                     input = trigger.get_input()
-                    input_json = jsondumps(input)
+                    input_json = cls.serialize_data(input)
 
                     class_name = Common.get_full_class_name(trigger)
 
@@ -200,7 +221,7 @@ class Trigger(Command):
         finally:
             GlobalContainer.remove("KillThreadCmd:allow")
 
-    call_all_triggers = staticmethod(call_all_triggers)
+    call_all_triggers = classmethod(call_all_triggers)
 
 
 

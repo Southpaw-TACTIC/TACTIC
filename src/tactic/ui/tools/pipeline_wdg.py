@@ -51,13 +51,56 @@ class PipelineToolWdg(BaseRefreshWdg):
         inner = DivWdg()
         top.add(inner)
 
+        show_pipelines = self.kwargs.get("show_pipeline_list")
+
         #table = Table()
         table = ResizableTableWdg()
+        inner.add(table)
         table.add_style("width: 100%")
-
         table.add_color("background", "background")
         table.add_color("color", "color")
-        inner.add(table)
+
+
+
+        table.add_row()
+        if show_pipelines not in [False, 'false']:
+            left = table.add_cell()
+        right = table.add_cell()
+        info = table.add_cell()
+
+
+        """
+        container = DivWdg()
+        inner.add(container)
+        container.add_style("display: flex")
+        container.add_style("flex-direction: row")
+        container.add_style("flex-wrap: nowrap")
+        container.add_style("justify-content: center")
+        container.add_style("align-items: stretch")
+        container.add_style("width: 100%")
+        container.add_style("height: 100%")
+
+        if show_pipelines not in [False, 'false']:
+            left = DivWdg()
+            container.add(left)
+            left.add_style("overflow-y: auto")
+            left.add_style("overflow-x: hidden")
+
+        right = DivWdg()
+        right.add_style("flex-grow: 2")
+
+        container.add(right)
+        info = DivWdg()
+        container.add(info)
+
+
+        container.add_style("width: 100%")
+        container.add_color("background", "background")
+        """
+
+
+
+
 
         # create two events
         save_event = top.get_unique_event()
@@ -159,11 +202,8 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
 
-        table.add_row()
 
-        show_pipelines = self.kwargs.get("show_pipeline_list")
         if show_pipelines not in [False, 'false']:
-            left = table.add_cell()
             left.add_style("width: 200px")
             left.add_style("min-width: 100px")
             left.add_style("vertical-align: top")
@@ -174,12 +214,10 @@ class PipelineToolWdg(BaseRefreshWdg):
             left.add(pipeline_list)
 
 
-        right = table.add_cell()
-        #right.add_style("width: 500px")
 
         show_help = self.kwargs.get('show_help') or True
-
-        pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=self.kwargs.get('width'), save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'))
+        width = self.kwargs.get("width")
+        pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'))
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
@@ -218,7 +256,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         # NOTE: the canvas in PipelineCanvasWdg requires a set size ... it does not respond
         # well to sizes like 100% or auto.  Unless this is fixed, we cannot have a table
         # responsively respond to a changing window size.
-        info = table.add_cell()
+
         #info.add_style("display: none")
         info.add_class("spt_pipeline_tool_info")
         info.add_class("spt_panel") 
@@ -2269,8 +2307,9 @@ class DefaultInfoWdg(BaseInfoWdg):
         setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
         if setting in ["true"]:
 
-            from spt.modules.workflow import TaskDetailSettingWdg
-            detail_wdg = TaskDetailSettingWdg(
+            from spt.modules.workflow import TaskButtonDetailSettingWdg, TaskDetailSettingWdg
+            #detail_wdg = TaskDetailSettingWdg(
+            detail_wdg = TaskButtonDetailSettingWdg(
                     **self.kwargs
             )
 

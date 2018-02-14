@@ -571,7 +571,7 @@ class CustomPropertyAdderCbk(Command):
             columns = widget.get_required_columns()
 
             if columns:
-                print "WARNING: need to create columns: ", columns
+                print("WARNING: need to create columns: ", columns)
 
             self.info['element_name'] = element_name
 

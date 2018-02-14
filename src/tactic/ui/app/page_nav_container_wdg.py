@@ -166,7 +166,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
             node = self.config_xml.get_node("config/application/element[@name='%s']/display/%s" % (panel_name, name) )
 
             if isinstance( value, basestring ):
-                #print "WARNING: set application: skipping [%s] with value [%s]" % (name, value)
+                #print("WARNING: set application: skipping [%s] with value [%s]" % (name, value))
                 #continue
                 element = self.config_xml.create_text_element(name, value)
                 self.config_xml.append_child(display_node, element)
@@ -202,7 +202,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
             node = self.config_xml.get_node("config/application/element[@name='%s']/web/%s" % (panel_name, name) )
 
             if not isinstance(value, basestring):
-                print "WARNING: set application: skipping [%s] with value [%s]" % (name, value)
+                print("WARNING: set application: skipping [%s] with value [%s]" % (name, value))
                 continue
             element = self.config_xml.create_text_element(name, value)
             self.config_xml.append_child(value_node, element)
@@ -494,7 +494,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
 
            
-        except Exception, e:
+        except Exception as e:
             # handle an error in the drawing
             buffer = self.get_buffer_on_exception()
             error_wdg = self.handle_exception(e)
