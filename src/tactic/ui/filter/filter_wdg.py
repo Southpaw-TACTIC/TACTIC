@@ -231,7 +231,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 search.add_filter("view", view)
                 config_sobj = search.get_sobject()
             except SearchException as e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
                 config_sobj = None
 
             if config_sobj:

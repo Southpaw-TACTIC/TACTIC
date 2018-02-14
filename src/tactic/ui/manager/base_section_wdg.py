@@ -584,7 +584,7 @@ class SideBarSectionWdg(BaseSectionWdg):
                     if config.get_view_node():
                         configs.append(config)
 
-        except XmlException, e:
+        except XmlException as e:
             msg = "Error with view [%s]"% ' '.join(views)
             error_list = Container.get_seq(cls.ERR_MSG)
             if msg not in error_list:

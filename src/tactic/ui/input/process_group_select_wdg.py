@@ -158,7 +158,7 @@ Search.eval("@GET(sthpw/login_group['login_group',
             labels_dict[user_name] = label
             
             labels.append('%s'%label)
-            #print "select ", user_name
+            #print("select ", user_name)
 
         # -- NOTE: leaving this commented out code here for reference. Not sure why this is the case but when
         # --       this click behavior is used instead of a 'change' behavior that forces a blur on select,
@@ -243,9 +243,9 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                     attrs = pipeline.get_process_attrs(task.get_value('process'))
                 
                     td.add_attr('spt_pipeline_code', attrs.get('%s_login_group'%self.get_name()))
-            except SObjectSecurityException, e:
+            except SObjectSecurityException as e:
                 pass
-            except SearchException, e:
+            except SearchException as e:
                 if e.__str__().find('not registered') != -1:
                     pass
                 elif e.__str__().find('does not exist for database') != -1:

@@ -628,9 +628,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 inner.add_attr("spt_extra_data", self.extra_data)
 
 
-        #if self.config_xml:
-        #    inner.add_attr("spt_config_xml", self.config_xml)
-
         save_class_name = self.kwargs.get("save_class_name")
         if save_class_name:
             inner.add_attr("spt_save_class_name", save_class_name)
@@ -5139,6 +5136,11 @@ spt.table.save_changes = function(kwargs) {
     if (class_name == null) {
         class_name = 'tactic.ui.panel.EditMultipleCmd';
     }
+
+
+    var config_xml = layout.getAttribute("spt_config_xml");
+    console.log(layout);
+
     var kwargs = {
         parent_key: parent_key,
         search_keys: search_keys,
@@ -5150,6 +5152,8 @@ spt.table.save_changes = function(kwargs) {
         extra_action: JSON.stringify(extra_action),
         connect_key: connect_key,
         trigger_mode: kwargs.trigger_mode,
+        config_xml: config_xml,
+
     }
    
 
