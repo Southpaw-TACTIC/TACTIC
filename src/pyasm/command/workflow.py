@@ -450,7 +450,11 @@ class BaseProcessTrigger(Trigger):
             process_code = process_sobj.get_code()
             triggers = Trigger.call(self, event, kwargs, process=process_code)
             if triggers:
-                ret_val = triggers[0].get_ret_val()
+                try:
+                    ret_val = triggers[0].get_ret_val()
+                except Exception as e:
+                    print("WARNING: ", e)
+                    ret_val = ""
 
 
 

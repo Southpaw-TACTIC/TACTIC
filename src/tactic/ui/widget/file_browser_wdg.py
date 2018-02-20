@@ -1308,7 +1308,7 @@ class DirListPathHandler(BaseRefreshWdg):
             if self.max_level == -1:
                 count += 1
                 if count > 1000:
-                    print "Hitting maximum of 1000 entries"
+                    print("Hitting maximum of 1000 entries")
                     break
 
 
@@ -1323,7 +1323,7 @@ class DirListPathHandler(BaseRefreshWdg):
                 dirname = os.path.dirname(path.rstrip("/"))
                 basename = os.path.basename(path.rstrip("/"))
 
-                #print " "*level, level, path, basename
+                #print(" "*level, level, path, basename)
 
                 # FIXME: hard coded
                 if basename == '.versions':

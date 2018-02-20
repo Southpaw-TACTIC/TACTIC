@@ -1803,6 +1803,9 @@ class Security(Base):
 
 
 
+    def generate_ticket(self, login_name, expiry=None, category=None):
+        return self._generate_ticket(login_name, expiry, category)
+
 
     def _generate_ticket(self, login_name, expiry=None, category=None):
         # create a new ticket for the user

@@ -40,7 +40,7 @@ class SetupManagerWdg(BaseRefreshWdg):
         try:
             cmd = DatabaseManagerCbk()
             cmd.execute()
-        except CommandException, e:
+        except CommandException as e:
             error = str(e)
         else:
             error = None
@@ -57,7 +57,7 @@ class SetupManagerWdg(BaseRefreshWdg):
             return div
 
         #security = Environment.get_security().get_login()
-        #print security
+        #print(security)
         error_for_user = DatabaseErrorWdg()
         div.add(error_for_user)
         return div
