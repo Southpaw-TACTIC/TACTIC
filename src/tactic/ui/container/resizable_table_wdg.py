@@ -39,7 +39,7 @@ class ResizableTableWdg(BaseRefreshWdg):
         self.table.add_class(name)
 
     def get_display(self):
-        top = DivWdg()
+        top = self.top
 
         self.table.add_class("spt_resizable_table_top")
 
@@ -67,7 +67,6 @@ class ResizableTableWdg(BaseRefreshWdg):
         }
         '''
         } )
-
 
 
         top.add(self.table)

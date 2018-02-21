@@ -1096,15 +1096,14 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
         #results_div.add_style("top: 25px")
-        results_div.add_style("top: %spx" % (self.height - 10))
+        results_div.add_style("top: %spx" % (self.height))
         results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")
         results_div.add_style("padding: 5px 10px 10px 5px")
         results_div.add_style("min-width: 220px")
         results_div.add_style("z-index: 1000")
-        results_div.add_style("font-size: 16px")
-        results_div.add_style("font-weight: bold")
+        results_div.add_style("font-size: 14px")
         results_div.add_border()
         results_div.set_box_shadow()
         results_div.add_class("spt_input_text_results")
@@ -1599,7 +1598,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
             results = search.get_sobjects()
 
             info_dict['results'] = results
-   
+  
+
+
         mode = self.kwargs.get("mode")
         if mode == "icon":
 
