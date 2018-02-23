@@ -1316,7 +1316,6 @@ class Snapshot(SObject):
         @return
         snapshot sobject
         '''
-
         # get from the database
         snapshot = Snapshot._get_by_version(search_type, search_id,
             context=context, version=version,
@@ -1455,6 +1454,7 @@ class Snapshot(SObject):
         if process != None:
             if isinstance(process, list):
                 search.add_enum_order_by("process", process)
+                search.add_filters("process", process)
             else:
                 search.add_filter("process", process)
             key = '%s:process=%s' %(key, process)
