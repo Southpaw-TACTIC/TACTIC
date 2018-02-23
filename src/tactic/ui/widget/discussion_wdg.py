@@ -1764,6 +1764,8 @@ class NoteWdg(BaseRefreshWdg):
                 server.delete_sobject(search_key);
 
                 spt.discussion.refresh(activator);
+
+                spt.panel.refresh_element(activator);
             } )
             
             '''
