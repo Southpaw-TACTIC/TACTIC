@@ -911,6 +911,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             """
 
             scroll.add_style("overflow-y: auto")
+
+            # Moo scrollbar
+            """
+            scroll.add_style("overflow-y: hidden")
+            scroll.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                new Scrollable(bvr.src_el, null);
+                '''
+            } )
+            """
+
+
+
             scroll.add_style("overflow-x: hidden")  
 
             # new
@@ -2535,7 +2549,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             td.add(add_div)
             add_div.add_style("display: inline-block")
             add_div.add_style("float: right")
-            add_div.add_style("margin: 3px 8px 3px 5px")
+            #add_div.add_style("margin: 3px 8px 3px 5px")
+            add_div.add_style("width: 30px")
+            add_div.add_style("padding: 5px")
+            add_div.add_class("tactic_hover")
+            add_div.add_style("text-align: center")
+            add_div.add_style("box-sizing: border-box")
             add_div.add_class("hand")
             add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
             add_div.add_behavior( {
@@ -2552,6 +2571,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     extra_data: bvr.extra_data,
                 }
                 spt.panel.load_popup("Insert", class_name, kwargs);
+
+                '''
+            } )
+
+            add_div.add_behavior( {
+                "type": "clickX",
+                "search_type": self.search_type,
+                "extra_data": extra_data,
+                "cbjs_action": '''
+
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+                var group_el = bvr.src_el.getParent(".spt_group_row");
+                var new_row = spt.table.add_new_item({row: group_el});
+                new_row.extra_data = bvr.extra_data;
 
                 '''
             } )
@@ -3402,7 +3436,7 @@ spt.table.get_all_search_keys = function() {
         if (rows[i].hasClass("spt_removed")) {
             continue;
         }
-        var search_key = rows[i].getAttribute("spt_search_key");
+        var search_key = rows[i].getAttribute("spt_search_key_v2");
         if (search_key)
             search_keys.push(search_key);
     }
@@ -4028,7 +4062,11 @@ spt.table.add_new_item = function(kwargs) {
     var row;
     var position;
     var table = spt.table.get_table();
-    if (kwargs.insert_location == 'bottom') {
+    if (kwargs.row) {
+        row = kwargs.row;
+        position = "after";
+    }
+    else if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
             row = table.getElement(".spt_table_header_row");
@@ -4043,6 +4081,7 @@ spt.table.add_new_item = function(kwargs) {
         row = table.getElement(".spt_table_row");
         position = "before";
     }
+
 
 
     var clone = spt.behavior.clone(insert_row);
@@ -5139,7 +5178,6 @@ spt.table.save_changes = function(kwargs) {
 
 
     var config_xml = layout.getAttribute("spt_config_xml");
-    console.log(layout);
 
     var kwargs = {
         parent_key: parent_key,

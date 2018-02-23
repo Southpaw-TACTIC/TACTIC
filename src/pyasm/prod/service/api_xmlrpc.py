@@ -2189,7 +2189,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 pass
             elif isinstance(results[0], pyasm.search.SObject):
                 results = self._get_sobjects_dict(results)
-                return results
+                #return results
 
         else:
             if isinstance(results, pyasm.search.SObject):
