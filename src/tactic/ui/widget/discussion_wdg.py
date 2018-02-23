@@ -2345,22 +2345,50 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             var file = files[i];
             file_names.push(file.name);
 
-            var loadingImage = loadImage(
-                file,
-                function (img) {
-                    var div = $(document.createElement("div"));
-                    list.appendChild(div);
-                    div.setStyle("padding", "0px 5px");
-                    div.setStyle("display", "inline-block");
-                    div.setStyle("vertical-align", "middle");
-                    div.setStyle("width", "80px");
-                    img = $(img);
-                    div.appendChild(img)
-                    img.setStyle("width", "100%");
-                    img.setStyle("height", "auto");
-                },
-                {maxWidth: 80, canvas: true, contains: true}
-            );
+            var ext = file.name.split('.').pop().toUpperCase();
+            if (ext == "JPG" || ext == "PNG" || ext == "GIF") {
+                var loadingImage = loadImage(
+                    file,
+                    function (img) {
+                        var div = $(document.createElement("div"));
+                        list.appendChild(div);
+                        div.setStyle("padding", "0px 5px");
+                        div.setStyle("display", "inline-block");
+                        div.setStyle("vertical-align", "middle");
+                        div.setStyle("width", "80px");
+
+
+                        img = $(img);
+                        div.appendChild(img)
+                        img.setStyle("width", "100%");
+                        img.setStyle("height", "auto");
+                    },
+                    {maxWidth: 80, canvas: true, contains: true}
+                );
+
+            }
+            else {
+                var div = $(document.createElement("div"));
+                list.appendChild(div);
+                div.setStyle("padding", "0px 5px");
+                div.setStyle("display", "inline-block");
+                div.setStyle("vertical-align", "middle");
+                div.setStyle("width", "80px");
+                div.setStyle("height", "60px");
+                div.setStyle("border", "solid 1px #DDD");
+                div.setStyle("border-radius", "5px");
+                div.setStyle("background", "#D9D9D9");
+                div.setStyle("box-sizing", "border-box");
+                div.setStyle("padding", "5px");
+                div.setStyle("text-align", "center");
+                div.setStyle("white-space", "nowrap");
+                div.setStyle("overflow", "hidden");
+                div.setStyle("text-overflow", "ellipsis");
+                div.setAttribute("title", file.name);
+
+
+                div.innerHTML = "<span style='font-size: 1.2em'>"+ext+"</span>" + "<br/><br/>" + "<span style='font-size: 0.8em;'>" + file.name + "</span>";
+            }
 
             top.files.push(file.name);
         }

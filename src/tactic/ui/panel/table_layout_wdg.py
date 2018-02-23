@@ -3436,7 +3436,7 @@ spt.table.get_all_search_keys = function() {
         if (rows[i].hasClass("spt_removed")) {
             continue;
         }
-        var search_key = rows[i].getAttribute("spt_search_key");
+        var search_key = rows[i].getAttribute("spt_search_key_v2");
         if (search_key)
             search_keys.push(search_key);
     }
