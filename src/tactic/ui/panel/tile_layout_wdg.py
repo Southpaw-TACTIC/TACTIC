@@ -2533,6 +2533,12 @@ class ThumbWdg2(BaseRefreshWdg):
         lib_path = None
         main_path = None
 
+
+        processes =  self.kwargs.get("processes") or ['icon','publish','']
+        if isinstance( processes, basestring):
+            processes = processes.split(",")
+
+
         base_search_type = sobject.get_base_search_type()
         if base_search_type == "sthpw/snapshot":
             #sobject = sobject.get_parent()
@@ -2545,12 +2551,13 @@ class ThumbWdg2(BaseRefreshWdg):
                 search_code = sobject.get_id()
 
 
+
             # FIXME: make this faster
-            snapshot = Snapshot.get_snapshot(search_type, search_code, process=['icon','publish',''])
+            snapshot = Snapshot.get_snapshot(search_type, search_code, process=processes)
 
 
         if not snapshot:
-            snapshot = Snapshot.get_snapshot("sthpw/search_object", base_search_type, process=['icon','publish',''])
+            snapshot = Snapshot.get_snapshot("sthpw/search_object", base_search_type, process=processes)
 
 
         if snapshot:

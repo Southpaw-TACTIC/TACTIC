@@ -54,6 +54,8 @@ class ThumbWdg(BaseTableElementWdg):
             'order': 1,
             'category': 'Display'
             },
+
+
          "icon_size": {
             "description": "control the icon size by percentage. e.g. 80%",
             'type': 'TextWdg',
@@ -67,6 +69,13 @@ class ThumbWdg(BaseTableElementWdg):
             'category': 'Display',
             },
  
+        "cascade_search": {
+            "description": "determines whether to keep looking for any image to use as an icon",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display'
+            },
+
 
         "filename": {
             "description": "whether to display the main file name for download",
@@ -384,24 +393,32 @@ class ThumbWdg(BaseTableElementWdg):
                     icon_context = None
                 else:
                     icon_context = self.sobjects[0].get_icon_context(self.context)
+
+
+                cascade_search = self.get_option('cascade_search') or 'true'
+
                 try:
                     if self.version == None:
                         self.data = Snapshot.get_by_sobjects(self.sobjects, icon_context, is_latest=True, return_dict=True)
-                        # verify if we get icon for all
-                        if len(self.data) < len(self.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(self.sobjects, self.DEFAULT_CONTEXT, is_latest=True, return_dict=True)
-                            self._update_data(publish_data)
-
-                        # verify if we get icon for all
-                        if len(self.data) < len(self.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(self.sobjects, process=self.DEFAULT_PROCESS, is_latest=True, return_dict=True)
-                            self._update_data(publish_data)
 
 
-                        # verify if we get icon for all
-                        if len(self.data) < len(self.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(self.sobjects, is_latest=True, return_dict=True)
-                            self._update_data(publish_data)
+                        if cascade_search != "false":
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, self.DEFAULT_CONTEXT, is_latest=True, return_dict=True)
+                                self._update_data(publish_data)
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, process=self.DEFAULT_PROCESS, is_latest=True, return_dict=True)
+                                self._update_data(publish_data)
+
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, is_latest=True, return_dict=True)
+                                self._update_data(publish_data)
 
 
 
@@ -410,20 +427,22 @@ class ThumbWdg(BaseTableElementWdg):
                     else:
                         self.data = Snapshot.get_by_sobjects(self.sobjects, icon_context, version=self.version, return_dict=True)
 
-                        # verify if we get icon for all
-                        if len(self.data) < len(self.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(self.sobjects, self.DEFAULT_CONTEXT, version=self.version, return_dict=True)
-                            self._update_data(publish_data)
+                        if cascade_search != "false":
 
-                        # verify if we get icon for all
-                        if len(self.data) < len(self.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(self.sobjects, process=self.DEFAULT_PROCESS, version=self.version, return_dict=True)
-                            self._update_data(publish_data)
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, self.DEFAULT_CONTEXT, version=self.version, return_dict=True)
+                                self._update_data(publish_data)
 
-                        # verify if we get icon for all
-                        if len(self.data) < len(self.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(self.sobjects, version=self.version, return_dict=True)
-                            self._update_data(publish_data)
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, process=self.DEFAULT_PROCESS, version=self.version, return_dict=True)
+                                self._update_data(publish_data)
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, version=self.version, return_dict=True)
+                                self._update_data(publish_data)
 
 
 
