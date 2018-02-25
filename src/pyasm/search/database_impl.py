@@ -199,8 +199,8 @@ class DatabaseImpl(DatabaseImplInterface):
         data = f.read()
         f.close()
 
-        print "Importing sql to database [%s]..." % (database)
-        print "   using path [%s]" % (path)
+        print("Importing sql to database [%s]..." % (database))
+        print("   using path [%s]" % (path))
 
         cmds = data.split(";")
         for cmd in cmds:
@@ -290,8 +290,8 @@ class DatabaseImpl(DatabaseImplInterface):
                 return False
             # cache it for repeated use
             Container.put("Sql:database_exists:%s"%db_resource.get_key(), True) 
-        except Exception, e:
-            #print "Error: ", str(e)
+        except Exception as e:
+            #print("Error: ", str(e))
             return False
         else:
             return True
@@ -705,7 +705,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         #postfix_len = '_id_seq'.__len__()
         #table_name_len = sequence_name.__len__() - postfix_len
         #table_name = sequence_name[0:table_name_len] 
-        #print '  get_create_sequence: table_name = ', table_name
+        #print('  get_create_sequence: table_name = ', table_name)
         #return 'ALTER TABLE %s ADD %s INT IDENTITY(100, 5) ' % (table_name, sequence_name)
         #return 'ALTER COLUMN %s ADD %s INT IDENTITY(100, 5) ' % (table_name, sequence_name)
         return
@@ -1225,17 +1225,17 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:
-            print "No output from sql command to create db [%s], assumed success" % database
+            print("No output from sql command to create db [%s], assumed success" % database)
             cmd.close()
             return
             #raise Exception("Error creating database '%s'" % database)
         cmd.close()
 
         if result[0].find("already exists") != -1:
-            print "already exists"
-            print "  Try deleting C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLEXPRESS\MSSQL\DATA\<database_name>.mdf"
+            print("already exists")
+            print("  Try deleting C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLEXPRESS\MSSQL\DATA\<database_name>.mdf")
         else:
-            print "no returned result from database creation (sqlcmd)"
+            print("no returned result from database creation (sqlcmd)")
 
 
     def drop_database(self, db_resource):
@@ -1260,11 +1260,11 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:
-            print "No output from sql command to drop db [%s], assumed success" % database
+            print("No output from sql command to drop db [%s], assumed success" % database)
             cmd.close()
             return
         else:
-            print result
+            print("Drop database: ", result)
         cmd.close()
 
     def get_modify_column(self, table, column, type, not_null=None):
@@ -1329,11 +1329,11 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                   (self.server, self.port, self.user, self.password, database, schema_path)
 
            
-            print "Importing schema ..."
-            print cmd
+            print("Importing schema ...")
+            print(cmd)
             os.system(cmd)
             #program = subprocess.call(cmd, shell=True)
-            #print "FINSIHED importing schema"
+            #print("FINSIHED importing schema")
 
 
     def import_default_data(self, db_resource, type):
@@ -1359,8 +1359,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         cmd = 'sqlcmd -S %s,%s -U %s -P %s -d %s -i "%s"' % \
               (self.server, self.port, self.user, self.password, database, data_path)
 
-        print "Importing data ..."
-        print cmd
+        print("Importing data ...")
+        print(cmd)
         os.system(cmd)
 
 
@@ -1786,7 +1786,6 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         else:
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
             
-        print "\"%s\" %s '%s'" %(column, op, regex)
         return "\"%s\" %s '%s'" %(column, op, regex)
 
 
@@ -1876,7 +1875,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         result = cmd.readlines()
         # Psql 8.3 doesn't have outputs on creation
         if not result:
-            print "no output, assumed success"
+            print("no output, assumed success")
             return
             #raise Exception("Error creating database '%s'" % database)
         cmd.close()
@@ -1884,11 +1883,11 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         
 
         if result[0] == "CREATE DATABASE":
-            print "success"
+            print("success")
         elif result[0].endswith("already exists"):
-            print "already exists"
+            print("already exists")
         else:
-            print "no returned result from database creation (psql 8.2+)"
+            print("no returned result from database creation (psql 8.2+)")
 
 
     def drop_database(self, db_resource):
@@ -1926,7 +1925,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             sql.do_query("""SELECT pg_terminate_backend(pg_stat_activity.%s)
             FROM pg_stat_activity WHERE pg_stat_activity.datname = '%s'"""%(col_name, database))
 
-        print "Dropping Database [%s] ..." % database
+        print("Dropping Database [%s] ..." % database)
         """
         isolation_level = sql.conn.isolation_level
         sql.conn.set_isolation_level(0)
@@ -1998,8 +1997,8 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             return
 
         schema = 'psql -q %s %s < "%s"' % (self._get_db_info(db_resource), database, schema_path)
-        print "Importing data ..."
-        print schema
+        print("Importing data ...")
+        print(schema)
         os.system(schema)
     """
 
@@ -2034,8 +2033,8 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                     columns = group.lstrip('(').rstrip(')')
                     columns = columns.split(',')
                 constraint['columns'] = columns
-        except Exception, e:
-            print e
+        except Exception as e:
+            print("ERROR: ", e)
 
 
         return constraints
@@ -2467,7 +2466,7 @@ class OracleImpl(PostgresImpl):
 
             statement =  select.get_statement()
             results = sql.do_query(statement)
-            #print results
+            #print(results)
 
             info = {}
             for result in results:
@@ -3246,7 +3245,7 @@ class MySQLImpl(PostgresImpl):
         #(0, u'id', u'integer', 1, None, 0)
         for result in results:
             #if table == "search_object":
-            #    print "result: ", result
+            #    print("result: ", result)
 
             name = result[0]
             data_type = result[1]
@@ -3499,11 +3498,11 @@ class MySQLImpl(PostgresImpl):
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:
-            print "No output from sql command to drop db [%s], assumed success" % database
+            print("No output from sql command to drop db [%s], assumed success" % database)
             cmd.close()
             return
         else:
-            print result
+            print(result)
         cmd.close()
 
 
@@ -3515,7 +3514,7 @@ class TacticImpl(PostgresImpl):
 
     class TacticCursor(object):
         def execute():
-            print "execute"
+            print("execute")
 
     # Mimic DB2 API
     OperationalError = Exception
@@ -3537,7 +3536,6 @@ class TacticImpl(PostgresImpl):
     def get_table_info(self, db_resource):
         search_type = "table/whatever?project=fifi"
         table_info = self.server.get_table_info(search_type)
-        print "xxx: ", table_info
         return table_info
 
 
