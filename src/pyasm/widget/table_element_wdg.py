@@ -74,7 +74,7 @@ class BaseTableElementWdg(HtmlElement):
         self.web = WebContainer.get_web()
         self.is_preprocessed = False
 
-        # FIXME: this should really be put in with  list of attrs
+        # NOTE: this should really be put in with  list of attrs
         self.width = 0
         self.view_attributes = {}
         self.attributes = {}
@@ -83,7 +83,7 @@ class BaseTableElementWdg(HtmlElement):
 
         self.generator_element = None
 
-        # FIXME: not sure what the different between these two are
+        # NOTE: not sure what the different between these two are
         self.parent_wdg = None
         self.layout_wdg = None
 

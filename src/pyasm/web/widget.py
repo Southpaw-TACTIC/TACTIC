@@ -585,22 +585,40 @@ class WidgetSettings(SObject):
     # Simple explicit functions with no manipulation of data
     #
 
-    def get_value_by_key(key, auto_create=True):
+    def get_value_by_key(key, auto_create=True, default="", is_json=False):
         if not DATABASE:
-            return ""
+            return default
 
         settings = WidgetSettings.get_by_key(key, auto_create=auto_create)
         if not settings:
-            return ""
+            return default
+
         value_str = settings.get_value("data")
+
+
+
+        if is_json:
+            if not value_str:
+                value_str = default
+            else:
+                try:
+                    value_str = jsonloads(value_str)
+                except Exception as e:
+                    print("WARNING: ", e)
+                    return default
+
+
         return value_str
     get_value_by_key = staticmethod(get_value_by_key)
 
 
-    def set_value_by_key(key, value):
+    def set_value_by_key(key, value, default=""):
         '''set and commit the value'''
         if not DATABASE:
-            return ""
+            return default
+
+        if isinstance(value, list) or isinstance(value, dict):
+            value = jsondumps(value)
 
         settings = WidgetSettings.get_by_key(key, auto_create=True)
         settings.set_value("data", value)
