@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl']
+__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl', 'DatabaseImplException']
 
 import os, sys, types, re
 import subprocess
@@ -94,11 +94,27 @@ class DatabaseImpl(DatabaseImplInterface):
         elif vendor == "MongoDb":
             from mongodb import MongoDbImpl
             return MongoDbImpl()
+
         elif vendor == "TACTIC":
             return TacticImpl()
+
+        else:
+            class_name = Config.get_value(vendor, "class")
+
+            from pyasm.common import Common
+            from pyasm.search import Search
+            search = Search("sthpw/db_resource")
+            search.add_filter("vendor", vendor)
+            sobject = search.get_sobject()
+            if sobject:
+                impl_class = sobject.get_value("db_impl_class", no_exception=True)
+                impl_class = "spt.tools.salesforce.SalesforceImpl"
+                return Common.create_from_class_path(impl_class)
+
         raise DatabaseImplException("Vendor [%s] not supported" % vendor)
 
     get = staticmethod(get)
+
 
 
     def preprocess_sql(self, data, unquoted_cols):

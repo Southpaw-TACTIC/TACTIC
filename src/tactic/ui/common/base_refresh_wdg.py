@@ -136,13 +136,13 @@ class BaseRefreshWdg(Widget):
                         id = int(code)
                         search.add_filter("id", id)
                         search.add_where("or")
-                    except ValueError, e:
+                    except ValueError as e:
                         pass
                 elif id:
                     try:
                         #id = int(code)
                         search.add_filter("id", id)
-                    except ValueError, e:
+                    except ValueError as e:
                         pass
                         #search.add_filter("code", code)
 
@@ -253,8 +253,8 @@ class BaseRefreshWdg(Widget):
             if state != 'null':
                 try:
                     state = eval(state)
-                except Exception, e:
-                    print "WARNING: ", str(e)
+                except Exception as e:
+                    print("WARNING: ", str(e))
                     state = {}
         return state
     process_state = staticmethod(process_state)

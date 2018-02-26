@@ -332,7 +332,7 @@ class SnapshotDirListWdg(DirListWdg):
         file_objects = self.kwargs.get("files")
         file_object = file_objects.get(path)
         if not file_object:
-            print "WARNING: No file object for [%s]" % path
+            print("WARNING: No file object for [%s]" % path)
             return
         file_search_key = file_object.get_search_key()
 
@@ -1232,8 +1232,8 @@ class PathMetadataWdg(BaseRefreshWdg):
                         break
                 if not is_ascii:
                     continue
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 continue
 
 

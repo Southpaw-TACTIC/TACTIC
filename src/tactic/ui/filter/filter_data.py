@@ -51,7 +51,7 @@ class FilterData(object):
                 # try a straight eval
                 self.data = eval(data)
 
-            except Exception, e:
+            except Exception as e:
                  if e.__str__().find('cannot parse JSON description') != -1:
                     raise SetupException('Data is not valid JSON.')
 

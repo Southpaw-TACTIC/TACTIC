@@ -88,6 +88,15 @@ except ImportError, e:
     pass
 
 
+# Salesforce
+"""
+try:
+    import simple_salesforce
+    DATABASE_DICT["Salesforce"] = simple_salesforce
+except ImportError, e:
+    pass
+"""
+
 
 
 # TACTIC Database
@@ -148,6 +157,7 @@ class Sql(Base):
     DO_QUERY_ERR = "do_query error"
 
     def __init__(self, database_name, host=None, user=None, password=None, vendor=None, port=None):
+
         if DbResource.is_instance(database_name):
             db_resource = database_name
             host = db_resource.get_host()
@@ -561,6 +571,13 @@ class Sql(Base):
                 from mongodb import MongoDbConn
                 self.conn = MongoDbConn(self.database_name)
 
+            elif self.vendor == "Salesforce":
+
+                database_impl = DatabaseImpl.get(self.vendor)
+                #self.conn = database_impl.get_connection()
+
+                from spt.tools.salesforce import SalesforceConn
+                self.conn = SalesforceConn(self.database_name)
 
             elif self.vendor == "TACTIC":
                 from pyasm.search import TacticImpl
@@ -688,7 +705,6 @@ class Sql(Base):
 
 
             vendor = self.get_vendor()
-            #if vendor == "MongoDb":
             if isinstance(query, Select):
                 self.results = query.execute(self)
             else:
@@ -1067,7 +1083,15 @@ class DbResource(Base):
         if not self.vendor:
             self.vendor = Sql.get_default_database_type()
 
-        assert self.vendor in VENDORS
+
+        # check to see if vendor is supported
+        try:
+            impl = DatabaseImpl.get(self.vendor)
+            if self.vendor not in VENDORS:
+                VENDORS.append(self.vendor)
+                DATABASE_DICT[self.vendor] = impl.get_module()
+        except Exception as e:
+            assert self.vendor in VENDORS
 
         self.user = user
         self.password = password
@@ -1778,31 +1802,6 @@ class Select(object):
         if vendor == "MongoDb":
             impl = db_resource.get_database_impl()
             results = impl.execute_query(sql, self)
-            """
-            table = self.tables[0]
-            collection = conn.get_collection(table)
-            self.cursor = collection.find(self.raw_filters)
-            if self.order_bys:
-                sort_list = []
-                for order_by in self.order_bys:
-                    parts = order_by.split(" ")
-                    order_by = parts[0]
-                    if len(parts) == 2:
-                        direction = parts[1]
-                    else:
-                        direction = "asc"
-
-                    if direction == "desc":
-                        sort_list.append( [order_by, -1] )
-                    else:
-                        sort_list.append( [order_by, 1] )
-
-                    self.cursor.sort(sort_list)
-
-            results = []
-            for result in self.cursor:
-                results.append(result)
-            """
 
         else:
 

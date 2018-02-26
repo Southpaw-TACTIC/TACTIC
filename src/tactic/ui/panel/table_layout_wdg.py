@@ -628,9 +628,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 inner.add_attr("spt_extra_data", self.extra_data)
 
 
-        #if self.config_xml:
-        #    inner.add_attr("spt_config_xml", self.config_xml)
-
         save_class_name = self.kwargs.get("save_class_name")
         if save_class_name:
             inner.add_attr("spt_save_class_name", save_class_name)
@@ -914,6 +911,20 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             """
 
             scroll.add_style("overflow-y: auto")
+
+            # Moo scrollbar
+            """
+            scroll.add_style("overflow-y: hidden")
+            scroll.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                new Scrollable(bvr.src_el, null);
+                '''
+            } )
+            """
+
+
+
             scroll.add_style("overflow-x: hidden")  
 
             # new
@@ -925,10 +936,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_behavior( {
                     'type': 'load',
                     'cbjs_action': '''
-                    //var y = window.getSize().y;
-                    //var y = window.getSize().y * 0.80;
-                    //bvr.src_el.setStyle('height', y);
-                    bvr.src_el.setStyle('height', '100%');
+                    var y = window.getSize().y;
+                    bvr.src_el.setStyle('height', y);
                     '''
                     } )
 
@@ -1974,6 +1983,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             show_border = self.kwargs.get("show_border")
             if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border: solid 1px %s" % border_color)
+            elif show_border == 'horizontal':
+                th.add_style("border-width: 0px 0px 1px 0px")
+                th.add_style("border-style: solid")
+                th.add_style("border-color: %s" % border_color)
 
             edit_wdg = self.edit_wdgs.get(name)
             if edit_wdg:
@@ -2178,13 +2191,26 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         label = '---'
                     else:
                         group_label_expr = self.kwargs.get("group_label_expr")
+                        group_label_link = self.kwargs.get("group_label_link")
+                        group_label_view = self.kwargs.get("group_label_view")
+
                         if group_label_expr:
                             label = Search.eval(group_label_expr, sobjects, single=True)
+                        elif group_label_view:
+                            from tactic.ui.panel import CustomLayoutWdg
+                            label = CustomLayoutWdg(
+                                    view=group_label_view,
+                                    group_value=group_value,
+                                    sobjects=sobjects,
+
+                            )
                         else:
                             label = Common.process_unicode_string(group_value)
 
-                    title = label
 
+                    title = DivWdg()
+                    title.add_style("display: inline-block")
+                    title.add(label)
                     group_div.add(title)
 
 
@@ -2521,7 +2547,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             td.add(add_div)
             add_div.add_style("display: inline-block")
             add_div.add_style("float: right")
-            add_div.add_style("margin: 3px 8px 3px 5px")
+            #add_div.add_style("margin: 3px 8px 3px 5px")
+            add_div.add_style("width: 30px")
+            add_div.add_style("padding: 5px")
+            add_div.add_class("tactic_hover")
+            add_div.add_style("text-align: center")
+            add_div.add_style("box-sizing: border-box")
             add_div.add_class("hand")
             add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
             add_div.add_behavior( {
@@ -2538,6 +2569,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     extra_data: bvr.extra_data,
                 }
                 spt.panel.load_popup("Insert", class_name, kwargs);
+
+                '''
+            } )
+
+            add_div.add_behavior( {
+                "type": "clickX",
+                "search_type": self.search_type,
+                "extra_data": extra_data,
+                "cbjs_action": '''
+
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+                var group_el = bvr.src_el.getParent(".spt_group_row");
+                var new_row = spt.table.add_new_item({row: group_el});
+                new_row.extra_data = bvr.extra_data;
 
                 '''
             } )
@@ -2608,7 +2654,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         # remember the original background colors
         bgcolor1 = table.get_color("background")
-        bgcolor2 = table.get_color("background", -1)
+        #bgcolor2 = table.get_color("background", -1)
+        bgcolor2 = bgcolor1
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
 
@@ -2938,10 +2985,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border", "solid 1px %s" % border_color)
+            elif show_border == 'horizontal':
+                th.add_style("border-width: 0px 0px 1px 0px")
+                th.add_style("border-style: solid")
+                th.add_style("border-color: %s" % border_color)
+
+
 
         th = table.add_cell()
         if show_border not in [False, "false", 'horizontal']:
             th.add_style("border", "solid 1px %s" % border_color)
+        elif show_border == 'horizontal':
+            th.add_style("border-width: 0px 0px 1px 0px")
+            th.add_style("border-style: solid")
+            th.add_style("border-color: %s" % border_color)
+
+
+
 
         th.add_looks( 'dg_row_select_box' )
         th.add_class( 'spt_table_header_select' )
@@ -3374,7 +3434,7 @@ spt.table.get_all_search_keys = function() {
         if (rows[i].hasClass("spt_removed")) {
             continue;
         }
-        var search_key = rows[i].getAttribute("spt_search_key");
+        var search_key = rows[i].getAttribute("spt_search_key_v2");
         if (search_key)
             search_keys.push(search_key);
     }
@@ -4000,7 +4060,11 @@ spt.table.add_new_item = function(kwargs) {
     var row;
     var position;
     var table = spt.table.get_table();
-    if (kwargs.insert_location == 'bottom') {
+    if (kwargs.row) {
+        row = kwargs.row;
+        position = "after";
+    }
+    else if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
             row = table.getElement(".spt_table_header_row");
@@ -4015,6 +4079,7 @@ spt.table.add_new_item = function(kwargs) {
         row = table.getElement(".spt_table_row");
         position = "before";
     }
+
 
 
     var clone = spt.behavior.clone(insert_row);
@@ -5108,6 +5173,10 @@ spt.table.save_changes = function(kwargs) {
     if (class_name == null) {
         class_name = 'tactic.ui.panel.EditMultipleCmd';
     }
+
+
+    var config_xml = layout.getAttribute("spt_config_xml");
+
     var kwargs = {
         parent_key: parent_key,
         search_keys: search_keys,
@@ -5119,6 +5188,8 @@ spt.table.save_changes = function(kwargs) {
         extra_action: JSON.stringify(extra_action),
         connect_key: connect_key,
         trigger_mode: kwargs.trigger_mode,
+        config_xml: config_xml,
+
     }
    
 
