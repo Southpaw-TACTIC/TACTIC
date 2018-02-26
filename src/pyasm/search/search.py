@@ -4773,7 +4773,11 @@ class SObject(object):
         for name, value in self.data.items():
             if value == None or name == 'code':
                 continue
-            clone.set_value(name, value)
+
+            if isinstance(value, list) or isinstance(value, dict):
+                clone.set_json_value(name, value)
+            else:
+                clone.set_value(name, value)
 
         del(clone.update_data['id'])
         clone.set_id(-1)
