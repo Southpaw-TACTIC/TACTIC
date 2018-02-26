@@ -995,7 +995,8 @@ def get_app_server_class():
         from webware_adapter import get_app_server
     elif app_server == "cherrypy":
         import cherrypy
-        if cherrypy.__version__.startswith("3."):
+        cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
+        if cherrypy_major_version >= 3:
             from cherrypy30_adapter import get_app_server
         else:
             from cherrypy_adapter import get_app_server
@@ -1017,7 +1018,8 @@ def get_xmlrpc_server_class():
         from webware_adapter import get_xmlrpc_server
     elif app_server == "cherrypy":
         import cherrypy
-        if cherrypy.__version__.startswith("3."):
+        cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
+        if cherrypy_major_version >= 3:
             from cherrypy30_adapter import get_xmlrpc_server
         else:
             from cherrypy_adapter import get_xmlrpc_server

@@ -48,7 +48,6 @@ class UploadServerWdg(Widget):
                 items = self.dump(field_storage, file_name)
                 files.extend(items)
 
-
         else:
             field_storage = web.get_form_value("file")
             if field_storage:
@@ -116,7 +115,7 @@ class UploadServerWdg(Widget):
         
         if custom_upload_dir:
             if subdir:
-                file_dir = "%s/%s"%(file_dir,subdir)
+                file_dir = "%s/%s" % (file_dir, subdir)
             else:
                 file_dir = custom_upload_dir
 
@@ -131,7 +130,7 @@ class UploadServerWdg(Widget):
             action = "create"
 
         '''
-        With some recent change done in cherrypy._cpreqbody line 294, 
+        With some recent change done in cherrypy._cpreqbody line 517, 
         we can use the field storage directly on Linux when the file
         is uploaded in html5 mode.
         TODO: This shortcut cannot be used with upload_multipart.py 
@@ -142,7 +141,7 @@ class UploadServerWdg(Widget):
         
         # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
-        if action ==  "create": 
+        if action == "create":
             if os.name == 'nt':
                 f = field_storage.file
             else:
