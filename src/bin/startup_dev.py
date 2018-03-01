@@ -29,6 +29,8 @@ tactic_site_dir = tacticenv.get_site_dir()
 sys.path.insert(0, "%s/src" % tactic_install_dir)
 sys.path.insert(0, "%s/tactic_sites" % tactic_install_dir)
 sys.path.insert(0, tactic_site_dir)
+sys.path.insert(0, "%s/3rd_party/CherryPy" % tactic_install_dir)
+
 
 
 def startup(port, server=""):
