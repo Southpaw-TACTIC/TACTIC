@@ -285,7 +285,12 @@ class LoginTableElementWdg(SimpleTableElementWdg):
         div.add(value)
 
         # display a link if specified
-        link_expr = "@SOBJECT(sthpw/login)"
+
+        from pyasm.biz import ProjectSetting
+        link_expr = ProjectSetting.get_value_by_key("task/assigned/link_expression")
+        if not link_expr:
+            link_expr = "@SOBJECT(sthpw/login)"
+
         if self.sobject and link_expr:
             # using direct behavior because new_tab isn't working consistently
             #div.add_class("tactic_new_tab")

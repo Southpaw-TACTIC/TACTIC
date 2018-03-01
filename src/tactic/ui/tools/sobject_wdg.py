@@ -233,31 +233,43 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-
-
         title_wdg = self.get_title_wdg()
         top.add(title_wdg)
         title_wdg.add_style("display: inline-block")
         title_wdg.add_style("vertical-align: top")
         title_wdg.add_style("width: 500px")
 
+        """
+        title_wdg.add_style("background: #FFF")
+        title_wdg.add_style("margin: 10px")
+        title_wdg.add_style("border-radius: 10px")
+        title_wdg.add_style("border: solid 1px #DDD")
+        top.add_style("background: #F9F9F9")
+        """
 
-        from tactic.ui.panel import ThumbWdg2
-        thumb_table = DivWdg()
-        top.add(thumb_table)
 
-        thumb = ThumbWdg2()
-        thumb_table.add(thumb)
-        thumb_table.add_style("width: 200px")
-        thumb_table.add_style("height: 125px")
-        thumb_table.add_style("padding: 5px")
-        thumb_table.add_style("margin-left: 20px")
-        thumb_table.add_style("margin-top: 20px")
-        thumb_table.add_style("display: inline-block")
-        thumb_table.add_style("vertical-align: top")
-        thumb_table.add_style("overflow-y: hidden")
-        # use a larger version for clearer display
-        #thumb.set_icon_type('web')
+
+
+
+        show_thumb = self.kwargs.get("show_thumb")
+        if show_thumb not in ['false', False]:
+
+            from tactic.ui.panel import ThumbWdg2
+            thumb_table = DivWdg()
+            top.add(thumb_table)
+
+            thumb = ThumbWdg2()
+            thumb_table.add(thumb)
+            thumb_table.add_style("width: 200px")
+            thumb_table.add_style("height: 125px")
+            thumb_table.add_style("padding: 5px")
+            thumb_table.add_style("margin-left: 20px")
+            thumb_table.add_style("margin-top: 20px")
+            thumb_table.add_style("display: inline-block")
+            thumb_table.add_style("vertical-align: top")
+            thumb_table.add_style("overflow-y: hidden")
+            # use a larger version for clearer display
+            #thumb.set_icon_type('web')
 
 
         top.add("<hr/>")

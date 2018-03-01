@@ -1485,9 +1485,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         tool_div.add_class("spt_tile_tool_top")
 
         lib_path = thumb.get_lib_path()
-        size = Common.get_dir_info(lib_path).get("size")
-        from pyasm.common import FormatValue
-        size = FormatValue().get_format_value(size, "KB")
+        if lib_path:
+            size = Common.get_dir_info(lib_path).get("size")
+            from pyasm.common import FormatValue
+            size = FormatValue().get_format_value(size, "KB")
+        else:
+            size = 0
 
         size_div = DivWdg()
         tool_div.add(size_div)
@@ -1518,22 +1521,23 @@ class TileLayoutWdg(ToolLayoutWdg):
         except:
             path = path
 
-        basename = os.path.basename(path)
-        href.add_attr("download", basename)
+        if path:
+            basename = os.path.basename(path)
+            href.add_attr("download", basename)
 
 
-        icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
-        icon.add_class("hand")
-        href.add(icon)
-        """
-        icon.add_behavior( {
-            'type': 'clickX',
-            'path': thumb.get_path(),
-            'cbjs_action': '''
-            alert(bvr.path); 
-            '''
-        } )
-        """
+            icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+            icon.add_class("hand")
+            href.add(icon)
+            """
+            icon.add_behavior( {
+                'type': 'clickX',
+                'path': thumb.get_path(),
+                'cbjs_action': '''
+                alert(bvr.path); 
+                '''
+            } )
+            """
 
 
 
