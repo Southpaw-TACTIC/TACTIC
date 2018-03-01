@@ -691,6 +691,8 @@ class BaseAppServer(Base):
             if not is_licensed:
                 widget.add("<script>alert('%s')</script>" % license.get_message())
 
+
+
         # create a web app and run it through the pipeline
         web_app = WebApp()
         web_app.get_display(widget)
