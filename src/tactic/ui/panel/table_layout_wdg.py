@@ -936,10 +936,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_behavior( {
                     'type': 'load',
                     'cbjs_action': '''
-                    //var y = window.getSize().y;
-                    //var y = window.getSize().y * 0.80;
-                    //bvr.src_el.setStyle('height', y);
-                    bvr.src_el.setStyle('height', '100%');
+                    var y = window.getSize().y;
+                    bvr.src_el.setStyle('height', y);
                     '''
                     } )
 

@@ -1090,7 +1090,7 @@ class DbResource(Base):
             if self.vendor not in VENDORS:
                 VENDORS.append(self.vendor)
                 DATABASE_DICT[self.vendor] = impl.get_module()
-        except Excetpion, e:
+        except Exception as e:
             assert self.vendor in VENDORS
 
         self.user = user
