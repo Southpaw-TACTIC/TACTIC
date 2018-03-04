@@ -225,13 +225,17 @@ class EditCmd(Command):
             action_options = config.get_action_options(element_name)
 
             if self.data != None:
+
                 element_data = self.data.get(element_name)
                 action_handler.set_data(element_data)
 
             for key, value in action_options.items():
                 action_handler.set_option(key, value)
 
+
             action_handlers.append(action_handler)
+
+
 
 
 

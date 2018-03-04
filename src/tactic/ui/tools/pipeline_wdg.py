@@ -4789,6 +4789,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         inner.add(canvas_top)
         canvas_top.add_class("spt_pipeline_wrapper")
         canvas_top.add_style("position: relative")
+        canvas_top.add_color("background", "background", -2)
         canvas = self.get_canvas()
         self.unique_id = canvas.get_unique_id()
         canvas_top.add(canvas)
