@@ -118,18 +118,18 @@ class DynamicListWdg(BaseRefreshWdg):
         #item_div.add(item)
         item_div.add(outer)
 
+        from tactic.ui.widget import IconButtonWdg
 
         add_wdg = DivWdg()
         add_wdg.add_class("hand")
         add_wdg.add_class("SPT_DTS")
-        add_wdg.add("(+)")
+        #add_wdg.add("(+)")
         add_wdg.add_class("spt_add")
-        #from tactic.ui.widget import IconButtonWdg
-        #button = IconButtonWdg(title="Add Entry", icon=IconWdg.ADD)
-        #add_wdg.add(button)
-        #button.add_behavior( {
+        button = IconButtonWdg(title="Add Entry", icon="BS_PLUS")
+        add_wdg.add(button)
         add_wdg.add_style("float: left")
-        add_wdg.add_style("margin: 3px")
+        add_wdg.add_style("opacity: 0.5")
+        #add_wdg.add_style("margin: 3px")
         item_div.add(add_wdg)
 
 
@@ -137,13 +137,13 @@ class DynamicListWdg(BaseRefreshWdg):
         remove_wdg = DivWdg()
         remove_wdg.add_class("hand")
         remove_wdg.add_class("SPT_DTS")
-        remove_wdg.add("(-)")
+        #remove_wdg.add("(-)")
         remove_wdg.add_class("spt_remove")
-        #button = IconButtonWdg(title="Remove Entry", icon=IconWdg.DELETE)
-        #remove_wdg.add(button)
-        #button.add_behavior( {
+        button = IconButtonWdg(title="Remove Entry", icon="BS_REMOVE")
+        remove_wdg.add(button)
         remove_wdg.add_style("float: left")
-        remove_wdg.add_style("margin: 3px")
+        remove_wdg.add_style("opacity: 0.5")
+        #remove_wdg.add_style("margin: 3px")
         item_div.add(remove_wdg)
         item_div.add("<br clear='all'/>")
 
