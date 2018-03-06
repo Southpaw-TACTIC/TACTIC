@@ -21,6 +21,7 @@ from pyasm.biz import Project
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette, SpanWdg
 from pyasm.widget import IconWdg
 from pyasm.search import Search
+from pyasm.security import Site
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg
@@ -1278,10 +1279,25 @@ class SitePage(AppServer):
             search.add_filter("url", "/index")
             self.custom_url = search.get_sobject()
 
+
+
         # TEST Using X-SendFile
-        #if self.hash and self.hash[0] == 'assets':
-        #    self.top = XSendFileTopWdg()
+        #if self.hash and self.hash[0] == 'ASSETS':
+        #    self.top = XSendFileTopWdg(hash=self.hash)
         #    return self.top
+
+
+        # REST API
+        if self.hash and self.hash[0] == 'REST':
+            handler = 'tactic.protocol.APIRestHandler' 
+            hash = "/".join(self.hash)
+            hash = "/%s" % hash
+            self.top = CustomTopWdg(url=self.custom_url, hash=hash, handler=handler)
+            return self.top
+
+
+
+
         
         if self.custom_url:
             xml = self.custom_url.get_xml_value("widget")
@@ -1296,7 +1312,6 @@ class SitePage(AppServer):
                 widget = BootstrapIndexWdg()
                 return widget
             elif widget == 'true':
-                web = WebContainer.get_web()
                 hash = "/".join(self.hash)
                 hash = "/%s" % hash
                 self.top = CustomTopWdg(url=self.custom_url, hash=hash)
@@ -1364,8 +1379,12 @@ class CustomTopWdg(BaseRefreshWdg):
         kwargs['Accept'] = accept
         kwargs['Method'] = method
 
-        from tactic.ui.panel import HashPanelWdg 
-        hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
+        handler = self.kwargs.get("handler")
+        if handler:
+            hash_widget = Common.create_from_class_path(handler, [], kwargs)
+        else:
+            from tactic.ui.panel import HashPanelWdg 
+            hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
 
 
         # Really, the hash widget should determine what is returned, but
@@ -1427,32 +1446,67 @@ class XSendFileTopWdg(BaseRefreshWdg):
 
     def get_display(self):
 
-        rel_path = "workflow/assets/workflow/asset/Fantasy/Castle/54d45150c61251f65687d716cc3951f1_v001.jpg"
+        web = WebContainer.get_web()
+        response = web.get_response()
 
-        parts = rel_path.split("/")
+        # get info from url
+        site_obj = Site.get()
+        path = web.get_request_path()
+        path_info = site_obj.break_up_request_path(path)
+        site = path_info.get("site")
+        project_code = path_info.get("project_code")
 
-        site = parts[0]
 
-        parts = rel_path.split("/")
+        # find the relative path
+        hash = self.kwargs.get("hash")
+        parts = hash[1:]
+        rel_path = "/".join(parts)
 
-        base_dir = "/spt/data/sites"
+        #rel_path = "asset/Fantasy/Castle/54d45150c61251f65687d716cc3951f1_v001.jpg"
+
+
+        # construct all of the paths
+        asset_dir = web.get_asset_dir()
+        base_dir = "%s/%s" % (asset_dir, project_code)
         path = "%s/%s" % (base_dir, rel_path)
-
         filename = os.path.basename(rel_path)
+
+        print "path: ", path
+
+
 
         # determine the mimetype automatically
         import mimetypes
         base, ext = os.path.splitext(path)
+        ext = ext.lower()
         mimetype = mimetypes.types_map[ext]
 
-        web = WebContainer.get_web()
-        response = web.get_response()
         headers = response.headers
         response.headers['Content-Type'] = mimetype
-        response.headers['Content-Disposition'] = 'inline; filename={0}'.format(filename)
-        response.headers['X-Sendfile'] = path
 
-        return Widget(path)
+        response.headers['Content-Disposition'] = 'inline; filename={0}'.format(filename)
+
+        use_xsendfile = True
+        if use_xsendfile:
+            response.headers['X-Sendfile'] = path
+            return Widget(path)
+
+        else:
+
+            response.headers['Content-Transfer-Encoding'] = 'BINARY'
+
+            widget = Widget()
+            f = open(path, 'rb')
+            data = f.read()
+            f.close()
+
+            widget.add(data)
+            return widget
+
+        #import base64
+        #data64 = base64.b64encode(data)
+        #widget.add(data64)
+        #return widget
 
 
 

@@ -415,27 +415,15 @@ class EditWdg(BaseRefreshWdg):
             if not is_editable:
                 self.skipped_element_names.append(element_name)
                 continue
+
             widget = self.config.get_display_widget(element_name, kbd_handler=False)
 
-            #if extra_data.get(element_name):
-            #    widget.set_value(extra_data.get(element_name))
 
             # some element could be disabled due to its data_type e.g. sql_timestamp
             if not widget:
                 self.skipped_element_names.append(element_name)
                 continue
 
-
-            """
-            widget.set_sobject(self.sobjects[0])
-            value = widget.get_value()
-            print "value: ", value
-            from pyasm.web import StringWdg
-            widget = TextWdg()
-            widget.set_option("default", value)
-            widget.add_style("border: none")
-            #widget.set_option("search_type", self.search_type)
-            """
 
 
             widget.set_sobject(self.sobjects[0])
@@ -886,8 +874,12 @@ class EditWdg(BaseRefreshWdg):
                     td.add_attr("title", hint)
 
 
+            element_name = widget.get_name()
+
             if not show_title:
                 th, td = table.add_row_cell( widget )
+                td.add_class("spt_edit_cell")
+                td.add_attr("spt_element_name", element_name)
                 continue
             else:
 
@@ -896,6 +888,9 @@ class EditWdg(BaseRefreshWdg):
                     td.add_style("min-width: 300px")
                     td.add_style("padding: 10px 25px 10px 5px")
                     td.add_style("vertical-align: top")
+
+                td.add_class("spt_edit_cell")
+                td.add_attr("spt_element_name", element_name)
 
                 td.add(widget)
 

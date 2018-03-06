@@ -180,8 +180,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         top = self.top
         top.add_class("spt_detail_top")
-        top.add_color("background", "background")
-        top.add_color("color", "color")
+        #top.add_color("background", "background")
+        #top.add_color("color", "color")
 
 
         if not self.sobject:
@@ -217,7 +217,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
             key = "sobject_detail_view"
             custom_view = ProjectSetting.get_value_by_key(key, search_type=self.sobject.get_base_search_type())
 
-
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
             selected = self.kwargs.get("selected") or ""
@@ -233,67 +232,87 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-
-
         title_wdg = self.get_title_wdg()
+        title_wdg.add_class("spt_detail_title")
         top.add(title_wdg)
         title_wdg.add_style("display: inline-block")
         title_wdg.add_style("vertical-align: top")
         title_wdg.add_style("width: 500px")
 
-
-        from tactic.ui.panel import ThumbWdg2
-        thumb_table = DivWdg()
-        top.add(thumb_table)
-
-        thumb = ThumbWdg2()
-        thumb_table.add(thumb)
-        thumb_table.add_style("width: 200px")
-        thumb_table.add_style("height: 125px")
-        thumb_table.add_style("padding: 5px")
-        thumb_table.add_style("margin-left: 20px")
-        thumb_table.add_style("margin-top: 20px")
-        thumb_table.add_style("display: inline-block")
-        thumb_table.add_style("vertical-align: top")
-        thumb_table.add_style("overflow-y: hidden")
-        # use a larger version for clearer display
-        #thumb.set_icon_type('web')
+        """
+        title_wdg.add_style("background: #FFF")
+        title_wdg.add_style("margin: 10px")
+        title_wdg.add_style("border-radius: 10px")
+        title_wdg.add_style("border: solid 1px #DDD")
+        top.add_style("background: #F9F9F9")
+        """
 
 
-        top.add("<hr/>")
 
-        if self.parent:
-            thumb.set_sobject(self.parent)
-            search_key = self.parent.get_search_key()
-        else:
-            thumb.set_sobject(self.sobject)
-            search_key = self.sobject.get_search_key()
+        panel_wdg = DivWdg()
+        top.add(panel_wdg)
+        panel_wdg.add_class("spt_detail_panel")
+        panel_wdg.add_style("display: inline-block")
+        panel_wdg.add_style("vertical-align: top")
 
-        gallery_div = DivWdg()
-        top.add( gallery_div )
-        gallery_div.add_class("spt_tile_gallery")
- 
-        thumb_table.add_behavior( {
-            'type': 'click_up',
-            'search_key': search_key,
-            'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_sobject_detail_top");
-                var gallery_el = top.getElement(".spt_tile_gallery");
 
-                var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
-                var kwargs = {
-                    search_key: bvr.search_key,
-                    search_keys: [bvr.search_key],
-                };
-                spt.panel.load(gallery_el, class_name, kwargs);
-            ''' } )
- 
 
-        # prefer to see the original image, then web
-        #thumb.set_option('image_link_order', 'main|web|icon')
-        #thumb.set_option("detail", "false")
-        #thumb.set_option("icon_size", "100%")
 
+        show_thumb = self.kwargs.get("show_thumb")
+        if show_thumb not in ['false', False]:
+
+            from tactic.ui.panel import ThumbWdg2
+            thumb_div = DivWdg()
+            panel_wdg.add(thumb_div)
+
+            thumb = ThumbWdg2()
+            thumb_div.add(thumb)
+            thumb_div.add_style("width: 200px")
+            thumb_div.add_style("height: 125px")
+            thumb_div.add_style("padding: 5px")
+            thumb_div.add_style("margin-left: 20px")
+            thumb_div.add_style("margin-top: 20px")
+            thumb_div.add_style("display: inline-block")
+            thumb_div.add_style("vertical-align: top")
+            thumb_div.add_style("overflow-y: hidden")
+            # use a larger version for clearer display
+            #thumb.set_icon_type('web')
+
+
+
+            if self.parent:
+                thumb.set_sobject(self.parent)
+                search_key = self.parent.get_search_key()
+            else:
+                thumb.set_sobject(self.sobject)
+                search_key = self.sobject.get_search_key()
+
+            gallery_div = DivWdg()
+            top.add( gallery_div )
+            gallery_div.add_class("spt_tile_gallery")
+     
+            thumb_div.add_behavior( {
+                'type': 'click_up',
+                'search_key': search_key,
+                'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_sobject_detail_top");
+                    var gallery_el = top.getElement(".spt_tile_gallery");
+
+                    var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+                    var kwargs = {
+                        search_key: bvr.search_key,
+                        search_keys: [bvr.search_key],
+                    };
+                    spt.panel.load(gallery_el, class_name, kwargs);
+                ''' } )
+     
+
+            # prefer to see the original image, then web
+            #thumb.set_option('image_link_order', 'main|web|icon')
+            #thumb.set_option("detail", "false")
+            #thumb.set_option("icon_size", "100%")
+
+        #top.add("<hr/>")
 
 
         top.add("<br clear='all'/>")
@@ -1948,7 +1967,6 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         top = self.top
         self.set_as_panel(top)
         top.add_class("spt_pipeline_wrapper")
-        top.add_color("background", "background")
 
         pipeline = Pipeline.get_by_code(pipeline_code)
         if pipeline:
@@ -2082,10 +2100,6 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
             '''
             } )
-
-
-        #div.add_style("padding: 10px")
-        div.add_border()
 
 
         return div

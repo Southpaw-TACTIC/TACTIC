@@ -2038,7 +2038,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             header_div.add_style("padding: 1px 3px 1px 3px")
             header_div.add_class("spt_table_header_content")
 
-
             if self.kwargs.get("wrap_headers") not in ["true", True]:
                 header_div.add_style("width: 10000%")
                 #header_div.add_style("white-space: nowrap")
@@ -4772,6 +4771,15 @@ spt.table.get_changed_rows = function(embedded) {
     var rows = table.getElements(css + ".spt_row_changed");
     return rows;
 }
+
+
+
+spt.table.get_changed_cells = function() {
+    var table = spt.table.get_table();
+    var cells = table.getElements(".spt_cell_changed");
+    return cells;
+}
+
 
 
 spt.table.has_changes = function() {
