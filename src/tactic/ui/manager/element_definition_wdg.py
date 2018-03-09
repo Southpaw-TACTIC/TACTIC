@@ -2587,6 +2587,11 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 from tactic.ui.input import IconSelectWdg
                 edit_wdg = IconSelectWdg(name)
 
+                if default_value and not value:
+                    value = default_value
+                if value:
+                    edit_wdg.set_value(value)
+
             elif widget_type == 'TextWdg':
                 edit_wdg = DivWdg()
                 select = TextInputWdg(name=name)
