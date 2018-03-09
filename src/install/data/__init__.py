@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['get_install_dir', 'get_site_dir', 'get_data_dir']
+__all__ = ['get_install_dir', 'get_site_dir', 'get_data_dir', 'get_temp_dir']
 
 import os, sys
 
@@ -27,6 +27,11 @@ def get_site_dir():
 def get_data_dir():
     return data_dir
 
+def get_temp_dir():
+    from pyasm.common import Environment 
+    temp_dir = Environment.get_tmp_dir()
+
+    return temp_dir
 
 # Defualt Tactic Installations
 from tactic_paths import *

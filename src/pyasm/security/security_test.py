@@ -27,32 +27,31 @@ from access_manager import *
 from batch import *
 from crypto_key import *
 
-
 import unittest
 
 class SecurityTest(unittest.TestCase):
 
-    def _setup(my):
+    def _setup(self):
 
         # intialiaze the framework as a batch process
         Site.set_site('default')
         security = Environment.get_security()
         from pyasm.biz import Project
         Project.set_project("unittest")
-        my.security = Environment.get_security()
-        my.user = 'unittest_guy'
-        my.password = 'cow'
-        my.encrypted = md5.new(my.password).hexdigest()
-        my.person = None
+        self.security = Environment.get_security()
+        self.user = 'unittest_guy'
+        self.password = 'cow'
+        self.encrypted = md5.new(self.password).hexdigest()
+        self.person = None
 
         # start a transaction
-        my.transaction = Transaction.get(create=True)
-        #my.transaction.start()
+        self.transaction = Transaction.get(create=True)
+        #self.transaction.start()
 
         # create the user
         login = SObjectFactory.create("sthpw/login")
-        login.set_value("login", my.user)
-        login.set_value("password", my.encrypted)
+        login.set_value("login", self.user)
+        login.set_value("password", self.encrypted)
         login.set_value("login_groups", "test")
         login.commit()
        
@@ -66,7 +65,7 @@ class SecurityTest(unittest.TestCase):
             group.commit()
 
         s = Search('sthpw/login_in_group')
-        s.add_filter('login',my.user)
+        s.add_filter('login',self.user)
         s.add_filter('login_group', 'user')
         lng = s.get_sobject()
         if lng:
@@ -76,7 +75,7 @@ class SecurityTest(unittest.TestCase):
         # create the user2
         login = SObjectFactory.create("sthpw/login")
         login.set_value("login", 'unittest_gal')
-        login.set_value("password", my.encrypted)
+        login.set_value("password", self.encrypted)
         login.set_value("login_groups", "test")
         login.commit()
 
@@ -84,7 +83,7 @@ class SecurityTest(unittest.TestCase):
         # create the user3 and add to a group
         login = SObjectFactory.create("sthpw/login")
         login.set_value("login", 'unittest_dan')
-        login.set_value("password", my.encrypted)
+        login.set_value("password", self.encrypted)
         login.commit()
 
         login = SObjectFactory.create("sthpw/login_group")
@@ -101,21 +100,21 @@ class SecurityTest(unittest.TestCase):
         l_in_g.commit()
 
         l_in_g = SObjectFactory.create("sthpw/login_in_group")
-        l_in_g.set_value("login", my.user)
+        l_in_g.set_value("login", self.user)
         l_in_g.set_value("login_group", 'test')
         l_in_g.commit()
 
-    def _tear_down(my):
-        #my.transaction = Transaction.get()
-        my.transaction.rollback()
+    def _tear_down(self):
+        #self.transaction = Transaction.get()
+        self.transaction.rollback()
         # this is necessary cuz the set_value() was caught in a security exception possibly, needs investigation
-        #if my.person:
-        #    my.person.delete()
+        #if self.person:
+        #    self.person.delete()
         tasks = Search.eval("@SOBJECT(sthpw/task['project_code','in','unittest|sample3d'])")
         for task in tasks:
             task.delete(triggers=False)
 
-    def test_all(my):
+    def test_all(self):
         batch = Batch()
         Environment.get_security().set_admin(True)
 
@@ -128,107 +127,109 @@ class SecurityTest(unittest.TestCase):
 
         Project.set_project("unittest")
         try:
-            my.access_manager = Environment.get_security().get_access_manager()   
-            my._test_all()
+            self.access_manager = Environment.get_security().get_access_manager()   
+            self._test_all()
 
         finally:
-            #Project.set_project("unittest")
-            Environment.get_security()._access_manager =  my.access_manager
-            my._tear_down()
+            # Reset access manager for tear down 
+            Environment.get_security()._access_manager =  self.access_manager
+            Environment.get_security().reset_access_manager() 
+            self._tear_down()
             Environment.get_security().set_admin(True)
             test_env.delete()
             Environment.get_security().set_admin(True)
             sample3d_env.delete()
             Site.pop_site()
 
-    def _test_initial_access_level(my):
+    def _test_initial_access_level(self):
         # before adding process unittest_guy in user group is in MIN access_level
         # so no access to process, but access to search_types
-        my.security.set_admin(False)
+        self.security.set_admin(False)
         security = Environment.get_security()
 
 
         process_keys = [{'process': 'anim'}]
         proc_access = security.check_access("process", process_keys, "allow") 
-        my.assertEquals(proc_access, False)
+        self.assertEquals(proc_access, False)
 
         stype_keys = [{'code':'*'}, {'code':'unittest/city'}]
         stype_access = security.check_access("search_type", stype_keys, "allow") 
         a = security.get_access_manager()
-        my.assertEquals(stype_access, True)
+        self.assertEquals(stype_access, True)
 
         # we don't have this sType specified explicitly, should be False
         stype_keys = [{'code':'unittest/city'}]
         stype_access = security.check_access("search_type", stype_keys, "allow") 
         a = security.get_access_manager()
-        my.assertEquals(stype_access, False)
+        self.assertEquals(stype_access, False)
 
 
 
-    def _test_all(my):
+    def _test_all(self):
 
         try:
-            my._setup()
-            my._test_crypto()
+            self._setup()
+            self._test_crypto()
 
-            my._test_security_fail()
-            my._test_security_pass()
-            my._test_initial_access_level()
-            my._test_sobject_access_manager()
+            self._test_security_fail()
+            self._test_security_pass()
+            self._test_initial_access_level()
+            self._test_sobject_access_manager()
     
             # order matters here
-            my._test_search_filter()
-            my._test_access_level()
-            my._test_access_manager()
-        except Exception, e:
-            print "Error: ", e
+            self._test_search_filter()
+            self._test_access_level()
+            self._test_access_manager()
+        
+            self._test_guest_allow()
+        except Exception as e:
+            print("Error: ", e)
             raise
 
 
 
 
-    def _test_security_fail(my):
+    def _test_security_fail(self):
 
         # should fail
         password = 'test'
 
         fail = False
         try:
-            my.security.login_user(my.user,password)
-        except SecurityException, e:
+            self.security.login_user(self.user,password)
+        except SecurityException as e:
             fail = True
 
-        my.assertEquals( True, fail )
+        self.assertEquals( True, fail )
 
 
-    def _test_security_pass(my):
+    def _test_security_pass(self):
 
         fail = False
         try:
-            my.security.login_user(my.user,my.password)
-        except SecurityException, e:
+            self.security.login_user(self.user,self.password)
+        except SecurityException as e:
             fail = True
 
         # set this user as admin
-        my.security.set_admin(True)
+        self.security.set_admin(True)
 
+        self.assertEquals('unittest_guy',  Environment.get_user_name())
+        self.assertEquals( False, fail )
 
-        my.assertEquals('unittest_guy',  Environment.get_user_name())
-        my.assertEquals( False, fail )
-
-    def count(my, it):
+    def count(self, it):
         from collections import defaultdict
         d = defaultdict(int)
         for j in it:
             d[j] += 1
         return d
     
-    def _test_search_filter(my):
+    def _test_search_filter(self):
 
         # NOTE: this unittest is flawed because it relies on project
         # that may not exist
 
-        my.security.set_admin(False)
+        self.security.set_admin(False)
 
         # exclude sample3d tasks and include unittest tasks only
         rules = """
@@ -246,8 +247,8 @@ class SecurityTest(unittest.TestCase):
         search = Search('sthpw/task')
         tasks = search.get_sobjects()
         project_codes = SObject.get_values(tasks,'project_code', unique=True)
-        my.assertEquals(False, 'sample3d' in project_codes)
-        my.assertEquals(True, 'unittest' in project_codes)
+        self.assertEquals(False, 'sample3d' in project_codes)
+        self.assertEquals(True, 'unittest' in project_codes)
 
         # test list-based expression
         rules = """
@@ -261,18 +262,18 @@ class SecurityTest(unittest.TestCase):
         # reset it
         Environment.get_security().reset_access_manager()
 
-        my.security.set_admin(False)
+        self.security.set_admin(False)
         access_manager = Environment.get_security().get_access_manager()
         access_manager.add_xml_rules(xml)
 
         search = Search('sthpw/task')
         tasks = search.get_sobjects()
         # 3 tasks were created above for a person
-        my.assertEquals(3, len(tasks))
+        self.assertEquals(3, len(tasks))
         assigned_codes = SObject.get_values(tasks,'assigned', unique=True)
         project_codes = SObject.get_values(tasks,'project_code', unique=True)
-        my.assertEquals({'unittest_guy': 1,'unittest_gal': 1}, my.count(assigned_codes))
-        my.assertEquals(True, ['unittest'] == project_codes)
+        self.assertEquals({'unittest_guy': 1,'unittest_gal': 1}, self.count(assigned_codes))
+        self.assertEquals(True, ['unittest'] == project_codes)
 
         rules = """
         <rules>
@@ -298,22 +299,22 @@ class SecurityTest(unittest.TestCase):
         tasks = search.get_sobjects()
       
         # 2 tasks were created above for unittest_guy
-        my.assertEquals(2, len(tasks))
+        self.assertEquals(2, len(tasks))
         assigned_codes = SObject.get_values(tasks,'assigned', unique=True)
         project_codes = SObject.get_values(tasks,'project_code', unique=True)
-        my.assertEquals(True, ['unittest_guy'] == assigned_codes)
-        my.assertEquals(True, ['unittest'] == project_codes)
+        self.assertEquals(True, ['unittest_guy'] == assigned_codes)
+        self.assertEquals(True, ['unittest'] == project_codes)
 
         Project.set_project('sample3d')
         try:
             search = Search('sthpw/task')
             tasks = search.get_sobjects()
 
-            my.assertEquals(1, len(tasks))
+            self.assertEquals(1, len(tasks))
             assigned_codes = SObject.get_values(tasks,'assigned', unique=True)
             project_codes = SObject.get_values(tasks,'project_code', unique=True)
-            my.assertEquals(True, ['unittest_guy'] == assigned_codes)
-            my.assertEquals(True, ['sample3d'] == project_codes)
+            self.assertEquals(True, ['unittest_guy'] == assigned_codes)
+            self.assertEquals(True, ['sample3d'] == project_codes)
         finally:
             Project.set_project('unittest')
 
@@ -348,8 +349,8 @@ class SecurityTest(unittest.TestCase):
             assigned_codes = SObject.get_values(tasks,'assigned', unique=True)
             project_codes = SObject.get_values(tasks,'project_code', unique=True)
             # should fail since project is switched to sample3d.. and it should have more than just unittest
-            my.assertEquals(False, ['unittest'] == assigned_codes)
-            my.assertEquals(True, ['sample3d'] == project_codes)
+            self.assertEquals(False, ['unittest'] == assigned_codes)
+            self.assertEquals(True, ['sample3d'] == project_codes)
 
 
 
@@ -379,13 +380,13 @@ class SecurityTest(unittest.TestCase):
             #project_codes = SObject.get_values(tasks,'project_code', unique=True)
             
             for p in priorities:
-                my.assertEquals(True, p != 5)
+                self.assertEquals(True, p != 5)
       
         try: 
             Project.set_project('unittest')
-        except SecurityException, e:
+        except SecurityException as e:
             # should get an SecurityException
-            my.assertEquals('User [unittest_guy] is not permitted to view project [unittest]', e.__str__())
+            self.assertEquals('User [unittest_guy] is not permitted to view project [unittest]', e.__str__())
             xml = Xml()
             xml.read_string(proj_rules)
             # reset it
@@ -394,15 +395,15 @@ class SecurityTest(unittest.TestCase):
 
             access_manager = Environment.get_security().get_access_manager()
             access_manager.add_xml_rules(xml)
-        except Exception, e:
-            print "Error : %s", str(e)
+        except Exception as e:
+            print("Error : %s", str(e))
         else:
             # this should not happen
             raise Exception('unittest_guy should not be allowed to use Project unittest here.')
 
         # One should be able to insert a task that is outside the query restriction of the above rule
         task = SearchType.create('sthpw/task')
-        task.set_sobject_value(my.person)
+        task.set_sobject_value(self.person)
         task.set_value('assigned', 'made_up_login')
         task.set_value('project_code', 'sample3d')
         task.set_value('description', 'a new task')
@@ -410,16 +411,16 @@ class SecurityTest(unittest.TestCase):
         task.set_value('context', 'unittest')
         task.commit()
 
-        my.assertEquals('made_up_login', task.get_value('assigned'))
+        self.assertEquals('made_up_login', task.get_value('assigned'))
 
     # DEPRECATED: column level security has been disabled for now (for
     # performance reasons)
-    def _test_sobject_access_manager(my):
+    def _test_sobject_access_manager(self):
         '''test a more realistic example'''
 
         # create a test person
         person = Person.create("Donald", "Duck", "DisneyLand", "A duck!!!")
-        my.person = person
+        self.person = person
 
         for project_code in ['unittest','unittest','sample3d']:
             task = SearchType.create('sthpw/task')
@@ -464,30 +465,30 @@ class SecurityTest(unittest.TestCase):
         # should fail
         try:
             person.set_value("name_last", "Ducky")
-        except SecurityException, e:
+        except SecurityException as e:
             pass
         else:
-            my.fail("Expected a SecurityException")
+            self.fail("Expected a SecurityException")
 
         # should succeed
         name_last = person.get_value("name_last")
-        my.assertEquals("Duck", name_last)
+        self.assertEquals("Duck", name_last)
 
         # should fail
         # DISABLED for now since Search._check_value_security() is commented out
         """
         try:
             nationality = person.get_value("nationality")
-        except SecurityException, e:
+        except SecurityException as e:
             pass
         else:
-            my.fail("Expected a SecurityException")
+            self.fail("Expected a SecurityException")
         """
         # disable admin for this test
         access_manager.set_admin(True)
 
 
-    def _test_access_manager(my):
+    def _test_access_manager(self):
         # reset it
         Environment.get_security().reset_access_manager()
 
@@ -555,93 +556,93 @@ class SecurityTest(unittest.TestCase):
         access_manager.print_rules('project')
         
         test = access_manager.check_access('builtin', 'view_site_admin','allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
         
         Project.set_project('sample3d')
         test = access_manager.check_access('builtin', 'export_all_csv','allow')
-        my.assertEquals(test, False)
+        self.assertEquals(test, False)
 
         # old way of checking project
         test = access_manager.check_access('project', 'sample3d','allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
         Project.set_project('unittest')
         # old way should work as well
         test = access_manager.check_access('builtin', 'export_all_csv','allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
         
         # default to the system's hardcoded deny for builtin
         test = access_manager.check_access('builtin', 'export_all_csv','allow', default='deny')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
 
 
         # this is the new way to control per project csv export
         keys = [{'key':'export_all_csv', 'project': 'unittest'}, {'key':'export_all_csv','project': '*'}]
         test = access_manager.check_access('builtin', keys ,'allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
         keys = [{'key':'import_csv', 'project': '*'}, {'key':'import_csv','project': Project.get_project_code()}]
         test = access_manager.check_access('builtin', keys ,'allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
 
         test = access_manager.check_access('builtin', 'view_side_bar','allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
         key = { "project": 'unittest', 'key':'view_side_bar' }
         key1 = { "project": 'sample3d', 'key':'view_side_bar' }
         key2 = { "project": "*",'key': 'view_side_bar' }
         keys = [key, key2]
         test = access_manager.check_access('builtin', keys,'allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
         keys = [key1, key2]
         test = access_manager.check_access('builtin', keys,'allow')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
         test = access_manager.check_access('builtin', 'retire_delete','allow')
 
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
         # test sensitive sobject
         test = access_manager.get_access('sobject', 'corporate/budget')
-        my.assertEquals(test, "allow")
+        self.assertEquals(test, "allow")
 
         # test allowed sobject
         test = access_manager.get_access('sobject', 'prod/asset')
-        my.assertEquals(test, "edit")
+        self.assertEquals(test, "edit")
 
         test = access_manager.get_access('sobject', [{'search_type':'sthpw/note', 'project':'sample3d'}])
-        my.assertEquals(test, "edit")
+        self.assertEquals(test, "edit")
         # test url
         test = access_manager.get_access('url', '/tactic/bar/Partner')
-        my.assertEquals(test, "view")
+        self.assertEquals(test, "view")
 
         # test with access values ... a more typical usage
         test = access_manager.check_access('sobject','prod/asset','view')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
         test = access_manager.check_access('sobject','corporate/budget','edit')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
         test = access_manager.check_access('sobject_column', 'prod/asset|director_notes','deny')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
         test = access_manager.check_access('sobject_column',{'search_type':'prod/shot','column':'description'},'edit')
-        my.assertEquals(test, False)
+        self.assertEquals(test, False)
 
         test = access_manager.check_access('sobject_column',{'search_type':'prod/shot','column':'description'},'view')
-        my.assertEquals(test, True)
+        self.assertEquals(test, True)
 
 
         test = access_manager.get_access('sobject',  {'search_type':'sthpw/note', 'project':'sample3d'} )
-        my.assertEquals(test, "edit")
+        self.assertEquals(test, "edit")
         test = access_manager.get_access('sobject', {'search_type':'sthpw/note'} )
-        my.assertEquals(test, None)
+        self.assertEquals(test, None)
 
         test = access_manager.get_access('sobject', {'search_type':'prod/layer', 'project':'sample3d'} )
-        my.assertEquals(test, "view")
+        self.assertEquals(test, "view")
         test = access_manager.get_access('sobject', 'prod/layer' )
-        my.assertEquals(test, None)
+        self.assertEquals(test, None)
 
         Project.set_project('sample3d')
         # security version 2 uses group = search_type
@@ -652,7 +653,7 @@ class SecurityTest(unittest.TestCase):
         Environment.get_security()._access_manager = access_manager
         
         test = access_manager.check_access('search_type',{'search_type':'prod/asset','project':'sample3d'},'delete')
-        my.assertEquals(test, False)
+        self.assertEquals(test, False)
 
         asset.delete()
 
@@ -663,14 +664,14 @@ class SecurityTest(unittest.TestCase):
         
 
         test = access_manager.get_access('search_type', [{'code':'sthpw/note', 'project':'unittest'}] )
-        my.assertEquals(test, 'edit')
+        self.assertEquals(test, 'edit')
         msg = ''
         # delete of unittest note should fail
         try:
             note.delete()
-        except SObjectException, e:
+        except SObjectException as e:
             msg = 'delete error'
-        my.assertEquals(msg, 'delete error')
+        self.assertEquals(msg, 'delete error')
             
         note = SearchType.create('sthpw/note')
         note.set_value('note','unit test sample3d note obj')
@@ -681,12 +682,12 @@ class SecurityTest(unittest.TestCase):
         note.delete()
 
         test = access_manager.check_access('search_type',{'search_type':'sthpw/note','project':'unittest'},'delete')
-        my.assertEquals(test, False)
+        self.assertEquals(test, False)
         
-        my.assertEquals('unittest_guy',  Environment.get_user_name())
+        self.assertEquals('unittest_guy',  Environment.get_user_name())
 
 
-    def _test_crypto(my):
+    def _test_crypto(self):
        
         key = CryptoKey()
         key.generate()
@@ -696,11 +697,11 @@ class SecurityTest(unittest.TestCase):
         test_string = "Holy Moly"
         signature = key.get_signature(test_string)
         check = key.verify(test_string, signature)
-        my.assertEquals(True, check)
+        self.assertEquals(True, check)
 
         # verify an incorrect string
         check = key.verify("whatever", signature)
-        my.assertEquals(False, check)
+        self.assertEquals(False, check)
 
 
         # encrypt and decrypt a string
@@ -713,9 +714,9 @@ class SecurityTest(unittest.TestCase):
         key2.set_private_key(private_key)
         test_string2 = key2.decrypt(coded)
 
-        my.assertEquals(test_string, test_string2)
+        self.assertEquals(test_string, test_string2)
 
-    def _test_access_level(my):
+    def _test_access_level(self):
         security = Environment.get_security()
         from pyasm.security import get_security_version
         security_version = get_security_version()
@@ -733,16 +734,75 @@ class SecurityTest(unittest.TestCase):
                 access = security.check_access("project", keys, "allow", default=default)
                 process_keys = [{'process': 'anim'}]
                 proc_access = security.check_access("process", process_keys, "allow")
-                my.assertEquals(proc_access, True)
+                self.assertEquals(proc_access, True)
                 if project.get_code() in ['sample3d','unittest']:
-                    my.assertEquals(access, True)
+                    self.assertEquals(access, True)
                 else:
-                    my.assertEquals(access, False)
+                    self.assertEquals(access, False)
         else:
             raise SecurityException('Please test with security version 2. Set it in your config file')
 
 
-      
+
+    def _test_guest_allow(self):
+        '''test Config tag allow_guest in security tag.
+        Note: Since it is hard to emulate AppServer class, 
+        this is based on logic which handles in _get_display 
+        of BaseAppServer.
+        
+        1. If allow_guest is false, then it is necessary that 
+        Sudo is instantiated.
+
+        2. If allow_guest is true, then it is necessary that 
+        guest login rules are added and login_as_guest is
+        executed.
+        '''
+
+        security = Security()
+        Environment.set_security(security)
+        
+        #1. allow_guest is false
+        fail = False
+        try:
+            sudo = Sudo()
+        except Exception as e:
+            fail = True
+        self.assertEquals( False, fail ) 
+        sudo.exit()
+        
+        key = [{'code': "*"}]
+        project_access = security.check_access("project", key, "allow")
+        self.assertEquals(project_access, False)
+        
+        #2. allow_guest is true
+        Site.set_site("default")
+        try:
+            security.login_as_guest()
+            ticket_key = security.get_ticket_key()
+            access_manager = security.get_access_manager()
+            xml = Xml()
+            xml.read_string('''
+            <rules>
+              <rule column="login" value="{$LOGIN}" search_type="sthpw/login" access="deny" op="!=" group="search_filter"/>
+              <rule group="project" code="default" access="allow"/>
+            </rules>
+            ''')
+            access_manager.add_xml_rules(xml)
+        finally:
+            Site.pop_site()
+       
+        
+        default_key = [{'code': "default"}]
+        project_access = security.check_access("project", default_key, "allow")
+        self.assertEquals(project_access, True)  
+        
+        unittest_key = [{'code', "sample3d"}]
+        project_access = security.check_access("project", unittest_key, "allow")
+        self.assertEquals(project_access, False)  
+        
+
+       
+         
 
 if __name__ == "__main__":
     unittest.main()

@@ -38,171 +38,171 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
     PROCESS_FILTER_NAME = "process_filter"
     DISPLAY_OPTION = "doption_DiscussionWdg"
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
-        my.kwargs = kwargs
+        self.kwargs = kwargs
 
-        my.notes_dict = {}
-        my.preprocess_notes = False
-        my.contexts = []
-        my.global_context = '' 
-        my.append_context = ''
-        my.append_setting = ''
-        my.wdg_width = 400
+        self.notes_dict = {}
+        self.preprocess_notes = False
+        self.contexts = []
+        self.global_context = '' 
+        self.append_context = ''
+        self.append_setting = ''
+        self.wdg_width = 400
         # this is needed for Ajax
-        my.parent_wdg = None
-        my.pref_text = None
+        self.parent_wdg = None
+        self.pref_text = None
         
-        my.process_filter = my.PROCESS_FILTER_NAME
-        my.include_submission = 'false'
+        self.process_filter = self.PROCESS_FILTER_NAME
+        self.include_submission = 'false'
      
-        my.refresh_event_dict = {}
+        self.refresh_event_dict = {}
         from tactic.ui.container import PopupWdg, MenuWdg, MenuItem
-        my.pop_menu = PopupWdg( id="NoteMenuWdg", allow_page_activity=True, width="", aux_position='right')
-        my.pref_show_sub_notes = FilterCheckboxWdg('discussion_show_sub_notes', label='show submission notes')
+        self.pop_menu = PopupWdg( id="NoteMenuWdg", allow_page_activity=True, width="", aux_position='right')
+        self.pref_show_sub_notes = FilterCheckboxWdg('discussion_show_sub_notes', label='show submission notes')
 
-        BaseTableElementWdg.__init__(my)
-        AjaxWdg.__init__(my)
+        BaseTableElementWdg.__init__(self)
+        AjaxWdg.__init__(self)
 
-        my.sobject = None
-        my.setting = None
+        self.sobject = None
+        self.setting = None
       
-        my.init_cgi()
+        self.init_cgi()
         
 
-    def is_ajax(my, xx=None):
-        return my.kwargs.get("refresh") == "true"
+    def is_ajax(self, xx=None):
+        return self.kwargs.get("refresh") == "true"
         
 
-    def init_cgi(my):
+    def init_cgi(self):
 
         # get the sobject
-        if not my.is_ajax(True):
+        if not self.is_ajax(True):
             return
-        keys = my.web.get_form_keys()
-        search_key = my.web.get_form_value("search_key")
+        keys = self.web.get_form_keys()
+        search_key = self.web.get_form_value("search_key")
         if not search_key:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
         
-        my.sobject = Search.get_by_search_key(search_key)
-        my.sobjects = [my.sobject]
+        self.sobject = Search.get_by_search_key(search_key)
+        self.sobjects = [self.sobject]
 
         # set multiple display options
-        hidden = HiddenWdg(my._get_display_option_name())
+        hidden = HiddenWdg(self._get_display_option_name())
         disp_option = hidden.get_value()
         disp_options = disp_option.split('||')
         for option in disp_options:
             disp_option = option.split(':')
             if len(disp_option) == 2:
-                my.set_option(disp_option[0], disp_option[1])
+                self.set_option(disp_option[0], disp_option[1])
         
-        my.init_setup()
+        self.init_setup()
 
-    def is_searchable(my):
+    def is_searchable(self):
         return True
 
-    def get_searchable_search_type(my):
+    def get_searchable_search_type(self):
         '''get the searchable search type for local search'''
         return 'sthpw/note'
 
-    def set_context(my, context):
+    def set_context(self, context):
         '''takes a string that describes the context to be displayed'''
-        my.context = context
+        self.context = context
 
         
-    def init_setup(my):
+    def init_setup(self):
         '''setup for a bunch of options and prefs used in this widget''' 
-        my.global_context = my.get_option("context")
+        self.global_context = self.get_option("context")
 
-        my.append_context = my.get_option("append_context")
-        if not my.append_context:
-            my.append_context = my.kwargs.get("append_context")
-        if my.get_option('process_filter'):
-            my.process_filter = my.get_option('process_filter')
-        my.setting = my.get_option('setting')
-        if not my.setting:
-            my.setting = my.kwargs.get('setting')
-        my.append_setting = my.get_option('append_setting')
-        if not my.append_setting:
-            my.append_setting = my.kwargs.get("append_setting")
-        my._get_sticky_status() 
+        self.append_context = self.get_option("append_context")
+        if not self.append_context:
+            self.append_context = self.kwargs.get("append_context")
+        if self.get_option('process_filter'):
+            self.process_filter = self.get_option('process_filter')
+        self.setting = self.get_option('setting')
+        if not self.setting:
+            self.setting = self.kwargs.get('setting')
+        self.append_setting = self.get_option('append_setting')
+        if not self.append_setting:
+            self.append_setting = self.kwargs.get("append_setting")
+        self._get_sticky_status() 
 
-        my.include_submission = my.get_option('include_submission')
-        width = my.get_option("wdg_width")
+        self.include_submission = self.get_option('include_submission')
+        width = self.get_option("wdg_width")
         if width:
-            my.wdg_width = width
+            self.wdg_width = width
 
         # put the display option in here
-        hidden = HiddenWdg(my._get_display_option_name())
-        my.add_ajax_input(hidden)
-        my.add_ajax_input_name(my._get_pref_name("comments_max_height"))
-        my.add_ajax_input_name(my._get_pref_name("discussion_wdg_width")) 
-        my.add_ajax_input_name('discussion_show_sub_notes')
+        hidden = HiddenWdg(self._get_display_option_name())
+        self.add_ajax_input(hidden)
+        self.add_ajax_input_name(self._get_pref_name("comments_max_height"))
+        self.add_ajax_input_name(self._get_pref_name("discussion_wdg_width")) 
+        self.add_ajax_input_name('discussion_show_sub_notes')
         
-        my.set_ajax_option("config_base_temp", my._get_config_base())
-        my.set_ajax_option("name", "discussion" )
-        my._init_prefs()
+        self.set_ajax_option("config_base_temp", self._get_config_base())
+        self.set_ajax_option("name", "discussion" )
+        self._init_prefs()
 
-    def _get_config_base(my):
+    def _get_config_base(self):
         config_base = ''
-        if my.get_config_base():
-            config_base = my.get_config_base()
+        if self.get_config_base():
+            config_base = self.get_config_base()
         else:
-            #config_base = my.web.get_form_value('config_base_temp')
-            config_base = my.kwargs.get('config_base_temp')
+            #config_base = self.web.get_form_value('config_base_temp')
+            config_base = self.kwargs.get('config_base_temp')
         return config_base
 
-    def _get_search_type(my):
+    def _get_search_type(self):
         search_type = ''
-        if my.get_search_type():
-            search_type = my.get_search_type()
+        if self.get_search_type():
+            search_type = self.get_search_type()
         else:
-            #search_type = my.web.get_form_value('search_type')
-            search_type = my.kwargs.get('search_type')
+            #search_type = self.web.get_form_value('search_type')
+            search_type = self.kwargs.get('search_type')
         return search_type
 
 
 
-    def _get_pref_name(my, pref_name):
-        config_base = my._get_config_base()
+    def _get_pref_name(self, pref_name):
+        config_base = self._get_config_base()
         pref_name = '%s_%s' %(config_base, pref_name)
         return pref_name
 
-    def _init_prefs(my):
-        height_pref_name = my._get_pref_name('comments_max_height')
-        my.pref_text = FilterTextWdg(height_pref_name,'Max height: ',\
+    def _init_prefs(self):
+        height_pref_name = self._get_pref_name('comments_max_height')
+        self.pref_text = FilterTextWdg(height_pref_name,'Max height: ',\
             css='small', is_number=True)
         
-        width_pref_name = my._get_pref_name('discussion_wdg_width')
-        my.pref_width = FilterTextWdg(width_pref_name, 'Width: ',\
+        width_pref_name = self._get_pref_name('discussion_wdg_width')
+        self.pref_width = FilterTextWdg(width_pref_name, 'Width: ',\
             css='small', is_number=True) 
-        my.pref_show_sub_notes = FilterCheckboxWdg('discussion_show_sub_notes', label='show submission notes')
+        self.pref_show_sub_notes = FilterCheckboxWdg('discussion_show_sub_notes', label='show submission notes')
         # if a display option is defined, the widget setting will be true by default
-        if my.get_option('include_submission') =='true':
-            my.pref_show_sub_notes.set_checked()
-            my.pref_show_sub_notes.set_attr('disabled', 'disabled')
+        if self.get_option('include_submission') =='true':
+            self.pref_show_sub_notes.set_checked()
+            self.pref_show_sub_notes.set_attr('disabled', 'disabled')
 
-    def get_prefs(my):
+    def get_prefs(self):
         widget = Widget()
-        my.pref_text.set_attr('size','3')
-        my.pref_text.set_unit('px')
-        my.pref_text.set_option('default','200')
-        if my.get_option("scroll") != "false":
-            widget.add(my.pref_text)
+        self.pref_text.set_attr('size','3')
+        self.pref_text.set_unit('px')
+        self.pref_text.set_option('default','200')
+        if self.get_option("scroll") != "false":
+            widget.add(self.pref_text)
         
-        my.pref_width.set_attr('size','3')
-        my.pref_width.set_unit('px')
-        my.pref_width.set_option('default','400')
-        widget.add(my.pref_width)
+        self.pref_width.set_attr('size','3')
+        self.pref_width.set_unit('px')
+        self.pref_width.set_option('default','400')
+        widget.add(self.pref_width)
         
-        widget.add(my.pref_show_sub_notes)
+        widget.add(self.pref_show_sub_notes)
        
         return widget
     
-    def handle_td(my, td):
+    def handle_td(self, td):
         pass
 
-    def get_note_menu(my):
+    def get_note_menu(self):
         ''' add the Note Utililty popup menu'''
 
         # DEPRECATED: note that this whole widget is deprecated, but in this
@@ -210,7 +210,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         # conflicting with what was there before
         return
 
-        widget = my.pop_menu
+        widget = self.pop_menu
         off_script = widget.get_cancel_script()
         note_util_wdg = NoteUtilWdg()
         hidden = HiddenWdg('base_name')
@@ -320,47 +320,47 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
    
 
-    def get_title(my):
+    def get_title(self):
         widget = Widget()
         # display options are formatted as 
         # <option1_name>:<option1_value>||<option2_name>:<option2_value>...
-        dis_option = ['sticky:%s' % my.get_option('sticky')]
-        dis_option.append('setting:%s' % my.get_option('setting'))
-        dis_option.append('append_setting:%s' % my.get_option('append_setting'))
-        dis_option.append('process_filter:%s' % my.get_option('process_filter'))
-        dis_option.append('context:%s' % my.get_option('context'))
-        dis_option.append('append_context:%s' % my.get_option('append_context'))
-        dis_option.append('include_submission:%s' % my.get_option('include_submission'))
-        dis_option.append('scroll:%s' % my.get_option('scroll'))
+        dis_option = ['sticky:%s' % self.get_option('sticky')]
+        dis_option.append('setting:%s' % self.get_option('setting'))
+        dis_option.append('append_setting:%s' % self.get_option('append_setting'))
+        dis_option.append('process_filter:%s' % self.get_option('process_filter'))
+        dis_option.append('context:%s' % self.get_option('context'))
+        dis_option.append('append_context:%s' % self.get_option('append_context'))
+        dis_option.append('include_submission:%s' % self.get_option('include_submission'))
+        dis_option.append('scroll:%s' % self.get_option('scroll'))
 
 
-        my.dis_hidden = HiddenWdg(my._get_display_option_name(), '||'.join(dis_option))
-        widget.add(my.dis_hidden) 
+        self.dis_hidden = HiddenWdg(self._get_display_option_name(), '||'.join(dis_option))
+        widget.add(self.dis_hidden) 
         
-        widget.add(my.get_note_menu())
-        widget.add(super(DiscussionWdg,my).get_title())
+        widget.add(self.get_note_menu())
+        widget.add(super(DiscussionWdg,self).get_title())
 
         return widget
 
-    def _get_display_option_name(my):
-        view = my._get_config_base() 
-        search_type = my._get_search_type()
-        dis_option_name = '%s_%s_%s' %(my.DISPLAY_OPTION, search_type, view)
+    def _get_display_option_name(self):
+        view = self._get_config_base() 
+        search_type = self._get_search_type()
+        dis_option_name = '%s_%s_%s' %(self.DISPLAY_OPTION, search_type, view)
         return dis_option_name
 
-    def _get_discussion_context(my):
+    def _get_discussion_context(self):
         ''' returns a list. look for a discussion_context. The order matters here
         context defined in config or as an option always takes precedence '''
        
-        my.global_context = my.get_option("context")
-        if not my.global_context:
-            my.global_context = my.kwargs.get('context')
-        if my.global_context:
-            return [my.global_context]
+        self.global_context = self.get_option("context")
+        if not self.global_context:
+            self.global_context = self.kwargs.get('context')
+        if self.global_context:
+            return [self.global_context]
         
         web = WebContainer.get_web()
-        dis_context_name = my._get_pref_name("discussion_context")
-        discussion_context = my.kwargs.get(dis_context_name)
+        dis_context_name = self._get_pref_name("discussion_context")
+        discussion_context = self.kwargs.get(dis_context_name)
         if discussion_context:
             return [discussion_context]
         
@@ -368,8 +368,8 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         # sometimes user would pick "Any Contexts" in Dailies tab which is ''
         # FIXME: web has residual keys from the last tab right now, so this check doesn't work
         """
-        if not discussion_context and web.has_form_key(my.process_filter):
-            process_filter = FilterSelectWdg(name=my.process_filter)
+        if not discussion_context and web.has_form_key(self.process_filter):
+            process_filter = FilterSelectWdg(name=self.process_filter)
             discussion_contexts = process_filter.get_values()
             discussion_context = [x for x in discussion_contexts if x]
         """
@@ -377,10 +377,10 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
             discussion_context = []
         return discussion_context
 
-    def alter_note_search(my, search, prefix='children', prefix_namespace='' ):
+    def alter_note_search(self, search, prefix='children', prefix_namespace='' ):
         from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
         filter_data = FilterData.get()
-        parent_search_type = my.sobjects[0].get_search_type()
+        parent_search_type = self.sobjects[0].get_search_type()
         
         if not filter_data.get_data():
             # use widget settings
@@ -403,7 +403,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         if prefix_namespace:
             prefix = '%s_%s' %(prefix_namespace, prefix)
         values_list = BaseFilterWdg.get_search_data_list(prefix, \
-                search_type=my.get_searchable_search_type())
+                search_type=self.get_searchable_search_type())
         if values_list:
             
             if filter_mode != 'custom': 
@@ -417,15 +417,15 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         return search
     
 
-    def preprocess(my):
+    def preprocess(self):
         '''get all of the notes for these sobjects'''
          
-        my.init_setup()
+        self.init_setup()
 
         
-        my.notes_dict = {}
+        self.notes_dict = {}
 
-        search = Note.get_search_by_sobjects(my.sobjects)
+        search = Note.get_search_by_sobjects(self.sobjects)
         if not search:
             return
 
@@ -433,15 +433,15 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         try:
             
             # go thru children of main search
-            search = my.alter_note_search(search, prefix='children')
+            search = self.alter_note_search(search, prefix='children')
             #print "search ", search.get_statement()
             # go thru Local Search
-            search = my.alter_note_search(search, prefix='main_body', prefix_namespace=my.__class__.__name__)
+            search = self.alter_note_search(search, prefix='main_body', prefix_namespace=self.__class__.__name__)
 
            
         except:
             from tactic.ui.app import SearchWdg
-            parent_search_type = my.sobjects[0].get_search_type()
+            parent_search_type = self.sobjects[0].get_search_type()
             SearchWdg.clear_search_data(parent_search_type)
             raise
 
@@ -452,7 +452,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         search.add_order_by("context")
         search.add_order_by("timestamp desc")
 
-        discussion_contexts = my._get_discussion_context()
+        discussion_contexts = self._get_discussion_context()
         
         discussion_context = ''
         context_list = []
@@ -460,7 +460,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         if len(discussion_contexts) > 1:
             context_list.extend(discussion_contexts)
             where_filters.append(search.get_filters('context', context_list))
-            where_filters.append(search.get_filters('status', my.sticky))
+            where_filters.append(search.get_filters('status', self.sticky))
         elif discussion_contexts:
             discussion_context = discussion_contexts[0]
         if discussion_context:
@@ -471,7 +471,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
                 where_filters.append(search.get_filter('context', discussion_context))
 
             # always get the notes with sticky statuses, only if context is selected
-            where_filters.append(search.get_filters('status', my.sticky))
+            where_filters.append(search.get_filters('status', self.sticky))
         if where_filters:
             search.add_where('( %s )' %' or '.join(where_filters))
         notes = search.get_sobjects()
@@ -483,10 +483,10 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         for note in notes:
 
             key = '|'.join([ str(note.get_value(col)) for col in key_cols])
-            notes_in_sobject = my.notes_dict.get(key)
+            notes_in_sobject = self.notes_dict.get(key)
             if not notes_in_sobject:
                 notes_in_sobject = []
-                my.notes_dict[key] = notes_in_sobject
+                self.notes_dict[key] = notes_in_sobject
 
             notes_in_sobject.append(note)
 
@@ -496,47 +496,47 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         #note_ids_str = ", ".join(note_ids)
         
         snapshots = Snapshot.get_by_sobjects(notes, is_latest=True)
-        my.snapshots_count = {}
-        my.snapshots = {}
+        self.snapshots_count = {}
+        self.snapshots = {}
         for snapshot in snapshots:
             search_id = snapshot.get_value("search_id")
 
-            if not my.snapshots_count.get(search_id):
-                my.snapshots_count[search_id] = 1
+            if not self.snapshots_count.get(search_id):
+                self.snapshots_count[search_id] = 1
             else:
-                my.snapshots_count[search_id] += 1
+                self.snapshots_count[search_id] += 1
 
 
-            list = my.snapshots.get(search_id)
+            list = self.snapshots.get(search_id)
             if not list:
                 list = []
-                my.snapshots[search_id] = list
+                self.snapshots[search_id] = list
             list.append(snapshot)
 
-        my.preprocess_notes = True
+        self.preprocess_notes = True
     
     
       
-    def _get_sticky_status(my):
+    def _get_sticky_status(self):
         '''set what statuses are sticky for notes'''
-        my.sticky = my.get_option('sticky')
-        if isinstance(my.sticky, list):
+        self.sticky = self.get_option('sticky')
+        if isinstance(self.sticky, list):
             return
-        if my.sticky:
-            my.sticky = my.sticky.split('|')
+        if self.sticky:
+            self.sticky = self.sticky.split('|')
         else:
-            my.sticky = ['new']
+            self.sticky = ['new']
 
-    def get_text_value(my):
-        my.sobject = my.get_current_sobject()
+    def get_text_value(self):
+        self.sobject = self.get_current_sobject()
 
         comment_area = []
 
         # collect the notes
-        my.sticky =  []
-        if not my.preprocess_notes:
-            my.preprocess()
-        notes = my.notes_dict.get(my.sobject.get_search_key())
+        self.sticky =  []
+        if not self.preprocess_notes:
+            self.preprocess()
+        notes = self.notes_dict.get(self.sobject.get_search_key())
         if not notes:
             return ''
 
@@ -562,64 +562,64 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
 
             
-    def get_display(my):
+    def get_display(self):
         # replace the event container functions per get_display
-        my.replace = True
+        self.replace = True
 
         web = WebContainer.get_web()
 
-        if not my.is_ajax():
-            my.sobject = my.get_current_sobject()
+        if not self.is_ajax():
+            self.sobject = self.get_current_sobject()
         else:
-            my.name = web.get_form_value("name")
+            self.name = web.get_form_value("name")
         
         # in regular drawing mode, just call get_value()
-        if my.pref_text:
-            my.pref_height_value = my.pref_text.get_value()
-            my.pref_width_value = my.pref_width.get_value()  
+        if self.pref_text:
+            self.pref_height_value = self.pref_text.get_value()
+            self.pref_width_value = self.pref_width.get_value()  
         else:
-            my.pref_height_value = "100%"
-            my.pref_width_value = "100%"
+            self.pref_height_value = "100%"
+            self.pref_width_value = "100%"
 
-        my.show_sub_notes_value = my.pref_show_sub_notes.is_checked(False)
+        self.show_sub_notes_value = self.pref_show_sub_notes.is_checked(False)
         try:
-            if int(my.pref_width_value) > int(my.wdg_width):
-                my.wdg_width = my.pref_width_value
+            if int(self.pref_width_value) > int(self.wdg_width):
+                self.wdg_width = self.pref_width_value
         except ValueError:
             pass
         # get the context the config file or Note Context filter or Process filter
         
-        my.contexts = my._get_discussion_context()
-        search_type = my.sobject.get_search_type()
-        id = my.sobject.get_id()
+        self.contexts = self._get_discussion_context()
+        search_type = self.sobject.get_search_type()
+        id = self.sobject.get_id()
 
         # name is part of the base name
-        name = my.get_name()
+        name = self.get_name()
         if not name:
-            name = my.kwargs.get("name")
+            name = self.kwargs.get("name")
         if not name:
             name = "notes"
         
         import random
         rand = random.randint(1, 100)
-        my.base_name = "notes|%s|%s|%s" % (search_type, id, rand)
+        self.base_name = "notes|%s|%s|%s" % (search_type, id, rand)
         
-        my.status_id = '%s_sign' %my.base_name
+        self.status_id = '%s_sign' %self.base_name
         
-        refresh_event = '%s_refresh' %my.base_name
+        refresh_event = '%s_refresh' %self.base_name
 
         
-        dis_context_name = my._get_pref_name("discussion_context")
+        dis_context_name = self._get_pref_name("discussion_context")
         
       
         # ajax elements that must be defined here
-        my.add_ajax_input_name(my.base_name)
-        my.add_ajax_input_name("%s_context" % my.base_name)
-        my.add_ajax_input_name("%s_parent" % my.base_name)
+        self.add_ajax_input_name(self.base_name)
+        self.add_ajax_input_name("%s_context" % self.base_name)
+        self.add_ajax_input_name("%s_parent" % self.base_name)
         
 
       
-        if my.is_ajax():
+        if self.is_ajax():
             main_div = Widget()
         else:
             main_div = DivWdg()
@@ -629,25 +629,25 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
             # new refresh using get_widget
             main_div.add_class("spt_discussion_panel")
-            class_name = Common.get_full_class_name(my)
+            class_name = Common.get_full_class_name(self)
             main_div.add_attr("spt_class_name", class_name)
 
             # this base name will get outdated when it changes after each update by using a random number
-            main_div.add_attr("spt_base_name", my.base_name)
+            main_div.add_attr("spt_base_name", self.base_name)
             main_div.add_attr("spt_refresh", "true")
-            main_div.add_attr("spt_config_base_temp", my._get_config_base())
+            main_div.add_attr("spt_config_base_temp", self._get_config_base())
             main_div.add_attr("spt_name", "discussion" )
-            main_div.add_attr("spt_search_key", my.sobject.get_search_key() )
-            main_div.add_attr("spt_search_type", my.sobject.get_base_search_type() )
-            main_div.add_attr("spt_%s" % dis_context_name, ','.join(my.contexts))
-            if my.global_context:
-                main_div.add_attr("spt_context", my.global_context)
+            main_div.add_attr("spt_search_key", self.sobject.get_search_key() )
+            main_div.add_attr("spt_search_type", self.sobject.get_base_search_type() )
+            main_div.add_attr("spt_%s" % dis_context_name, ','.join(self.contexts))
+            if self.global_context:
+                main_div.add_attr("spt_context", self.global_context)
 
-            if my.setting:
-                main_div.add_attr("spt_setting", my.setting)
-            if my.append_context:
-                main_div.add_attr("spt_append_context", my.append_context)
-            main_div.add_attr("spt_append_setting", my.append_setting)
+            if self.setting:
+                main_div.add_attr("spt_setting", self.setting)
+            if self.append_context:
+                main_div.add_attr("spt_append_context", self.append_context)
+            main_div.add_attr("spt_append_setting", self.append_setting)
            
         
         div = DivWdg()
@@ -655,14 +655,14 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         div.add_color('background','background', -10)
         div.add_style('width: 96%')
         div.add_style('padding: 5px')
-        #div.add_style('width', '%spx' %my.wdg_width) 
+        #div.add_style('width', '%spx' %self.wdg_width) 
         main_div.add(div)
         
         # these are for compatibility with CommentCmd
-        hidden_base = HiddenWdg('base_name', my.base_name)
+        hidden_base = HiddenWdg('base_name', self.base_name)
         div.add(hidden_base)
 
-        hidden_base = HiddenWdg('search_key', my.sobject.get_search_key())
+        hidden_base = HiddenWdg('search_key', self.sobject.get_search_key())
         div.add(hidden_base)
 
         #event = WebContainer.get_event_container()
@@ -670,18 +670,18 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         #main_div.set_post_ajax_script(caller)
 
         # collect the notes
-        if not my.preprocess_notes:
-            my.preprocess()
-        key = "%s|%s" % (my.sobject.get_search_type(), my.sobject.get_id())
-        notes = my.notes_dict.get(key)
+        if not self.preprocess_notes:
+            self.preprocess()
+        key = "%s|%s" % (self.sobject.get_search_type(), self.sobject.get_id())
+        notes = self.notes_dict.get(key)
      
         if not notes:
             notes = []
 
         # add submission notes
-        if my.include_submission == 'true' or my.show_sub_notes_value == True:
-            filter_contexts = my._get_discussion_context()
-            submission_notes = Submission.get_all_notes(my.sobject, filter_contexts)
+        if self.include_submission == 'true' or self.show_sub_notes_value == True:
+            filter_contexts = self._get_discussion_context()
+            submission_notes = Submission.get_all_notes(self.sobject, filter_contexts)
             notes.extend(submission_notes)
             
             def compare_context(y, x):
@@ -698,16 +698,16 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         comment_attr = None
 
         use_notes = True
-        comment_toggle_event = '%s_toggle' % my.base_name
+        comment_toggle_event = '%s_toggle' % self.base_name
         new_note_swap = SwapDisplayWdg()
         num_comments = xrange(len(notes))
         if len(num_comments) == 0:
-            div.add( my._get_add_comment_wdg(new_note_swap, comment_toggle_event) )
+            div.add( self._get_add_comment_wdg(new_note_swap, comment_toggle_event) )
             return main_div
         
         # create an event
-        event_name1 = '%s_main_expand' % my.base_name
-        event_name2 = '%s_main_collapse' % my.base_name
+        event_name1 = '%s_main_expand' % self.base_name
+        event_name2 = '%s_main_collapse' % self.base_name
         
         
         #comment_toggle_caller = event.get_event_caller(comment_toggle_event)
@@ -726,24 +726,24 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
         # this needs to be the search_key since we may mix search type in the
         # same page like Artist tab.
-        #base_id = "comment_%s" % my.sobject.get_search_key()
-        base_id = "%s_comment" % my.base_name
+        #base_id = "comment_%s" % self.sobject.get_search_key()
+        base_id = "%s_comment" % self.base_name
 
         comment_area = DivWdg()
 
-        if my.get_option("scroll") != "false":
-            comment_area.add_style("max-height", "%spx" % my.pref_height_value)
+        if self.get_option("scroll") != "false":
+            comment_area.add_style("max-height", "%spx" % self.pref_height_value)
             comment_area.add_style("overflow: auto")
 
 
         last_context = None 
 
-        sticky_notes, parent_notes, note_dict = my._preprocess_notes(notes)
+        sticky_notes, parent_notes, note_dict = self._preprocess_notes(notes)
     
         sticky_base_id = '%s_stick' % base_id
         for i, note in enumerate(sticky_notes):
             child_notes = note_dict.get(note.get_id())
-            my.draw_note(i, note, child_notes, comment_area, sticky_base_id, \
+            self.draw_note(i, note, child_notes, comment_area, sticky_base_id, \
                  event_name1, event_name2, comment_toggle_caller, \
                  new_note_swap, 'discussion_sticky', use_notes)
 
@@ -757,7 +757,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
            
             child_notes = note_dict.get(note.get_id())
             # draw note item
-            my.draw_note(i, note, child_notes, comment_area, base_id, \
+            self.draw_note(i, note, child_notes, comment_area, base_id, \
                  event_name1, event_name2, comment_toggle_caller, \
                  new_note_swap, 'discussion_parent', use_notes)
 
@@ -765,18 +765,18 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
         #security = WebContainer.get_security()
         #if not security.check_access("sobject|column", \
-        #        "%s|%s" % (search_type,my.name), "edit"):
+        #        "%s|%s" % (search_type,self.name), "edit"):
         div.add(comment_area)
 
-        div.add( my._get_add_comment_wdg(new_note_swap, comment_toggle_event) )
+        div.add( self._get_add_comment_wdg(new_note_swap, comment_toggle_event) )
         
         # add a hidden input for storing parent_id
-        hidden = HiddenWdg('%s_parent' %my.base_name, '')
+        hidden = HiddenWdg('%s_parent' %self.base_name, '')
         div.add(hidden)
         return main_div
 
 
-    def _preprocess_notes(my, notes):
+    def _preprocess_notes(self, notes):
         '''sort out the parent and child relationsip here. and group the
         sticky notes '''
         sticky_notes = []
@@ -794,7 +794,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
                     note_dict[parent_id] = [note]
             else:
                 parent_notes.append(note)
-                if note.get_status() in my.sticky:
+                if note.get_status() in self.sticky:
                     sticky_notes.append(note)
                     # used for chronological sorting
                     sticky_dict[note.get_value('timestamp')] = note
@@ -806,7 +806,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         return sticky_notes, parent_notes, note_dict
 
 
-    def draw_note(my, idx, note, child_notes, comment_area,  base_id, event_name1, event_name2, \
+    def draw_note(self, idx, note, child_notes, comment_area,  base_id, event_name1, event_name2, \
             comment_toggle_caller, new_note_swap, note_css, use_notes=True):
         event = WebContainer.get_event_container()
 
@@ -814,7 +814,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         if not use_notes:
             # skip if we have specified a context
             context = comment_attr.get_context(idx)
-            if my.contexts != [""] and context not in my.contexts:
+            if self.contexts != [""] and context not in self.contexts:
                 return
 
             user, date, comment = comment_attr.get_comment_data(idx)
@@ -855,7 +855,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         
         # add status span
         if note_id == parent_id:
-            status_span = my._get_status_span(status, note_id, event)
+            status_span = self._get_status_span(status, note_id, event)
             comment_div.add(status_span)
 
         if not user:
@@ -870,9 +870,9 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
         comment = WikiUtil().convert(comment)
         max_comment_len = 40
-        if my.wdg_width:
+        if self.wdg_width:
             try:
-                max_comment_len = int(float(my.wdg_width) / 8)
+                max_comment_len = int(float(self.wdg_width) / 8)
             except ValueError:
                 pass
         if len(comment) > max_comment_len:
@@ -880,7 +880,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         else:
             short = comment
 
-        comment = my._replace_references(comment)
+        comment = self._replace_references(comment)
 
         # TODO: index here is reused on refresh
         index = idx
@@ -925,8 +925,8 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
 
 
-        #event.add_listener(event_name1, main_swap_function1, my.replace )
-        #event.add_listener(event_name2, main_swap_function2, my.replace )
+        #event.add_listener(event_name1, main_swap_function1, self.replace )
+        #event.add_listener(event_name2, main_swap_function2, self.replace )
         behavior = {
             'type': 'listen',
             'event_name': event_name1,
@@ -944,7 +944,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
 
         # stop resetting event container after the first note
-        my.replace = False
+        self.replace = False
 
         comment_div.add( span_short )
         comment_div.add( span_long )
@@ -958,11 +958,11 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
             script = []
             script.append(comment_toggle_caller)
             script.append("Note.focus_note('%s', -180, '%s', '%s')" \
-                %(my.base_name, short_id, my.status_id))
+                %(self.base_name, short_id, self.status_id))
             script.append(new_note_swap.get_swap_script(bias=SwapDisplayWdg.ON))
             
             # lock the context to match that of the parent note
-            select_name = "%s_context" % my.base_name
+            select_name = "%s_context" % self.base_name
             script.append("Note.lock_context('%s','%s')" %(select_name, context))
 
             reply = HtmlElement.href(data=" [ reply ] ", ref="#")
@@ -978,10 +978,10 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
             
 
             menu_script = ["Note.setup_util('%s','%s','%s')" \
-                %(note.get_search_key(), note.get_parent_search_key(), my.base_name)]
+                %(note.get_search_key(), note.get_parent_search_key(), self.base_name)]
         
            
-            menu_script.append(my.pop_menu.get_cancel_aux_script())
+            menu_script.append(self.pop_menu.get_cancel_aux_script())
             menu_script.append("spt.popup.open('NoteMenuWdg');")
             menu_script.append('''
                     var pos = spt.mouse.get_abs_cusor_position(evt);
@@ -1000,7 +1000,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
             action_wdg.add(icon_wdg)
 
             # if count is zero, the just add the publish link
-            count = my.snapshots_count.get(note_id)
+            count = self.snapshots_count.get(note_id)
             if not count:
                 # add a publish link
                 from pyasm.widget import PublishLinkWdg, ThumbWdg
@@ -1050,7 +1050,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
                 if count:
                     popup_menu.add("<hr/>")
-                    snapshot_list = my.snapshots.get(note_id)
+                    snapshot_list = self.snapshots.get(note_id)
                     for snapshot in snapshot_list:
                         web_dir = snapshot.get_web_dir()
                         file_name = snapshot.get_file_name_by_type("main")
@@ -1095,14 +1095,14 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
             base_id = child_div_id
             for idx, child_note in enumerate(child_notes):
                 
-                my.draw_note(idx, child_note, [], child_div, base_id, \
+                self.draw_note(idx, child_note, [], child_div, base_id, \
                      event_name1, event_name2, comment_toggle_caller, new_note_swap, \
                      note_css='discussion_child')
 
             comment_area.add(child_div)
 
 
-    def _get_status_span(my, status, note_id, event):
+    def _get_status_span(self, status, note_id, event):
         status_dict = ProdSetting.get_dict_by_key('note_status')
         status_value = status_dict.get(status)
         # add a default status (-) if not set yet
@@ -1114,9 +1114,9 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         
         return status_span
 
-    def _get_add_comment_wdg(my, swap, toggle_event_name):
+    def _get_add_comment_wdg(self, swap, toggle_event_name):
 
-        div_id = "%s_add" % my.base_name
+        div_id = "%s_add" % self.base_name
 
         div = DivWdg()
 
@@ -1150,30 +1150,30 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         div2.set_id(div_id)
         div2.add_style("display: none")
 
-        status_div = FloatDivWdg('New Note: ', id=my.status_id)
+        status_div = FloatDivWdg('New Note: ', id=self.status_id)
         status_div.add_class("left_content")
         div2.add(status_div)
 
         # add a new note link
-        new_note_id = '%s_new' %my.base_name
+        new_note_id = '%s_new' %self.base_name
         link = HtmlElement.js_href("Note.new_note('%s','%s','%s')" \
-            % (new_note_id, my.status_id, my.base_name), data=" [ New note ]")
+            % (new_note_id, self.status_id, self.base_name), data=" [ New note ]")
         new_note = FloatDivWdg(link, id = new_note_id )
         new_note.add_style('display: none')
         new_note.add_class("left_content")
         div2.add(new_note)
 
-        textarea = TextAreaWdg(my.base_name)
+        textarea = TextAreaWdg(self.base_name)
         textarea.set_attr('rows','4')
         textarea.add_style("width: 90%")
-        textarea.set_id(my.base_name)
+        textarea.set_id(self.base_name)
 
         textarea.force_default_context_menu()
 
         cols = 35
         try:
-            if my.wdg_width:
-                cols = cols * int(my.wdg_width) / 350
+            if self.wdg_width:
+                cols = cols * int(self.wdg_width) / 350
         except ValueError:
             pass
         textarea.set_attr("cols", cols)
@@ -1181,8 +1181,8 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         div2.add(textarea)
         div2.add(HtmlElement.br())
 
-        setting = my.setting
-        select_name = "%s_context" % my.base_name
+        setting = self.setting
+        select_name = "%s_context" % self.base_name
         
         # construct from setting if any
         context_span = None
@@ -1194,16 +1194,16 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
             context_select.set_option("setting", setting)
 
             context_select.add_empty_option("<- Select ->")
-            if my.contexts:
+            if self.contexts:
                 # just take the first one
-                context_select.set_value(my.contexts[0])
+                context_select.set_value(self.contexts[0])
             
             context_span.add("Context: ")
             context_span.add(context_select)
             div2.add(context_span)
-        elif my.global_context:
+        elif self.global_context:
             context_select = SelectWdg(select_name)
-            context_select.append_option(my.global_context, my.global_context)
+            context_select.append_option(self.global_context, self.global_context)
             context_span = SpanWdg("Context: ")
             context_span.add_style("float: left")
             context_span.add(context_select)
@@ -1215,32 +1215,32 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
             # assume there is a ProcessFilterSelectWdg in the page
             from pyasm.prod.web import ProcessSelectWdg, ProcessFilterSelectWdg
             context_select = ProcessSelectWdg( has_empty=False,\
-                search_type=my.sobject.get_base_search_type(), sobject=my.sobject)
+                search_type=self.sobject.get_base_search_type(), sobject=self.sobject)
             
             context_select._add_options()
             labels, values = context_select.get_select_values() 
             set_dom_again = False
 
-            if my.append_setting:
+            if self.append_setting:
                 temp_select = SelectWdg(select_name)
-                temp_select.set_option("setting", my.append_setting)
+                temp_select.set_option("setting", self.append_setting)
                 append_values, append_labels = temp_select._get_setting()
                 if append_values:
                     context_select.append_option('','')
-                    context_select.append_option('&lt;&lt; %s &gt;&gt;' %my.append_setting, '')
+                    context_select.append_option('&lt;&lt; %s &gt;&gt;' %self.append_setting, '')
                 for value in append_values:
                     if value not in values:
                         context_select.append_option(value, value)
                         values.append(value)
                         set_dom_again = True
-            for context in my.contexts:
+            for context in self.contexts:
                 if context and context not in values and "," not in context:
                     context_select.append_option(context, context)
                     set_dom_again = True
             
             security = Environment.get_security()
             # append custom context
-            append_context = my.append_context
+            append_context = self.append_context
             if append_context:
                 append_context = append_context.split('|')
                 for context in append_context:
@@ -1262,8 +1262,8 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
             
             process_filter =  ProcessFilterSelectWdg(\
-                 search_type=my.sobject.get_base_search_type(),\
-                 name=my.process_filter)
+                 search_type=self.sobject.get_base_search_type(),\
+                 name=self.process_filter)
             
             current_filter_value = process_filter.get_value()
 
@@ -1283,7 +1283,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         #div2.add( clipboard )
 
         # register the note entry ajax script 
-        refresh_event = '%s_refresh' %my.base_name
+        refresh_event = '%s_refresh' %self.base_name
 
         # TEST
         script = "spt.panel.refresh( $(bvr.src_el).getParent('.spt_discussion_panel'), null, true)";
@@ -1323,7 +1323,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         return widget
 
 
-    def _replace_references(my, comment):
+    def _replace_references(self, comment):
         ''' replace search_key with a thumbnail '''
         p = re.compile( r"\|\|(.*)\|\|", re.DOTALL )
         m = p.search(comment)
@@ -1343,7 +1343,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 class NoteUtilWdg(BaseRefreshWdg):
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         '''external settings which populate the widget'''
         return { 'base_name': 'Base name for the DiscussionWdg',
                  'skey_note': 'Search key for the note',
@@ -1351,85 +1351,85 @@ class NoteUtilWdg(BaseRefreshWdg):
                  'note_action': 'Note Action like EDIT or MOVE or STATUS',
                  'note_util_offscript': 'Off script'}
 
-    def init(my):
-        my.parent = None
-        my.new_parent = None
-        my.main_div = DivWdg(id='parent_sobj')
-        my.main_div.add_style('margin: 4px')
-        class_name = Common.get_full_class_name(my)
-        my.main_div.add_attr("spt_class_name", class_name)
+    def init(self):
+        self.parent = None
+        self.new_parent = None
+        self.main_div = DivWdg(id='parent_sobj')
+        self.main_div.add_style('margin: 4px')
+        class_name = Common.get_full_class_name(self)
+        self.main_div.add_attr("spt_class_name", class_name)
         
-        my.main_div.add_class("spt_note_menu_panel")
+        self.main_div.add_class("spt_note_menu_panel")
 
         # get the sobject
         web = WebContainer.get_web() 
-        search_key = my.kwargs.get('skey_note_parent')
-        note_search_key = my.kwargs.get('skey_note')
+        search_key = self.kwargs.get('skey_note_parent')
+        note_search_key = self.kwargs.get('skey_note')
         if note_search_key:
-            my.note = Search.get_by_search_key(note_search_key)
-        my.off_script = my.kwargs.get('note_util_offscript')
-        my.note_action = my.kwargs.get('note_action')
-        my.base_name = my.kwargs.get('base_name')
-        new_parent_search_key = my.kwargs.get('skey_new_parent')
+            self.note = Search.get_by_search_key(note_search_key)
+        self.off_script = self.kwargs.get('note_util_offscript')
+        self.note_action = self.kwargs.get('note_action')
+        self.base_name = self.kwargs.get('base_name')
+        new_parent_search_key = self.kwargs.get('skey_new_parent')
         if search_key:
-            my.parent = Search.get_by_search_key(search_key)
+            self.parent = Search.get_by_search_key(search_key)
         if new_parent_search_key:
-            my.new_parent = Search.get_by_search_key(new_parent_search_key)
+            self.new_parent = Search.get_by_search_key(new_parent_search_key)
 
        
   
-    def add(my, widget):
-        my.main_div.add(widget)
+    def add(self, widget):
+        self.main_div.add(widget)
 
 
-    def get_display(my):
+    def get_display(self):
         #TODO: on refresh, don't draw container div 
         
-        widget = my.main_div
+        widget = self.main_div
        
         # no parent in first draw
-        if not my.parent:
+        if not self.parent:
             return widget
 
         
         is_action = True
-        note = my.note.get_value('note')[:30]
+        note = self.note.get_value('note')[:30]
         span = DivWdg('%s...' %note)
         span.add_style('line-height: 1.0em')
         widget.add(span)
         widget.add(HtmlElement.br())
         msg = ''
         msg_css = ''
-        if my.note_action == "MOVE":
+        if self.note_action == "MOVE":
             msg = 'Move to:'
-        elif my.note_action == "COPY":
+        elif self.note_action == "COPY":
             msg = 'Copy to:'
-        elif my.note_action == "EDIT":
+        elif self.note_action == "EDIT":
             msg = 'Edit:'
-        elif my.note_action == "DEL":
+        elif self.note_action == "DEL":
             msg_css = 'warning'
             security = Environment.get_security()
-            if my.note.get_login() == Environment.get_user_name() or \
+            if self.note.get_login() == Environment.get_user_name() or \
                     security.check_access("project", "admin", "view"):
                 msg = "Delete this note?"
-            elif my.note.get_login() != Environment.get_user_name():
+            elif self.note.get_login() != Environment.get_user_name():
                 msg = "You can only delete your own notes."
                 is_action = False
 
-        elif my.note_action == "STATUS":
+        elif self.note_action == "STATUS":
             msg = 'Edit Status:'
         span = SpanWdg('%s '%msg, css='small %s' %msg_css)
         widget.add(span)
-        search_type = my.parent.get_value('search_type', no_exception=True)
+        search_type = self.parent.get_value('search_type', no_exception=True)
         web = WebContainer.get_web()
        
         parent_search_key = ''
 
         # trying to look for grandparent
         if search_type:
-            parent_search_key = my.parent.get_parent_search_key()
+            parent_search_key = self.parent.get_parent_search_key()
         else: # settle for just the parent
-            search_type = my.parent.get_search_type()
+            search_type = self.parent.get_search_type()
        
    
         # values are outside the panel intentionally
@@ -1437,7 +1437,7 @@ class NoteUtilWdg(BaseRefreshWdg):
         server_cmd += "TacticServerCmd.execute_cmd('pyasm.widget.NoteUtilCmd', null, {}, values);"
 
 
-        widget.add(my._get_monitor(my.note_action, search_type))
+        widget.add(self._get_monitor(self.note_action, search_type))
         
         # add OK button
         button = ProdIconButtonWdg('OK')
@@ -1450,25 +1450,25 @@ class NoteUtilWdg(BaseRefreshWdg):
         widget.add(div)
         script = []
         script.append( server_cmd )
-        script.append( my.off_script )
+        script.append( self.off_script )
         
         execute_event = 'NoteUtilCmd_exe'
        
         #pat = re.compile(r'(.*\|)(.*\|.*)(\|.*)')
-        #new_base_name = pat.sub( r'\1%s\3'%my.parent.get_search_key(), my.base_name)
+        #new_base_name = pat.sub( r'\1%s\3'%self.parent.get_search_key(), self.base_name)
        
         #TODO: this does not account for the Destination search key for edit and copy operation
         behavior = {
             'type': 'click_up',
             'cbjs_action': ';'.join(script),
-            'cbjs_postaction': "spt.named_events.fire_event('%s_refresh', {})" %(my.base_name)} 
+            'cbjs_postaction': "spt.named_events.fire_event('%s_refresh', {})" %(self.base_name)} 
 
 
             
         button.add_behavior(behavior)
         return widget
 
-    def _get_status_wdg(my):
+    def _get_status_wdg(self):
         div = DivWdg()
         div.add(HtmlElement.br())
 
@@ -1491,7 +1491,7 @@ class NoteUtilWdg(BaseRefreshWdg):
         status_sel.set_option('labels', labels)
         status_sel.set_option('values', values)
         status_sel.add_empty_option('-- Select a Status --')
-        cur_status = my.note.get_value('status')
+        cur_status = self.note.get_value('status')
         
         #if cur_status:
         status_sel.set_value(cur_status)
@@ -1499,7 +1499,7 @@ class NoteUtilWdg(BaseRefreshWdg):
 
         return div
 
-    def _get_monitor(my, action, search_type):
+    def _get_monitor(self, action, search_type):
         '''get the widget on the right side (the monitor)'''
         widget = Widget()
         if action in ['COPY', 'MOVE']:
@@ -1507,14 +1507,14 @@ class NoteUtilWdg(BaseRefreshWdg):
             parent_search_key = ''
 
             # trying to look for grandparent
-            search_type = my.parent.get_value('search_type', no_exception=True)
+            search_type = self.parent.get_value('search_type', no_exception=True)
             if search_type:
-                parent_search_key = my.parent.get_parent_search_key()
+                parent_search_key = self.parent.get_parent_search_key()
             else: # settle for just the parent
-                search_type = my.parent.get_search_type()
+                search_type = self.parent.get_search_type()
             # start a search
             search = Search(search_type)
-            my.categorize(widget, search_type, search)
+            self.categorize(widget, search_type, search)
             search.add_order_by("code")
            
             sobjects = search.get_sobjects()
@@ -1537,7 +1537,7 @@ class NoteUtilWdg(BaseRefreshWdg):
             select.set_option("labels", labels)
             select.add_empty_option()
             # TO BE REMOVED: transfer the options
-            for key, value in my.options.items():
+            for key, value in self.options.items():
                 select.set_option(key, value)
          
             if parent_search_key: 
@@ -1548,14 +1548,14 @@ class NoteUtilWdg(BaseRefreshWdg):
             text = TextAreaWdg('edited_note')
             text.set_attr('rows','4')
             text.set_attr('cols','30')
-            text.set_value(my.note.get_value('note'))
+            text.set_value(self.note.get_value('note'))
             widget.add(text)
 
         elif action == 'STATUS':
-            widget.add(my._get_status_wdg())
+            widget.add(self._get_status_wdg())
         return widget
 
-    def categorize(my, widget, search_type, search):
+    def categorize(self, widget, search_type, search):
         '''categorize parents based on search_type'''
         # FIXME: this should not be here.  This is a general class for all
         # search types, not just prod/asset
@@ -1598,8 +1598,8 @@ class NoteUtilWdg(BaseRefreshWdg):
             if parent_lib:
                 search.add_filter('category', parent_lib)
     
-    def get_off_script(my):
-        return "set_display_off(\\'%s\\')" %my.main_div.get_id()
+    def get_off_script(self):
+        return "set_display_off(\\'%s\\')" %self.main_div.get_id()
 
 class NoteUtilCmd(Command):
 
@@ -1609,154 +1609,154 @@ class NoteUtilCmd(Command):
     DEL = "DEL"
     STATUS = "STATUS"
 
-    def get_title(my):
+    def get_title(self):
         return "NoteUtilCmd"
 
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
-        my.search_type = web.get_form_value("search_type")
-        my.note_search_key = web.get_form_value('skey_note')
-        my.note = Search.get_by_search_key(my.note_search_key)
-        my.note_parent_search_key = web.get_form_value('skey_note_parent')
-        my.note_parent = Search.get_by_search_key(my.note_parent_search_key)
-        my.new_parent_search_key = web.get_form_value('skey_new_parent')
-        my.note_new_parent = None
-        my.action = web.get_form_value('note_action')
-        my.edited_note = web.get_form_value('edited_note')
-        my.status = web.get_form_value('note_status')
+        self.search_type = web.get_form_value("search_type")
+        self.note_search_key = web.get_form_value('skey_note')
+        self.note = Search.get_by_search_key(self.note_search_key)
+        self.note_parent_search_key = web.get_form_value('skey_note_parent')
+        self.note_parent = Search.get_by_search_key(self.note_parent_search_key)
+        self.new_parent_search_key = web.get_form_value('skey_new_parent')
+        self.note_new_parent = None
+        self.action = web.get_form_value('note_action')
+        self.edited_note = web.get_form_value('edited_note')
+        self.status = web.get_form_value('note_status')
 
-    def check(my):
-        my.init()
+    def check(self):
+        self.init()
         web = WebContainer.get_web()
 
-        if my.edited_note and my.note:
+        if self.edited_note and self.note:
             return True
 
-        if my.new_parent_search_key:
-            my.note_new_parent = Search.get_by_search_key(my.new_parent_search_key)
+        if self.new_parent_search_key:
+            self.note_new_parent = Search.get_by_search_key(self.new_parent_search_key)
         
-        elif my.action not in [my.DEL, my.STATUS]:
+        elif self.action not in [self.DEL, self.STATUS]:
             raise UserException("Please select a new parent from the dropdown.")
         
-        if not my.action:
+        if not self.action:
             raise UserException("Unknown Action.")
             return False
         
-        if not my.note or not my.note_parent:
+        if not self.note or not self.note_parent:
             return False
 
-        if not my.note_new_parent and my.action not in [my.DEL, my.STATUS] :
-            raise UserException("The new parent does not exist [%s]" %my.new_parent_search_key)
+        if not self.note_new_parent and self.action not in [self.DEL, self.STATUS] :
+            raise UserException("The new parent does not exist [%s]" %self.new_parent_search_key)
             return False
         
 
-        if my.note_parent_search_key == my.new_parent_search_key:
+        if self.note_parent_search_key == self.new_parent_search_key:
             raise UserException("The new parent is the same as current parent. Skipped.")
             return False
         return True
 
-    def execute(my):
-        if my.action == my.MOVE:
-            my.note.set_sobject_value(my.note_new_parent)
-            my.note.commit()
-            my.sobjects = [my.note]
+    def execute(self):
+        if self.action == self.MOVE:
+            self.note.set_sobject_value(self.note_new_parent)
+            self.note.commit()
+            self.sobjects = [self.note]
             # move the child notes as well
-            child_notes = my.note.get_child_notes()
+            child_notes = self.note.get_child_notes()
             for child_note in child_notes:
-                child_note.set_sobject_value(my.note_new_parent)
+                child_note.set_sobject_value(self.note_new_parent)
                 child_note.commit()
-            my.add_description('Moved note [%s...] and replied notes from [%s] to [%s]' \
-                    %(my.note.get_value('note')[:10], my.note_parent.get_code(), my.note_new_parent.get_code()))
-        elif my.action == my.COPY:
-            new_note = my.note.copy_note(my.note_new_parent)
-            my.sobjects = [new_note] 
+            self.add_description('Moved note [%s...] and replied notes from [%s] to [%s]' \
+                    %(self.note.get_value('note')[:10], self.note_parent.get_code(), self.note_new_parent.get_code()))
+        elif self.action == self.COPY:
+            new_note = self.note.copy_note(self.note_new_parent)
+            self.sobjects = [new_note] 
             # move the child notes as well
-            child_notes = my.note.get_child_notes()
+            child_notes = self.note.get_child_notes()
             for child_note in child_notes:
-                child_note.copy_note(my.note_new_parent, new_note)
+                child_note.copy_note(self.note_new_parent, new_note)
 
-            my.add_description('Copied note [%s...] and replied notes from [%s] to [%s]' \
-                %(my.note.get_value('note')[:10], my.note_parent.get_code(), my.note_new_parent.get_code()))
-        elif my.action == my.EDIT:
-            parent_code = my.note_parent.get_code()
-            my.sobjects = [my.note]
-            my.note.set_value('note', my.edited_note)
-            my.note.commit()
-            my.add_description('Edited note for [%s]' %(parent_code))
+            self.add_description('Copied note [%s...] and replied notes from [%s] to [%s]' \
+                %(self.note.get_value('note')[:10], self.note_parent.get_code(), self.note_new_parent.get_code()))
+        elif self.action == self.EDIT:
+            parent_code = self.note_parent.get_code()
+            self.sobjects = [self.note]
+            self.note.set_value('note', self.edited_note)
+            self.note.commit()
+            self.add_description('Edited note for [%s]' %(parent_code))
 
-        elif my.action == my.DEL:
-            value = my.note.get_value('note')
-            parent_code = my.note_parent.get_code()
-            my.sobjects = [my.note]
-            my.note.delete()
-            my.add_description('Deleted note [%s] from [%s]' %(value, parent_code))
+        elif self.action == self.DEL:
+            value = self.note.get_value('note')
+            parent_code = self.note_parent.get_code()
+            self.sobjects = [self.note]
+            self.note.delete()
+            self.add_description('Deleted note [%s] from [%s]' %(value, parent_code))
             
 
-        elif my.action == my.STATUS:
-            my.note.set_value('status', my.status)
-            my.note.commit()
-            my.add_description('Changed status of a note')
+        elif self.action == self.STATUS:
+            self.note.set_value('status', self.status)
+            self.note.commit()
+            self.add_description('Changed status of a note')
 
     
 
 
 class CommentAttr(object):
 
-    def __init__(my, sobject, name):
-        my.sobject = sobject
-        my.name = name
+    def __init__(self, sobject, name):
+        self.sobject = sobject
+        self.name = name
 
-        my.xml = my.sobject.get_xml_value(my.name, "discussion")
+        self.xml = self.sobject.get_xml_value(self.name, "discussion")
 
-        my._extract_data()
-
-
-    def _extract_data(my):
-        my.nodes = my.xml.get_nodes("discussion/comment")
+        self._extract_data()
 
 
-    def get_num_comments(my):
-        return len(my.nodes)
+    def _extract_data(self):
+        self.nodes = self.xml.get_nodes("discussion/comment")
 
 
-    def get_comment_data(my, index):
-        #return (my.users[index], my.dates[index], my.comments[index])
-        user = Xml.get_attribute(my.nodes[index], "user")
-        date = Xml.get_attribute(my.nodes[index], "date")
+    def get_num_comments(self):
+        return len(self.nodes)
+
+
+    def get_comment_data(self, index):
+        #return (self.users[index], self.dates[index], self.comments[index])
+        user = Xml.get_attribute(self.nodes[index], "user")
+        date = Xml.get_attribute(self.nodes[index], "date")
 
         # FIXME: Don't like this dependency on "childNodes"!
-        comment = my.nodes[index].childNodes[0].nodeValue
+        comment = self.nodes[index].childNodes[0].nodeValue
         return user, date, comment
 
 
-    def get_context(my, index):
-        context = Xml.get_attribute(my.nodes[index], "context")
+    def get_context(self, index):
+        context = Xml.get_attribute(self.nodes[index], "context")
         return context
 
 
 
-    def add_comment(my, comment, context=""):
+    def add_comment(self, comment, context=""):
 
         user = WebContainer.get_login().get_login()
 
         # compare this comment to the last one: avoiding the whole reload
         # problem
-        num = my.get_num_comments()
+        num = self.get_num_comments()
         if num != 0:
-            last_user, last_date, last_comment = my.get_comment_data(num-1)
+            last_user, last_date, last_comment = self.get_comment_data(num-1)
             if user == last_user and comment == last_comment:
                 return
 
         # get the latest snapshot for this asset
         snapshot = Snapshot.get_latest( \
-                my.sobject.get_search_type(), my.sobject.get_id() )
+                self.sobject.get_search_type(), self.sobject.get_id() )
 
         # get root
-        doc = my.xml.get_doc()
+        doc = self.xml.get_doc()
         root = doc.documentElement
 
         # create a new comment element and add it to the root
-        comment_element = my.xml.create_element("comment")
+        comment_element = self.xml.create_element("comment")
         Xml.set_attribute(comment_element, "user", user)
         Xml.set_attribute(comment_element, "date", time.asctime() )
         Xml.set_attribute(comment_element, "context", context)
@@ -1771,64 +1771,64 @@ class CommentAttr(object):
         root.appendChild(comment_element)
 
         # commit it to the sobject
-        my.sobject.set_value(my.name, my.xml.get_xml() )
-        my.sobject.commit()
+        self.sobject.set_value(self.name, self.xml.get_xml() )
+        self.sobject.commit()
 
-        my._extract_data()
-
-
+        self._extract_data()
 
 
 
-    def remove_comment(my, index):
+
+
+    def remove_comment(self, index):
         """remove the comment located at a particular index"""
-        doc = my.xml.get_doc()
+        doc = self.xml.get_doc()
         root = doc.documentElement
-        nodes = my.xml.get_nodes("discussion/comment" )
+        nodes = self.xml.get_nodes("discussion/comment" )
         node = nodes[index]
 
         root.removeChild(node)
 
         # commit it to the sobject
-        my.sobject.set_value(my.name, my.xml.get_xml() )
-        my.sobject.commit()
+        self.sobject.set_value(self.name, self.xml.get_xml() )
+        self.sobject.commit()
 
-        my._extract_data()
+        self._extract_data()
 
 
 
 class CommentCmd(Command):
 
 
-    def get_title(my):
+    def get_title(self):
         return "Add Note"
 
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
 
         # get all of the relevant keys
-        my.search_keys = []
-        my.values = {}
-        my.contexts = {}
-        my.parent_ids = {}
+        self.search_keys = []
+        self.values = {}
+        self.contexts = {}
+        self.parent_ids = {}
         
         
         key = web.get_form_value('base_name')
 
         search_key = web.get_form_value('search_key')
 
-        my.search_keys.append(search_key)
-        # key is based on my.base_name defined in DiscussionWdg
+        self.search_keys.append(search_key)
+        # key is based on self.base_name defined in DiscussionWdg
         
         note_value = web.get_form_value(key)
         if not note_value:
             return False
-        my.values[search_key] = note_value
+        self.values[search_key] = note_value
         
-        my.contexts[search_key] = web.get_form_value("%s_context" % key)
-        my.parent_ids[search_key] = web.get_form_value("%s_parent" % key)
-        if my.search_keys:
+        self.contexts[search_key] = web.get_form_value("%s_context" % key)
+        self.parent_ids[search_key] = web.get_form_value("%s_parent" % key)
+        if self.search_keys:
             return True
         else:
             return False
@@ -1836,16 +1836,16 @@ class CommentCmd(Command):
 
 
 
-    def execute(my):
-        if not my.search_keys:
+    def execute(self):
+        if not self.search_keys:
             return
 
         # get all of the affected sobjects
         web = WebContainer.get_web()
 
         added = False
-        for search_key in my.search_keys:
-            value = my.values[search_key]
+        for search_key in self.search_keys:
+            value = self.values[search_key]
             # needed for filtering out other search key in the page
             if value == "":
                 continue
@@ -1855,7 +1855,7 @@ class CommentCmd(Command):
             #value = value.replace("\\", "\\\\")
 
 
-            context = my.contexts.get(search_key)
+            context = self.contexts.get(search_key)
             if not context:
                 # this should be illegal, raise a warning
                 #context = web.get_form_value("discussion_context")
@@ -1863,7 +1863,7 @@ class CommentCmd(Command):
                     'This note will not be entered.')
                 continue
             # get parent_id 
-            parent_id = my.parent_ids.get(search_key)
+            parent_id = self.parent_ids.get(search_key)
             sobject = Search.get_by_search_key(search_key)
 
             # for now, assume process = context
@@ -1872,15 +1872,15 @@ class CommentCmd(Command):
 
             # this is for the new sobject implementation of notes
             note = Note.create(sobject, value, context, process=process, parent_id=parent_id)
-            my.sobjects.append(note)
+            self.sobjects.append(note)
 
-            my.info['context'] = context
-            my.info['process'] = process
-            my.info['search_key'] = search_key
+            self.info['context'] = context
+            self.info['process'] = process
+            self.info['search_key'] = search_key
 
             if not context:
                 context = "main"
-            my.description = "Note added: '%s' in the '%s' context" % (value, context)
+            self.description = "Note added: '%s' in the '%s' context" % (value, context)
 
             added = True
 

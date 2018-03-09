@@ -37,11 +37,11 @@ class Environment(Base):
     # global function for all threads.
     IS_INITIALIZED = False
 
-    def __init__(my):
-        my.initialize_python_path()
+    def __init__(self):
+        self.initialize_python_path()
 
         if not Environment.IS_INITIALIZED:
-            my.initialize()
+            self.initialize()
             Environment.IS_INITIALIZED = True
 
         # set the temp dir
@@ -54,7 +54,7 @@ class Environment(Base):
 
        
 
-    def initialize_python_path(my):
+    def initialize_python_path(self):
         # add some paths
         paths = Config.get_value("services", "python_path", no_exception=True)
         paths_list = paths.split("|")
@@ -67,7 +67,7 @@ class Environment(Base):
             sys.path.insert(0, plugin_dir)
 
 
-    def initialize(my):
+    def initialize(self):
         '''Initializes the enviroment outside environment Tactic.  This is
         can be used for both the web environment and the batch environment'''
 
@@ -80,34 +80,35 @@ class Environment(Base):
         is_installed = False
         if is_installed:
             # get the config file and read it for errors
-            config_path = my.get_config_path()
+            config_path = self.get_config_path()
             if not os.path.exists(config_path):
                 raise EnvironmentException("Config file [%s] does not exist" % config_path)
 
-            install_dir = my.get_install_dir()
+            install_dir = self.get_install_dir()
             if not os.path.exists(install_dir):
                 raise EnvironmentException("Install dir [%s] does not exist" % install_dir)
 
             # DEPRECATED
-            #site_dir = my.get_site_dir()
+            #site_dir = self.get_site_dir()
             #if not os.path.exists(site_dir):
             #    raise EnvironmentException("Site dir [%s] does not exist" % site_dir)
 
-            asset_dir = my.get_asset_dir()
+            asset_dir = self.get_asset_dir()
             if not os.path.exists(asset_dir):
                 raise EnvironmentException("Asset dir [%s] does not exist" % asset_dir)
 
 
         # create all of the temp directories
         # TODO: is this relevant for batch processes
-        tmp_dir = my.get_tmp_dir()
+        tmp_dir = self.get_tmp_dir()
         dirs = []
         dirs.append("%s/upload" % tmp_dir)
         dirs.append("%s/download" % tmp_dir)
+        dirs.append("%s/handoff" % tmp_dir)
         dirs.append("%s/cache" % tmp_dir)
         dirs.append("%s/upload" % tmp_dir)
         dirs.append("%s/temp" % tmp_dir)
-        plugin_dir = my.get_plugin_dir()
+        plugin_dir = self.get_plugin_dir()
         dirs.append(plugin_dir)
 
         for dir in dirs:
@@ -147,7 +148,7 @@ class Environment(Base):
     get_python_exec = classmethod(get_python_exec)
 
 
-    def get_transfer_mode(my):
+    def get_transfer_mode(self):
         repo_dir = Config.get_value("checkin", "win32_client_repo_dir")
         if repo_dir:
             transfer_mode = 'client_repo'
@@ -160,12 +161,12 @@ class Environment(Base):
 
     # methods that should be overridden by implementation of the
     # environment
-    def get_context_name(my):
+    def get_context_name(self):
         '''get the path for configruation file for the framework'''
         raise EnvironmentException("This function must be overridden")
 
 
-    def get_command_key(my):
+    def get_command_key(self):
         '''Every command executed gets a unique key.  This key is checked
         to ensure that commands are not executed twice (ie refresh on
         a web page'''
@@ -341,7 +342,7 @@ class Environment(Base):
 
 
 
-    def get_client_handoff_dir(my, ticket=None, no_exception=False, include_ticket=True):
+    def get_client_handoff_dir(self, ticket=None, no_exception=False, include_ticket=True):
         if Environment.get_env_object().get_client_os() =='nt':
             base_handoff_dir = Config.get_value("checkin", "win32_client_handoff_dir", no_exception=True)
         else:
@@ -349,9 +350,9 @@ class Environment(Base):
 
 
         if not base_handoff_dir:
-            data_dir = my.get_data_dir()
-            base_handoff_dir = "%s/%s" % (data_dir, "handoff")
-            
+            tmp_dir = self.get_tmp_dir()
+            base_handoff_dir = "%s/%s" % (tmp_dir, "handoff")
+                
 
         if no_exception == False and not base_handoff_dir:
             raise TacticException("No handoff directory defined in TACTIC config file")
@@ -375,7 +376,7 @@ class Environment(Base):
 
 
 
-    def get_server_handoff_dir(my, ticket=None, include_ticket=True):
+    def get_server_handoff_dir(self, ticket=None, include_ticket=True):
         if not ticket:
             security = Environment.get_security()
             ticket = security.get_ticket_key()
@@ -389,7 +390,7 @@ class Environment(Base):
 
         # if not, then it's the same as the client
         if not base_handoff_dir:
-            handoff_dir = my.get_client_handoff_dir(ticket, include_ticket=include_ticket)
+            handoff_dir = self.get_client_handoff_dir(ticket, include_ticket=include_ticket)
         else:
             if include_ticket:
                 handoff_dir = "%s/%s" % (base_handoff_dir, ticket)
@@ -513,7 +514,6 @@ class Environment(Base):
             alias = "default"
 
 
-
         from pyasm.security import Site
         asset_dir = Site.get().get_asset_dir(file_object=file_object,alias=alias)
         if asset_dir:
@@ -597,12 +597,13 @@ class Environment(Base):
 
 
 
-    def get_base_url(my):
+    def get_base_url(cls):
         '''get the url to access tactic'''
         # first assume localhost
         from pyasm.web import Url
-        return Url("http://localhost")
-
+        server = Config.get_value("install", "hostname")
+        return Url("http://%s" % server)
+    get_base_url = classmethod(get_base_url)
 
 
 
@@ -613,7 +614,12 @@ class Environment(Base):
 
     def set_security(security):
         Container.put("Environment:security", security)
+
     set_security = staticmethod(set_security)
+
+    def set_security_list(security_list):
+        Container.put("Environment:security_list", security_list)
+    set_security_list = staticmethod(set_security_list)
 
 
     def get_ticket():

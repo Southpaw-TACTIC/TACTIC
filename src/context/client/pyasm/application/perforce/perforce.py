@@ -24,14 +24,14 @@ class Perforce(object):
 
     PORT = "1666"
 
-    def get_exec_path(my):
+    def get_exec_path(self):
         return "p4"
 
-    def execute(my, cmd, input="", no_exception=False):
+    def execute(self, cmd, input="", no_exception=False):
 
         no_exception = True
 
-        p4_cmd = "%s %s" % (my.get_exec_path(), cmd)
+        p4_cmd = "%s %s" % (self.get_exec_path(), cmd)
         print p4_cmd
         #pipe = popen3(p4_cmd)
         # FIXME: this has not been fixed for the supprocess command
@@ -58,65 +58,65 @@ class Perforce(object):
         return stdout
 
 
-    def add_file(my, path):
+    def add_file(self, path):
         path = path.replace("//", "/")
         cmd = "add \"" + path + "\""
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         if ret_val[0].count("can't add existing file"):
             raise PerforceException(ret_val[0])
         print ret_val
 
 
-    def get_checkout(my, path):
+    def get_checkout(self, path):
         cmd = "opened \"" + path + "...\""
-        ret_val = my.execute(cmd.toString())
+        ret_val = self.execute(cmd.toString())
         return ret_val
 
 
-    def get_repo(my, path, synced=True):
+    def get_repo(self, path, synced=True):
         '''find all files in the repo'''
         p4_cmd = "files"
         if synced:
             p4_cmd = "have"
         cmd = p4_cmd + " \"" + path + "...\""
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return ret_val
 
 
-    def checkin(my, path):
+    def checkin(self, path):
         cmd = 'add "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return "|".join(ret_val) 
 
 
-    def edit(my, path):
+    def edit(self, path):
         path = path.replace("//", "/")
         cmd = "edit \"" + path + "\""
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return "|".join(ret_val)
  
 
-    def revert(my, path):
+    def revert(self, path):
         cmd = "revert -a \"" + path + "\""
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return "|".join(ret_val)
 
 
-    def sync(my, path):
+    def sync(self, path):
         cmd = 'sync -f "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         return "|".join(ret_val) 
 
 
-    def delete(my, path):
+    def delete(self, path):
         cmd = 'delete "%s"' % path
-        ret_val = my.execute(cmd)
+        ret_val = self.execute(cmd)
         print ret_val
         return "|".join(ret_val)
 
 
-    def get_root(my):
-        ret_val = my.execute("workspaces")
+    def get_root(self):
+        ret_val = self.execute("workspaces")
         tmp = ret_val[0].split(" ")
 
         # HACK: big hack to overcome the bad output from perforce
@@ -131,8 +131,8 @@ class Perforce(object):
         return root
 
 
-    def get_workspaces(my):
-        ret_val = my.execute("workspaces")
+    def get_workspaces(self):
+        ret_val = self.execute("workspaces")
         return ret_val
         #root = Common.hexify(ret_val)
         #return root;
@@ -145,18 +145,18 @@ class Perforce(object):
     # param@ paths - list of file paths to be commited
     # param@ description - check in description
     # param@ root - P4 client installation root path
-    def commit(my, description, paths=[], root=None):
+    def commit(self, description, paths=[], root=None):
 
         # if no root is specified, then get it from perforce
         if not root:
-            root = my.get_root()
+            root = self.get_root()
 
         info = {}
             
 
         # Start a new changelist
         description_key = "<enter description here>"
-        output = my.execute("change -o")
+        output = self.execute("change -o")
        
         input = []
         files = []
@@ -170,7 +170,7 @@ class Perforce(object):
 
             if line.startswith("Files:" ):
                 files_flag = True
-            #elif files_flag and not my.match_path(paths, line):
+            #elif files_flag and not self.match_path(paths, line):
             #    print "file: ", line
             #    continue
             if files_flag and line != "\n":
@@ -189,7 +189,7 @@ class Perforce(object):
 
         input_str = "".join( input )
 
-        ret_val = my.execute("change -i", input_str)
+        ret_val = self.execute("change -i", input_str)
         ret_val_str = "\n".join( ret_val )
 
         # get the change list number
@@ -197,19 +197,19 @@ class Perforce(object):
         changelist = int(tmp[1])
 
         # submit the change
-        ret_val = my.execute("submit -c %s" % changelist )
+        ret_val = self.execute("submit -c %s" % changelist )
 
         # parse the return value
         info['message'] = "|".join(ret_val)
 
-        info['revision'] = my.extract_value("Submitting change (\d+)", ret_val[0])
+        info['revision'] = self.extract_value("Submitting change (\d+)", ret_val[0])
 
-        num_files = my.extract_value("Locking (\d+) files", ret_val[1])
+        num_files = self.extract_value("Locking (\d+) files", ret_val[1])
 
         files = []
         for line in ret_val:
             if line.startswith("edit") or line.startswith("add"):
-                values = my.extract_values("\w+ (.*)#(\d+)", line)
+                values = self.extract_values("\w+ (.*)#(\d+)", line)
                 path = values[0]
                 version = values[1]
 
@@ -226,7 +226,7 @@ class Perforce(object):
 
 
     # Match the line with one of the given paths
-    def match_path(my, paths, line):
+    def match_path(self, paths, line):
         matched = False;
         # force only the output paths to lower case
         i = 0
@@ -238,7 +238,7 @@ class Perforce(object):
         return matched
 
 
-    def extract_values(my, expr, line):
+    def extract_values(self, expr, line):
         p = re.compile(expr, re.DOTALL)
         m = p.search(line)
         if not m:
@@ -247,8 +247,8 @@ class Perforce(object):
         return values
 
 
-    def extract_value(my, expr, line):
-        values = my.extract_values(expr,line)
+    def extract_value(self, expr, line):
+        values = self.extract_values(expr,line)
         if not values:
             return None
         return values[0]

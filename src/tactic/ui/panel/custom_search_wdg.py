@@ -34,28 +34,28 @@ from dateutil import parser
 
 class CustomSearchWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget'
         }
 
 
-    def init(my):
-        #my.handle_search()
+    def init(self):
+        #self.handle_search()
         pass
 
-    def handle_search(my):
+    def handle_search(self):
 
-        search_type = my.kwargs.get("search_type")
-        my.search = Search(search_type)
-        my.alter_search(my.search)
-        return my.search
+        search_type = self.kwargs.get("search_type")
+        self.search = Search(search_type)
+        self.alter_search(self.search)
+        return self.search
 
-    def get_search(my):
-        return my.search
+    def get_search(self):
+        return self.search
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
         user = Environment.get_user_name()
         from pyasm.security import Login
@@ -74,7 +74,7 @@ class CustomSearchWdg(BaseRefreshWdg):
             date = datetime.datetime.now()
 
         from tactic.ui.report import MMSUtility
-        #start_wday, end_wday = my.get_week_range(date_string)
+        #start_wday, end_wday = self.get_week_range(date_string)
         start_wday, end_wday = MMSUtility.get_week_range(date)
 
         one_day = datetime.timedelta(days=1)
@@ -121,7 +121,7 @@ class CustomSearchWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
 
         from tactic.ui.report import MMSUtility
@@ -129,10 +129,10 @@ class CustomSearchWdg(BaseRefreshWdg):
         date = datetime.datetime.now()
         start_wday, end_wday =  MMSUtility.get_week_range(date)
 
-        my.prefix = 'week'
+        self.prefix = 'week'
         top = DivWdg()
         top.add_class("spt_table_search")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         from tactic.ui.container import RoundedCornerDivWdg
         inner = RoundedCornerDivWdg(corner_size=10, hex_color_code='949494')
@@ -141,7 +141,7 @@ class CustomSearchWdg(BaseRefreshWdg):
         top.add(inner)
 
 
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         top.add(hidden)
 
 
@@ -203,13 +203,13 @@ class CustomSearchWdg(BaseRefreshWdg):
         text.add(week)
         table.add_cell(text)
 
-        table.add_cell( my.get_search_wdg() )
+        table.add_cell( self.get_search_wdg() )
 
         return top
 
 
 
-    def get_search_wdg(my):
+    def get_search_wdg(self):
         filter_div = DivWdg()
 
         buttons_list = [
@@ -231,7 +231,7 @@ class CustomSearchWdg(BaseRefreshWdg):
             //spt.panel.refresh(top);
             //}, 10);
             ''',
-            'panel_id':     my.prefix
+            'panel_id':     self.prefix
         }
         txt_btn_set.get_btn_by_label('Run Search').add_behavior( run_search_bvr )
 

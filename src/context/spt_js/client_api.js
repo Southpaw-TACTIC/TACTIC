@@ -19,6 +19,13 @@ TacticServerStub = function() {
     this.site = null;
     this.project = null;
 
+    this.get_promise = function() {
+        promise = new Promise( function(resolve, reject) {
+           resolve();
+        })
+        return promise;
+    }
+
     this.set_transaction_ticket = function(ticket) {
         this.transaction_ticket = ticket;
     }
@@ -26,7 +33,6 @@ TacticServerStub = function() {
 
     this.set_ticket = function(login_ticket) {
         this.login_ticket = login_ticket;
-        //this.transaction_ticket = login_ticket;
     }
 
     this.get_login_ticket = function() {
@@ -81,8 +87,102 @@ TacticServerStub = function() {
     }
 
 
+    this.get_server = function() {
+        return this.server_name;
+    }
+
+
+
+
     this.get_transaction_ticket = function() {
         return this.transaction_ticket;
+    }
+
+
+    // a key is an encoded
+    this.set_key = function(key) {
+
+        var str = '';
+        if (key.indexOf("http") == 0) {
+            str = key;
+        }
+        else {
+            var hex = key.toString();
+            for (var i = 0; i < hex.length; i += 2)
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+        }
+
+        
+        // The format of key is as follows
+        // https://portal.southpawtech.com/tegna/tank/key/ABCDEFG
+        var parts = str.split("/");
+        if (parts.length == 7) {
+            var login_ticket = parts[6];
+            var hash = parts[5];
+            var project = parts[4];
+            var site = parts[3];
+        }
+        else {
+            var login_ticket = parts[5];
+            var hash = parts[4];
+            var project = parts[3];
+        }
+
+        if (hash != "ticket" && hash != "login_ticket") {
+            throw("Malformed key [http<s>://<server>/<site>/<project>/ticket/<ticket>]");
+        }
+
+        var server = parts[0] + "/" + parts[1] + "/" + parts[2];
+
+        var env = spt.Environment.get();
+        var url = env.get_api_url(server);
+
+
+        console.log(str);
+        console.log("server: " + server);
+        console.log("site: " + site);
+        console.log("project: " + project);
+        console.log("ticket: " + login_ticket);
+
+        /*
+        env.set_server_url(server);
+        env.set_site(site)
+        env.set_project(project);
+        env.set_ticket(login_ticket);
+        */
+
+        this.set_url(url);
+        this.set_ticket(login_ticket);
+        if (site)
+            this.set_site(site);
+        this.set_project(project);
+
+    }
+
+    this.get_key = function(key) {
+
+        var env = spt.Environment.get();
+
+        var server = env.get_server_url();
+        var site = this.get_site();
+        var project = this.get_project();
+        var ticket = this.get_login_ticket();
+
+        var str = [];
+        str.push(server);
+        if (site)
+            str.push(site)
+        str.push(project)
+        str.push(ticket)
+
+        str = str.join("/");
+
+        var hex = '';
+        for(var i=0;i<str.length;i++) {
+            hex += ''+str.charCodeAt(i).toString(16);
+        }
+
+        return hex;
     }
 
 
@@ -219,6 +319,13 @@ TacticServerStub = function() {
         return this._delegate("ping");
     }
 
+    this.async_ping = function() {
+        console.log("Async ping not implemented");
+        return "OK";
+    }
+
+
+
 
     this.get_connection_info = function() {
         return this._delegate("get_connection_info");
@@ -352,77 +459,60 @@ TacticServerStub = function() {
             kwargs = {__empty__:true};
         }
         var mode_options = ['upload','uploaded', 'copy', 'move', 'inplace','local'];
+
+        // mode is no uploaded by default
         var mode = kwargs['mode'];
-        if (mode == undefined) mode = "upload";
+        if (mode == undefined) mode = "uploaded";
         if (typeof(file_path) != 'string') {
             spt.alert("file_path should be a string instead of an array.");
             return;
         }
-        var applet = null;
-        if (mode != 'uploaded') {
-            // put in a check for Perforce for the moment because file.exists()
-            // is very slow when looking for //depot
-            if (file_path.substr(0, 2) != '//') {
-                var applet = spt.Applet.get();
-                if (applet.is_dir(file_path)){
-                    alert('[' + file_path + '] is a directory. Exiting...');
-                    return;
-                }
-            }
-        }
 
-        if (mode == 'upload') {
-            var ticket = this.transaction_ticket;
-            
-            this.upload_file(file_path, ticket);
-            //file_path = spt.path.get_filesystem_path(file_path); 
-            kwargs.use_handoff_dir = false;
-        }
+
         // already uploaded
-        else if (mode == 'uploaded') {
+        if (mode == 'uploaded') {
             kwargs.use_handoff_dir = false;
             //file_path = spt.path.get_filesystem_path(file_path); 
         }
-        else if (['copy', 'move'].contains(mode)) {
-            var handoff_dir = this.get_handoff_dir();
-            kwargs.use_handoff_dir = true;
-            applet.makedirs(handoff_dir);
-            applet.exec("chmod 777 " + handoff_dir);
-            var basename = spt.path.get_basename(file_path);
 
-            if (mode == 'move') {
-                applet.move_file(file_path, handoff_dir + '/' +  basename);
-            }
-            else if (mode == 'copy') {
-                applet.copy_file(file_path, handoff_dir + '/' +  basename);
-                // it moves from handoff to repo during check-in
-            }
-            mode = 'create';
 
-            // this is meant for 3.8, commented out for now
-            /*
-            var delayed = true;
-            if (delayed) {
-                mode = 'local'; // essentially, local just means delayed
-                kwargs.mode = 'local';
-            }*/
+
+        // NOTE: the modes upload, copy, move and local require local access
+        // either by a java applet or some other applet like pyApplet.
+        // Otherwise, these modes should not be used
+        else {
+            var applet = spt.Applet.get();
+            if (!applet) {
+                spt.alert("Mode ["+mode+"] requires a valid applet (either Java or Python or equivalent).  None found")
+            }
+
+
+            if (mode == 'upload') {
+                var ticket = this.transaction_ticket;
+                
+                this.upload_file(file_path, ticket);
+                kwargs.use_handoff_dir = false;
+            }
+
+            else if (['copy', 'move'].contains(mode)) {
+                var handoff_dir = this.get_handoff_dir();
+                kwargs.use_handoff_dir = true;
+                applet.makedirs(handoff_dir);
+                applet.exec("chmod 777 " + handoff_dir);
+                var basename = spt.path.get_basename(file_path);
+
+                if (mode == 'move') {
+                    applet.move_file(file_path, handoff_dir + '/' +  basename);
+                }
+                else if (mode == 'copy') {
+                    applet.copy_file(file_path, handoff_dir + '/' +  basename);
+                    // it moves from handoff to repo during check-in
+                }
+                mode = 'create';
+            }
+
         }
 
-
-        // find the source path
-        // DISABLING for now until client can recognize this
-        //var source_path = this._find_source_path(file_path);
-        //console.log("source_path: " + source_path);
-        //kwargs['source_path'] = source_path;
-
-        /* Test check-in to SCM
-        if (spt.scm) {
-            var editable = true;
-            var scm_info = spt.scm.run("commit_file", [file_path, description, editable]);
-            return;
-        }
-
-        */
 
 
         // do the checkin
@@ -682,7 +772,7 @@ TacticServerStub = function() {
             kwargs = {__empty__:true};
         }
         if (!kwargs.mode) {
-            kwargs.mode = 'copy';
+            kwargs.mode = 'preallocate';
         }
         var mode = kwargs.mode;
         if ( !(mode in {'copy':'', 'move':'', 'preallocate':'', 'manual': '', 'upload': '', 'uploaded': ''}) ) {
@@ -732,7 +822,73 @@ TacticServerStub = function() {
     }
 
 
+    this.add_sequence = function(snapshot_code, file, file_type, file_range, kwargs) {
+        return this.add_group(snapshot_code, file, file_type, file_range, kwargs);
+    }
+
+    this.add_group = function(snapshot_code, file_pattern, file_type, file_range, kwargs) {
+        // If no mode is specified, set the default mode to 'copy'.
+        if (!kwargs) {
+            kwargs = {__empty__:true};
+        }
+        if (!kwargs.mode) {
+            kwargs.mode = 'preallocate';
+        }
+        var mode = kwargs.mode;
+        if ( !(mode in {'copy':'', 'move':'', 'preallocate':'', 'manual': '', 'upload': '', 'uploaded': ''}) ) {
+            throw("Mode '" + mode + "' must be in [copy, move, preallocate, manual, upload, uploaded]");
+        }
+        
+        //file = spt.path.get_filesystem_path(file); 
+        var use_handoff_dir;
+        var handoff_dir;
+
+        if (mode in {'copy':'', 'move':''}) {
+            var applet = spt.Applet.get();
+
+            handoff_dir = this.get_handoff_dir()
+
+            // make sure that handoff dir is empty
+            applet.rmtree(handoff_dir);
+            applet.makedirs(handoff_dir);
+
+            // copy or move the file
+            var basename = spt.path.get_basename(file);
+             
+            if (mode == 'move') {
+                applet.move(file, handoff_dir + "/" + basename);
+            }
+            else if (mode == 'copy') {
+                applet.copy_file(file, handoff_dir + "/" + basename);
+            }
+            use_handoff_dir = true;
+            mode = 'create';
+        }
+        else if (mode in {'manual':''}) {
+            // files are already in handoff
+            use_handoff_dir = true;
+        }
+        else if (mode == 'upload') {
+            var ticket = this.transaction_ticket;
+            this.upload_file(file, ticket);
+            use_handoff_dir = false;
+        }
+        else { // preallocate
+            use_handoff_dir = false;
+        }
+
+
+
+        kwargs.use_handoff_dir = use_handoff_dir;
+        return this._delegate("add_group", arguments, kwargs )
+    }
+
+
+
+
+
     // DEPRECATED: use checkout_snapshot
+    /*
     this.checkout = function(search_key, context, kwargs) {
     
         // get the files for this search_key, defaults to latest version and checkout to current directory
@@ -812,6 +968,7 @@ TacticServerStub = function() {
         return to_paths
    
     }
+    */
 
 
 
@@ -1010,21 +1167,93 @@ TacticServerStub = function() {
         return this._delegate("get_related_types", arguments);
     }
 
-    this.query = function(search_type, kwargs) {
-        var value = this._delegate("query", arguments, kwargs, "string");
+
+
+    this.query = function(search_type, kwargs, on_complete, on_error) {
+        var newArgs = Array.prototype.slice.call(arguments).slice(0,2);
+        if(on_complete){
+          if(!on_error){
+            on_error = function(err){
+                console.log(err);
+            };
+          }
+          return this._delegate("query", newArgs, kwargs, "string", on_complete, on_error);
+        }
+
+        var value = this._delegate("query", newArgs, kwargs, "string");
         //return this._delegate("query", arguments, kwargs);
         value = JSON.parse(value);
         return value
     }
 
-    this.get_by_search_key = function(search_key) {
-        return this._delegate("get_by_search_key", arguments);
+
+
+    /* TEST Promises */
+    this.query2 = function(search_type, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        on_complete2 = function(value) {
+            value = JSON.parse(value);
+            on_complete(value);
+        }
+
+        var value = this._delegate("query", arguments, kwargs, "string", on_complete2, on_error);
+        // asynchronouse
+        if (on_complete) {
+            return;
+        }
+        value = JSON.parse(value);
+        return value
     }
+
+
+    this.p_query = function(search_type, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {};
+            kwargs.on_complete = function(x) { resolve(x); }
+            return this.query2(search_type, kwargs);
+        }.bind(this) )
+    }
+
+
+
+
+    this.get_by_search_key = function(search_key, kwargs, on_complete, on_error) {
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var value = this._delegate("get_by_search_key", arguments, kwargs, null, on_complete, on_error);
+        // asynchronouse
+        if (on_complete) {
+            return;
+        }
+        return value
+
+    }
+
+    this.p_get_by_search_key = function(search_key, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = function(x) { resolve(x); }
+            this.get_by_search_key(search_key, kwargs);
+        }.bind(this) )
+    }
+
+
 
 
     this.get_by_code = function(search_type, code) {
         return this._delegate("get_by_code", arguments);
     }
+
+    this.p_get_by_code = function(search_type, code, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = function(x) { resolve(x); }
+            this.get_by_code(search_type, code, kwargs);
+        }.bind(this) )
+    }
+
+
+
 
 
 
@@ -1040,16 +1269,48 @@ TacticServerStub = function() {
         
     }
 
-    this.update = function(search_type, data, kwargs) {
-        return this._delegate("update", arguments, kwargs);
+    this.update = function(search_type, data, kwargs, on_complete, on_error) {
+        var newArgs = Array.prototype.slice.call(arguments).slice(0,3);
+        if(on_complete){
+          if(!on_error){
+            on_error = function(err){
+              console.log(err);
+            };
+          }
+          return this._delegate("update", newArgs, kwargs, undefined, on_complete, on_error);
+        }
+
+        return this._delegate("update", newArgs, kwargs);
     }
 
 
 
-    this.update_multiple = function(data, kwargs) {
+    this.p_update = function(search_type, data, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {};
+            kwargs.on_complete = function(x) { resolve(x); }
+            return this.query2(search_type, data, kwargs);
+        }.bind(this) )
+    }
+
+
+
+
+
+
+    this.update_multiple = function(data, kwargs, on_complete, on_error) {
+        var newArgs = Array.prototype.slice.call(arguments).slice(0,2);
         data = JSON.stringify(data);
+        if(on_complete){
+          if(!on_error){
+            on_error = function(err){
+              console.log(err);
+            };
+          }
+          return this._delegate("update_multiple", arguments, kwargs, undefined, on_complete, on_error);
+        }
+
         return this._delegate("update_multiple", arguments, kwargs);
-        
     }
 
 
@@ -1057,9 +1318,32 @@ TacticServerStub = function() {
     //
     // Expression methods
     //
-    this.eval = function(expression, kwargs) {
-        return this._delegate("eval", arguments, kwargs);
+    this.eval = function(expression, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("eval", arguments, kwargs, null, on_complete, on_error);
+        // asynchronouse
+        if (on_complete) {
+            return;
+        }
+        // synchronouse
+        if (ret_val && ret_val.status == "ERROR") {
+            throw ret_val;
+        }
+        return ret_val;
     }
+
+
+    /* Test promises */
+    this.p_eval = function(expression, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = function(x) { resolve(x); }
+            this.eval(expression, kwargs);
+        }.bind(this) )
+    }
+
+
 
     //
     // SObject methods
@@ -1191,12 +1475,14 @@ TacticServerStub = function() {
     /*
      * Widget methods
      */
-    this.get_widget = function(class_name, kwargs) {
+    this.get_widget = function(class_name, kwargs, on_complete, on_error) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+
         try {
-            var ret_val = this._delegate("get_widget", arguments, kwargs, "string");
+            var ret_val = this._delegate("get_widget", arguments, kwargs, "string", on_complete, on_error);
             return ret_val;
         }
         catch(e) {
@@ -1209,33 +1495,78 @@ TacticServerStub = function() {
         }
     }
 
+
+
+    // Test load view
+    this.load_view = function(el, view, kwargs, on_complete, on_error) {
+
+        if (!kwargs) kwargs = {};
+        kwargs['view'] = view;
+
+        var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+        var wdg_kwargs = {
+            args: kwargs,
+            cbjs_action: function(widget) {
+                var node = document.createElement("div");
+
+                node.innerHTML = widget;
+
+                el.appendChild(node);
+
+                var scripts = node.getElementsByTagName("script");
+                for (var i = 0; i < scripts.length; i++) {
+                    var func = function() {
+                        eval(scripts[i].innerHTML);
+
+                    };
+                    func();
+                    scripts[i].remove();
+                }
+
+                if (on_complete)
+                    on_complete(node);
+            }
+
+
+        };
+        this.async_get_widget(class_name, wdg_kwargs);
+    }
+
+
+
+
+
+
     this.class_exists = function(class_path) {
         return this._delegate("class_exists", arguments);
     }
 
 
-    this.execute_cmd = function(class_name, args, values, kwargs) {
-        if (kwargs) {
-            callback = kwargs.on_complete;
-            on_error = kwargs.on_error;
-            delete kwargs.on_error;
-            delete kwargs.on_complete;
-        }
-        else { 
-            callback = null;
-            on_error = null;
-        }
-        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, callback, on_error);
-        if (callback) {
+    this.execute_cmd = function(class_name, args, values, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, on_complete, on_error);
+        if (on_complete) {
             return;
         }
         if (ret_val && ret_val.status == "ERROR") {
-            // FIXME: put in a proper error here
-            //alert("ERROR: " + ret_val.msg);
             throw ret_val;
         }
         return ret_val;
     }
+
+
+    /* Test promises */
+    this.p_execute_cmd = function(class_name, args, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = function(x) { resolve(x); }
+            this.execute_cmd(class_name, args, {}, kwargs);
+        }.bind(this) )
+    }
+
+
+
 
 
     this.execute_class_method = function(class_name, method, kwargs) {
@@ -1266,11 +1597,25 @@ TacticServerStub = function() {
 
 
 
-
+    
 
     this.execute = function(code) {
         return this._delegate("execute", arguments, null);
     }
+
+    this.check_access = function(access_group, key, access, kwargs) {
+        return this._delegate("check_access", arguments, kwargs);
+    }
+
+
+    //
+    // Queue Manager
+    //
+    this.add_queue_item = function(class_name, args, kwargs) {
+        return this._delegate("add_queue_item", arguments, kwargs);
+    }
+
+
 
     this.get_column_names = function(search_type) {
         return this._delegate("get_column_names", arguments, null);
@@ -1316,6 +1661,25 @@ TacticServerStub = function() {
 
 
     //
+    // Trigger methods
+    //
+    this.call_trigger = function(search_key, event, kwargs) {
+        return this._delegate("call_trigger", arguments, kwargs);
+    }
+
+
+    this.call_pipeline_event = function(search_key, process, event, data) {
+        return this._delegate("call_pipeline_event", arguments)
+    }
+
+    this.get_pipeline_status = function(search_key, process) {
+        return this._delegate("get_pipeline_status", argumnets);
+    }
+
+
+
+
+    //
     // Directory methods
     //
     this.get_paths = function(search_key, kwargs) {
@@ -1347,6 +1711,12 @@ TacticServerStub = function() {
     }
 
 
+    // Access to some useful external functions
+    this.send_rest_request = function(method, url, kwargs) {
+        return this._delegate("send_rest_request", arguments, null);
+    }
+
+
 
     // Misc
     this.get_path_from_snapshot = function(snapshot_code, kwargs) {
@@ -1361,7 +1731,7 @@ TacticServerStub = function() {
 
     // async functions
 
-    this.async_get_widget = function(class_name, kwargs) {
+    this.async_get_widget = function(class_name, kwargs, on_complete, on_error) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
@@ -1369,12 +1739,32 @@ TacticServerStub = function() {
         if (!callback) {
             callback = kwargs['callback'];
         }
-        var on_error = function(e) {
-            if (e == 502)
-                e = '502 Timeout Error.';
-            spt.alert(e); 
+        if (!callback) {
+            callback = kwargs['on_complete'];
+        }
+        if (!callback) {
+            callback = on_complete;
+        }
+        var err_callback = function(e) {
+            if (e == 0)
+                e = 'Received an error (Error 0)';
+            else if (e == 502)
+                e = 'Timeout Error (Error 502)';
+            else if (e == 503)
+                e = 'Service is unavailable (Error 503)';
+
+            if (!on_error) {
+                on_error = kwargs['on_error'];
+            }
+
+            if (on_error) {
+                on_error(e);
+            }
+            else {
+                spt.alert(e);
+            }
         };
-        this._delegate("get_widget", arguments, kwargs, "string", callback, on_error);
+        this._delegate("get_widget", arguments, kwargs, "string", callback, err_callback);
         return;
     }
 
@@ -1385,6 +1775,43 @@ TacticServerStub = function() {
         }
         this._delegate("eval", arguments, kwargs, null, callback);
         return;
+    }
+
+
+    // methed that handles asynchronous callbacks.
+    // It allows for on_complete to be called in the kwargs as well.
+    // It also handles a flag "promise" which can be used with promises which
+    // defines an oncomplete that is passed to the "then" function of the
+    // promise
+    //
+    this._handle_callbacks = function(kwargs, on_complete, on_error) {
+        if (typeof(kwargs) != 'undefined' && kwargs != null) {
+
+            if (!on_complete) {
+                on_complete = kwargs.on_complete;
+            }
+            if (!on_error) {
+                on_error = kwargs.on_error;
+            }
+
+            delete kwargs.on_error;
+            delete kwargs.on_complete;
+        }
+        else {
+            on_complete = null;
+            on_error = null;
+        }
+
+        if (on_complete) {
+            if (!on_error) {
+                on_error = function(err){
+                    throw(err);
+                };
+            }
+        }
+
+        return [on_complete, on_error];
+            
     }
 
 
@@ -1693,6 +2120,7 @@ TacticServerStub.get = function() {
 }
 
 
+TACTIC = TacticServerStub;
 
 
 

@@ -32,46 +32,46 @@ class LoaderException(Exception):
 class LoaderContext(Base):
     '''contains all of the production logic for various process'''
 
-    def __init__(my):
-        my.context = None
-        my.options = {}
+    def __init__(self):
+        self.context = None
+        self.options = {}
 
 
-    def set_options(my, options):
+    def set_options(self, options):
         if not options:
             return
         pairs = options.split("|")
         for pair in pairs:
             name, value = pair.split("=")
-            my.options[name] = value
+            self.options[name] = value
 
 
-    def set_option(my, name, value):
-        my.options[name] = value
+    def set_option(self, name, value):
+        self.options[name] = value
 
 
-    def get_option(my, name):
-        if my.options.has_key(name):
-            return my.options[name]
+    def get_option(self, name):
+        if self.options.has_key(name):
+            return self.options[name]
         else:
             return ""
 
 
-    def set_context(my, context):
-        my.context = context
+    def set_context(self, context):
+        self.context = context
 
-    def get_context(my):
-        return my.context
+    def get_context(self):
+        return self.context
 
     # virtual methods
-    def is_instance_culled(my, ref_instance):
+    def is_instance_culled(self, ref_instance):
         raise LoaderException("Must overload this function")
 
 
-    def get_snapshot(my, ref_node, context=None, latest=True):
+    def get_snapshot(self, ref_node, context=None, latest=True):
         raise LoaderException("Must overload this function")
 
-    def get_loader(my, snapshot, context=None):
+    def get_loader(self, snapshot, context=None):
         raise LoaderException("Must overload this function")
 
 
@@ -83,19 +83,19 @@ class ProdLoaderContext(LoaderContext):
 
     LATEST = '-- LATEST --'
 
-    def __init__(my):
-        super(ProdLoaderContext,my).__init__()
-        my.shot = None
-        my.shot_search_type = 'prod/shot'
+    def __init__(self):
+        super(ProdLoaderContext,self).__init__()
+        self.shot = None
+        self.shot_search_type = 'prod/shot'
 
-    def set_shot(my, shot):
-        my.shot = shot
+    def set_shot(self, shot):
+        self.shot = shot
 
 
-    def set_shot_search_type(my, stype):
-        my.shot_search_type = stype
+    def set_shot_search_type(self, stype):
+        self.shot_search_type = stype
 
-    def get_defined_model_contexts(my):
+    def get_defined_model_contexts(self):
         pipes = Pipeline.get_by_search_type('prod/asset',\
             Project.get_project_code())
         contexts = []
@@ -110,7 +110,7 @@ class ProdLoaderContext(LoaderContext):
         contexts.append('publish')
         return contexts
 
-    def get_defined_anim_contexts(my):
+    def get_defined_anim_contexts(self):
         pipes = Pipeline.get_by_search_type('prod/shot',\
             Project.get_project_code())
         contexts = []
@@ -121,21 +121,21 @@ class ProdLoaderContext(LoaderContext):
 
 
 
-    def is_instance_culled(my, ref_instance):
+    def is_instance_culled(self, ref_instance):
 
         # if there is no shot, then it cannot be culled 
-        if my.shot == None:
+        if self.shot == None:
             return False
 
         # get latest cull snapshot
-        instance = ShotInstance.get_by_shot(my.shot,"cull")
+        instance = ShotInstance.get_by_shot(self.shot,"cull")
         if not instance:
             return False
 
         cull_snapshot = Snapshot.get_latest_by_sobject(instance)
 
         # a cull is a snapshot in a shot
-        #cull_snapshot = Snapshot.get_latest_by_sobject(my.shot,"cull")
+        #cull_snapshot = Snapshot.get_latest_by_sobject(self.shot,"cull")
         if cull_snapshot == None:
             return False
 
@@ -151,7 +151,7 @@ class ProdLoaderContext(LoaderContext):
 
 
 
-    def get_snapshot(my, ref_node, context=None, latest=True, recurse=False):
+    def get_snapshot(self, ref_node, context=None, latest=True, recurse=False):
         '''get a snapshot based on a reference node in the snapshot'''
 
         # if there is an explicit snapshot given, then just use that
@@ -162,12 +162,12 @@ class ProdLoaderContext(LoaderContext):
 
         # if no context is specified, use the loading context
         if context == None:
-            context = my.context
+            context = self.context
 
 
         # determine if this should be replaced with a proxy snapshot
-        proxiable_contexts = my.get_defined_model_contexts()
-        if my.get_option("proxy") == "yes" and context in proxiable_contexts:
+        proxiable_contexts = self.get_defined_model_contexts()
+        if self.get_option("proxy") == "yes" and context in proxiable_contexts:
             context = "proxy"
 
         # check if getting the latest
@@ -188,33 +188,33 @@ class ProdLoaderContext(LoaderContext):
         # if the context is a shot context, then load the instance, otherwise
         # load the asset
         if isinstance(sobject, Asset) and \
-                context in my.get_defined_anim_contexts():
+                context in self.get_defined_anim_contexts():
             asset = Asset.get_by_id(search_id)
 
             instance_name = Xml.get_attribute(ref_node,"instance")
-            ref_snapshot = my.get_snapshot_by_sobject(sobject,context,version,revision,recurse)
+            ref_snapshot = self.get_snapshot_by_sobject(sobject,context,version,revision,recurse)
 
         else:
-            ref_snapshot = my.get_snapshot_by_sobject(sobject,context,version,revision,recurse)
+            ref_snapshot = self.get_snapshot_by_sobject(sobject,context,version,revision,recurse)
         return ref_snapshot
 
 
-    def get_snapshot_by_search_type(my, search_type, search_id, \
+    def get_snapshot_by_search_type(self, search_type, search_id, \
             context,version=-1, recurse=False):
         sobject = Search.get_by_search_type(search_type, search_id, recurse)
-        return my.get_snapshot_by_sobject(sobject, context, version)
+        return self.get_snapshot_by_sobject(sobject, context, version)
 
 
 
 
-    def get_snapshot_by_sobject(my, sobject, context, version=-1, revision=-1,\
+    def get_snapshot_by_sobject(self, sobject, context, version=-1, revision=-1,\
             recurse=False):
         '''get the snapshot by sobject info'''
 
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
 
-        if context == my.LATEST:
+        if context == self.LATEST:
             context = None
         # find the reference snapshot
         ref_snapshot = Snapshot.get_by_version( \
@@ -230,11 +230,11 @@ class ProdLoaderContext(LoaderContext):
 
             # store the instance if it is one
             if isinstance(sobject, ShotInstance):
-                my.shot_instance = sobject
+                self.shot_instance = sobject
             else:
-                my.shot_instance = None
+                self.shot_instance = None
 
-            ref_snapshots = my.get_input_snapshots(sobject, process, recurse)
+            ref_snapshots = self.get_input_snapshots(sobject, process, recurse)
             if ref_snapshots:
                 ref_snapshot = ref_snapshots[0]
 
@@ -243,16 +243,16 @@ class ProdLoaderContext(LoaderContext):
 
 
 
-    def get_output_snapshots(my, sobject, process, recurse=False):
-        return my.get_snapshots(sobject, process, mode="output")
+    def get_output_snapshots(self, sobject, process, recurse=False):
+        return self.get_snapshots(sobject, process, mode="output")
 
 
-    def get_input_snapshots(my, sobject, process, recurse=False):
-        return my.get_snapshots(sobject, process, mode="input", recurse=False)
+    def get_input_snapshots(self, sobject, process, recurse=False):
+        return self.get_snapshots(sobject, process, mode="input", recurse=False)
 
 
 
-    def get_snapshots(my, sobject, process, mode="input", recurse=False):
+    def get_snapshots(self, sobject, process, mode="input", recurse=False):
         '''recursive functions that goes back in the pipeline to find
         snapshots'''
 
@@ -264,15 +264,15 @@ class ProdLoaderContext(LoaderContext):
         # HACK: add this to make it work
         # store the instance if it is one
         if isinstance(sobject, ShotInstance):
-            my.shot_instance = sobject
+            self.shot_instance = sobject
         else:
-            my.shot_instance = None
+            self.shot_instance = None
 
         
         # TOOD: the sobject should define the pipeline
         # determine the pipeline of the sobject
-        if my.shot_instance:
-            pipeline_sobject = my.shot_instance.get_parent(my.shot_search_type)
+        if self.shot_instance:
+            pipeline_sobject = self.shot_instance.get_parent(self.shot_search_type)
         else:
             pipeline_sobject = sobject
 
@@ -281,7 +281,7 @@ class ProdLoaderContext(LoaderContext):
 
         pipeline_code = pipeline_sobject.get_value("pipeline_code")
         pipeline = Pipeline.get_by_code(pipeline_code)
-        if not pipeline and not my.shot_instance:
+        if not pipeline and not self.shot_instance:
             Environment.add_warning("No pipeline %s" %sobject.get_code(),\
                 "No pipeline exists for [%s]" % sobject.get_code() )
             # we will try to return the snapshot below for output in this case
@@ -346,8 +346,8 @@ class ProdLoaderContext(LoaderContext):
             tmp_sobj = sobject
             if back_process.find("/") != -1:
                 pipeline_code, process = back_process.split("/")
-                if my.shot_instance:
-                    tmp_sobj = my.shot_instance.get_parent("prod/asset")
+                if self.shot_instance:
+                    tmp_sobj = self.shot_instance.get_parent("prod/asset")
 
             if not tmp_sobj:
                 continue
@@ -369,7 +369,7 @@ class ProdLoaderContext(LoaderContext):
 
             # if there is no snapshot, then recurse down
             #if recurse and not ref_snapshot:
-            #    ref_snapshot = my._get_back_snapshot(sobject, back_process, back_context)
+            #    ref_snapshot = self._get_back_snapshot(sobject, back_process, back_context)
 
             if ref_snapshot:
                 ref_snapshots.append(ref_snapshot)
@@ -384,11 +384,11 @@ class ProdLoaderContext(LoaderContext):
 
 
 
-    def get_updater(my, snapshot, asset_code, namespace, context=None):
+    def get_updater(self, snapshot, asset_code, namespace, context=None):
         assert snapshot != None
 
         if context == None:
-            context = my.context
+            context = self.context
         updater = None
         snapshot_type = snapshot.get_snapshot_type()
         if snapshot_type == "set":
@@ -414,20 +414,20 @@ class ProdLoaderContext(LoaderContext):
         # set the updater context here for now
 
         if updater:
-            updater.set_loader_context(my)
+            updater.set_loader_context(self)
             updater.set_snapshot(snapshot)
             updater.set_asset_code(asset_code)
             updater.set_namespace(namespace)
 
         return updater
 
-    def get_template_loader(my, sobject, context=None):
+    def get_template_loader(self, sobject, context=None):
         from pyasm.flash import FlashLoad
 
         loader = TemplateLoaderCmd()
         if context == None:
-            context = my.context
-        loader.set_loader_context(my)
+            context = self.context
+        loader.set_loader_context(self)
         flash_load = FlashLoad(sobject)
         template = flash_load.get_template()
         tmpl_fla_link, tmpl_fla = flash_load._get_file_info(template)
@@ -443,12 +443,12 @@ class ProdLoaderContext(LoaderContext):
             loader.set_snapshot(snapshot)
         return loader
 
-    def get_loader(my, snapshot, context=None):
+    def get_loader(self, snapshot, context=None):
 
         assert snapshot != None
 
         if context == None:
-            context = my.context
+            context = self.context
 
         snapshot_type = snapshot.get_snapshot_type()
         if snapshot_type == "set":
@@ -472,18 +472,18 @@ class ProdLoaderContext(LoaderContext):
             #raise LoaderException("No server loader defined for snapshot [%s] with snapshot_type [%s]" % (snapshot.get_code(), snapshot_type) )
 
         # set the loader context here for now
-        loader.set_loader_context(my)
+        loader.set_loader_context(self)
         loader.set_snapshot(snapshot)
 
         return loader
 
 
-    def get_publisher(my, type):
+    def get_publisher(self, type):
         publisher = None
         if type == 'flash':
             publisher = FlashAssetPublisherCmd()
             
-        publisher.set_asset_code(my.get_option('code'))
+        publisher.set_asset_code(self.get_option('code'))
 
         return publisher
 

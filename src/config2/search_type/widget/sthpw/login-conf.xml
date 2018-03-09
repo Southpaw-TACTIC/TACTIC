@@ -41,8 +41,7 @@
                 };
 
                 var title = login.display_name + ' Schedule';
-                var top = bvr.src_el.getParent(".spt_dashboard_top");
-                spt.tab.set_tab_top(top);
+                spt.tab.set_tab_top(bvr.src_el);
                 spt.tab.add_new("user_schedule", title, class_name, kwargs);
             </cbjs_action>
         </display>
@@ -90,9 +89,10 @@
                     search_key: sk
                 };
                 var popup = spt.panel.load_popup("Edit User", class_name, kwargs);
-
-                popup.on_save_cbk = function() {
-                    spt.panel.refresh(top);
+                var tab_top = bvr.src_el.getParent(".spt_tab_top");
+                popup.on_save_cbk = function(){
+                    spt.tab.set_tab_top(tab_top);
+                    spt.tab.reload_selected();
                 }
             </cbjs_action>
         </display>
@@ -131,6 +131,7 @@
     <element name="first_name"/>
     <element name="last_name"/>
     <element name="display_name"/>
+    <element name="email"/>
     <element name="activity"/>
     <element name="groups"/>
     <element name="security"/>
@@ -291,7 +292,7 @@
         <action class="LoginAction"/>
     </element>
  
-   <element name="upn">
+   <element name="upn" title="User Principal Name">
     </element>
 
     <element name="authentication">
@@ -324,14 +325,14 @@
     <element name="email"/>
 
     <element name="department"/>
-
+    <!--
     <element name="license_type">
       <display class="SelectWdg">
         <empty>true</empty>
         <values>disabled|user</values>
       </display>
     </element>
-
+    -->
 </edit>
 
 <edit_account layout="EditWdg">
@@ -374,7 +375,7 @@
 </edit_account>
 
 
-<insert>
+<insert num_columns="1">
     <element name="thumb">
         <display class="pyasm.widget.ThumbInputWdg"/>
         <action class="NullAction"/>

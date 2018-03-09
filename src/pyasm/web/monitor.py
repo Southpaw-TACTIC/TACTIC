@@ -43,81 +43,98 @@ STARTUP_DEV_EXEC = '%s "%s/src/bin/startup_dev.py"' % (python, tactic_install_di
 
 class BaseProcessThread(threading.Thread):
     '''Each Thread runs a separate TACTIC service'''
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        my.num_checks = 0
-        my.kill_interval = 30 + random.randint(0,30)
-        my.kill_interval = 1
-        my.end = False
-        super(BaseProcessThread,my).__init__()
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.num_checks = 0
+        self.kill_interval = 30 + random.randint(0,30)
+        self.kill_interval = 1
+        self.end = False
+        self.port = None
+        super(BaseProcessThread,self).__init__()
 
-    def run(my):
-        print "Starting %s ..." % my.get_title()
+    def run(self):
+        print("Starting %s ..." % self.get_title())
 
         while 1:
 
-            my.execute()
+            self.execute()
 
             # TACTIC has exited
             time.sleep(1)
             
-            if my.end:
-                print "Stopping %s ..." % my.get_title()
+            if self.end:
+                #print("Stopping %s ..." % self.get_title())
                 break
             else:
-                print "Restarting %s ..." % my.get_title()
+                #print("Restarting %s ..." % self.get_title())
+                pass
 
-    def get_title(my):
+    def get_title(self):
         return "No Title"
 
 
-    def execute(my):
+    def execute(self):
         raise Exception("Must override execute")
 
+    def write_log(self, msg):
+        '''for debugging only'''
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+ 
+        f = open('%s/monitor.log' % log_dir,'a')
+        import datetime
+        f.write('\nTime: %s\n\n' %datetime.datetime.now())
+        f.write('%s\n'%msg)
 
-    def check(my):
+    def check(self):
         pass
 
 
-    def _check(my):
+    def _get_pid(self):
+        '''Get PID from a file'''
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+        pid_path = "%s/pid.%s" % (log_dir, self.port)
+        pid = 0
+        if os.path.exists(pid_path):
+            file = open(pid_path, "r")
+            pid = file.read()
+            file.close()
+        return pid
+       
+    def _check(self):
 
         # This will kill the TACTIC process 
         # This is very harsh and should be used sparingly if at all
         use_restart = Config.get_value("services", "use_periodic_restart")
         if use_restart in [True, 'true']:
-            if my.num_checks and my.num_checks % my.kill_interval == 0:
+            if self.num_checks and self.num_checks % self.kill_interval == 0:
                 # read pid file
                 log_dir = "%s/log" % Environment.get_tmp_dir()
-                file = open("%s/pid.%s" % (log_dir,my.port), "r")
+                file = open("%s/pid.%s" % (log_dir,self.port), "r")
                 pid = file.read()
                 file.close()
-                print "Killing process: ", pid
                 Common.kill(pid)
 
-                #my.run()
-                my.num_checks += 1
+                #self.run()
+                self.num_checks += 1
                 return
 
 
-
-        my.num_checks += 1
+        self.num_checks += 1
 
         start = time.clock()
         try:
-            response = my.check()
+            response = self.check()
         except IOError, e:
-            print "Tactic IOError: ", str(e)
 
-            # Kill if unresponsive ... (only on linux)
-            log_dir = "%s/log" % Environment.get_tmp_dir()
-            file = open("%s/pid.%s" % (log_dir,my.port), "r")
-            pid = file.read()
-            file.close()
-            print "Killing process: ", pid
-            Common.kill(pid) 
+            pid = self._get_pid() 
+            if pid:
+                Common.kill(pid)
         else:
             if response and response != "OK":
-                my.end = True
+                #self.end = True
+                pid = self._get_pid() 
+                if pid:
+                    Common.kill(pid)
                 return
 
         '''
@@ -129,53 +146,55 @@ class BaseProcessThread(threading.Thread):
         if interval > 5:
             # read pid file
             log_dir = "%s/log" % Environment.get_tmp_dir()
-            file = open("%s/pid.%s" % (log_dir,my.port), "r")
+            file = open("%s/pid.%s" % (log_dir,self.port), "r")
             pid = file.read()
             file.close()
 
-            print "WARNING : port %s is not responsive!!" % my.port
+            print("WARNING : port %s is not responsive!!" % self.port)
         '''
 
 
 
 
 class TacticThread(BaseProcessThread):
-    def __init__(my, port):
-        super(TacticThread,my).__init__()
+    def __init__(self, port):
+        super(TacticThread,self).__init__()
 
-        my.dev_mode = False
-        my.port = port
+        self.dev_mode = False
+        self.port = port
 
-    def set_dev(my, mode):
-        my.dev_mode = mode
+    def set_dev(self, mode):
+        self.dev_mode = mode
 
-    def get_title(my):
-        return my.port
+    def get_title(self):
+        return self.port
 
 
-    def execute(my):
-        if my.dev_mode:
+    def execute(self):
+        if self.dev_mode:
             exec_file = STARTUP_DEV_EXEC
         else:
             exec_file = STARTUP_EXEC
-        os.system('%s %s' % (exec_file, my.port) )
+        os.system('%s %s' % (exec_file, self.port) )
 
-    def check(my):
-        f = urllib.urlopen("http://localhost:%s/test" % my.port )
+
+    def check(self):
+        f = urllib.urlopen("http://localhost:%s/test" % self.port )
         response = f.readlines()
         f.close()
         return response[0]
 
 
 
+
 class CustomPythonProcessThread(BaseProcessThread):
 
-    def get_title(my):
-        return my.kwargs.get("title")
+    def get_title(self):
+        return self.kwargs.get("title")
 
-    def execute(my):
+    def execute(self):
         # Run the job queue service
-        path = my.kwargs.get("path")
+        path = self.kwargs.get("path")
 
         plugin_dir = Environment.get_plugin_dir()
         path = path.replace("${TACTIC_PLUGIN_DIR}", plugin_dir)
@@ -195,7 +214,7 @@ class CustomPythonProcessThread(BaseProcessThread):
 
             if char == "\n":
                 line = "".join(buffer)
-                print line
+                #print(line)
 
             buffer.append(char)
  
@@ -204,10 +223,10 @@ class CustomPythonProcessThread(BaseProcessThread):
 
 class ASyncThread(BaseProcessThread):
 
-    def get_title(my):
+    def get_title(self):
         return "aSync Queue"
 
-    def execute(my):
+    def execute(self):
         # Run the job queue service
         executable = '%s "%s/src/bin/startup_async.py"' % (python, tactic_install_dir)
         os.system('%s' % (executable) )
@@ -217,66 +236,74 @@ class ASyncThread(BaseProcessThread):
 
 class JobQueueThread(BaseProcessThread):
 
-    def get_title(my):
+    def __init__(self, idx):
+        super(JobQueueThread,self).__init__()
+        self.idx = idx
+
+    def get_title(self):
         return "Job Task Queue"
 
-    def execute(my):
+    def _check(self):
+        pass
+
+    def execute(self):
         # Run the job queue service
-        executable = '%s "%s/src/bin/startup_queue.py"' % (python, tactic_install_dir)
+        executable = '%s "%s/src/bin/startup_queue.py" -i %s' % (python, tactic_install_dir, self.idx)
         os.system('%s' % (executable) )
 
 
 
 class WatchFolderThread(BaseProcessThread):
 
-    def __init__(my, **kwargs):
-        super(WatchFolderThread,my).__init__()
-        my.project_code = kwargs.get("project_code")
-        my.base_dir = kwargs.get("base_dir")
-        my.search_type = kwargs.get("search_type")
-        my.process = kwargs.get("process")
-        my.script_path=kwargs.get("script_path")
+    def __init__(self, **kwargs):
+        super(WatchFolderThread,self).__init__()
+        self.project_code = kwargs.get("project_code")
+        self.base_dir = kwargs.get("base_dir")
+        self.search_type = kwargs.get("search_type")
+        self.process = kwargs.get("process")
+        self.script_path=kwargs.get("script_path")
+        self.watch_folder_code = kwargs.get("watch_folder_code")
  
-    def get_title(my):
+    def get_title(self):
         return "Watch Folder"
 
-    def execute(my):
+    def execute(self):
 
         # Run the job queue service
         parts = []
         parts.append(python)
         parts.append('"%s/src/tactic/command/watch_drop_folder.py"'% tactic_install_dir)
-        parts.append('--project="%s"' % my.project_code)
-        parts.append('--drop_path="%s"' % my.base_dir)
-        parts.append('--search_type="%s"' % my.search_type)
-        parts.append('--script_path="%s"'%my.script_path)
-        if my.process:
-            parts.append('--process="%s"' % my.process)
+        parts.append('--project="%s"' % self.project_code)
+        parts.append('--drop_path="%s"' % self.base_dir)
+        parts.append('--search_type="%s"' % self.search_type)
+        parts.append('--script_path="%s"'%self.script_path)
+        if self.watch_folder_code:
+            parts.append('--watch_folder_code="%s"' % self.watch_folder_code)
+        if self.process:
+            parts.append('--process="%s"' % self.process)
 
         executable = " ".join(parts)
 
         os.system('%s' % (executable) )
 
 
-
-
 # DEPRECATED: use TacticSchedulerThread below
 class TacticTimedThread(threading.Thread):
 
-    def __init__(my):
-        my.end = False
-        super(TacticTimedThread,my).__init__()
+    def __init__(self):
+        self.end = False
+        super(TacticTimedThread,self).__init__()
 
-    def _check(my):
+    def _check(self):
         pass
 
 
-    def run(my):
+    def run(self):
 
         import time
         time.sleep(6)
 
-        #print "Starting Timed Trigger"
+        #print("Starting Timed Trigger")
 
         # checks are done every 60 seconds
         chunk = 60
@@ -307,21 +334,19 @@ class TacticTimedThread(threading.Thread):
 
         while 1:
             time.sleep(chunk)
-            #print "Running timer"
+            #print("Running timer")
 
             date = Date()
-            #print "utc: ", date.get_display_time()
+            #print("utc: ", date.get_display_time())
 
             # go through each trigger
             for timed_trigger in timed_triggers:
-                print timed_trigger
                 if not timed_trigger.is_ready():
-                    print "... not ready"
                     continue
 
                 if timed_trigger.is_in_separate_thread():
                     class xxx(threading.Thread):
-                        def run(my):
+                        def run(self):
                             try:
                                 Batch()
                                 timed_trigger._do_execute()
@@ -334,26 +359,29 @@ class TacticTimedThread(threading.Thread):
             DbContainer.close_thread_sql()
 
 
-            if my.end:
-                print "Stopping timed thread"
+            if self.end:
+                #print("Stopping timed thread")
                 break
 
 
  
 class TacticSchedulerThread(threading.Thread):
 
-    def __init__(my):
-        super(TacticSchedulerThread,my).__init__()
+    def __init__(self):
+        self.dev_mode = False
+        super(TacticSchedulerThread,self).__init__()
 
-    def _check(my):
+    def _check(self):
         pass
 
+    def set_dev(self, mode):
+        self.dev_mode = mode
 
-    def run(my):
+    def run(self):
         import time
         time.sleep(3)
 
-        print "Starting Scheduler ...."
+        #print("Starting Scheduler ....")
 
         # NOTE: not sure why we have to do a batch here
         from pyasm.security import Batch
@@ -363,20 +391,25 @@ class TacticSchedulerThread(threading.Thread):
 
         from pyasm.biz import Project
         search = Search("sthpw/project")
+        # only requires the admin project
+        search.add_filter('code', 'sthpw', op='!=')
         projects = search.get_sobjects()
 
         # get the all of the timed triggers
         #search = Search("sthpw/timed_trigger")
         #search.add_filter("type", "timed")
+        timed_trigger_sobjs = []
         for project in projects:
 
             project_code = project.get_code()
             try:
                 search = Search("config/trigger?project=%s" % project_code)
                 search.add_filter("event", "schedule")
-                timed_trigger_sobjs = search.get_sobjects()
-            except Exception, e:
-                print "WARNING: ", e
+                items = search.get_sobjects()
+                if items:
+                    timed_trigger_sobjs.extend(items)
+            except Exception as e:
+                #print("WARNING: ", e)
                 continue
 
             # example
@@ -417,8 +450,8 @@ class TacticSchedulerThread(threading.Thread):
                     
                 timed_triggers.append(timed_trigger)
 
-            if has_triggers:
-                print "Found [%s] scheduled triggers in project [%s]..." % (len(timed_triggers), project_code)
+            if has_triggers and self.dev_mode:
+                print("Found [%s] scheduled triggers in project [%s]..." % (len(timed_triggers), project_code))
 
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
@@ -428,19 +461,18 @@ class TacticSchedulerThread(threading.Thread):
 
 
         class TimedTask(SchedulerTask):
-            def __init__(my, **kwargs):
-                super(TimedTask, my).__init__(**kwargs)
-                my.index = kwargs.get("index")
-                my.project_code = kwargs.get("project_code")
+            def __init__(self, **kwargs):
+                super(TimedTask, self).__init__(**kwargs)
+                self.index = kwargs.get("index")
+                self.project_code = kwargs.get("project_code")
 
-            def execute(my):
+            def execute(self):
                 try:
                     #Batch()
                     #Command.execute_cmd(timed_trigger)
-                    Project.set_project(my.project_code)
-                    timed_triggers[my.index].execute()
-                except Exception, e:
-                    print "Error running trigger"
+                    Project.set_project(self.project_code)
+                    timed_triggers[self.index].execute()
+                except Exception as e:
                     raise
                 finally:
                     DbContainer.close_thread_sql()
@@ -473,11 +505,19 @@ class TacticSchedulerThread(threading.Thread):
             trigger_type = data.get("type")
 
             if trigger_type == 'interval':
-                #scheduler.add_interval_task(task, interval=interval, mode='threaded', delay=0)
+
+                interval = data.get("interval")
+                delay = data.get("delay")
+
+                if not interval:
+                    continue
+
+                if not delay:
+                    delay = 3
 
                 args = {
-                    'interval': int( data.get("interval") ),
-                    'delay': int( data.get("delay") ),
+                    'interval': interval,
+                    'delay': delay,
                 }
 
                 scheduler.add_interval_task(task, **args)
@@ -511,10 +551,11 @@ class TacticSchedulerThread(threading.Thread):
 
 class TacticMonitor(object):
 
-    def __init__(my, num_processes=None):
-        my.check_interval = 120
-        my.num_processes = num_processes
-        my.dev_mode = False
+    def __init__(self, num_processes=None):
+        self.check_interval = 120
+        self.startup = True
+        self.num_processes = num_processes
+        self.dev_mode = False
 
         import sys
         plugin_dir = Environment.get_plugin_dir()
@@ -524,25 +565,55 @@ class TacticMonitor(object):
         # before batch, clean up the ticket with a NULL code
         sql.do_update('DELETE from "ticket" where "code" is NULL;')
 
+        self.tactic_threads = []
+        self.mode = 'normal'
 
-    def set_check_interval(my, check_interval):
-        my.check_interval = check_interval
 
-    def set_dev(my, mode):
-        my.dev_mode = mode
+    def write_log(self, msg):
+        '''for debugging only'''
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+ 
+        f = open('%s/monitor.log' % log_dir,'a')
+        import datetime
+        f.write('\nTime: %s\n\n' %datetime.datetime.now())
+        f.write('%s\n'%msg)
 
-    def execute(my):
+    def set_check_interval(self, check_interval):
+        self.check_interval = check_interval
+
+    def set_dev(self, mode):
+        self.dev_mode = mode
+
+    def watch_folder_cleanup(self, base_dir):
+        '''removes old action files from previous watch
+        folder processes.'''
+        if os.path.exists(base_dir):
+            files = os.listdir(base_dir)
+            for file_name in files:
+                base_file, ext = os.path.splitext(file_name)
+                if ext in [".lock", ".checkin"]:
+                    path = "%s/%s" % (base_dir, file_name)
+                    os.remove(path)
+             
+    def execute(self):
+        if self.mode == 'monitor':
+            self.monitor()
+        else:
+            self._execute()
+
+    def _execute(self):
+        '''if mode is normal, this runs both the main startup (init) logic plus monitor'''
         from pyasm.security import Batch
         Batch(login_code="admin")
 
         os.environ["TACTIC_MONITOR"] = "true"
 
-        if not my.num_processes:
-            my.num_processes = Config.get_value("services", "process_count")
-            if my.num_processes:
-                my.num_processes = int(my.num_processes)
+        if not self.num_processes:
+            self.num_processes = Config.get_value("services", "process_count")
+            if self.num_processes:
+                self.num_processes = int(self.num_processes)
             else:
-                my.num_processes = 3
+                self.num_processes = 3
 
 
 
@@ -561,7 +632,7 @@ class TacticMonitor(object):
             else:
                 start_port = 8081
             ports = []
-            for i in range(0, my.num_processes):
+            for i in range(0, self.num_processes):
                 ports.append( start_port + i )
         
 
@@ -598,12 +669,13 @@ class TacticMonitor(object):
 
         # create a number of processes
         if start_tactic:
-            #for i in range(0, my.num_processes):
+            self.remove_monitor_pid()
+            #for i in range(0, self.num_processes):
             for port in ports:
 
                 # start cherrypy
                 tactic_thread = TacticThread(port)
-                tactic_thread.set_dev(my.dev_mode)
+                tactic_thread.set_dev(self.dev_mode)
 
                 tactic_thread.start()
                 tactic_threads.append(tactic_thread)
@@ -634,7 +706,7 @@ class TacticMonitor(object):
                 num_processes = int(num_processes)
 
             for i in range(0, num_processes):
-                job_thread = JobQueueThread()
+                job_thread = JobQueueThread(i)
                 job_thread.start()
                 tactic_threads.append(job_thread)
 
@@ -650,26 +722,30 @@ class TacticMonitor(object):
                 search_type = watch_folder.get("search_type")
                 process = watch_folder.get("process")
                 script_path = watch_folder.get("script_path")
+                watch_folder_code = watch_folder.get("code")
 
                 if not project_code:
-                    print "Watch Folder missing project_code ... skipping"
+                    print("Watch Folder missing project_code ... skipping")
                     continue
 
-                if not project_code:
-                    print "Watch Folder missing base_dir ... skipping"
+                if not base_dir:
+                    print("Watch Folder missing base_dir ... skipping")
                     continue
 
                 if not search_type:
-                    print "Watch Folder missing search_type ... skipping"
+                    print("Watch Folder missing search_type ... skipping")
                     continue
+
+                self.watch_folder_cleanup(base_dir)
 
                 watch_thread = WatchFolderThread(
                         project_code=project_code,
                         base_dir=base_dir,
                         search_type=search_type,
                         process=process,
-                        script_path = script_path
-                        )
+                        script_path = script_path,
+                        watch_folder_code=watch_folder_code
+                )
                 watch_thread.start()
                 tactic_threads.append(watch_thread)
 
@@ -685,9 +761,9 @@ class TacticMonitor(object):
 
 
         if len(tactic_threads) == 0:
-            print
-            print "No services started ..."
-            print
+            print("\n")
+            print("No services started ...")
+            print("\n")
             return
 
 
@@ -701,8 +777,9 @@ class TacticMonitor(object):
         # create a separate thread for scheduler processes
 
         start_scheduler = Config.get_value("services", "scheduler")
-        if start_scheduler == 'true':
+        if start_scheduler == 'true' or True:
             tactic_scheduler_thread = TacticSchedulerThread()
+            tactic_scheduler_thread.set_dev(self.dev_mode)
             tactic_scheduler_thread.start()
             tactic_threads.append(tactic_scheduler_thread)
 
@@ -711,34 +788,106 @@ class TacticMonitor(object):
 
 
         DbContainer.close_thread_sql()
+        self.tactic_threads = tactic_threads
+        if self.mode == "normal":
+            self.monitor()
 
 
-        # check each thread every 20 seconds
+    def remove_monitor_pid(self):
+        '''remove the stop.monitor file'''
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+
+        if os.path.exists("%s/stop.monitor" % log_dir):
+            os.unlink("%s/stop.monitor" % log_dir)
+
+    def monitor(self):
+        '''monitor the tactic threads'''
+        start_time = time.time()
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+        
         while 1:
             end = False
             try:
-                if my.check_interval:
-                    time.sleep(my.check_interval)
-                    for tactic_thread in tactic_threads:
-                        tactic_thread._check()
+                monitor_stop = os.path.exists('%s/stop.monitor'%log_dir)
+                if monitor_stop:
+                    for tactic_thread in self.tactic_threads:
+					    tactic_thread.end = True
+                    break
+                if self.check_interval:
+                    # don't check threads during startup period
+                    if not self.startup:
+                        time.sleep(self.check_interval)
+                        for tactic_thread in self.tactic_threads:
+                            tactic_thread._check()
+                    else:
+                        if time.time() - start_time > self.check_interval:
+                            self.startup = False
 
                 else:
-                    # FIXME: break for now (for windows service)
+                    # Windows Service does not need this 0 check_interval
+                    # any more.  
                     break
 
             except KeyboardInterrupt, e:
-                print "Keyboard interrupt ... exiting Tactic"
-                for tactic_thread in tactic_threads:
+                #print("Keyboard interrupt ... exiting Tactic")
+                for tactic_thread in self.tactic_threads:
                     tactic_thread.end = True
                     end = True
 
             if end:
                 break
 
-        #print "exiting Tactic"
-        #sys.exit(0)
+        self.final_kill()
+        
 
+    def final_kill(self):
+        '''Kill the startup, startup_queue, watch_folder processes. This is used primarily in Windows Service.
+           Linux service should have actively killed the processes already'''
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+        files = os.listdir(log_dir)
+        ports = []
+        watch_folders = []
+        queues = []
 
+        for filename in files:
+            base, ext = os.path.splitext(filename)
+            if base == 'pid':
+                ports.append(ext[1:])
+            elif base == 'watch_folder':
+                watch_folders.append(ext[1:])
+            elif base == 'startup_queue':
+                queues.append(ext[1:])
+
+    
+        for port in ports:
+            try:
+                file_name = "%s/pid.%s" % (log_dir,port)
+                file = open(file_name, "r")
+                pid = file.readline().strip()
+                file.close()
+                Common.kill(pid)
+            except IOError, e:
+                continue
+
+        # kill watch folder processes
+        for watch_folder in watch_folders:
+            try:
+                filename = "%s/watch_folder.%s" % (log_dir, watch_folder)
+                f = open(filename, "r")
+                pid = f.readline()
+                f.close()
+                Common.kill(pid)
+            except IOError, e:
+                continue
+        for idx, queue in enumerate(queues):
+            try:
+                filename = "%s/startup_queue.%s" % (log_dir, idx)
+                f = open(filename, "r")
+                pid = f.readline()
+                f.close()
+                Common.kill(pid)
+            except IOError, e:
+                continue
 
 if __name__ == '__main__':
     monitor = TacticMonitor()

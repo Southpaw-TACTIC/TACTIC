@@ -48,25 +48,25 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
        }
 
-    def list_references(my):
+    def list_references(self):
         '''lists whether references can be checked in with this widget'''
         return False
     
-    def get_context_data(my):
-        process = my.process_select.get_value()
-        labels, values = super(AppSObjectCheckinWdg,my).get_context_data(\
-            my.search_type, process)
+    def get_context_data(self):
+        process = self.process_select.get_value()
+        labels, values = super(AppSObjectCheckinWdg,self).get_context_data(\
+            self.search_type, process)
 
         return labels, values
 
 
 
-    def get_display(my):
+    def get_display(self):
 
 
-        my.search_type = my.kwargs.get('search_type')
-        my.texture_search_type = my.kwargs.get('texture_search_type')
-        assert my.search_type
+        self.search_type = self.kwargs.get('search_type')
+        self.texture_search_type = self.kwargs.get('texture_search_type')
+        assert self.search_type
 
         app_name = WebContainer.get_web().get_selected_app()
         # add an outside box
@@ -76,7 +76,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
         #div = DivWdg(css="maq_search_bar")
         div = DivWdg()
         div.add_color("background", "background2", -15)
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         top.add(div)
         div.add_style("margin: 5px")
@@ -90,8 +90,8 @@ class AppSObjectCheckinWdg(CheckinWdg):
         process_div = DivWdg()
         process_div.add_style("padding-left: 10px")
         div.add(process_div)
-        process_div.add( my.get_process_wdg(my.search_type))
-        process_div.add( my.get_context_filter_wdg() )
+        process_div.add( self.get_process_wdg(self.search_type))
+        process_div.add( self.get_context_filter_wdg() )
         process_div.add(HtmlElement.br(clear="all")) 
 
 
@@ -107,30 +107,30 @@ class AppSObjectCheckinWdg(CheckinWdg):
         div.add(title)
 
 
-        checkin_options.add( my.get_file_type_wdg() )
-        checkin_options.add( my.get_snapshot_type_wdg() )
+        checkin_options.add( self.get_file_type_wdg() )
+        checkin_options.add( self.get_snapshot_type_wdg() )
         checkin_options.add(HtmlElement.br(1)) 
-        checkin_options.add( my.get_export_method_wdg() )
-        checkin_options.add( my.get_checkin_as_wdg() )
+        checkin_options.add( self.get_export_method_wdg() )
+        checkin_options.add( self.get_checkin_as_wdg() )
 
-        #my.add( my.get_render_icon_wdg() )
+        #self.add( self.get_render_icon_wdg() )
 
         # For different export methods
-        checkin_options.add( my.get_currency_wdg() )
+        checkin_options.add( self.get_currency_wdg() )
 
-        checkin_options.add( my.get_reference_option())
-        checkin_options.add( my.get_auto_version_wdg())
-        checkin_options.add( my.get_texture_option(app=app_name))
-        checkin_options.add( my.get_handoff_wdg())
+        checkin_options.add( self.get_reference_option())
+        checkin_options.add( self.get_auto_version_wdg())
+        checkin_options.add( self.get_texture_option(app=app_name))
+        checkin_options.add( self.get_handoff_wdg())
        
-        if not my.context_select.get_value(for_display=True):
-            my.add(DivWdg('A context must be selected.', css='warning'))
+        if not self.context_select.get_value(for_display=True):
+            self.add(DivWdg('A context must be selected.', css='warning'))
             return
 
         div.add(checkin_options)
       
         
-        top.add( my.get_introspect_wdg() )
+        top.add( self.get_introspect_wdg() )
         top.add(HtmlElement.br(2))
         
         # create the interface
@@ -146,39 +146,39 @@ class AppSObjectCheckinWdg(CheckinWdg):
         table.add_header("&nbsp;")
         th = table.add_header("Instance")
         th.add_style('text-align: left')
-        table.add_header(my.get_checkin())
+        table.add_header(self.get_checkin())
         table.add_header("Sandbox")
         tr.add_color('background','background2', -15)
         
 
         # get session and handle case where there is no session
-        my.session = SessionContents.get()
-        if my.session == None:
+        self.session = SessionContents.get()
+        if self.session == None:
             instance_names = []
             asset_codes = []
             node_names = []
         else:
-            instance_names = my.session.get_instance_names()
-            asset_codes = my.session.get_asset_codes()
-            node_names = my.session.get_node_names()
+            instance_names = self.session.get_instance_names()
+            asset_codes = self.session.get_asset_codes()
+            node_names = self.session.get_node_names()
 
         # get all of the possible assets based on the asset codes
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         search.add_filters("code", asset_codes)
         assets = search.get_sobjects()
         assets_dict = SObject.get_dict(assets, ["code"])
 
-        if my.session:
-            my.add("Current Project: <b>%s</b>" % my.session.get_project_dir() )
+        if self.session:
+            self.add("Current Project: <b>%s</b>" % self.session.get_project_dir() )
         else:
-            my.add("Current Project: Please press 'Introspect'")
+            self.add("Current Project: Please press 'Introspect'")
 
 
         count = 0
         for i in range(0, len(node_names) ):
             node_name = node_names[i]
-            if not my.session.is_tactic_node(node_name) and \
-                not my.session.get_node_type(node_name) in ['transform','objectSet']:
+            if not self.session.is_tactic_node(node_name) and \
+                not self.session.get_node_type(node_name) in ['transform','objectSet']:
                     continue
             instance_name = instance_names[i]
 
@@ -189,8 +189,8 @@ class AppSObjectCheckinWdg(CheckinWdg):
                 asset_code = instance_name
 
             # skip if this is a reference
-            if my.list_references == False and \
-                    my.session.is_reference(node_name):
+            if self.list_references == False and \
+                    self.session.is_reference(node_name):
                 continue
 
             table.add_row()
@@ -203,17 +203,17 @@ class AppSObjectCheckinWdg(CheckinWdg):
            
             # list items if it is a set
             if asset.get_value('asset_type', no_exception=True) in ["set", "section"]:
-                my.current_sobject = asset
-                my.handle_set( table, instance_name, asset, instance_names)
+                self.current_sobject = asset
+                self.handle_set( table, instance_name, asset, instance_names)
                 count +=1
             # if this asset is in the database, then allow it to checked in
             if asset:
-                if my.session.get_snapshot_code(instance_name, snapshot_type='set'):
+                if self.session.get_snapshot_code(instance_name, snapshot_type='set'):
                     continue
 
                 # hack remember this
-                my.current_sobject = asset
-                my.handle_instance(table, instance_name, asset, node_name)
+                self.current_sobject = asset
+                self.handle_instance(table, instance_name, asset, node_name)
 
             else:
                 table.add_blank_cell()
@@ -227,11 +227,11 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
         top.add(table)
 
-        if not my.session:
+        if not self.session:
             return
 
 
-        non_tactic_nodes = my.session.get_instance_names(is_tactic_node=False)
+        non_tactic_nodes = self.session.get_instance_names(is_tactic_node=False)
         title = HtmlElement.b("Unknown List")
         swap = SwapDisplayWdg.get_triangle_wdg()
 
@@ -248,13 +248,13 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
         
         for instance in non_tactic_nodes:
-            my.handle_unknown_instance(unknown_table, instance)
+            self.handle_unknown_instance(unknown_table, instance)
         
         top.add(div)
         return top
 
 
-    def get_file_type_wdg(my):
+    def get_file_type_wdg(self):
         '''drop down which selects which file type to export to'''
         # add a filter
         div = DivWdg()
@@ -291,17 +291,17 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
 
 
-    def get_checkin(my):
+    def get_checkin(self):
         '''the button which initiates the checkin'''
         # create the button with the javascript function
         widget = Widget()
-        #button = TextBtnWdg(label=my.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
+        #button = TextBtnWdg(label=self.PUBLISH_BUTTON, size='large', width='100', side_padding='20', vert_offset='-5')
         #button.get_top_el().add_class('smaller')
-        button = ActionButtonWdg(title=my.PUBLISH_BUTTON, tip='Publish the selected assets')
+        button = ActionButtonWdg(title=self.PUBLISH_BUTTON, tip='Publish the selected assets')
         button.add_style('margin-bottom: 10px')
         #button.add_color("background", "background")
 
-        hidden = HiddenWdg(my.PUBLISH_BUTTON, '')
+        hidden = HiddenWdg(self.PUBLISH_BUTTON, '')
         button.add( hidden )
        
         '''
@@ -317,7 +317,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
         server_cbk = "pyasm.prod.web.AssetCheckinCbk"
         #TODO: make other Publish Buttons call their own handle_input function
         exec( Common.get_import_from_class_path(server_cbk) )
-        exec( "%s.handle_input(button, my.search_type, my.texture_search_type)" % server_cbk)
+        exec( "%s.handle_input(button, self.search_type, self.texture_search_type)" % server_cbk)
 
         return widget
 
@@ -326,7 +326,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
     """  
 
-    def get_export_method_wdg(my):
+    def get_export_method_wdg(self):
         '''Checkbox that determines whether to use export or file/save'''
         is_unchecked = True
         default_cb = None
@@ -367,7 +367,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
     
 
 
-    def get_render_icon_wdg(my):
+    def get_render_icon_wdg(self):
         '''Checkbox determines whether to create icon'''
         div = DivWdg()
         div.add("Create Icon: ")
@@ -377,7 +377,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
         return div
 
 
-    def handle_set(my, table, instance_name,  asset,  session_instances):
+    def handle_set(self, table, instance_name,  asset,  session_instances):
         asset_code = asset.get_code()
         
         # get all of the reference instances from the latest published
@@ -387,7 +387,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
         if not instance_name in session_instances:
             return
         if not snapshot:
-            my.handle_instance(table, instance_name, asset)
+            self.handle_instance(table, instance_name, asset)
             return
 
 
@@ -398,7 +398,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
         # TODO should get it based on the set's asset code so that
         # if the sesssion's set is older, it will still work
-        session_set_items = my.session._get_data().get_nodes_attr(\
+        session_set_items = self.session._get_data().get_nodes_attr(\
             "session/node[@set_asset_code='%s']" %asset_code, 'instance')
         count = 0
 
@@ -423,7 +423,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
         if count == 0:
             return
 
-        my.handle_instance(table, instance_name, asset)
+        self.handle_instance(table, instance_name, asset)
     
         # display all of the set instance that are in session
         for set_instance in set_instances_in_session:
@@ -437,7 +437,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
                 print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                 set_instance, tmp = set_instance.split(":")
 
-            my.handle_instance(table, set_instance, ref_asset, publish=False)
+            self.handle_instance(table, set_instance, ref_asset, publish=False)
 
         widget = Widget("&nbsp;")
         if set_instances_not_in_session:
@@ -458,13 +458,13 @@ class AppSObjectCheckinWdg(CheckinWdg):
                 print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
                 set_instance, tmp = set_instance.split(":")
 
-            my.handle_missing_instance(table, set_instance, ref_asset)
+            self.handle_missing_instance(table, set_instance, ref_asset)
 
         if set_instances_not_in_session:
             table.add_row_cell("&nbsp;")
 
 
-    def handle_instance(my, table, instance, asset, node_name='', publish=True, allow_ref_checkin=False):
+    def handle_instance(self, table, instance, asset, node_name='', publish=True, allow_ref_checkin=False):
 
         # handle the case where asset is not defined
         if not asset:
@@ -483,13 +483,13 @@ class AppSObjectCheckinWdg(CheckinWdg):
             else:
                 table.add_cell(instance)
             td = table.add_cell()
-            td.add("< %s node >" % my.session.get_node_type(instance_name))
+            td.add("< %s node >" % self.session.get_node_type(instance_name))
             table.add_blank_cell()
             return 
 
         # get the pipeline for this asset and handlers for the pipeline
-        process_name = my.process_select.get_value() 
-        handler_hidden = my.get_handler_input(asset, process_name)
+        process_name = self.process_select.get_value() 
+        handler_hidden = self.get_handler_input(asset, process_name)
         pipeline = Pipeline.get_by_sobject(asset) 
         
 
@@ -497,9 +497,9 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
         # TEST: switch this to using node name instead, if provided
         if node_name:
-            instance_node = my.session.get_node(node_name)
+            instance_node = self.session.get_node(node_name)
         else:
-            instance_node = my.session.get_node(instance)
+            instance_node = self.session.get_node(instance)
 
         if instance_node is None:
             return
@@ -572,7 +572,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
             import_button.add_event('onclick', "import_instance('%s')"  %instance)
             td.add(import_button)
             '''
-            table.add_cell(my.get_save_wdg(my.current_sobject) )
+            table.add_cell(self.get_save_wdg(self.current_sobject) )
 
         elif publish:
             textarea = TextAreaWdg()
@@ -581,14 +581,14 @@ class AppSObjectCheckinWdg(CheckinWdg):
             textarea.set_attr("cols", "35")
             textarea.set_attr("rows", "2")
             table.add_cell(textarea)
-            table.add_cell(my.get_save_wdg(my.current_sobject) )
+            table.add_cell(self.get_save_wdg(self.current_sobject) )
         else:
             table.add_blank_cell()
             table.add_blank_cell()
 
 
 
-    def handle_missing_instance(my, table, instance, asset):
+    def handle_missing_instance(self, table, instance, asset):
 
         asset_code = asset.get_code()
 
@@ -611,7 +611,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
         table.add_blank_cell()
 
-    def handle_unknown_instance(my, table, instance):
+    def handle_unknown_instance(self, table, instance):
         '''handle unassigned or non-tactic nodes'''
 
         table.add_row()

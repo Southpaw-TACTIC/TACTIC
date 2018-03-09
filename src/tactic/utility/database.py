@@ -14,7 +14,7 @@ from pyasm.common import Config, Common
 
 class DatabaseBackup(object):
 
-    def execute(my):
+    def execute(self):
         base_dir = "/tmp"
         root = 'tacticdb'
 
@@ -24,7 +24,7 @@ class DatabaseBackup(object):
         file_name = '%s_%s.sql' % (root, date)
         path = "%s/%s" % (base_dir, file_name)
 
-        print "Backing up database to: [%s]" % path
+        print("Backing up database to: [%s]" % path)
 
         import os
         cmd = 'pg_dumpall -U postgres > %s' % path

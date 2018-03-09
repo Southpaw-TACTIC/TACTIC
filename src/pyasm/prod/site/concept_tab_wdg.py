@@ -21,23 +21,23 @@ from pyasm.widget import FilterSelectWdg
 
 class ConceptTabWdg(BaseTabWdg):
 
-    def init(my):
-        my.add(HelpItemWdg('Concept Pipeline', 'Concept Pipeline contains a collection of tabs that manage the creation process of concept artwork.', False))
-        my.setup_tab("concept_pipeline_tab", css=TabWdg.SMALL)
+    def init(self):
+        self.add(HelpItemWdg('Concept Pipeline', 'Concept Pipeline contains a collection of tabs that manage the creation process of concept artwork.', False))
+        self.setup_tab("concept_pipeline_tab", css=TabWdg.SMALL)
 
 
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
         
-        tab.add(my.get_concept_list_wdg, _("Concept List") )
-        tab.add(my.get_summary_wdg, _("Summary") )
-        tab.add(my.get_task_manager_wdg, _("Tasks") )
-        tab.add(my.get_concept_artist_wdg, _("Artist (Concepts)") )
-        tab.add(my.get_concept_supe_wdg, _("Supe (Concepts)") )
-        tab.add(my.get_notes_wdg, _("Notes") )
+        tab.add(self.get_concept_list_wdg, _("Concept List") )
+        tab.add(self.get_summary_wdg, _("Summary") )
+        tab.add(self.get_task_manager_wdg, _("Tasks") )
+        tab.add(self.get_concept_artist_wdg, _("Artist (Concepts)") )
+        tab.add(self.get_concept_supe_wdg, _("Supe (Concepts)") )
+        tab.add(self.get_notes_wdg, _("Notes") )
 
 
-    def get_concept_list_wdg(my):
+    def get_concept_list_wdg(self):
 
         widget = Widget()
 
@@ -55,7 +55,7 @@ class ConceptTabWdg(BaseTabWdg):
 
 
 
-    def get_summary_wdg(my):
+    def get_summary_wdg(self):
 
         widget = Widget()
         #widget.add(HelpItemWdg('Summary tab', '/doc/site/prod/summary_tab.html'))
@@ -78,7 +78,7 @@ class ConceptTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_task_manager_wdg(my):
+    def get_task_manager_wdg(self):
        
         widget = Widget()
         help = HelpItemWdg('Tasks tab', 'The Task Manager lets the coordinator set up tasks for each individual asset. Once created, the tasks can be assigned to different users. Settings such as bid date, duration, and milestone can be customized at any time.')
@@ -91,7 +91,7 @@ class ConceptTabWdg(BaseTabWdg):
 
 
 
-    def get_concept_artist_wdg(my):
+    def get_concept_artist_wdg(self):
         widget = Widget()
         approval_wdg = ApprovalManagerWdg()
         widget.add(approval_wdg)
@@ -102,7 +102,7 @@ class ConceptTabWdg(BaseTabWdg):
         widget.add(help)
         return widget
 
-    def get_concept_supe_wdg(my):
+    def get_concept_supe_wdg(self):
         widget = Widget()
         approval_wdg = ApprovalManagerWdg()
         widget.add(approval_wdg)
@@ -116,7 +116,7 @@ class ConceptTabWdg(BaseTabWdg):
 
 
 
-    def get_notes_wdg(my):
+    def get_notes_wdg(self):
         widget = Widget()
 
         help = HelpItemWdg('Notes tab', 'The Notes tab focuses on the display of notes. It includes both concept notes and submission notes for each concept.')

@@ -22,17 +22,17 @@ from loader_wdg import IntrospectWdg
 
 class SessionWdg(BaseRefreshWdg):
     
-    def init(my):
-        super(SessionWdg, my).init()
-        my.is_refresh = my.kwargs.get('is_refresh') =='true'
+    def init(self):
+        super(SessionWdg, self).init()
+        self.is_refresh = self.kwargs.get('is_refresh') =='true'
   
-    def get_display(my):
+    def get_display(self):
 
-        my.is_refresh = my.kwargs.get('is_refresh') =='true'
+        self.is_refresh = self.kwargs.get('is_refresh') =='true'
       
-        if not my.is_refresh:
+        if not self.is_refresh:
             top = DivWdg(css='spt_view_panel')
-            my.set_as_panel(top)
+            self.set_as_panel(top)
         else:
             top = Widget() 
 
@@ -144,14 +144,14 @@ class SessionWdg(BaseRefreshWdg):
             else:
                 table.add_cell("---")
 
-            table.add_cell( my.get_version_wdg(session,snapshot,node_name) )
+            table.add_cell( self.get_version_wdg(session,snapshot,node_name) )
 
         top.add(table)
         return top       
 
 
 
-    def get_version_wdg(my, session, snapshot, node_name):
+    def get_version_wdg(self, session, snapshot, node_name):
 
         if not snapshot:
             return "---"

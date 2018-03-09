@@ -24,31 +24,31 @@ from maya_tab_wdg import *
 
 class ShotTabWdg(BaseTabWdg):
 
-    def init(my):
+    def init(self):
         help = HelpItemWdg('Shot Pipeline', 'Shot Pipeline contains a collection of tabs that define different aspects of the shot pipeline. Shots are inserted here and the status of each shot can be tracked.', False)
-        my.add(help)
+        self.add(help)
 
-        my.setup_tab("shot_pipeline_tab", css=TabWdg.SMALL)
+        self.setup_tab("shot_pipeline_tab", css=TabWdg.SMALL)
 
-    def handle_tab(my, tab):
-        tab.add(my.get_shot_list_wdg, _("Shot List") )
-        tab.add(my.get_summary_wdg, _("Summary") )
-        tab.add(my.get_milestone_wdg, _("Milestones") )
+    def handle_tab(self, tab):
+        tab.add(self.get_shot_list_wdg, _("Shot List") )
+        tab.add(self.get_summary_wdg, _("Summary") )
+        tab.add(self.get_milestone_wdg, _("Milestones") )
         tab.add(MultiPlannerWdg, _("Planners") )
-        tab.add(my.get_task_manager_wdg, _("Tasks") )
+        tab.add(self.get_task_manager_wdg, _("Tasks") )
         #tab.add(ShotParentWdg, "Shot Parenting") )
-        tab.add(my.get_artist_wdg, _("Artist (Shots)") )
-        tab.add(my.get_supe_wdg, _("Supe (Shots)") )
-        tab.add(my.get_layer_wdg, _("Layers") )
-        tab.add(my.get_comp_wdg, _("Composites") )
-        tab.add(my.get_render_log_wdg, _("Render Log") )
-        tab.add(my.get_seq_wdg, _("Sequences") )
+        tab.add(self.get_artist_wdg, _("Artist (Shots)") )
+        tab.add(self.get_supe_wdg, _("Supe (Shots)") )
+        tab.add(self.get_layer_wdg, _("Layers") )
+        tab.add(self.get_comp_wdg, _("Composites") )
+        tab.add(self.get_render_log_wdg, _("Render Log") )
+        tab.add(self.get_seq_wdg, _("Sequences") )
         if ProdSetting.get_value_by_key('shot_hierarchy') == 'episode_sequence':
-            tab.add(my.get_episode_wdg, _("Episodes") )
-        tab.add(my.get_notes_wdg, _("Notes") )
+            tab.add(self.get_episode_wdg, _("Episodes") )
+        tab.add(self.get_notes_wdg, _("Notes") )
 
 
-    def get_shot_list_wdg(my):
+    def get_shot_list_wdg(self):
 
         widget = Widget()
         help = HelpItemWdg('Shot List', 'The Shot List tab allows you to insert new shots, define frame range, amd set differernt statuses for your shot. It also provides a button for media submission.')
@@ -102,7 +102,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_summary_wdg(my):
+    def get_summary_wdg(self):
         widget = Widget()
 
         nav = DivWdg(css="filter_box")
@@ -138,7 +138,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_task_manager_wdg(my):
+    def get_task_manager_wdg(self):
         manager = TaskManagerWdg()
         manager.set_search_type("prod/shot")
         manager.set_process_filter_name("shot_process_filter")
@@ -157,7 +157,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_artist_wdg(my):
+    def get_artist_wdg(self):
         widget = Widget()
         help = HelpItemWdg('Artist tab', 'The Artist tab lets the artist to set the status of his assigned tasks, leave notes, publish, and view all sorts of info related to various shots.')
         widget.add(help)
@@ -180,7 +180,7 @@ class ShotTabWdg(BaseTabWdg):
         
         return widget
 
-    def get_supe_wdg(my):
+    def get_supe_wdg(self):
         widget = Widget()
         help = HelpItemWdg('Supe tab', 'In addition to what the Artist tab does, The Supe tab lets the supervisor assign existing tasks to differernt users, and modify the estimated date range for each task.')
         widget.add(help)
@@ -208,7 +208,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_layer_wdg(my):
+    def get_layer_wdg(self):
 
         widget = Widget()
 
@@ -243,7 +243,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_comp_wdg(my):
+    def get_comp_wdg(self):
 
         widget = Widget()
 
@@ -279,7 +279,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_render_log_wdg(my):
+    def get_render_log_wdg(self):
 
         widget = Widget()
 
@@ -308,7 +308,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_seq_wdg(my):
+    def get_seq_wdg(self):
         
         
         widget = Widget()
@@ -332,7 +332,7 @@ class ShotTabWdg(BaseTabWdg):
 
         return widget
 
-    def get_episode_wdg(my):
+    def get_episode_wdg(self):
         
         widget = Widget()
         help = HelpItemWdg('Episodes tab', 'The Episodes tab lets you create episodes which can be used to relate to sequences. Each sequence has a episode code attribute which you can assign to.')
@@ -353,7 +353,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_milestone_wdg(my):
+    def get_milestone_wdg(self):
         search = Search("sthpw/milestone")
         project = Project.get()
         search.add_project_filter( project.get_code() )
@@ -369,7 +369,7 @@ class ShotTabWdg(BaseTabWdg):
 
 
 
-    def get_notes_wdg(my):
+    def get_notes_wdg(self):
         widget = Widget()
         help = HelpItemWdg('Notes tab', 'The Notes tab focuses on the display of notes. It includes both shot notes and submission notes for each shot.')
         widget.add(help)

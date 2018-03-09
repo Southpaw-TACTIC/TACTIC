@@ -252,23 +252,25 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
     cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
     eval( cbjs_str );
-    
-    if (spt.behavior.mode == "dev") {        
+   
+    // basically disable js_logger for this because we loose the origin
+    // of the error and chrome handles it really well now
+    if (true || spt.behavior.mode == "dev") {        
         run_bvr();
     }
     else {
         try {
             run_bvr();
         } catch(e) {
-            log.error( "___________________________________________________________________________________________" );
-            log.error( "Caught javascript ERROR: " + e );
-            log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
-            log.error( "..........................................................................................." );
-            log.error( " " );
-            log.error( cbjs_str );
-            log.error( " " );
-            log.error( "___________________________________________________________________________________________" );
-            //throw(e)
+            spt.js_log.error( "___________________________________________________________________________________________" );
+            spt.js_log.error( "Caught javascript ERROR: " + e );
+            spt.js_log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
+            spt.js_log.error( "..........................................................................................." );
+            spt.js_log.error( " " );
+            spt.js_log.error( cbjs_str );
+            spt.js_log.error( " " );
+            spt.js_log.error( "___________________________________________________________________________________________" );
+            throw(e);
         }
     }
 }
@@ -438,8 +440,8 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     var parent_node = el.parentNode;
 
     if( ! parent_node ) {
-        log.error( "ERROR: NO parent_node found in 'spt.behavior.replace_table_child_element()' ... here is element:" );
-        log.error( el );
+        spt.js_log.error( "ERROR: NO parent_node found in 'spt.behavior.replace_table_child_element()' ... here is element:" );
+        spt.js_log.error( el );
         return null;
     }
 
@@ -471,7 +473,7 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     }
 
     if( ! first_child ) {
-        log.error( "ERROR: NO first child found in temporary table element in " +
+        spt.js_log.error( "ERROR: NO first child found in temporary table element in " +
                    "'spt.behavior.replace_table_child_element()'" );
         // FIXME: previously the check was comparing against node type 3 and so it was always going into
         //        this block, but the code below didn't seem to do anything. This error stuff should
@@ -499,8 +501,26 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
 }
 
 
+
+
+// Provide a destroy function which cleans up the behaviors before destroying
+spt.behavior.destroy = function( el ) {
+    return spt.behavior.destroy_element(el)
+}
+
+
 spt.behavior.destroy_element = function( el )
 {
+    // call any unload behaviors
+    try {
+        spt.behavior.process_unload_behaviors( el );
+    }
+    catch(e) {
+        // if an exception is thrown
+        spt.js_log.warning(e);
+    }
+
+
     // First do any behavior clean up needed in the DOM under the given element ...
     spt.behavior.deactivate_children( el );
 
@@ -585,23 +605,6 @@ spt.behavior.deactivate = function( bvr_el )
     }
 }
 
-
-// Provide a destroy function which cleans up the behaviors before destroying
-spt.behavior.destroy = function( el ) {
-    // call any unload behaviors
-    try {
-        spt.behavior.process_unload_behaviors( el );
-    }
-    catch(e) {
-        // if an exception is thrown
-        spt.js_log.warning(e);
-    }
-
-    // deactivate the behaviors and cleanup
-    spt.behavior.deactivate_children( el );
-
-    el.destroy();
-}
 
 
 
@@ -1241,10 +1244,7 @@ spt.behavior.process_load_behaviors = function( el_list )
                 var bvr = load_bvrs[i];
 
                 if( bvr.cbjs_action ) {
-                    cbjs_action = bvr.cbjs_action
-                    //cbjs_action = cbjs_action.replace(/&lt;/g, "<");
-                    //cbjs_action = cbjs_action.replace(/&gt;/g, ">");
-                    //spt.behavior.run_cbjs( cbjs_action, bvr, null, null );
+                    cbjs_action = bvr.cbjs_action;
                     spt.behavior.run_cbjs( bvr.cbjs_action, bvr, null, null );
                 }
                 else if( 'cbfn_action' in bvr ) {

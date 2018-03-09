@@ -24,14 +24,14 @@ class InstallException(Exception):
 
 class Install:
 
-    def run_sql(my, sql):
+    def run_sql(self, sql):
         from pyasm.search import DatabaseImpl, DbContainer
         db = DbContainer.get("sthpw")
         db.do_update(sql)
 
     
 
-    def check_db_program(my):
+    def check_db_program(self):
         try:
             print
             print "Verifying the database is installed. The default is no password if you have followed the instructions to not require a password. If you see it asking for 'Password for user postgres', you should close this window and make the database not require a password first (refer to our install documentation) and resume the installation."
@@ -39,15 +39,15 @@ class Install:
 
             # Determine database type.
             # Run command query and exit.
-            print '\nDatabase type is: ', my.database_type
+            print '\nDatabase type is: ', self.database_type
             print '(if this is not the database type desired,'
             print 'hit Ctrl+C to cancel and see the types available with \'python install.py -h\' )'
-            if my.database_type == 'PostgresSQL':
-                program = subprocess.Popen(['psql', '-U',  'postgres', '-p', my.port_num, '-c', "\q"], shell=True, stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
-            elif my.database_type == 'SQLServer':
+            if self.database_type == 'PostgresSQL':
+                program = subprocess.Popen(['psql', '-U',  'postgres', '-p', self.port_num, '-c', "\q"], shell=True, stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
+            elif self.database_type == 'SQLServer':
                 program = subprocess.Popen(['sqlcmd', '-U',  'tactic', '-P', 'south123paw', '-Q', "quit"], shell=True, stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
                         
-            elif my.database_type == 'Oracle':
+            elif self.database_type == 'Oracle':
                 raise InstallException('Integration with Oracle SQL shell command has not been implemented yet.')
             else:
                 raise InstallException('Database type must be: PostgresSQL or SQLServer.  Please try again.')
@@ -56,9 +56,9 @@ class Install:
             lines = program.stderr.readlines()
             line = '\n'.join(lines)
             if os.name =='nt' and line.find('is not recognized') != -1:
-                if my.database_type == 'PostgresSQL':
+                if self.database_type == 'PostgresSQL':
                     raise InstallException('Please put psql.exe for Postgres in your PATH environment variable. When you are finished, run install.py again.')
-                elif my.database_type == 'SQLServer':
+                elif self.database_type == 'SQLServer':
                     raise InstallException('Please put sqlcmd.exe for SQLServer in your PATH environment variable. When you are finished, run install.py again.')
                 else:
                     raise InstallException('Please put the SQL command shell for the database in your PATH environment variable. When you are finished, run install.py again.')
@@ -67,15 +67,15 @@ class Install:
             print "Exiting..."
             sys.exit(0)
 
-    def check_db_exists(my, project_code):
+    def check_db_exists(self, project_code):
         # create the sthpw database
 
-        if my.database_type == 'SQLServer':
+        if self.database_type == 'SQLServer':
             # TODO: Implement drop database option for SQL Server.
             return
 
         if os.name == 'nt':
-            if my.database_type == 'SQLServer':
+            if self.database_type == 'SQLServer':
                 # Print out an error and exit
                 # if the sthpw already exists.
                 args = 'sqlcmd -U tactic -P south123paw -Q \" \
@@ -93,10 +93,10 @@ class Install:
                     print "Exiting..."
                     sys.exit(0)
             else:
-                args = ['psql','-U', 'postgres',  '-p', my.port_num, '-c', "\c %s;\q"%project_code]
+                args = ['psql','-U', 'postgres',  '-p', self.port_num, '-c', "\c %s;\q"%project_code]
 
         else:
-            args = 'psql -U postgres -p %s -c  "\c %s;\q"'%(my.port_num, project_code)
+            args = 'psql -U postgres -p %s -c  "\c %s;\q"'%(self.port_num, project_code)
         program = subprocess.Popen(args, shell=True, \
             stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
         lines = program.stdout.readlines()
@@ -111,26 +111,26 @@ class Install:
                 db_host = 'localhost'
                 db_user = 'postgres'
                 backup_name = 'sthpw_backup.sql'
-                current_dir = my.get_current_dir()
+                current_dir = self.get_current_dir()
                 
-                backup_cmd = 'pg_dump -h %s -U %s -p %s --clean sthpw > %s/%s ' % (db_host, db_user, my.port_num, current_dir, backup_name)
+                backup_cmd = 'pg_dump -h %s -U %s -p %s --clean sthpw > %s/%s ' % (db_host, db_user, self.port_num, current_dir, backup_name)
                 os.system(backup_cmd)
-                my.backup_msg =  "Database 'sthpw' is backed up to [%s/%s]" %(current_dir, backup_name)
-                if my.backup_msg:
+                self.backup_msg =  "Database 'sthpw' is backed up to [%s/%s]" %(current_dir, backup_name)
+                if self.backup_msg:
                     print
-                    print my.backup_msg
+                    print self.backup_msg
 
 
-                os.system('dropdb -U postgres -p %s sthpw'%my.port_num)
-                my.check_db_exists('sthpw')
+                os.system('dropdb -U postgres -p %s sthpw'%self.port_num)
+                self.check_db_exists('sthpw')
             else:
                 raise InstallException("Database '%s' already exists. You can back it up first and then run the install again." % project_code)
 
 
    
-    def update_tactic_configs(my):
-        #tactic_conf_path = '%s/config/%s' %(my.tactic_site_dir, my.tactic_conf)
-        tactic_conf_path = '%s/config/tactic-conf.xml' %(my.tactic_data_dir)
+    def update_tactic_configs(self):
+        #tactic_conf_path = '%s/config/%s' %(self.tactic_site_dir, self.tactic_conf)
+        tactic_conf_path = '%s/config/tactic-conf.xml' %(self.tactic_data_dir)
         f = open(tactic_conf_path, 'r')
         new_lines = []
         data_keyword = ''
@@ -142,9 +142,9 @@ class Install:
             keyword = '/home/apache'
         for line in f:
             if line.find(keyword) != -1:
-                 line = line.replace(keyword, my.tactic_base_dir)
+                 line = line.replace(keyword, self.tactic_base_dir)
             elif line.find(data_keyword) != -1 and os.name == 'nt':
-                 line = line.replace(data_keyword, my.tactic_data_base_dir)
+                 line = line.replace(data_keyword, self.tactic_data_base_dir)
 
             new_lines.append(line)
         f.close()
@@ -156,15 +156,15 @@ class Install:
 
         # apache conf extension
         new_lines = []
-        apache_conf_path = '%s/config/%s' %(my.tactic_data_dir, my.apache_conf)
-        my.apache_conf_path = apache_conf_path
+        apache_conf_path = '%s/config/%s' %(self.tactic_data_dir, self.apache_conf)
+        self.apache_conf_path = apache_conf_path
         f = open(apache_conf_path, 'r')
         new_lines = []
         for line in f:
             if line.find(keyword) != -1:
-                 line = line.replace(keyword, my.tactic_base_dir)
+                 line = line.replace(keyword, self.tactic_base_dir)
             elif line.find(data_keyword) != -1 and os.name == 'nt':
-                 line = line.replace(data_keyword, my.tactic_data_base_dir)
+                 line = line.replace(data_keyword, self.tactic_data_base_dir)
 
             new_lines.append(line)
         f.close()
@@ -175,67 +175,67 @@ class Install:
         f.close()
 
 
-    def create_temp_directory(my):
+    def create_temp_directory(self):
         from pyasm.common import Environment 
-        my.tmp_dir = Environment.get_tmp_dir()
-        print "Creating TACTIC temp directories: ", my.tmp_dir
-        if not os.path.exists(my.tmp_dir):
-            os.makedirs(my.tmp_dir)
+        self.tmp_dir = Environment.get_tmp_dir()
+        print "Creating TACTIC temp directories: ", self.tmp_dir
+        if not os.path.exists(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
 
-    def change_directory_ownership(my):
+    def change_directory_ownership(self):
         if os.name != 'nt':
             print "Changing directory ownership of temp and data directories"
             # set the owner of tmp_dir and site_dir
             os.system('chown -R %s \"%s\"'\
-                %(my.tactic_apache_user, my.tmp_dir))
+                %(self.tactic_apache_user, self.tmp_dir))
 
             os.system('chown -R %s \"%s\"'\
-                %(my.tactic_apache_user, my.tactic_site_dir))
+                %(self.tactic_apache_user, self.tactic_site_dir))
 
             os.system('chown -R %s \"%s\"'\
-                %(my.tactic_apache_user, my.tactic_data_dir))
+                %(self.tactic_apache_user, self.tactic_data_dir))
 
             os.system('chown -R %s \"%s/assets\"'\
-                %(my.tactic_apache_user, my.tactic_base_dir))
+                %(self.tactic_apache_user, self.tactic_base_dir))
 
             os.system('chown -R %s \"%s\"'\
-                %(my.tactic_apache_user, my.tactic_src_dir))
+                %(self.tactic_apache_user, self.tactic_src_dir))
 
-    def install_win32_service(my):
+    def install_win32_service(self):
         if os.name == 'nt':
             print "Installing win32 service."
             # install the windows service
-            current_dir = my.get_current_dir()
+            current_dir = self.get_current_dir()
             service_path = '"%s/src/install/service/win32_service.py" install'%current_dir
             os.system(PYTHON_EXE + ' %s' %service_path)
 
 
-    def execute(my, install_db=True, install_defaults=False, database_type='PostgresSQL', port_num='5432'):
-        my.tactic_base_dir = None
-        my.tactic_data_base_dir = None
-        my.tactic_install_dir = None
-        my.tmp_dir = None
-        my.tactic_site_dir = None
-        my.tactic_apache_user = 'apache'
-        my.apache_conf_path = None
-        my.database_type = database_type
-        my.port_num = port_num
+    def execute(self, install_db=True, install_defaults=False, database_type='PostgresSQL', port_num='5432'):
+        self.tactic_base_dir = None
+        self.tactic_data_base_dir = None
+        self.tactic_install_dir = None
+        self.tmp_dir = None
+        self.tactic_site_dir = None
+        self.tactic_apache_user = 'apache'
+        self.apache_conf_path = None
+        self.database_type = database_type
+        self.port_num = port_num
 
-        my.backup_msg = None
-        my.non_default_install = False
+        self.backup_msg = None
+        self.non_default_install = False
         project_code = "sthpw"
         project_type = "sthpw"
 
-        my.print_header()
+        self.print_header()
 
         # verification
         try:
             if install_db:
-                my.check_db_program()
+                self.check_db_program()
 
-            	my.check_db_exists(project_code)
+            	self.check_db_exists(project_code)
             # install the necessary files to python directory
-            my.install_to_python(install_defaults)
+            self.install_to_python(install_defaults)
         
         except InstallException, e:
             print "Error: %s" %e.__str__()
@@ -244,7 +244,7 @@ class Install:
             print
             sys.exit(2)
 
-        my.update_tactic_configs()
+        self.update_tactic_configs()
 
         # check modules
         try:
@@ -252,7 +252,7 @@ class Install:
         except ImportError:
             print 'Error: Failed to "import tacticenv"'
             return
-        my.check_modules(install_db)
+        self.check_modules(install_db)
 
         # create the asset_dir
         from pyasm.common import Environment
@@ -272,11 +272,20 @@ class Install:
             print "Environment variable TACTIC_DATA_DIR '%s' does not exist" % data_dir
             return
 
-        my.create_temp_directory()
 
-        my.change_directory_ownership()
+        # create the dist folder
+        dist_dir = Environment.get_dist_dir()
+        if not os.path.exists(dist_dir):
+            os.makedirs(dist_dir)
 
-        my.install_win32_service()
+
+
+
+        self.create_temp_directory()
+
+        self.change_directory_ownership()
+
+        self.install_win32_service()
 
 
         if install_db == False:
@@ -316,7 +325,7 @@ class Install:
         database.import_default_data(project_code, project_type)
 
         # add the default user (admin)
-        my.run_sql('''
+        self.run_sql('''
       
         --add in admin group
 INSERT INTO login_group (login_group, description)
@@ -332,7 +341,7 @@ INSERT INTO login_in_group ("login", login_group) VALUES ('admin', 'admin');
 
 
         # add in the necessary triggers for email notification
-        my.run_sql('''
+        self.run_sql('''
         --register notification
 INSERT INTO notification (code, description, "type", search_type, event)
 VALUES ('asset_attr_change', 'Attribute Changes For Assets', 'email', 'prod/asset', 'update|prod/asset');
@@ -350,7 +359,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
          
         Batch()
-        version = my.get_version()
+        version = self.get_version()
         version.replace('.', '_')
         upgrade = Upgrade(version, is_forced=True, project_code=None, quiet=True)
         upgrade.execute()
@@ -358,17 +367,17 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
         print
         print
-        print "*** Installation of TACTIC completed at [%s] ***" %my.tactic_base_dir
+        print "*** Installation of TACTIC completed at [%s] ***" %self.tactic_base_dir
         print
         print
-        #if my.backup_msg:
-        #    print my.backup_msg
+        #if self.backup_msg:
+        #    print self.backup_msg
 
         if os.name != 'nt':
-            print "Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. /etc/httpd/conf.d/"%my.apache_conf_path
+            print "Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. /etc/httpd/conf.d/"%self.apache_conf_path
 
         else:
-            print "Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. C:/Program Files/Apache Software Foundation/Apache2.2/conf/"%my.apache_conf_path
+            print "Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. C:/Program Files/Apache Software Foundation/Apache2.2/conf/"%self.apache_conf_path
     
         print
         print "Depending on the OS, you may need to add the following line to the main config file [httpd.conf] shipped with Apache as well:"
@@ -381,7 +390,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             print "Include conf.d/*.conf"
         print
 
-    def print_header(my):
+    def print_header(self):
         print
         print
         print "*"*20
@@ -390,12 +399,12 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         print
 
 
-    def get_user(my):
+    def get_user(self):
         import getpass
         user = getpass.getuser()
         return user
 
-    def get_version(my):
+    def get_version(self):
         cur_path = os.path.abspath(__file__)
         cur_path, file = os.path.split(cur_path)
 
@@ -411,7 +420,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         f.close()
         return version.strip()
 
-    def in_directory(my, file, directory):
+    def in_directory(self, file, directory):
         #make both absolute    
         directory = os.path.realpath(directory)
         file = os.path.realpath(file)
@@ -419,7 +428,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         #e.g. /a/b/c/d.rst and directory is /a/b, the common prefix is /a/b
         return os.path.commonprefix([file, directory]) == directory
     
-    def check_web_server_user(my, name):
+    def check_web_server_user(self, name):
         import pwd
         try:
             pw = pwd.getpwnam(name)
@@ -428,7 +437,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             return False
         return uid
       
-    def get_default_web_server_user(my):
+    def get_default_web_server_user(self):
         user = 'apache'
         try:
             f = open('/etc/passwd', 'r')
@@ -448,7 +457,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         return user
 
 
-    def get_current_dir(my):
+    def get_current_dir(self):
         ''' get the current tactic src root where install.py is launched from'''
         cur_path = os.path.abspath(__file__)
         cur_path, file = os.path.split(cur_path)
@@ -462,7 +471,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         current_dir = '/'.join(parts)
         return current_dir
 
-    def install_to_python(my, install_defaults=False):
+    def install_to_python(self, install_defaults=False):
         # install the files into python site-packages directory
         version_info = sys.version_info
         from distutils.sysconfig import get_python_lib
@@ -520,7 +529,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             os.makedirs(python_install_dir)
 
 
-        current_dir = my.get_current_dir()
+        current_dir = self.get_current_dir()
         # copy the data files
         files = ["__init__.py", "tactic_paths.py"]
         for file in files:
@@ -562,20 +571,20 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         tactic_data_base_dir = tactic_data_base_dir.rstrip('/')
 
         if tactic_base_dir != default_base_dir:
-            my.non_default_install = True
+            self.non_default_install = True
            
 
-        version = my.get_version()
-        my.tactic_base_dir = tactic_base_dir
-        my.tactic_src_dir = '%s/tactic_src_%s'%(tactic_base_dir, version)
-        my.tactic_install_dir = '%s/tactic'%tactic_base_dir
+        version = self.get_version()
+        self.tactic_base_dir = tactic_base_dir
+        self.tactic_src_dir = '%s/tactic_src_%s'%(tactic_base_dir, version)
+        self.tactic_install_dir = '%s/tactic'%tactic_base_dir
 
-        my.tactic_site_dir = '%s/projects' %tactic_base_dir
+        self.tactic_site_dir = '%s/projects' %tactic_base_dir
     
 
         # set apache user for Linux
         if os.name != 'nt':
-            default_apache_user = my.get_default_web_server_user()
+            default_apache_user = self.get_default_web_server_user()
             if not install_defaults:
                 print
                 print "Please enter the user Apache Web Server is run under:"
@@ -587,35 +596,35 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 	    else:
                 tactic_apache_user = default_apache_user
 
-            my.tactic_apache_user = tactic_apache_user
-            user_id  =  my.check_web_server_user(tactic_apache_user) 
+            self.tactic_apache_user = tactic_apache_user
+            user_id  =  self.check_web_server_user(tactic_apache_user) 
             if user_id == False:
                 print "User [%s] does not exist in the system. Exiting..." %tactic_apache_user
                 print
                 sys.exit(2)
 
 
-        my.tactic_data_dir = '%s/tactic_data' %my.tactic_base_dir
+        self.tactic_data_dir = '%s/tactic_data' %self.tactic_base_dir
         if os.name == 'nt':
-            my.tactic_data_dir = '%s/Tactic' %tactic_data_base_dir
-            my.tactic_data_base_dir = tactic_data_base_dir
+            self.tactic_data_dir = '%s/Tactic' %tactic_data_base_dir
+            self.tactic_data_base_dir = tactic_data_base_dir
 
 
         # copy the files to the python directory
         f = open("%s/tactic_paths.py" % python_install_dir, "a")
         f.write("\n")
-        f.write("TACTIC_INSTALL_DIR='%s'\n" % my.tactic_install_dir)
-        #f.write("TACTIC_SITE_DIR='%s'\n" % my.tactic_site_dir)
+        f.write("TACTIC_INSTALL_DIR='%s'\n" % self.tactic_install_dir)
+        #f.write("TACTIC_SITE_DIR='%s'\n" % self.tactic_site_dir)
         f.write("TACTIC_SITE_DIR=''\n")
-        f.write("TACTIC_DATA_DIR='%s'\n" % my.tactic_data_dir)
+        f.write("TACTIC_DATA_DIR='%s'\n" % self.tactic_data_dir)
         f.write("\n")
         f.close()
 
         try:
-            if not os.path.exists(my.tactic_site_dir):
-                os.makedirs(my.tactic_site_dir)
-            if not os.path.exists(my.tactic_data_dir):
-                os.makedirs(my.tactic_data_dir)
+            if not os.path.exists(self.tactic_site_dir):
+                os.makedirs(self.tactic_site_dir)
+            if not os.path.exists(self.tactic_data_dir):
+                os.makedirs(self.tactic_data_dir)
         except OSError, e:
             if e.__str__().find('Access is denied') != -1:
 
@@ -633,10 +642,10 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             print
             print "Please enter TACTIC user:"
             print
-            my.tactic_user = raw_input("(%s) -> " % default_tactic_user)
-            if not my.tactic_user:
-                my.tactic_user = default_install_dir
-            my.tactic_group = my.tactic_user
+            self.tactic_user = raw_input("(%s) -> " % default_tactic_user)
+            if not self.tactic_user:
+                self.tactic_user = default_install_dir
+            self.tactic_group = self.tactic_user
        
 
 
@@ -651,7 +660,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
             # create root directory
             old = root
-            new = old.replace("template", my.tactic_site_dir)
+            new = old.replace("template", self.tactic_site_dir)
             dirname = os.path.dirname(new)
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
@@ -663,7 +672,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                     continue
 
                 old = "%s/%s" % (root, file)
-                new = old.replace("template", my.tactic_site_dir)
+                new = old.replace("template", self.tactic_site_dir)
 
                 dirname = os.path.dirname(new)
                 if not os.path.exists(dirname):
@@ -672,19 +681,19 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 shutil.copyfile(old, new)
                 # FIXME: this does not work ... need uid and gid
                 #if not os.name == "nt":
-                #    os.chown(new,my.tactic_user,my.tactic_group)
+                #    os.chown(new,self.tactic_user,self.tactic_group)
 
 
         """
         
 
-        my.tactic_license = 'tactic-license.xml'
+        self.tactic_license = 'tactic-license.xml'
         if os.name != 'nt':
-            my.apache_conf = 'tactic.conf'
-            my.tactic_conf = 'tactic_linux-conf.xml'
+            self.apache_conf = 'tactic.conf'
+            self.tactic_conf = 'tactic_linux-conf.xml'
         else:
-            my.apache_conf = 'tactic_win32.conf'
-            my.tactic_conf = 'tactic_win32-conf.xml'
+            self.apache_conf = 'tactic_win32.conf'
+            self.tactic_conf = 'tactic_win32-conf.xml'
 
 
 
@@ -692,26 +701,26 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
 
         try:
-            src = '%s/src/install/apache/%s' %(current_dir, my.apache_conf)
-            dst_dir= '%s/config' % my.tactic_data_dir
-            dst = '%s/config/%s' %(my.tactic_data_dir, my.apache_conf)
+            src = '%s/src/install/apache/%s' %(current_dir, self.apache_conf)
+            dst_dir= '%s/config' % self.tactic_data_dir
+            dst = '%s/config/%s' %(self.tactic_data_dir, self.apache_conf)
             if not os.path.exists(dst_dir):
                 os.makedirs(dst_dir)
 
             shutil.copyfile(src, dst)
 
-            src = '%s/src/install/template/config/%s' %(current_dir, my.tactic_conf)
-            dst = '%s/config/tactic-conf.xml' %(my.tactic_data_dir)
+            src = '%s/src/install/template/config/%s' %(current_dir, self.tactic_conf)
+            dst = '%s/config/tactic-conf.xml' %(self.tactic_data_dir)
             shutil.copyfile(src, dst)
            
             # Copy the TACTIC EPL license over to the tactic_data/config directory
-            src = '%s/src/install/template/config/%s' %(current_dir, my.tactic_license)
-            dst = '%s/config/%s' %(my.tactic_data_dir, my.tactic_license)
+            src = '%s/src/install/template/config/%s' %(current_dir, self.tactic_license)
+            dst = '%s/config/%s' %(self.tactic_data_dir, self.tactic_license)
             shutil.copyfile(src, dst)
            
             # copy default project templates
             src = '%s/src/install/start/templates' %current_dir
-            dst =  '%s/templates' %my.tactic_data_dir
+            dst =  '%s/templates' %self.tactic_data_dir
             if not os.path.exists(dst):
                 shutil.copytree(src, dst)
 
@@ -721,9 +730,9 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             raise InstallException(e)
 
         if os.name != 'nt':
-            src_dir = my.tactic_src_dir
+            src_dir = self.tactic_src_dir
         else:
-            src_dir = my.tactic_install_dir
+            src_dir = self.tactic_install_dir
 
 
 
@@ -733,7 +742,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         # prevent copying to itself
         #print "SRC_DIR ", src_dir
         #print "CUR ", current_dir
-        if my.in_directory(src_dir, current_dir):
+        if self.in_directory(src_dir, current_dir):
             raise InstallException("The install directory can't be inside the current directory.")
 
         if src_dir != current_dir:
@@ -761,18 +770,18 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
         # create symlink
         if os.name != 'nt':
-            if os.path.islink(my.tactic_install_dir):
-                os.unlink(my.tactic_install_dir)
+            if os.path.islink(self.tactic_install_dir):
+                os.unlink(self.tactic_install_dir)
 
-            if not os.path.exists(my.tactic_install_dir):
+            if not os.path.exists(self.tactic_install_dir):
                 print
-                print "Creating a symlink at [%s]..." % my.tactic_install_dir
-                os.symlink(my.tactic_src_dir, my.tactic_install_dir)
+                print "Creating a symlink at [%s]..." % self.tactic_install_dir
+                os.symlink(self.tactic_src_dir, self.tactic_install_dir)
             
 
 
 
-    def check_modules(my, install_db):
+    def check_modules(self, install_db):
         print
         print "Verifying Python modules are properly installed..." 
         print

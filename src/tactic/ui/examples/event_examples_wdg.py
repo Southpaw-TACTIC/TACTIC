@@ -21,21 +21,21 @@ from base_example_wdg import BaseExampleWdg
 
 class NamedEventListenExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Named Event Listen Behavior Examples"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "A few examples of using a 'listen' behavior on an SPT named event."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
 
         # ---------------------------------------------------------------------------------------------------------
 
-        my.setup_next_example(div,"Demonstrates the adding of a 'listen' type behavior Named Event in Javascript " \
+        self.setup_next_example(div,"Demonstrates the adding of a 'listen' type behavior Named Event in Javascript " \
                                   "dynamically")
 
         dummy_listener_div = DivWdg()
@@ -52,7 +52,7 @@ class NamedEventListenExampleWdg(BaseExampleWdg):
 
         # ---------------------------------------------------------------------------------------------------------
 
-        my.setup_next_example(div,"Demonstrates the firing of an SPT Named Event for 'listen' type behavior. This " \
+        self.setup_next_example(div,"Demonstrates the firing of an SPT Named Event for 'listen' type behavior. This " \
                                   "example also shows the adding of stacked 'listen' type behaviors on a single " \
                                   "element listening for a single event name (allowing 2 actions to occur on the " \
                                   "firing of one event name)" )
@@ -86,7 +86,7 @@ class NamedEventListenExampleWdg(BaseExampleWdg):
 
         # ---------------------------------------------------------------------------------------------------------
 
-        my.setup_next_example( div, "Demonstrates the ability for a single Named Event 'listen' behavior to listen to " \
+        self.setup_next_example( div, "Demonstrates the ability for a single Named Event 'listen' behavior to listen to " \
                                "multiple event names, but execute a single call-back" )
 
         event_name_list  = [
@@ -125,7 +125,7 @@ class NamedEventListenExampleWdg(BaseExampleWdg):
 
         # ------------------------------------------------------------------------------------------------------------
 
-        my.setup_next_example( div, "Demonstrates the use of the convenience short cut for adding a 'listen' " \
+        self.setup_next_example( div, "Demonstrates the use of the convenience short cut for adding a 'listen' " \
                                     "type behavior by using HtmlElement.add_named_listener() method" )
 
         # Add a div to click on to fire the desired named event ...
@@ -157,24 +157,24 @@ class NamedEventListenExampleWdg(BaseExampleWdg):
 
         # ------------------------------------------------------------------------------------------------------------
 
-        my.setup_next_example( div, "" )
+        self.setup_next_example( div, "" )
 
         return div
 
 
 class DomEventListenExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "DOM Event Listen Behavior Example"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Example of using a 'dom_listen' behavior on a firing of a DOM event. NOTE: that this seems to only " \
                 "work if the DOM event is fired and 'listened to' from the same HTML element. Not sure how useful " \
                 "this is."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
 

@@ -23,26 +23,26 @@ from texture_tab_wdg import TextureTabWdg
 
 class AssetTabWdg(BaseTabWdg):
 
-    def init(my):
-        my.add(HelpItemWdg('Asset Pipeline', 'Asset Pipeline contains a collection of tabs that define different aspects of the asset pipeline.', False))
-        my.setup_tab("asset_pipeline_tab", css=TabWdg.SMALL)
+    def init(self):
+        self.add(HelpItemWdg('Asset Pipeline', 'Asset Pipeline contains a collection of tabs that define different aspects of the asset pipeline.', False))
+        self.setup_tab("asset_pipeline_tab", css=TabWdg.SMALL)
 
 
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
         
-        tab.add(my.get_asset_list_wdg, _("Asset List") )
-        tab.add(my.get_summary_wdg, _("Summary") )
-        tab.add(my.get_task_manager_wdg, _("Tasks") )
-        tab.add(my.get_asset_artist_wdg, _("Artist (3D Assets)") )
-        tab.add(my.get_asset_supe_wdg, _("Supe (3D Assets)") )
+        tab.add(self.get_asset_list_wdg, _("Asset List") )
+        tab.add(self.get_summary_wdg, _("Summary") )
+        tab.add(self.get_task_manager_wdg, _("Tasks") )
+        tab.add(self.get_asset_artist_wdg, _("Artist (3D Assets)") )
+        tab.add(self.get_asset_supe_wdg, _("Supe (3D Assets)") )
         tab.add(TextureTabWdg, _("2D Assets") )
-        tab.add(my.get_render_log_wdg, _("Render Log") )
-        tab.add(my.get_library_type_wdg, _("Asset Libraries") )
-        tab.add(my.get_notes_wdg, _("Notes") )
+        tab.add(self.get_render_log_wdg, _("Render Log") )
+        tab.add(self.get_library_type_wdg, _("Asset Libraries") )
+        tab.add(self.get_notes_wdg, _("Notes") )
 
 
-    def get_asset_list_wdg(my):
+    def get_asset_list_wdg(self):
 
         widget = Widget()
         widget.add(HelpItemWdg('Asset List Tab', '/doc/production/asset_list.html', is_link=True))
@@ -68,7 +68,7 @@ class AssetTabWdg(BaseTabWdg):
 
 
 
-    def get_summary_wdg(my):
+    def get_summary_wdg(self):
 
         widget = Widget()
         #widget.add(HelpItemWdg('Summary tab', '/doc/site/prod/summary_tab.html'))
@@ -93,7 +93,7 @@ class AssetTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_task_manager_wdg(my):
+    def get_task_manager_wdg(self):
        
         widget = Widget()
         help = HelpItemWdg('Tasks tab', 'The Task Manager lets the coordinator set up tasks for each individual asset. Once created, the tasks can be assigned to different users. Settings such as bid date, duration, and milestone can be customized at any time.')
@@ -106,7 +106,7 @@ class AssetTabWdg(BaseTabWdg):
 
 
 
-    def get_asset_artist_wdg(my):
+    def get_asset_artist_wdg(self):
         widget = Widget()
         approval_wdg = ApprovalManagerWdg()
         widget.add(approval_wdg)
@@ -117,7 +117,7 @@ class AssetTabWdg(BaseTabWdg):
         widget.add(help)
         return widget
 
-    def get_asset_supe_wdg(my):
+    def get_asset_supe_wdg(self):
         widget = Widget()
         approval_wdg = ApprovalManagerWdg()
         widget.add(approval_wdg)
@@ -130,7 +130,7 @@ class AssetTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_texture_wdg(my):
+    def get_texture_wdg(self):
 
         search = Search(Texture.SEARCH_TYPE)
 
@@ -154,7 +154,7 @@ class AssetTabWdg(BaseTabWdg):
 
 
 
-    def get_source_wdg(my):
+    def get_source_wdg(self):
 
         search = Search(TextureSource.SEARCH_TYPE)
 
@@ -179,7 +179,7 @@ class AssetTabWdg(BaseTabWdg):
 
 
 
-    def get_render_log_wdg(my):
+    def get_render_log_wdg(self):
 
         widget = Widget()
 
@@ -211,7 +211,7 @@ class AssetTabWdg(BaseTabWdg):
 
 
 
-    def get_library_type_wdg(my):
+    def get_library_type_wdg(self):
 
         widget = Widget()
         search = Search("prod/asset_library")
@@ -223,7 +223,7 @@ class AssetTabWdg(BaseTabWdg):
 
  
 
-    def get_notes_wdg(my):
+    def get_notes_wdg(self):
         widget = Widget()
 
         help = HelpItemWdg('Notes tab', 'The Notes tab focuses on the display of notes. It includes both asset notes and submission notes for each asset.')

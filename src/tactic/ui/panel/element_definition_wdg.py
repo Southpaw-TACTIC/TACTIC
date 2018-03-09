@@ -35,32 +35,32 @@ from view_manager_wdg import ViewManagerWdg
 
 class TableViewManagerWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type of the view',
         'view': 'view to be edited'
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_class("spt_table_view_manager_top")
 
-        my.search_type = my.kwargs.get("search_type")
-        my.view = my.kwargs.get("view")
+        self.search_type = self.kwargs.get("search_type")
+        self.view = self.kwargs.get("view")
 
         web = WebContainer.get_web()
-        if not my.search_type:
-            my.search_type = web.get_form_value("search_type")
-        if not my.view:
-            my.view = web.get_form_value("view")
-        if not my.view:
-            my.view = 'table'
+        if not self.search_type:
+            self.search_type = web.get_form_value("search_type")
+        if not self.view:
+            self.view = web.get_form_value("view")
+        if not self.view:
+            self.view = 'table'
 
 
-        filter_wdg = my.get_filter_wdg()
+        filter_wdg = self.get_filter_wdg()
         top.add(filter_wdg)
 
 
@@ -68,14 +68,14 @@ class TableViewManagerWdg(BaseRefreshWdg):
         #search_type = web.get_form_value("search_type")
         #view = web.get_form_value("view")
 
-        view_manager_wdg = ViewManagerWdg(search_type=my.search_type,view=my.view)
+        view_manager_wdg = ViewManagerWdg(search_type=self.search_type,view=self.view)
         top.add(view_manager_wdg)
 
 
         return top
 
         
-    def get_filter_wdg(my):
+    def get_filter_wdg(self):
 
         div = DivWdg()
         div.add_style("margin: 10px")
@@ -106,22 +106,22 @@ class TableViewManagerWdg(BaseRefreshWdg):
             #//spt.panel.refresh(manager_top, values);'''
         }
         select.add_behavior(behavior)
-        select.set_value(my.search_type)
+        select.set_value(self.search_type)
         div.add(select)
 
-        if not my.search_type:
+        if not self.search_type:
             return div
 
         div.add('View: ')
         view_wdg = SelectWdg("view")
-        view_wdg.set_value(my.view)
+        view_wdg.set_value(self.view)
         view_wdg.add_empty_option("-- Select --")
         view_wdg.add_behavior(behavior)
         div.add(view_wdg)
 
 
         search = Search("config/widget_config")
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("search_type", self.search_type)
         db_configs = search.get_sobjects()
 
 
@@ -130,14 +130,14 @@ class TableViewManagerWdg(BaseRefreshWdg):
             view = db_config.get_value("view")
             views.update([view])
 
-        if my.search_type and my.view:
-            config_view = WidgetConfigView.get_by_search_type(my.search_type, my.view)
+        if self.search_type and self.view:
+            config_view = WidgetConfigView.get_by_search_type(self.search_type, self.view)
 
             configs = config_view.get_configs()
             for x in configs:
                 view = x.get_view()
                 file_path = x.get_file_path()
-                if view != my.view:
+                if view != self.view:
                     continue
                 if file_path and file_path.endswith("DEFAULT-conf.xml"):
                     continue
@@ -153,17 +153,17 @@ class TableViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_action_menu_details(my):
+    def get_action_menu_details(self):
         # FIXME: not needed
         is_personal = 'false'
         return {
             'menu_id': 'ManageViewPanelWdg_DropdownMenu', 'width': 250, 'allow_icons': False,
             'opt_spec_list': [
                 { "type": "action", "label": "New Link", "bvr_cb":
-                    {'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_link'},'%s',%s);" % (my.view,is_personal)} },
+                    {'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'new_link'},'%s',%s);" % (self.view,is_personal)} },
                 { "type": "separator" },
                 { "type": "action", "label": "Save", "bvr_cb":
-                    {'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (my.view,is_personal)} }
+                    {'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (self.view,is_personal)} }
             ]
         }
 
@@ -174,20 +174,20 @@ class TableViewManagerWdg(BaseRefreshWdg):
 
 class ElementDefinitionWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget',
         'view': 'the top level view we are looking at',
         'element_name': 'the element name to look at',
         }
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
 
-        search_type = my.kwargs.get("search_type")
-        view = my.kwargs.get("view")
-        element_name = my.kwargs.get("element_name")
+        search_type = self.kwargs.get("search_type")
+        view = self.kwargs.get("view")
+        element_name = self.kwargs.get("element_name")
 
         config_view = WidgetConfigView.get_by_search_type(search_type, view)
 
@@ -305,10 +305,10 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
 
 
-    def get_definitions(my, element_name):
+    def get_definitions(self, element_name):
         '''get all the definitions for this element'''
-        search_type = my.kwargs.get("search_type")
-        view = my.kwargs.get("view")
+        search_type = self.kwargs.get("search_type")
+        view = self.kwargs.get("view")
         config_view = WidgetConfigView.get_by_search_type(search_type, view)
 
         display_class = config_view.get_display_handler(element_name)
@@ -332,7 +332,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
 class SimpleElementDefinitionWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type for this search widget',
         'view': 'the top level view we are looking at',
@@ -342,12 +342,12 @@ class SimpleElementDefinitionWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
-        element_name = my.kwargs.get('element_name')
+        element_name = self.kwargs.get('element_name')
 
-        config_view = my.kwargs.get("config_view")
+        config_view = self.kwargs.get("config_view")
         display_class = config_view.get_display_handler(element_name)
         display_options = config_view.get_display_options(element_name)
         element_attr = config_view.get_element_attributes(element_name)

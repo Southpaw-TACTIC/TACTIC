@@ -37,18 +37,18 @@ class TaskCompletionWdg(BaseTableElementWdg):
             'category': 'Display'
         }
     }
-    def init(my):
-        my.is_preprocessed = False
-        my.data = {}
-        my.cal_sub_task = None
-        my.cal_sub_task_value = False
+    def init(self):
+        self.is_preprocessed = False
+        self.data = {}
+        self.cal_sub_task = None
+        self.cal_sub_task_value = False
 
         # this is meant for handle_td()
-        my.row_completion = 0
-        my.expression = None
+        self.row_completion = 0
+        self.expression = None
 
 
-    def get_width(my):
+    def get_width(self):
         return 200
 
 
@@ -57,65 +57,65 @@ class TaskCompletionWdg(BaseTableElementWdg):
         return False
     is_editable = classmethod(is_editable)
 
-    def preprocess(my):
-        my.total_completion = 0.0
-        my.num_sobjects = 0
-        my.expression = my.kwargs.get('task_expr')
-        if my.sobjects and  not my.expression:
-            if my.expression:
-                tasks = Search.eval(my.expression, sobjects=my.sobjects)
+    def preprocess(self):
+        self.total_completion = 0.0
+        self.num_sobjects = 0
+        self.expression = self.kwargs.get('task_expr')
+        if self.sobjects and  not self.expression:
+            if self.expression:
+                tasks = Search.eval(self.expression, sobjects=self.sobjects)
             else:
-                tasks = Task.get_by_sobjects(my.sobjects)
+                tasks = Task.get_by_sobjects(self.sobjects)
             # create a data structure
             for task in tasks:
                 search_type = task.get_value("search_type")
                 search_code = task.get_value("search_code")
                 search_key = SearchKey.build_search_key(search_type, search_code, column='code')
-                sobject_tasks = my.data.get(search_key)
+                sobject_tasks = self.data.get(search_key)
                 if not sobject_tasks:
                     sobject_tasks = []
-                    my.data[search_key] = sobject_tasks
+                    self.data[search_key] = sobject_tasks
 
                 sobject_tasks.append(task)
 
-        my.is_preprocessed = True
+        self.is_preprocessed = True
 
-    def get_prefs(my):
-        my.cal_sub_task = FilterCheckboxWdg('calculate_sub_task', \
+    def get_prefs(self):
+        self.cal_sub_task = FilterCheckboxWdg('calculate_sub_task', \
             label='include sub tasks', css='small')
-        my.cal_sub_task_value = my.cal_sub_task.is_checked()
-        return my.cal_sub_task
+        self.cal_sub_task_value = self.cal_sub_task.is_checked()
+        return self.cal_sub_task
 
-    def get_width(my):
+    def get_width(self):
         '''not used I think'''
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
 
         if not width:
             width = 400
         return int(width)
 
-    def get_text_value(my):
-        sobject = my.get_current_sobject()
+    def get_text_value(self):
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             return ''
 
-        if not my.is_preprocessed:
-            my.preprocess()
+        if not self.is_preprocessed:
+            self.preprocess()
 
-        sobject = my.get_current_sobject()
-        completion = my.get_completion(sobject)
+        sobject = self.get_current_sobject()
+        completion = self.get_completion(sobject)
         if not completion:
             completion = 0
         return "%0.1f%%" % completion
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             return ''
 
-        completion = my.get_completion(sobject)
-        my.row_completion = completion
+        completion = self.get_completion(sobject)
+        self.row_completion = completion
 
         # completion is compared to None, because a 0% completion is valid
         if completion == None:
@@ -124,22 +124,22 @@ class TaskCompletionWdg(BaseTableElementWdg):
             return div
 
         widget = DivWdg()
-        width = my.get_width()
+        width = self.get_width()
         bar_wdg = CompletionBarWdg(completion, width )
         widget.add(bar_wdg)
 
         # keep a running tab of the total if there is at least one task for this sobject
-        my.total_completion += completion
-        my.num_sobjects += 1
+        self.total_completion += completion
+        self.num_sobjects += 1
 
         return widget
 
 
-    def get_bottom_wdg(my):
-        width = my.get_width()
+    def get_bottom_wdg(self):
+        width = self.get_width()
         
-        if my.num_sobjects:
-            completion = my.total_completion / my.num_sobjects
+        if self.num_sobjects:
+            completion = self.total_completion / self.num_sobjects
             bar_wdg = CompletionBarWdg(completion, width)
         else:
             bar_wdg = "n/a"
@@ -151,18 +151,18 @@ class TaskCompletionWdg(BaseTableElementWdg):
         return div
 
 
-    def get_tasks(my, sobject):
+    def get_tasks(self, sobject):
         ''' if the sobject is a task, then just return the sobject, since tasks
          do not have tasks. Account for subtask based on preferences. Also
          filters out tasks belonging to obsolete processes'''
         if isinstance(sobject, Task):
             return [sobject]
         
-        if my.expression:
-            tasks = Search.eval(my.expression, sobjects=[sobject])
+        if self.expression:
+            tasks = Search.eval(self.expression, sobjects=[sobject])
             return tasks
 
-        tasks = my.data.get( SearchKey.get_by_sobject(sobject, use_id=False) )
+        tasks = self.data.get( SearchKey.get_by_sobject(sobject, use_id=False) )
         if tasks == None:
             tasks = Task.get_by_sobjects([sobject])
 
@@ -175,7 +175,7 @@ class TaskCompletionWdg(BaseTableElementWdg):
 
         pipeline = Pipeline.get_by_sobject(parent)
         recurse = False
-        if my.cal_sub_task_value:
+        if self.cal_sub_task_value:
             recurse = True
         if pipeline:
             processes = pipeline.get_process_names(recurse=recurse)
@@ -194,13 +194,13 @@ class TaskCompletionWdg(BaseTableElementWdg):
 
 
 
-    def get_completion(my, sobject):
-        my.tasks = my.get_tasks(sobject)
+    def get_completion(self, sobject):
+        self.tasks = self.get_tasks(sobject)
         
         percent = 0
         # count the tasks with invalid or obsolete status
         #invalid_count = 0
-        for task in my.tasks:
+        for task in self.tasks:
             status_attr = task.get_attr("status")
             task_percent = status_attr.get_percent_completion()
             if task_percent < 0:
@@ -208,21 +208,21 @@ class TaskCompletionWdg(BaseTableElementWdg):
                 #invalid_count += 1
             percent += task_percent
 
-        if my.tasks:
+        if self.tasks:
             # NOT sure if I should subtract total # of tasks by invalid
             # task, leave it for now
-            percent = float(percent) / len(my.tasks)
+            percent = float(percent) / len(self.tasks)
         else:
             return None
 
         return percent
 
-    def handle_td(my, td):
+    def handle_td(self, td):
         td.add_style('vertical-align','middle')
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             return
-        td.add_attr("spt_input_value", my.row_completion)
+        td.add_attr("spt_input_value", self.row_completion)
 
 
 
@@ -245,42 +245,42 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         }
 
     }
-    def preprocess(my):
-        my.options = my.get_option('options')
-        if my.options:
+    def preprocess(self):
+        self.options = self.get_option('options')
+        if self.options:
             try:
-                my.group_list = jsonloads(my.options)
+                self.group_list = jsonloads(self.options)
             except:
-                my.group_list = [{'label': 'Syntax Error', 'context':[]}]
+                self.group_list = [{'label': 'Syntax Error', 'context':[]}]
         else:
-            my.group_list = [{'label':'default', 'context': []}]
+            self.group_list = [{'label':'default', 'context': []}]
 
-        super(TaskGroupCompletionWdg, my).preprocess()
+        super(TaskGroupCompletionWdg, self).preprocess()
 
-    def init(my):
+    def init(self):
         # these 2 are used for bottom summary
-        my.total_completion_dict = {}
-        my.num_sobjects = 0
-        super(TaskGroupCompletionWdg, my).init()
+        self.total_completion_dict = {}
+        self.num_sobjects = 0
+        super(TaskGroupCompletionWdg, self).init()
 
-    def get_bottom_wdg(my):
-        if my.total_completion_dict:
+    def get_bottom_wdg(self):
+        if self.total_completion_dict:
             table = Table()
             table.add_color("color", "color")
             col = table.add_col()
             col = table.add_col()
             col.add_style('width','80%')
-            for group in my.group_list:
+            for group in self.group_list:
                 group_label = group.get('label')
-                # FIXME is that right?. should we get my.num_sobjects per group?
-                completion = my.total_completion_dict.get(group_label)/ my.num_sobjects
+                # FIXME is that right?. should we get self.num_sobjects per group?
+                completion = self.total_completion_dict.get(group_label)/ self.num_sobjects
             
                 group_contexts = group.get('context')
                 if group_contexts:
                     group_contexts = ', '.join(group_contexts)
 
 
-                width = my.get_width()
+                width = self.get_width()
                 bar_wdg = CompletionBarWdg(completion, width)
                 label_div = FloatDivWdg('%s: ' %group_label)
                 label_div.add_style('margin-right: 4px')
@@ -290,10 +290,10 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
                 table.add_cell(bar_wdg)
             return table
 
-        width = my.get_width()
+        width = self.get_width()
         completion = 0
-        if my.num_sobjects:
-            completion = my.total_completion / my.num_sobjects
+        if self.num_sobjects:
+            completion = self.total_completion / self.num_sobjects
         div = DivWdg()
         div.add("Total")
         div.add("<hr>")
@@ -301,7 +301,7 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         div.add(bar_wdg)
         return div
     
-    def get_group_completion(my, items):
+    def get_group_completion(self, items):
         '''get the avg completion'''
         sum = 0
         if not items:
@@ -311,32 +311,32 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         avg = sum / len(items)
         return avg
 
-    def get_text_value(my):
-        sobject = my.get_current_sobject()
+    def get_text_value(self):
+        sobject = self.get_current_sobject()
         if sobject.get_id() == -1:
             return ''
-        my.calculate(sobject)
+        self.calculate(sobject)
 
         output = []
-        for group in my.group_list:
+        for group in self.group_list:
             group_label = group.get('label')
             group_contexts = group.get('context')
             if group_contexts:
                 group_contexts = ', '.join(group_contexts)
-            group_completion = my.completion_dict.get(group_label)
-            completion = my.get_group_completion(group_completion)
+            group_completion = self.completion_dict.get(group_label)
+            completion = self.get_group_completion(group_completion)
             output.append('%s: %s%%'%(group_label, completion))
 
         return '\n'.join(output)
 
-    def calculate(my, sobject):
+    def calculate(self, sobject):
         '''do the calculation'''
-        tasks = my.get_tasks(sobject)
+        tasks = self.get_tasks(sobject)
 
 
         completion = '' 
-        my.completion_dict = {}
-        for group in my.group_list:
+        self.completion_dict = {}
+        for group in self.group_list:
             group_label = group.get('label')
             group_contexts = group.get('context')
             if not group_label:
@@ -344,25 +344,25 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
             for task in tasks:
                 context = task.get_value('context')
                 if context in group_contexts:
-                    completion = my.get_completion(task)
-                    group_completion = my.completion_dict.get(group_label)
+                    completion = self.get_completion(task)
+                    group_completion = self.completion_dict.get(group_label)
                     if group_completion == None:
-                        my.completion_dict[group_label] = [completion]
+                        self.completion_dict[group_label] = [completion]
                     else:
                         group_completion.append(completion)
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         if sobject.is_insert():
             return ''
-        my.calculate(sobject)
+        self.calculate(sobject)
         
              
         # completion is compared to None, because a 0% completion is valid
-        if not my.completion_dict:
-            if my.group_list and my.group_list[0].get('label')=='Syntax Error':
+        if not self.completion_dict:
+            if self.group_list and self.group_list[0].get('label')=='Syntax Error':
                 div = DivWdg("<i>Syntax Error in Column Definition</i>")
-            elif my.group_list and my.group_list[0].get('label')=='default':
+            elif self.group_list and self.group_list[0].get('label')=='default':
                 div = DivWdg('<i>Fill in the options e.g. [{"label":"MODEL", "context": ["model","rig"]}] </i>')
             else:
                 div = DivWdg("<i>No tasks</i>")
@@ -374,16 +374,16 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         col = table.add_col()
         col = table.add_col()
         col.add_style('width','80%')
-        for group in my.group_list:
+        for group in self.group_list:
             group_label = group.get('label')
             group_contexts = group.get('context')
             if group_contexts:
                 group_contexts = ', '.join(group_contexts)
-            group_completion = my.completion_dict.get(group_label)
-            completion = my.get_group_completion(group_completion)
+            group_completion = self.completion_dict.get(group_label)
+            completion = self.get_group_completion(group_completion)
 
 
-            width = my.get_width()
+            width = self.get_width()
             bar_wdg = CompletionBarWdg(completion, width)
             label_div = FloatDivWdg('%s: ' %group_label)
             label_div.add_style('margin-right: 4px')
@@ -392,55 +392,55 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
             table.add_cell(label_div)
             table.add_cell(bar_wdg)
             #widget.add(HtmlElement.br())
-            completed_summary = my.total_completion_dict.get(group_label)
+            completed_summary = self.total_completion_dict.get(group_label)
             if not completed_summary:
                 completed_summary = 0
-	    my.total_completion_dict[group_label] = completion + completed_summary
-        my.num_sobjects += 1
+	    self.total_completion_dict[group_label] = completion + completed_summary
+        self.num_sobjects += 1
 
         return table
 
 
 class CompletionBarWdg(DivWdg):
 
-    def __init__(my, percent, length):
+    def __init__(self, percent, length):
         if not percent:
             percent = 0
-        my.percent = percent
-        #my.percent = 100
-        my.length = length
-        super(CompletionBarWdg, my).__init__()
+        self.percent = percent
+        #self.percent = 100
+        self.length = length
+        super(CompletionBarWdg, self).__init__()
 
-    def init(my):
-        #my.add_style("width", my.length + 50)
-        my.add_style("font-size", "0.8em")
+    def init(self):
+        #self.add_style("width", self.length + 50)
+        self.add_style("font-size", "0.8em")
 
-        width = int(my.length*(float(my.percent)/100))
+        width = int(self.length*(float(self.percent)/100))
         if width == 0:
             width = 1
 
-        percent_str = HtmlElement.span("%s%%&nbsp" % my.percent )
+        percent_str = HtmlElement.span("%s%%&nbsp" % self.percent )
         percent_str.add_style("float: right")
         percent_str.add_style("color: white")
 
         bar = FloatDivWdg()
         bar.add("&nbsp;")
         #bar.add_style("width", width)
-        bar.add_style("width", "%s%%" % (70*my.percent/100))
+        bar.add_style("width", "%s%%" % (70*self.percent/100))
         bar.add_style("border: 1px solid #aaa")
-        color_code = my._get_color_code(my.percent)
-        bar.add_class("completion %s" % my._get_bar_color_code(my.percent) )
+        color_code = self._get_color_code(self.percent)
+        bar.add_class("completion %s" % self._get_bar_color_code(self.percent) )
         bar.add_style("background-color", color_code)
         bar.add_style("float", "left")
 
-        my.add(bar)
-        percent = FloatDivWdg("%0.1f%%" % my.percent, css='larger')
+        self.add(bar)
+        percent = FloatDivWdg("%0.1f%%" % self.percent, css='larger')
         percent.add_style('padding', '2px 0 0 4px')
-        my.add( percent )
+        self.add( percent )
 
 
 
-    def _get_bar_color_code(my, percent):
+    def _get_bar_color_code(self, percent):
         ''' get a color code based on percentage of task completion '''
         color = "grey"
         if percent == 100:
@@ -454,7 +454,7 @@ class CompletionBarWdg(DivWdg):
         return color
 
 
-    def _get_color_code(my, percent):
+    def _get_color_code(self, percent):
         ''' get a color code based on percentage of task completion '''
         color = "#ddd"
         if percent == 100:
@@ -472,7 +472,7 @@ class CompletionBarWdg(DivWdg):
 
 class MilestoneCompletionWdg(TaskCompletionWdg):
 
-    def get_tasks(my, sobject):
+    def get_tasks(self, sobject):
         milestone = sobject.get_code()
         search = Search("sthpw/task")
         search.add_filter("milestone_code", milestone)
@@ -497,29 +497,58 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
     }
 
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def is_groupable(my):
+    def is_groupable(self):
         return True
 
-    def init(my):
-        my.due_date_col = my.kwargs.get('due_date_col')
-        if not my.due_date_col:
-            my.due_date_col = 'bid_end_date'
-        my.mode = ''
+    def init(self):
+        self.due_date_col = self.kwargs.get('due_date_col')
+        if not self.due_date_col:
+            self.due_date_col = 'bid_end_date'
+        self.mode = ''
+
+        self.set_option('filter_name', self.due_date_col)
 
 
-    def init_data(my):
+    def add_value_update(self, value_wdg, sobject, name):
+        value_wdg.add_update( {
+            'search_key': sobject.get_search_key(),
+            'column': name,
+            'interval': 2,
+            'cbjs_action': '''
+            spt.panel.refresh_element(bvr.src_el, {}, {
+              callback: function() {
+                var td = bvr.src_el.getParent("td");
+                var el = bvr.src_el.getElement(".spt_background");
+                if (!td || !el) return;
+                var color = el.getAttribute("spt_color");
+                var background = el.getAttribute("spt_background");
+                td.setStyle("color", color);
+                td.setStyle("background", background);
+              }
+            } );
+            '''
+        } )
 
-        sobject = my.get_current_sobject()
-        value = sobject.get_value(my.due_date_col)
+
+    def init_data(self):
+
+        sobject = self.get_current_sobject()
+        if not sobject:
+            sobject = self.sobject
+
+        value = sobject.get_value(self.due_date_col)
         if not value:
-            my.mode = ""
+            self.mode = ""
+            self.diff = ""
+            self.date_today = None
+            self.date_due = None
             return
 
-        DAY = my.DAY
-        HOUR = my.HOUR
+        DAY = self.DAY
+        HOUR = self.HOUR
         status = sobject.get_value("status")
 
         due_date = parser.parse(value)
@@ -542,13 +571,15 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         delta = due_date - now
         diff = (delta.days * DAY) + delta.seconds
 
+        date_today = now.date()
+        date_due = due_date.date()
 
         if diff < 0:
             if status.lower() in ["approved", "complete", "done"]:
                 mode = "done"
             else:
                 mode = "critical"
-        elif diff > (HOUR*2) and diff <= DAY:
+        elif diff > (HOUR*2) and date_today == date_due:
             mode = "today"
         elif diff > HOUR and diff <= (HOUR*2):
             mode = "warning_1"
@@ -557,62 +588,143 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         else:
             mode = "due"
         
-        my.mode = mode
-        my.diff = diff
+        self.mode = mode
+        self.diff = diff
+        self.date_today = date_today
+        self.date_due = date_due
 
 
 
+    def get_colors(self):
 
+        self.init_data()
 
-    def handle_td(my, td):
+        color = "#000"
 
-        my.init_data()
-
-        '''background color is better handled on td directly'''
-        if my.mode == 'critical':
-            td.add_style("background: #e84a4d")
-        elif my.mode == 'today':
-            td.add_style("background: #a3d991")
-        elif my.mode == 'warning_1':
-            td.add_style("background: #e9e386")
-        elif my.mode == 'warning_2':
-            td.add_style("background: #ecbf7f")
-        elif my.mode == 'done':
-            pass
+        if self.mode == 'critical':
+            background = "#e84a4d"
+            color = "#FFF"
+        elif self.mode == 'today':
+            background = "#a3d991"
+            color = "#FFF"
+        elif self.mode == 'warning_1':
+            background = "#e9e386"
+        elif self.mode == 'warning_2':
+            background = "#ecbf7f"
+        elif self.mode == 'done':
+            background = ""
         else:
-            td.add_style("background: #FFF")
+            background = ""
 
-        super(TaskDaysDueElementWdg, my).handle_td(td)
+        return color, background 
+
+
+    def handle_td(self, td):
+        '''background color is better handled on td directly'''
+
+        self.init_data()
+
+        if self.mode == 'critical':
+            td.add_style("background: #e84a4d")
+        elif self.mode == 'today':
+            td.add_style("background: #a3d991")
+        elif self.mode == 'warning_1':
+            td.add_style("background: #e9e386")
+        elif self.mode == 'warning_2':
+            td.add_style("background: #ecbf7f")
+        elif self.mode == 'done':
+            pass
+        #else:
+        #    td.add_style("background: #FFF")
+
+        super(TaskDaysDueElementWdg, self).handle_td(td)
            
 
+    def get_text_value(self):
+        self.init_data()
+
+        sobject = self.get_current_sobject()
+        value = sobject.get_value(self.due_date_col)
+        if not value:
+            return "no date"
+
+        mode = self.mode
+        date_today = self.date_today
+        date_due = self.date_due
 
 
-    def get_display(my):
+        if mode == "critical":
+            days = abs((date_due - date_today).days)
+            msg = "%s Days Overdue" % (days)
+            if days == 0:
+                value = "Today"
+            elif days == 1:
+                value = "1 Day Overdue"
+            else:
+                value = msg
+        elif mode == "today":
+            value = "Today"
+        elif mode == "warning_1":
+            value = "< 2 Hours"
+        elif mode == "warning_2":
+            value = "< 1 Hour"
+        elif mode == "done":
+            value = ""
+        else:
+            days = abs((date_due - date_today).days)
+            if days == 1:
+                value = "1 Day"
+            else:
+                value = "%s Days" % days
 
-        my.init_data()
+        return value
+
+
+    def get_display(self):
+
+        sobject = self.get_current_sobject()
+        if not sobject:
+            search_key = self.kwargs.get("search_key")
+            sobject = Search.get_by_search_key(search_key)
+        else:
+            search_key = sobject.get_search_key()
+            self.kwargs['search_key'] = search_key
+
+        self.sobject = sobject
 
         div = DivWdg()
+        self.set_as_panel(div)
 
-        sobject = my.get_current_sobject()
-        value = sobject.get_value(my.due_date_col)
+        color, background = self.get_colors()
+        div.add_attr("spt_background" , background)
+        div.add_attr("spt_color", color)
+        div.add_class("spt_background")
+
+        #self.init_data()
+
+        value = sobject.get_value(self.due_date_col)
         if not value:
             div.add("<div style='margin: 0px auto; opacity: 0.3; text-align: center'>no date</div>")
             return div
 
         status = sobject.get_value("status")
 
-        mode = my.mode
-        diff = my.diff
-        DAY = my.DAY
-        HOUR = my.HOUR
+        mode = self.mode
+        diff = self.diff
+        date_today = self.date_today
+        date_due = self.date_due
+
+        self.add_value_update(div, sobject, self.due_date_col)
 
         if mode == "critical":
             div.add_style("color: #FFF")
-            days = diff/DAY
-            msg = "%s Days Overdue" % (-days)
+            days = abs((date_due - date_today).days)
+            msg = "%s Days Overdue" % (days)
             div.add_attr("title", msg)
-            if diff < 0 and diff >= -DAY:
+            if days == 0:
                 div.add("Today")
+            elif days == 1:
+                div.add("1 Day Overdue")
             else:
                 div.add(msg)
         elif mode == "today":
@@ -631,9 +743,9 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             pass
         else:
             div.add_style("color: #000")
-            days = diff/DAY
+            days = abs((date_due - date_today).days)
             div.add_attr("title", "Due in %s Day(s)" % days)
-            if diff > DAY and diff <= (DAY*2):
+            if days == 1:
                 div.add("1 Day")
             else:
                 div.add("%s Days" % days)

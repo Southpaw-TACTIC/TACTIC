@@ -28,43 +28,43 @@ class Transaction(Base):
 
     KEY = "Transaction:transaction"
 
-    def __init__(my):
-        my.counter = 0
-        my._reset()
-        my.command_class = ""
-        my.description = ""
-        my.title = ''
-        my.record_flag = True
-        my.sync_flag = True
+    def __init__(self):
+        self.counter = 0
+        self._reset()
+        self.command_class = ""
+        self.description = ""
+        self.title = ''
+        self.record_flag = True
+        self.sync_flag = True
 
 
-    def _reset(my):
-        my.counter = 0
-        my.transaction_objs = []
-        my.databases = {}
-        my.xml = Xml()
-        my.xml.create_doc("transaction")
-        my.transaction_log = None
-        my.change_timestamps = {}
-        my.description = ""
+    def _reset(self):
+        self.counter = 0
+        self.transaction_objs = []
+        self.databases = {}
+        self.xml = Xml()
+        self.xml.create_doc("transaction")
+        self.transaction_log = None
+        self.change_timestamps = {}
+        self.description = ""
 
-    def set_record(my, record_flag):
-        my.record_flag = record_flag
-
-
-    def set_sync(my, sync_flag):
-        my.sync_flag = sync_flag
+    def set_record(self, record_flag):
+        self.record_flag = record_flag
 
 
-    def get_xml(my):
-        return my.xml
+    def set_sync(self, sync_flag):
+        self.sync_flag = sync_flag
 
 
-    def get_change_timestamp(my, search_type, search_code, is_insert=False):
+    def get_xml(self):
+        return self.xml
+
+
+    def get_change_timestamp(self, search_type, search_code, is_insert=False):
 
         key = "%s|%s" % (search_type, search_code)
 
-        log = my.change_timestamps.get(key)
+        log = self.change_timestamps.get(key)
         if log != None:
             return log
 
@@ -87,83 +87,83 @@ class Transaction(Base):
             log.set_value("changed_on", changed_on)
             log.set_value("changed_by", changed_by)
 
-        my.change_timestamps[key] = log
+        self.change_timestamps[key] = log
 
         return log
 
 
-    def get_change_timestamps(my):
-        return my.change_timestamps
+    def get_change_timestamps(self):
+        return self.change_timestamps
 
 
 
 
 
-    def set_transaction(my, transaction_log):
-        #my.xml = transaction_log.get_xml_value("transaction")
+    def set_transaction(self, transaction_log):
+        #self.xml = transaction_log.get_xml_value("transaction")
 
         # We now start with a fresh transaction and then only append
         # on commit.
-        my.xml = Xml()
-        my.xml.read_string("<transaction/>")
-        my.transaction_log = transaction_log
+        self.xml = Xml()
+        self.xml.read_string("<transaction/>")
+        self.transaction_log = transaction_log
 
 
-    def set_description(my, description):
-        my.description = description
+    def set_description(self, description):
+        self.description = description
 
-    def add_description(my, description):
-        if my.description:
-            my.description += "\n%s" % description
+    def add_description(self, description):
+        if self.description:
+            self.description += "\n%s" % description
         else:
-            my.description += "%s" % description
+            self.description += "%s" % description
 
 
-    def set_title(my, title):
-        my.title = title
+    def set_title(self, title):
+        self.title = title
 
-    def set_command_class(my, command_class):
-        my.command_class = command_class
+    def set_command_class(self, command_class):
+        self.command_class = command_class
 
 
-    def is_in_transaction(my):
-        if my.counter == 0:
+    def is_in_transaction(self):
+        if self.counter == 0:
             return False
         else:
             return True
 
 
-    def start(my):
-        if my.counter == 0:
-            my._reset()
+    def start(self):
+        if self.counter == 0:
+            self._reset()
 
-        my.counter += 1
-        #if my.counter > 1:
+        self.counter += 1
+        #if self.counter > 1:
         #    raise Exception("counter > 1")
 
 
-    def commit_all(my):
-        my.counter = 1
-        my.commit()
+    def commit_all(self):
+        self.counter = 1
+        self.commit()
         
 
 
 
-    def commit(my):
-        my.counter -= 1
-        if my.counter < 0:
+    def commit(self):
+        self.counter -= 1
+        if self.counter < 0:
             print("Transaction counter below zero")
             raise TransactionException("Transaction counter below zero")
 
         # check if this is a nested transaction
-        if my.counter > 0:
+        if self.counter > 0:
             return
 
-        assert my.counter == 0
+        assert self.counter == 0
 
         # commit all of the transaction items
         from sql import SqlException
-        for transaction_obj in my.transaction_objs:
+        for transaction_obj in self.transaction_objs:
             try:
                 transaction_obj.commit()
             except SqlException:
@@ -171,34 +171,34 @@ class Transaction(Base):
 
         # check the number of nodes in the transaction.  If there are
         # no nodes, then nothing happened don't put this into the log
-        nodes = my.xml.get_nodes("transaction/*")
+        nodes = self.xml.get_nodes("transaction/*")
         if len(nodes) == 0:
-            my._reset()
+            self._reset()
             return
 
 
 
         # after committing all of the transaction items, commit this
         # transaction to the transaction log
-        if my.record_flag:
-            my.commit_log()
+        if self.record_flag:
+            self.commit_log()
 
 
         # reset the transaction
-        my._reset()
+        self._reset()
 
 
-    def abort(my):
-        return my.rollback()
+    def abort(self):
+        return self.rollback()
 
 
-    def rollback(my):
+    def rollback(self):
 
-        if my.counter <= 0:
+        if self.counter <= 0:
             raise TransactionException("Transaction start/rollback mismatch")
 
         # go through each transaction items and rollback
-        for transaction in my.transaction_objs:
+        for transaction in self.transaction_objs:
             transaction.rollback()
 
         # use the current ticket
@@ -211,73 +211,73 @@ class Transaction(Base):
         # Undo file system calls
         # TODO: should put this into a transaction object and register it
         # Do it manually here for now
-        xml = my.xml
+        xml = self.xml
         nodes = xml.get_nodes("transaction/file")
         nodes.reverse()
         for node in nodes:
             FileUndo.undo(node, ticket)
          
         # reset transaction and the counter
-        my._reset()
+        self._reset()
     
         # close connections, not sure if this is needed
         #from pyasm.search import DbContainer
         #DbContainer.close_session_sql()
 
 
-    def register(my, transaction_obj):
+    def register(self, transaction_obj):
         '''registers the transaction object.  Note a command can be a
         transaction object.'''
 
         # if we are not in transaction, don't bother
-        if my.counter == 0:
+        if self.counter == 0:
             return
 
         # for a command, this start functions doesn't really do anything
         transaction_obj.start()
-        my.transaction_objs.append(transaction_obj)
+        self.transaction_objs.append(transaction_obj)
 
 
 
-    def register_database(my, database):
+    def register_database(self, database):
         '''makes sure that the database is only in the transaction once'''
 
         # if we are not in transaction, don't bother
-        if my.counter == 0:
+        if self.counter == 0:
             return
 
         db_name = database.get_database_name()
 
         # if the database is listed, then ignore it
-        if my.databases.has_key(db_name):
+        if self.databases.has_key(db_name):
             return
 
         # start a transaction in the database
         database.start()
-        my.databases[db_name] = database
+        self.databases[db_name] = database
 
         # add it to the transactions
-        my.transaction_objs.append(database)
+        self.transaction_objs.append(database)
 
-    def get_databases(my):
-        return my.databases
+    def get_databases(self):
+        return self.databases
 
-    def get_database(my, db_name):
-        return my.databases.get(db_name)
+    def get_database(self, db_name):
+        return self.databases.get(db_name)
 
 
     # logging functions for transactionss
     # Any action that occurs to the system should get recorded here
-    def get_transaction_log(my):
-        return my.xml
+    def get_transaction_log(self):
+        return self.xml
 
-    def get_transaction_log_sobj(my):
-        return my.transaction_log
+    def get_transaction_log_sobj(self):
+        return self.transaction_log
 
 
-    def get_file_log(my):
+    def get_file_log(self):
         '''get only the file logs'''
-        xml = my.get_transaction_log()
+        xml = self.get_transaction_log()
         file_nodes = xml.get_nodes("transaction/file")
 
         # create a new document
@@ -294,26 +294,26 @@ class Transaction(Base):
 
 
 
-    def create_log_node(my,node_name):
-        root = my.xml.get_root_node()
-        node = my.xml.create_element(node_name)
-        my.xml.append_child(root, node)
+    def create_log_node(self,node_name):
+        root = self.xml.get_root_node()
+        node = self.xml.create_element(node_name)
+        self.xml.append_child(root, node)
         return node
 
 
-    def commit_log(my):
+    def commit_log(self):
 
-        if not my.description:
-            my.description = "No description available"
+        if not self.description:
+            self.description = "No description available"
 
         # if there is a command class, check that is undoable, otherwise
         # it is by default undoable
-        if my.command_class:
-            module, class_name = Common.breakup_class_path(my.command_class)
+        if self.command_class:
+            module, class_name = Common.breakup_class_path(self.command_class)
 
             try:
                 exec("import %s" % module)
-                is_undoable = eval( "%s.is_undoable()" % my.command_class )
+                is_undoable = eval( "%s.is_undoable()" % self.command_class )
                 if not is_undoable:
                     return
             except AttributeError:
@@ -321,14 +321,14 @@ class Transaction(Base):
                 pass
 
 
-        xml_string = my.xml.to_string()
+        xml_string = self.xml.to_string()
 
         xml_lib = Xml.get_xml_library()
 
         string_append = True
-        if string_append and my.transaction_log:
+        if string_append and self.transaction_log:
             # append the value instead
-            old_value = my.transaction_log.get_value("transaction")
+            old_value = self.transaction_log.get_value("transaction")
             if old_value == '<transaction/>':
                 old_lines = []
             else:
@@ -362,31 +362,31 @@ class Transaction(Base):
  
             new_value = '\n'.join(new_lines)
 
-            my.transaction_log.set_value("transaction", new_value )
-            my.transaction_log.set_value("description", my.description)
-            my.transaction_log.commit()
+            self.transaction_log.set_value("transaction", new_value )
+            self.transaction_log.set_value("description", self.description)
+            self.transaction_log.commit()
 
-        elif my.transaction_log:
-            my.transaction_log.set_value("transaction", xml_string )
-            my.transaction_log.set_value("description", my.description)
-            my.transaction_log.commit()
+        elif self.transaction_log:
+            self.transaction_log.set_value("transaction", xml_string )
+            self.transaction_log.set_value("description", self.description)
+            self.transaction_log.commit()
         else:
             from transaction_log import TransactionLog
-            my.transaction_log = TransactionLog.create( \
-                my.command_class, xml_string, my.description, my.title )
+            self.transaction_log = TransactionLog.create( \
+                self.command_class, xml_string, self.description, self.title )
 
 
         # update the change_timestamp logs
-        my.update_change_timestamps(my.transaction_log)
+        self.update_change_timestamps(self.transaction_log)
 
         # add remote sync registration
-        if my.sync_flag:
-            my.transaction_log.trigger_remote_sync()
+        if self.sync_flag:
+            self.transaction_log.trigger_remote_sync()
 
-        return my.transaction_log
+        return self.transaction_log
 
 
-    def update_change_timestamps(my, transaction_log):
+    def update_change_timestamps(self, transaction_log):
 
         # commit all of the changes logs
 	    # NOTE: this does not get executed on undo/redo
@@ -407,10 +407,11 @@ class Transaction(Base):
         code = transaction_log.get_value("code")
 
         from pyasm.biz import Project
+        from pyasm.security import Site
         from pyasm.search import Search
         project_code = Project.get_project_code()
 
-        for key, change_timestamp in my.change_timestamps.items():
+        for key, change_timestamp in self.change_timestamps.items():
             new_changed_on = change_timestamp.get_json_value("changed_on", {})
 
             search_type = change_timestamp.get_value("search_type")
@@ -439,25 +440,27 @@ class Transaction(Base):
             # was created in another transaction
             from pyasm.search import SqlException, DbContainer
             try:
-                change_timestamp.commit(triggers="none", log_transaction=False, cache=False)
-            except SqlException, e:
-                print "WARNING: ", str(e)
+                # triggers are "ingest" which basically runs nothing execpt the
+                # update
+                change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
+            except SqlException as e:
+                print("WARNING: ", str(e))
                 if change_timestamp.is_insert:
                     action = "insert"
                 else:
                     action = "update"
-                print "Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code)
+                print("Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code))
                 DbContainer.commit_thread_sql()
 
 
 
 
 
-    def commit_file_log(my):
-        xml_string = my.get_file_log().to_string()
+    def commit_file_log(self):
+        xml_string = self.get_file_log().to_string()
         from transaction_log import TransactionLog
         transaction_log = TransactionLog.create( \
-            my.command_class, xml_string, my.description, my.title )
+            self.command_class, xml_string, self.description, self.title )
         return transaction_log
 
 
@@ -584,8 +587,8 @@ class FileUndo:
         if os.path.exists(src):
             try:
                 os.rmdir(src)
-            except Exception, e:
-                print "WARNING: could not remove [%s]" % src
+            except Exception as e:
+                print("WARNING: could not remove [%s]" % src)
         FileUndo._add_to_transaction_log("rmdir", src, "")
  
     rmdir = staticmethod(rmdir)
@@ -757,7 +760,7 @@ class FileUndo:
             try:
                 os.symlink(rel,dst)
             except Exception:
-                print "Error: could not symlink [%s] to [%s]" % (rel, dst)
+                print("Error: could not symlink [%s] to [%s]" % (rel, dst))
                 raise 
 
         # all file links need to be relative
@@ -868,7 +871,7 @@ class FileUndo:
                     else:
                         shutil.move(src, "%s" % tmp_dir )
 
-                except Exception, e:
+                except Exception as e:
                     # if there are any errors in moving to cache, then
                     # just delete the files
                     if os.path.exists(src):
@@ -876,8 +879,8 @@ class FileUndo:
                             shutil.rmtree(src)
                         else:
                             os.unlink(src)
-                        print "Error: ", e.args[0].encode('utf-8','ignore')
-                        print "Error moving [%s] to cache directory in [%s] failed. Removed repository files" % (src, tmp_dir)
+                        print("Error: ", e.args[0].encode('utf-8','ignore'))
+                        print("Error moving [%s] to cache directory in [%s] failed. Removed repository files" % (src, tmp_dir))
 
                 # attempt to remove directories
                 last_dir = None
@@ -932,7 +935,7 @@ class FileUndo:
                         try:
                             rel = Common.relative_path(dst, prev)
                             os.symlink(rel, dst)
-                        except Exception, e:
+                        except Exception as e:
                             raise IOError(str(e))
 
 
@@ -941,8 +944,8 @@ class FileUndo:
             print("Failed to undo %s %s" % (type, src))
         except OSError, e:
             raise TransactionException("Failed to undo due to OS Error during %s. %s" % (type, e.__str__()))
-        except Exception, e:
-            print "Error: %s" %e
+        except Exception as e:
+            print("Error: %s" %e)
             raise
 
     undo = staticmethod(undo)
@@ -1008,7 +1011,7 @@ class FileUndo:
 
 
             if not os.path.exists(orig):
-                print "WARNING: cannot find file [%s]" % orig
+                print("WARNING: cannot find file [%s]" % orig)
 
             if not os.path.exists(src_dir):
                 os.makedirs(src_dir)
@@ -1054,7 +1057,7 @@ class FileUndo:
 
                     os.symlink(rel,dst)
                 except Exception:
-                    print "Error: could not symlink [%s] to [%s]" % (rel, dst)
+                    print("Error: could not symlink [%s] to [%s]" % (rel, dst))
                     raise 
 
 
@@ -1070,7 +1073,7 @@ class TableUndo(Base):
         # build the sobject xml action description
         transaction = Transaction.get()
         if not transaction:
-            print "WARNING: no transaction found"
+            print("WARNING: no transaction found")
             return
 
         sobject_node = transaction.create_log_node("table")
@@ -1085,7 +1088,7 @@ class TableUndo(Base):
         column_info = SearchType.get_column_info(search_type)
         xml = transaction.get_xml()
 
-        #print "column_info: ", column_info
+        #print("column_info: ", column_info)
         #column_info:  {u'code': {'data_type': 'varchar', 'nullable': True}, u'description': {'data_type': 'text', 'nullable': True}, u'timestamp': {'data_type': 'timestamp', 'nullable': True}, u's_status': {'data_type': 'varchar', 'nullable': True}, u'keywords': {'data_type': 'text', 'nullable': True}, u'login': {'data_type': 'varchar', 'nullable': True}, u'id': {'data_type': 'integer', 'nullable': False}, u'name': {'data_type': 'varchar', 'nullable': True}}
         for column, data in column_info.items():
             column_node = xml.create_element("column")
@@ -1164,8 +1167,8 @@ class TableUndo(Base):
             dumper = TableSchemaDumper(search_type)
             try:
                 dumper.dump_to_tactic(path=schema_path)
-            except SqlException, e:
-                print "SqlException: ", e
+            except SqlException as e:
+                print("SqlException: ", e)
         
             # dump the table data to a file and store it in cache
             from sql_dumper import TableDataDumper
@@ -1173,8 +1176,8 @@ class TableUndo(Base):
             dumper.set_info(table)
             try:
                 dumper.execute()
-            except SqlException, e:
-                print "SqlException: ", e
+            except SqlException as e:
+                print("SqlException: ", e)
 
             #cmd = "pg_dump -h %s -U %s -t %s %s > %s" % \
             #    (host, user, table, database, schema_path)
@@ -1182,15 +1185,15 @@ class TableUndo(Base):
 
             sql.do_update('DROP TABLE "%s"' % table)
 
-        except SqlException, e:
+        except SqlException as e:
             # This means that the table did not exist, DROP TABLE failed.
             # if there is an sql exception, Note it, but continue.  The
             # undo must complete.
             # TODO: should put this in an error log
-            print "SqlException: ", e
+            print("SqlException: ", e)
 
-        except TransactionException, e:
-            print "Failed to undo '%s' '%s'" % (database, table)
+        except TransactionException as e:
+            print("Failed to undo '%s' '%s'" % (database, table))
 
     undo = staticmethod(undo)
 
@@ -1259,17 +1262,17 @@ class TableUndo(Base):
 
 
             except IOError, e:
-                 print "ERROR: ", str(e)
+                 print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             """
 
 
-            #except SqlException, e:
-            #     print "Database ERROR:", str(e)
+            #except SqlException as e:
+            #     print("Database ERROR:", str(e))
         
-        except TransactionException, e:
+        except TransactionException as e:
             print("Failed to redo '%s' '%s'" % (database, table_name))
-            print "Error: ", e
+            print("Error: ", e)
 
     redo = staticmethod(redo)
 
@@ -1337,10 +1340,10 @@ class TableDropUndo(Base):
                  if seq_max:
                      SearchType.sequence_setval(search_type, seq_max)
             except IOError, e:
-                 print "ERROR: ", str(e)
+                 print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
-            except SqlException, e:
-                 print "Database ERROR:", str(e)
+            except SqlException as e:
+                 print("Database ERROR:", str(e))
 
          
             # need to keep it around
@@ -1387,21 +1390,21 @@ class TableDropUndo(Base):
             dumper = TableSchemaDumper(search_type)
             try:
                 dumper.dump_to_tactic(path=schema_path)
-            except SqlException, e:
-                print "SqlException: ", e
+            except SqlException as e:
+                print("SqlException: ", e)
            
 
             sql.do_update('DROP TABLE "%s"' % table)
 
-        except SqlException, e:
+        except SqlException as e:
             # This means that the table did not exist, DROP TABLE failed.
             # if there is an sql exception, Note it, but continue.  The
             # undo must complete.
             # TODO: should put this in an error log
-            print "SqlException: ", e
+            print("SqlException: ", e)
 
-        except TransactionException, e:
-            print "Failed to redo '%s' '%s'" % (database, table)
+        except TransactionException as e:
+            print("Failed to redo '%s' '%s'" % (database, table))
     redo = staticmethod(redo)
 
 
@@ -1537,8 +1540,8 @@ class AlterTableUndo(Base):
 
         except TransactionException:
             print("Failed to add column '%s.%s'" % (table, column))
-        except Exception, e:
-            print "Error: [%s]" % e.__str__()
+        except Exception as e:
+            print("Error: [%s]" % e.__str__())
             if statement:
                 print("Failed to execute: %s in [%s]" % (statement, database))
             raise
@@ -1571,7 +1574,7 @@ class AlterTableUndo(Base):
 
         except TransactionException:
             print("Failed to drop column '%s.%s'" % (table, column))
-        except Exception, e:
+        except Exception as e:
             print(e.__str__())
             if statement:
                 print("Failed to execute: %s" % statement)
@@ -1610,7 +1613,7 @@ class AlterTableUndo(Base):
 
         except TransactionException:
             print("Failed to modify column '%s.%s'" % (table, column))
-        except Exception, e:
+        except Exception as e:
             print(e.__str__())
             print("Failed to execute sql.modify_column()")
 

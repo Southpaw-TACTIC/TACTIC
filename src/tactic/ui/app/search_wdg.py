@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["SearchWdg","SearchBoxPopupWdg", "LocalSearchWdg", "SaveSearchCbk"]
+__all__ = ["SearchWdg","SearchBoxPopupWdg", "LocalSearchWdg", "SaveSearchCbk","LoadSearchWdg"]
 
 import os, types
 
@@ -21,15 +21,15 @@ from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, TextWdg, Butt
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import RoundedCornerDivWdg, PopupWdg, HorizLayoutWdg
 from tactic.ui.filter import FilterData
-from tactic.ui.widget import TextBtnSetWdg
-from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.widget import TextBtnSetWdg, ActionButtonWdg
+from tactic.ui.input import TextInputWdg
 
 #from search_limit_wdg import SearchLimitWdg
 
 
 class SearchBoxPopupWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         '''External settings which populate the widget.  There are 3 ways to
         define which searches exist.
             1) specify the filters, 
@@ -44,33 +44,33 @@ class SearchBoxPopupWdg(BaseRefreshWdg):
             'state': 'the surrounding state'
         }
 
-    def init(my):
-        my.search_type = my.kwargs.get('search_type')
-        my.search_view = my.kwargs.get('view')
-        my.custom_filter_view = my.kwargs.get('custom_filter_view')
-        my.parent_key  = my.kwargs.get('parent_key')
-        my.filter  = my.kwargs.get('filter')
-        my.state  = my.kwargs.get('state')
+    def init(self):
+        self.search_type = self.kwargs.get('search_type')
+        self.search_view = self.kwargs.get('view')
+        self.custom_filter_view = self.kwargs.get('custom_filter_view')
+        self.parent_key  = self.kwargs.get('parent_key')
+        self.filter  = self.kwargs.get('filter')
+        self.state  = self.kwargs.get('state')
         
-        my.state = BaseRefreshWdg.process_state(my.state)
+        self.state = BaseRefreshWdg.process_state(self.state)
 
-        my.search_wdg = SearchWdg(search_type=my.search_type, view=my.search_view, parent_key=my.parent_key, display=True, filter=my.filter, custom_filter_view=my.custom_filter_view, state=my.state)
-        my.search = my.search_wdg.get_search()
+        self.search_wdg = SearchWdg(search_type=self.search_type, view=self.search_view, parent_key=self.parent_key, display=True, filter=self.filter, custom_filter_view=self.custom_filter_view, state=self.state)
+        self.search = self.search_wdg.get_search()
 
-    def get_search(my):
-        return my.search
+    def get_search(self):
+        return self.search
 
 
-    def get_display(my):
+    def get_display(self):
         sbox_popup_id = 'SearchBoxPopupWdg'
 
         search_container = DivWdg()
         search_container.set_id( "%s_search" % sbox_popup_id)
         search_container.add_style("display", "block")
-        search_container.set_attr("spt_search_type", my.search_type)
-        search_container.set_attr("spt_search_view", my.search_view)
+        search_container.set_attr("spt_search_type", self.search_type)
+        search_container.set_attr("spt_search_view", self.search_view)
 
-        search_container.add(my.search_wdg)
+        search_container.add(self.search_wdg)
 
         sbox_popup = PopupWdg(id=sbox_popup_id, allow_page_activity=True, width="720px")
         sbox_popup.add("TACTIC Search Box Window", "title")
@@ -84,7 +84,7 @@ class SearchBoxPopupWdg(BaseRefreshWdg):
 
 class SearchWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         '''External settings which populate the widget.  There are 3 ways to
         define which searches exist.
             1) specify the filters, 
@@ -111,8 +111,8 @@ class SearchWdg(BaseRefreshWdg):
 
 
 
-    def get_default_filter_config(my):
-        custom_filter_view = my.kwargs.get('custom_filter_view')
+    def get_default_filter_config(self):
+        custom_filter_view = self.kwargs.get('custom_filter_view')
 
         if not custom_filter_view:
             custom_filter_view=''
@@ -122,13 +122,13 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<filter>\n")
 
         config.append('''
-        <element name='Combination'>
+        <element name='Keywords'>
           <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
             <search_type>%s</search_type>
             <prefix>quick</prefix>
           </display>
         </element>
-        ''' % my.search_type)
+        ''' % self.search_type)
 
         config.append('''
         <element name='Custom'>
@@ -139,7 +139,7 @@ class SearchWdg(BaseRefreshWdg):
             <custom_filter_view>%s</custom_filter_view>
           </display>
         </element>
-        ''' % (my.search_type, custom_filter_view) )
+        ''' % (self.search_type, custom_filter_view) )
 
 
         config.append('''
@@ -150,7 +150,7 @@ class SearchWdg(BaseRefreshWdg):
              <mode>sobject</mode>
            </display>
         </element>
-        ''' % my.search_type)
+        ''' % self.search_type)
 
         """
         config.append('''
@@ -161,10 +161,10 @@ class SearchWdg(BaseRefreshWdg):
              <mode>sobject</mode>
            </display>
         </element>
-        ''' % my.search_type)
+        ''' % self.search_type)
         """
 
-
+        """
         config.append('''
         <element name='Parent'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
@@ -173,18 +173,19 @@ class SearchWdg(BaseRefreshWdg):
             <mode>parent</mode>
           </display>
         </element>
-        ''' % my.search_type)
+        ''' % self.search_type)
+        """
 
 
         config.append('''
-        <element name='Children'>
+        <element name='Related'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
             <prefix>children</prefix>
             <search_type>%s</search_type>
             <mode>child</mode>
           </display>
         </element>
-        ''' % my.search_type)
+        ''' % self.search_type)
 
 
         """
@@ -196,7 +197,7 @@ class SearchWdg(BaseRefreshWdg):
             <mode>child</mode>
           </display>
         </element>
-        ''' % my.search_type)
+        ''' % self.search_type)
         """
 
 
@@ -213,55 +214,55 @@ class SearchWdg(BaseRefreshWdg):
         return config
 
 
-    def get_num_filters_enabled(my):
-        return my.num_filters_enabled
+    def get_num_filters_enabled(self):
+        return self.num_filters_enabled
 
 
-    def init(my):
+    def init(self):
 
-        my.user_override = my.kwargs.get('user_override') in ['true', True]
+        self.user_override = self.kwargs.get('user_override') in ['true', True]
 
-        custom_search_view = my.kwargs.get('custom_search_view')
+        custom_search_view = self.kwargs.get('custom_search_view')
         if not custom_search_view or not custom_search_view.strip():
             custom_search_view = 'search'
 
         # create a search for this search widget
-        my.search_type = my.kwargs.get('search_type')
+        self.search_type = self.kwargs.get('search_type')
 
-        my.search = my.kwargs.get("search")
-        if not my.search:
-            my.search = Search(my.search_type)
-        my.config = None
+        self.search = self.kwargs.get("search")
+        if not self.search:
+            self.search = Search(self.search_type)
+        self.config = None
 
         # determine whether or not to use the last search.  If any kind of
         # state has been set, then ignore the last_search
-        my.use_last_search = True
-        parent_key = my.kwargs.get('parent_key')
-        state = my.kwargs.get('state')
-        if parent_key or state or my.kwargs.get('use_last_search') in [False, 'false']:
-            my.use_last_search = False
+        self.use_last_search = True
+        parent_key = self.kwargs.get('parent_key')
+        state = self.kwargs.get('state')
+        if parent_key or state or self.kwargs.get('use_last_search') in [False, 'false']:
+            self.use_last_search = False
        
-        my.prefix_namespace = my.kwargs.get('prefix_namespace')
+        self.prefix_namespace = self.kwargs.get('prefix_namespace')
 
 
         # NOTE: this is still hard coded
-        my.prefix = 'main_body'
+        self.prefix = 'main_body'
         # if we are asking for a specific saved search
-        save = my.kwargs.get('save')
+        save = self.kwargs.get('save')
 
 
-        my.view = my.kwargs.get('view')
+        self.view = self.kwargs.get('view')
 
         # get the config from a specific location
 
         # if the view is specified, use this view with the values
         # specified explicitly in this view
-        my.config = None
+        self.config = None
 
         # see if a filter is explicitly passed in
-        filter = my.kwargs.get('filter')
-        my.limit = my.kwargs.get('limit')
-        my.run_search_bvr = my.kwargs.get('run_search_bvr')
+        filter = self.kwargs.get('filter')
+        self.limit = self.kwargs.get('limit')
+        self.run_search_bvr = self.kwargs.get('run_search_bvr')
 
         # get from search view
      
@@ -269,11 +270,11 @@ class SearchWdg(BaseRefreshWdg):
         # xml(filter wdg definition)
         if filter:
             if type(filter) == types.DictType:
-                my.config = my.get_default_filter_config()
+                self.config = self.get_default_filter_config()
                 filter_data = FilterData([filter])
                 filter_data.set_to_cgi()
             elif type(filter) == types.ListType:
-                my.config = my.get_default_filter_config()
+                self.config = self.get_default_filter_config()
                 filter_data = FilterData(filter)
                 filter_data.set_to_cgi()
         
@@ -283,126 +284,132 @@ class SearchWdg(BaseRefreshWdg):
                     filter_data = None
 
                     # TODO: remove this. This is for backward compatibilty
-                    my.config = WidgetConfig.get(xml=filter, view='filter')
+                    self.config = WidgetConfig.get(xml=filter, view='filter')
                     filter_data = FilterData.get()
                     if not filter_data.get_data():
                         # use widget settings
-                        key = SearchWdg._get_key(my.search_type, my.view)
+                        key = SearchWdg._get_key(self.search_type, self.view)
 
                         data = WidgetSettings.get_value_by_key(key)
                         if data:
                             filter_data = FilterData(data)
                         filter_data.set_to_cgi()
 
-                except XmlException, e:
-                    print "WARNING: non-xml filter detected!! %s" %filter
+                except XmlException as e:
+                    print("WARNING: non-xml filter detected!!")
 
         
         # NOTE: this is only used to maintain backwards compatibility
         # plus it is needed for link_search: which contains the filter_config (old way of doing it)
-        if not my.config:# and my.view:
+        if not self.config:# and self.view:
             """
-            if ':' in my.view: # avoid view of a SearchWdg like link_search:<search_type>:<view>
+            if ':' in self.view: # avoid view of a SearchWdg like link_search:<search_type>:<view>
                 search_view = custom_search_view
             else:
-                search_view = my.view
+                search_view = self.view
             """
             search_view = custom_search_view
-            config_view = WidgetConfigView.get_by_search_type(my.search_type, view=search_view)
-            # get the my.config first for the display of SearchWdg
+            config_view = WidgetConfigView.get_by_search_type(self.search_type, view=search_view)
+            # get the self.config first for the display of SearchWdg
             # then get the filter data below if there is any
             if config_view.get_config().has_view(search_view):
-                my.config = config_view.get_config()   
+                self.config = config_view.get_config()   
 
             try:
                 search = Search('config/widget_config')
-                search.add_filter("view", my.view)
-                search.add_filter("search_type", my.search_type)
-                config_sobj = search.get_sobject()
-            except SearchException, e:
-                print "WARNING: ", e
+                search.add_filter("view", self.view)
+                search.add_filter("search_type", self.search_type)
+                config_sobjs = search.get_sobjects()
+                from pyasm.search import WidgetDbConfig
+                config_sobj = WidgetDbConfig.merge_configs(config_sobjs)
+                #config_sobj = config_sobjs[0]
+            except SearchException as e:
+                print("WARNING: ", e)
                 config_sobj = None
 
 
             if config_sobj:
                 config_xml = config_sobj.get_xml_value("config")
 
-                if not config_view.get_config().has_view(my.view):
+                if not config_view.get_config().has_view(self.view):
                     # make sure it does have the old way of storing filter
                     # elements instead of just filter data
                     if config_xml.get_nodes("config/filter/element"):
-                        my.config = WidgetConfig.get(xml=config_xml, view='filter')
+                        self.config = WidgetConfig.get(xml=config_xml, view='filter')
                     
-                #my.config = my.get_default_filter_config()
+                #self.config = self.get_default_filter_config()
 
                 # set the form variables for the filters
                 data = config_xml.get_value("config/filter/values")
                 # link_search with specific search params takes precesdence
                 # TODO: make a distinction between search definition and alter
                 # search data provided by user
-                if data and not my.user_override:
+                if data and not self.user_override:
                     filter_data = FilterData(data)
                     filter_data.set_to_cgi()
                 else:    
-                    my.set_filter_data(my.search_type, my.view)
+                    self.set_filter_data(self.search_type, self.view)
 
             else:
-                if my.use_last_search: 
-                    my.set_filter_data(my.search_type, my.view)
-        if not my.config:
+                if self.use_last_search: 
+                    self.set_filter_data(self.search_type, self.view)
+        if not self.config:
             # get the approprate filter definition
-            my.config = my.get_default_filter_config()
-            if my.use_last_search: 
-                my.set_filter_data(my.search_type, my.view)
+            self.config = self.get_default_filter_config()
+            if self.use_last_search: 
+                self.set_filter_data(self.search_type, self.view)
 
 
-        if not my.config:
+        if not self.config:
             return
 
 
-        my.num_filters_enabled = 0
+        self.num_filters_enabled = 0
 
         # create the filters
-        my.filters = []
+        self.filters = []
         security = Environment.get_security()
-        for element_name in my.config.get_element_names():
-            filter = my.config.get_display_widget(element_name)
+        element_names = self.config.get_element_names()
+        #element_names = ["Keywords", "Related"]
+
+        for element_name in element_names:
+            filter = self.config.get_display_widget(element_name)
 
             if filter and filter.is_visible():
-                my.filters.append(filter)
+                self.filters.append(filter)
 
         # make sure there is at least one filter defined
-        #assert my.filters
+        #assert self.filters
 
         # just for drawing purpose
-        if my.kwargs.get('skip_search') == True:
+        if self.kwargs.get('skip_search') == True:
             return
 
         try:
-            my.alter_search()
-            my.set_persistent_value()
+            self.alter_search()
+            self.set_persistent_value()
 
-        except SearchInputException, e:
-            my.clear_search_data(my.search_type)
-            raise SearchInputException("%s If this problem persists, this view may contain invalid data in &lt; values &gt;. Clean up the data in Widget Config for the view [%s]."%( e.__str__(), my.view)) 
+        except SearchInputException as e:
+            self.clear_search_data(self.search_type)
+            raise SearchInputException("%s If this problem persists, this view may contain invalid data in &lt; values &gt;. Clean up the data in Widget Config for the view [%s]."%( e.__str__(), self.view)) 
         except:
-            my.clear_search_data(my.search_type)
+            self.clear_search_data(self.search_type)
             raise
         
             
      
 
-    def set_persistent_value(my):
+    def set_persistent_value(self):
         filter_data = FilterData.get_from_cgi()
 
         json = filter_data.serialize()
         # use widget settings instead
         # Using solely TableLayoutWdg will result in having no search view
-        if my.view:
-            key = SearchWdg._get_key(my.search_type, my.view)
+        if self.view:
+            key = SearchWdg._get_key(self.search_type, self.view)
             WidgetSettings.set_value_by_key(key, json)
         #value = WidgetSettings.get_value_by_key(key)
-        #print "value: ", value
+        #print("value: ", value)
         return
 
 
@@ -426,17 +433,17 @@ class SearchWdg(BaseRefreshWdg):
     get_last_filter_config = staticmethod(get_last_filter_config)
 
 
-    def get_search(my):
-        return my.search
+    def get_search(self):
+        return self.search
 
 
-    def alter_search(my, search=None):
+    def alter_search(self, search=None):
 
         if not search:
-            search = my.search
-            if my.limit:
+            search = self.search
+            if self.limit:
                 try:
-                    limit = int(my.limit)
+                    limit = int(self.limit)
                 except ValueError:
                     limit = 50
             else:
@@ -446,16 +453,16 @@ class SearchWdg(BaseRefreshWdg):
        
 
         # if a parent key was added
-        parent_key = my.kwargs.get('parent_key')
+        parent_key = self.kwargs.get('parent_key')
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search.add_parent_filter(parent)
 
-        my.state = my.kwargs.get('state')
-        my.state = BaseRefreshWdg.process_state(my.state)
+        self.state = self.kwargs.get('state')
+        self.state = BaseRefreshWdg.process_state(self.state)
         
-        if my.state:
-            parent_type = my.state.get('parent_type')
+        if self.state:
+            parent_type = self.state.get('parent_type')
             if parent_type:
                 search.add_filter("search_type", parent_type)
 
@@ -466,8 +473,8 @@ class SearchWdg(BaseRefreshWdg):
         data = filter_data.get_data()
         filter_mode = None
         prefix = "filter_mode"
-        if my.prefix_namespace:
-            prefix = '%s_%s' %(my.prefix_namespace, prefix)
+        if self.prefix_namespace:
+            prefix = '%s_%s' %(self.prefix_namespace, prefix)
         values = FilterData.get().get_values_by_index(prefix, 0)
         
         if values:
@@ -480,36 +487,39 @@ class SearchWdg(BaseRefreshWdg):
         search.set_show_retired(show_retired)
 
         # add all the filters
-        for filter in my.filters:
+        for filter in self.filters:
             filter.set_filter_mode(filter_mode)
-            filter.set_state(my.state)
+            filter.set_state(self.state)
             filter.alter_search(search)
 
-            my.num_filters_enabled += filter.get_num_filters_enabled()
+            self.num_filters_enabled += filter.get_num_filters_enabled()
 
 
-    def set_as_panel(my, widget):
+    def set_as_panel(self, widget):
         widget.add_class("spt_panel")
 
-        widget.add_attr("spt_class_name", Common.get_full_class_name(my) )
+        widget.add_attr("spt_class_name", Common.get_full_class_name(self) )
 
-        for name, value in my.kwargs.items():
+        for name, value in self.kwargs.items():
             widget.add_attr("spt_%s" % name, value)
 
 
-    def get_display(my):
+    def get_display(self):
         # if no filters are defined, then display nothing
-        if not my.filters:
+        if not self.filters:
             return Widget()
 
-        #filter_top = DivWdg(css="maq_search_bar")
+        top = self.top
+        top.add_class("spt_search_top")
+
         filter_top = DivWdg()
+        top.add(filter_top)
         filter_top.add_color("color", "color")
         filter_top.add_color("background", "background", -5)
         filter_top.add_style("padding: 5px")
         filter_top.add_style("min-width: 800px")
         filter_top.add_border()
-        my.set_as_panel(filter_top)
+        self.set_as_panel(filter_top)
 
 
         # TEST link to help for search widget
@@ -526,20 +536,17 @@ class SearchWdg(BaseRefreshWdg):
 
 
         # this id should be removed
-        filter_top.set_id("%s_search" % my.prefix)
+        filter_top.set_id("%s_search" % self.prefix)
         filter_top.add_class("spt_search")
 
 
-        for name, value in my.kwargs.items():
+        for name, value in self.kwargs.items():
             filter_top.set_attr("spt_%s" % name, value)
 
-        #filter_top.add(my.statement)
-        popup = my.get_retrieve_wdg()
-        filter_top.add(popup)
-        popup = my.get_save_wdg()
-        filter_top.add(popup)
 
-        display = my.kwargs.get('display')
+
+
+        display = self.kwargs.get('display')
        
 
         # Add a number of filters indicator
@@ -551,8 +558,8 @@ class SearchWdg(BaseRefreshWdg):
         #search_summary.add(div)
         filter_top.add(div)
 
-        if my.num_filters_enabled:
-            msg = "[%s] filter/s" % my.num_filters_enabled
+        if self.num_filters_enabled:
+            msg = "[%s] filter/s" % self.num_filters_enabled
             icon = IconWdg(msg, IconWdg.DOT_GREEN)
             div.add(icon)
             div.add("%s" % msg)
@@ -565,7 +572,7 @@ class SearchWdg(BaseRefreshWdg):
 
         # TODO: disabling for now
         # add the action buttons
-        #action_wdg =  my.get_action_wdg()
+        #action_wdg =  self.get_action_wdg()
         #action_wdg.add_style("text-align: right")
         #filter_div.add( action_wdg )
         # add the top
@@ -574,11 +581,11 @@ class SearchWdg(BaseRefreshWdg):
             display_str = 'none'
         filter_div.add_style("display: %s" % display_str)
 
-        search_wdg = my.get_search_wdg()
+        search_wdg = self.get_search_wdg()
 
         prefix = "filter_mode"
-        if my.prefix_namespace:
-            prefix = '%s_%s' %(my.prefix_namespace, prefix)
+        if self.prefix_namespace:
+            prefix = '%s_%s' %(self.prefix_namespace, prefix)
         hidden = HiddenWdg("prefix", prefix)
 
         match_div = DivWdg()
@@ -597,7 +604,7 @@ class SearchWdg(BaseRefreshWdg):
         select.set_persist_on_submit(prefix)
         select.remove_empty_option() 
         # for Local search, leave out compound search for now
-        if my.kwargs.get('prefix_namespace'):
+        if self.kwargs.get('prefix_namespace'):
             select.set_option("labels", "Match all|Match any")
             select.set_option("values", "and|or")
         else:
@@ -655,14 +662,14 @@ class SearchWdg(BaseRefreshWdg):
         security = Environment.get_security()
 
         # add all the filters
-        for filter in my.filters:
+        for filter in self.filters:
             element_name = filter.get_name()
 
             if not security.check_access("search", element_name, "view"):
                 continue
 
             # no need to create it again    
-            #filter = my.config.get_display_widget(element_name)
+            #filter = self.config.get_display_widget(element_name)
             div = DivWdg()
             filters_div.add(div)
 
@@ -680,7 +687,7 @@ class SearchWdg(BaseRefreshWdg):
 
             div.add_border()
             div.add_style("padding: 8px 5px")
-            div.add_style("whitespace: nowrap")
+            div.add_style("white-space: nowrap")
 
             
             if element_name in ["Parent", 'Children']:
@@ -719,7 +726,7 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         buttons_div.add_style("margin-top: 7px")
         buttons_div.add_style("margin-bottom: 7px")
-        search_wdg = my.get_search_wdg()
+        search_wdg = self.get_search_wdg()
         search_wdg.add_style("margin: 15px auto")
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
@@ -727,71 +734,14 @@ class SearchWdg(BaseRefreshWdg):
 
         filter_top.add(filter_div)
 
-        return filter_top
-
-
-    def get_retrieve_wdg(my):
-
-        # add the popup
-        popup = PopupWdg(id='retrieve_search_wdg')
-        popup.add("Retrieve Saved Search", "title")
-
-        div = DivWdg()
-        div.add("List of Saved Searches: ")
-        div.add(HtmlElement.br(2))
-        
-        try:
-            search = Search("config/widget_config")
-            search.add_where("\"view\" like 'saved_search:%'")
-            search.add_filter("search_type", my.search_type)
-            configs = search.get_sobjects()
-        except SearchException, e:
-            print "WARNING: ", e
-            configs = []
-        except:
-            my.clear_search_data(my.search_type)
-            raise
-        views = SObject.get_values(configs, "view")
-
-        select = SelectWdg("saved_search")
-        select.set_id("saved_search")
-        select.add_empty_option("-- Select --")
-        #select.set_option("query", "config/widget_config|view|view")
-        select.set_option("values", views)
-        #select.set_option("query_filter", "\"view\" like 'saved_search:%'")
-        div.add(select)
-
-        retrieve_button = ButtonWdg("Retrieve Search")
-        behavior = {
-            'type':         'click',
-            'cbjs_action':  'spt.dg_table.retrieve_search_cbk(evt, bvr);'
-        }
-        retrieve_button.add_behavior( behavior )
+        if self.kwargs.get("is_refresh"):
+            return filter_top
+        else:
+            return top
 
 
 
-        cancel_button = ButtonWdg("Cancel")
-        cancel_button.add_event("onclick", "$('retrieve_search_wdg').style.display = 'none'")
-
-        div.add(HtmlElement.hr())
-        button_div = DivWdg()
-        button_div.add_style("text-align: center")
-        button_div.add(retrieve_button)
-        button_div.add("&nbsp;&nbsp;")
-        button_div.add(cancel_button)
-        div.add(button_div)
-
-        popup.add(div, "content")
-
-        return popup
-
-
-    def get_save_wdg(my):
-
-        # add the popup
-        popup = PopupWdg(id='save_search_wdg')
-        popup.add("Save Search", "title")
-
+    def get_save_wdg(self):
 
         div = DivWdg()
         div.add("Save current search as: ")
@@ -804,9 +754,7 @@ class SearchWdg(BaseRefreshWdg):
 
         save_button = ButtonWdg("Save Search")
         behavior = {
-            'type':         'click',
-            'mouse_btn':    'LMB',
-            'cbjs_action':  'spt.dg_table.save_search_cbk(evt, bvr);'
+            'cbjs_action':  'spt.table.save_search();'
         }
         save_button.add_behavior( behavior )
 
@@ -822,12 +770,11 @@ class SearchWdg(BaseRefreshWdg):
         button_div.add(cancel_button)
         div.add(button_div)
 
-        popup.add(div, "content")
-
-        return popup
+        return div
 
 
-    def get_action_wdg(my):
+
+    def get_action_wdg(self):
 
         filter_div = DivWdg()
 
@@ -842,21 +789,21 @@ class SearchWdg(BaseRefreshWdg):
         return filter_div
 
 
-    def get_search_wdg(my):
+    def get_search_wdg(self):
         filter_div = DivWdg()
-        filter_div.add_style("width: 200px")
+        filter_div.add_style("width: 300px")
 
         search_button = ActionButtonWdg(title='Search', tip='Run search with this criteria')
 
-        if my.run_search_bvr:
-            run_search_bvr = my.run_search_bvr
+        if self.run_search_bvr:
+            run_search_bvr = self.run_search_bvr
         else:
             # cbjs works better than cbfn here
             run_search_bvr = {
                 'type':         'click_up',
                 'new_search':   True,
                 'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)',
-                'panel_id':     my.prefix,
+                'panel_id':     self.prefix,
                 
             }
 
@@ -866,7 +813,7 @@ class SearchWdg(BaseRefreshWdg):
         # add a listener for other widgets to call Run Search
         listen_bvr = run_search_bvr.copy()
         listen_bvr['type'] = 'listen'
-        listen_bvr['event_name'] = 'search_%s' %my.search_type
+        listen_bvr['event_name'] = 'search_%s' %self.search_type
 
         # needed for CgApp loader
         search_button.add_behavior( listen_bvr )
@@ -878,15 +825,38 @@ class SearchWdg(BaseRefreshWdg):
         spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_search"), '.spt_input:not(select.spt_search_filter_mode)');
         '''
         } )
-        #    {'label': 'Clear', 'tip': 'Clear all search criteria', 'width': 45,
-        #        'bvr': {'cbjs_action': 'spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_search"))'} }
-        #]
-        #txt_btn_set = TextBtnSetWdg(buttons=buttons_list, spacing=6, size='small', side_padding=4 )
+
+
+
+        # add the load wdg
+        saved_button = ActionButtonWdg(title='Saved', tip='Load Saved Searches')
+        saved_button.add_behavior( {
+            #'type': 'load',
+            'search_type': self.search_type,
+            'cbjs_action': '''
+            // close the search
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+
+            var class_name = 'tactic.ui.app.LoadSearchWdg';
+            var kwargs = {
+                search_type: bvr.search_type
+            }
+            var layout = spt.table.get_layout();
+            var panel = layout.getParent(".spt_view_panel_top");
+            var popup = spt.panel.load_popup("Saved Searches", class_name, kwargs);
+            popup.activator = panel;
+            '''
+        } )
+
+
 
         filter_div.add(search_button)
         search_button.add_style("float: left")
         filter_div.add(clear_button)
         clear_button.add_style("float: left")
+        filter_div.add(saved_button)
+        saved_button.add_style("float: left")
         filter_div.add("<br clear='all'/>")
 
         return filter_div
@@ -913,9 +883,9 @@ class SearchWdg(BaseRefreshWdg):
                 try:
                     filter_data = FilterData(data)
                     filter_data.set_to_cgi()
-                except SetupException, e:
-                    print "This filter data is causing error:", data
-                    print e
+                except SetupException as e:
+                    print("This filter data is causing error:", data)
+                    print(e)
 
 
     set_filter_data = staticmethod(set_filter_data)
@@ -928,19 +898,189 @@ class SearchWdg(BaseRefreshWdg):
 
 
 
+class LoadSearchWdg(BaseRefreshWdg):
+
+    def get_display(self):
+
+        search_type = self.kwargs.get("search_type")
+
+        div = self.top
+
+        div.add("List of Saved Searches: ")
+        div.add(HtmlElement.br(2))
+        div.add_style("margin: 20px")
+        div.add_style("width: 400px")
+        div.add_class("spt_saved_search_top")
+        
+        try:
+            search = Search("config/widget_config")
+            search.add_op("begin")
+            search.add_filter("view", 'saved_search:%', op="like")
+            search.add_filter("category", 'search_filter')
+            search.add_op("or")
+            search.add_op("begin")
+            search.add_user_filter()
+            search.add_filter("login", "NULL", op="is", quoted=False)
+            search.add_op("or")
+            search.add_filter("search_type", search_type)
+            configs = search.get_sobjects()
+        except SearchException as e:
+            print("WARNING: ", e)
+            configs = []
+        except:
+            SearchWdg.clear_search_data(search_type)
+            raise
+
+        """
+        from tactic.ui.panel import TableLayoutWdg
+        element_names = ['view','name','description','delete']
+        table = TableLayoutWdg(
+                search_type=search_type,
+                element_names=element_names,
+                search=search,
+                show_shelf=False,
+                show_border=False,
+                show_search_limit=False,
+                height="auto",
+
+        )
+        div.add(table)
+        """
+
+        values = [x.get("view") for x in configs]
+        labels = [x.get("title") or x.get("view") for x in configs]
+
+        select = SelectWdg("saved_search")
+        div.add(select)
+        select.set_id("saved_search")
+        select.add_class("spt_saved_search_input")
+        select.add_empty_option("-- Select --")
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+
+        retrieve_button = ActionButtonWdg(title="Load")
+        behavior = {
+            'type':         'click',
+            #'cbjs_action':  'spt.dg_table.retrieve_search_cbk(evt, bvr);'
+            'cbjs_action':  '''
+            var top = bvr.src_el.getParent(".spt_saved_search_top")
+            var input = top.getElement(".spt_saved_search_input");
+            var value = input.value;
+            if (!value) {
+                spt.alert("Please select a saved search to load.");
+                return;
+            }
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var activator = popup.activator;
+            var layout = activator.getElement(".spt_layout");
+            spt.table.set_layout(layout);
+
+            spt.table.load_search(value);
+            '''
+        }
+        retrieve_button.add_behavior( behavior )
+        retrieve_button.add_style("display: inline-block")
+
+
+        remove_button = ActionButtonWdg(title="Remove")
+        remove_button.add_behavior( {
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_saved_search_top")
+            var input = top.getElement(".spt_saved_search_input");
+            var value = input.value;
+            if (!value) {
+                spt.alert("Please select a saved search to remove.");
+                return;
+            }
+
+            spt.alert("Remove: " + value);
+
+
+
+            '''
+        } )
+        remove_button.add_style("display: inline-block")
+
+
+
+        cancel_button = ActionButtonWdg(title="Cancel")
+        cancel_button.add_behavior( {
+            'cbjs_action': '''
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+            '''
+        } )
+        cancel_button.add_style("display: inline-block")
+
+        div.add("<br/>")
+        button_div = DivWdg()
+        button_div.add_style("text-align: center")
+        button_div.add(retrieve_button)
+        button_div.add("&nbsp;&nbsp;")
+        button_div.add(remove_button)
+        button_div.add("&nbsp;&nbsp;")
+        button_div.add(cancel_button)
+        div.add(button_div)
+
+
+
+        div.add("<hr/>")
+
+        save_div = DivWdg()
+        div.add(save_div)
+        save_div.add("Save Current Search")
+        save_div.add("<br/>")
+        save_div.add("<br/>")
+
+        text = TextInputWdg(name="new_search_name")
+        save_div.add(text)
+        text.add_class("spt_new_search_name")
+
+        save_div.add("<br/>")
+
+
+        save_button = ActionButtonWdg(title="Save Search", width="200")
+        save_div.add(save_button)
+        save_button.add_behavior( {
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_saved_search_top");
+            var input = top.getElement(".spt_new_search_name");
+            var value = input.value;
+            if (!value) {
+                spt.alert("No view name specified");
+                return;
+            }
+            spt.table.save_search(value, {personal: true});
+
+            spt.notify.show_message("Search saved");
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            spt.popup.close(popup);
+            '''
+        } )
+        save_button.add_style("display: inline-block")
+
+        return div
+
+
+
+
+
+
 
 class LocalSearchWdg(SearchWdg):
     '''Search for a specific column (TableElementWdg)'''
 
-    def init(my):
-        my.searchable_search_type = my.kwargs.get('searchable_search_type')
-        super(LocalSearchWdg, my).init()
-        # my.search_type remains as the one in the main_body used for retrieving data in WidgetSettings
+    def init(self):
+        self.searchable_search_type = self.kwargs.get('searchable_search_type')
+        super(LocalSearchWdg, self).init()
+        # self.search_type remains as the one in the main_body used for retrieving data in WidgetSettings
 
-    def get_search_wdg(my):
+    def get_search_wdg(self):
         filter_div = DivWdg()
 
-        #my.main_src_el_id = my.kwargs.get('main_src_el_id')
+        #self.main_src_el_id = self.kwargs.get('main_src_el_id')
         buttons_list = [
                 {'label': 'Run Local Search', 'tip': 'Run search with this criteria' },
                 {'label': 'Clear', 'tip': 'Clear all search criteria',
@@ -951,8 +1091,8 @@ class LocalSearchWdg(SearchWdg):
         run_search_bvr = {
             'type':         'click_up',
             'cbjs_action':  'spt.dg_table.local_search_cbk(evt, bvr);',
-            'panel_id':     my.prefix,
-            'prefix_namespace': my.prefix_namespace
+            'panel_id':     self.prefix,
+            'prefix_namespace': self.prefix_namespace
             
         }
         txt_btn_set.get_btn_by_label('Run Local Search').add_behavior( run_search_bvr )
@@ -960,8 +1100,8 @@ class LocalSearchWdg(SearchWdg):
         filter_div.add( txt_btn_set )
         return filter_div
 
-    def get_default_filter_config(my):
-        custom_filter_view = my.kwargs.get('custom_filter_view')
+    def get_default_filter_config(self):
+        custom_filter_view = self.kwargs.get('custom_filter_view')
         config = '''
         <config>
         <filter>
@@ -974,7 +1114,7 @@ class LocalSearchWdg(SearchWdg):
           </element>
         </filter>
         </config>
-        ''' % {'search_type': my.searchable_search_type, 'prefix_namespace': my.prefix_namespace  }
+        ''' % {'search_type': self.searchable_search_type, 'prefix_namespace': self.prefix_namespace  }
         config_xml = Xml()
         config_xml.read_string(config)
         config = WidgetConfig.get(xml=config_xml, view='filter')
@@ -982,7 +1122,7 @@ class LocalSearchWdg(SearchWdg):
 
 class SaveSearchCbk(Command):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search_type',
         'view': 'view',
@@ -990,52 +1130,39 @@ class SaveSearchCbk(Command):
         }
 
 
-    def check_unique(my):
+    def check_unique(self):
         search = Search('config/widget_config')
-        search.add_filter("view", my.view)
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("view", self.view)
+        search.add_filter("search_type", self.search_type)
         search.add_user_filter()
         config_sobj = search.get_sobject()
-        if config_sobj and my.unique:
-            view = my.view.replace('link_search:', '')
+        if config_sobj and self.unique:
+            view = self.view.replace('link_search:', '')
             raise UserException('This view [%s] already exists' %view)
         return True
     
-    def init(my):
+    def init(self):
         # handle the default
-        config = my.kwargs.get('config')
-        my.search_type = my.kwargs.get("search_type")
-        my.view = my.kwargs.get("view")
-        my.unique = my.kwargs.get('unique') == True
-        assert(my.search_type)
-        if my.unique:
-            my.check_unique()
-        my.personal = my.kwargs.get('personal')
+        config = self.kwargs.get('config')
+        self.search_type = self.kwargs.get("search_type")
+        self.view = self.kwargs.get("view")
+        self.unique = self.kwargs.get('unique') == True
+        assert(self.search_type)
+        if self.unique:
+            self.check_unique()
+        self.personal = self.kwargs.get('personal')
 
 
-    def execute(my):
-        my.init()
+    def execute(self):
+        self.init()
 
         # create the filters
-        my.filters = []
-        """
-        for element_name in my.config.get_element_names():
-            
-            filter = my.config.get_display_widget(element_name)
-            my.filters.append(filter)
+        self.filters = []
 
-        # make sure there is at least one filter defined
-        assert my.filters
-
-        """
         config = "<config>\n"
         config += "<filter>\n"
 
         # get all of the serialized versions of the filters
-        """
-        for filter in my.filters:
-            config += filter.serialize() + "\n"
-        """
         filter_data = FilterData.get()
         json = filter_data.serialize()
         value_type = "json"
@@ -1049,30 +1176,31 @@ class SaveSearchCbk(Command):
         xml.read_string(config)
 
 
-        if not my.view:
-            saved_view = "saved_search:%s" % my.search_type
+        if not self.view:
+            saved_view = "saved_search:%s" % self.search_type
         else:
-            saved_view = my.view
-        #    if my.view.startswith("saved_search:"):
-        #        saved_view = my.view
+            saved_view = self.view
+        #    if self.view.startswith("saved_search:"):
+        #        saved_view = self.view
         #    else:
-        #        saved_view = "saved_search:%s" % my.view
+        #        saved_view = "saved_search:%s" % self.view
 
         # use widget config instead
         search = Search('config/widget_config')
         search.add_filter("view", saved_view)
-        search.add_filter("search_type", my.search_type)
-        if my.personal:
+        search.add_filter("search_type", self.search_type)
+        if self.personal:
             search.add_user_filter()
         config = search.get_sobject()
 
         if not config:
             config = SearchType.create('config/widget_config')
             config.set_value("view", saved_view)
-            config.set_value("search_type", my.search_type)
-            if my.personal:
+            config.set_value("search_type", self.search_type)
+            if self.personal:
                 config.set_user()
 
+        config.set_value("category", "search_filter")
         config.set_value("config", xml.to_string())
         config.commit()
 

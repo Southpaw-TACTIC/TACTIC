@@ -22,30 +22,43 @@ from pyasm.biz import ExpressionParser
 class EmailHandler(object):
     '''Base class for email notifications'''
 
-    def __init__(my, notification, sobject, parent, command, input):
-        my.notification = notification
-        my.sobject = sobject
-        my.command = command
-        my.parent = parent
-        my.input = input
+    def __init__(self, notification, sobject, parent, command, input):
+        self.notification = notification
+        self.sobject = sobject
+        self.command = command
+        self.parent = parent
+        self.input = input
 
-    def check_rule(my):
+        # Introduce an environment that can be reflected
+        self.env_sobjects = {
+            'sobject': self.sobject
+        }
+
+        snapshot = self.input.get('snapshot')
+        if snapshot:
+            self.env_sobjects['snapshot'] = Search.get_by_code("sthpw/snapshot", snapshot.get("code"))
+        note = self.input.get('note')
+        if note:
+            self.env_sobjects['note'] = Search.get_by_code("sthpw/note", note.get("code"))
+
+
+
+
+    def check_rule(self):
         '''determine whether an email should be sent'''
         return True
         
 
 
-    def get_mail_users(my, column):
+    def get_mail_users(self, column):
         # mail groups
         recipients = set()
 
-        expr = my.notification.get_value(column, no_exception=True)
+        expr = self.notification.get_value(column, no_exception=True)
         if expr:
             sudo = Sudo()
-            # Introduce an environment that can be reflected
-            env = {
-                'sobject': my.sobject
-            }
+
+            env_sobjects = self.env_sobjects.copy()
 
             #if expr.startswith("@"):
             #    logins = Search.eval(expr, list=True, env_sobjects=env)
@@ -55,8 +68,14 @@ class EmailHandler(object):
             # go through each login and evaluate each
             logins = []
             for part in parts:
+
+                if part.startswith("#"):
+                    continue
+                if not part:
+                    continue
+
                 if part.startswith("@") or part.startswith("{"):
-                    results = Search.eval(part, list=True, env_sobjects=env)
+                    results = Search.eval(part, list=True, env_sobjects=env_sobjects)
                     # clear the container after each expression eval
                     ExpressionParser.clear_cache()
                     # these can just be login names, get the actual Logins
@@ -87,7 +106,7 @@ class EmailHandler(object):
 
             del sudo
         else:
-            notification_id = my.notification.get_id()
+            notification_id = self.notification.get_id()
             logins = GroupNotification.get_logins_by_id(notification_id)
 
         for login in logins:
@@ -96,40 +115,39 @@ class EmailHandler(object):
         return recipients
 
 
-    def get_to(my):
-        return my.get_mail_users("mail_to")
+    def get_to(self):
+        return self.get_mail_users("mail_to")
 
-    def get_cc(my):
-        return my.get_mail_users("mail_cc")
+    def get_cc(self):
+        return self.get_mail_users("mail_cc")
 
-    def get_bcc(my):
-        return my.get_mail_users("mail_bcc")
+    def get_bcc(self):
+        return self.get_mail_users("mail_bcc")
 
 
-    def get_subject(my):
-        subject = my.notification.get_value("subject",no_exception=True)
+    def get_subject(self):
+        subject = self.notification.get_value("subject",no_exception=True)
         if subject:
             # parse it through the expression
             sudo = Sudo()
             parser = ExpressionParser()
-            subject  = parser.eval(subject, my.sobject, mode='string')
+            subject  = parser.eval(subject, self.sobject, mode='string')
             del sudo
         else:
-            subject = '%s - %s' %(my.sobject.get_update_description(), my.command.get_description())
+            subject = '%s - %s' %(self.sobject.get_update_description(), self.command.get_description())
         return subject
 
 
-    def get_message(my):
-        search_type_obj = my.sobject.get_search_type_obj()
+    def get_message(self):
+        search_type_obj = self.sobject.get_search_type_obj()
         title = search_type_obj.get_title()
-        subject = my.get_subject()
-        notification_message = my.notification.get_value("message")
+        subject = self.get_subject()
+        notification_message = self.notification.get_value("message")
         if notification_message:
             # parse it through the expression
             sudo = Sudo()
             parser = ExpressionParser()
-            snapshot = my.input.get('snapshot')
-            env_sobjects = {}
+            snapshot = self.input.get('snapshot')
 
             # turn prev_data and update_data from input into sobjects
             prev_data = SearchType.create("sthpw/virtual")
@@ -138,7 +156,7 @@ class EmailHandler(object):
             if id_col:
                 del prev_data.data[id_col]
 
-            prev_dict = my.input.get("prev_data")
+            prev_dict = self.input.get("prev_data")
             if prev_dict:
                 for name, value in prev_dict.items():
                     if value != None:
@@ -151,29 +169,22 @@ class EmailHandler(object):
             if id_col:
                 del update_data.data[id_col]
 
-            update_dict = my.input.get("update_data")
+            update_dict = self.input.get("update_data")
             if update_dict:
                 for name, value in update_dict.items():
                     if value != None:
                         update_data.set_value(name, value)
 
 
-
-            if snapshot:
-
-                env_sobjects = {
-                'snapshot': snapshot
-            }
-
-
+            env_sobjects = self.env_sobjects.copy()
             env_sobjects['prev_data'] = prev_data
             env_sobjects['update_data'] = update_data
 
-            notification_message  = parser.eval(notification_message, my.sobject, env_sobjects=env_sobjects, mode='string')
+            notification_message  = parser.eval(notification_message, self.sobject, env_sobjects=self.env_sobjects, mode='string')
             del sudo
             return notification_message
 
-        message = "%s %s" % (title, my.sobject.get_name())
+        message = "%s %s" % (title, self.sobject.get_name())
         message = '%s\n\nReport from transaction:\n%s\n' % (message, subject)
         return message
 
@@ -185,9 +196,9 @@ class EmailHandler(object):
 class TaskAssignEmailHandler(EmailHandler):
     '''Email sent when a task is assigned'''
 
-    def get_subject(my):
+    def get_subject(self):
         
-        task = my.sobject
+        task = self.sobject
 
         sobject = task.get_parent()
         name = sobject.get_name()
@@ -196,17 +207,17 @@ class TaskAssignEmailHandler(EmailHandler):
         task_process = task.get_value("process")
         task_description = task.get_value("description")
 
-        #title = my.notification.get_description()
+        #title = self.notification.get_description()
         title = "Assignment"
 
         return "%s: %s to %s (%s) %s"  % (title, name, assigned, task_process, task_description)
 
 
-    def get_to(my):
+    def get_to(self):
         # add the assigned user to the list of users sent.
-        recipients = super(TaskAssignEmailHandler, my).get_to()
+        recipients = super(TaskAssignEmailHandler, self).get_to()
 
-        task = my.sobject
+        task = self.sobject
         assigned = task.get_value("assigned")
 
         login = Login.get_by_login(assigned)
@@ -219,9 +230,9 @@ class TaskAssignEmailHandler(EmailHandler):
         return recipients
 
 
-    def get_message(my):
+    def get_message(self):
 
-        task = my.sobject
+        task = self.sobject
        
         assigned = task.get_value("assigned")
         task_process = task.get_value("process")
@@ -262,19 +273,19 @@ class TaskAssignEmailHandler(EmailHandler):
 
 class NoteEmailHandler(EmailHandler):
 
-    def check_rule(my):
+    def check_rule(self):
         '''determine whether an email should be sent'''
         return True
 
-    def _get_login(my, assigned):
+    def _get_login(self, assigned):
         return Login.get_by_login(assigned)
         
     
 
-    def get_to(my):
-        #recipients = super(NoteEmailHandler, my).get_to()
+    def get_to(self):
+        #recipients = super(NoteEmailHandler, self).get_to()
         recipients = set()
-        note = my.sobject
+        note = self.sobject
 
         search = Search(Task)
         search.add_filter('search_type', note.get_value('search_type'))
@@ -284,10 +295,10 @@ class NoteEmailHandler(EmailHandler):
         search.add_filter('project_code',note.get_value('project_code'))
         tasks = search.get_sobjects()
         for task in tasks:
-            assigned = my._get_login(task.get_assigned())
+            assigned = self._get_login(task.get_assigned())
             if assigned:
                 recipients.add(assigned)
-            supe = my._get_login(task.get_supervisor())
+            supe = self._get_login(task.get_supervisor())
             if supe:
                 recipients.add(supe)
         return recipients
@@ -295,23 +306,23 @@ class NoteEmailHandler(EmailHandler):
 
 class GeneralNoteEmailHandler(EmailHandler):
 
-    def check_rule(my):
+    def check_rule(self):
         '''determine whether an email should be sent'''
         return True
 
-    def _get_login(my, assigned):
+    def _get_login(self, assigned):
         return Login.get_by_login(assigned)
         
-    def get_to(my):
-        #recipients = super(NoteEmailHandler, my).get_to()
+    def get_to(self):
+        #recipients = super(NoteEmailHandler, self).get_to()
         recipients = set()
-        note = my.sobject
+        note = self.sobject
 
         search = Search(Task)
         grand_parent = None
         parent_search_type = note.get_value('search_type')
         if 'prod/submission' in parent_search_type:
-            grand_parent = my.parent.get_parent()
+            grand_parent = self.parent.get_parent()
         
         search_type = note.get_value('search_type')
         search_id = note.get_value('search_id')
@@ -326,30 +337,30 @@ class GeneralNoteEmailHandler(EmailHandler):
         search.add_filter('project_code',note.get_value('project_code'))
         tasks = search.get_sobjects()
         for task in tasks:
-            assigned = my._get_login(task.get_assigned())
+            assigned = self._get_login(task.get_assigned())
             if assigned:
                 recipients.add(assigned)
-            supe = my._get_login(task.get_supervisor())
+            supe = self._get_login(task.get_supervisor())
             if supe:
                 recipients.add(supe)
         return recipients
 
-    def get_message(my):
+    def get_message(self):
         
-        search_type_obj = my.sobject.get_search_type_obj()
+        search_type_obj = self.sobject.get_search_type_obj()
         title = search_type_obj.get_title()
         
-        notification_message = my.notification.get_value("message")
+        notification_message = self.notification.get_value("message")
 
-        message = "%s %s" % (title, my.sobject.get_name())
+        message = "%s %s" % (title, self.sobject.get_name())
         if notification_message:
             message = "%s (%s)" %(message, notification_message)
 
-        update_desc = my.sobject.get_update_description()
-        parent_search_type = my.sobject.get_value('search_type')
+        update_desc = self.sobject.get_update_description()
+        parent_search_type = self.sobject.get_value('search_type')
         grand_parent = None
         if 'prod/submission' in parent_search_type:
-            parent = Search.get_by_id(parent_search_type, my.sobject.get_value('search_id') )
+            parent = Search.get_by_id(parent_search_type, self.sobject.get_value('search_id') )
             snapshot = Snapshot.get_latest_by_sobject(parent, 'publish')
             if snapshot:
                 file_name = snapshot.get_file_name_by_type('main')
@@ -357,7 +368,7 @@ class GeneralNoteEmailHandler(EmailHandler):
             grand_parent = parent.get_parent()
             if grand_parent:
                 update_desc = '%s %s'%(update_desc, grand_parent.get_code())
-        command_desc = my.command.get_description()
+        command_desc = self.command.get_description()
 
         message = '%s\n\nReport from transaction:\n%s\n\n%s' \
             % (message, update_desc, command_desc)
@@ -367,16 +378,16 @@ class GeneralPublishEmailHandler(EmailHandler):
     ''' On publish of a shot/asset, it will find all the assignees of this 
         shot/asset and send the notification to them'''
 
-    def check_rule(my):
+    def check_rule(self):
         '''determine whether an email should be sent'''
         return True
 
-    def _get_login(my, assigned):
+    def _get_login(self, assigned):
         return Login.get_by_login(assigned)
         
-    def get_to(my):
-        recipients = super(GeneralPublishEmailHandler, my).get_to()
-        sobj = my.sobject
+    def get_to(self):
+        recipients = super(GeneralPublishEmailHandler, self).get_to()
+        sobj = self.sobject
 
         search = Search(Task)
         
@@ -392,28 +403,28 @@ class GeneralPublishEmailHandler(EmailHandler):
         search.add_filter('project_code', Project.get_project_code())
         tasks = search.get_sobjects()
         for task in tasks:
-            assigned = my._get_login(task.get_assigned())
+            assigned = self._get_login(task.get_assigned())
             if assigned:
                 recipients.add(assigned)
-            supe = my._get_login(task.get_supervisor())
+            supe = self._get_login(task.get_supervisor())
             if supe:
                 recipients.add(supe)
         return recipients
 
-    def get_message(my):
+    def get_message(self):
         
-        search_type_obj = my.sobject.get_search_type_obj()
+        search_type_obj = self.sobject.get_search_type_obj()
         title = search_type_obj.get_title()
         
-        notification_message = my.notification.get_value("message")
+        notification_message = self.notification.get_value("message")
 
-        message = "%s %s" % (title, my.sobject.get_name())
+        message = "%s %s" % (title, self.sobject.get_name())
         if notification_message:
             message = "%s (%s)" %(message, notification_message)
 
-        update_desc = my.sobject.get_update_description()
+        update_desc = self.sobject.get_update_description()
         
-        command_desc = my.command.get_description()
+        command_desc = self.command.get_description()
 
         message = '%s\n\nReport from transaction:\n%s\n\n%s' \
             % (message, update_desc, command_desc)
@@ -421,16 +432,16 @@ class GeneralPublishEmailHandler(EmailHandler):
 
 class TaskStatusEmailHandler(EmailHandler):
 
-    def check_rule(my):
+    def check_rule(self):
         '''determine whether an email should be sent'''
         return True
 
-    def _get_login(my, assigned):
+    def _get_login(self, assigned):
         return Login.get_by_login(assigned)
         
-    def get_to(my):
-        recipients = super(TaskStatusEmailHandler, my).get_to()
-        sobj = my.sobject
+    def get_to(self):
+        recipients = super(TaskStatusEmailHandler, self).get_to()
+        sobj = self.sobject
        
         # it could be the parent of task:
         if not isinstance(sobj, Task):
@@ -439,10 +450,10 @@ class TaskStatusEmailHandler(EmailHandler):
             tasks = [sobj]
 
         for task in tasks:
-            assigned = my._get_login(task.get_assigned())
+            assigned = self._get_login(task.get_assigned())
             if assigned:
                 recipients.add(assigned)
-            supe = my._get_login(task.get_supervisor())
+            supe = self._get_login(task.get_supervisor())
             if supe:
                 recipients.add(supe)
         return recipients
@@ -450,36 +461,36 @@ class TaskStatusEmailHandler(EmailHandler):
 class SubmissionEmailHandler(EmailHandler):
     '''Email sent when a submission is entered'''
 
-    def get_message(my):
-        search_type_obj = my.sobject.get_search_type_obj()
+    def get_message(self):
+        search_type_obj = self.sobject.get_search_type_obj()
         title = search_type_obj.get_title()
-        subject = my.get_subject()
-        notification_message = my.notification.get_value("message")
+        subject = self.get_subject()
+        notification_message = self.notification.get_value("message")
 
-        message = "%s %s" % (title, my.sobject.get_name())
+        message = "%s %s" % (title, self.sobject.get_name())
         if notification_message:
             message = "%s (%s)" %(message, notification_message)
 
         submit_desc = ''
 
         from pyasm.prod.biz import Submission
-        if isinstance(my.sobject, Submission):
+        if isinstance(self.sobject, Submission):
             update_info = ['']
             # add more info about the file and bin
-            snapshot = Snapshot.get_latest_by_sobject(my.sobject)
+            snapshot = Snapshot.get_latest_by_sobject(self.sobject)
             xpath = "snapshot/file[@type='main']"
             if not snapshot:
                 return "no snapshot found"
             xml = snapshot.get_xml_value('snapshot')
             file = None
             if xml.get_node(xpath) is not None:
-                file = my._get_file_obj(snapshot)
+                file = self._get_file_obj(snapshot)
             else:
                 snapshots = snapshot.get_all_ref_snapshots()
                 snapshot_file_objects = []
                 if snapshots:
                     snapshot = snapshots[0]
-                    file = my._get_file_obj(snapshot, type=None)
+                    file = self._get_file_obj(snapshot, type=None)
             if file:
                 file_name = file.get_file_name()
                 web_path = file.get_web_path()
@@ -487,15 +498,15 @@ class SubmissionEmailHandler(EmailHandler):
                 host = WebContainer.get_web().get_base_url()
                 update_info.append('Browse: %s %s%s' %( file_name, host.to_string(), web_path))
 
-            bins = my.sobject.get_bins()
+            bins = self.sobject.get_bins()
             bin_labels = [ bin.get_label() for bin in bins]
             update_info.append('Bin: %s' %', '.join(bin_labels))
 
-            update_info.append('Artist: %s' %my.sobject.get_value('artist'))
-            update_info.append('Description: %s' %my.sobject.get_value('description'))
+            update_info.append('Artist: %s' %self.sobject.get_value('artist'))
+            update_info.append('Description: %s' %self.sobject.get_value('description'))
              
             # get notes
-            search = Note.get_search_by_sobjects([my.sobject])
+            search = Note.get_search_by_sobjects([self.sobject])
             if search:
                 search.add_order_by("context")
                 search.add_order_by("timestamp desc")
@@ -510,7 +521,7 @@ class SubmissionEmailHandler(EmailHandler):
                     note_list.append( "[ %s ] " % context )
                 last_context = context
                 
-                #child_notes = my.notes_dict.get(note.get_id())
+                #child_notes = self.notes_dict.get(note.get_id())
                 # draw note item
                 date = Date(db=note.get_value('timestamp'))
                 note_list.append('(%s) %s'%(date.get_display_time(), note.get_value("note")))
@@ -519,14 +530,14 @@ class SubmissionEmailHandler(EmailHandler):
             submit_desc =  '\n'.join(update_info)
 
             
-        update_desc = my.sobject.get_update_description()
-        command_desc = my.command.get_description()
+        update_desc = self.sobject.get_update_description()
+        command_desc = self.command.get_description()
 
         message = '%s\n\nReport from transaction:\n%s\n\n%s\n%s' \
             % (message, update_desc, command_desc, submit_desc)
         return message
 
-    def _get_file_obj(my, snapshot, type='main'):
+    def _get_file_obj(self, snapshot, type='main'):
         if type:
             xpath = "snapshot/file[@type='%s']" %type
         else:
@@ -541,18 +552,18 @@ class SubmissionEmailHandler(EmailHandler):
 
 class SubmissionStatusEmailHandler(SubmissionEmailHandler):
 
-    def check_rule(my):
+    def check_rule(self):
         '''determine whether an email should be sent'''
         return True
 
-    def _get_login(my, assigned):
+    def _get_login(self, assigned):
         return Login.get_by_login(assigned)
         
-    def get_to(my):
-        recipients = super(SubmissionStatusEmailHandler, my).get_to()
-        submission = my.sobject
+    def get_to(self):
+        recipients = super(SubmissionStatusEmailHandler, self).get_to()
+        submission = self.sobject
         artist = submission.get_value('artist')
-        assigned = my._get_login(artist)
+        assigned = self._get_login(artist)
         if assigned:
             recipients.add(assigned)
         
@@ -560,38 +571,38 @@ class SubmissionStatusEmailHandler(SubmissionEmailHandler):
 
 class SubmissionNoteEmailHandler(SubmissionEmailHandler):
 
-    def check_rule(my):
+    def check_rule(self):
         '''determine whether an email should be sent'''
         return True
 
-    def get_message(my):
-        search_type_obj = my.parent.get_search_type_obj()
+    def get_message(self):
+        search_type_obj = self.parent.get_search_type_obj()
         title = search_type_obj.get_title()
-        subject = my.get_subject()
-        notification_message = my.notification.get_value("message")
+        subject = self.get_subject()
+        notification_message = self.notification.get_value("message")
 
-        message = "%s %s Note Entry" % (title, my.parent.get_name())
+        message = "%s %s Note Entry" % (title, self.parent.get_name())
         if notification_message:
             message = "%s (%s)" %(message, notification_message)
 
         submit_desc = ''
 
         from pyasm.prod.biz import Submission
-        if isinstance(my.parent, Submission):
+        if isinstance(self.parent, Submission):
             update_info = ['']
             # add more info about the file and bin
-            snapshot = Snapshot.get_latest_by_sobject(my.parent, "publish")
+            snapshot = Snapshot.get_latest_by_sobject(self.parent, "publish")
             xpath = "snapshot/file[@type='main']"
             xml = snapshot.get_xml_value('snapshot')
             file = None
             if xml.get_node(xpath) is not None:
-                file = my._get_file_obj(snapshot)
+                file = self._get_file_obj(snapshot)
             else:
                 snapshots = snapshot.get_all_ref_snapshots()
                 snapshot_file_objects = []
                 if snapshots:
                     snapshot = snapshots[0]
-                    file = my._get_file_obj(snapshot, type=None)
+                    file = self._get_file_obj(snapshot, type=None)
             if file:
                 file_name = file.get_file_name()
                 web_path = file.get_web_path()
@@ -599,15 +610,15 @@ class SubmissionNoteEmailHandler(SubmissionEmailHandler):
                 host = WebContainer.get_web().get_base_url()
                 update_info.append('Browse: %s %s%s' %( file_name, host.to_string(), web_path))
 
-            bins = my.parent.get_bins()
+            bins = self.parent.get_bins()
             bin_labels = [ bin.get_label() for bin in bins]
             update_info.append('Bin: %s' %', '.join(bin_labels))
 
-            update_info.append('Artist: %s' %my.parent.get_value('artist'))
-            update_info.append('Description: %s' %my.parent.get_value('description'))
+            update_info.append('Artist: %s' %self.parent.get_value('artist'))
+            update_info.append('Description: %s' %self.parent.get_value('description'))
              
             # get notes
-            search = Note.get_search_by_sobjects([my.parent])
+            search = Note.get_search_by_sobjects([self.parent])
             if search:
                 search.add_order_by("context")
                 search.add_order_by("timestamp desc")
@@ -622,7 +633,7 @@ class SubmissionNoteEmailHandler(SubmissionEmailHandler):
                     note_list.append( "[ %s ] " % context )
                 last_context = context
                 
-                #child_notes = my.notes_dict.get(note.get_id())
+                #child_notes = self.notes_dict.get(note.get_id())
                 # draw note item
                 date = Date(db=note.get_value('timestamp'))
                 note_list.append('(%s) %s'%(date.get_display_time(), note.get_value("note")))
@@ -631,8 +642,8 @@ class SubmissionNoteEmailHandler(SubmissionEmailHandler):
             submit_desc =  '\n'.join(update_info)
 
             
-        update_desc = my.sobject.get_update_description()
-        command_desc = my.command.get_description()
+        update_desc = self.sobject.get_update_description()
+        command_desc = self.command.get_description()
 
         message = '%s\n\nReport from transaction:\n%s\n\n%s\n%s' \
             % (message, update_desc, command_desc, submit_desc)
@@ -640,14 +651,14 @@ class SubmissionNoteEmailHandler(SubmissionEmailHandler):
 
         
 
-    def _get_login(my, assigned):
+    def _get_login(self, assigned):
         return Login.get_by_login(assigned)
         
-    def get_to(my):
-        recipients = super(SubmissionNoteEmailHandler, my).get_to()
-        submission = my.parent
+    def get_to(self):
+        recipients = super(SubmissionNoteEmailHandler, self).get_to()
+        submission = self.parent
         artist = submission.get_value('artist')
-        assigned = my._get_login(artist)
+        assigned = self._get_login(artist)
         if assigned:
             recipients.add(assigned)
         
@@ -656,18 +667,18 @@ class SubmissionNoteEmailHandler(SubmissionEmailHandler):
 class TestEmailHandler(EmailHandler):
     '''Email sent when a task is assigned'''
 
-    def check_rule(my):
-        task = my.sobject
+    def check_rule(self):
+        task = self.sobject
        
         assigned = task.get_value("assigned")
         task_process = task.get_value("process")
         task_description = task.get_value("description")
 
         # get the pipeline
-        my.parent = task.get_parent()
-        pipeline_code = my.parent.get_value("pipeline_code")
-        my.pipeline = Pipeline.get_by_code(pipeline_code)
-        if not my.pipeline:
+        self.parent = task.get_parent()
+        pipeline_code = self.parent.get_value("pipeline_code")
+        self.pipeline = Pipeline.get_by_code(pipeline_code)
+        if not self.pipeline:
             # No pipeline, so don't email
             print "Warning: No Pipeline"
             return False

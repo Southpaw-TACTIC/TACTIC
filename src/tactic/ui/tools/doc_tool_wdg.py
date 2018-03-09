@@ -34,7 +34,7 @@ import os
 class DocToolWdg(BaseRefreshWdg):
 
 
-    def get_diff(my, lines, lines2):
+    def get_diff(self, lines, lines2):
         import difflib
         d = difflib.Differ()
         result = list(d.compare(lines, lines2) )
@@ -62,7 +62,7 @@ class DocToolWdg(BaseRefreshWdg):
 
 
 
-    def get_text(my, path, last_path=None, highlight=True):
+    def get_text(self, path, last_path=None, highlight=True):
 
 
         if path.startswith("http"):
@@ -89,7 +89,7 @@ class DocToolWdg(BaseRefreshWdg):
                 try:
                     xml.read_string(html)
                 except:
-                    my.doc_mode = "formatted"
+                    self.doc_mode = "formatted"
                     html = html.replace("&amp;", "&")
                     print
                     print "WARNING: cannot parse as XML"
@@ -97,7 +97,7 @@ class DocToolWdg(BaseRefreshWdg):
                     return html
 
 
-                if my.doc_mode == "formatted":
+                if self.doc_mode == "formatted":
                     return xml.to_string().replace("&amp;", "&")
 
 
@@ -154,7 +154,7 @@ class DocToolWdg(BaseRefreshWdg):
             #lines2 = f.readlines()
             #f.close()
 
-            #diff = my.get_diff(lines, lines2)
+            #diff = self.get_diff(lines, lines2)
             #text = "".join(diff)
 
             text = "".join(lines)
@@ -171,13 +171,13 @@ class DocToolWdg(BaseRefreshWdg):
         if last_text != None:
             lines = text.split("\n")
             lines2 = last_text.split("\n")
-            diff = my.get_diff(lines2, lines)
+            diff = self.get_diff(lines2, lines)
             diff_text = "\n".join(diff)
             text = diff_text
 
 
         if highlight:
-            search_type_obj = SearchType.get(my.search_type)
+            search_type_obj = SearchType.get(self.search_type)
             color = search_type_obj.get_value("color")
             if not color:
                 color = '#0F0'
@@ -185,12 +185,12 @@ class DocToolWdg(BaseRefreshWdg):
             # assemble all the lines
             data = []
 
-            search = Search(my.search_type)
+            search = Search(self.search_type)
             sobjects = search.get_sobjects()
             for sobject in sobjects:
                 search_key = sobject.get_search_key()
 
-                value = sobject.get_value(my.column)
+                value = sobject.get_value(self.column)
                 lines = value.split("\n")
                 for line in lines:
                     line = line.strip()
@@ -210,22 +210,22 @@ class DocToolWdg(BaseRefreshWdg):
         return text
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.doc_mode = my.kwargs.get("doc_mode")
-        path = my.kwargs.get("path")
-        my.search_type = my.kwargs.get("search_type")
+        self.doc_mode = self.kwargs.get("doc_mode")
+        path = self.kwargs.get("path")
+        self.search_type = self.kwargs.get("search_type")
 
-        my.last_path = None
+        self.last_path = None
 
-        doc_key = my.kwargs.get("doc_key")
+        doc_key = self.kwargs.get("doc_key")
         if doc_key:
-            my.doc = Search.get_by_search_key(doc_key)
-            snapshot = Snapshot.get_latest_by_sobject(my.doc)
+            self.doc = Search.get_by_search_key(doc_key)
+            snapshot = Snapshot.get_latest_by_sobject(self.doc)
             if snapshot:
-                my.last_path = snapshot.get_lib_path_by_type('main')
+                self.last_path = snapshot.get_lib_path_by_type('main')
 
-            path = my.doc.get_value("link")
+            path = self.doc.get_value("link")
 
 
         # TEST TEST TEST
@@ -240,15 +240,15 @@ class DocToolWdg(BaseRefreshWdg):
             #path = "https://docs.google.com/spreadsheet/pub?key=0Al0xl-XktnaNdExraEE4QkxVQXhaOFh1SHIxZmZMQ0E&single=true&gid=0&output=html"
             path = "/home/apache/tactic/doc/alias.json"
 
-        if not my.search_type:
-            my.search_type = "test3/shot"
+        if not self.search_type:
+            self.search_type = "test3/shot"
 
 
-        my.column = "description"
+        self.column = "description"
 
-        top = my.top
+        top = self.top
         top.add_class("spt_document_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         #table = Table()
         table = ResizableTableWdg()
@@ -290,12 +290,12 @@ class DocToolWdg(BaseRefreshWdg):
         button.add_style("float: left")
 
 
-        if not my.doc_mode:
-            my.doc_mode = "text"
+        if not self.doc_mode:
+            self.doc_mode = "text"
         select = SelectWdg("doc_mode")
         select.set_option("values", "text|formatted")
         title.add(select)
-        select.set_value(my.doc_mode)
+        select.set_value(self.doc_mode)
         select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
@@ -326,26 +326,26 @@ class DocToolWdg(BaseRefreshWdg):
         #    text_wdg.add_style("overflow-x: hidden")
         if True:
 
-            if not my.last_path and my.doc:
+            if not self.last_path and self.doc:
                 tmp_dir = Environment.get_tmp_dir()
                 tmp_path = '%s/last_path.txt' % tmp_dir
                 f = open(tmp_path, 'w')
 
-                text = my.get_text(path, highlight=False)
+                text = self.get_text(path, highlight=False)
 
                 f.write(text)
                 f.close()
 
-                cmd = FileCheckin(my.doc, tmp_path)
+                cmd = FileCheckin(self.doc, tmp_path)
                 Command.execute_cmd(cmd)
 
             else:
                 save = False
                 if save:
                     # open up the last path
-                    f = open(my.last_path, 'r')
+                    f = open(self.last_path, 'r')
                     last_text = f.read()
-                    text = my.get_text(path, None, highlight=False)
+                    text = self.get_text(path, None, highlight=False)
 
                     if last_text != text:
 
@@ -356,15 +356,15 @@ class DocToolWdg(BaseRefreshWdg):
                         f.write(text)
                         f.close()
 
-                        cmd = FileCheckin(my.doc, tmp_path)
+                        cmd = FileCheckin(self.doc, tmp_path)
                         Command.execute_cmd(cmd)
 
-                text = my.get_text(path, my.last_path)
+                text = self.get_text(path, self.last_path)
 
 
             lines = text.split("\n") 
 
-            if my.doc_mode == "text":
+            if self.doc_mode == "text":
 
                 num_lines = len(lines)
 
@@ -383,7 +383,7 @@ class DocToolWdg(BaseRefreshWdg):
 
 
 
-            if my.doc_mode == "text":
+            if self.doc_mode == "text":
                 pre = HtmlElement.pre()
                 pre.add_style("white-space: pre-wrap")
             else:
@@ -401,7 +401,7 @@ class DocToolWdg(BaseRefreshWdg):
             pre.add_style("font-family: courier")
 
 
-            if my.doc_mode == "formatted":
+            if self.doc_mode == "formatted":
                 pre.add(text)
 
             else:
@@ -457,7 +457,7 @@ class DocToolWdg(BaseRefreshWdg):
         text_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'bvr_match_class': 'spt_document_item',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_document_top");
@@ -480,7 +480,7 @@ class DocToolWdg(BaseRefreshWdg):
         text_wdg.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_document_item',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'bgcolor': bgcolor,
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "1.0");
@@ -493,7 +493,7 @@ class DocToolWdg(BaseRefreshWdg):
         text_wdg.add_relay_behavior( {
             'type': 'mouseout',
             'bvr_match_class': 'spt_document_item',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'cbjs_action': '''
             bvr.src_el.setStyle("opacity", "1.0");
             //bvr.src_el.setStyle("font-weight", "bold");
@@ -507,8 +507,8 @@ class DocToolWdg(BaseRefreshWdg):
 
 
         # add a context menu
-        ctx_menu = my.get_text_context_menu()
-        ctx_new_menu = my.get_text_new_context_menu()
+        ctx_menu = self.get_text_context_menu()
+        ctx_new_menu = self.get_text_new_context_menu()
         menus_in = {
             'TEXT_CTX': ctx_menu,
             'TEXT_NEW_CTX': ctx_new_menu,
@@ -518,7 +518,7 @@ class DocToolWdg(BaseRefreshWdg):
 
 
         panel = ViewPanelWdg(
-                search_type=my.search_type,
+                search_type=self.search_type,
                 layout="blah"
         )
 
@@ -614,9 +614,9 @@ spt.document.expandtoword = function(range)
         return top
 
 
-    def get_text_new_context_menu(my):
+    def get_text_new_context_menu(self):
 
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
         title = search_type_obj.get_title()
 
 
@@ -655,9 +655,9 @@ spt.document.expandtoword = function(range)
         return menu
 
 
-    def get_text_context_menu(my):
+    def get_text_context_menu(self):
 
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
         title = search_type_obj.get_title()
 
 
@@ -674,8 +674,8 @@ spt.document.expandtoword = function(range)
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'search_type': my.search_type,
-            'column': my.column,
+            'search_type': self.search_type,
+            'column': self.column,
             'cbjs_action': r'''
             var activator = spt.smenu.get_activator(bvr);
 
@@ -704,7 +704,7 @@ spt.document.expandtoword = function(range)
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'cbjs_action': r'''
             var activator = spt.smenu.get_activator(bvr);
 
@@ -736,7 +736,7 @@ spt.document.expandtoword = function(range)
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'cbjs_action': r'''
             var activator = spt.smenu.get_activator(bvr);
             var selection = spt.document.selected_text;

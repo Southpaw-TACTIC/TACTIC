@@ -17,7 +17,9 @@ import re
 import threading
 import smtplib
 import types
+from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.MIMEImage import MIMEImage
 from email.Utils import formatdate
 from command import CommandException
 
@@ -31,52 +33,52 @@ from trigger import *
 
 class EmailTrigger(Trigger):
 
-    def __init__(my):
-        super(EmailTrigger, my).__init__()
-        my.cmd_attrs = {}
+    def __init__(self):
+        super(EmailTrigger, self).__init__()
+        self.cmd_attrs = {}
 
 
-    def get_title(my):
+    def get_title(self):
         return "EmailTrigger"
 
-    def check(my):
+    def check(self):
         return True
 
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
 
-    def execute(my):
+    def execute(self):
 
         # get command sobject and the notification code associated with it
-        class_name = my.get_command().__class__.__name__
+        class_name = self.get_command().__class__.__name__
         cmd_sobj = CommandSObj.get_by_class_name(class_name)
         # if this command is not registered, it cannot have a notification
         # code, so skip
         if not cmd_sobj:
             return
-        my.notification_code = cmd_sobj.get_value('notification_code')
+        self.notification_code = cmd_sobj.get_value('notification_code')
 
 
         # get the search objects operated on by the command and iterate
         # through them
-        command = my.get_command()
+        command = self.get_command()
         sobjects = command.get_sobjects()
         if not sobjects:
             msg = "Command [%s] has no sobjects.  Triggers cannot be called" % class_name
             Environment.add_warning("Command has no sobjects", msg)
 
-        input = my.get_input()
+        input = self.get_input()
 
         # TODO: figure out what to do when there are multiple sobjects
         # Right now, there is a single mail per sobject which may be
         # way too heavy.
         for sobject in sobjects:
-            my.handle_sobject(sobject, command, input)
+            self.handle_sobject(sobject, command, input)
 
 
 
-    def handle_sobject(my, main_sobject, command, input):
+    def handle_sobject(self, main_sobject, command, input):
 
         search_type = main_sobject.get_search_type_obj().get_base_key()
         parent = None
@@ -99,7 +101,7 @@ class EmailTrigger(Trigger):
         
         # Basically, this selects which command this notification will be
         # run from.  Other commands will be ignored.
-        search.add_filter("code", my.notification_code)
+        search.add_filter("code", self.notification_code)
         notifications = search.get_sobjects()
         
         # send an email for each notification that matches the rules
@@ -122,11 +124,11 @@ class EmailTrigger(Trigger):
                 compare = Xml.get_attribute(rule_node, 'compare')
                 # parse the rule
                 if group_type == "sobject":
-                    if not my._process_sobject(main_sobject, rule_key, compare):
+                    if not self._process_sobject(main_sobject, rule_key, compare):
                         break
                     value = main_sobject.get_value(rule_key, no_exception=True )
                 elif group_type == "parent":
-                    if not parent or not my._process_sobject(parent, rule_key, compare):
+                    if not parent or not self._process_sobject(parent, rule_key, compare):
                         break
                     value = parent.get_value(rule_key, no_exception=True )
                 else: # group_type == 'command'
@@ -143,7 +145,7 @@ class EmailTrigger(Trigger):
                 is_skipped = False
            
             # allow the handler to check for whether an email should be sent
-            handler = my.get_email_handler(notification, main_sobject, parent, command, input)
+            handler = self.get_email_handler(notification, main_sobject, parent, command, input)
             if is_skipped or not handler.check_rule():
                 continue
             # if all rules are met then get the groups for this notification
@@ -163,7 +165,7 @@ class EmailTrigger(Trigger):
                         %(handler.__class__.__name__, e.__str__()))
 
             # set the email
-            my.send(to_users, cc_users, bcc_users, subject, message)
+            self.send(to_users, cc_users, bcc_users, subject, message)
 
             from_user = Environment.get_user_name()
 
@@ -200,7 +202,7 @@ class EmailTrigger(Trigger):
 
 
 
-    def _process_sobject(my, sobject, rule_key, compare):
+    def _process_sobject(self, sobject, rule_key, compare):
         # if the sobject does not have this value, then return
         if not sobject.has_value(rule_key):
             print "... skipping: sobject has no attr: '%s'" % rule_key
@@ -216,7 +218,7 @@ class EmailTrigger(Trigger):
         return True
 
 
-    def get_email_handler(my, notification, sobject, parent, command, input={}):
+    def get_email_handler(self, notification, sobject, parent, command, input={}):
 
         email_handler_cls = notification.get_value("email_handler_cls")
         if not email_handler_cls:
@@ -251,7 +253,8 @@ class EmailTrigger(Trigger):
         else:
             user_email = Environment.get_login().get_full_email()
             if not user_email:
-                raise TacticException("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+                print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+                return
             sender.add(user_email)
 
         for x in to_users:
@@ -376,48 +379,76 @@ class SendEmail(Command):
         subject - string, email header
         cc - list of cc in email header
         bcc - list of strings, email header
+        paths - paths of files to attach
     '''
-    def execute(my):
+    def execute(self):
         
-        sender_email = my.kwargs.get('sender_email')
+        sender_email = self.kwargs.get('sender_email')
+        sender_name = self.kwargs.get('sender_name')
+        paths = self.kwargs.get("paths") or []
+
         if not sender_email:
             sender_email = Environment.get_login().get_full_email()
             if not sender_email:
-                raise TacticException("Sender's email is empty. Please check the email \
-                    attribute of [%s]." %Environment.get_user_name())
+                print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+                return
 
-        recipient_emails = my.kwargs.get('recipient_emails')
-        message = my.kwargs.get('msg')
+        recipient_emails = self.kwargs.get('recipient_emails')
+        message = self.kwargs.get('msg')
 
-        is_uni = False
-        st = 'plain'
+        is_unicode = False
+        if "<html>" in message or paths:
+            st = 'html'
+        else:
+            st = 'plain'
         charset = 'us-ascii'
         subject = "Email Test"
-        new_subject = my.kwargs.get('subject')
+        new_subject = self.kwargs.get('subject')
         if new_subject:
             subject = new_subject
 
 
-        cc = my.kwargs.get('cc') or []
-        bcc = my.kwargs.get('bcc') or []
+        cc = self.kwargs.get('cc') or []
+        bcc = self.kwargs.get('bcc') or []
 
         if type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
-            is_uni = True
+            is_unicode = True
 
-        msg = MIMEText(message, _subtype=st, _charset=charset)
-        msg.add_header('Subject', subject)
-        msg.add_header('From', sender_email)
+
+        msg = MIMEMultipart()
         msg.add_header('Reply-To', sender_email)
         msg.add_header('To',  ','.join(recipient_emails))
         msg.add_header('Date', formatdate(localtime=True))
         msg.add_header('Cc', ','.join(cc))
         msg.add_header('Bcc', ','.join(bcc))
+
+
+        msg_text = MIMEText(message, _subtype=st, _charset=charset)
+        msg.attach(msg_text)
+
+        for path in paths:
+            #message = '''<div style="text-align: center"><img src="cid:%s"/></div>''' % path
+            #msg_text = MIMEText(message, _subtype=st, _charset=charset)
+            #msg.attach(msg_text)
+
+            fp = open(path, "rb")
+            img = MIMEImage(fp.read())
+            fp.close()
+            img.add_header('Content-ID', '<{}>'.format(path))
+            msg.attach(img)
+
        
 
-        if is_uni:
+        msg.add_header('Subject', subject)
+        if sender_name:
+            msg.add_header('From', "%s <%s>" % (sender_name, sender_email))
+        else:
+            msg.add_header('From', "%s" % sender_email)
+
+        if is_unicode:
             msg.add_header('html_encoding', 'base64')
 
         recipient_emails = set(recipient_emails)
@@ -440,23 +471,23 @@ class SendEmail(Command):
 
 class EmailTrigger2(EmailTrigger):
 
-    def __init__(my):
-        super(EmailTrigger, my).__init__()
-        my.cmd_attrs = {}
+    def __init__(self):
+        super(EmailTrigger, self).__init__()
+        self.cmd_attrs = {}
 
-    def get_title(my):
+    def get_title(self):
         return "EmailTrigger"
 
-    def check(my):
+    def check(self):
         return True
 
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
 
-    def execute(my):
+    def execute(self):
         # get the caller
-        caller = my.get_caller()
+        caller = self.get_caller()
 
         # check to see if the caller is a serach object
         import pyasm
@@ -465,23 +496,23 @@ class EmailTrigger2(EmailTrigger):
         else:
             sobjects = caller.get_sobjects()
             if not sobjects:
-                msg = "Caller '%s' has no sobjects.  Triggers cannot be called" % class_name
+                msg = "Caller has no sobjects.  Triggers cannot be called" 
                 Environment.add_warning("Caller has no sobjects", msg)
 
 
         # get the notification
-        notification = my.get_trigger_sobj()
-        input = my.get_input()
+        notification = self.get_trigger_sobj()
+        input = self.get_input()
 
         # TODO: figure out what to do when there are multiple sobjects
         # Right now, there is a single mail per sobject which may be
         # too heavy.
         for sobject in sobjects:
-            my.handle_sobject(sobject, caller, notification, input)
+            self.handle_sobject(sobject, caller, notification, input)
 
 
 
-    def handle_sobject(my, main_sobject, caller, notification, input):
+    def handle_sobject(self, main_sobject, caller, notification, input):
 
         # TODO: deal with parents later
         parent = main_sobject.get_parent()
@@ -489,9 +520,11 @@ class EmailTrigger2(EmailTrigger):
         snapshot = input.get('snapshot')
         env_sobjects = {}
         if snapshot:
-            env_sobjects = {
-                'snapshot': snapshot
-            }
+            env_sobjects['snapshot'] = snapshot
+        note = input.get('note')
+        if note:
+            env_sobjects['note'] = note
+
         
         # get the rules from the database
         rules_xml = notification.get_xml_value("rules")
@@ -520,11 +553,11 @@ class EmailTrigger2(EmailTrigger):
             # DEPRECATED: likely the expression complete replaces this
             # parse the rule
             if group_type == "sobject":
-                if not my._process_sobject(main_sobject, rule_key, compare):
+                if not self._process_sobject(main_sobject, rule_key, compare):
                     break
                 value = main_sobject.get_value(rule_key, no_exception=True )
             elif group_type == "parent":
-                if not parent or not my._process_sobject(parent, rule_key, compare):
+                if not parent or not self._process_sobject(parent, rule_key, compare):
                     break
                 value = parent.get_value(rule_key, no_exception=True )
             else: # group_type == 'command'
@@ -546,19 +579,17 @@ class EmailTrigger2(EmailTrigger):
 
 
         # allow the handler to check for whether an email should be sent
-        handler = my.get_email_handler(notification, main_sobject, parent, caller, input)
+        handler = self.get_email_handler(notification, main_sobject, parent, caller, input)
         if is_skipped or not handler.check_rule():
-            my.add_description('Notification not sent due to failure to pass the set rules. Comment out the rules for now if you are just running email test.')
+            self.add_description('Notification not sent due to failure to pass the set rules. Comment out the rules for now if you are just running email test.')
             return
 
-        print "sending email!!!"
 
         # if all rules are met then get the groups for this notification
         try:
             to_users = handler.get_to()
             cc_users = handler.get_cc()
             bcc_users = handler.get_bcc()
-
 
             subject = handler.get_subject()
             if len(subject) > 60:
@@ -568,12 +599,16 @@ class EmailTrigger2(EmailTrigger):
             raise Exception("Error in running Email handler [%s]. %s" \
                     %(handler.__class__.__name__, e.__str__()))
 
+        if not to_users:
+            return
+        print "sending email: ", to_users
+
         #sobj_data = main_sobject.get_aux_data()
         #email_info = sobj_data.get('__tactic_email_info__')
         #extra_ccs = email_info.get('mail_cc')
         #extra_bccs = email_info.get('mail_bcc')
         # set the email
-        my.send(to_users, cc_users, bcc_users, subject, message)
+        self.send(to_users, cc_users, bcc_users, subject, message)
         
         if isinstance(to_users, set) and isinstance(cc_users, set) and \
                 isinstance(bcc_users, set):
@@ -598,8 +633,8 @@ class EmailTrigger2(EmailTrigger):
         project_code = Project.get_project_code()
 
         all_emails = ", ".join(email_list)
-        my.add_description('\nEmail sent to [%s]' %all_emails) 
-        my.add_notification(email_users, subject, message, project_code, from_user='')
+        self.add_description('\nEmail sent to [%s]' %all_emails) 
+        self.add_notification(email_users, subject, message, project_code, from_user='')
 
     def add_notification(all_users, subject, message, project_code, from_user=''):
 
@@ -648,47 +683,47 @@ class EmailTrigger2(EmailTrigger):
 
 class EmailTriggerThread(threading.Thread):
     '''Sending email as a separate thread'''
-    def __init__(my, sender_email, recipient_emails, msg):
-        super(EmailTriggerThread,my).__init__()
-        my.sender_email = sender_email
-        my.recipient_emails = recipient_emails
-        my.msg = msg
-        my.mailserver = Config.get_value('services','mailserver')
+    def __init__(self, sender_email, recipient_emails, msg):
+        super(EmailTriggerThread,self).__init__()
+        self.sender_email = sender_email
+        self.recipient_emails = recipient_emails
+        self.msg = msg
+        self.mailserver = Config.get_value('services','mailserver')
         # get optional arguments
-        my.user = Config.get_value('services','mail_user', True)
-        my.password = Config.get_value('services','mail_password', True)
-        my.port = Config.get_value('services','mail_port', True)
-        my.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
-        my.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
+        self.user = Config.get_value('services','mail_user', True)
+        self.password = Config.get_value('services','mail_password', True)
+        self.port = Config.get_value('services','mail_port', True)
+        self.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
+        self.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
 
-        if not my.port:
-            my.port = 25
+        if not self.port:
+            self.port = 25
         else:
-            my.port = int(my.port)
+            self.port = int(self.port)
             
 
-    def set_mailserver(my, mailserver):
-        my.mailserver = mailserver
+    def set_mailserver(self, mailserver):
+        self.mailserver = mailserver
 
    
-    def run(my):
+    def run(self):
         try:
             s = smtplib.SMTP()
-            s.connect(my.mailserver, my.port)
+            s.connect(self.mailserver, self.port)
 
-            if my.mail_tls_enabled:
+            if self.mail_tls_enabled:
                 s.ehlo()
                 s.starttls()
                 s.ehlo()
 
-            if my.user:
-                s.login(my.user,my.password)
+            if self.user:
+                s.login(self.user,self.password)
             #s.set_debuglevel(1)
-            if my.mail_sender_disabled:
+            if self.mail_sender_disabled:
                 # to get around some email server security check if the addr 
                 # is owned by the sender email address's owner
-                my.sender_email = ''
-            s.sendmail(my.sender_email, my.recipient_emails, my.msg)
+                self.sender_email = ''
+            s.sendmail(self.sender_email, self.recipient_emails, self.msg)
             s.quit()
 
         except Exception, e:
@@ -696,30 +731,30 @@ class EmailTriggerThread(threading.Thread):
             print "WARNING: Error sending email:"
             print str(e)
             print
-            print "mailserver: ", my.mailserver
-            print "port: ", my.port
-            print "sender: ", my.sender_email
-            print "recipients: ", my.recipient_emails
+            print "mailserver: ", self.mailserver
+            print "port: ", self.port
+            print "sender: ", self.sender_email
+            print "recipients: ", self.recipient_emails
             print
             #raise
 
 class EmailTriggerTestCmd(Command):
     '''This is run in the same thread for the email testing button'''
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         
-        my.kwargs = kwargs
-        my.sender_email = my.kwargs.get('sender_email')
+        self.kwargs = kwargs
+        self.sender_email = self.kwargs.get('sender_email')
 
-        if not my.sender_email:
+        if not self.sender_email:
             raise TacticException("Sender's email is empty.")
-        my.recipient_emails = my.kwargs.get('recipient_emails')
-        message = my.kwargs.get('msg')
+        self.recipient_emails = self.kwargs.get('recipient_emails')
+        message = self.kwargs.get('msg')
 
-        is_uni = False
+        is_unicode = False
         st = 'plain'
         charset = 'us-ascii'
         subject = "Email Test"
-        new_subject = my.kwargs.get('subject')
+        new_subject = self.kwargs.get('subject')
         if new_subject:
             subject = new_subject
 
@@ -727,74 +762,73 @@ class EmailTriggerTestCmd(Command):
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
-            is_uni = True
+            is_unicode = True
 
         msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
-        msg.add_header('From', my.sender_email)
-        msg.add_header('Reply-To', my.sender_email)
-        msg.add_header('To',  ','.join(my.recipient_emails))
+        msg.add_header('From', self.sender_email)
+        msg.add_header('Reply-To', self.sender_email)
+        msg.add_header('To',  ','.join(self.recipient_emails))
         msg.add_header('Date', formatdate(localtime=True))
        
 
-        if is_uni:
+        if is_unicode:
             msg.add_header('html_encoding', 'base64')
-        my.msg = msg
+        self.msg = msg
         
-        my.mailserver = Config.get_value('services','mailserver')
+        self.mailserver = Config.get_value('services','mailserver')
         # get optional arguments
-        my.user = Config.get_value('services','mail_user', True)
-        my.password = Config.get_value('services','mail_password', True)
-        my.port = Config.get_value('services','mail_port', True)
-        my.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
-        my.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
+        self.user = Config.get_value('services','mail_user', True)
+        self.password = Config.get_value('services','mail_password', True)
+        self.port = Config.get_value('services','mail_port', True)
+        self.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
+        self.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
 
 
-        if not my.port:
-            my.port = 25
+        if not self.port:
+            self.port = 25
         else:
-            my.port = int(my.port)
+            self.port = int(self.port)
          
-        super(EmailTriggerTestCmd, my).__init__()
+        super(EmailTriggerTestCmd, self).__init__()
 
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
 
-    def set_mailserver(my, mailserver):
-        my.mailserver = mailserver
+    def set_mailserver(self, mailserver):
+        self.mailserver = mailserver
 
    
-    def execute(my):
+    def execute(self):
         try:
             s = smtplib.SMTP()
-            s.connect(my.mailserver, my.port)
+            s.connect(self.mailserver, self.port)
 
-            if my.mail_tls_enabled:
+            if self.mail_tls_enabled:
                 s.ehlo()
                 s.starttls()
                 s.ehlo()
 
-            if my.user:
-                s.login(my.user,my.password)
+            if self.user:
+                s.login(self.user,self.password)
             #s.set_debuglevel(1)
-            if my.mail_sender_disabled:
+            if self.mail_sender_disabled:
                 # to get around some email server security check if the addr 
                 # is owned by the sender email address's owner
-                my.sender_email = ''
-            s.sendmail(my.sender_email, my.recipient_emails, my.msg.as_string())
+                self.sender_email = ''
+            s.sendmail(self.sender_email, self.recipient_emails, self.msg.as_string())
             s.quit()
 
         except Exception, e:
-
             msg = []
             msg.append( "-"*60)
             msg.append( "WARNING: Error sending email:")
             msg.append( str(e))
-            msg.append( "mailserver: %s"%my.mailserver)
-            msg.append("port: %s" %my.port)
-            msg.append( "sender: %s"% my.sender_email)
-            msg.append( "recipients: %s"% ','.join(my.recipient_emails))
+            msg.append( "mailserver: %s"%self.mailserver)
+            msg.append("port: %s" %self.port)
+            msg.append( "sender: %s"% self.sender_email)
+            msg.append( "recipients: %s"% ','.join(self.recipient_emails))
             
             raise TacticException('\n'.join(msg))
 

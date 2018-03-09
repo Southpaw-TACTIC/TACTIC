@@ -23,16 +23,6 @@ class ProjectSetting(SObject):
     SEARCH_TYPE = "config/prod_setting"
 
 
-    # FIXME: what is this for?
-    """
-    def get_app_tabs(my):
-        '''This controls what tabs are visible'''
-        return ["3D Asset", "Checkin", "Sets", "Anim Loader", "Anim Checkin", "Layer Loader", "Layer Checkin", "Shot"]
-    """
-               
-
-
-
     def _get_container_key(cls, key, search_type=None):
         if search_type:
             key = "ProjectSetting:%s:%s" % (key, search_type)
@@ -154,7 +144,7 @@ class ProjectSetting(SObject):
     get_dict_by_key = classmethod(get_dict_by_key)
 
     
-    def create(key, value, type, description='', search_type=''):
+    def create(key, value, type="string", description='', search_type=''):
         '''create a ProjectSetting'''
 
         if Project.get_project_name() in ['admin', 'sthpw']:

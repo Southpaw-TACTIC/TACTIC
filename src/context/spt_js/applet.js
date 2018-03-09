@@ -880,6 +880,10 @@ spt.Applet.get = function() {
     }
 
 
+
+    // NOTE: The Java applet is no longer practically supported by any of the
+    // browsers.
+
     var applet;
     if (spt.browser.is_IE()) {
        

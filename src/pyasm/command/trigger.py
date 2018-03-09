@@ -11,6 +11,8 @@
 # Description: Triggers are called periodically in the code based on some event
 # These are registered in the global container and listen for events.
 
+from __future__ import print_function
+
 __all__ = ["TriggerException", "Trigger", "SampleTrigger", "TimedTrigger", "SampleTimedTrigger"]
 
 import sys, traceback
@@ -36,83 +38,83 @@ class Trigger(Command):
     TRIGGER_EVENT_KEY = "triggers:cache"
     NOTIFICATION_EVENT_KEY = "notifications:cache"
 
-    def __init__(my, **kwargs):
-        my.caller = None
-        my.message = None
-        my.trigger_sobj = None
-        my.input = {}
-        my.output = {}
-        my.description = ''
-        my.kwargs = kwargs
-        super(Trigger,my).__init__()
+    def __init__(self, **kwargs):
+        self.caller = None
+        self.message = None
+        self.trigger_sobj = None
+        self.input = {}
+        self.output = {}
+        self.description = ''
+        self.kwargs = kwargs
+        super(Trigger,self).__init__()
 
-    def get_title(my):
-        print "WARNING: Should override 'get_title' function for %s" % my
-        return Common.get_full_class_name(my)
+    def get_title(self):
+        print("WARNING: Should override 'get_title' function for %s" % self)
+        return Common.get_full_class_name(self)
 
 
-    def set_trigger_sobj(my, trigger_sobj):
-        my.trigger_sobj = trigger_sobj
+    def set_trigger_sobj(self, trigger_sobj):
+        self.trigger_sobj = trigger_sobj
 
-    def get_trigger_sobj(my):
-        return my.trigger_sobj
+    def get_trigger_sobj(self):
+        return self.trigger_sobj
 
-    def get_trigger_data(my):
-        data = my.trigger_sobj.get_value("data")
+    def get_trigger_data(self):
+        data = self.trigger_sobj.get_value("data")
         if not data:
             return {}
         else:
             return jsonloads(data)
 
 
-    def set_command(my, command):
-        my.caller = command
+    def set_command(self, command):
+        self.caller = command
 
-    def set_message(my, message):
-        my.message = message
+    def set_message(self, message):
+        self.message = message
 
-    def get_message(my):
-        return my.message
+    def get_message(self):
+        return self.message
 
-    def set_event(my, event):
-        my.message = event
+    def set_event(self, event):
+        self.message = event
 
-    def get_event(my):
-        return my.message
+    def get_event(self):
+        return self.message
     
-    def get_command(my):
-        return my.caller
+    def get_command(self):
+        return self.caller
 
-    def set_caller(my, caller):
-        my.caller = caller
+    def set_caller(self, caller):
+        self.caller = caller
 
-    def get_caller(my):
-        return my.caller
+    def get_caller(self):
+        return self.caller
 
-    def get_command_class(my):
-        command_class = my.caller.__class__.__name__
+    def get_command_class(self):
+        command_class = self.caller.__class__.__name__
         return command_class
 
 
     # set inputs and outputs
-    def set_input(my, input):
-        my.input = input
+    def set_input(self, input):
+        self.input = input
     
-    def get_input(my):
-        return my.input
+    def get_input(self):
+        return self.input
 
-    def set_output(my, output):
-        my.output = output
+    def set_output(self, output):
+        self.output = output
     
-    def get_output(my):
-        return my.output
+    def get_output(self):
+        return self.output
 
-    def set_description(my, description):
-        my.description = description
-    def get_description(my):
-        return my.description
+    def set_description(self, description):
+        self.description = description
+    def get_description(self):
+        return self.description
 
-    def execute(my):
+    def execute(self):
         raise TriggerException("Must override execute function")
 
 
@@ -121,73 +123,105 @@ class Trigger(Command):
     # DEPRECATED
     def append_trigger(caller, trigger, event):
         '''append to the the list of called triggers'''
-        #print "Trigger.append_trigger is DEPRECATED"
+        #print("Trigger.append_trigger is DEPRECATED")
         trigger.set_caller(caller)
         trigger.set_event(event)
         triggers = Container.append_seq("Trigger:called_triggers",trigger)
     append_trigger = staticmethod(append_trigger)
 
 
+    def serialize_data(cls, data):
+        try:
+            data = jsondumps(data)
+            return data
 
-    def call_all_triggers():
+        except Exception as e:
+
+            new_data = {}
+
+            for name, value in data.items():
+
+                if isinstance(value, SObject):
+                    value = value.get_sobject_dict()
+
+                new_data[name] = value
+
+            return new_data
+
+    serialize_data = classmethod(serialize_data)
+
+
+
+    def call_all_triggers(cls):
         '''calls all triggers for events that have occurred'''
         triggers = Container.get("Trigger:called_triggers")
         Container.remove("Trigger:called_triggers")
         if not triggers:
             return
 
-        
-        prev_called_triggers = Container.get_seq("Trigger:prev_called_triggers")
+        GlobalContainer.put("KillThreadCmd:allow", "false")
+        try:
+            
+            prev_called_triggers = Container.get_seq("Trigger:prev_called_triggers")
+            # run each trigger in a separate transaction
+            for trigger in triggers:
 
-        # run each trigger in a separate transaction
-        for trigger in triggers:
-        
-            # prevent recursive triggers shutting down the system
-            input = trigger.get_input()
+                try:
+                
+                    # prevent recursive triggers shutting down the system
+                    input = trigger.get_input()
+                    input_json = cls.serialize_data(input)
 
-            # remove timestamp (Why was it commented out? i.e. sync related?)
-            #sobject = input.get('sobject')
-            #if sobject and sobject.has_key('timestamp'):
-            #    del sobject['timestamp']
-            input_json = jsondumps(input)
+                    class_name = Common.get_full_class_name(trigger)
 
-            class_name = Common.get_full_class_name(trigger)
+                    event = trigger.get_event()
 
-            event = trigger.get_event()
+                    if class_name == 'pyasm.command.subprocess_trigger.SubprocessTrigger':
+                        class_name = trigger.get_class_name()
 
-            if class_name == 'pyasm.command.subprocess_trigger.SubprocessTrigger':
-                class_name = trigger.get_class_name()
+                    if (event, class_name, input_json) in prev_called_triggers:
+                        # handle the emails, which can have multiple per event
+                        if class_name in [
+                            "pyasm.command.email_trigger.EmailTrigger",
+                            "pyasm.command.email_trigger.EmailTrigger2"
+                        ]:
+                            pass
+                        else:
+                            #print("Recursive trigger (event: %s,  class: %s)" % (event, class_name))
+                            continue
 
-            if (event, class_name, input_json) in prev_called_triggers:
-                # handle the emails, which can have multiple per event
-                if class_name in [
-                    "pyasm.command.email_trigger.EmailTrigger",
-                    "pyasm.command.email_trigger.EmailTrigger2"
-                ]:
-                    pass
-                else:
-                    #print("Recursive trigger (event: %s,  class: %s)" % (event, class_name))
+                    # store previous called triggers
+                    prev_called_triggers.append( (event, class_name, input_json) )
+
+                    # set call_trigger to false to prevent infinite loops
+                    if not issubclass(trigger.__class__, Trigger):
+                        # if this is not a trigger, then wrap in a command
+                        handler_cmd = HandlerCmd(trigger)
+                        handler_cmd.add_description(trigger.get_description())
+                        trigger = handler_cmd
+
+
+                    # triggers need to run in their own transaction when
+                    # they get here.
+                    Trigger.execute_cmd(trigger, call_trigger=False)
+
+                except Exception as e:
+                    # if there is an error in calling this trigger for some
+                    # reason, carry on with the other triggers
+                    # print the stacktrace
+                    tb = sys.exc_info()[2]
+                    stacktrace = traceback.format_tb(tb)
+                    stacktrace_str = "".join(stacktrace)
+                    print("-"*50)
+                    print(stacktrace_str)
+                    print(str(e))
+                    print("-"*50)
                     continue
 
-            # store previous called triggers
-            prev_called_triggers.append( (event, class_name, input_json) )
+        finally:
+            GlobalContainer.remove("KillThreadCmd:allow")
 
-            # set call_trigger to false to prevent infinite loops
-            if not issubclass(trigger.__class__, Trigger):
-                # if this is not a trigger, then wrap in a command
-                handler_cmd = HandlerCmd(trigger)
-                handler_cmd.add_description(trigger.get_description())
-                trigger = handler_cmd
-
-
-            # triggers need to run in their own transaction when
-            # they get here.
-            Trigger.execute_cmd(trigger, call_trigger=False)
-            # DEPRECATED
-            #in_transaction = trigger.is_in_transaction()
-
-
-    call_all_triggers = staticmethod(call_all_triggers)
+    call_all_triggers = classmethod(call_all_triggers)
 
 
 
@@ -375,8 +409,8 @@ class Trigger(Command):
                 try:
                     search = Search("config/trigger")
                     project_triggers = search.get_sobjects()
-                except SearchException, e:
-                    print "WARNING: ", e
+                except SearchException as e:
+                    print("WARNING: ", e)
                     project_triggers = []
             else:
                 project_triggers = []
@@ -476,6 +510,14 @@ class Trigger(Command):
                     else:
                         kwargs = {}
 
+                    # add any data to the kwargs
+                    trigger_data = trigger_sobj.get_value("data")
+                    if trigger_data:
+                        trigger_data = jsonloads(trigger_data)
+                        for name, value in trigger_data.items():
+                            kwargs[name] = value
+
+
                     from subprocess_trigger import SubprocessTrigger
                     trigger = SubprocessTrigger()
                     trigger.set_mode(mode)
@@ -486,7 +528,7 @@ class Trigger(Command):
                         "project": project_code,
                         "ticket": Environment.get_ticket(),
                         "class_name": trigger_class,
-                        "kwargs": kwargs
+                        "kwargs": kwargs,
                     }
                     trigger.set_data(data)
 
@@ -506,10 +548,10 @@ class Trigger(Command):
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
                 raise
 
             if issubclass( trigger.__class__, Trigger):
@@ -521,7 +563,7 @@ class Trigger(Command):
             # create a package
             # transfer outputs to inputs.  This allows a command to deliver
             # from one process to another
-            if output:
+            if output or output == {}:
                 input = output.copy()
             else:
                 input = caller.get_info()
@@ -540,28 +582,23 @@ class Trigger(Command):
             # otherwise call the trigger immediately
             try:
                 trigger.execute()
-            except Exception, e:
+            except Exception as e:
                 #log = ExceptionLog.log(e)
 
                 # print the stacktrace
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
 
                 caller.errors.append("Trigger [%s] failed: %s" \
                     %(trigger.get_title(), str(e)))
 
                 raise
            
-            # DEPRECATED
-            #try:
-            #    exec("trigger.handle_%s()" % event)
-            #except AttributeError:
-            #    pass
 
         return triggers
 
@@ -600,7 +637,7 @@ class Trigger(Command):
         triggers.extend(project_triggers)
 
         #for trigger in triggers:
-        #    print trigger.get_search_key()
+        #    print(trigger.get_search_key())
 
         search_type = None
 
@@ -631,7 +668,7 @@ class Trigger(Command):
                 continue
 
 
-            #print event, trigger_process, process,trigger.get_id()
+            #print(event, trigger_process, process,trigger.get_id())
 
             if trigger.get_value("event") == event:
                 event_triggers.append(trigger)
@@ -800,8 +837,8 @@ class SnapshotIsLatestTrigger(Trigger):
     is_undoable = classmethod(is_undoable)
 
 
-    def execute(my):
-        input = my.get_input()
+    def execute(self):
+        input = self.get_input()
         mode = input.get("mode")
         # NOTE: this could be run during update and insert of snapshot
         # during insert, for simple snapshot creation like server.create_snaphot()
@@ -848,10 +885,10 @@ class SnapshotIsLatestTrigger(Trigger):
         snapshot = Search.get_by_search_key(search_key)
         
 
-        #print "mode: ", mode
-        #print "snapshot: ", snapshot.get("version"), snapshot.get("context")
-        #print "data: ", input.get("update_data").keys()
-        #print
+        #print("mode: ", mode)
+        #print("snapshot: ", snapshot.get("version"), snapshot.get("context"))
+        #print("data: ", input.get("update_data").keys())
+        #print("\n")
 
 
         # if the current snapshot is already the latest, don't do anything
@@ -873,10 +910,10 @@ __all__.append('SearchTypeCacheTrigger')
 from tactic_client_lib.interpreter import Handler
 class SearchTypeCacheTrigger(Handler):
 
-    def execute(my):
+    def execute(self):
         from pyasm.biz import CacheContainer
-        print "running cache trigger"
-        search_type = my.input.get("search_type")
+        print("running cache trigger")
+        search_type = self.input.get("search_type")
         assert search_type
         cache = CacheContainer.get(search_type)
         cache.make_dirty()
@@ -886,13 +923,13 @@ class SearchTypeCacheTrigger(Handler):
 
 
 class SampleTrigger(Trigger):
-    def execute(my):
+    def execute(self):
         # filter this to the specific command
-        command_class = my.get_command_class()
+        command_class = self.get_command_class()
         if command_class != "SimpleStatusCmd":
             return
 
-        print "Executing sample trigger"
+        print("Executing sample trigger")
 
     
 
@@ -901,48 +938,48 @@ import time
 
 class TimedTrigger(Base):
 
-    def __init__(my):
+    def __init__(self):
         # start the clock on creation time
-        my.start_interval = time.time()
-        my.interval = 0
-        my.is_executing = False
+        self.start_interval = time.time()
+        self.interval = 0
+        self.is_executing = False
 
 
-    def get_execute_interval(my):
+    def get_execute_interval(self):
         '''return number of seconds between execution'''
         return 
 
-    def get_execute_time(my):
+    def get_execute_time(self):
         '''return time of day this needs to be executed'''
         return
 
 
-    def get_time(my):
+    def get_time(self):
         '''return time when this should be executed'''
         pass
 
-    def is_in_separate_thread(my):
+    def is_in_separate_thread(self):
         '''determines whether this trigger should be run in an independent
         separate thread'''
         return False
 
 
-    def is_ready(my):
+    def is_ready(self):
 
-        if my.is_executing:
+        if self.is_executing:
             return False
 
-        execute_interval = my.get_execute_interval()
+        execute_interval = self.get_execute_interval()
 
         current = time.time()
-        my.interval = current - my.start_interval
+        self.interval = current - self.start_interval
 
         # check if the execute interval is exceeded
-        if execute_interval and my.interval >= execute_interval:
+        if execute_interval and self.interval >= execute_interval:
             return True
 
         # check time of day
-        execute_time = my.get_execute_time()
+        execute_time = self.get_execute_time()
         if execute_time:
             execute_hour, execute_minute = execute_time.split(":")
 
@@ -952,37 +989,37 @@ class TimedTrigger(Base):
 
             if current_hour == execute_hour:
                 if execute_minute == current_minute:
-                    print "time of day!!!"
+                    print("time of day!!!")
                     return True
 
         return False
 
 
 
-    def _do_execute(my):
+    def _do_execute(self):
         current = time.time()
-        my.is_executing = True
-        my.execute()
-        my.is_executing = False
-        my.start_interval = current
+        self.is_executing = True
+        self.execute()
+        self.is_executing = False
+        self.start_interval = current
        
 
-    def execute(my):
+    def execute(self):
         raise TriggerException("Must override execute function")
 
 
 
 class SampleTimedTrigger(TimedTrigger):
 
-    def get_execute_interval(my):
+    def get_execute_interval(self):
         '''return number of seconds between execution'''
         return 3600
 
-    def execute(my):
-        print "doing a bunch of stuff"
-        print "sleeping"
+    def execute(self):
+        print("doing a bunch of stuff")
+        print("sleeping")
         time.sleep(15)
-        print ".... done"
+        print(".... done")
 
         
 
@@ -994,29 +1031,29 @@ from email_handler import EmailHandler
 
 class BurnDownTimedTrigger(TimedTrigger):
 
-    def __init__(my):
-        my.notified = {}
-        my.keyed = {}
-        super(BurnDownTimedTrigger, my).__init__()
+    def __init__(self):
+        self.notified = {}
+        self.keyed = {}
+        super(BurnDownTimedTrigger, self).__init__()
 
-    def get_execute_interval(my):
+    def get_execute_interval(self):
         '''return number of seconds between execution'''
         return 5
         #pass
 
-    def get_execute_time(my):
+    def get_execute_time(self):
         #return "00:20"
         pass
 
-    def is_in_separate_thread(my):
+    def is_in_separate_thread(self):
         return False
 
 
-    def execute(my):
+    def execute(self):
         date = Date()
         cur_time = date.get_utc()
 
-        print "Burn down"
+        print("Burn down")
 
         #first = 8 * 60 * 60
         first = 30
@@ -1064,13 +1101,13 @@ class BurnDownTimedTrigger(TimedTrigger):
 
             # once we've reached the first marker, email next interval
             start = (interval - first) / next
-            print "start: ", interval, first, start
+            print("start: ", interval, first, start)
 
             continue
 
             parent = sobject.get_parent()
             if not parent:
-                print "WARNING: parent does not exist [%s]" % sobject.get_search_key()
+                print("WARNING: parent does not exist [%s]" % sobject.get_search_key())
                 continue
 
             process = sobject.get_value("process")
@@ -1078,7 +1115,7 @@ class BurnDownTimedTrigger(TimedTrigger):
             status = sobject.get_value("status")
             code = parent.get_code()
 
-            print (code, assigned, process, status, interval/3600)
+            print(code, assigned, process, status, interval/3600)
             ready_sobjects.append( sobject )
 
 
@@ -1095,15 +1132,15 @@ class BurnDownTimedTrigger(TimedTrigger):
 
         from pyasm.command import Command
         class BurnDownCmd(Command):
-            def get_title(my):
+            def get_title(self):
                 return "Burn Down Command"
-            def set_sobjects(my, sobjects):
-                my.sobjects = [sobject]
-            def execute(my):
+            def set_sobjects(self, sobjects):
+                self.sobjects = [sobject]
+            def execute(self):
                 # call email trigger
                 from email_trigger import EmailTrigger
                 email_trigger = EmailTrigger()
-                email_trigger.set_command(my)
+                email_trigger.set_command(self)
                 email_trigger.execute()
 
 
@@ -1115,7 +1152,7 @@ class BurnDownTimedTrigger(TimedTrigger):
         # remember the time of each email
         for sobject in ready_sobjects:
             search_key = sobject.get_search_key()
-            my.notified[search_key] = cur_time
+            self.notified[search_key] = cur_time
             
 
 
@@ -1123,13 +1160,13 @@ class BurnDownTimedTrigger(TimedTrigger):
     
 class BurnDownEmailHandler(EmailHandler):
 
-    def get_subject(my):
-        parent = my.sobject.get_parent()
+    def get_subject(self):
+        parent = self.sobject.get_parent()
         search_type_obj = parent.get_search_type_obj()
         title = search_type_obj.get_title()
 
-        process = my.sobject.get_value("process")
-        assigned = my.sobject.get_value("assigned")
+        process = self.sobject.get_value("process")
+        assigned = self.sobject.get_value("assigned")
 
         return "Task In Progress: %s, %s, %s, %s" % (title, parent.get_code(), process, assigned )
 

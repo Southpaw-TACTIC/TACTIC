@@ -19,37 +19,37 @@ from pyasm.widget import TextWdg, TextAreaWdg
 
 class CKEditorWdg(BaseRefreshWdg):
 
-    def init(my):
-        name = my.kwargs.get("name")
+    def init(self):
+        name = self.kwargs.get("name")
         assert(name)
-        my.text = TextAreaWdg(name)
-        my.text_id = my.kwargs.get("text_id")
-        if not my.text_id:
-            my.text_id = my.text.set_unique_id()
-    def get_display(my):
+        self.text = TextAreaWdg(name)
+        self.text_id = self.kwargs.get("text_id")
+        if not self.text_id:
+            self.text_id = self.text.set_unique_id()
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("min-width: 600px")
 
         top.add_class("spt_ckeditor_top")
-        top.add_attr("text_id", my.text_id)
+        top.add_attr("text_id", self.text_id)
 
-        top.add(my.text)
+        top.add(self.text)
 
-        value = my.kwargs.get("value")
+        value = self.kwargs.get("value")
         if value:
-            my.text.set_value(value)
+            self.text.set_value(value)
 
-        my.text.add_style("width: 100%")
-        my.text.add_style("height: 100%")
-        my.text.add_style("min-height: 500px")
-        my.text.add_style("display: none")
-        my.text.set_id(my.text_id)
+        self.text.add_style("width: 100%")
+        self.text.add_style("height: 100%")
+        self.text.add_style("min-height: 500px")
+        self.text.add_style("display: none")
+        self.text.set_id(self.text_id)
 
-        my.text.add_behavior( {
+        self.text.add_behavior( {
         'type': 'load',
-        'color': my.text.get_color("background", -10),
-        'text_id': my.text_id,
+        'color': self.text.get_color("background", -10),
+        'text_id': self.text_id,
         'cbjs_action': '''
 
         /*

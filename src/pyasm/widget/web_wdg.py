@@ -49,7 +49,7 @@ import random, os, re
 
 class PyMayaInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
         html = Html()
 
         # this is to prevent this function from being run in other tabs
@@ -109,7 +109,7 @@ class PyMayaInit(Widget):
 
 class PyFlashInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         html = Html()
@@ -136,7 +136,7 @@ class PyFlashInit(Widget):
 
 class PyPerforceInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
         html = Html()
         html.writeln("<script>var pyp4=new PyPerforce()</script>")
         
@@ -148,7 +148,7 @@ class PyPerforceInit(Widget):
 
 class PyHoudiniInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
 
@@ -179,7 +179,7 @@ class PyHoudiniInit(Widget):
 
 class PyXSIInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
 
@@ -215,7 +215,7 @@ class PyXSIInit(Widget):
 
 class BottomWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         html = Html()
         # put a real button on the bottom of the page.  The form needs at least
@@ -252,7 +252,7 @@ class BottomWdg(Widget):
 
 class DynTopWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         html = Html()
         html.writeln("<html>")
@@ -308,7 +308,7 @@ class DynTopWdg(Widget):
 
 class DynBottomWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         html = Html()
         html.writeln("</body>")
@@ -320,53 +320,53 @@ class DynBottomWdg(Widget):
 
 class EditLinkWdg(HtmlElement):
 
-    def __init__(my, search_type, search_id, text="Edit", config_base='edit', \
+    def __init__(self, search_type, search_id, text="Edit", config_base='edit', \
             widget='tactic.ui.panel.EditWdg', long=False, action=''):
-        super(EditLinkWdg,my).__init__("div")
-        my.text = text
-        my.search_type = search_type
-        my.search_id = search_id
-        my.long = long
-        #my.add_style("padding: 0 5px 0 5px")
-        my.config_base = config_base
-        my.view = config_base
-        my.widget = widget 
+        super(EditLinkWdg,self).__init__("div")
+        self.text = text
+        self.search_type = search_type
+        self.search_id = search_id
+        self.long = long
+        #self.add_style("padding: 0 5px 0 5px")
+        self.config_base = config_base
+        self.view = config_base
+        self.widget = widget 
         # layout can be 'default' or 'plain'
-        my.layout = 'default'
-        my.refresh_mode = None
+        self.layout = 'default'
+        self.refresh_mode = None
         # this is used in adding arbitrary values to the behavior
-        my.value_dict = {}
-        my.action = action # what is this?
+        self.value_dict = {}
+        self.action = action # what is this?
 
-    def get_button(my):
-        button = IconButtonWdg(my.text, IconWdg.EDIT, my.long)
+    def get_button(self):
+        button = IconButtonWdg(self.text, IconWdg.EDIT, self.long)
         return button
 
-    def set_layout(my, layout):
-        my.layout = layout
+    def set_layout(self, layout):
+        self.layout = layout
 
 
-    def set_refresh_mode(my, refresh_mode):
+    def set_refresh_mode(self, refresh_mode):
         assert refresh_mode in ['page', 'table', 'row']
         # NOTE: only page is supported
-        my.refresh_mode = refresh_mode
+        self.refresh_mode = refresh_mode
 
 
-    def add_url_options(my, url):
+    def add_url_options(self, url):
         '''DEPRECATED'''
         pass
 
-    def modify_behavior(my, bvr):
+    def modify_behavior(self, bvr):
         '''subclasses update the edit behavior here'''
         pass
 
-    def get_hidden(my):
-        search_type_base = SearchType.get(my.search_type).get_base_key()
+    def get_hidden(self):
+        search_type_base = SearchType.get(self.search_type).get_base_key()
         # check if it is an EditLinkWdg, with a valid search_id
         hidden = None
-        key = "%s|search_ids_str" % my.search_type
-        if my.sobjects:
-            values = SObject.get_values( my.sobjects, 'id', unique=False)
+        key = "%s|search_ids_str" % self.search_type
+        if self.sobjects:
+            values = SObject.get_values( self.sobjects, 'id', unique=False)
             values = [ str(x) for x in values if isinstance(x, int)]
             search_ids_str = "|".join(values)
             if search_ids_str:
@@ -375,33 +375,33 @@ class EditLinkWdg(HtmlElement):
                
         return hidden
 
-    def get_display(my):
+    def get_display(self):
 
-        search_type_base = SearchType.get(my.search_type).get_base_key()
+        search_type_base = SearchType.get(self.search_type).get_base_key()
        
-        button = my.get_button()
-        behavior = EditLinkWdg.get_edit_behavior(my.widget, my.search_type, \
-            my.search_id, my.view)
-        my.modify_behavior(behavior)
+        button = self.get_button()
+        behavior = EditLinkWdg.get_edit_behavior(self.widget, self.search_type, \
+            self.search_id, self.view)
+        self.modify_behavior(behavior)
         button.add_behavior(behavior)
         
 
-        my.add(button)
+        self.add(button)
 
-        return super(EditLinkWdg,my).get_display()
+        return super(EditLinkWdg,self).get_display()
 
-    def set_value_dict(my, value_dict):
+    def set_value_dict(self, value_dict):
         '''this is used in adding arbitrary values to the behavior'''
-        my.value_dict = value_dict
+        self.value_dict = value_dict
 
-    def set_iframe_width(my, width):
-        my.iframe_width = width
+    def set_iframe_width(self, width):
+        self.iframe_width = width
 
-    def _set_iframe_width(my, iframe):
-        if my.layout == 'default':
-            iframe.set_width(my.iframe_width)
+    def _set_iframe_width(self, iframe):
+        if self.layout == 'default':
+            iframe.set_width(self.iframe_width)
         else:
-            iframe.set_width(my.iframe_width - 18)
+            iframe.set_width(self.iframe_width - 18)
 
     def get_edit_behavior(class_name, search_type, search_id, view):
         '''get the default edit behavior'''
@@ -426,118 +426,118 @@ class EditLinkWdg(HtmlElement):
     get_edit_behavior = staticmethod(get_edit_behavior)
 
 class ProdSettingLinkWdg(EditLinkWdg):
-    def __init__(my,  search_id, search_type='config/prod_setting', text="Edit Project Setting", long=False, \
+    def __init__(self,  search_id, search_type='config/prod_setting', text="Edit Project Setting", long=False, \
             config_base='edit', widget="tactic.ui.panel.EditWdg"):
-        super(ProdSettingLinkWdg, my).__init__(search_type, search_id, text, config_base, widget)
-        my.set_refresh_mode('page') 
+        super(ProdSettingLinkWdg, self).__init__(search_type, search_id, text, config_base, widget)
+        self.set_refresh_mode('page') 
         
-    def _set_iframe_width(my, iframe):
-        if my.layout == 'default':
+    def _set_iframe_width(self, iframe):
+        if self.layout == 'default':
             iframe.set_width(74)
         else:
             iframe.set_width(56)
     
-    def modify_behavior(my, bvr):
+    def modify_behavior(self, bvr):
         '''values is for web form values'''
-        bvr['values'] = my.value_dict
+        bvr['values'] = self.value_dict
 
 class SubmissionLinkWdg(EditLinkWdg):
-    def __init__(my, search_type, search_id, text="Submit", long=False, \
+    def __init__(self, search_type, search_id, text="Submit", long=False, \
             config_base='submit', widget='pyasm.prod.web.SubmissionWdg'):
            
-        my.long = long
+        self.long = long
 
-        my.parent_search_type = search_type
-        my.parent_search_id = search_id
+        self.parent_search_type = search_type
+        self.parent_search_id = search_id
 
         search_type = "prod/submission"
         search_id = "-1"
         config_base = "insert"
 
-        super(SubmissionLinkWdg,my).__init__(search_type,search_id,text,config_base, widget)
+        super(SubmissionLinkWdg,self).__init__(search_type,search_id,text,config_base, widget)
 
-    def modify_behavior(my, bvr):
+    def modify_behavior(self, bvr):
         '''values is for web form values'''
         val = {}
-        val["parent_search_type"] = my.parent_search_type
-        val["parent_search_id"] = my.parent_search_id
+        val["parent_search_type"] = self.parent_search_type
+        val["parent_search_id"] = self.parent_search_id
         bvr['values'] = val
 
 
-    def _set_iframe_width(my, iframe):
-        if my.layout == 'default':
+    def _set_iframe_width(self, iframe):
+        if self.layout == 'default':
             iframe.set_width(74)
         else:
             iframe.set_width(56)
 
-    def get_button(my):
+    def get_button(self):
         from tactic.ui.widget.button_new_wdg import IconButtonWdg
-        button = IconButtonWdg(title=my.text, icon=IconWdg.FILM)
-        #button = IconButtonWdg(my.text, IconWdg.FILM, my.long)
+        button = IconButtonWdg(title=self.text, icon=IconWdg.FILM)
+        #button = IconButtonWdg(self.text, IconWdg.FILM, self.long)
         return button
 
 
 class RenderLinkWdg(EditLinkWdg):
-    def __init__(my, search_type, search_id, text="Render", long=False, \
+    def __init__(self, search_type, search_id, text="Render", long=False, \
             config_base='submit', widget='pyasm.prod.web.RenderSubmissionWdg'):
            
-        my.long = long
+        self.long = long
 
-        my.parent_search_type = search_type
-        my.parent_search_id = search_id
+        self.parent_search_type = search_type
+        self.parent_search_id = search_id
 
         search_type = "sthpw/queue"
         search_id = "-1"
         config_base = "submit"
 
-        EditLinkWdg.__init__(my, search_type,search_id,text,config_base, widget)
+        EditLinkWdg.__init__(self, search_type,search_id,text,config_base, widget)
 
-    def modify_behavior(my, bvr):
+    def modify_behavior(self, bvr):
         val = {}
-        val["parent_search_type"] = my.parent_search_type
-        val["parent_search_id"] = my.parent_search_id
+        val["parent_search_type"] = self.parent_search_type
+        val["parent_search_id"] = self.parent_search_id
         bvr['values'] = val
 
 
 
 
-    def _set_iframe_width(my, iframe):
-        if my.layout == 'default':
+    def _set_iframe_width(self, iframe):
+        if self.layout == 'default':
             iframe.set_width(74)
         else:
             iframe.set_width(56)
 
-    def get_button(my):
-        button = IconButtonWdg(my.text, IconWdg.RENDER, my.long)
+    def get_button(self):
+        button = IconButtonWdg(self.text, IconWdg.RENDER, self.long)
         return button
 
 
 
 class FileAppendLinkWdg(EditLinkWdg):
-    def __init__(my, search_type, search_id, text="Append Files", long=False, \
+    def __init__(self, search_type, search_id, text="Append Files", long=False, \
             config_base='append', widget='tactic.ui.panel.FileAppendWdg'):
 
-        my.long = long
+        self.long = long
            
-        EditLinkWdg.__init__(my, search_type,search_id,text,config_base, widget)
+        EditLinkWdg.__init__(self, search_type,search_id,text,config_base, widget)
 
-    def modify_behavior(my, bvr):
+    def modify_behavior(self, bvr):
         val = {}
         from pyasm.biz import Snapshot
-        snapshot = Search.get_by_id(my.search_type, my.search_id)
-        val["search_type"] = my.search_type
-        val["search_id"] = my.search_id
+        snapshot = Search.get_by_id(self.search_type, self.search_id)
+        val["search_type"] = self.search_type
+        val["search_id"] = self.search_id
         bvr['values'] = val
 
 
-    def _set_iframe_width(my, iframe):
-        if my.layout == 'default':
+    def _set_iframe_width(self, iframe):
+        if self.layout == 'default':
             iframe.set_width(74)
         else:
             iframe.set_width(56)
 
-    def get_button(my):
-        button = IconButtonWdg(my.text, IconWdg.INSERT, my.long)
+    def get_button(self):
+        button = IconButtonWdg(self.text, IconWdg.INSERT, self.long)
         return button
 
 
@@ -547,43 +547,43 @@ class FileAppendLinkWdg(EditLinkWdg):
 
 
 class InsertLinkWdg(EditLinkWdg):
-    def __init__(my, search_type, text="Insert", long=True, config_base='insert'):
+    def __init__(self, search_type, text="Insert", long=True, config_base='insert'):
         # check if the insert config exists
         search_id = -1
         search_type_obj = SearchType.get(search_type)
         config = WidgetConfigView.get_by_search_type( search_type_obj, config_base )
         if not config:    
             config_base='edit'
-        super(InsertLinkWdg,my).__init__(search_type, search_id, text, config_base, widget='tactic.ui.panel.InsertWdg', long=long)
+        super(InsertLinkWdg,self).__init__(search_type, search_id, text, config_base, widget='tactic.ui.panel.InsertWdg', long=long)
 
-    def get_button(my):
-        button = IconButtonWdg(my.text, IconWdg.INSERT, my.long)
+    def get_button(self):
+        button = IconButtonWdg(self.text, IconWdg.INSERT, self.long)
         return button
 
 class PublishLinkWdg(EditLinkWdg):
-    def __init__(my, search_type, search_id, text="Publish", long=False, config_base='publish', icon=IconWdg.PUBLISH):
+    def __init__(self, search_type, search_id, text="Publish", long=False, config_base='publish', icon=IconWdg.PUBLISH):
        
-        my.long = long
-        super(PublishLinkWdg,my).__init__(search_type, search_id, text, \
+        self.long = long
+        super(PublishLinkWdg,self).__init__(search_type, search_id, text, \
                 config_base=config_base, widget='tactic.ui.panel.PublishWdg')
-        my.icon = icon
-        #my.set_refresh_mode('page')
+        self.icon = icon
+        #self.set_refresh_mode('page')
 
-    def get_button(my):
-        button = IconButtonWdg(my.text, my.icon, my.long)
+    def get_button(self):
+        button = IconButtonWdg(self.text, self.icon, self.long)
         return button
   
 
-    def modify_behavior(my, bvr):
+    def modify_behavior(self, bvr):
         '''values is for web form values'''
-        bvr['values'] = my.value_dict
+        bvr['values'] = self.value_dict
     
 
 class IframeInsertLinkWdg(InsertLinkWdg):
-     def __init__(my, search_type, text="Insert", long=True, config_base='insert'):
+     def __init__(self, search_type, text="Insert", long=True, config_base='insert'):
         
-        super(IframeInsertLinkWdg, my).__init__(search_type, text, long, config_base)
-        my.set_layout('plain')
+        super(IframeInsertLinkWdg, self).__init__(search_type, text, long, config_base)
+        self.set_layout('plain')
     
 
 class DeleteLinkWdg(HtmlElement):
@@ -592,103 +592,103 @@ class DeleteLinkWdg(HtmlElement):
     TODO: merge the duplicated code between this and RetireLinkWdg
     '''
 
-    def __init__(my, search_type, search_id, display_name, sobject=None):
-        my.search_type = search_type
-        my.search_id = search_id
-        my.display_name = display_name
+    def __init__(self, search_type, search_id, display_name, sobject=None):
+        self.search_type = search_type
+        self.search_id = search_id
+        self.display_name = display_name
 
         # if sobject is passed in, just use that
         if not sobject:
-            my.sobject = Search.get_by_id(my.search_type, my.search_id)
+            self.sobject = Search.get_by_id(self.search_type, self.search_id)
         else:
-            my.sobject = sobject
+            self.sobject = sobject
 
-        super(DeleteLinkWdg,my).__init__("div")
-        my.add_style("display", "inline")
+        super(DeleteLinkWdg,self).__init__("div")
+        self.add_style("display", "inline")
 
-    def init(my):
+    def init(self):
         button = IconButtonWdg("Delete", IconWdg.DELETE)
         """
         from pyasm.web import AjaxCmd
-        ajax = AjaxCmd("delete_%s" % my.search_id )
+        ajax = AjaxCmd("delete_%s" % self.search_id )
         ajax.register_cmd("pyasm.command.DeleteCmd")
-        ajax.set_option("search_type", my.search_type)
-        ajax.set_option("search_id", my.search_id)
+        ajax.set_option("search_type", self.search_type)
+        ajax.set_option("search_id", self.search_id)
         div = ajax.generate_div()
         div.add_style("display", "inline")
-        my.add(div)
+        self.add(div)
         """
 
-        display_name = my.sobject.get_name()
+        display_name = self.sobject.get_name()
 
         js_action = "TacticServerCmd.execute_cmd('pyasm.command.DeleteCmd', \
-                '', {'search_type': '%s', 'search_id': '%s'}, {});" %(my.search_type, my.search_id)
+                '', {'search_type': '%s', 'search_id': '%s'}, {});" %(self.search_type, self.search_id)
 
         # build the search key
-        search_key = "%s|%s" % (my.search_type, my.search_id)
+        search_key = "%s|%s" % (self.search_type, self.search_id)
         
         button.add_behavior({'type': 'click_up', 'cbjs_action': " if (delete_sobject('%s','%s')==true){ %s}" \
             %(search_key, display_name, js_action)})
 
-        my.add(button)
+        self.add(button)
         
 
 class RetireLinkWdg(HtmlElement):
 
-    def __init__(my, search_type, search_id, display_name):
-        my.search_type = search_type
-        my.search_id = search_id
-        my.display_name = display_name
-        super(RetireLinkWdg,my).__init__("div")
-        my.add_style("display", "inline")
+    def __init__(self, search_type, search_id, display_name):
+        self.search_type = search_type
+        self.search_id = search_id
+        self.display_name = display_name
+        super(RetireLinkWdg,self).__init__("div")
+        self.add_style("display", "inline")
 
-    def init(my):
+    def init(self):
         button = IconButtonWdg("Retire", IconWdg.RETIRE)
 
         js_action = "TacticServerCmd.execute_cmd('pyasm.command.RetireCmd', \
-                '', {'search_type': '%s', 'search_id': '%s'}, {});" %(my.search_type, my.search_id)
+                '', {'search_type': '%s', 'search_id': '%s'}, {});" %(self.search_type, self.search_id)
 
         # build the search key
-        search_key = "%s|%s" % (my.search_type, my.search_id)
+        search_key = "%s|%s" % (self.search_type, self.search_id)
         
         button.add_behavior({'type': 'click_up', 'cbjs_action': " if (retire_sobject('%s','%s')==true){ %s}" \
-            %(search_key, my.display_name, js_action)})
+            %(search_key, self.display_name, js_action)})
             
-        my.add(button)
+        self.add(button)
 
 
 
 
 class ReactivateLinkWdg(HtmlElement):
 
-    def __init__(my, search_type, search_id, dispay_name):
-        my.search_type = search_type
-        my.search_id = search_id
-        my.dispay_name = dispay_name
-        super(ReactivateLinkWdg,my).__init__("div")
-        my.add_style("display", "inline")
+    def __init__(self, search_type, search_id, dispay_name):
+        self.search_type = search_type
+        self.search_id = search_id
+        self.dispay_name = dispay_name
+        super(ReactivateLinkWdg,self).__init__("div")
+        self.add_style("display", "inline")
 
-    def init(my):
+    def init(self):
         button = IconButtonWdg("Reactivate", IconWdg.CREATE)
 
         from pyasm.web import AjaxCmd
-        ajax = AjaxCmd("reactivate_%s" % my.search_id )
+        ajax = AjaxCmd("reactivate_%s" % self.search_id )
         ajax.register_cmd("pyasm.command.ReactivateCmd")
-        ajax.set_option("search_type", my.search_type)
-        ajax.set_option("search_id", my.search_id)
+        ajax.set_option("search_type", self.search_type)
+        ajax.set_option("search_id", self.search_id)
         div = ajax.generate_div()
         div.add_style("display", "inline")
-        my.add(div)
+        self.add(div)
         on_script = ajax.get_on_script(show_progress=False)
         
         button.add_event("onclick", " if (confirm('Are you sure you want to REACTIVATE this asset [%s]?')"\
-            "==false) return; %s"  % (my.dispay_name, on_script))
+            "==false) return; %s"  % (self.dispay_name, on_script))
             
-        my.add(button)
+        self.add(button)
 
         event_container = WebContainer.get_event_container()
         caller = event_container.get_event_caller(SiteMenuWdg.EVENT_ID)
-        search_key = "%s|%s" % (my.search_type, my.search_id)
+        search_key = "%s|%s" % (self.search_type, self.search_id)
         caller2 = event_container.get_event_caller("refresh|%s" % (search_key))
 
         div.set_post_ajax_script("%s;%s" %(caller,caller2))
@@ -704,166 +704,166 @@ class SwapDisplayWdg(HtmlElement):
     ON = "on_wdg"
     OFF = "off_wdg"
     
-    def __init__(my, on_event_name=None, off_event_name=None, icon_tip_on="", icon_tip_off=""):
+    def __init__(self, on_event_name=None, off_event_name=None, icon_tip_on="", icon_tip_off=""):
         if on_event_name != None:
             assert off_event_name != None
-        my.on_event_name = on_event_name
-        my.off_event_name = off_event_name
-        my.no_events = False
-        my.swap1_id = None
-        my.swap2_id = None
-        super(SwapDisplayWdg,my).__init__("span")
-        my.wdg1 = None
-        my.wdg2 = None
+        self.on_event_name = on_event_name
+        self.off_event_name = off_event_name
+        self.no_events = False
+        self.swap1_id = None
+        self.swap2_id = None
+        super(SwapDisplayWdg,self).__init__("span")
+        self.wdg1 = None
+        self.wdg2 = None
 
-        my.icon_tip_on = icon_tip_on
-        my.icon_tip_off = icon_tip_off
+        self.icon_tip_on = icon_tip_on
+        self.icon_tip_off = icon_tip_off
 
-        my.is_on = False
+        self.is_on = False
 
-    def set_off(my):
-        my.is_on = True
+    def set_off(self):
+        self.is_on = True
        
-    def set_no_events(my):
-        my.no_events = True
+    def set_no_events(self):
+        self.no_events = True
    
-    def init(my):
-        my.on_wdg = HtmlElement.span()
-        my.off_wdg = HtmlElement.span()
+    def init(self):
+        self.on_wdg = HtmlElement.span()
+        self.off_wdg = HtmlElement.span()
 
-        my.add(my.on_wdg,"div1")
-        my.add(my.off_wdg,"div2")
+        self.add(self.on_wdg,"div1")
+        self.add(self.off_wdg,"div2")
 
         # generate a random reference number
         ref_count = random.randint(0,10000)
-        my.swap1_id = "swap_%s" % str(ref_count)
-        my.swap2_id = "swap_%s" % str(ref_count+1)
+        self.swap1_id = "swap_%s" % str(ref_count)
+        self.swap2_id = "swap_%s" % str(ref_count+1)
 
 
         top = DivWdg()
-        if my.on_event_name != None and my.off_event_name != None:
+        if self.on_event_name != None and self.off_event_name != None:
             behavior = {
                 'type': 'smart_click_up',
                 'bvr_match_class': 'SPT_SWAP_ON_EVENT',
-                'cb_fire_named_event': my.on_event_name,
+                'cb_fire_named_event': self.on_event_name,
             }
             top.add_behavior(behavior)
 
             behavior = {
                 'type': 'smart_click_up',
                 'bvr_match_class': 'SPT_SWAP_OFF_EVENT',
-                'cb_fire_named_event': my.off_event_name,
+                'cb_fire_named_event': self.off_event_name,
             }
             top.add_behavior(behavior)
 
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.add_class("spt_swap_top")
+        self.add_class("spt_swap_top")
 
-        swap_script = my.get_swap_script()
+        swap_script = self.get_swap_script()
        
         #event = WebContainer.get_event_container()
 
         # set up events
-        if my.no_events:
+        if self.no_events:
             pass
-        elif my.on_event_name != None and my.off_event_name != None:
+        elif self.on_event_name != None and self.off_event_name != None:
             behavior = {
                 'type': 'click_up',
-                'cb_fire_named_event': my.on_event_name,
+                'cb_fire_named_event': self.on_event_name,
             }
-            my.on_wdg.add_behavior(behavior)
+            self.on_wdg.add_behavior(behavior)
 
             behavior = {
                 'type': 'click_up',
-                'cb_fire_named_event': my.off_event_name,
+                'cb_fire_named_event': self.off_event_name,
             }
-            my.off_wdg.add_behavior(behavior)
+            self.off_wdg.add_behavior(behavior)
 
             # add some listeners for the swap.  It doesn't matter which
             # dom element these are put on
             behavior = {
                 'type': 'listen',
-                'event_name': my.on_event_name,
+                'event_name': self.on_event_name,
                 'cbjs_action': swap_script
             }
-            my.on_wdg.add_behavior( behavior )
+            self.on_wdg.add_behavior( behavior )
             behavior = {
                 'type': 'listen',
-                'event_name': my.off_event_name,
+                'event_name': self.off_event_name,
                 'cbjs_action': swap_script
             }
-            my.off_wdg.add_behavior( behavior )
+            self.off_wdg.add_behavior( behavior )
 
 
         else:
-            my.on_wdg.add_behavior({"type": "click_up", 
+            self.on_wdg.add_behavior({"type": "click_up", 
                 "cbjs_action": swap_script})
-            my.off_wdg.add_behavior({"type": "click_up", 
+            self.off_wdg.add_behavior({"type": "click_up", 
                 "cbjs_action": swap_script})
 
 
-        my.on_wdg.set_id(my.swap1_id)
-        my.on_wdg.add_class("hand")
-        #my.on_wdg.add_class("swap_link")
-        if my.is_on:
-            my.on_wdg.add_style("display: none")
+        self.on_wdg.set_id(self.swap1_id)
+        self.on_wdg.add_class("hand")
+        #self.on_wdg.add_class("swap_link")
+        if self.is_on:
+            self.on_wdg.add_style("display: none")
         else:
-            my.on_wdg.add_style("display: inline")
+            self.on_wdg.add_style("display: inline")
 
-        my.off_wdg.set_id(my.swap2_id)
-        my.off_wdg.add_class("hand")
-        #my.off_wdg.add_class("swap_link")
-        if my.is_on:
-            my.off_wdg.add_style("display: inline")
+        self.off_wdg.set_id(self.swap2_id)
+        self.off_wdg.add_class("hand")
+        #self.off_wdg.add_class("swap_link")
+        if self.is_on:
+            self.off_wdg.add_style("display: inline")
         else:
-            my.off_wdg.add_style("display: none")
+            self.off_wdg.add_style("display: none")
 
-        if not my.wdg1 or not my.wdg2:
+        if not self.wdg1 or not self.wdg2:
             # use the default arrow
-            my.wdg1 = IconWdg(my.icon_tip_on, IconWdg.INFO_CLOSED_SMALL, width='20px')
-            my.wdg2 = IconWdg(my.icon_tip_off, IconWdg.INFO_OPEN_SMALL , width='20px')
+            self.wdg1 = IconWdg(self.icon_tip_on, IconWdg.INFO_CLOSED_SMALL, width='20px')
+            self.wdg2 = IconWdg(self.icon_tip_off, IconWdg.INFO_OPEN_SMALL , width='20px')
 
         # add in the content
-        my.on_wdg.add( my.wdg1 )
-        my.off_wdg.add( my.wdg2 )
+        self.on_wdg.add( self.wdg1 )
+        self.off_wdg.add( self.wdg2 )
 
-        return super(SwapDisplayWdg, my).get_display()
+        return super(SwapDisplayWdg, self).get_display()
 
 
-    def add_action_script(my, action_script1, action_script2=None):
+    def add_action_script(self, action_script1, action_script2=None):
         '''adds an action javascript to the first widget'''
 
-        div1 = my.get_widget("div1")
-        div2 = my.get_widget("div2")
+        div1 = self.get_widget("div1")
+        div2 = self.get_widget("div2")
         
         #event = WebContainer.get_event_container()
-        # my.on_event_name is the primary event we look for
-        if my.on_event_name != None:
+        # self.on_event_name is the primary event we look for
+        if self.on_event_name != None:
             behavior = {
                 'type': 'listen',
-                'event_name': my.on_event_name,
+                'event_name': self.on_event_name,
                 'cbjs_action': action_script1
             }
-            my.on_wdg.add_behavior( behavior )
+            self.on_wdg.add_behavior( behavior )
 
-            #event.add_listener(my.on_event_name, action_script1)
+            #event.add_listener(self.on_event_name, action_script1)
             if action_script2 != None:
                  behavior = {
                 'type': 'listen',
-                'event_name': my.off_event_name,
+                'event_name': self.off_event_name,
                 'cbjs_action': action_script2
             }
             else:
                 behavior = {
                 'type': 'listen',
-                'event_name': my.off_event_name,
+                'event_name': self.off_event_name,
                 'cbjs_action': action_script1
             }
-            my.off_wdg.add_behavior( behavior )
+            self.off_wdg.add_behavior( behavior )
             
         else:
             div1.add_behavior({"type": "click_up",
@@ -875,33 +875,33 @@ class SwapDisplayWdg(HtmlElement):
                 div2.add_behavior({"type": "click_up",
                             "cbjs_action": action_script1})
 
-    def set_display_widgets(my, widget1, widget2):
+    def set_display_widgets(self, widget1, widget2):
         """override the displays of the clickable widget"""
-        my.wdg1 = widget1
-        my.wdg2 = widget2
+        self.wdg1 = widget1
+        self.wdg2 = widget2
 
-    def get_on_widget(my):
-        return my.on_wdg
+    def get_on_widget(self):
+        return self.on_wdg
     
-    def get_off_widget(my):
-        return my.off_wdg
+    def get_off_widget(self):
+        return self.off_wdg
 
-    def get_on_script(my):
-        script = "spt.named_events.fire_event('%s', bvr);" %my.on_event_name
+    def get_on_script(self):
+        script = "spt.named_events.fire_event('%s', bvr);" %self.on_event_name
         return script
 
-    def get_off_script(my):
-        script = "spt.named_events.fire_event('%s', bvr);" %my.off_event_name
+    def get_off_script(self):
+        script = "spt.named_events.fire_event('%s', bvr);" %self.off_event_name
         return script
 
-    def get_swap_script(my, bias=None):
+    def get_swap_script(self, bias=None):
         script = ''
         if not bias:
-            script = "var state = spt.swap_display('%s','%s');" % (my.swap1_id, my.swap2_id)
-        elif bias == my.ON:
-            script = "var state = spt.swap_display('%s','%s','%s');" % (my.swap1_id, my.swap2_id, my.swap1_id)
-        elif bias == my.OFF:
-            script = "var state = spt.swap_display('%s','%s','%s');" % (my.swap1_id, my.swap2_id, my.swap2_id)
+            script = "var state = spt.swap_display('%s','%s');" % (self.swap1_id, self.swap2_id)
+        elif bias == self.ON:
+            script = "var state = spt.swap_display('%s','%s','%s');" % (self.swap1_id, self.swap2_id, self.swap1_id)
+        elif bias == self.OFF:
+            script = "var state = spt.swap_display('%s','%s','%s');" % (self.swap1_id, self.swap2_id, self.swap2_id)
         else:
             raise TacticException("bias is either SwapDisplayWdg.ON or SwapDisplayWdg.OFF")
 
@@ -1002,7 +1002,7 @@ class SwapDisplayWdg(HtmlElement):
 
 class DebugWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         # if debug is off, then just return an empty widget
         pref = PrefSetting.get_value_by_key("debug")
@@ -1015,7 +1015,7 @@ class DebugWdg(Widget):
 
         href = HtmlElement.href("Debug", "javascript:toggle_display('debug')")
         div.add(href)
-        my.add(div)
+        self.add(div)
 
         debug = DivWdg()
         debug.set_id("debug")
@@ -1111,11 +1111,11 @@ class DebugWdg(Widget):
 
         div.add(debug)
 
-        return super(DebugWdg,my).get_display()
+        return super(DebugWdg,self).get_display()
 
 
 class TacticLogoWdg(Widget):
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg(css='centered')
         div.add_color("color", "color")
@@ -1145,22 +1145,22 @@ class WebLoginWdg(Widget):
 
     LOGIN_MSG = 'login_message'
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
         # hidden is for inline login when a session expires
-        my.hidden = kwargs.get('hidden') in  [True, 'True']
-        super(WebLoginWdg,my).__init__("div")
+        self.hidden = kwargs.get('hidden') in  [True, 'True']
+        super(WebLoginWdg,self).__init__("div")
 
 
-    def get_display(my):
-        name_label = my.kwargs.get('name_label')
-        password_label = my.kwargs.get('password_label')
-        override_background = my.kwargs.get('override_background') == "true"
-        override_logo = my.kwargs.get('override_logo') == "true"
-        override_company_name = my.kwargs.get('override_company_name') == "true"
-        override_password = my.kwargs.get('override_password') == "true"
-        override_login = my.kwargs.get('override_login') == "true"
-        bottom_link = my.kwargs.get('bottom_link')
+    def get_display(self):
+        name_label = self.kwargs.get('name_label')
+        password_label = self.kwargs.get('password_label')
+        override_background = self.kwargs.get('override_background') == "true"
+        override_logo = self.kwargs.get('override_logo') == "true"
+        override_company_name = self.kwargs.get('override_company_name') == "true"
+        override_password = self.kwargs.get('override_password') == "true"
+        override_login = self.kwargs.get('override_login') == "true"
+        bottom_link = self.kwargs.get('bottom_link')
 
 
         if not name_label:
@@ -1198,7 +1198,7 @@ class WebLoginWdg(Widget):
         div.add_class("centered")
 
 
-        allow_change_admin = my.kwargs.get("allow_change_admin")
+        allow_change_admin = self.kwargs.get("allow_change_admin")
         if allow_change_admin in [False, 'false']:
             allow_change_admin = False
         else:
@@ -1216,7 +1216,7 @@ class WebLoginWdg(Widget):
             if admin_login and admin_login.get_value('s_status') =='retired':
                 admin_login.reactivate()
                 web = WebContainer.get_web()
-                web.set_form_value(my.LOGIN_MSG, "admin user has been reactivated.")
+                web.set_form_value(self.LOGIN_MSG, "admin user has been reactivated.")
                 admin_password = admin_log.get_value("password")
                 if admin_password == Login.get_default_encrypted_password():
                     change_admin = True
@@ -1310,7 +1310,7 @@ class WebLoginWdg(Widget):
        
         if hosts and len(hosts) != len(domains):
             msg = 'When specified, the number of IP_address has to match the number of domains'
-            web.set_form_value(my.LOGIN_MSG, msg)
+            web.set_form_value(self.LOGIN_MSG, msg)
 
         host = web.get_http_host()
         if host.find(':') != -1:
@@ -1342,13 +1342,10 @@ class WebLoginWdg(Widget):
         
 
         th = table.add_header( "<b> %s: </b>"%name_label)
-        if override_password:
-            th.add_style("")
-        else:
-            th.add_style("padding: 10px 5px")
+        th.add_style("padding: 5px")
 
         text_wdg = TextWdg("login")
-        if override_password:
+        if override_login:
             text_wdg.add_class("spt_login_textbox")
             text_wdg.add_class("form-control")
 
@@ -1356,7 +1353,7 @@ class WebLoginWdg(Widget):
             text_wdg.add_style("width: 130px")
             text_wdg.add_style("color: black")
             text_wdg.add_style("padding: 2px")
-        if my.hidden:
+        if self.hidden:
             login_name = Environment.get_user_name()
             text_wdg.set_value(login_name)
         else:
@@ -1457,7 +1454,7 @@ class WebLoginWdg(Widget):
 
         table2.add_row()
         
-        msg = web.get_form_value(my.LOGIN_MSG)
+        msg = web.get_form_value(self.LOGIN_MSG)
         td = table2.add_cell(css='center_content')
 
         if bottom_link:
@@ -1467,7 +1464,7 @@ class WebLoginWdg(Widget):
         else:
             td.add_style("")
         
-        if my.hidden:
+        if self.hidden:
             msg = 'Your session has expired. Please login again.'
             div.add_style("height: 230px")
 
@@ -1508,7 +1505,7 @@ class WebLoginWdg(Widget):
 
         div.add( HtmlElement.spacer_div(1,14) )
         div.add(table2)
-        div.add(HiddenWdg(my.LOGIN_MSG))
+        div.add(HiddenWdg(self.LOGIN_MSG))
 
         box.add(script)
 
@@ -1516,7 +1513,7 @@ class WebLoginWdg(Widget):
         #widget.add( HtmlElement.br(3) )
         table = Table()
         table.add_class('spt_login_screen')
-        if my.hidden:
+        if self.hidden:
             table.add_style('display','none')
             table.add_style('top','0px')
             table.add_style('position','absolute')
@@ -1539,19 +1536,19 @@ class WebLoginWdg(Widget):
 """
 class WebLoginCmd(Command):
 
-    def check(my):
+    def check(self):
         return True
 
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
 
-    def reenable_user(my, login_sobject, delay):
+    def reenable_user(self, login_sobject, delay):
         class EnableUserTask(SchedulerTask):
-            def execute(my):
+            def execute(self):
                 Batch()
                 reset_attempts = 0
-                login_sobject = my.kwargs.get('sobject')
+                login_sobject = self.kwargs.get('sobject')
                 login_sobject.set_value("license_type", "user")
                 login_sobject.set_value("login_attempt", reset_attempts)
                 login_sobject.commit(triggers=False)
@@ -1562,7 +1559,7 @@ class WebLoginCmd(Command):
         scheduler.start_thread()
 
               
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
@@ -1570,17 +1567,17 @@ class WebLoginCmd(Command):
         # in the TACTIC config file,
         # then force the login string argument to be lowercase.
         # This tag is false by default.
-        my.login = web.get_form_value("login")
+        self.login = web.get_form_value("login")
         if Config.get_value("security","force_lowercase_login") == "true":
-            my.login = my.login.lower()
-        my.password = web.get_form_value("password")
-        my.domain = web.get_form_value("domain")
+            self.login = self.login.lower()
+        self.password = web.get_form_value("password")
+        self.domain = web.get_form_value("domain")
 
-        if my.login == "" and my.password == "":
+        if self.login == "" and self.password == "":
             return False
 
         
-        if my.login == "" or  my.password == "":
+        if self.login == "" or  self.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                 "Empty username or password") 
             return False
@@ -1588,21 +1585,21 @@ class WebLoginCmd(Command):
         security = WebContainer.get_security()
 
         # handle windows domains
-        #if my.domain:
-        #    my.login = "%s\\%s" % (my.domain, my.login)
+        #if self.domain:
+        #    self.login = "%s\\%s" % (self.domain, self.login)
 
 
         verify_password = web.get_form_value("verify_password")
         if verify_password:
-            if verify_password != my.password:
+            if verify_password != self.password:
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                     "Passwords do not match.") 
                 return False
 
-            my.password = Login.get_default_password()
+            self.password = Login.get_default_password()
 
         try:
-            security.login_user(my.login, my.password, domain=my.domain)
+            security.login_user(self.login, self.password, domain=self.domain)
         except SecurityException, e:
             msg = str(e)
             if not msg:
@@ -1612,7 +1609,7 @@ class WebLoginCmd(Command):
             login_code = "admin"
 
             search = Search("sthpw/login")
-            search.add_filter('login',my.login)
+            search.add_filter('login',self.login)
             login_sobject = search.get_sobject()
             max_attempts=-1
             try:
@@ -1646,7 +1643,7 @@ class WebLoginCmd(Command):
                         #make delay default to 30 min
                         delay = 30*60
 
-                    my.reenable_user(login_sobject, delay)
+                    self.reenable_user(login_sobject, delay)
 
                 
                 login_sobject.commit(triggers=False)
@@ -1671,7 +1668,7 @@ class WebLoginCmd(Command):
 class WebLicenseWdg(Widget):
 
     LOGIN_MSG = 'login_message'
-    def get_display(my):
+    def get_display(self):
 
         box = ShadowBoxWdg()
         box = DivWdg(css='login')
@@ -1734,7 +1731,7 @@ class WebLicenseWdg(Widget):
 class ChangePasswordWdg(Widget):
 
     PASSWORD = 'password'
-    def init(my):
+    def init(self):
 
         marshaller = WebContainer.register_cmd( "pyasm.command.PasswordAction" )
         marshaller.set_option("commit_flag", "True")
@@ -1742,7 +1739,7 @@ class ChangePasswordWdg(Widget):
         login = Environment.get_security().get_login()
         marshaller.set_option("search_key",login.get_search_key())
 
-    def get_display(my):
+    def get_display(self):
         from pyasm.prod.web import ProdIconSubmitWdg
 
         top = DivWdg()
@@ -1759,7 +1756,7 @@ class ChangePasswordWdg(Widget):
         table.set_style("margin: auto; margin-top: 40px")
         table.add_row()
         table.add_cell( "New Password:" )
-        password = PasswordWdg(my.PASSWORD)
+        password = PasswordWdg(self.PASSWORD)
         table.add_cell( password )
         table.add_row()
         table.add_cell( "Re-enter Password:" )
@@ -1782,10 +1779,10 @@ class ChangePasswordWdg(Widget):
 # DEPRECATED
 
 class SignOutLinkWdg(Widget):
-    def __init__(my):
-        super(SignOutLinkWdg,my).__init__("div")
+    def __init__(self):
+        super(SignOutLinkWdg,self).__init__("div")
     
-    def init(my):
+    def init(self):
 
         web = WebContainer.get_web()
         base_url = web.get_project_url().to_string()
@@ -1813,13 +1810,13 @@ class SignOutLinkWdg(Widget):
 
         href.add_class("hand")
        
-        my.add(href)
+        self.add(href)
 
 
 """
 class ChangePasswordLinkWdg(Widget):
 
-    def init(my):
+    def init(self):
         xpos = '0'
         if WebContainer.get_web().is_IE():
             xpos = '-500'
@@ -1832,22 +1829,22 @@ class ChangePasswordLinkWdg(Widget):
         ajax.set_display_id("change_password")
         ajax.set_load_class("pyasm.widget.ChangePasswordWdg")
         overlay.add( div )
-        my.add( overlay )
+        self.add( overlay )
 
         overlay_script = overlay.get_on_script()
         ajax_script = ajax.get_on_script()
 
         link = HtmlElement.js_href('%s;%s' %(overlay_script, ajax_script), \
                 data='[change-password]')
-        my.add( link )
+        self.add( link )
 """
 
 
 
 class UndoButtonWdg(IconButtonWdg):
-    def __init__(my,long=True):
-        #super(UndoButtonWdg,my).__init__(_("Undo"), IconWdg.UNDO,long)
-        super(UndoButtonWdg,my).__init__("Undo", IconWdg.UNDO,long)
+    def __init__(self,long=True):
+        #super(UndoButtonWdg,self).__init__(_("Undo"), IconWdg.UNDO,long)
+        super(UndoButtonWdg,self).__init__("Undo", IconWdg.UNDO,long)
         transaction = TransactionLog.get_last('undo')
 
         # if there aren't any transaction, just return
@@ -1859,7 +1856,7 @@ class UndoButtonWdg(IconButtonWdg):
         if len(desc) > 60:
             desc = '%s&nbsp;.....' % desc[:60]
         if transaction:
-            my.add_tip(desc, title='Undo')
+            self.add_tip(desc, title='Undo')
                 
         cmd = AjaxCmd("UndoCmd")
         cmd.register_cmd("pyasm.command.UndoCmd")
@@ -1869,17 +1866,17 @@ class UndoButtonWdg(IconButtonWdg):
         div.add_style('display: none')
 
         # FIXME: disabling for now ... too buggy
-        #update_script = my.get_update_script(transaction)
+        #update_script = self.get_update_script(transaction)
         #div.set_post_ajax_script(update_script)
         div.set_post_ajax_script('document.form.submit()')
 
 
-        my.add(div)
-        my.add_event('onclick', script)
+        self.add(div)
+        self.add_event('onclick', script)
 
 
 
-    def get_update_script(my, transaction):
+    def get_update_script(self, transaction):
         if not transaction:
             return "alert('Nothing to undo')"
 
@@ -1929,19 +1926,19 @@ class UndoButtonWdg(IconButtonWdg):
         
 
 class RedoButtonWdg(UndoButtonWdg):
-    def __init__(my,long=True):
+    def __init__(self,long=True):
         # This is intentionally skipping the __init__ of UndoButtonWdg
-        #super(UndoButtonWdg,my).__init__(_("Redo"), IconWdg.REDO,long)
-        super(UndoButtonWdg,my).__init__("Redo", IconWdg.REDO,long)
+        #super(UndoButtonWdg,self).__init__(_("Redo"), IconWdg.REDO,long)
+        super(UndoButtonWdg,self).__init__("Redo", IconWdg.REDO,long)
         transaction = TransactionLog.get_next_redo()
         if transaction:
             desc = transaction.get_description().strip()
             desc = Common.escape_tag(desc)
             if len(desc) > 60:
                 desc = '%s&nbsp;.....' % desc[:60]
-            my.add_tip(desc, title='Redo')
+            self.add_tip(desc, title='Redo')
         else:
-            my.add_tip('n/a', title='Redo')
+            self.add_tip('n/a', title='Redo')
         cmd = AjaxCmd("RedoCmd")
         cmd.register_cmd("pyasm.command.RedoCmd")
         script = cmd.get_on_script(False)
@@ -1950,24 +1947,24 @@ class RedoButtonWdg(UndoButtonWdg):
         div.add_style('display: none')
 
         # FIXME: disabling for now ... too buggy
-        #update_script = my.get_update_script(transaction)
+        #update_script = self.get_update_script(transaction)
         #div.set_post_ajax_script(update_script)
         div.set_post_ajax_script('document.form.submit()')
 
-        my.add(div)
-        my.add_event('onclick', script)
+        self.add(div)
+        self.add_event('onclick', script)
 
 
 
 
 class CmdReportWdg(Widget):
     '''report all of the errors from the commands'''
-    def __init__(my):
-        my.total_errors = []
-        super(CmdReportWdg,my).__init__()
+    def __init__(self):
+        self.total_errors = []
+        super(CmdReportWdg,self).__init__()
         
 
-    def init(my):
+    def init(self):
         # add in summary from commands
         cmd_delegator = WebContainer.get_cmd_delegator()
         executed_cmds = cmd_delegator.get_executed_cmds()
@@ -1981,7 +1978,7 @@ class CmdReportWdg(Widget):
         for cmd in executed_cmds:
             errors = cmd.get_errors()
             for error in errors:
-                my.total_errors.append(error)
+                self.total_errors.append(error)
 
         # get error from error.txt
         error_path = '%s/error.txt' %FileCheckin.get_upload_dir()
@@ -1994,11 +1991,11 @@ class CmdReportWdg(Widget):
                 # must remove the file since some commands stop
                 # if they find the file exist
                 os.unlink(error_path)
-                my.total_errors.append(client_error)
+                self.total_errors.append(client_error)
             except IOError, e:
-                my.total_errors.append("Error reading error.txt")
+                self.total_errors.append("Error reading error.txt")
 
-        if not my.total_errors:
+        if not self.total_errors:
             return
         
         error_table = Table()
@@ -2011,7 +2008,7 @@ class CmdReportWdg(Widget):
         error_table.add_header(IconWdg("Errors", IconWdg.ERROR, True) )
         error_table.add_col(css='small')
         error_table.add_col()
-        for error in my.total_errors:
+        for error in self.total_errors:
             error_table.add_row()
             error_table.add_blank_cell()
             error_str = str(error)
@@ -2020,14 +2017,14 @@ class CmdReportWdg(Widget):
             error = error.replace('\\n','<br/>')
             error_table.add_cell(error, "warning")
 
-        my.add(error_table)
+        self.add(error_table)
     
-    def get_errors(my):
-        return my.total_errors
+    def get_errors(self):
+        return self.total_errors
        
 class WarningReportWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
         wdg_warnings = WebContainer.get_warning()
 
         # get warning from warning.txt
@@ -2062,24 +2059,24 @@ class WarningReportWdg(Widget):
                 raise TacticException("Error reading warning.txt")
 
         for warning in wdg_warnings:
-            my._add_item(warning)
+            self._add_item(warning)
 
         # add a view_all item 
         if len(wdg_warnings) > 0:
             all_warnings = '<br/>'.join([warn.get_msg() for warn in wdg_warnings])
             warning = TacticWarning('- View All -', all_warnings)
-            my._add_item(warning)
+            self._add_item(warning)
             
         # add blinking effect
         script = HtmlElement.script("if (warn_menu.help_actions.length > 0) \
             {var warning_interval = window.setInterval(\"Effects.blink('warning_menu')\", 1000);\
             if ($('warning_menu'))  $('warning_menu').setStyle('visiblity','visible');} ")
         script.set_attr('mode','dynamic')
-        my.add(script)
+        self.add(script)
         
-        super(WarningReportWdg, my).get_display()
+        super(WarningReportWdg, self).get_display()
 
-    def _add_item(my, warning):
+    def _add_item(self, warning):
         msg = warning.get_msg()
         label = warning.get_label()
         type = warning.get_type()
@@ -2088,7 +2085,7 @@ class WarningReportWdg(Widget):
         escaped_script = Common.escape_quote(script)
         script_wdg = HtmlElement.script("warn_menu.add('%s','%s')" \
             %(label, escaped_script))
-        my.add(script_wdg)
+        self.add(script_wdg)
 
         if type=='urgent':
             BaseAppServer.add_onload_script(script)
@@ -2099,7 +2096,7 @@ class WarningReportWdg(Widget):
         warn_menu.add(span)
         
 class MessageWdg(DivWdg):
-    def __init__(my, message, css=None, icon=None):
+    def __init__(self, message, css=None, icon=None):
         assert message
         if not css:
             css = 'warning'
@@ -2119,10 +2116,10 @@ class MessageWdg(DivWdg):
         
         span.add(HtmlElement.br(2))
         span.add(ok)
-        super(MessageWdg,my).__init__(span, css)
+        super(MessageWdg,self).__init__(span, css)
         
 class HintWdg(SpanWdg):
-    def __init__(my, message, css='small', icon="BS_QUESTION_SIGN", title=''):
+    def __init__(self, message, css='small', icon="BS_QUESTION_SIGN", title=''):
         assert message
         message = message.replace('\n','<br/>')
         icon_wdg = IconWdg("", icon)
@@ -2131,7 +2128,7 @@ class HintWdg(SpanWdg):
         icon_wdg.set_attr('title', message)
         icon_wdg.add_class('tactic_tip')
         
-        super(HintWdg,my).__init__(icon_wdg, css)
+        super(HintWdg,self).__init__(icon_wdg, css)
 
     
     def get_on_script(msg):
@@ -2148,26 +2145,26 @@ class HelpMenuWdg(Widget):
     SLIDE_PANEL = 'slide_panel'
     SLIDE_PANEL_CONTAINER = 'slide_panel_cont'
     SLIDE_PANEL_BODY = 'slide_panel_body'
-    def get_display(my):
+    def get_display(self):
         span = SpanWdg(IconWdg('help', IconWdg.HELP), css='small hand')
         # DEPRECATED
         #span.add_event('onmouseover', "help_menu.show(event)")
         help_menu = WebContainer.get_menu('help_menu')
         span.add_event('onmouseover', help_menu.get_on_script())
-        my.add(span)
+        self.add(span)
         
-        BaseAppServer.add_onload_script("Effects.slide_hide('%s')" % my.SLIDE_PANEL)
-        return super(HelpMenuWdg, my).get_display()
+        BaseAppServer.add_onload_script("Effects.slide_hide('%s')" % self.SLIDE_PANEL)
+        return super(HelpMenuWdg, self).get_display()
 
-    def get_panel(my):
+    def get_panel(self):
         '''a single panel needs to be placed in the page'''
         # add a slide panel
-        div = DivWdg(id=my.SLIDE_PANEL, css=my.SLIDE_PANEL )
+        div = DivWdg(id=self.SLIDE_PANEL, css=self.SLIDE_PANEL )
         div.add_style('display','none') 
-        container = DivWdg(id = my.SLIDE_PANEL_CONTAINER, css=my.SLIDE_PANEL_CONTAINER)
-        close = CloseWdg("Effects.slide_out('%s')" % my.SLIDE_PANEL, is_absolute=True)
+        container = DivWdg(id = self.SLIDE_PANEL_CONTAINER, css=self.SLIDE_PANEL_CONTAINER)
+        close = CloseWdg("Effects.slide_out('%s')" % self.SLIDE_PANEL, is_absolute=True)
         container.add(close)
-        body_div = DivWdg(id=my.SLIDE_PANEL_BODY)
+        body_div = DivWdg(id=self.SLIDE_PANEL_BODY)
         div.add(body_div)
         container.add(div)
 
@@ -2179,7 +2176,7 @@ class HelpItemWdg(Widget):
        @label - a label in the help popup menu
        @script - a link to a html file or a string message
        @is_link - True if script is a link ref '''
-    def __init__(my, label, script, is_link=False):
+    def __init__(self, label, script, is_link=False):
         assert script
         if is_link:
             script = IframeWdg.get_popup_script(ref=script, width=100)
@@ -2189,90 +2186,90 @@ class HelpItemWdg(Widget):
         #span = SpanWdg(label, css='hand')
         #span.add_event('onclick', script)
         #help_menu.add(span)
-        super(HelpItemWdg, my).__init__()
+        super(HelpItemWdg, self).__init__()
    
 class WarningMenuWdg(Widget):
-    def init(my):
+    def init(self):
         span = SpanWdg(IconWdg('', IconWdg.ERROR), css='small hand')
         warn_menu = WebContainer.get_menu('warn_menu')
         span.add_event('onmouseover', "%s; Effects.blink('warning_menu', warning_interval)" \
                 %warn_menu.get_on_script())
         span.set_id('warning_menu')
         span.add_style('visibility: hidden')
-        my.add(span)
+        self.add(span)
         
 
 
 class FloatMenuWdg(DivWdg):
     '''a float menu for quick access to info or buttons''' 
-    def __init__(my, id, content=None, css='hidden popup_hint'):
-        my.title = ''
-        my.id = id
-        super(FloatMenuWdg,my).__init__(content, css)
-        my.set_id(id)
-        my.add_style('display','none')
-        my.add_style('padding: 2px 8px 10px 8px')
+    def __init__(self, id, content=None, css='hidden popup_hint'):
+        self.title = ''
+        self.id = id
+        super(FloatMenuWdg,self).__init__(content, css)
+        self.set_id(id)
+        self.add_style('display','none')
+        self.add_style('padding: 2px 8px 10px 8px')
         
-    def init(my):
-        my.add(CloseWdg("set_display_off('%s')" %my.id))
-        my.span = DivWdg('actions')
-        my.span.add('&nbsp;', 'title')
-        my.span.add_style('border-bottom: 1px dotted #888')
-        my.add(my.span)
-        my.add(HtmlElement.br())
+    def init(self):
+        self.add(CloseWdg("set_display_off('%s')" %self.id))
+        self.span = DivWdg('actions')
+        self.span.add('&nbsp;', 'title')
+        self.span.add_style('border-bottom: 1px dotted #888')
+        self.add(self.span)
+        self.add(HtmlElement.br())
         
 
-    def set_title(my, title):
-        my.title = title
+    def set_title(self, title):
+        self.title = title
 
-    def get_display(my):
-        if my.title:
-            my.span.set_widget(SpanWdg('- %s ' %my.title, css='small'), 'title')
+    def get_display(self):
+        if self.title:
+            self.span.set_widget(SpanWdg('- %s ' %self.title, css='small'), 'title')
         
-        return super(FloatMenuWdg, my).get_display()
+        return super(FloatMenuWdg, self).get_display()
   
-    def get_icon(my):
+    def get_icon(self):
         icon = IconWdg('float_menu', icon=IconWdg.FLOAT, css='hand')
-        icon.add_event('onclick', my.get_on_script())
+        icon.add_event('onclick', self.get_on_script())
         return icon
 
-    def get_on_script(my):
+    def get_on_script(self):
         return "Common.follow_click(event, '%s', -60, -80); Effects.fade_in('%s', 100)"\
-                %(my.id, my.id)
+                %(self.id, self.id)
 
 class ExtraInfoWdg(SpanWdg):
 
 
-    def init(my):
-        my.mouseout_flag = True
-        my.id = "ExtraInfoWdg_%s" % my.generate_unique_id()
-        my.div_css = ''
-        my.span = SpanWdg()
-        my.content = ""
+    def init(self):
+        self.mouseout_flag = True
+        self.id = "ExtraInfoWdg_%s" % self.generate_unique_id()
+        self.div_css = ''
+        self.span = SpanWdg()
+        self.content = ""
         
-    def set_content(my, content):
-        my.content = content
+    def set_content(self, content):
+        self.content = content
 
-    def set_mouseout_flag(my, flag):
-        my.mouseout_flag = flag
+    def set_mouseout_flag(self, flag):
+        self.mouseout_flag = flag
 
-    def set_class(my, css):
-        my.div_css = css
+    def set_class(self, css):
+        self.div_css = css
         
-    def add(my, widget):
-        my.span.add(widget)
+    def add(self, widget):
+        self.span.add(widget)
         
-    def get_display(my):
-        my._add_widget(my.span)
-        my.span.add_class('hand')
+    def get_display(self):
+        self._add_widget(self.span)
+        self.span.add_class('hand')
         # hidden container
-        if not my.div_css:
-            my.div_css = 'popup_hint'
+        if not self.div_css:
+            self.div_css = 'popup_hint'
            
-        div = DivWdg(css=my.div_css, id=my.id)
+        div = DivWdg(css=self.div_css, id=self.id)
 
         # inner div is needed for all sorts of display effects
-        inner_div = DivWdg(id = '%s_inner' %my.id)
+        inner_div = DivWdg(id = '%s_inner' %self.id)
         inner_div.add_style('display', 'block')
         div.add(inner_div)
 
@@ -2285,62 +2282,62 @@ class ExtraInfoWdg(SpanWdg):
         div.add_style('background','#ffffff')
         div.add_style('padding','10px')
         '''
-        inner_div.add(my.content)
-        my._add_widget(div)
-        my.span.add_event("onmousedown", my.get_mousedown_script())
-        if my.mouseout_flag:
-            my.span.add_event("onmouseout", "e=document.getElementById('%s');e.style.display='none';" % my.id)
+        inner_div.add(self.content)
+        self._add_widget(div)
+        self.span.add_event("onmousedown", self.get_mousedown_script())
+        if self.mouseout_flag:
+            self.span.add_event("onmouseout", "e=document.getElementById('%s');e.style.display='none';" % self.id)
 
-        return super(ExtraInfoWdg,my).get_display()
+        return super(ExtraInfoWdg,self).get_display()
 
 
-    def get_mousedown_script(my, height='115'):
-        #return "set_display_on('%s');" % my.id
-        return "Effects.roll('%s','down', '%s')" %(my.id, height)
+    def get_mousedown_script(self, height='115'):
+        #return "set_display_on('%s');" % self.id
+        return "Effects.roll('%s','down', '%s')" %(self.id, height)
 
-    def get_off_script(my):
-        script = "Effects.roll('%s','up')" %my.id
+    def get_off_script(self):
+        script = "Effects.roll('%s','up')" %self.id
         #script = "e=document.getElementById('%s');e.style.display='none';"\
-        #    % my.id
+        #    % self.id
         return script
         
 
 class UserExtraInfoWdg(ExtraInfoWdg):
 
-    def __init__(my, user=None):
-        my.user = user 
-        assert my.user
-        super(UserExtraInfoWdg,my).__init__()
+    def __init__(self, user=None):
+        self.user = user 
+        assert self.user
+        super(UserExtraInfoWdg,self).__init__()
 
-    def init(my):
-        assert my.user
+    def init(self):
+        assert self.user
         
         # run the init of ExtraInfoWdg
-        super(UserExtraInfoWdg, my).init()
+        super(UserExtraInfoWdg, self).init()
         from pyasm.security import Login
 
         # create the content
         content = DivWdg()
 
-        login = Login.get_by_login(my.user)
+        login = Login.get_by_login(self.user)
 
         if not login:
             return
-        thumb = my.get_thumb(login)
+        thumb = self.get_thumb(login)
         content.add(thumb)
         content.add(login.get_full_name())
         content.add(HtmlElement.br())
         content.add(login.get_value("email"))
 
-        my.set_content(content)
-        my.set_mouseout_flag(True)
-        user_name = HtmlElement.b(' %s' %my.user)
+        self.set_content(content)
+        self.set_mouseout_flag(True)
+        user_name = HtmlElement.b(' %s' %self.user)
         user_name.add_class('user_name')
-        my.add(user_name)
+        self.add(user_name)
         
         
 
-    def get_thumb(my, login):
+    def get_thumb(self, login):
         '''get and cache the thumb image'''
         img = Container.get('UserExtraInfoWdg:%s' %login.get_login())
         if not img:
@@ -2355,24 +2352,24 @@ class UserExtraInfoWdg(ExtraInfoWdg):
 class ProgressWdg(DivWdg):
     ''' an overlay progress indicator with an option progress meter'''
 
-    def __init__(my, message='Processing. . .', css='progress_container', \
+    def __init__(self, message='Processing. . .', css='progress_container', \
             icon=IconWdg.PROGRESS):
         
-        super(ProgressWdg,my).__init__(css=css, id='tactic_busy')
-        my.add_style('display','none')
-        my.busy_icon = icon
-        my.show_busy_icon = True
-        my.message = message
+        super(ProgressWdg,self).__init__(css=css, id='tactic_busy')
+        self.add_style('display','none')
+        self.busy_icon = icon
+        self.show_busy_icon = True
+        self.message = message
         
-    def set_busy_icon(my, show):
-        my.show_busy_icon = show
+    def set_busy_icon(self, show):
+        self.show_busy_icon = show
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg(css='content')
         div.center()
-        msg_div = DivWdg(my.message, css='progress_message', id='tactic_busy_msg')
+        msg_div = DivWdg(self.message, css='progress_message', id='tactic_busy_msg')
         msg_div.add_style('margin-left','10px')
-        icon = IconWdg('busy', my.busy_icon)
+        icon = IconWdg('busy', self.busy_icon)
         icon.set_id('tactic_progress_icon')
         #icon.add_style('margin-left', '105px')
          
@@ -2404,9 +2401,9 @@ class ProgressWdg(DivWdg):
         
         div.add(top_div)
         div.add(meter)
-        my.add(div)
+        self.add(div)
         
-        return super(ProgressWdg, my).get_display() 
+        return super(ProgressWdg, self).get_display() 
         
     def get_on_script(message='Processing', show_meter='false'):
         return "Overlay.display_progress('%s',%s)" %(message, show_meter)
@@ -2428,25 +2425,25 @@ class SiteMenuWdg(SpanWdg, AjaxWdg):
 
     ID = 'SiteMenuWdg'
     EVENT_ID = 'SiteMenuWdg_refresh'
-    def init(my):
-        my.init_setup()
+    def init(self):
+        self.init_setup()
         
         
-    def get_display(my):
+    def get_display(self):
         event_container = WebContainer.get_event_container()
         script = SiteMenuWdg.get_self_refresh_script(show_progress=False)
-        event_container.add_listener(my.EVENT_ID, script, replace=True )
+        event_container.add_listener(self.EVENT_ID, script, replace=True )
         
-        my.add(WarningMenuWdg()) 
-        my.add(UndoButtonWdg())
-        my.add(RedoButtonWdg())
-        my.add(IconRefreshWdg())
-        my.add(SpanWdg(css='small'))
-        super(SiteMenuWdg, my).get_display()
+        self.add(WarningMenuWdg()) 
+        self.add(UndoButtonWdg())
+        self.add(RedoButtonWdg())
+        self.add(IconRefreshWdg())
+        self.add(SpanWdg(css='small'))
+        super(SiteMenuWdg, self).get_display()
         
-    def init_setup(my):
-        my.set_id(my.ID)
-        my.set_ajax_top(my)
+    def init_setup(self):
+        self.set_id(self.ID)
+        self.set_ajax_top(self)
 
 
 class DateSelectWdg(SelectWdg):
@@ -2454,37 +2451,37 @@ class DateSelectWdg(SelectWdg):
        e.g. label_list = ['Today','1 Hour Ago', 'Last 2 days', 'Last 5 days', 'Last 30 days']
             value_list = ['today','1 Hour', '1 Day', '4 Day','29 Day']'''
         
-    def __init__(my, name='date_select', label='Date: ', is_filter=True,\
+    def __init__(self, name='date_select', label='Date: ', is_filter=True,\
             label_list=['Today','1 Hour Ago', 'Last 2 days', 'Last 5 days', 'Last 30 days'],\
             value_list=['today','1 Hour', '1 Day', '4 Day','29 Day']):
             
         
-        my.label_list = label_list
-        my.value_list = value_list
-        my.label = label
-        super(DateSelectWdg, my).__init__(name, label=label)
+        self.label_list = label_list
+        self.value_list = value_list
+        self.label = label
+        super(DateSelectWdg, self).__init__(name, label=label)
         # these have to be set in the constructor
         if is_filter:
-            my.set_persistence()
-            my.set_submit_onchange()
+            self.set_persistence()
+            self.set_submit_onchange()
         
-    def set_label(my, label_list):
-        my.label_list = label_list
+    def set_label(self, label_list):
+        self.label_list = label_list
    
-    def set_value(my, value_list):
-        my.value_list = value_list
+    def set_value(self, value_list):
+        self.value_list = value_list
 
     
-    def get_display(my):
-        my.add_empty_option(label='--  All  --', value=SelectWdg.NONE_MODE)
-        my.set_option('labels', "|".join(my.label_list))
-        my.set_option('values', "|".join(my.value_list))
+    def get_display(self):
+        self.add_empty_option(label='--  All  --', value=SelectWdg.NONE_MODE)
+        self.set_option('labels', "|".join(self.label_list))
+        self.set_option('values', "|".join(self.value_list))
 
-        return super(DateSelectWdg, my).get_display()
+        return super(DateSelectWdg, self).get_display()
         '''
-        if my.label:
-            span = SpanWdg('%s: ' %my.label, css='small')
-            select = FilterSelectWdg.get_class_display(my)
+        if self.label:
+            span = SpanWdg('%s: ' %self.label, css='small')
+            select = FilterSelectWdg.get_class_display(self)
             span.add(select)
             return span
         else:
@@ -2502,71 +2499,71 @@ class DateSelectWdg(SelectWdg):
 
 class CloseWdg(Widget):
     
-    def __init__(my, off_script, is_absolute=True):
-        my.off_script = off_script
-        my.is_absolute = is_absolute
-        super(CloseWdg, my).__init__()
+    def __init__(self, off_script, is_absolute=True):
+        self.off_script = off_script
+        self.is_absolute = is_absolute
+        super(CloseWdg, self).__init__()
 
-    def init(my):
+    def init(self):
         div = FloatDivWdg("X", css='hand right_content',  width='1em')
-        div.add_event('onclick', my.off_script)
-        if my.is_absolute:
+        div.add_event('onclick', self.off_script)
+        if self.is_absolute:
             div.add_style('position: absolute') 
         div.add_style('right: 0.5em')
         div.add_style('color: black')
-        my.add(div)
+        self.add(div)
 
 class PopupWindowLinkWdg(HtmlElement):
     ''' a link for a pop-up window '''
-    def __init__(my, search_type, widget='FlashSwfViewWdg', element_list=[] ):
-        super(PopupWindowLinkWdg,my).__init__("span")
+    def __init__(self, search_type, widget='FlashSwfViewWdg', element_list=[] ):
+        super(PopupWindowLinkWdg,self).__init__("span")
        
-        my.add_style("padding: 0 5px 0 5px")
-        my.search_type = search_type
-        my.widget = widget 
-        my.button = IconButtonWdg("pop_up", long=False)
-        my.element_list = element_list
+        self.add_style("padding: 0 5px 0 5px")
+        self.search_type = search_type
+        self.widget = widget 
+        self.button = IconButtonWdg("pop_up", long=False)
+        self.element_list = element_list
 
-    def set_button(my, button):
-        my.button = button
+    def set_button(self, button):
+        self.button = button
         
-    def get_display(my):
+    def get_display(self):
 
         web_state = WebState.get()
        
         url = WebContainer.get_web().get_widget_url()
-        url.set_option("widget", my.widget)
-        url.set_option("search_type", my.search_type) 
+        url.set_option("widget", self.widget)
+        url.set_option("search_type", self.search_type) 
 
         url.add_web_state()
         ref = url.get_url()
-        button = my.button
+        button = self.button
 
-        action = PopupWindowWdg.get_on_script(ref, my.element_list)
+        action = PopupWindowWdg.get_on_script(ref, self.element_list)
         button.add_event("onclick", action)
-        my.add(button)
+        self.add(button)
 
-        return super(PopupWindowLinkWdg,my).get_display()
+        return super(PopupWindowLinkWdg,self).get_display()
 
 
 class FileUploadUpdateWdg(AjaxWdg):
-    '''It updates the upload prgress'''
+    '''It updates the upload progress'''
 
-    def init_cgi(my):
-        my.file_name = ''
-        keys = my.web.get_form_keys()
+    def init_cgi(self):
+        self.file_name = ''
+        keys = self.web.get_form_keys()
         for key in keys:
             pat = re.compile(r'(\|files|\|images|\|snapshot|\|submission|\|publish_main)$')
             if pat.search(key):
-                my.file_name = my.web.get_form_value(key)
-                if my.file_name:
-                    my.file_name = File.process_file_path(os.path.basename(my.file_name))
+                self.file_name = self.web.get_form_value(key)
+                if self.file_name:
+                    self.file_name = File.process_file_path(os.path.basename(self.file_name))
 
-    def get_display(my):
-        if not my.file_name:
+    def get_display(self):
+        if not self.file_name:
             return Widget()
         
-        path ="%s/%s_progress" % ( Environment.get_upload_dir(), my.file_name)
+        path ="%s/%s_progress" % ( Environment.get_upload_dir(), self.file_name)
         file_size = ''
         try:
             f = open(path, 'r')
@@ -2589,17 +2586,17 @@ class FileUploadUpdateWdg(AjaxWdg):
 class FilterboxWdg(DivWdg):
     ''' A Filter box that can be expanded to display more complicated filters'''
     ATTR_WIDTH = 100
-    def __init__(my, name='filter_box'):
+    def __init__(self, name='filter_box'):
         
-        super(FilterboxWdg, my).__init__(css='filter_box')
-        my.add_style('width: 100%')
-        my.advanced_filters = []
-        my.bottom_wdgs = []
-        my.left_span = FloatDivWdg()
-        my.left_span.add_style('margin: 6px 0 2px 10px')
-        my.content_div = DivWdg(id='%s_content' %name)
-        my.content_div.add_style('margin-top','6px')
-        my.content_div.add_style('clear', 'left')
+        super(FilterboxWdg, self).__init__(css='filter_box')
+        self.add_style('width: 100%')
+        self.advanced_filters = []
+        self.bottom_wdgs = []
+        self.left_span = FloatDivWdg()
+        self.left_span.add_style('margin: 6px 0 2px 10px')
+        self.content_div = DivWdg(id='%s_content' %name)
+        self.content_div.add_style('margin-top','6px')
+        self.content_div.add_style('clear', 'left')
         swap = SwapDisplayWdg()
         
         is_toggle_open = ProdSetting.get_value_by_key('is_toggle_open')
@@ -2608,45 +2605,45 @@ class FilterboxWdg(DivWdg):
             swap.set_off()
         else:
             is_toggle_open = False
-        SwapDisplayWdg.create_swap_title('', swap, my.content_div, is_open=is_toggle_open)
-        my.add(swap) 
+        SwapDisplayWdg.create_swap_title('', swap, self.content_div, is_open=is_toggle_open)
+        self.add(swap) 
 
-    def _is_input(my, widget):
+    def _is_input(self, widget):
         ''' return True if it is a Filter '''
         from pyasm.prod.web import BaseSelectFilterWdg
         return isinstance(widget, BaseInputWdg) or isinstance(widget, BaseSelectFilterWdg)
 
-    def add_advanced_filter(my, filter, label=''):
+    def add_advanced_filter(self, filter, label=''):
         ''' add filters or regular widgets (hints and stuff) into the 
         advanced section of the filter box'''
-        if not label and my._is_input(filter):
+        if not label and self._is_input(filter):
             label = filter.get_label()
             label = label.replace(':', '').strip()
-        my.advanced_filters.append((filter, label))
+        self.advanced_filters.append((filter, label))
 
-    def add(my, widget):
+    def add(self, widget):
         div = FloatDivWdg(widget)
-        my.left_span.add(div)
+        self.left_span.add(div)
 
-    def add_bottom(my, widget):
-        my.bottom_wdgs.append(widget)
+    def add_bottom(self, widget):
+        self.bottom_wdgs.append(widget)
     
-    def get_display(my):
+    def get_display(self):
         from pyasm.prod.web import ProdIconButtonWdg
         # add a refresh button
         icon = ProdIconButtonWdg('Filter')
         icon.add_event('onclick', 'document.form.submit()')
         icon_div = FloatDivWdg(icon)
         icon_div.add_style('margin-top', '2px')
-        my.left_span._add_widget(icon_div)
+        self.left_span._add_widget(icon_div)
         # value_list stores values for display
         value_list = []
         # label_list keeps track of uniqueness
         label_list = []
         count = 0
-        for idx, (filter, label) in enumerate(my.advanced_filters):
-            my.content_div.add(filter)
-            if my._is_input(filter):
+        for idx, (filter, label) in enumerate(self.advanced_filters):
+            self.content_div.add(filter)
+            if self._is_input(filter):
                 values = filter.get_values()
                 values = [x for x in values if x]
                 if values == ['']:
@@ -2661,7 +2658,7 @@ class FilterboxWdg(DivWdg):
                     label_list.append(label)
                     '''
                     # insert line breaks if it exceeds the ATTR_WIDTH
-                    if count > my.ATTR_WIDTH:
+                    if count > self.ATTR_WIDTH:
                         display = '%s<br/>' %display
                         count = 0
                     '''
@@ -2673,27 +2670,27 @@ class FilterboxWdg(DivWdg):
         bottom_div =  FloatDivWdg(css='smaller left_content')
         #bottom_div.add_style('clear', 'left')
         bottom_div.add_style('margin', '2px 0 10px 30px')
-        for wdg in my.bottom_wdgs:
+        for wdg in self.bottom_wdgs:
             bottom_div.add(wdg)
 
-        my._add_widget(my.left_span)
-        my._add_widget(attr_div)
-        #my._add_widget(HtmlElement.br())
-        my._add_widget(bottom_div)
-        my._add_widget(HtmlElement.br(3))
-        my._add_widget(my.content_div)
+        self._add_widget(self.left_span)
+        self._add_widget(attr_div)
+        #self._add_widget(HtmlElement.br())
+        self._add_widget(bottom_div)
+        self._add_widget(HtmlElement.br(3))
+        self._add_widget(self.content_div)
 
-        return super(FilterboxWdg, my).get_display()
+        return super(FilterboxWdg, self).get_display()
         
 
 class ExceptionWdg(Widget):
 
-    def __init__(my, e):
-        my.exception = e
-        super(ExceptionWdg, my).__init__(my)
+    def __init__(self, e):
+        self.exception = e
+        super(ExceptionWdg, self).__init__(self)
 
-    def init(my):
-        e = my.exception
+    def init(self):
+        e = self.exception
         stacktrace = ExceptionLog.log(e)
         from pyasm.command import FileUploadException
         from tactic.ui.widget import ActionButtonWdg
@@ -2703,7 +2700,7 @@ class ExceptionWdg(Widget):
         trace = stacktrace.get_value("stack_trace")
 
         widget = DivWdg()
-        my.add(widget)
+        self.add(widget)
 
         widget.add_attr("spt_error", "true")
         widget.set_round_corners()
@@ -2815,21 +2812,21 @@ class ExceptionWdg(Widget):
 __all__.append("ExceptionMinimalWdg")
 class ExceptionMinimalWdg(Widget):
 
-    def __init__(my, e):
-        my.exception = e
-        super(ExceptionMinimalWdg, my).__init__(my)
+    def __init__(self, e):
+        self.exception = e
+        super(ExceptionMinimalWdg, self).__init__(self)
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
         
 
-    def init(my):
+    def init(self):
         widget = DivWdg()
-        my.top = widget
+        self.top = widget
 
-        my.add(widget)
+        self.add(widget)
 
-        message = str(my.exception)
+        message = str(self.exception)
 
         widget.add_style("text-align: center")
 
@@ -2886,7 +2883,7 @@ class ExceptionMinimalWdg(Widget):
 
 class SObjectLevelWdg(Widget):
     # widget that indicates what level you are at
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
         search_type = web.get_form_value("filter|search_type")
         search_id = web.get_form_value("filter|search_id")
@@ -2930,44 +2927,44 @@ class SObjectLevelWdg(Widget):
             
 
 class SwfEmbedWdg(Widget):
-    def __init__(my, name=None):
-        my.search_type = None
-        my.code = None
-        my.connector_type = None
-        super(SwfEmbedWdg, my).__init__(name)
+    def __init__(self, name=None):
+        self.search_type = None
+        self.code = None
+        self.connector_type = None
+        super(SwfEmbedWdg, self).__init__(name)
 
-    def set_search_type(my, search_type):
-        my.search_type = search_type
+    def set_search_type(self, search_type):
+        self.search_type = search_type
 
-    def set_code(my, code):
-        my.code = code
+    def set_code(self, code):
+        self.code = code
         
-    def set_connector_type(my, connector_type):
-        my.connector_type = connector_type
+    def set_connector_type(self, connector_type):
+        self.connector_type = connector_type
 
-    def get_display(my):
+    def get_display(self):
        
         # if not overridden, get it from the web
         web = WebContainer.get_web()
-        if not my.search_type:
-            my.search_type = web.get_form_value("search_type")
-        if not my.code:
-            my.code = web.get_form_value("code")
-        if not my.connector_type:
-            my.connector_type = web.get_form_value("connector_type")
+        if not self.search_type:
+            self.search_type = web.get_form_value("search_type")
+        if not self.code:
+            self.code = web.get_form_value("code")
+        if not self.connector_type:
+            self.connector_type = web.get_form_value("connector_type")
 
 
-        if not my.connector_type:
-            my.connector_type = "dependency"
-            #my.connector_type = "hierarchy"
+        if not self.connector_type:
+            self.connector_type = "dependency"
+            #self.connector_type = "hierarchy"
 
         # build the pipeline xml request
         import urllib
         widget_url = web.get_widget_url()
         widget_url.set_option("dynamic_file", "true")
         widget_url.set_option("widget", "pyasm.admin.creator.GetPipelineXml")
-        widget_url.set_option("search_type", my.search_type)
-        widget_url.set_option("pipeline_code", my.code)
+        widget_url.set_option("search_type", self.search_type)
+        widget_url.set_option("pipeline_code", self.code)
         xml_request = widget_url.to_string()
         xml_request = urllib.quote(xml_request)
 
@@ -2980,7 +2977,7 @@ class SwfEmbedWdg(Widget):
 
         login_ticket = WebContainer.get_security().get_ticket_key()
 
-        url = "/context/pipeline_creator.swf?load_xml=%s&login_ticket=%s&pipeline_code=%s&hide_title=true&connector_type=%s&url=%s" % (xml_request, login_ticket, my.code, my.connector_type, base_url)
+        url = "/context/pipeline_creator.swf?load_xml=%s&login_ticket=%s&pipeline_code=%s&hide_title=true&connector_type=%s&url=%s" % (xml_request, login_ticket, self.code, self.connector_type, base_url)
 
         id = "pipeline_creator"
         height = "800"

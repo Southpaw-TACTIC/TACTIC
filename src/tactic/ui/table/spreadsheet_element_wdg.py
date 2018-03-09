@@ -33,52 +33,52 @@ class SpreadsheetElementWdg(SimpleTableElementWdg):
 
     }
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
 
-    def is_editable(my):
+    def is_editable(self):
         return True
 
-    def init(my):
-        my.total = 0
+    def init(self):
+        self.total = 0
 
 
-    def get_value(my):
-        return my.total
+    def get_value(self):
+        return self.total
 
 
-    def get_text_value(my):
-        column = my.get_option("column")
-        sobject = my.get_current_sobject()
+    def get_text_value(self):
+        column = self.get_option("column")
+        sobject = self.get_current_sobject()
         sobj_value = sobject.get_value(column)
         if sobj_value:
-            my.total += sobj_value
+            self.total += sobj_value
 
-        return my.total
+        return self.total
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        sobjects = my.sobjects
-        sobject = my.get_current_sobject()
-        index = my.get_current_index()
+        sobjects = self.sobjects
+        sobject = self.get_current_sobject()
+        index = self.get_current_index()
 
 
-        column = my.get_option("column")
-        sobject = my.get_current_sobject()
+        column = self.get_option("column")
+        sobject = self.get_current_sobject()
         sobj_value = sobject.get_value(column)
         if sobj_value:
-            my.total += sobj_value
+            self.total += sobj_value
 
 
-        format_str = my.get_option('format')
+        format_str = self.get_option('format')
         if format_str:
             format = FormatValue()
             #display = format.get_format_value(value, "$#,###.##")
-            display = format.get_format_value(my.total, format_str)
+            display = format.get_format_value(self.total, format_str)
         else:
-            display = my.total
+            display = self.total
 
 
         value_div = DivWdg()
@@ -86,14 +86,14 @@ class SpreadsheetElementWdg(SimpleTableElementWdg):
         value_div.add_style("float: right")
         value_div.add(display)
 
-        name = my.get_name()
-        sobject.set_value(name, my.total)
+        name = self.get_name()
+        sobject.set_value(name, self.total)
         #sobject.commit()
 
         return top
 
 
-    def test(my):
+    def test(self):
 
         # Neeed a way to refer to another colum spreadsheet style
 

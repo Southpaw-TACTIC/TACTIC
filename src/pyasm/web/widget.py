@@ -30,36 +30,36 @@ class WidgetException(Exception):
 class Widget(object):
     '''Base class for all display widgets'''
 
-    def _get_my_widgets(my):
-        if my._widgets == None:
-            my._widgets = []
-        return my._widgets
-    def _set_my_widgets(my, widgets):
-        my._widgets = widgets
+    def _get_my_widgets(self):
+        if self._widgets == None:
+            self._widgets = []
+        return self._widgets
+    def _set_my_widgets(self, widgets):
+        self._widgets = widgets
     widgets = property(_get_my_widgets, _set_my_widgets)
 
-    def _get_my_named_widgets(my):
-        if my._named_widgets == None:
-            my._named_widgets = {}
-        return my._named_widgets
-    def _set_my_named_widgets(my, named_widgets):
-        my._named_widgets = named_widgets
+    def _get_my_named_widgets(self):
+        if self._named_widgets == None:
+            self._named_widgets = {}
+        return self._named_widgets
+    def _set_my_named_widgets(self, named_widgets):
+        self._named_widgets = named_widgets
     named_widgets = property(_get_my_named_widgets, _set_my_named_widgets)
 
-    def _get_my_sobjects(my):
-        if my._sobjects == None:
-            my._sobjects = []
-        return my._sobjects
-    def _set_my_sobjects(my, sobjects):
-        my._sobjects = sobjects
+    def _get_my_sobjects(self):
+        if self._sobjects == None:
+            self._sobjects = []
+        return self._sobjects
+    def _set_my_sobjects(self, sobjects):
+        self._sobjects = sobjects
     sobjects = property(_get_my_sobjects, _set_my_sobjects)
 
-    def _get_my_options(my):
-        if my._options == None:
-            my._options = {}
-        return my._options
-    def _set_my_options(my, options):
-        my._options = options
+    def _get_my_options(self):
+        if self._options == None:
+            self._options = {}
+        return self._options
+    def _set_my_options(self, options):
+        self._options = options
     options = property(_get_my_options, _set_my_options)
 
 
@@ -67,53 +67,53 @@ class Widget(object):
     #__slots__ = ['name', 'title', 'search','_sobjects','current_index','_widgets','named_widgets','typed_widgets','is_top','security_denied','_options','state']
 
 
-    def __init__(my, name=""):
-        my.name = name
-        my.title = ''
-        my.search = None
-        #my.sobjects = []
-        my._sobjects = None
-        my.current_index = -1
-        #my.widgets = []
-        my._widgets = None
-        my._named_widgets = None
-        my.typed_widgets = None
-        my.is_top = False
+    def __init__(self, name=""):
+        self.name = name
+        self.title = ''
+        self.search = None
+        #self.sobjects = []
+        self._sobjects = None
+        self.current_index = -1
+        #self.widgets = []
+        self._widgets = None
+        self._named_widgets = None
+        self.typed_widgets = None
+        self.is_top = False
 
-        my.security_denied = False
+        self.security_denied = False
 
-        #my.options = {}
-        my._options = None
-        my.state = None
+        #self.options = {}
+        self._options = None
+        self.state = None
 
         # make sure the init function catches security exceptions
         try:
             # quick test to see if the class_init function exists
             """
-            if hasattr(my, "class_init"):
+            if hasattr(self, "class_init"):
                 # do a class initialization if necessary
                 inits = Container.get("Widget:class_init")
                 if inits == None:
                     inits = {}
                     Container.put("Widget:class_init", inits )
 
-                class_name = Common.get_full_class_name(my)
+                class_name = Common.get_full_class_name(self)
                 if not inits.has_key(class_name):
                     inits[class_name] = ""
-                    my.class_init()
+                    self.class_init()
             """
 
             # call the main initialization function
-            my.init()
+            self.init()
 
-        except SecurityException, e:
-            my.__cripple_widget(e)
+        except SecurityException as e:
+            self.__cripple_widget(e)
 
 
     # DEPRECATED
     """
     DO NOT REMOVE
-    def class_init(my):
+    def class_init(self):
         '''this function is called once per class.  It is used initialize
         global features of this class as opposed to a particular instance
         of a widget'''
@@ -129,33 +129,33 @@ class Widget(object):
     init_dynamic = staticmethod(init_dynamic)
 
 
-    def init(my):
+    def init(self):
         '''initialize all of the widgets.  Classes override this method
         for initialization'''
         pass
 
 
-    def __cripple_widget(my, e):
+    def __cripple_widget(self, e):
         '''function that basically makes this widget useless for display
         purposes.  This ensures that even if a function is overridden,
         it will not display correctly'''
 
         def do_search():
             pass
-        my.do_search = do_search
+        self.do_search = do_search
 
         def get_display():
             widget = StringWdg("Security Denied: '%s' with error: '%s'<br/>" \
-                % (my.__class__.__name__, str(e)) )
+                % (self.__class__.__name__, str(e)) )
             return widget
-        my.get_display = get_display;
+        self.get_display = get_display;
 
 
-    def set_state(my, state):
-        my.state = state
+    def set_state(self, state):
+        self.state = state
 
-    def get_state(my):
-        return my.state
+    def get_state(self):
+        return self.state
 
 
 
@@ -172,47 +172,47 @@ class Widget(object):
         return security.get_access(group, key, default=None)
     get_access = classmethod(get_access)
 
-    def get_top(my):
+    def get_top(self):
         '''return the top element.  In the case of widget, this is the instance
         itself'''
-        return my
+        return self
 
 
-    def get_name(my):
+    def get_name(self):
         '''returns the name of the widget'''
-        return my.name
+        return self.name
 
-    def get_class_name(my):
+    def get_class_name(self):
         '''returns the class that this sobject is an instance of'''
-        return Common.get_full_class_name(my)
+        return Common.get_full_class_name(self)
   
-    def set_title(my, title):
-        my.title = title
+    def set_title(self, title):
+        self.title = title
 
-    def set_name(my, name):
-        my.name = name
+    def set_name(self, name):
+        self.name = name
 
-    def set_as_top(my):
-        my.is_top = True
+    def set_as_top(self):
+        self.is_top = True
 
 
-    def add_widget(my,widget,name=None,wdgtype=None,index=None,use_state=False):
+    def add_widget(self,widget,name=None,wdgtype=None,index=None,use_state=False):
         '''add a child widget to this widget'''
         if not widget:
             return
-        my._add_widget(widget,name,wdgtype,index=index)
+        self._add_widget(widget,name,wdgtype,index=index)
 
 
-    def add(my,widget,name=None,wdgtype=None,index=None,use_state=False):
+    def add(self,widget,name=None,wdgtype=None,index=None,use_state=False):
         '''Convenience function to add a child widget. Does the same
         as add widget'''
         if not widget:
             return
-        my._add_widget(widget,name,wdgtype,index=index)
+        self._add_widget(widget,name,wdgtype,index=index)
 
 
 
-    def _add_widget(my,widget,name=None,wdgtype=None,index=None,use_state=False):
+    def _add_widget(self,widget,name=None,wdgtype=None,index=None,use_state=False):
         '''actually adds the child widget.  This is a protected member
         and allows the adding of widgets internally.  Subclasses can
         override add_widget to add to an internal widget instead'''
@@ -229,155 +229,155 @@ class Widget(object):
 
         if name:
             # find if the old widget is in the dictionary
-            if my.named_widgets == None:
-                my.named_widgets = {}
+            if self.named_widgets == None:
+                self.named_widgets = {}
 
 
-            if my.named_widgets.has_key(name):
+            if self.named_widgets.has_key(name):
 
                 # replace the old widget with the new one
-                my.__replace_widget(widget, name)
+                self.__replace_widget(widget, name)
             else:
                 # or just append a new on if it is not in the dictionary
                 if index == None:
-                    my.widgets.append(widget)
+                    self.widgets.append(widget)
                 else:
-                    my.widgets.insert(index, widget)
+                    self.widgets.insert(index, widget)
 
 
-            my.named_widgets[name] = widget
+            self.named_widgets[name] = widget
     
 
         # if there is no name, just append
         else:
             if index == None:
-                my.widgets.append(widget)
+                self.widgets.append(widget)
             else:
-                my.widgets.insert(index, widget)
+                self.widgets.insert(index, widget)
 
 
 
         if wdgtype != None and wdgtype != "":
 
-            if my.typed_widgets == None:
-                my.typed_widgets = {}
+            if self.typed_widgets == None:
+                self.typed_widgets = {}
 
-            if not my.typed_widgets.has_key(wdgtype):
-                my.typed_widgets[wdgtype] = []
-            my.typed_widgets[wdgtype].append(widget)
+            if not self.typed_widgets.has_key(wdgtype):
+                self.typed_widgets[wdgtype] = []
+            self.typed_widgets[wdgtype].append(widget)
 
 
         if use_state:
-            my.state = WebState.get().get_current()
+            self.state = WebState.get().get_current()
 
 
-    def __replace_widget(my, widget, name):
+    def __replace_widget(self, widget, name):
         try:
-            old_widget = my.named_widgets[name]
-            index = my.widgets.index(old_widget)
+            old_widget = self.named_widgets[name]
+            index = self.widgets.index(old_widget)
         except ValueError:
             pass
         else:
-            my.widgets[index] = widget
+            self.widgets[index] = widget
 
-    def set_widget(my, widget, name):
+    def set_widget(self, widget, name):
         assert name != None and name.strip() != ''
-        my.__replace_widget(widget, name) 
-        my.named_widgets[name] = widget
+        self.__replace_widget(widget, name) 
+        self.named_widgets[name] = widget
 
-    def get_widget(my, name):
-        return my.named_widgets.get(name)
+    def get_widget(self, name):
+        return self.named_widgets.get(name)
 
 
-    def get_widgets_by_type(my,wdgtype):
-        if my.typed_widgets.has_key(wdgtype):
-            return my.typed_widgets[wdgtype]
+    def get_widgets_by_type(self,wdgtype):
+        if self.typed_widgets.has_key(wdgtype):
+            return self.typed_widgets[wdgtype]
         else:
             return []
 
 
-    def get_widgets(my):
-        return my.widgets
+    def get_widgets(self):
+        return self.widgets
 
 
-    def set_parent(my, parent):
-        return parent.add(my)
+    def set_parent(self, parent):
+        return parent.add(self)
 
 
 
     """
-    def add_command(my, command):
+    def add_command(self, command):
         '''deprecated: use CommandDelegator'''
-        my.commands.append(command)
+        self.commands.append(command)
     """
 
-    def set_search(my, search):
+    def set_search(self, search):
         '''sets the search that will be performed in the search phase'''
-        my.search = search
+        self.search = search
 
-    def set_sobjects(my,sobjects,search=None):
+    def set_sobjects(self,sobjects,search=None):
         '''store the sobjects that this widget will act upon'''
-        #print "set_sobjects"
+        #print("set_sobjects")
         if search:
-            my.search = search
-        my.sobjects = sobjects
-        my.current_index = 0
+            self.search = search
+        self.sobjects = sobjects
+        self.current_index = 0
 
         # DEPRECATED: is this really necessary???
         # set all of the sobjects to all of the child widgets
-        for widget in (my.widgets):
+        for widget in (self.widgets):
             widget.set_sobjects(sobjects,search)
 
 
-    def set_sobject(my,sobject,search=None):
+    def set_sobject(self,sobject,search=None):
         '''convenience function to set only one sobject'''
         if sobject:
-            my.set_sobjects([sobject],search)
+            self.set_sobjects([sobject],search)
 
-    def is_sobjects_explicitly_set(my):
-        return my.current_index != -1
+    def is_sobjects_explicitly_set(self):
+        return self.current_index != -1
 
-    def get_sobjects(my):
-        return my.sobjects
+    def get_sobjects(self):
+        return self.sobjects
 
 
-    def set_current_index(my, index):
+    def set_current_index(self, index):
         '''sets the index of the current sobject'''
-        my.current_index = index
+        self.current_index = index
 
-        for widget in (my.widgets):
+        for widget in (self.widgets):
             widget.set_current_index(index)
     
-    def get_current_index(my):
-        return my.current_index
+    def get_current_index(self):
+        return self.current_index
 
-    def get_current_sobject(my):
-        if my.current_index == -1 or len(my.sobjects) == 0:
+    def get_current_sobject(self):
+        if self.current_index == -1 or len(self.sobjects) == 0:
             return None
         else:
-            return my.sobjects[my.current_index]
+            return self.sobjects[self.current_index]
 
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         '''Alter any search that comes through this widget'''
-        for widget in my.widgets:
+        for widget in self.widgets:
             widget.alter_search( search )
 
-    def do_search(my):
+    def do_search(self):
         '''Perform any searches that were created in the init function.
         Returns a list of SObjects'''
         # if no search is defined in this class, then skip this
-        if my.search != None:
+        if self.search != None:
             # give the opportunity for each of the lower widgets to alter the
             # search
-            my.alter_search( my.search )
+            self.alter_search( self.search )
 
             # actually do the search and notify all of the children
-            my.sobjects = my.search.get_sobjects()
+            self.sobjects = self.search.get_sobjects()
 
         # go through each widget and perform their searches
-        for widget in my.widgets:
+        for widget in self.widgets:
             widget.do_search()
 
 
@@ -385,29 +385,29 @@ class Widget(object):
         # FIXME: this has the effect of overriding any lower searches
         # that may exist.  This is probably not desired behaviour
         # and should be fixed
-        if my.search != None:
-            my.set_sobjects( my.sobjects, my.search )
+        if self.search != None:
+            self.set_sobjects( self.sobjects, self.search )
 
 
 
-    def check_security(my):
+    def check_security(self):
         '''give the widget a callback that allows it to check security.
         This function will return if the widget is in a state that
         is acceptable to the security manager'''
         # execute all of the security checks of the lower widgets.  If
         # any fail with a security exception
-        for widget in my.widgets:
+        for widget in self.widgets:
             try:
                 widget.check_security()
-            except SecurityException, e:
-                my.__cripple_widget(e)
+            except SecurityException as e:
+                self.__cripple_widget(e)
 
 
-    def explicit_display(my, cls=None):
+    def explicit_display(self, cls=None):
         if not cls:
-            child = my.get_display()
+            child = self.get_display()
         else:
-            child = cls.get_display(my)
+            child = cls.get_display(self)
         if child:
             widget = None
             if isinstance(child,basestring):
@@ -427,9 +427,9 @@ class Widget(object):
             del(widget)
 
 
-    def get_display(my):
+    def get_display(self):
         '''Draw all of the contents'''
-        for widget in my.widgets:
+        for widget in self.widgets:
             #try:
             #    widget.explicit_display()
             #except SecurityException:
@@ -440,38 +440,38 @@ class Widget(object):
    
 
 
-    def get_buffer(my, cls=None):
+    def get_buffer(self, cls=None):
         '''create a new buffer and execute the get_display of this widget.
         This is useful for caching the display of a widget for multiple
         reuse'''
         # have to bake the widget in a new buffer
         WebContainer.push_buffer()
         try:
-            my.explicit_display(cls)
+            self.explicit_display(cls)
         finally:
             buffer = WebContainer.pop_buffer()
         return buffer
 
-    def get_buffer_display(my, cls=None):
+    def get_buffer_display(self, cls=None):
         '''get a new buffer's value and execute the get_display of this widget.
         This is useful for caching the display of a widget for multiple
         reuse'''
-        buffer = my.get_buffer(cls)
+        buffer = self.get_buffer(cls)
         value = buffer.getvalue()
         buffer.clear()
 
         return value
 
-    def render(my, cls=None):
+    def render(self, cls=None):
         '''get a new buffer's value and execute the get_display of this widget.
         This is useful for caching the display of a widget for multiple
         reuse'''
-        return my.get_buffer(cls).getvalue()
+        return self.get_buffer(cls).getvalue()
 
 
 
 
-    def get_class_display(cls, my):
+    def get_class_display(cls, self):
         '''Explicitly use the get_display function of a provided class for a
         particular instance.  This is rarely used and should only be used
         carefully.  It is intended to break infinite loops when trying to
@@ -480,7 +480,7 @@ class Widget(object):
         a span is wrapped around a checkbox, but the widget needs to have the
         internal checkbox's interface.
         '''
-        return my.get_buffer(cls).getvalue()
+        return self.get_buffer(cls).getvalue()
     get_class_display = classmethod(get_class_display)
 
     def get_buffer_on_exception(cls, last_buffer=1):
@@ -541,12 +541,12 @@ class Widget(object):
 
     has_access = classmethod(has_access)
 
-    def dump(my):
-        print my
-        for widget in my.widgets:
-            print "child: \t", widget
+    def dump(self):
+        print(self)
+        for widget in self.widgets:
+            print("child: \t", widget)
 
-        for widget in my.widgets:
+        for widget in self.widgets:
             widget.dump()
 
 
@@ -585,22 +585,40 @@ class WidgetSettings(SObject):
     # Simple explicit functions with no manipulation of data
     #
 
-    def get_value_by_key(key, auto_create=True):
+    def get_value_by_key(key, auto_create=True, default="", is_json=False):
         if not DATABASE:
-            return ""
+            return default
 
         settings = WidgetSettings.get_by_key(key, auto_create=auto_create)
         if not settings:
-            return ""
+            return default
+
         value_str = settings.get_value("data")
+
+
+
+        if is_json:
+            if not value_str:
+                value_str = default
+            else:
+                try:
+                    value_str = jsonloads(value_str)
+                except Exception as e:
+                    print("WARNING: ", e)
+                    return default
+
+
         return value_str
     get_value_by_key = staticmethod(get_value_by_key)
 
 
-    def set_value_by_key(key, value):
+    def set_value_by_key(key, value, default=""):
         '''set and commit the value'''
         if not DATABASE:
-            return ""
+            return default
+
+        if isinstance(value, list) or isinstance(value, dict):
+            value = jsondumps(value)
 
         settings = WidgetSettings.get_by_key(key, auto_create=True)
         settings.set_value("data", value)
@@ -677,7 +695,7 @@ class WidgetSettings(SObject):
     # DEPRECATED
     def get_key_value(key, widget_name):
 
-        #print 'DEPRECATED: WidgetSettings.get_key_value()'
+        #print('DEPRECATED: WidgetSettings.get_key_value()')
 
         # web form value overrides all others
         web = WebContainer.get_web()
@@ -754,11 +772,11 @@ class WidgetSettings(SObject):
 from pyasm.command import Command
 class WidgetSettingSaveCbk(Command):
     '''Callback to save a WidgetSetting'''
-    def execute(my):
-        data = my.kwargs.get('data')
-        key = my.kwargs.get('key')
+    def execute(self):
+        data = self.kwargs.get('data')
+        key = self.kwargs.get('key')
         value = WidgetSettings.set_value_by_key(key, data)
-        my.info['data'] = value
+        self.info['data'] = value
 
     def is_undoable(cls):
         return False
@@ -766,107 +784,107 @@ class WidgetSettingSaveCbk(Command):
 
 
 class StringWdg(Widget):
-    def __init__(my,string=""):
-        my.widgets = []
-        my.string = string
-        my.name = None
+    def __init__(self,string=""):
+        self.widgets = []
+        self.string = string
+        self.name = None
 
-    def do_search(my):
+    def do_search(self):
         pass
     
-    def check_security(my):
+    def check_security(self):
         pass
     
-    def get_display(my):
+    def get_display(self):
         html = WebContainer.get_buffer()
 
         # write directly to the StringIO
-        if type(my.string) == types.UnicodeType:
-            my.string = Common.process_unicode_string(my.string)
-        html.get_buffer().write(my.string)
+        if type(self.string) == types.UnicodeType:
+            self.string = Common.process_unicode_string(self.string)
+        html.get_buffer().write(self.string)
     
 class ClassWdg(Widget):
-    def __init__(my, class_type=None):
-        my.widgets = []
+    def __init__(self, class_type=None):
+        self.widgets = []
         assert type(class_type) == types.TypeType
-        my.class_type = class_type
+        self.class_type = class_type
     
-    def do_search(my):
+    def do_search(self):
         pass
     
-    def check_security(my):
+    def check_security(self):
         pass
     
-    def get_display(my):    
-        return my.class_type()
+    def get_display(self):    
+        return self.class_type()
         
-    def get_class_name(my):
-        return '%s.%s'%(my.class_type.__module__, my.class_type.__name__)
+    def get_class_name(self):
+        return '%s.%s'%(self.class_type.__module__, self.class_type.__name__)
     
 class MethodWdg(Widget):
-    def __init__(my, method =''):
-        my.widgets = []
+    def __init__(self, method =''):
+        self.widgets = []
         assert type(method) == types.MethodType
-        my.method = method
-    def do_search(my):
+        self.method = method
+    def do_search(self):
         pass
     
-    def check_security(my):
+    def check_security(self):
         pass
     
-    def get_display(my):    
-        return my.method()
+    def get_display(self):    
+        return self.method()
         
-    def get_class_name(my):
-        return '%s.%s'%(my.method.im_class.__module__, \
-            my.method.im_class.__name__)
+    def get_class_name(self):
+        return '%s.%s'%(self.method.im_class.__module__, \
+            self.method.im_class.__name__)
 
-    def get_function_name(my):
-        return my.method.im_func.func_name
+    def get_function_name(self):
+        return self.method.im_func.func_name
 
 class Html(Base):
     '''String buffer class for html code'''
 
-    def __init__(my):
-        my._buffer = cStringIO.StringIO()
+    def __init__(self):
+        self._buffer = cStringIO.StringIO()
 
-    def __del__(my):
-        my.clear()
+    def __del__(self):
+        self.clear()
 
-    def write(my, html):
+    def write(self, html):
         if isinstance(html, basestring):
-            my._buffer.write(html)
+            self._buffer.write(html)
         elif type(html) == types.IntType:
-            my._buffer.write( str(html) )
+            self._buffer.write( str(html) )
         elif isinstance(html,Html):
-            my._buffer.write(html.getvalue())
+            self._buffer.write(html.getvalue())
         elif not html:
             pass
         else:
             raise WidgetException("Cannot handle [%s] type" % html)
 
 
-    def writeln(my, html):
-        my.write(html)
-        my._buffer.write("\n")
+    def writeln(self, html):
+        self.write(html)
+        self._buffer.write("\n")
 
 
-    def getvalue(my):
+    def getvalue(self):
         '''This exists to maintain backwards compatibility when this class
         used the StringIO class directly.'''
-        return my._buffer.getvalue()
+        return self._buffer.getvalue()
 
-    def get_display(my):
-        return my._buffer.getvalue()
+    def get_display(self):
+        return self._buffer.getvalue()
 
-    def to_string(my):
-        return my._buffer.getvalue()
+    def to_string(self):
+        return self._buffer.getvalue()
 
-    def get_buffer(my):
-        return my._buffer
+    def get_buffer(self):
+        return self._buffer
 
-    def clear(my):
-        my._buffer.close()
+    def clear(self):
+        self._buffer.close()
 
 
 
@@ -875,46 +893,46 @@ class Html(Base):
 class Url(Base):
     '''class which builds up a url'''
 
-    def __init__(my, base=""):
-        my.base = base
-        my.options = {}
+    def __init__(self, base=""):
+        self.base = base
+        self.options = {}
 
-    def set_base(my, base):
-        my.base = base
+    def set_base(self, base):
+        self.base = base
 
-    def append_to_base(my, extra):
+    def append_to_base(self, extra):
         if extra.startswith("/"):
-            my.base += extra
+            self.base += extra
         else:
-            my.base += "/%s" % extra
+            self.base += "/%s" % extra
 
 
 
-    def set_option(my, name, value):
-        my.options[name] = value
+    def set_option(self, name, value):
+        self.options[name] = value
 
 
-    def get_info(my):
-        url = my.to_string()
+    def get_info(self):
+        url = self.to_string()
         urlparts = urlparse.urlsplit(url)
         return urlparts
 
-    def get_protocol(my):
-        return my.get_info()[0]
+    def get_protocol(self):
+        return self.get_info()[0]
 
-    def get_host(my):
-        return my.get_info()[1]
-
-
-    def get_selector(my):
-        return my.get_info()[2]
+    def get_host(self):
+        return self.get_info()[1]
 
 
+    def get_selector(self):
+        return self.get_info()[2]
 
-    def to_string(my):
+
+
+    def to_string(self):
 
         options_list = []
-        for name,value in my.options.items():
+        for name,value in self.options.items():
 
             if type(value) == types.ListType:
                 for item in value:
@@ -931,31 +949,31 @@ class Url(Base):
         options_str = string.join( options_list, "&" )
 
         if options_str != "":
-            url = "%s?%s" % (my.base, options_str)
+            url = "%s?%s" % (self.base, options_str)
         else:
-            url = my.base
+            url = self.base
 
         return url
 
 
-    def add_web_state(my):
+    def add_web_state(self):
         '''add web state paramenters to this url'''
         state = WebState.get()
-        state.add_state_to_url(my)
+        state.add_state_to_url(self)
 
 
-    def get_protocol(my):
-        parts = my.base.split("://")
+    def get_protocol(self):
+        parts = self.base.split("://")
         return parts[0]
 
 
 
-    def get_url(my):
-        return my.to_string()
+    def get_url(self):
+        return self.to_string()
 
 
-    def get_base(my):
-        return my.base
+    def get_base(self):
+        return self.base
 
 
 

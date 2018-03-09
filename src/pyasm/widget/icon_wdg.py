@@ -390,30 +390,30 @@ class IconWdg(DivWdg):
     get_icon_path = staticmethod(get_icon_path)
 
 
-    def __init__(my, name=None, icon=None, long=False, css='', right_margin='3px', width='', opacity=None, **kwargs):
+    def __init__(self, name=None, icon=None, long=False, css='', right_margin='3px', width='', opacity=None, **kwargs):
         try:
-            my.icon_path = eval("IconWdg.%s" % icon.upper())
+            self.icon_path = eval("IconWdg.%s" % icon.upper())
         except:
-            my.icon_path = icon
-        my.text = name
-        my.long = long
-        my.css = css
-        my.right_margin = right_margin
-        my.width = width
-        my.kwargs = kwargs
-        my.opacity = opacity
-        my.size = kwargs.get("size")
-        super(IconWdg,my).__init__()
+            self.icon_path = icon
+        self.text = name
+        self.long = long
+        self.css = css
+        self.right_margin = right_margin
+        self.width = width
+        self.kwargs = kwargs
+        self.opacity = opacity
+        self.size = kwargs.get("size")
+        super(IconWdg,self).__init__()
 
 
-    def init(my):
-        if my.icon_path.startswith("BS"):
-            icon_path = my.icon_path
-        elif not my.icon_path.startswith("/"):
-            # icon_path = "/context/icons/oo/%s" % my.icon_path
-            icon_path = "/context/icons/silk/%s" % my.icon_path
+    def init(self):
+        if self.icon_path.startswith("BS") or self.icon_path.startswith("FA"):
+            icon_path = self.icon_path
+        elif not self.icon_path.startswith("/"):
+            # icon_path = "/context/icons/oo/%s" % self.icon_path
+            icon_path = "/context/icons/silk/%s" % self.icon_path
         else:
-            icon_path = my.icon_path
+            icon_path = self.icon_path
 
         if icon_path.startswith("BS_"):
             icon = HtmlElement.span()
@@ -424,53 +424,68 @@ class IconWdg(DivWdg):
             if part == "save":
                 part = "floppy-disk"
             icon.add_class("glyphicon-%s" % part)
-            if not my.size:
-                my.size = "16px"
-            icon.add_style("font-size: %s" % my.size)
-            if not my.opacity:
-                my.opacity = 0.6
+            if not self.size:
+                self.size = "16px"
+            icon.add_style("font-size: %s" % self.size)
+            if not self.opacity:
+                self.opacity = 0.6
+
+        elif icon_path.startswith("FA"):
+            icon = HtmlElement.i()
+            icon.add_class("fa")
+            part = icon_path.replace("FA_", "")
+            part = part.lower()
+            part = part.replace("_","-")
+            icon.add_class("fa-%s" % part)
+            if not self.size:
+                self.size = "16px"
+            icon.add_style("font-size: %s" % self.size)
+            if not self.opacity:
+                self.opacity = 0.6
+
+
         else:
             icon = HtmlElement.img(icon_path)
 
-        if my.opacity:
-            icon.add_style("opacity: %s" % my.opacity)
+        if self.opacity:
+            icon.add_style("opacity: %s" % self.opacity)
 
 
-        if my.text and my.text != "":
-            icon.set_attr("title", my.text)
-        if my.right_margin:
-            icon.add_style("margin-right: %s" % my.right_margin)
+        if self.text and self.text != "":
+            icon.set_attr("title", self.text)
+        if self.right_margin:
+            icon.add_style("margin-right: %s" % self.right_margin)
        
-        my.icon = icon
+        self.icon = icon
 
-        inline = my.kwargs.get("inline")
+        inline = self.kwargs.get("inline")
         if inline in [False, 'false']:
-            my.add_style("float: left")
+            self.add_style("float: left")
         else:
-            my.add_style("display: inline")
+            self.add_style("display: inline")
         
 
         
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.add(my.icon)
-        if my.css:
-            my.add_class(my.css)
+        self.add(self.icon)
+        if self.css:
+            self.add_class(self.css)
 
-        if my.long:
-            my.add(my.text)
+        if self.long:
+            self.add(self.text)
 
-        if my.width:
-            if my.icon_path.startswith("BS_"):
-                my.icon.add_style('font-size', my.width)
+        if self.width:
+            if self.icon_path.startswith("BS_"):
+                self.icon.add_style('font-size', self.width)
             else:
-                my.icon.add_style('width', my.width)
-        return super(IconWdg,my).get_display()
+                self.icon.add_style('width', self.width)
+        return super(IconWdg,self).get_display()
 
-    def get_icon(my):
-        return my.icon
+    def get_icon(self):
+        return self.icon
 
     def get_icons_def():
         return IconWdg.icons
@@ -485,54 +500,58 @@ class IconWdg(DivWdg):
 
 class IconButtonWdg(HtmlElement):
     
-    def __init__(my, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None):
-        my.text = name
-        my.icon_path = icon
-        my.long = long
-        my.icon_pos = icon_pos
-        super(IconButtonWdg,my).__init__("span")
-        my.name = name
-        my.icon_styles = icon_styles
+    def __init__(self, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None):
+        self.text = name
+        self.icon_path = icon
+        self.long = long
+        self.icon_pos = icon_pos
+        super(IconButtonWdg,self).__init__("span")
+        self.name = name
+        self.icon_styles = icon_styles
     
 
-    def set_icon(my, icon):
-        my.icon_path = icon
+    def set_icon(self, icon):
+        self.icon_path = icon
 
-    def set_text(my, text):
-        my.text = text
+    def set_text(self, text):
+        self.text = text
 
-    def get_display(my):
+    def get_display(self):
 
-        if my.icon_pos == "left":
-            my._add_icon()
-            my._add_title()
-        elif my.icon_pos == "right":
-            my._add_title()
-            my.add(" ")
-            my._add_icon()
+        if self.icon_pos == "left":
+            self._add_icon()
+            self._add_title()
+        elif self.icon_pos == "right":
+            self._add_title()
+            self.add(" ")
+            self._add_icon()
 
-        return super(IconButtonWdg,my).get_display()
+        return super(IconButtonWdg,self).get_display()
 
 
-    def _add_icon(my):
+    def _add_icon(self):
         # icon is optional
-        if not my.icon_path:
+        if not self.icon_path:
             return
         
-        if not my.icon_path.startswith("/"):
-            # icon_path = "/context/icons/oo/%s" % my.icon_path
-            icon_path = "/context/icons/silk/%s" % my.icon_path
+        if self.icon_path.startswith("BS_"):
+            icon = IconWdg(self.name, self.icon_path)
         else:
-            icon_path = my.icon_path
+            icon_path = IconWdg.get_icon_path(self.icon_path)
+            if not icon_path:
+                if not self.icon_path.startswith("/"):
+                    icon_path = "/context/icons/silk/%s" % self.icon_path
+                else:
+                    icon_path = self.icon_path
 
-        icon = HtmlElement.img(icon_path)
-        icon.set_attr("title", my.name)
-        icon.add_styles(my.icon_styles)   
-        if my.long:
-            img_id = my.generate_unique_id(my.name)
+            icon = HtmlElement.img(icon_path)
+            icon.set_attr("title", self.name)
+            icon.add_styles(self.icon_styles)   
+        if self.long:
+            img_id = self.generate_unique_id(self.name)
             icon.add_class("icon_out") 
-            my.add_event("onmouseover","wdg_opacity('%s','over');" % (img_id))
-            my.add_event("onmouseout","wdg_opacity('%s','out');" % (img_id))
+            self.add_event("onmouseover","wdg_opacity('%s','over');" % (img_id))
+            self.add_event("onmouseout","wdg_opacity('%s','out');" % (img_id))
             icon.set_id(img_id)
         else:
             icon.add_class("simple_button")
@@ -543,81 +562,81 @@ class IconButtonWdg(HtmlElement):
         else:
             icon.add_style("vertical-align: middle")
        
-        my.add(icon)
+        self.add(icon)
 
 
 
 
 
-    def _add_title(my):
-        if my.long:
+    def _add_title(self):
+        if self.long:
             # This would be better on the whole span
-            my.add(HtmlElement.href(my.text, "#"))
+            self.add(HtmlElement.href(self.text, "#"))
             # this is Mootools specific
-            my.add_event('onclick', 'new Event(event).stop()')
-            my.add_class("button")
+            self.add_event('onclick', 'new Event(event).stop()')
+            self.add_class("button")
           
             if WebContainer.get_web().is_IE():
-                my.add_style("border-width: 0px 2px 2px 0px")
-                my.add_style("border-style: solid")
-                my.add_style("border-color: #303030")
-                my.add_event("onmousedown", "button_down(this)")
-                my.add_event("onmouseup", "button_up(this)")
-                my.add_event("onmouseout", "button_up(this)")
+                self.add_style("border-width: 0px 2px 2px 0px")
+                self.add_style("border-style: solid")
+                self.add_style("border-color: #303030")
+                self.add_event("onmousedown", "button_down(this)")
+                self.add_event("onmouseup", "button_up(this)")
+                self.add_event("onmouseout", "button_up(this)")
        
             
 
 class IconSubmitWdg(IconButtonWdg):
-    def __init__(my, name=None, icon=None, long=False, icon_pos="left", \
+    def __init__(self, name=None, icon=None, long=False, icon_pos="left", \
             add_hidden=True, value=None):
-        my.add_hidden = add_hidden
-        my.hidden = None
+        self.add_hidden = add_hidden
+        self.hidden = None
         if not value:
-            my.value = name
+            self.value = name
         else:
-            my.value = value
+            self.value = value
 
-        # for some reason, my.name gets reset to empty
-        my.name = name
-        my.submit_name = name
+        # for some reason, self.name gets reset to empty
+        self.name = name
+        self.submit_name = name
         
-        super(IconSubmitWdg,my).__init__(name,icon,long,icon_pos)
+        super(IconSubmitWdg,self).__init__(name,icon,long,icon_pos)
     
-    def init(my):
+    def init(self):
         from input_wdg import HiddenWdg
-        if my.add_hidden:
-            my.hidden = HiddenWdg(my.value,"")
-            my.add( my.hidden )
+        if self.add_hidden:
+            self.hidden = HiddenWdg(self.value,"")
+            self.add( self.hidden )
 
-        my.add_event("onclick", "submit_icon_button('%s','%s')" % \
-                (my.submit_name,my.value) )
+        self.add_event("onclick", "submit_icon_button('%s','%s')" % \
+                (self.submit_name,self.value) )
 
-    def get_display(my):
-        return super(IconSubmitWdg,my).get_display()
+    def get_display(self):
+        return super(IconSubmitWdg,self).get_display()
 
-    def get_value(my):
-        return my.hidden.get_value()
+    def get_value(self):
+        return self.hidden.get_value()
     
 
 
 class IconRefreshWdg(IconSubmitWdg):
-    def __init__(my, long=True):
-        super(IconRefreshWdg,my).__init__("Refresh", IconWdg.REFRESH, long)
+    def __init__(self, long=True):
+        super(IconRefreshWdg,self).__init__("Refresh", IconWdg.REFRESH, long)
 
 
 
 class ProdIconButtonWdg(IconButtonWdg):
     
-    def __init__(my, name=None, icon=None, long=True, icon_pos="left", icon_styles=''):
-        super(ProdIconButtonWdg,my).__init__(name, icon, long, icon_pos, icon_styles=icon_styles)
-        #my.add_style("line-height: 14px")
-        my.add_style("font-size: 1.0em")
-        my.add_style("padding: 3px 10px 3px 10px")
+    def __init__(self, name=None, icon=None, long=True, icon_pos="left", icon_styles=''):
+        super(ProdIconButtonWdg,self).__init__(name, icon, long, icon_pos, icon_styles=icon_styles)
+        #self.add_style("line-height: 14px")
+        self.add_style("font-size: 1.0em")
+        self.add_style("padding: 3px 10px 3px 10px")
 
 class ProdIconSubmitWdg(IconSubmitWdg):
     
-    def __init__(my, name=None, icon=None, long=True, icon_pos="left"):
-        super(ProdIconSubmitWdg,my).__init__(name, icon, long, icon_pos)
-        my.add_style("line-height: 14px")
-        my.add_style("font-size: 1.0em")
-        my.add_style("padding: 3px 10px 3px 10px")
+    def __init__(self, name=None, icon=None, long=True, icon_pos="left"):
+        super(ProdIconSubmitWdg,self).__init__(name, icon, long, icon_pos)
+        self.add_style("line-height: 14px")
+        self.add_style("font-size: 1.0em")
+        self.add_style("padding: 3px 10px 3px 10px")

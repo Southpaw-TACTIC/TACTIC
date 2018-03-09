@@ -46,6 +46,31 @@ class SPTDate(object):
     start_of_today = classmethod(start_of_today)
 
 
+    def strip_time(cls, date):
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
+        date = datetime(date.year, date.month, date.day)
+        return date
+    strip_time = classmethod(strip_time)
+
+
+    def strip_timezone(cls, date):
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
+        date = date.replace(tzinfo=None)
+        return date
+    strip_timezone = classmethod(strip_timezone)
+
+
+    def set_noon(cls, date):
+        date = datetime(date.year, date.month, date.day, hour=12, minute=0, second=0)
+        return date
+    set_noon = classmethod(set_noon)
+
+
+
     def timedelta(cls, **kwargs):
         delta = timedelta(**kwargs)
         return delta
@@ -56,6 +81,32 @@ class SPTDate(object):
         date = cls.convert(date)
         return date
     parse = classmethod(parse)
+
+
+
+    def is_weekday(cls, date):
+        if date.weekday() in (5,6):
+            return False
+        else:
+            return True
+
+    is_weekday = classmethod(is_weekday)
+
+
+
+    def add_business_days(cls, from_date, add_days, holidays=[]):
+        business_days_to_add = add_days
+        current_date = from_date
+        while business_days_to_add > 0:
+            current_date += timedelta(days=1)
+            weekday = current_date.weekday()
+            if weekday >= 5: # sunday = 6
+                continue
+            if current_date in holidays:
+                continue
+            business_days_to_add -= 1
+        return current_date
+    add_business_days = classmethod(add_business_days)
 
 
 
@@ -209,34 +260,53 @@ class SPTDate(object):
 
 
 
-    def get_time_ago(cls, date):
+    def get_time_ago(cls, date, convert=False):
 
         if isinstance(date, basestring):
             date = parser.parse(date)
 
+        if convert:
+            date = cls.convert(date)
+        else:
+            date = cls.strip_timezone(date)
+
         now = cls.now()
 
         diff = now - date
+        if diff.days < 0:
+            diff = date - now
+            txt = "from now"
+        else:
+            txt = "ago"
+
+        if diff.days >= 7:
+            value = date.strftime("%b %d at %I:%M %p")
+
+        elif diff.days == 1:
+            value = "1 day %s" % txt
+
+        elif diff.days > 1:
+            value = "%s days %s" % (diff.days, txt)
 
         # less than a minute
-        if diff.seconds < 60:
-            value = "%s seconds ago" % diff.seconds
+        elif diff.seconds < 60:
+            value = "%s seconds %s" % (diff.seconds, txt)
 
         # less than an hour
         elif diff.seconds < 60 * 60:
             minutes = diff.seconds / 60
             if minutes == 1:
-                value = "1 minute ago"
+                value = "1 minute %s" % txt
             else:
-                value = "%s minutes ago" % minutes
+                value = "%s minutes %s" % (minutes, txt)
 
         # less than a day
         elif diff.seconds < 60 * 60 * 24:
-            hours = diff.seconds / 60 /60
-            if hours == 1:
-                value = "1 hour ago"
+            hours = float(diff.seconds) / 60.0 / 60.0
+            if hours < 12:
+                value = "%0.1f hours %s" % (hours, txt)
             else:
-                value = "%s hours ago" % hours
+                value = "%s hours %s" % (int(hours), txt)
 
 
         else:

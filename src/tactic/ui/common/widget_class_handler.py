@@ -18,11 +18,11 @@ from pyasm.common import Container
 
 class WidgetClassHandler(object):
 
-    def __init__(my):
+    def __init__(self):
 
         key = "WidgetClassHandler:config"
-        my.config = Container.get(key)
-        if my.config != None:
+        self.config = Container.get(key)
+        if self.config != None:
             return
 
         base_config = '''
@@ -119,18 +119,23 @@ class WidgetClassHandler(object):
         </element>
 
         <element name='hidden_row'>
-            <!--
-            <display class='pyasm.widget.HiddenRowToggleWdg'/>
-            -->
             <display class='tactic.ui.table.HiddenRowElementWdg'/>
         </element>
 
-        <element name='text'>
-        <!--
-            <display class='tactic.ui.input.TextInputWdg'/>
-        -->
-            <display class='pyasm.widget.TextWdg'/>
+
+
+
+
+
+        <element name='title'>
+            <display class='tactic.ui.panel.EditTitleWdg'/>
         </element>
+
+        <element name='text'>
+            <display class='tactic.ui.input.TextInputWdg'/>
+        </element>
+
+
         <element name='select'>
             <display class='pyasm.widget.SelectWdg'/>
         </element>
@@ -171,27 +176,27 @@ class WidgetClassHandler(object):
         </config>
         '''
         from pyasm.widget import WidgetConfig
-        my.config = WidgetConfig.get(view='widget_definition', xml=base_config)
+        self.config = WidgetConfig.get(view='widget_definition', xml=base_config)
 
         # customize config to register widgets
         #path = "xxx.conf"
 
-        Container.put(key, my.config)
+        Container.put(key, self.config)
 
 
 
 
-    def get_display_handler(my, key):
-        return my.config.get_display_handler(key)
+    def get_display_handler(self, key):
+        return self.config.get_display_handler(key)
 
 
 
-    def get_element_attributes(my, key):
-        return my.config.get_element_attributes(key)
+    def get_element_attributes(self, key):
+        return self.config.get_element_attributes(key)
 
 
-    def get_all_elements_attributes(my, attr):
-        xml = my.config.get_xml()
+    def get_all_elements_attributes(self, attr):
+        xml = self.config.get_xml()
 
         attrs = {}
         nodes = xml.get_nodes("config/widget_definition/element")

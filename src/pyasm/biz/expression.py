@@ -46,35 +46,39 @@ class ParserException(TacticException):
 
 class ExpressionParser(object):
         
-    def __init__(my):
-        my.init()
+    def __init__(self):
+        self.init()
 
 
-    def init(my):
-        my.env_sobjects = {}
-        my.expression = None
+    def init(self):
+        self.env_sobjects = {}
+        self.expression = None
         # for building cache key
-        my.related_types = []
-        my.index = -1
-        my.sobjects = []
-        my.search = None
-        my.result = None
-        my.vars = {}
-        my.show_retired = False
-        my.state = {}
-        my.return_mode = 'array'
-        my.is_single = False
+        self.related_types = []
+        self.index = -1
+        self.sobjects = []
+        self.search = None
+        self.result = None
+        self.vars = {}
+        self.show_retired = False
+        self.state = {}
+        self.return_mode = 'array'
+        self.is_single = False
+        self.use_cache = True
 
 
 
-    def eval(my, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None ):
+    def eval(self, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None, use_cache=None ):
 
         if not expression:
             return ''
 
-        my.init()
+        self.init()
 
-            
+
+        if use_cache is not None:
+            self.use_cache = use_cache
+
 
         if dictionary == True:
             return_mode = 'dict'
@@ -85,43 +89,42 @@ class ExpressionParser(object):
         Container.put("Expression::return_mode", return_mode)
 
         if sobjects == None:
-            #my.is_single = False
+            #self.is_single = False
             sobjects = []
      
         elif type(sobjects) != types.ListType:
-            #my.is_single = True
+            #self.is_single = True
             sobjects = [sobjects]
       
 
-        my.show_retired = show_retired
+        self.show_retired = show_retired
 
 
-        my.expression = expression
-        my.sobjects = sobjects
+        self.expression = expression
+        self.sobjects = sobjects
         if search:
-            my.search = search.copy()
-        my.env_sobjects = env_sobjects
-        my.state = state
+            self.search = search.copy()
+        self.env_sobjects = env_sobjects
+        self.state = state
 
-        my.vars = {}
-        my.vars.update( my.get_date_vars() )
+        self.vars = {}
+        self.vars.update( self.get_date_vars() )
 
         # add the environment
         login = Environment.get_login()
         if login:
-            my.vars['LOGIN'] = login.get_value("login")
-            my.vars['LOGIN_ID'] = login.get_id()
+            self.vars['LOGIN'] = login.get_value("login")
+            self.vars['LOGIN_ID'] = login.get_id()
 
             # add users in login group
             from pyasm.security import LoginGroup
             login_codes = LoginGroup.get_login_codes_in_group()
             login_codes = "|".join(login_codes)
-            my.vars['LOGINS_IN_GROUP'] = login_codes
+            self.vars['LOGINS_IN_GROUP'] = login_codes
 
 
         project = Project.get_project_code()
-        my.vars['PROJECT'] = project
-
+        self.vars['PROJECT'] = project
 
         try:
             from pyasm.web import WebContainer
@@ -130,42 +133,40 @@ class ExpressionParser(object):
             web = None
         if web:
             url = web.get_base_url()
-            my.vars['BASE_URL'] = url.to_string()
+            self.vars['BASE_URL'] = url.to_string()
 
             url = web.get_project_url()
-            my.vars['PROJECT_URL'] = url.to_string()
+            self.vars['PROJECT_URL'] = url.to_string()
         else:
             base_url = Config.get_value("services", "mail_base_url")
             if base_url:
-                my.vars['BASE_URL'] = base_url
-                my.vars['PROJECT_URL'] = "%s/tactic/%s" % (base_url, project)
+                self.vars['BASE_URL'] = base_url
+                self.vars['PROJECT_URL'] = "%s/tactic/%s" % (base_url, project)
 
 
         if vars:
-            my.vars.update(vars)
+            self.vars.update(vars)
  
         # replace all of the variables: Note that this replaces even in the
         # string area ... not sure if this is what we want
-        keys = my.vars.keys()
+        keys = self.vars.keys()
         keys.sort()
         keys.reverse()
-        #for name, value in my.vars.items():
+        #for name, value in self.vars.items():
         for name in keys:
 
-            value = my.vars.get(name)
-            #new_value = "'%s'" % str(value)
+            value = self.vars.get(name)
             new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
             # HACK: replace with the single quotes first.  Not elegant, but
             # it works for now until we have real variables
-            my.expression = my.expression.replace("'$%s'" % name, new_value)
-            my.expression = my.expression.replace("$%s" % name, new_value)
-
+            self.expression = re.sub("'\$%s'"%name, new_value, self.expression)
+            self.expression = re.sub("\$%s"%name, new_value, self.expression)
 
 
         if not mode:
             # start in string mode
-            string_idx = my.expression.find("{")
-            expr_idx = my.expression.find("@")
+            string_idx = self.expression.find("{")
+            expr_idx = self.expression.find("@")
 
             if string_idx == -1:
                 new_parser = ExpressionMode()
@@ -175,46 +176,46 @@ class ExpressionParser(object):
                 new_parser = ExpressionMode()
             else:
                 new_parser = StringMode()
-                my.is_single = False
+                self.is_single = False
     
         elif mode == 'expression':
             # start in string mode
             new_parser = ExpressionMode()
-            my.is_single = True
+            self.is_single = True
         elif mode == 'string':
             new_parser = StringMode()
-            my.is_single = True
+            self.is_single = True
 
             # if the are no {}, then just exit ... no use parsing
-            string_idx = my.expression.find("{")
+            string_idx = self.expression.find("{")
             if string_idx == -1:
-                return my.expression
+                return self.expression
 
 
         if single:
-            my.is_single = True
+            self.is_single = True
         if list:
-            my.is_single = False
+            self.is_single = False
 
         
         Container.put("Expression::extra_filters", extra_filters)
 
-        my.dive(new_parser)
+        self.dive(new_parser)
         Container.put("Expression::extra_filters", None)
-        if my.is_single and type(my.result) == types.ListType: 
-            if my.result:
-                return my.result[0]
+        if self.is_single and type(self.result) == types.ListType: 
+            if self.result:
+                return self.result[0]
             else:
                 # for single, should return None
                 return None
-        elif list and type(my.result) != types.ListType:
-            return [my.result]
+        elif list and type(self.result) != types.ListType:
+            return [self.result]
         else:
-            return my.result
+            return self.result
 
 
 
-    def get_date_vars(my):
+    def get_date_vars(self):
         date_vars = Container.get("Expression:date_vars")
         if date_vars != None:
             return date_vars
@@ -311,28 +312,28 @@ class ExpressionParser(object):
 
 
 
-    def get_result(my):
-        return my.result
+    def get_result(self):
+        return self.result
 
-    def get_env_sobject(my, key):
-        return my.env_sobjects.get(key)
+    def get_env_sobject(self, key):
+        return self.env_sobjects.get(key)
 
 
-    def get_cache_sobjects(my):
+    def get_cache_sobjects(self):
         '''method to store all the sobjects as they being searched through
         the hierarchy'''
-        key = "%s|%s|%s" % (my.expression, my.related_types, str(my.sobjects))
+        key = "%s|%s|%s" % (self.expression, self.related_types, str(self.sobjects))
         cache = Container.get_full_dict('Expression:%s' % key)
         return cache
 
 
-    def cache_sobjects(my, sobject, related_sobjects):
+    def cache_sobjects(self, sobject, related_sobjects):
         '''method to store all the sobjects as they being searched through
         the hierarchy'''
         if not related_sobjects:
             related_sobjects = []
 
-        key = "%s|%s|%s" % (my.expression, my.related_types, str(my.sobjects))
+        key = "%s|%s|%s" % (self.expression, self.related_types, str(self.sobjects))
         cache = Container.get_full_dict('Expression:%s' % key)
         cache[sobject] = related_sobjects
 
@@ -346,15 +347,15 @@ class ExpressionParser(object):
 
 
 
-    def get_flat_cache(my, filter_leaf=False):
-        cache_sobjects = my.get_cache_sobjects()
+    def get_flat_cache(self, filter_leaf=False):
+        cache_sobjects = self.get_cache_sobjects()
         flat_cache_sobjects = {}
         level = 0
 
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
             leaf_sobjects = []
             search_key = sobject.get_search_key()
-            my._flatten_cache(sobject, level, cache_sobjects, leaf_sobjects)
+            self._flatten_cache(sobject, level, cache_sobjects, leaf_sobjects)
             # FIXME
             # _flatten_cache return a bizarre case where the leaf = [sobject]
             # to determine
@@ -369,7 +370,7 @@ class ExpressionParser(object):
 
 
 
-    def _flatten_cache(my, top_sobject, level, cache_sobjects, leaf_sobjects):
+    def _flatten_cache(self, top_sobject, level, cache_sobjects, leaf_sobjects):
         search_key = top_sobject.get_search_key()
         # flatten the cache_sobjects
         sobjects = cache_sobjects.get(search_key)
@@ -392,22 +393,22 @@ class ExpressionParser(object):
             if not isinstance(sobject, SObject) or not sobject:
                 continue
           
-            my._flatten_cache(sobject, level, cache_sobjects, leaf_sobjects)
+            self._flatten_cache(sobject, level, cache_sobjects, leaf_sobjects)
 
     #
     # These methods allow for querying the leaf values for each sobject on
     # an expression that started with multiple sobjects.
     #
-    def get_result_by_sobject(my, sobject):
-        results = my.get_results_by_sobject(sobject)
+    def get_result_by_sobject(self, sobject):
+        results = self.get_results_by_sobject(sobject)
         if results:
             return results[0]
         else:
             return None
 
-    def get_results_by_sobject(my, sobject):
+    def get_results_by_sobject(self, sobject):
         key = sobject.get_search_key()
-        relationships = my.get_cache_sobjects()
+        relationships = self.get_cache_sobjects()
 
         # only go one level right now
         results = []
@@ -421,20 +422,20 @@ class ExpressionParser(object):
             break
         return results
 
-    def get_results_by_sobject_dict(my):
+    def get_results_by_sobject_dict(self):
         results = {}
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
             key = sobject.get_search_key()
-            sobj_results = my.get_results_by_sobject(sobject)
+            sobj_results = self.get_results_by_sobject(sobject)
             results[key] = sobj_results
         return results
 
-    def get_result_by_sobject_dict(my):
+    def get_result_by_sobject_dict(self):
         '''get a single result for each sobject organized by a dictionary'''
         results = {}
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
             key = sobject.get_search_key()
-            sobj_results = my.get_result_by_sobject(sobject)
+            sobj_results = self.get_result_by_sobject(sobject)
             results[key] = sobj_results
         return results
 
@@ -442,7 +443,7 @@ class ExpressionParser(object):
 
 
 
-    def _find_sqr_brackets(my, filter):
+    def _find_sqr_brackets(self, filter):
         '''get the [ ] in the string and pass it to SqrBracketMode''' 
         # use greedy search
         p = re.compile("(\[.*\])")
@@ -450,20 +451,20 @@ class ExpressionParser(object):
         if m:
             filter = m[0]
             mode = SqrBracketMode()
-            rtn = my.dive(mode, expression=filter)
+            rtn = self.dive(mode, expression=filter)
         else:
             rtn = []
 
         return rtn
 
 
-    def _split_arg(my, arg):
+    def _split_arg(self, arg):
         parts = []
         
 
         #p = re.compile("(\[.*?\])")
         #filters = p.findall(arg)
-        filters = my._find_sqr_brackets(arg)
+        filters = self._find_sqr_brackets(arg)
         if not filters:
             return arg.split(".")
 
@@ -479,7 +480,7 @@ class ExpressionParser(object):
 
         return parts
         
-    def get_plain_related_types(my, expression):
+    def get_plain_related_types(self, expression):
         '''get plain related_types without the filters in an expression. This is similar to _split_arg()'''
         # this should work in a nested expression as well with @UNIQUE 
         m = re.match(r'.*@SOBJECT\((.*?)\)*$',expression)
@@ -490,7 +491,7 @@ class ExpressionParser(object):
 
         parts = []
 
-        filters = my._find_sqr_brackets(arg)
+        filters = self._find_sqr_brackets(arg)
         if not filters:
             return arg.split(".")
 
@@ -504,26 +505,26 @@ class ExpressionParser(object):
 
         return parts
 
-    def do_parse(my):
+    def do_parse(self):
         
         while(1):
-            char = my.expression[my.index]
-            value = my.parse(char)
+            char = self.expression[self.index]
+            value = self.parse(char)
             if value == 'continue':
-                my.result = None
-                my.stack = []
+                self.result = None
+                self.stack = []
 
             if value == 'exit':
                 return
 
-            my.index += 1
+            self.index += 1
 
-            if my.index >= len(my.expression):
+            if self.index >= len(self.expression):
                 break
 
 
 
-    def dive(my, new_parser, reuse_token=False, expression=None):
+    def dive(self, new_parser, reuse_token=False, expression=None):
 
         # handle the case where expression is empty ... no reason to go further
         if expression == '':
@@ -533,33 +534,39 @@ class ExpressionParser(object):
             new_parser.expression = expression
             new_parser.index = 0
         else:
-            new_parser.expression = my.expression
+            new_parser.expression = self.expression
             if reuse_token:
-                new_parser.index = my.index
+                new_parser.index = self.index
             else:
-                new_parser.index = my.index + 1
+                new_parser.index = self.index + 1
 
 
 
-        new_parser.sobjects = my.sobjects
-        new_parser.search = my.search
-        new_parser.env_sobjects = my.env_sobjects
-        new_parser.state = my.state
-        new_parser.vars = my.vars
-        new_parser.show_retired = my.show_retired
+        new_parser.sobjects = self.sobjects
+        new_parser.search = self.search
+        new_parser.env_sobjects = self.env_sobjects
+        new_parser.state = self.state
+        new_parser.vars = self.vars
+        new_parser.show_retired = self.show_retired
+        new_parser.use_cache = self.use_cache
+        new_parser.related_types = self.related_types
 
         new_parser.do_parse()
 
         # get the result from the parse
-        my.result = new_parser.get_result()
+        self.result = new_parser.get_result()
+
+        # get the related_types going back up after a dive
+        # This is for caching purposes
+        self.related_types = new_parser.related_types
 
         if not expression:
-            my.index = new_parser.index
+            self.index = new_parser.index
 
-        return my.result
+        return self.result
 
 
-    def get_mode(my, expression):
+    def get_mode(self, expression):
         # start in string mode
         string_idx = expression.find("{")
         expr_idx = expression.find("@")
@@ -583,27 +590,27 @@ class ExpressionParser(object):
 
 class StringMode(ExpressionParser):
 
-    def __init__(my):
-        my.stack = []
+    def __init__(self):
+        self.stack = []
 
-        my.arg = []
+        self.arg = []
         
-        super(StringMode, my).__init__()
+        super(StringMode, self).__init__()
 
-    def get_result(my):
+    def get_result(self):
         try:
-            result =  "".join( my.stack )
+            result =  "".join( self.stack )
         except UnicodeDecodeError:
-            my.stack = [ x.decode('utf-8') if type(x)==types.StringType else x for x in my.stack]
-            result =  "".join( my.stack )
+            self.stack = [ x.decode('utf-8') if type(x)==types.StringType else x for x in self.stack]
+            result =  "".join( self.stack )
         return result
 
 
-    def parse(my, token):
+    def parse(self, token):
         # go in to expression mode
         if token == '{':
             mode = ExpressionMode()
-            result = my.dive(mode)
+            result = self.dive(mode)
             # FIXME: for now, take the first element
             if type(result) == types.ListType:
                 if not result:
@@ -615,16 +622,16 @@ class StringMode(ExpressionParser):
 
 
 
-            if my.expression[my.index] != '}':
+            if self.expression[self.index] != '}':
 
                 mode = StringFormatMode()
-                format = my.dive(mode)
+                format = self.dive(mode)
                 format = format.strip()
                 if isinstance(result, datetime.datetime):
                     try:
                         result = result.strftime(str(format))
                     except Exception, e:
-                        raise SyntaxError("Error when using format [%s] on datetime result [%s] in expression [%s]: [%s]" % (format, result, my.expression, str(e)))
+                        raise SyntaxError("Error when using format [%s] on datetime result [%s] in expression [%s]: [%s]" % (format, result, self.expression, str(e)))
 
                 # FIXME: does this make sense??
                 # if it is a timedelta, convert to seconds for
@@ -646,7 +653,7 @@ class StringMode(ExpressionParser):
                             elif str(e) == "a float is required":
                                 result = ''
                             else:
-                                #raise SyntaxError("Error when using format [%s] on result [%s] in expression [%s]: [%s]" % (format, result, my.expression, str(e)))
+                                #raise SyntaxError("Error when using format [%s] on result [%s] in expression [%s]: [%s]" % (format, result, self.expression, str(e)))
                                 result = ''
                 elif format.startswith("format="):
 
@@ -673,13 +680,13 @@ class StringMode(ExpressionParser):
 
             if not isinstance(result, basestring):
                 result = str(result)
-            my.stack.append(result)
+            self.stack.append(result)
 
         elif token == '}':
             return 'exit'
 
         else:
-            my.stack.append(token)
+            self.stack.append(token)
 
 
 
@@ -689,86 +696,86 @@ class StringMode(ExpressionParser):
 
 class StringFormatMode(ExpressionParser):
 
-    def __init__(my):
-        my.format = []
+    def __init__(self):
+        self.format = []
 
-        my.start_char = False
-        my.brackets = 0
-        super(StringFormatMode, my).__init__()
+        self.start_char = False
+        self.brackets = 0
+        super(StringFormatMode, self).__init__()
 
-    def get_result(my):
-        return "".join(my.format)
+    def get_result(self):
+        return "".join(self.format)
 
-    def parse(my, token):
+    def parse(self, token):
 
-        if not my.start_char and token == '}':
+        if not self.start_char and token == '}':
             return "exit"
 
-        elif token == my.start_char: 
+        elif token == self.start_char: 
             # using matching parentheses to ensure | is not part of an expression
-            if my.brackets == 0:
+            if self.brackets == 0:
                 # skip pass the } after |
-                char = my.expression[my.index]
+                char = self.expression[self.index]
                 while char != '}':
-                    my.index += 1
-                    char = my.expression[my.index]
+                    self.index += 1
+                    char = self.expression[self.index]
                 return "exit"
             else:
-                my.format.append(token)
+                self.format.append(token)
              
 
         #elif token == ' ':
         #    pass
 
         elif token == '|':
-            my.start_char = token
+            self.start_char = token
 
         else:
             if token == '(':
-                my.brackets += 1
+                self.brackets += 1
             elif token == ')':
-                my.brackets -= 1
-            my.format.append(token)
+                self.brackets -= 1
+            self.format.append(token)
 
 
 
 class ExpressionMode(ExpressionParser):
 
-    def __init__(my):
-        my.stack = []
-        my.literal = []
-        my.literal_mode = False
+    def __init__(self):
+        self.stack = []
+        self.literal = []
+        self.literal_mode = False
 
-        super(ExpressionMode, my).__init__()
+        super(ExpressionMode, self).__init__()
 
 
-    def get_result(my):
-        my.handle_literal()
+    def get_result(self):
+        self.handle_literal()
 
-        if len(my.stack) == 1:
+        if len(self.stack) == 1:
             # FIXME: not sure why this is double array?
-            return my.stack[0]
+            return self.stack[0]
 
         # go through the stack and calculate
-        value = my.evaluate_stack(my.stack)
-        my.result = value
+        value = self.evaluate_stack(self.stack)
+        self.result = value
 
-        return my.result
+        return self.result
 
 
 
     EMPTY_LITERAL = '!!!_^^^_!!!'
 
-    def parse(my, token):
+    def parse(self, token):
         # make special provision for literal (string) mode
-        if my.literal_mode:
+        if self.literal_mode:
             if token == "'":
-                my.literal_mode = False
-                if not my.literal:
+                self.literal_mode = False
+                if not self.literal:
                     # NEED A SPECIAL STRING TO GET BY LITERAL CHECKS
-                    my.literal = [my.EMPTY_LITERAL]
+                    self.literal = [self.EMPTY_LITERAL]
             else:
-                my.literal.append(token)
+                self.literal.append(token)
             return
 
         # if the next character is }, then exit
@@ -777,8 +784,8 @@ class ExpressionMode(ExpressionParser):
        
         elif token == '@':
             mode = MethodMode()
-            my.result = my.dive(mode)
-            my.stack.append(my.result)
+            self.result = self.dive(mode)
+            self.stack.append(self.result)
 
 
         elif token == ',':
@@ -786,8 +793,8 @@ class ExpressionMode(ExpressionParser):
 
         elif token == '(':
             mode = ExpressionMode()
-            value = my.dive(mode)
-            my.stack.append(value)
+            value = self.dive(mode)
+            self.stack.append(value)
 
 
         elif token == ')':
@@ -797,82 +804,82 @@ class ExpressionMode(ExpressionParser):
         elif token == '-':
             try:
                 # handle negative number
-                int(my.expression[my.index+1])
-                my.literal.append(token)
+                int(self.expression[self.index+1])
+                self.literal.append(token)
             except ValueError:
-                my.handle_literal()
-                my.stack.append(token)
+                self.handle_literal()
+                self.stack.append(token)
 
         elif token in ['+', '-', '/', '*', '~']:
 
-            my.handle_literal()
+            self.handle_literal()
 
-            my.stack.append(token)
+            self.stack.append(token)
 
         #elif op in ['>','>=','==','=','<','<=']:
         elif token in ['>','=','<','!']:
-            my.handle_literal()
+            self.handle_literal()
 
-            if my.expression[my.index+1] in ['=','!']:
+            if self.expression[self.index+1] in ['=','!']:
                 token += '='
-                my.index += 1
-            elif my.expression[my.index+1] in ['~']:
+                self.index += 1
+            elif self.expression[self.index+1] in ['~']:
                 token += '~'
-                my.index += 1
+                self.index += 1
 
-            my.stack.append(token)
+            self.stack.append(token)
 
         elif token in ["'"]:
-            my.literal_mode = True
+            self.literal_mode = True
             return
 
         elif token in [' ', '\t', '\n']:
-            my.handle_literal()
+            self.handle_literal()
 
         elif token in [';']:
             return "continue"
 
         else:
             # append to the literal if this is any other token
-            my.literal.append(token)
+            self.literal.append(token)
 
-            #raise SyntaxError("Unrecognized token [%s] in expression mode in line [%s]" % (token, my.expression))
+            #raise SyntaxError("Unrecognized token [%s] in expression mode in line [%s]" % (token, self.expression))
 
 
-    def handle_literal(my):
-        if not my.literal:
+    def handle_literal(self):
+        if not self.literal:
             return
 
-        literal = "".join(my.literal)
+        literal = "".join(self.literal)
 
         # parse the shorthand
-        literal = my.handle_shorthand(literal)
+        literal = self.handle_shorthand(literal)
         if literal == '':
             return 0
         try:
             literal = float(literal)
         except ValueError:
-            #raise SyntaxError("Expression contains non-number element [%s] in [%s]" % (literal, my.expression))
+            #raise SyntaxError("Expression contains non-number element [%s] in [%s]" % (literal, self.expression))
             pass
 
-        if literal == my.EMPTY_LITERAL:
+        if literal == self.EMPTY_LITERAL:
             literal = ''
         
-        my.stack.append(literal)
-        my.literal = []
+        self.stack.append(literal)
+        self.literal = []
 
 
 
-    def handle_shorthand(my, expr):
+    def handle_shorthand(self, expr):
 
-        my.literal_sobjects = {
+        self.literal_sobjects = {
             'login': Environment.get_login(),
-            #'sobjects': my.sobject,
-            #'snapshot': my.snapshot,
-            #'file': my.file_object,
+            #'sobjects': self.sobject,
+            #'snapshot': self.snapshot,
+            #'file': self.file_object,
         }
 
-        my.literal_vars = {
+        self.literal_vars = {
             'login': Environment.get_user_name(),
             #'version': '003'
         }
@@ -883,12 +890,12 @@ class ExpressionMode(ExpressionParser):
         if expr.find(".") != -1:
             type, attr = expr.split(".", 1)
 
-            literal_value = my.literal_sobjects.get(type)
+            literal_value = self.literal_sobjects.get(type)
             if literal_value:
                 return literal_value.get_value(attr)
 
         # find single values
-        literal_value = my.literal_vars.get(expr)
+        literal_value = self.literal_vars.get(expr)
         if literal_value:
             return literal_value
 
@@ -898,7 +905,7 @@ class ExpressionMode(ExpressionParser):
 
 
 
-    def evaluate_stack(my, stack):
+    def evaluate_stack(self, stack):
         # build the expression for each element
         num_elements = 0
         for item in stack:
@@ -1048,7 +1055,7 @@ class ExpressionMode(ExpressionParser):
                 result = None
 
             except Exception, e:
-                raise SyntaxError("Could not evaluate [%s] in expression [%s] due to error [%s]" % ( expression, my.expression, str(e) ) )
+                raise SyntaxError("Could not evaluate [%s] in expression [%s] due to error [%s]" % ( expression, self.expression, str(e) ) )
 
             # NOTE: not sure if this is correct.  If there is only one
             # element, return it as a single value
@@ -1063,7 +1070,7 @@ class ExpressionMode(ExpressionParser):
 
 
     # not used!!!
-    def evaluate_stack2(my, stack):
+    def evaluate_stack2(self, stack):
         op = stack[1]
         left = stack[0]
         right = stack[2]
@@ -1096,7 +1103,7 @@ class ExpressionMode(ExpressionParser):
             result = [eval("l %s r" % op) for l, r in zip(left, right)]
         else:
             raise ParserException("Syntax Error: Operator [%s] not recognized" % op)
-            #result = "".join(my.stack)
+            #result = "".join(self.stack)
 
         return result
 
@@ -1106,29 +1113,29 @@ class ExpressionMode(ExpressionParser):
 
 class MethodMode(ExpressionParser):
 
-    def __init__(my):
-        my.method_name = []
-        my.result = None
-        my.brackets = 0
+    def __init__(self):
+        self.method_name = []
+        self.result = None
+        self.brackets = 0
 
-    def parse(my, token):
+    def parse(self, token):
 
         if token == '}':
             return
 
         elif token == '(':
-            method_name = ''.join(my.method_name)
+            method_name = ''.join(self.method_name)
 
-            my.brackets += 1
+            self.brackets += 1
             mode = ArgListMode()
-            my.dive( mode )
+            self.dive( mode )
 
             # get the args
             args = mode.get_result()
 
             # call the method
             try:
-                my.result = my.execute_method(method_name, args)
+                self.result = self.execute_method(method_name, args)
             except SyntaxError, e:
                 raise
             except Exception, e:
@@ -1138,19 +1145,19 @@ class MethodMode(ExpressionParser):
             return "exit"
 
         elif token == ')':
-            my.brackets -= 1
-            if my.brackets == 0:
+            self.brackets -= 1
+            if self.brackets == 0:
                 return "exit"
             else:
-                my.method_name.append(token)
+                self.method_name.append(token)
 
 
         elif token == ' ':
-            raise SyntaxError('Syntax Error: found extra space in [%s]' % my.expression)
+            raise SyntaxError('Syntax Error: found extra space in [%s]' % self.expression)
 
 
         else:
-            my.method_name.append(token)
+            self.method_name.append(token)
 
 
  
@@ -1160,35 +1167,35 @@ class MethodMode(ExpressionParser):
 
 
 
-    def execute_method(my, method, args):
+    def execute_method(self, method, args):
         results = []
         method = method.upper()
 
         if method in ['GET', 'GETALL']:
             format = None
             if len(args) == 1:
-                parts = my._split_arg(args[0])
+                parts = self._split_arg(args[0])
                 search_types = parts[:-1]
                 column = parts[-1]
             elif len(args) == 2:
-                parts = my._split_arg(args[0])
+                parts = self._split_arg(args[0])
                 search_types = parts[:-1]
                 column = parts[-1]
                 format = args[1]
             else:
-                raise SyntaxError("Method @GET can only have one or two arguments, found [%s] in expression [%s]" % (len(args), my.expression))
+                raise SyntaxError("Method @GET can only have one or two arguments, found [%s] in expression [%s]" % (len(args), self.expression))
 
             if not search_types and column:
-                raise SyntaxError("Method [%s] requires a column in search_type [%s] in expression [%s]" % (method, args[0], my.expression))
+                raise SyntaxError("Method [%s] requires a column in search_type [%s] in expression [%s]" % (method, args[0], self.expression))
 
             if not search_types:
-                raise SyntaxError("Improper arguments in method [%s] definition in expression [%s]" % (method, my.expression))
+                raise SyntaxError("Improper arguments in method [%s] definition in expression [%s]" % (method, self.expression))
 
             unique = method == 'GET'
-            sobjects = my.get_sobjects(search_types, unique=unique)
+            sobjects = self.get_sobjects(search_types, unique=unique)
             """
             #TOOO: make this work with @CASE or @IF statements
-            sobjects_search = my.get_sobjects(search_types, unique=unique, is_search=True)
+            sobjects_search = self.get_sobjects(search_types, unique=unique, is_search=True)
             if sobjects_search:
                 sobjects = sobjects_search.get_sobjects()
             else:
@@ -1197,26 +1204,26 @@ class MethodMode(ExpressionParser):
 
             return_mode = Container.get("Expression::return_mode")
             if return_mode == 'dict':
-                sobjects = my.get_flat_cache()
+                sobjects = self.get_flat_cache()
             
-            results = my.get(sobjects, column)
+            results = self.get(sobjects, column)
             if format and results:
-                results = my.format_results(results, format)
+                results = self.format_results(results, format)
                 
         elif method == 'SOBJECT':
             if not len(args):
-                if my.search:
-                    results = my.search.get_sobjects()
+                if self.search:
+                    results = self.search.get_sobjects()
                 else:
-                    results = my.sobjects
+                    results = self.sobjects
             else:
                 first_arg = args[0]
-                search_types = my._split_arg(first_arg)
-                results = my.get_sobjects(search_types)
+                search_types = self._split_arg(first_arg)
+                results = self.get_sobjects(search_types)
 
             return_mode = Container.get("Expression::return_mode")
             if return_mode == 'dict':
-                results = my.get_flat_cache()
+                results = self.get_flat_cache()
 
         elif method == 'SEARCH':
             if not len(args):
@@ -1224,45 +1231,45 @@ class MethodMode(ExpressionParser):
                 pass
             else:
                 first_arg = args[0]
-                search_types = my._split_arg(first_arg)
-                results = my.get_search(search_types)
+                search_types = self._split_arg(first_arg)
+                results = self.get_search(search_types)
 
         elif method == 'COUNT':
             if len(args) == 0:
-                results = my.count(my.sobjects)
+                results = self.count(self.sobjects)
             elif len(args) == 1 or len(args) == 2:
                 # matching @GET(....
                 p = re.compile("^@\w+\((\w+\/\w+)?")
                 #p = re.compile("^(\w+\/\w+\[?.*?\]?)(\.[\/\w+]*)?")
                 m = p.match(args[0])
                 if m:
-                    mode = my.get_mode(args[0])
-                    sobjects = my.dive(mode, expression= args[0])
+                    mode = self.get_mode(args[0])
+                    sobjects = self.dive(mode, expression= args[0])
                   
                 else:
-                    parts = my._split_arg(args[0])
+                    parts = self._split_arg(args[0])
                     search_types = parts
-                    sobjects = my.get_sobjects(search_types, is_count=True)
+                    sobjects = self.get_sobjects(search_types, is_count=True)
 
                 return_mode = Container.get("Expression::return_mode")
                 if return_mode == 'dict':
-                    sobjects = my.get_flat_cache()
+                    sobjects = self.get_flat_cache()
 
                 # it is possible that get_sobjects just returns a number
                 if type(sobjects) == types.IntType:
                     results = sobjects
                 else:
-                    results = my.count(sobjects)
+                    results = self.count(sobjects)
 
             else:
-                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
         elif method == 'PYTHON':
             if len(args) :
                 from tactic.command import PythonCmd
                 first_arg = args[0]
-                if my.sobjects:
-                    sobject = my.sobjects[0]
+                if self.sobjects:
+                    sobject = self.sobjects[0]
                 else:
                     sobject = None
                 cmd = PythonCmd(script_path=first_arg, sobject=sobject)
@@ -1280,7 +1287,7 @@ class MethodMode(ExpressionParser):
                 if not m:
                     # evaluate expression
                     mode = ExpressionMode()
-                    arg_results = my.dive(mode, expression=arg)
+                    arg_results = self.dive(mode, expression=arg)
                     if type(arg_results) == types.ListType:
                         results = 0
                         for arg_result in arg_results:
@@ -1288,8 +1295,8 @@ class MethodMode(ExpressionParser):
                                 results += arg_result
 
                     #elif type(arg_results) == types.DictType:
-                    #    sobjects = my.get_flat_cache()
-                    #    results = my.sum(sobjects, column)
+                    #    sobjects = self.get_flat_cache()
+                    #    results = self.sum(sobjects, column)
 
                     elif not arg_results:
                         results = 0
@@ -1298,19 +1305,19 @@ class MethodMode(ExpressionParser):
 
 
                 else:
-                    parts = my._split_arg(args[0])
+                    parts = self._split_arg(args[0])
                     search_types = parts[:-1]
                     column = parts[-1]
 
-                    sobjects = my.get_sobjects(search_types)
+                    sobjects = self.get_sobjects(search_types)
 
                     return_mode = Container.get("Expression::return_mode")
                     if return_mode == 'dict':
-                        sobjects = my.get_flat_cache()
+                        sobjects = self.get_flat_cache()
 
-                    results = my.sum(sobjects, column)
+                    results = self.sum(sobjects, column)
             else:
-                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
         elif method == 'VAR':
             name = args[0]
@@ -1326,14 +1333,14 @@ class MethodMode(ExpressionParser):
                 p = re.compile("^(\w+\/\w+)?(\.[\/\w+]*)?\.(\w+)")
                 m = p.match(arg)
                 if not m:
-                    parts = my._split_arg(args[0])
+                    parts = self._split_arg(args[0])
                     search_types = parts[:-1]
-                    sobjects = my.get_sobjects(search_types)
-                    results = my.avg(sobjects, parts[-1])
+                    sobjects = self.get_sobjects(search_types)
+                    results = self.avg(sobjects, parts[-1])
                     """
                     # evaluate expression
                     mode = ExpressionMode()
-                    arg_results = my.dive(mode, expression=arg)
+                    arg_results = self.dive(mode, expression=arg)
                     if type(arg_results) == types.ListType:
                         results = 0
                         for arg_result in arg_results:
@@ -1343,47 +1350,47 @@ class MethodMode(ExpressionParser):
                     """
                 else:
 
-                    parts = my._split_arg(args[0])
+                    parts = self._split_arg(args[0])
                     search_types = parts[:-1]
                     column = parts[-1]
-                    sobjects = my.get_sobjects(search_types)
-                    results = my.avg(sobjects, column)
+                    sobjects = self.get_sobjects(search_types)
+                    results = self.avg(sobjects, column)
 
             else:
-                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
             # FIXME: search_types is not declared if m is None. It's fixed above in if not m:
-            #sobjects = my.get_sobjects(search_types)
-            #results = my.avg(sobjects, column)
+            #sobjects = self.get_sobjects(search_types)
+            #results = self.avg(sobjects, column)
 
 
         elif method == 'MIN':
             if len(args) == 1:
-                parts = my._split_arg(args[0])
+                parts = self._split_arg(args[0])
                 search_types = parts[:-1]
                 column = parts[-1]
             else:
-                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
-            sobjects = my.get_sobjects(search_types)
-            results = my.fcmp(sobjects, column, op='<')
+            sobjects = self.get_sobjects(search_types)
+            results = self.fcmp(sobjects, column, op='<')
 
         elif method == 'MAX':
             if len(args) == 1:
-                parts = my._split_arg(args[0])
+                parts = self._split_arg(args[0])
                 search_types = parts[:-1]
                 column = parts[-1]
             else:
-                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
-            sobjects = my.get_sobjects(search_types)
-            results = my.fcmp(sobjects, column, op='>')
+            sobjects = self.get_sobjects(search_types)
+            results = self.fcmp(sobjects, column, op='>')
 
         elif method == 'FLOOR':
             if len(args) == 1:
                 arg = args[0]
-                mode = my.get_mode(arg)
-                arg_results = my.dive(mode, expression=arg)
+                mode = self.get_mode(arg)
+                arg_results = self.dive(mode, expression=arg)
 
                 # FIXME: should this not always return an array
                 results = []
@@ -1395,14 +1402,14 @@ class MethodMode(ExpressionParser):
                     results = math.floor(arg_results)
 
             else:
-                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
 
         elif method == 'UNIQUE':
             if len(args) == 1:
                 arg = args[0]
-                mode = my.get_mode(arg)
-                result = my.dive(mode, expression=arg)
+                mode = self.get_mode(arg)
+                result = self.dive(mode, expression=arg)
                 if len(result) == 0:
                     return []
                 elif isinstance(result[0], SObject):
@@ -1419,14 +1426,14 @@ class MethodMode(ExpressionParser):
                     # provide some predictability in the result
                     results.sort()
             else:
-                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
 
         elif method == 'UNION':
             results = set()
             for arg in args:
-                mode = my.get_mode(arg)
-                result = my.dive(mode, expression=arg)
+                mode = self.get_mode(arg)
+                result = self.dive(mode, expression=arg)
                 results = results.union(result)
             results = list(results)
 
@@ -1435,8 +1442,8 @@ class MethodMode(ExpressionParser):
             is_first = True
             final_sks = []
             for arg in args:
-                mode = my.get_mode(arg)
-                result = my.dive(mode, expression=arg)
+                mode = self.get_mode(arg)
+                result = self.dive(mode, expression=arg)
                 if is_first:
                     results = results.union(result)
                     is_first = False
@@ -1452,22 +1459,22 @@ class MethodMode(ExpressionParser):
 
         elif method == 'IF':
             if len(args) <= 1:
-                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
             expression = args[0]
-            mode = my.get_mode(expression)
-            result = my.dive(mode, expression=expression)
+            mode = self.get_mode(expression)
+            result = self.dive(mode, expression=expression)
             if type(result) == types.ListType and result:
                 result = result[0]
             if result:
                 expression = args[1]
-                mode = my.get_mode(expression)
-                results = my.dive(mode, expression=expression)
+                mode = self.get_mode(expression)
+                results = self.dive(mode, expression=expression)
             else:
                 if len(args) == 3:
                     expression = args[2]
-                    mode = my.get_mode(expression)
-                    results = my.dive(mode, expression=expression)
+                    mode = self.get_mode(expression)
+                    results = self.dive(mode, expression=expression)
                 else:
                     results = None
 
@@ -1475,8 +1482,8 @@ class MethodMode(ExpressionParser):
             for i in xrange(0, len(args), 2):
                 expression = args[i]
                 value_expr = args[i+1]
-                mode = my.get_mode(expression)
-                result = my.dive(mode, expression=expression)
+                mode = self.get_mode(expression)
+                result = self.dive(mode, expression=expression)
 
                 # NOTE: single assumption
                 # if the returned value is a list, then take the first one
@@ -1484,8 +1491,8 @@ class MethodMode(ExpressionParser):
                     result = result[0]
 
                 if result:
-                    mode = my.get_mode(value_expr)
-                    results = my.dive(mode, expression=value_expr)
+                    mode = self.get_mode(value_expr)
+                    results = self.dive(mode, expression=value_expr)
                     break
 
 
@@ -1496,19 +1503,19 @@ class MethodMode(ExpressionParser):
             if not isinstance(result, basestring):
                 result = str(result)
             #else:
-            #    mode = my.get_mode(result)
-            #    result = my.dive(mode, expression=result)
+            #    mode = self.get_mode(result)
+            #    result = self.dive(mode, expression=result)
             #    result = str(result)
             results = result
 
 
         elif method == 'FOREACH':
             if len(args) <= 1:
-                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
             expression = args[0]
-            mode = my.get_mode(expression)
-            results = my.dive(mode, expression=expression)
+            mode = self.get_mode(expression)
+            results = self.dive(mode, expression=expression)
 
             # iterate through each
             format = args[1]
@@ -1523,11 +1530,11 @@ class MethodMode(ExpressionParser):
 
         elif method == 'JOIN':
             if len(args) <= 1:
-                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
             expression = args[0]
-            mode = my.get_mode(expression)
-            results = my.dive(mode, expression=expression)
+            mode = self.get_mode(expression)
+            results = self.dive(mode, expression=expression)
 
             delimiter = args[1]
             results = delimiter.join(results)
@@ -1535,30 +1542,99 @@ class MethodMode(ExpressionParser):
 
         elif method == 'SUBSTITUTE':
             if len(args) <= 1:
-                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+                raise SyntaxError("Method @%s must have at least 2 arguments, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
             values_list = []
             for arg in args[1:]:
                 expression = arg
-                mode = my.get_mode(expression)
-                values = my.dive(mode, expression=expression)
+                mode = self.get_mode(expression)
+                values = self.dive(mode, expression=expression)
                 values_list.append(values)
 
             # transpose the values
-            values_list = zip(*values_list)
+            if len(values_list) == 1:
+                pass
+            else:
+                values_list = zip(*values_list)
             results = []
             for values in values_list:
                 result = args[0] % values
                 results.append(result)
 
 
-        elif method == 'REPLACE':
-            if len(args) != 3:
-                raise SyntaxError("Method @%s must have 3 arguments, found [%s] in expression [%s]" % (method, len(args), my.expression))
+        elif method == 'STARTSWITH':
+
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
             expression = args[0]
-            mode = my.get_mode(expression)
-            values = my.dive(mode, expression=expression)
+            mode = self.get_mode(expression)
+            results = self.dive(mode, expression=expression)
+            if not results:
+                return False
+
+            result = results[0]
+            return result.startswith(args[1])
+
+        elif method == 'ENDSWITH':
+
+            if len(args) <= 1:
+                raise SyntaxError("Method @%s must have at least 2 argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
+
+            expression = args[0]
+            mode = self.get_mode(expression)
+            results = self.dive(mode, expression=expression)
+            if not results:
+                return False
+
+            result = results[0]
+            return result.endswith(args[1])
+
+
+
+        elif method == 'BASENAME':
+            if len(args) < 1:
+                raise SyntaxError("Method @%s must have at least 1 arguments, found [%s] in expression [%s]" % (method, len(args), self.expression))
+
+            expression = args[0]
+            if not expression.startswith("@"):
+                expression = "@GET(%s)" % expression
+            mode = self.get_mode(expression)
+            values = self.dive(mode, expression=expression)
+
+            results = []
+            for value in values:
+                value2 = os.path.basename(value)
+                results.append(value2)
+
+
+        elif method == 'DIRNAME':
+            if len(args) < 1:
+                raise SyntaxError("Method @%s must have at least 1 arguments, found [%s] in expression [%s]" % (method, len(args), self.expression))
+
+            expression = args[0]
+            if not expression.startswith("@"):
+                expression = "@GET(%s)" % expression
+            mode = self.get_mode(expression)
+            values = self.dive(mode, expression=expression)
+
+            results = []
+            for value in values:
+                if not value:
+                    value2 = ""
+                else:
+                    value2 = os.path.dirname(value)
+                results.append(value2)
+
+
+
+        elif method == 'REPLACE':
+            if len(args) != 3:
+                raise SyntaxError("Method @%s must have 3 arguments, found [%s] in expression [%s]" % (method, len(args), self.expression))
+
+            expression = args[0]
+            mode = self.get_mode(expression)
+            values = self.dive(mode, expression=expression)
 
             # FIXME: empty string is handled weirdly elsewhere and resturns "''"
             if args[2] == "''":
@@ -1574,10 +1650,10 @@ class MethodMode(ExpressionParser):
             # the first argument is sobjects
             expression = args[0]
             if expression == "sobject":
-                sobjects = my.sobjects
+                sobjects = self.sobjects
             else:
-                mode = my.get_mode(expression)
-                sobjects = my.dive(mode, expression=expression)
+                mode = self.get_mode(expression)
+                sobjects = self.dive(mode, expression=expression)
 
             if sobjects:
                 column = args[1]
@@ -1595,18 +1671,36 @@ class MethodMode(ExpressionParser):
 
         elif method in ['LATEST','CURRENT']:
             # get the file paths
-            first_arg = args[0]
-            expression = "@SOBJECT(%s)" % first_arg
-            mode = my.get_mode(expression)
-            sobjects = my.dive(mode, expression=expression)
+            if len(args):
+                first_arg = args[0]
+                expression = "@SOBJECT(%s)" % first_arg
+                mode = self.get_mode(expression)
+                sobjects = self.dive(mode, expression=expression)
+            else:
+                sobjects = self.sobjects
+                expression = "@SOBJECT()"
 
             results = []
             if sobjects:
-                context = args[1]
+                if len(args) > 1:
+                    context = args[1]
+                    if not context:
+                        context = "__ALL__"
+                else:
+                    context = "__ALL__"
                 #file_type = args[2]
 
-                base_dir = Environment.get_asset_dir()
-                mode = my.get_mode(expression)
+                if len(args) > 2:
+                    print args[2]
+                    if args[2] == "web":
+                        #base_dir = Environment.get_base_url().to_string()
+                        base_dir = Environment.get_web_dir()
+                    else:
+                        base_dir = Environment.get_asset_dir()
+                else:
+                    base_dir = Environment.get_asset_dir()
+
+                mode = self.get_mode(expression)
 
                 if method == 'LATEST':
                     expression = '''@SOBJECT(sthpw/snapshot['context','%s']['is_latest','true'].sthpw/file)''' % context
@@ -1634,17 +1728,17 @@ class MethodMode(ExpressionParser):
 
         elif method == 'EVAL' or method == '':
             expression = args[0]
-            mode = my.get_mode(expression)
-            results = my.dive(mode, expression=expression)
+            mode = self.get_mode(expression)
+            results = self.dive(mode, expression=expression)
 
 
         elif method == 'FORMAT':
             expression = args[0]
-            mode = my.get_mode(expression)
+            mode = self.get_mode(expression)
 
-            result = my.dive(mode, expression=expression)
-            if not result:
-                result = expression
+            result = self.dive(mode, expression=expression)
+            if result is None:
+                result = ""
 
 
             args_len = len(args)
@@ -1717,19 +1811,19 @@ class MethodMode(ExpressionParser):
             results = colors
 
         else:
-            raise SyntaxError("Method [%s] not support found in expression[%s]" % (method, my.expression))
+            raise SyntaxError("Method [%s] not support found in expression[%s]" % (method, self.expression))
 
 
         return results
 
 
-    def format_results(my, results, format):
+    def format_results(self, results, format):
 
         if isinstance(results, dict):
             new_results = {}
             for key, values in results.items():
                 if values:
-                    new_results[key] = my.format_results(values, format)
+                    new_results[key] = self.format_results(values, format)
                 else:
                     new_results[key] = values
 
@@ -1763,7 +1857,7 @@ class MethodMode(ExpressionParser):
 
 
 
-    def process_search_type(my, search_type):
+    def process_search_type(self, search_type):
 
         filters = []
 
@@ -1809,7 +1903,7 @@ class MethodMode(ExpressionParser):
                 # TODO: parsing not strong enough for this right now
                 #if string_str.startswith("@"):
                 #    mode = ExpressionMode()
-                #    string_str = my.dive(mode, expression=string_str)
+                #    string_str = self.dive(mode, expression=string_str)
            
                 string = []
                 cur_filter.append(string_str)
@@ -1820,8 +1914,8 @@ class MethodMode(ExpressionParser):
                 string.append(token)
                 string_str = "".join(string)
                 
-                mode = my.get_mode(string_str)
-                string_str = my.dive(mode, expression=string_str)
+                mode = self.get_mode(string_str)
+                string_str = self.dive(mode, expression=string_str)
                 
                 # just pass the only item in the list of a @GET, which is the most common case
                 if isinstance(string_str, list) and len(string_str) == 1:
@@ -1860,20 +1954,20 @@ class MethodMode(ExpressionParser):
 
             else:
                 
-                raise SyntaxError("Could not process token [%s] search type [%s] in expression [%s]" % (token, search_type, my.expression))
+                raise SyntaxError("Could not process token [%s] search type [%s] in expression [%s]" % (token, search_type, self.expression))
 
 
         return base_search_type, filters
 
         
 
-    def get_search(my, related_types, is_count=False):
-        search =  my.get_sobjects(related_types, is_count=is_count, is_search=True)
+    def get_search(self, related_types, is_count=False):
+        search =  self.get_sobjects(related_types, is_count=is_count, is_search=True)
         if not isinstance(search, Search):
             raise ParserException('Make sure the @SEARCH expression ends with a valid sType') 
         return search
 
-    def group_filters(my, filters):
+    def group_filters(self, filters):
         context_filters = []
         reg_filters = []
         for item in filters:
@@ -1885,27 +1979,32 @@ class MethodMode(ExpressionParser):
 
         return reg_filters, context_filters
 
-    def get_sobjects(my, related_types, is_count=False, is_search=False, unique=True):
+    def get_sobjects(self, related_types, is_count=False, is_search=False, unique=True):
         # FIXME: not sure why id() does not work. It seems to return the same
         # results all the time.  It is desireable to use id because the
         # keys would be much smaller
-        #key = "%s|%s" % (related_types, id(my.sobjects))
+        #key = "%s|%s" % (related_types, id(self.sobjects))
 
-        #key = "%s|%s|%s" % (unique, related_types, str(my.sobjects))
-        my.related_types = related_types
-        if my.search:
-            key = "%s|%s|%s" % (my.expression, related_types, str(my.search))
+        #key = "%s|%s|%s" % (unique, related_types, str(self.sobjects))
+        self.related_types = related_types
+
+        if self.search:
+            key = "%s|%s|%s" % (self.expression, related_types, str(self.search))
         else:
-            key = "%s|%s|%s" % (my.expression, related_types, str(my.sobjects))
+            key = "%s|%s|%s" % (self.expression, related_types, str(self.sobjects))
         if len(key) > 10240:
             print "WARNING: huge key in get_sobjects in expression"
-        results = Container.get_dict(get_expression_key(), key)
-     
-        if results != None:
-            return results
+
+        if self.use_cache == True:
+            results = Container.get_dict(get_expression_key(), key)
+            if results != None:
+                return results
 
         related_types_filters = {}
         related_types_paths = {}
+
+        related_exprs = related_types[:]
+        related_types = related_types[:]
 
         # process the search type
         p = re.compile('^(\w+):')
@@ -1919,46 +2018,52 @@ class MethodMode(ExpressionParser):
             else:
                 path = None
 
-            related_type, filters = my.process_search_type(related_type)
+            related_type, filters = self.process_search_type(related_type)
+
+            related_expr = related_exprs[i]
 
             related_types[i] = related_type
-            related_types_filters[related_type] = filters
-            related_types_paths[related_type] = path
+            related_types_filters[related_expr] = filters
+            related_types_paths[related_expr] = path
+
 
         # handle some absolute sobjects
         if len(related_types) == 1:
+            related_type = related_types[0]
+            related_expr = related_exprs[0]
+
             # support some shorthand here?
             if related_type == 'login':
                 related_sobjects = [Environment.get_login()]
                 return related_sobjects
             elif related_type == 'state':
                 sobject = SearchType.create("sthpw/virtual")
-                for name, value in my.state.items():
+                for name, value in self.state.items():
                     if value != None:
                         sobject.set_value(name, value)
                 return [sobject]
 
             elif related_type == 'parent':
                 related_sobjects = []
-                for sobject in my.sobjects:
+                for sobject in self.sobjects:
                     parent = sobject.get_parent()
                     related_sobjects.append(parent)
-                    my.cache_sobjects(sobject.get_search_key(), [parent])
+                    self.cache_sobjects(sobject.get_search_key(), [parent])
                 return related_sobjects
 
             elif related_type == 'connect':
                 related_sobjects = []
                 from pyasm.biz import SObjectConnection
-                filters = related_types_filters.get(related_type)
-                reg_filters, context_filters = my.group_filters(filters)
+                filters = related_types_filters.get(related_expr)
+                reg_filters, context_filters = self.group_filters(filters)
                 
                 if is_search:
-                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    connections = SObjectConnection.get_connections(self.sobjects, context_filters=context_filters)
                     related_search = SObjectConnection.get_search(connections, filters=reg_filters)
                     return related_search
                 else:
 
-                    connections = SObjectConnection.get_connections(my.sobjects, context_filters=context_filters)
+                    connections = SObjectConnection.get_connections(self.sobjects, context_filters=context_filters)
                     related_sobjects = SObjectConnection.get_sobjects(connections, filters=reg_filters)
                     return related_sobjects
 
@@ -1984,7 +2089,7 @@ class MethodMode(ExpressionParser):
  
             elif related_type == 'search_type':
                 related_sobjects = []
-                for sobject in my.sobjects:
+                for sobject in self.sobjects:
                     search_type = sobject.get_search_type_obj()
                     related_sobjects.append(search_type)
                     return related_sobjects
@@ -2004,8 +2109,10 @@ class MethodMode(ExpressionParser):
 
         # if no sobjects have been specified to start with, then use
         # the first search type as a starting point
-        if not my.sobjects:
+        if not self.sobjects:
             related_type = related_types[0]
+            related_expr = related_exprs[0]
+
             # support some shorthand here?
             if related_type == 'login':
                 related_sobjects = [Environment.get_login()]
@@ -2024,7 +2131,7 @@ class MethodMode(ExpressionParser):
                 related_sobjects = [site]
 
             elif related_type.find("/") == -1:
-                sobject = my.get_env_sobject(related_type)
+                sobject = self.get_env_sobject(related_type)
                 if sobject:
                     related_sobjects = [sobject]
                 else:
@@ -2041,17 +2148,18 @@ class MethodMode(ExpressionParser):
             else:
                 related_sobjects = []
                 # do the full search
-                if not my.search:
+                if not self.search:
                     search = Search(related_type)
                 else:
                     # Base type have to be the same
-                    assert(related_type == my.search.get_base_search_type())
-                    search = my.search
+                    if not related_type == self.search.get_base_search_type():
+                        raise SyntaxError('Base Type and Related type must be the same: %s' % self.expression)
+                    search = self.search
 
-                if my.show_retired:
+                if self.show_retired:
                     search.set_show_retired(True)
 
-                filters = related_types_filters.get(related_type)
+                filters = related_types_filters.get(related_expr)
                 search.add_op_filters(filters)
 
                 # add any extra filters
@@ -2061,7 +2169,7 @@ class MethodMode(ExpressionParser):
                     if extra_filter:
                         search.add_op_filters(extra_filter)
 
-                # on the very specific time when there are no relative sobjects
+                # on the very specific case when there are no relative sobjects
                 # to start off with we only have one level of related types,
                 # then just use the count method
                 if is_count and len(related_types) == 1:
@@ -2080,9 +2188,10 @@ class MethodMode(ExpressionParser):
 
             # remove the one just found
             related_types = related_types[1:]
+            related_exprs = related_exprs[1:]
         else:
             # start of with the current sobject list
-            related_sobjects = my.sobjects
+            related_sobjects = self.sobjects
 
         # go through each of the related types
         cur_search_type = ''
@@ -2096,10 +2205,15 @@ class MethodMode(ExpressionParser):
         elif is_search:
             cur_search_type = related_search.get_base_search_type()
 
+
+
+
         list = []
         for i, related_type in enumerate(related_types):
             if related_type == '':
                 break
+
+            related_expr = related_exprs[i]
 
             #mode = 'original'
             mode = 'fast'
@@ -2113,15 +2227,15 @@ class MethodMode(ExpressionParser):
                 for related_sobject in related_sobjects:
                     parent = related_sobject.get_parent()
                     list.append(parent)
-                    my.cache_sobjects(related_sobject.get_search_key(), [parent])
+                    self.cache_sobjects(related_sobject.get_search_key(), [parent])
 
 
             elif related_type == 'connect':
                 list = []
                 from pyasm.biz import SObjectConnection
 
-                filters = related_types_filters.get(related_type)
-                reg_filters, context_filters = my.group_filters(filters)
+                filters = related_types_filters.get(related_expr)
+                reg_filters, context_filters = self.group_filters(filters)
 
                 if is_search:
                     related_search.add_column('id')
@@ -2139,11 +2253,11 @@ class MethodMode(ExpressionParser):
 
 
                 # TODO: caching is not implemented on connect
-                #my.cache_sobjects(related_sobject.get_search_key(), sobjects)
+                #self.cache_sobjects(related_sobject.get_search_key(), sobjects)
 
             elif related_type.find("/") == -1:
                 list = []
-                sobject = my.get_env_sobject(related_type)
+                sobject = self.get_env_sobject(related_type)
                 if sobject:
                     list.append(sobject)
 
@@ -2151,7 +2265,7 @@ class MethodMode(ExpressionParser):
                 # no need to search for itself again
                 if is_search:
                     related_search = Search(related_type)
-                    if my.show_retired:
+                    if self.show_retired:
                         related_search.set_show_retired(True) 
                     if related_sobjects:
                         related_search.add_relationship_filters(related_sobjects)
@@ -2159,18 +2273,18 @@ class MethodMode(ExpressionParser):
 
             #elif mode == 'fast':
             else:
-                filters = related_types_filters.get(related_type)
-                path = related_types_paths.get(related_type)
+                filters = related_types_filters.get(related_expr)
+                path = related_types_paths.get(related_expr)
                 
                 if is_search:
                     # do the full search
                     sub_search = Search(related_type)
 
-                    if my.show_retired:
+                    if self.show_retired:
                         sub_search.set_show_retired(True)
 
                     #FIXME: filters for the very last related_type is not found
-                    filters = related_types_filters.get(related_type)
+                    filters = related_types_filters.get(related_expr)
                     sub_search.add_op_filters(filters)
 
                     if related_sobjects:
@@ -2181,14 +2295,26 @@ class MethodMode(ExpressionParser):
                         
                     related_search = sub_search
 
+
                 else:
-                    tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=my.show_retired)
+
+                    # on the very specific case when there is just one relative
+                    # type, then just use the count method
+                    if is_count and len(related_types) == 1:
+                        search = Search(related_type)
+                        search.add_relationship_filters(related_sobjects, path=path)
+                        search.add_op_filters(filters)
+                        count = search.get_count()
+                        return count
+
+
+                    tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=self.show_retired)
 
                     # collapse the list and make it unique
                     tmp_list = []
                     for tmp_key, items in tmp_dict.items():
                         tmp_list.extend(items)
-                        my.cache_sobjects(tmp_key, items)
+                        self.cache_sobjects(tmp_key, items)
 
 
                     list = []
@@ -2209,7 +2335,7 @@ class MethodMode(ExpressionParser):
                         continue
                     # maybe an env obj
                     if related_type.find("/") == -1:
-                        tmp_sobj = my.get_env_sobject(related_type)
+                        tmp_sobj = self.get_env_sobject(related_type)
                         if tmp_sobj:
                             tmp = [tmp_sobj]
                         else:
@@ -2217,8 +2343,8 @@ class MethodMode(ExpressionParser):
                     else:
                         filters = related_types_filters.get(related_type)
                     	path = related_types_paths.get(related_type)
-                        tmp = related_sobject.get_related_sobjects(related_type, filters, path=path, show_retired=my.show_retired)
-                    my.cache_sobjects(related_sobject, tmp)
+                        tmp = related_sobject.get_related_sobjects(related_type, filters, path=path, show_retired=self.show_retired)
+                    self.cache_sobjects(related_sobject, tmp)
                     if not tmp:
                         continue
 
@@ -2244,7 +2370,7 @@ class MethodMode(ExpressionParser):
 
 
 
-    def get(my, sobjects, column):
+    def get(self, sobjects, column):
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():
@@ -2256,9 +2382,9 @@ class MethodMode(ExpressionParser):
                     # The result is empty
                     results[key] = [None]
                 else:
-                    results[key] = my.get(values, column)
+                    results[key] = self.get(values, column)
                 """
-                results[key] = my.get(values, column)
+                results[key] = self.get(values, column)
             return results
 
         if not sobjects:
@@ -2300,16 +2426,16 @@ class MethodMode(ExpressionParser):
            
             values.append(value)
 
-            my.cache_sobjects(sobject, value)
+            self.cache_sobjects(sobject, value)
 
         return values
 
 
-    def sum(my, sobjects, column):
+    def sum(self, sobjects, column):
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():
-                results[key] = my.sum(values, column)
+                results[key] = self.sum(values, column)
             return results
 
         total = 0
@@ -2327,8 +2453,8 @@ class MethodMode(ExpressionParser):
 
         return total
 
-    def avg(my, sobjects, column):
-        value = my.sum(sobjects, column)
+    def avg(self, sobjects, column):
+        value = self.sum(sobjects, column)
         count = len(sobjects)
         if not count:
             return 0
@@ -2336,11 +2462,11 @@ class MethodMode(ExpressionParser):
         return avg
 
 
-    def count(my, sobjects):
+    def count(self, sobjects):
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():
-                results[key] = my.count(values)
+                results[key] = self.count(values)
             return results
 
         if not sobjects:
@@ -2348,8 +2474,8 @@ class MethodMode(ExpressionParser):
         return len(sobjects)
 
 
-    def is_zero(my, sobjects, column):
-        value = my.sum(sobjects, column)
+    def is_zero(self, sobjects, column):
+        value = self.sum(sobjects, column)
         return value == 0
 
 
@@ -2399,14 +2525,14 @@ class MethodMode(ExpressionParser):
 
 class ArgListMode(ExpressionParser):
 
-    def __init__(my):
-        my.cur_arg = []
-        my.args = []
+    def __init__(self):
+        self.cur_arg = []
+        self.args = []
 
-    def get_result(my):
-        return my.args
+    def get_result(self):
+        return self.args
 
-    def parse(my, token):
+    def parse(self, token):
         if token in [' ','\n','\t']:
             return
 
@@ -2415,53 +2541,53 @@ class ArgListMode(ExpressionParser):
 
         else:
             mode = ArgMode()
-            arg = my.dive(mode, reuse_token=True)
-            my.args.append(arg)
+            arg = self.dive(mode, reuse_token=True)
+            self.args.append(arg)
 
-        if my.index == len(my.expression):
-            raise SyntaxError('No closing bracket around arguments for [%s]' % my.expression)
+        if self.index == len(self.expression):
+            raise SyntaxError('No closing bracket around arguments for [%s]' % self.expression)
         # if the next character is ), then exit
         try:
-            if my.expression[my.index] == ')':
+            if self.expression[self.index] == ')':
                 return 'exit'
         except IndexError:
-            raise SyntaxError('Incorrect syntax found for %s' %my.expression)
+            raise SyntaxError('Incorrect syntax found for %s' %self.expression)
 
 
 
 class ArgMode(ExpressionParser):
 
-    def __init__(my):
-        my.result = []
+    def __init__(self):
+        self.result = []
 
-        #my.in_filter = False
-        my.brackets = 0
+        #self.in_filter = False
+        self.brackets = 0
 
-        my.literal_mode = False
-        my.literal = []
+        self.literal_mode = False
+        self.literal = []
 
-        my.is_only_literal = True
+        self.is_only_literal = True
 
 
-    def parse(my, token):
+    def parse(self, token):
         # handle literals
         if token == "'":
-            if my.literal_mode:
-                my.literal_mode = False
-                if not my.literal:
-                    my.result.append("''")
+            if self.literal_mode:
+                self.literal_mode = False
+                if not self.literal:
+                    self.result.append("''")
                 else:
-                    if my.is_only_literal:
-                        literal = "".join(my.literal)
+                    if self.is_only_literal:
+                        literal = "".join(self.literal)
                     else:
-                        literal = "'%s'" % "".join(my.literal)
-                    my.result.append(literal)
-                my.literal = []
+                        literal = "'%s'" % "".join(self.literal)
+                    self.result.append(literal)
+                self.literal = []
             else:
-                my.literal_mode = True
+                self.literal_mode = True
 
-        elif my.literal_mode:
-            my.literal.append(token)
+        elif self.literal_mode:
+            self.literal.append(token)
 
         # ignore spaces
         elif token == ' ':
@@ -2469,67 +2595,67 @@ class ArgMode(ExpressionParser):
 
         elif token in [',', ')']:
             if token == ')':
-                my.brackets -= 1
+                self.brackets -= 1
 
-                if my.brackets < 0:
-                    my.result = "".join(my.result)
-                    my.result = my.result.strip()
+                if self.brackets < 0:
+                    self.result = "".join(self.result)
+                    self.result = self.result.strip()
                     return "exit"
                 else:
-                    my.result.append(token)
+                    self.result.append(token)
                     
             else: # , found. Ensure it is a arg separator using bracket counts
-                if my.brackets < 1:
-                    my.result = "".join(my.result)
-                    my.result = my.result.strip()
+                if self.brackets < 1:
+                    self.result = "".join(self.result)
+                    self.result = self.result.strip()
                     return "exit"
                 else:
-                    my.result.append(token)
+                    self.result.append(token)
 
         # start a filter
         elif token == '[':
             mode = FilterMode()
-            tmp = my.result     # div makes use of my.result
-            filter = my.dive(mode, reuse_token=True)
-            my.result = tmp
-            my.result.append(filter)
+            tmp = self.result     # div makes use of self.result
+            filter = self.dive(mode, reuse_token=True)
+            self.result = tmp
+            self.result.append(filter)
 
         elif token == '(':
-            my.brackets += 1
-            my.result.append(token)
+            self.brackets += 1
+            self.result.append(token)
 
 
         #elif token == ' ':
-        #    #raise SyntaxError("Space found in argument in expression [%s]" % my.expression)
+        #    #raise SyntaxError("Space found in argument in expression [%s]" % self.expression)
 
         else:
-            my.result.append(token)
-            my.is_only_literal = False
+            self.result.append(token)
+            self.is_only_literal = False
 
 
 class FilterMode(ExpressionParser):
 
-    def __init__(my):
-        my.result = []
-        my.brackets = 0
+    def __init__(self):
+        self.result = []
+        self.brackets = 0
 
-    def get_result(my):
-        return "".join( my.result)
+    def get_result(self):
+        return "".join( self.result)
 
-    def parse(my, token):
+    def parse(self, token):
 
         # handle literals
         if token == ']':
-            my.result.append(token)
-            if my.brackets == 0:
+            self.result.append(token)
+            if self.brackets == 0:
                 return 'exit'
 
         else:
             if token == '(':
-                my.brackets += 1
+                self.brackets += 1
             elif token == ')':
-                my.brackets -= 1
-            my.result.append(token)
+                self.brackets -= 1
+            self.result.append(token)
 
 class SqrBracketMode(ExpressionParser):
     '''this replaces the old regex of lazy findall of [..], which can't handle recursion 
@@ -2538,33 +2664,33 @@ class SqrBracketMode(ExpressionParser):
         
         The input string is a greedy regex of [..]'''
 
-    def __init__(my):
-        my.result = []
-        my.brackets = 0
-        my.delimiter = None
-        my.stack = []
+    def __init__(self):
+        self.result = []
+        self.brackets = 0
+        self.delimiter = None
+        self.stack = []
 
-    def get_result(my):
-        if my.brackets > 0:
-            raise SyntaxError('Incorrect syntax: square brackets for the filter [] are not balanced for "%s"'%my.expression)
-        return my.result
+    def get_result(self):
+        if self.brackets > 0:
+            raise SyntaxError('Incorrect syntax: square brackets for the filter [] are not balanced for "%s"'%self.expression)
+        return self.result
 
-    def parse(my, token):
+    def parse(self, token):
         if token == '[':
-            my.brackets += 1
-            my.delimiter = ']'
-            my.stack.append(token)
+            self.brackets += 1
+            self.delimiter = ']'
+            self.stack.append(token)
 
-        elif token == my.delimiter:
-            my.brackets -= 1
-            my.stack.append(token)
-            if my.brackets == 0:
-                string_str = "".join(my.stack)
-                my.result.append(string_str)
-                my.stack = []
+        elif token == self.delimiter:
+            self.brackets -= 1
+            self.stack.append(token)
+            if self.brackets == 0:
+                string_str = "".join(self.stack)
+                self.result.append(string_str)
+                self.stack = []
         else:
-            if my.brackets > 0:
-                my.stack.append(token)
+            if self.brackets > 0:
+                self.stack.append(token)
 
 def tokenize(expr, special_chars):
 

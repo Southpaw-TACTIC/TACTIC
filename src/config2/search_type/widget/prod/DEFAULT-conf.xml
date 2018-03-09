@@ -273,7 +273,7 @@ display class, it will adopt the one defined here-->
 
 
 
-    <element name='task_pipeline_panels' title='Task Pipeline'>
+    <element name='task_pipeline_panels' title='Task Workflow'>
        <display class='tactic.ui.table.TaskElementWdg'>
         <layout>panel</layout>
         <status_color>status</status_color>
@@ -288,7 +288,7 @@ display class, it will adopt the one defined here-->
     </element>
 
 
-    <element name='task_pipeline_vertical' title='Task Pipeline'>
+    <element name='task_pipeline_vertical' title='Task Workflow'>
        <display class='tactic.ui.table.TaskElementWdg'>
         <layout>vertical</layout>
         <status_color>status</status_color>
@@ -943,6 +943,129 @@ display class, it will adopt the one defined here-->
 
     
 </edit>
+
+
+<default_edit_definition>
+
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg"/>
+        <action class="pyasm.command.UploadAction"/>
+    </element>
+     <element name="picture">
+         <display class="tactic.ui.widget.SimpleUploadWdg">
+         </display>
+          <action class="pyasm.command.UploadAction"/>
+     </element>
+
+    <element name="images">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+        <!-- <action class="UploadAction"/>-->
+    </element>
+
+
+    <element name="files" edit="true">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>publish</context>
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+    </element>
+
+
+
+    <element name="snapshot">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+        </display>
+        <action class="pyasm.command.UploadAction"/>
+        <!-- <action class="UploadAction"/>-->
+    </element>
+   
+
+    <element name="episode_code">
+        <display class="SelectWdg">
+            <query>prod/episode|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+    <element name="sequence_code">
+        <display class="SelectWdg">
+            <query>prod/sequence|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+
+    <element name="shot_code">
+        <display class="SelectWdg">
+            <query>prod/shot|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+
+    <element name="asset_code">
+        <display class="SelectWdg">
+            <query>prod/asset|code|code</query>
+            <empty>true</empty>
+        </display>
+    </element>
+  
+
+  <element name="pipeline">
+    <display class="tactic.ui.input.PipelineInputWdg"/>
+    <action class="pyasm.command.DatabaseAction">
+        <column>pipeline_code</column>
+    </action>
+  </element>
+
+
+
+  <element name="pipeline_code">
+      <display class="tactic.ui.input.PipelineInputWdg">
+          <use_code>true</use_code>
+      </display>
+  </element>
+
+
+    <element name="task_status">
+        <display class="ParallelStatusEditWdg"/>
+    </element>
+
+
+    <element name="timestamp"/>
+
+
+
+
+
+    <element name="code" title="Code (optional)">
+        <display class="TextWdg">
+            <hint>Unique code for this item.  If left empty, then one will automatically be assigned.</hint>
+        </display>
+    </element>
+
+
+
+    <element name="short_code"/>
+    <element name="name"/>
+    <element name="description">
+        <display class="TextAreaWdg"/>
+    </element>
+
+   <element name="sort_order">
+        <display class="TextWdg">
+            <hint>Order with an integer. 1 will stay at the top</hint>
+        </display>
+    </element>
+
+    <element name="add_initial_tasks">
+        <display class="CheckboxWdg"/>
+        <action class="pyasm.command.InitialTaskCreateAction"/>
+    </element>
+
+    
+</default_edit_definition>
+
+
 
 
 <preview_edit>

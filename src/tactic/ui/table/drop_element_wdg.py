@@ -62,14 +62,14 @@ class DropElementWdg(SimpleTableElementWdg):
     """
 
 
-    def get_width(my):
+    def get_width(self):
         return 150
 
     
-    def _get_sorted_instances(my):
-        sobject = my.get_current_sobject()
+    def _get_sorted_instances(self):
+        sobject = self.get_current_sobject()
 
-        instance_type = my.get_option("instance_type")
+        instance_type = self.get_option("instance_type")
         instances = sobject.get_related_sobjects(instance_type)
         # sorting now
         name_dict ={}
@@ -84,9 +84,9 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
 
-    def handle_layout_behaviors(my, layout):
-        #my.menu.set_activator_over(layout, "spt_drop_item")
-        #my.menu.set_activator_out(layout, "spt_drop_item")
+    def handle_layout_behaviors(self, layout):
+        #self.menu.set_activator_over(layout, "spt_drop_item")
+        #self.menu.set_activator_out(layout, "spt_drop_item")
         layout.add_behavior( {
             'type': 'load',
             'cbjs_action': get_onload_js()
@@ -94,40 +94,40 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
 
-    def handle_td(my, td):
+    def handle_td(self, td):
         # FIXME: this is some hackery borrowed from the work to make gantt widget not commit on change
         # ... need to clean this up at some point!
-        version = my.parent_wdg.get_layout_version()
+        version = self.parent_wdg.get_layout_version()
         if version != "2":
             td.add_attr('spt_input_type', 'gantt')
             td.add_class("spt_input_inline")
-        super(DropElementWdg, my).handle_td(td)
+        super(DropElementWdg, self).handle_td(td)
 
-    def get_value_wdg(my):
-        return my.value_wdg
+    def get_value_wdg(self):
+        return self.value_wdg
 
 
-    def handle_tr(my, tr):
+    def handle_tr(self, tr):
         # define the drop zone
-        version = my.parent_wdg.get_layout_version()
+        version = self.parent_wdg.get_layout_version()
         
 
 
 
 
 
-    def handle_th(my, th, wdg_idx=None):
+    def handle_th(self, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
 
         """
         # handle finger menu
-        my.top_class = "spt_drop_element_menu"
+        self.top_class = "spt_drop_element_menu"
         from tactic.ui.container import MenuWdg, MenuItem
-        my.menu = MenuWdg(mode='horizontal', width = 25, height=20, top_class=my.top_class)
+        self.menu = MenuWdg(mode='horizontal', width = 25, height=20, top_class=self.top_class)
 
 
         menu_item = MenuItem('action', label=IconWdg("Add User", IconWdg.ADD))
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -136,9 +136,9 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
         widget = DivWdg()
-        widget.add_class(my.top_class)
+        widget.add_class(self.top_class)
         widget.add_styles('position: absolute; display: none; z-index: 1000')
-        widget.add(my.menu)
+        widget.add(self.menu)
         th.add(widget)
         """
 
@@ -146,14 +146,14 @@ class DropElementWdg(SimpleTableElementWdg):
  
 
     """ FIXME: Waiting until this is implemented
-    def handle_th(my, th, wdg_idx=None):
+    def handle_th(self, th, wdg_idx=None):
 
         from tactic.ui.container import MenuWdg, MenuItem
-        my.menu = MenuWdg(mode='horizontal', width = 40)
-        th.add(my.menu)
+        self.menu = MenuWdg(mode='horizontal', width = 40)
+        th.add(self.menu)
 
         menu_item = MenuItem('action', label='delete')
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''alert('cow');'''
@@ -161,7 +161,7 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
         menu_item = MenuItem('action', label='kill')
-        my.menu.add(menu_item)
+        self.menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''alert('cow');'''
@@ -169,13 +169,13 @@ class DropElementWdg(SimpleTableElementWdg):
     """
 
 
-    def add_drop_behavior(my, widget, accepted_search_type=''):
+    def add_drop_behavior(self, widget, accepted_search_type=''):
 
-        js_callback = my.get_option("cbjs_drop_action")
+        js_callback = self.get_option("cbjs_drop_action")
         if not js_callback:
             js_callback = 'spt.drop.sobject_drop_action(evt,bvr)'
 
-        py_callback = my.get_option("cbpy_drop_action")
+        py_callback = self.get_option("cbpy_drop_action")
         #assert(py_callback)
 
         # define the drop zone
@@ -199,46 +199,46 @@ class DropElementWdg(SimpleTableElementWdg):
             })
 
 
-    def get_text_value(my): 
-        sorted_instances = my._get_sorted_instances()
+    def get_text_value(self): 
+        sorted_instances = self._get_sorted_instances()
         names = ''
         for inst in sorted_instances:
             names += '%s ' % inst.get_display_value()
         return names 
 
-    def get_display(my):
-        my.display_expr = my.kwargs.get('display_expr')
-        my.values = []
+    def get_display(self):
+        self.display_expr = self.kwargs.get('display_expr')
+        self.values = []
 
-        instance_type = my.get_option("instance_type")
-        accepted_type = my.get_option("accepted_drop_type")
+        instance_type = self.get_option("instance_type")
+        accepted_type = self.get_option("accepted_drop_type")
 
         div = DivWdg()
         div.add_class("spt_drop_element_top")
         div.add_style("width: 100%")
-        div.add_style("min-height: 30px")
+        div.add_style("min-height: 70px")
         div.add_style("height: auto")
         div.add_style("min-width: 100px")
         div.add_style("max-height: 300px")
         div.add_style("overflow-y: auto")
         div.add_style("overflow-x: hidden")
 
-        my.value_wdg = HiddenWdg(my.get_name())
-        my.value_wdg.add_class("spt_drop_element_value")
-        div.add( my.value_wdg )
+        self.value_wdg = HiddenWdg(self.get_name())
+        self.value_wdg.add_class("spt_drop_element_value")
+        div.add( self.value_wdg )
 
 
 
-        version = my.parent_wdg.get_layout_version()
+        version = self.parent_wdg.get_layout_version()
         #if version != "2":
-        my.add_drop_behavior(div, accepted_type)
+        self.add_drop_behavior(div, accepted_type)
 
 
 
         # add the hidden div which holds containers info for the sobject
         template_div = DivWdg()
         template_div.add_style("display: none")
-        template_item = my.get_item_div(None)
+        template_item = self.get_item_div(None)
 
         # float left for the new icon beside it
         item_div = template_item.get_widget('item_div')
@@ -259,7 +259,7 @@ class DropElementWdg(SimpleTableElementWdg):
         content_div.add_class("spt_drop_content")
 
         if instance_type:
-            instance_wdg = my.get_instance_wdg(instance_type)
+            instance_wdg = self.get_instance_wdg(instance_type)
             content_div.add(instance_wdg)
             
         return div
@@ -268,20 +268,20 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
 
-    def get_instance_wdg(my, instance_type):
-        sorted_instances = my._get_sorted_instances()
+    def get_instance_wdg(self, instance_type):
+        sorted_instances = self._get_sorted_instances()
         content_div = Widget()
 
         for instance in sorted_instances:
-            item_div = my.get_item_div(instance)
+            item_div = self.get_item_div(instance)
             item_div.add_attr( "spt_search_key", SearchKey.get_by_sobject(instance) )
             item_div.add_class("spt_drop_item")
 
             # no need for that
             #item_div.add('&nbsp;')
             content_div.add(item_div)
-        value_wdg = my.get_value_wdg()
-        json = jsondumps(my.values)
+        value_wdg = self.get_value_wdg()
+        json = jsondumps(self.values)
         json = json.replace('"', '&quot;')
         value_wdg.set_value(json)
 
@@ -290,7 +290,7 @@ class DropElementWdg(SimpleTableElementWdg):
 
 
 
-    def get_item_div(my, sobject):
+    def get_item_div(self, sobject):
         ''' get the item div the sobject'''
         top = DivWdg()
         top.add_style("padding: 3px 2px")
@@ -325,8 +325,8 @@ class DropElementWdg(SimpleTableElementWdg):
         #icon_div.add_border()
 
 
-        #my.menu.set_over(item_div, event="mousein")
-        #my.menu.set_out(top, event="mouseleave")
+        #self.menu.set_over(item_div, event="mousein")
+        #self.menu.set_out(top, event="mouseleave")
 
 
         # set this as the place for the display value to go
@@ -336,19 +336,19 @@ class DropElementWdg(SimpleTableElementWdg):
         ExpressionParser.clear_cache()
         if sobject:
             if add_icon:
-                my._add_icon(sobject, item_div)
+                self._add_icon(sobject, item_div)
 
-            if my.display_expr:
-                display_value = Search.eval(my.display_expr, sobjects = sobject, single=True)
+            if self.display_expr:
+                display_value = Search.eval(self.display_expr, sobjects = sobject, single=True)
             else:
                 display_value = sobject.get_display_value()
             if isinstance(display_value, list):
                 display_value = display_value[0]
             item_div.add( display_value )
-            my.values.append( SearchKey.get_by_sobject(sobject) )
+            self.values.append( SearchKey.get_by_sobject(sobject) )
         return top
 
-    def _add_icon(my, sobject, item_div):
+    def _add_icon(self, sobject, item_div):
         '''add icon to the item_div'''
         if sobject.get_base_search_type() == 'sthpw/login_in_group':
             icon = IconWdg(icon=IconWdg.USER)
@@ -359,11 +359,11 @@ class DropElementAction(DatabaseAction):
 
     # Specific server side call-back to handle dragging a user on a group
     #
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
-        value = web.get_form_value( my.get_input_name() )
+        value = web.get_form_value( self.get_input_name() )
         if not value:
-            value = my.get_data()
+            value = self.get_data()
 
         if not value:
             return
@@ -374,9 +374,9 @@ class DropElementAction(DatabaseAction):
 
         # get all fo the sobjects from the search keys
         #src_sobjects = SearchKey.get_by_search_keys(src_search_keys)
-        instance_type = my.get_option("instance_type")
+        instance_type = self.get_option("instance_type")
         # path is used for self-relating in an instance table
-        src_path = my.get_option("path")
+        src_path = self.get_option("path")
 
         src_sobjects = []
         src_instances = []
@@ -389,7 +389,7 @@ class DropElementAction(DatabaseAction):
                 src_sobjects.append(src_sobject)
 
 
-        dst_sobject = my.sobject
+        dst_sobject = self.sobject
 
         
         # get all of the current instances and see if any were removed
@@ -710,37 +710,37 @@ class RelatedElementAction(DatabaseAction):
         <path>sub</path>
       </action>
     '''
-    def execute(my):
-        my.is_insert = False
+    def execute(self):
+        self.is_insert = False
         # this can only be determined in the execute method
-        if my.sobject.is_insert() == True:
-            my.is_insert = True
-        super(RelatedElementAction, my).execute()
+        if self.sobject.is_insert() == True:
+            self.is_insert = True
+        super(RelatedElementAction, self).execute()
 
 
-    def postprocess(my):
+    def postprocess(self):
         web = WebContainer.get_web()
-        value = web.get_form_value( my.get_input_name() )
+        value = web.get_form_value( self.get_input_name() )
         if not value:
             return
         
         # get all fo the sobjects from the search keys
-        instance_type = my.get_option("instance_type")
+        instance_type = self.get_option("instance_type")
         
         # path is used for self-relating in an instance table
-        src_path = my.get_option("path")
+        src_path = self.get_option("path")
 
     
-        #src_sobject = my.sobject
+        #src_sobject = self.sobject
 
-        search = Search(my.sobject.get_search_type())
-        search.add_id_filter(my.sobject.get_id())
+        search = Search(self.sobject.get_search_type())
+        search.add_id_filter(self.sobject.get_id())
         src_sobject = search.get_sobject()
 
         # this is passed in from EditCmd in insert mode
-        parent_key = my.get_option('parent_key')
+        parent_key = self.get_option('parent_key')
         # in some rare cases we have project as the parent_key
-        if parent_key and my.is_insert and 'sthpw/project' not in parent_key:
+        if parent_key and self.is_insert and 'sthpw/project' not in parent_key:
             # this is the parent
             dst_sobject = SearchKey.get_by_search_key(parent_key)
 

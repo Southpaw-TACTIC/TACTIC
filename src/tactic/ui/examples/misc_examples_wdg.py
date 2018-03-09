@@ -21,11 +21,11 @@ from base_example_wdg import BaseExampleWdg
 
 class ClientSideAddBehaviorExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Client-side Add Behavior Example"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Above are div elements, each labeled with the class name they are tagged with. They all are " \
                "generated with NO behaviors. Click on them when they are just loaded to verify! Then open up " \
                "the JS Editor and copy and paste the following text (as an example) into the " \
@@ -43,7 +43,7 @@ class ClientSideAddBehaviorExampleWdg(BaseExampleWdg):
                "did! Go ahead and try adding behaviors in the same way to the other div elements above!"
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
         dinfo_list = [
@@ -69,16 +69,16 @@ class ClientSideAddBehaviorExampleWdg(BaseExampleWdg):
 
 class BehaviorHandoffExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Behavior Handoff Example"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Example of using a '_handoff_' property in behavior spec in order to handoff a behavior to another " \
                 " widget."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
 

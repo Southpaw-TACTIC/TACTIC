@@ -25,7 +25,7 @@ buffers = {}
 class WebContainer(Base):
     """global container class for web related information"""
 
-    def __init__(my):
+    def __init__(self):
         pass
 
     def set_web(web):

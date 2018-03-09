@@ -25,11 +25,12 @@ from tactic.ui.input import TextInputWdg
 
 from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg, ActionButtonWdg, SwapDisplayWdg, IconButtonWdg
 
+import re
 
 class CustomLayoutHelpWdg(BaseRefreshWdg):
     '''Showing sample code when clicking on the Show hint button'''
-    def get_display(my):
-        data = my.kwargs.get('data')
+    def get_display(self):
+        data = self.kwargs.get('data')
 
         widget = TextAreaWdg()
         widget.add_styles("max-width: 600px; width: 500px; height: 300px")
@@ -38,7 +39,7 @@ class CustomLayoutHelpWdg(BaseRefreshWdg):
         # parse the xml to see if it is valid
         try:
             Xml(string=data, strip_cdata=True)
-        except XmlException, e:
+        except XmlException as e:
             widget.add( IconWdg("XML Parse Error", IconWdg.ERROR) )
             span = SpanWdg()
             span.add_style('color: #f44')
@@ -54,104 +55,114 @@ class CustomLayoutHelpWdg(BaseRefreshWdg):
 
 __all__.append("WidgetEditorWdg")
 class WidgetEditorWdg(BaseRefreshWdg):
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
-    def get_display(my):
-        element_name = my.kwargs.get("element_name")
-        display_handler = my.kwargs.get("display_handler")
-        display_options = my.kwargs.get("display_options")
+    def get_display(self):
+        element_name = self.kwargs.get("element_name")
+        display_handler = self.kwargs.get("display_handler")
+        display_options = self.kwargs.get("display_options")
 
-        top = my.top
+        top = self.top
         top.add_class("spt_widget_editor_top")
         top.add_style("padding: 10px")
         top.add_style("width: 540px")
         top.add_color("background", "background")
 
 
-        action_wdg = DivWdg()
-        top.add(action_wdg)
-        action_wdg.add_color("background", "background", -10)
-        action_wdg.add_style("margin: -10px -10px 10px -10px")
-        action_wdg.add_style("padding: 5px")
+        if self.kwargs.get("show_action") not in ['false', False]:
 
-        """
-        delete = ActionButtonWdg(title='Remove', tip='Remove from Canvas')
-        action_wdg.add(delete)
-        delete.add_style("float: right")
-        delete.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
-        var values = spt.api.get_input_values(attr_top, null, false);
-        '''
-        })
-        """
+            action_wdg = DivWdg()
+            top.add(action_wdg)
+            action_wdg.add_color("background", "background", -10)
+            action_wdg.add_style("margin: -10px -10px 10px -10px")
+            action_wdg.add_style("padding: 5px")
 
-
-        inject = ActionButtonWdg(title='Inject')
-        action_wdg.add(inject)
-
-        editor_id = my.kwargs.get("editor_id")
+            """
+            delete = ActionButtonWdg(title='Remove', tip='Remove from Canvas')
+            action_wdg.add(delete)
+            delete.add_style("float: right")
+            delete.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
+            var values = spt.api.get_input_values(attr_top, null, false);
+            '''
+            })
+            """
 
 
-        inject.add_behavior( {
-        'type': 'click_up',
-        'editor_id': editor_id,
-        'cbjs_action': r'''
-        var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
-        var values = spt.api.get_input_values(attr_top, null, false);
+            inject = ActionButtonWdg(title='Inject')
+            action_wdg.add(inject)
 
-        //console.log(values);
-
-        // load the widget
-        var class_name = values['xxx_option|display_class'];
+            editor_id = self.kwargs.get("editor_id")
 
 
-        // build up a kwargs
-        var kwargs = {};
-        for (key in values) {
-            var parts = key.split("|");
-            if (parts[0] == 'option') {
-                var value = values[key];
-                console.log(value);
-                kwargs[parts[1]] = value;
+            inject.add_behavior( {
+            'type': 'click_up',
+            'editor_id': editor_id,
+            'cbjs_action': r'''
+            var attr_top = bvr.src_el.getParent(".spt_widget_editor_top");
+            var values = spt.api.get_input_values(attr_top, null, false);
+
+            //console.log(values);
+
+            // load the widget
+            var class_name = values['xxx_option|display_class'];
+            var widget_key = values['xxx_option|widget_key'];
+
+
+            // build up a kwargs
+            var kwargs = {};
+            for (key in values) {
+                var parts = key.split("|");
+                if (parts[0] == 'option') {
+                    var value = values[key];
+                    console.log(value);
+                    kwargs[parts[1]] = value;
+                }
             }
-        }
 
 
-        var activator = bvr.src_el;
-        var top = activator.getParent(".spt_widget_editor_top");
-        var view = activator.getAttribute("spt_view");
+            var activator = bvr.src_el;
+            var top = activator.getParent(".spt_widget_editor_top");
+            var view = activator.getAttribute("spt_view");
 
-        var element = []
-        if (view) {
-            element.push("<element name='"+view+"'>");
-        }
-        else {
-            element.push("<element>");
-        }
-        element.push("  <display class='"+class_name+"'>");
-        for (key in kwargs) {
-            if (!kwargs.hasOwnProperty(key) ) { continue; }
-            var value = kwargs[key];
-            if (value == "") { continue; }
+            var element = []
+            if (view) {
+                element.push("<element name='"+view+"'>");
+            }
+            else {
+                element.push("<element>");
+            }
 
-            element.push("    <"+key+">" + value + "</"+key+">");
-        }
-        element.push("  </display>");
-        element.push("</element>");
+            if (widget_key) {
+                element.push("  <display widget='"+widget_key+"'>");
+            }
+            else {
+                element.push("  <display class='"+class_name+"'>");
+            }
 
-        spt.ace_editor.set_editor(bvr.editor_id);
-        spt.ace_editor.insert_lines(element);
+            for (key in kwargs) {
+                if (!kwargs.hasOwnProperty(key) ) { continue; }
+                var value = kwargs[key];
+                if (value == "") { continue; }
 
-        var popup = bvr.src_el.getParent( ".spt_popup" );
-        if (popup)
-            spt.popup.close(popup);
+                element.push("    <"+key+">" + value + "</"+key+">");
+            }
+            element.push("  </display>");
+            element.push("</element>");
 
-        '''
-        } )
+            spt.ace_editor.set_editor(bvr.editor_id);
+            spt.ace_editor.insert_lines(element);
+
+            var popup = bvr.src_el.getParent( ".spt_popup" );
+            if (popup)
+                spt.popup.close(popup);
+
+            '''
+            } )
 
 
 
@@ -166,7 +177,7 @@ class WidgetEditorWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell()
         td.add("Name:")
-        td.add_style("width: 150px")
+        td.add_style("width: 85px")
         td = table.add_cell()
         text = TextInputWdg(name="element_name")
         if element_name:
@@ -183,8 +194,8 @@ class WidgetEditorWdg(BaseRefreshWdg):
 
         from tactic.ui.manager import WidgetClassSelectorWdg
 
-        class_labels = ['-- Class Path--']
-        class_values = ['__class__']
+        class_labels = ['Table', 'Calendar', 'Custom', '-- Class Path--']
+        class_values = ['table_layout', 'calendar', 'custom_layout',  '__class__']
 
         # add the widget information
         #class_labels = ['Raw Data', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Custom Layout', '-- Class Path --']
@@ -207,7 +218,7 @@ class WidgetEditorWdg(BaseRefreshWdg):
 
 class CustomLayoutEditWdg(BaseRefreshWdg):
 
-    def get_title_wdg(my, title, content_id=None, is_on=True):
+    def get_title_wdg(self, title, content_id=None, is_on=True):
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -1")
         title_wdg.add_style("height: 25px")
@@ -309,14 +320,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
-        my.editor_id = ''
-        top = my.top
+    def get_display(self):
+        self.editor_id = ''
+        top = self.top
         top.add_class("spt_custom_layout_top")
         #top.add_style("padding: 20px")
         top.add_color("color", "color")
         top.add_color("background", "background")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
@@ -324,7 +335,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         inner.add_class("spt_custom_layout_inner")
 
 
-        my.plugin = None
+        self.plugin = None
 
         # Disabling for now until we can actually get this working.
         """
@@ -375,6 +386,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         #search.add_order_by("folder")
         search.add_order_by("view")
 
+        view_filter = self.kwargs.get("view_filter")
+        if view_filter:
+            search.add_filter("view", view_filter, op="like")
+
         configs = search.get_sobjects()
 
         folders = []
@@ -396,7 +411,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
         if view:
             view = view.replace("/", ".")
         if view == '__new__':
@@ -434,10 +449,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add in a context menu
-        menu = my.get_context_menu()
+        menu = self.get_context_menu()
         menus = [menu.get_data()]
 
-        dir_menu = my.get_dir_context_menu()
+        dir_menu = self.get_dir_context_menu()
         dir_menus = [dir_menu.get_data()]
 
         menus_in = {
@@ -478,8 +493,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         } )
 
 
-        bg_color = left_div.get_color("background3")
-        bg_color2 = left_div.get_color("background3", -10)
+        bg_color = left_div.get_color("background")
+        bg_color2 = left_div.get_color("background", -10)
 
         left_div.add_relay_behavior( {
             'type': 'mouseover',
@@ -520,7 +535,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         if folder_states:
             try:
                 folder_states = jsonloads(folder_states)
-            except Exception, e:
+            except Exception as e:
                 print "WARNINIG: can't parse json string [%s]" % folder_states
                 folder_states = {}
         else:
@@ -563,14 +578,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         content_div.add_color("color", "color3")
 
 
-        plugin_code = my.kwargs.get("plugin_code")
+        plugin_code = self.kwargs.get("plugin_code")
         #plugin_code = "SPT/sample_form"
 
 
         last_folder = None
         folder_wdgs = {}
         folder_wdgs["/"] = left_div
-        my.num_views = len(configs)
+        self.num_views = len(configs)
         for config in configs:
 
             # find out if this custom layout belongs to a plugin
@@ -640,18 +655,29 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     parent_wdg = folder_wdg
 
                     # fill it in
-                    icon = IconWdg(folder, IconWdg.FOLDER, inline=False)
-                    icon.add_style("margin-top: -2px")
-                    icon.add_style("margin-left: -5px")
+                    #icon = IconWdg(folder, IconWdg.FOLDER, inline=False)
+                    #icon.add_style("margin-top: -2px")
+                    #icon.add_style("margin-left: -5px")
+
+                    icon = IconWdg(folder, "BS_FOLDER_OPEN", inline=False, size=12)
+                    icon.add_style("margin-top: 0px")
+                    icon.add_style("margin-left: 0px")
+                    icon.add_style("margin-right: 3px")
+
 
                     folder_header = DivWdg()
                     folder_content = DivWdg()
 
 
+                    folder_item = DivWdg()
+                    folder_wdg.add(folder_item)
+                    folder_item.add_class("tactic_hover")
+
                     from tactic.ui.widget import SwapDisplayWdg
                     swap = SwapDisplayWdg()
-                    folder_wdg.add(swap)
+                    folder_item.add(swap)
                     swap.set_title_wdg(folder_header)
+
                     folder_wdg.add_widget(folder_content, "content")
                     swap.add_class("spt_folder")
                     swap.add_attr("spt_folder", folder)
@@ -691,7 +717,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 config_div.add_style("padding-left: 5px")
 
             config_div.add_class("spt_custom_layout_item")
-            icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
+            #icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
+            icon = IconWdg("Custom Layout View", "BS_FILE", inline=False, size=12)
+            icon.add_style("margin-left: 3px")
+            icon.add_style("margin-right: 1px")
+            icon.add_style("opacity: 0.8")
             config_div.add(icon)
 
             config_div.add(display_view)
@@ -723,7 +753,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             """
             #TODO: include this Click to Add feature back.
-            if not my.num_views:
+            if not self.num_views:
                 arrow_div = DivWdg()
                 right_div.add(arrow_div)
                 icon = IconWdg("Click to Add", IconWdg.ARROW_UP_LEFT_32)
@@ -773,7 +803,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
        
         if not view or (not is_new and not cur_config):
-            shelf_wdg = my.get_shelf_wdg()
+            shelf_wdg = self.get_shelf_wdg()
             right_div.add(shelf_wdg, "shelf_wdg")
 
             # at the first widget load, don't draw the view text input 
@@ -799,7 +829,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 mako = ''
                 kwargs = ''
                 widget_type = ''
-                my.plugin = None
+                self.plugin = None
             else:
 
                 pretty = True
@@ -835,7 +865,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     try:
                         raw_data = cur_config.get_value('config')
                         Xml(string=raw_data, strip_cdata=True)
-                    except XmlException, e:
+                    except XmlException as e:
                         for text in ['config', view, 'html']:
                             raw_data = raw_data.replace('<%s>' %text, '')
                             raw_data = raw_data.replace('</%s>'%text, '')
@@ -853,7 +883,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
                 # find out if this custom layout belongs to a plugin
                 expr = "@SOBJECT(config/plugin_content.config/plugin)"
-                my.plugin = Search.eval(expr, cur_config, single=True)
+                self.plugin = Search.eval(expr, cur_config, single=True)
 
 
             if error_msgs:
@@ -870,11 +900,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             
             html_div.set_name("HTML")
             html_div.add_style("height: 600px")
-
+            html_div.add_class("spt_html_tab")
 
             text = TextAreaWdg("html")
             content_id = text.set_unique_id()
-            title_wdg = my.get_title_wdg("HTML", content_id)
+            title_wdg = self.get_title_wdg("HTML", content_id)
             html_div.add(title_wdg)
 
             # DEPRECATED: never worked very well
@@ -891,7 +921,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_style("font-family: courier")
             html = ''.join(htmls)
             html = html.replace( "&amp;", "&")
-
+            
+            # This reverses formatting by CustomLayoutEditSaveCmd.build_xml
+            # to preserve empty tags.
+            html = re.sub(r'(<\w+>)\s(</\w+>)',r'\1\2', html, re.MULTILINE)
+            
             # a final html conversion to ensure textarea draws properly
             html = Xml.to_html(html, allow_empty=True)
             if html:
@@ -901,16 +935,16 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             # add the editor
             from tactic.ui.app import AceEditorWdg
             editor = AceEditorWdg(width="100%", language="xml", code=html, show_options=False, editor_id='custom_layout_html')
-            my.editor_id = editor.get_editor_id()
+            self.editor_id = editor.get_editor_id()
             html_div.add(editor)
 
             # DEPRECATED: never worked very well
             """
             if cur_config:
-                my.handle_image_inject(cur_config, button)
+                self.handle_image_inject(cur_config, button)
             """
 
-            shelf_wdg = my.get_shelf_wdg()
+            shelf_wdg = self.get_shelf_wdg()
             right_div.set_widget(shelf_wdg, "shelf_wdg")
 
             #shelf_wdg.add_style("overflow-x: hidden")
@@ -923,7 +957,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view_wdg.add("<div style='margin: 5px 5px 5px 20px; float: left'><b>View: &nbsp;</b></div>")
             text = TextInputWdg(name="view", height="30px")
             view_wdg.add(text)
-            text.add_style("width: 350px")
+            text.add_style("width: 400px")
             view_wdg.add_style("margin-top: 4px")
             view_wdg.add_style("margin-left: 10px")
             view_wdg.add_style("padding-left: 230px")
@@ -934,6 +968,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 text.set_value(view.replace(".", "/"))
 
             type_wdg = DivWdg()
+            # Hide this ... never really used
+            type_wdg.add_style("display: none")
             shelf_wdg.add(type_wdg)
             type_wdg.add_style("float: left")
             type_wdg.add_style("margin: 0px 5px 5px 20px")
@@ -977,7 +1013,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view_wdg.add(hidden)
             selected = web.get_form_value("selected")
             if not selected:
-                selected = my.kwargs.get("selected")
+                selected = self.kwargs.get("selected")
             if not selected:
                 selected = "HTML"
 
@@ -1013,25 +1049,27 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             tab.add(html_div)
 
             # Mako
+            if mako.startswith('\n'):
+                mako = mako[1:]
+            
             mako_div = DivWdg()
+            mako_div.add_class("spt_mako_tab")
             tab.add(mako_div)
             mako_div.set_name("python")
-            # replace the placeholder
             
+            title_wdg = self.get_title_wdg("Python", content_id, is_on=True)
+            mako_div.add(title_wdg)
+
+            editor = AceEditorWdg(width="100%", language="python", code=mako, show_options=False, editor_id='custom_layout_mako')
+            self.mako_editor_id = editor.get_editor_id()
+            mako_div.add(editor)
+
+            """
             text = TextAreaWdg("mako")
             text.add_class("spt_mako")
             text.add_class("spt_python")
             content_id = text.set_unique_id()
-
-
-            title_wdg = my.get_title_wdg("Python", content_id, is_on=True)
-            mako_div.add(title_wdg)
-
-            #editor = AceEditorWdg(width="100%", language="python", code=mako, show_options=False, editor_id='custom_layout_mako')
-            #my.mako_editor_id = editor.get_editor_id()
-            #mako_div.add(editor)
-
-
+            
             mako_div.add(text)
             text.add_style("width: 100%")
             text.add_style("height: 400px")
@@ -1058,7 +1096,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 }
                 '''
             } )
-
+            """
 
 
             # styles
@@ -1071,7 +1109,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             content_id = text.set_unique_id()
             #text.add_style("display: none")
 
-            title_wdg = my.get_title_wdg("Styles", content_id, is_on=True)
+            title_wdg = self.get_title_wdg("Styles", content_id, is_on=True)
             style_div.add(title_wdg)
 
             style_div.add(text)
@@ -1094,7 +1132,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             content_id = text.set_unique_id()
             #text.add_style("display: none")
 
-            title_wdg = my.get_title_wdg("Behaviors", content_id, is_on=True)
+            title_wdg = self.get_title_wdg("Behaviors", content_id, is_on=True)
             behavior_div.add(title_wdg)
 
             behavior_div.add(text)
@@ -1173,7 +1211,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_class("spt_kwargs")
             content_id = text.set_unique_id()
 
-            title_wdg = my.get_title_wdg("Options", content_id, is_on=True)
+            title_wdg = self.get_title_wdg("Options", content_id, is_on=True)
             kwargs_div.add(title_wdg)
 
             kwargs_div.add(text)
@@ -1201,7 +1239,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             content_id = text.set_unique_id()
             #text.add_style("display: none")
 
-            title_wdg = my.get_title_wdg("Files", content_id, is_on=True)
+            title_wdg = self.get_title_wdg("Files", content_id, is_on=True)
             files_div.add(title_wdg)
 
             search = Search("config/widget_config")
@@ -1252,14 +1290,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
 
 
-    def get_shelf_wdg(my):
+    def get_shelf_wdg(self):
 
         shelf_wdg = DivWdg()
 
@@ -1294,27 +1332,34 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         button.add_behavior( {
             'type': 'click_up',
-            'editor_id': my.editor_id,
+            'editor_id': self.editor_id,
             'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
 
             var cmd = 'tactic.ui.tools.CustomLayoutEditSaveCmd';
 
-            //var html = values.html;
             if (!bvr.editor_id) {
-                spt.alert('There is no view to save. Please create a view or select an exixting view.');
+                spt.alert('There is no view to save. Please create a view or select an existing view.');
                 return;
             }
-
-            spt.ace_editor.set_editor_top(top);
+ 
+            html_tab = top.getElement(".spt_html_tab");
+            spt.ace_editor.set_editor_top(html_tab);
             var html = spt.ace_editor.get_value();
+
+            mako_tab = top.getElement(".spt_mako_tab");
+            spt.ace_editor.set_editor_top(mako_tab);
+            var mako = spt.ace_editor.get_value();
+            //FIXME: get_value appends newline onto beginning.
+            if (mako && mako.startsWith("\n")) {
+                mako = mako.substring(1);
+            }
 
             var view = values.view;
             var widget_type = values.widget_type;
             var code = values.code;
             var style = values.style;
-            var mako = values.mako;
             var kwargs = values.kwargs;
 
             var behavior = values.behavior;
@@ -1389,7 +1434,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row.add(button)
 
         # add in a context menu
-        menu = my.get_inject_menu()
+        menu = self.get_inject_menu()
         menus = [menu.get_data()]
         SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
@@ -1403,12 +1448,23 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row.add(button)
         button.add_behavior( {
             'type': 'click_up',
-            'cbjs_action': '''
+            'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
 
-            spt.ace_editor.set_editor_top(top);
+            html_tab = top.getElement(".spt_html_tab");
+            spt.ace_editor.set_editor_top(html_tab);
             values.html = spt.ace_editor.get_value();
+
+            mako_tab = top.getElement(".spt_mako_tab");
+            spt.ace_editor.set_editor_top(mako_tab);
+            mako = spt.ace_editor.get_value();
+            //FIXME: get_value appends newline onto beginning.
+            if (mako && mako.startsWith("\n")) {
+                mako = mako.substring(1);
+            }
+            values.mako = mako;
+
             values.is_test = true;
 
             if (!values.view && !values.html) {
@@ -1440,7 +1496,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button = ButtonNewWdg(title="Link Actions", icon="BS_LINK", show_arrow=True)
         button_row.add(button)
 
-        menu = my.get_link_menu()
+        menu = self.get_link_menu()
         menus = [menu.get_data()]
         SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
@@ -1467,7 +1523,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-    def get_context_menu(my):
+    def get_context_menu(self):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -1604,7 +1660,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             # Disabled for now
             menu_item.add_behavior({
                 'type': 'click_up',
-                'plugin': my.plugin.get_value("code"),
+                'plugin': self.plugin.get_value("code"),
                 'cbjs_action': '''
                 alert("View belongs to plugin ["+bvr.plugin+"]");
                 '''
@@ -1673,7 +1729,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         return menu
 
 
-    def get_dir_context_menu(my):
+    def get_dir_context_menu(self):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -1746,7 +1802,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-    def get_link_menu(my):
+    def get_link_menu(self):
         menu = Menu(width=180)
         menu.set_allow_icons(False)
 
@@ -1779,7 +1835,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             menu.add(menu_item)
 
 
-        if my.plugin:
+        if self.plugin:
 
             menu_item = MenuItem(type='action', label='Edit Plugin')
             menu.add(menu_item)
@@ -1788,7 +1844,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             menu_item.add_behavior( {
                 'type': 'click_up',
-                'dirname': my.plugin.get('rel_dir'),
+                'dirname': self.plugin.get('rel_dir'),
                 'plugin_dir': plugin_dir,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.app.PluginEditWdg';
@@ -2007,7 +2063,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
          
 
-    def get_inject_menu(my):
+    def get_inject_menu(self):
         menu = Menu(width=180)
         menu.set_allow_icons(False)
 
@@ -2170,7 +2226,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
         var kwargs = {
@@ -2185,7 +2241,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
         var kwargs = {
@@ -2202,7 +2258,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
         var kwargs = {
@@ -2218,7 +2274,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
         var kwargs = {
@@ -2234,7 +2290,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
         var kwargs = {
@@ -2251,7 +2307,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
 
@@ -2272,7 +2328,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
 
@@ -2293,7 +2349,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
 
@@ -2314,7 +2370,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
 
@@ -2335,7 +2391,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
 
@@ -2355,7 +2411,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'editor_id': my.editor_id,
+        'editor_id': self.editor_id,
         'cbjs_action': '''
         var class_name = 'tactic.ui.tools.WidgetEditorWdg';
 
@@ -2418,7 +2474,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     # DEPRECATED: never worked very well
     """
-    def handle_image_inject(my, config, button):
+    def handle_image_inject(self, config, button):
 
         from tactic.ui.container import DialogWdg
         dialog = DialogWdg()
@@ -2455,7 +2511,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         <element name="file_size"/>
         </inject>
         </config>
-        ''' % my.editor_id
+        ''' % self.editor_id
         config_xml = config_xml.replace('"', "'")
 
 
@@ -2471,9 +2527,9 @@ from tactic.ui.table import ButtonElementWdg
 class AddImageElementWdg(ButtonElementWdg):
 
 
-    def preprocess(my):
-        editor_id = my.get_option("editor_id")
-        my.set_option( "cbjs_action", '''
+    def preprocess(self):
+        editor_id = self.get_option("editor_id")
+        self.set_option( "cbjs_action", '''
         spt.ace_editor.set_editor("%s");
 
         expression = "/assets/{@GET(sthpw/file.relative_dir)}/{@GET(sthpw/file.file_name)}";
@@ -2491,27 +2547,27 @@ class AddImageElementWdg(ButtonElementWdg):
         spt.hide(dialog);
         ''' % editor_id )
 
-        my.set_option("icon", "ADD")
+        self.set_option("icon", "ADD")
 
 
 
 
 class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        html = my.kwargs.get("html")
-        style = my.kwargs.get("style")
-        view = my.kwargs.get("view")
+        html = self.kwargs.get("html")
+        style = self.kwargs.get("style")
+        view = self.kwargs.get("view")
         view = view.replace("/", ".")
 
-        mako = my.kwargs.get("mako")
-        behavior = my.kwargs.get("behavior")
-        kwargs = my.kwargs.get("kwargs")
-        is_test = my.kwargs.get("is_test")
+        mako = self.kwargs.get("mako")
+        behavior = self.kwargs.get("behavior")
+        kwargs = self.kwargs.get("kwargs")
+        is_test = self.kwargs.get("is_test")
 
         # find out if there is a plugin associated with this
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
         plugin = Search.eval("@SOBJECT(config/plugin_content['search_code','%s'].config/plugin)" % code, single=True)
 
 
@@ -2532,7 +2588,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
 
         from tactic.ui.panel import CustomLayoutWdg
-        top = my.top
+        top = self.top
         #top.add_style("padding: 20px")
         top.add_border()
         top.add_color("color", "color")
@@ -2565,6 +2621,7 @@ class CustomLayoutEditSaveCmd(Command):
         html = html.replace("<%", "<![CDATA[\n<%")
         html = html.replace("%>", "%>]]>")
         html = html.replace("&", "&amp;")
+        html = re.sub(r'(<\w+>)(</\w+>)',r'\1 \2', html, re.MULTILINE)
 
 
 
@@ -2582,7 +2639,7 @@ class CustomLayoutEditSaveCmd(Command):
             # check if kwargs is a proper dictionary
             try:
                 kwargs_test = eval(kwargs)
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('kwargs contains syntax error: %s' %(e))
             for key, value in kwargs_test.items():
                 if not isinstance(value, basestring) and not isinstance(value, dict):
@@ -2637,7 +2694,6 @@ class CustomLayoutEditSaveCmd(Command):
         if behavior:
             if behavior.find('<![CDATA[') != -1:
                 raise TacticException("CDATA is automatically added when it is saved. Do not include any CDATA tag in behavior.")
-            import re
             behavior = behavior.strip()
             #behavior = behavior.replace("\\", "\\\\")
 
@@ -2669,21 +2725,21 @@ class CustomLayoutEditSaveCmd(Command):
 
 
 
-    def execute(my):
+    def execute(self):
 
-        html = my.kwargs.get("html")
-        style = my.kwargs.get("style")
-        kwargs = my.kwargs.get("kwargs")
+        html = self.kwargs.get("html")
+        style = self.kwargs.get("style")
+        kwargs = self.kwargs.get("kwargs")
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
         view = view.replace("/", ".")
 
-        widget_type = my.kwargs.get("widget_type")
+        widget_type = self.kwargs.get("widget_type")
 
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
 
-        behavior = my.kwargs.get("behavior")
-        mako = my.kwargs.get("mako")
+        behavior = self.kwargs.get("behavior")
+        mako = self.kwargs.get("mako")
 
         if html and html.find('<![CDATA[') != -1:
             raise TacticException("CDATA is automatically added when it is saved. Do not include any CDATA tag in HTML section.")
@@ -2691,7 +2747,7 @@ class CustomLayoutEditSaveCmd(Command):
         if style and style.find('<![CDATA[') != -1:
             raise TacticException("Do not include any CDATA tag in Styles section.")
 
-        config_xml = my.build_xml(view, html, style, behavior, mako, kwargs)
+        config_xml = self.build_xml(view, html, style, behavior, mako, kwargs)
 
         xml = Xml()
         xml.read_string(config_xml)
@@ -2719,18 +2775,18 @@ class CustomLayoutEditSaveCmd(Command):
         sobject.set_value("config", config_xml)
         sobject.commit()
 
-        my.add_description("Saved Custom Layout view [%s]" % view)
+        self.add_description("Saved Custom Layout view [%s]" % view)
 
 
 
 class SimpleLoginTemplate(object):
 
-    def __init__(my):
+    def __init__(self):
         from pyasm.biz import Project
         project = Project.get()
         title = project.get_value("title")
 
-        my.html = r'''
+        self.html = r'''
 <div class="custom_login">
   <div class="title">
     <h1>[expr]@GET(project.title)[/expr]</h1>
@@ -2755,7 +2811,7 @@ Password:
         '''
 
 
-        my.style = r'''
+        self.style = r'''
 body {
     background: #FFF !important;
 }
@@ -2785,15 +2841,15 @@ body {
 
         '''
 
-        my.behavior = ' '
+        self.behavior = ' '
 
 
 
 class RawMenuTemplate(object):
 
-    def __init__(my):
+    def __init__(self):
 
-        my.html = '''
+        self.html = '''
 <div class="menu">
   <div>
     <element name="menu" id="side_bar">
@@ -2808,7 +2864,7 @@ class RawMenuTemplate(object):
         '''
 
 
-        my.style = '''
+        self.style = '''
 
 .web_menu_wdg {
 }
@@ -2843,7 +2899,7 @@ class RawMenuTemplate(object):
 
 
 
-        my.behavior = '''
+        self.behavior = '''
         '''
 
 
@@ -2851,9 +2907,9 @@ class RawMenuTemplate(object):
 
 class SimpleMenuTemplate(object):
 
-    def __init__(my):
+    def __init__(self):
 
-        my.html = '''
+        self.html = '''
 <div class="menu">
   <div>
     <element name="menu" id="side_bar">
@@ -2867,10 +2923,10 @@ class SimpleMenuTemplate(object):
 </div>
         '''
 
-        my.python = ''
+        self.python = ''
 
 
-        my.style = '''
+        self.style = '''
 <%
 num_menus = 4;
 menu_width = 150;
@@ -2964,7 +3020,7 @@ menu_width = 150;
 
 
 
-        my.behavior = '''
+        self.behavior = '''
 
 <behavior class="main_li" event="mouseenter">
 // make sure they are all closed
@@ -3020,9 +3076,9 @@ for ( var i = 0; i < els.length; i++) {
 
 class SimpleSidebarTemplate(SimpleMenuTemplate):
 
-    def __init__(my):
+    def __init__(self):
 
-        my.html = ''' <div>
+        self.html = ''' <div>
   <div class="menu">
     <element name="menu" id="side_bar">
       <display class="tactic.ui.panel.SimpleSideBarWdg">
@@ -3036,7 +3092,7 @@ class SimpleSidebarTemplate(SimpleMenuTemplate):
         '''
 
 
-        my.python = '''
+        self.python = '''
 bgcolor = server.eval("@COLOR('background3')")
 bgcolor2 = server.eval("@COLOR('background3',-10)")
 
@@ -3044,7 +3100,7 @@ kwargs['bgcolor'] = bgcolor
 kwargs['bgcolor2'] = bgcolor2
         '''
 
-        my.style = '''
+        self.style = '''
 <%
 num_menus = 5;
 menu_width = 200;
@@ -3159,7 +3215,7 @@ menu_height = 30;
         '''
 
 
-        my.behavior = '''
+        self.behavior = '''
 <behavior class="web_menu_wdg" event="load">
 var top = bvr.src_el.getParent(".spt_custom_top");
 top.setAttribute("id", "side_bar");
@@ -3234,27 +3290,27 @@ for ( var i = 0; i < els.length; i++) {
 
 class CustomLayoutActionCbk(Command):
 
-    def execute(my):
-        action = my.kwargs.get("action")
+    def execute(self):
+        action = self.kwargs.get("action")
 
         if action == "copy_folder":
-            my.copy_folder()
+            self.copy_folder()
 
         elif action == "rename_folder":
-            my.rename_folder()
+            self.rename_folder()
 
         elif action == "delete_folder":
-            my.delete_folder()
+            self.delete_folder()
     
         elif action == "copy_view":
-            my.copy_view()
+            self.copy_view()
 
 
         else:
             raise TacticException("Action [%s] not supported" % action)
 
 
-    def new_view(my, view, new_folder):
+    def new_view(self, view, new_folder):
         if view.startswith("."):
             return view
 
@@ -3269,12 +3325,15 @@ class CustomLayoutActionCbk(Command):
 
 
 
-    def copy_folder(my):
+    def copy_folder(self):
 
-        folder = my.kwargs.get("folder")
-        new_folder = my.kwargs.get("new_folder")
+        folder = self.kwargs.get("folder")
+        folder = folder.replace("/", ".")
+
+        new_folder = self.kwargs.get("new_folder")
         if not new_folder:
             new_folder = "%s_copy" % folder
+
 
         search = Search("config/widget_config")
         search.add_filter("view", "%s.%%" % folder, op="like" )
@@ -3283,7 +3342,8 @@ class CustomLayoutActionCbk(Command):
 
         for config in configs:
             view = config.get_value("view")
-            new_view = my.new_view(view, new_folder)
+            new_view = self.new_view(view, new_folder)
+            print "new_view: ", new_view
 
             config_xml = config.get_xml_value("config")
 
@@ -3295,7 +3355,7 @@ class CustomLayoutActionCbk(Command):
                 element_view = config_xml.get_attribute(element, "view")
                 if element_view:
                     element_view = element_view.replace("/", ".")
-                    new_element_view = my.new_view(element_view, new_folder)
+                    new_element_view = self.new_view(element_view, new_folder)
                     config_xml.set_attribute(element, "view", new_element_view)
 
             new_config = SearchType.create("config/widget_config")
@@ -3305,10 +3365,10 @@ class CustomLayoutActionCbk(Command):
             new_config.commit()
 
 
-    def rename_folder(my):
+    def rename_folder(self):
 
-        folder = my.kwargs.get("folder")
-        new_folder = my.kwargs.get("new_folder")
+        folder = self.kwargs.get("folder")
+        new_folder = self.kwargs.get("new_folder")
         if not new_folder:
             new_folder = "%s_copy" % folder
 
@@ -3321,7 +3381,7 @@ class CustomLayoutActionCbk(Command):
             new_config = config
 
             view = config.get_value("view")
-            new_view = my.new_view(view, new_folder)
+            new_view = self.new_view(view, new_folder)
 
             config_xml = config.get_xml_value("config")
 
@@ -3335,7 +3395,7 @@ class CustomLayoutActionCbk(Command):
                 element_view = config_xml.get_attribute(element, "view")
                 if element_view:
                     element_view = element_view.replace("/", ".")
-                    new_element_view = my.new_view(element_view, new_folder)
+                    new_element_view = self.new_view(element_view, new_folder)
                     config_xml.set_attribute(element, "view", new_element_view)
 
             new_config.set_value("category", "CustomLayoutWdg")
@@ -3346,9 +3406,9 @@ class CustomLayoutActionCbk(Command):
 
 
 
-    def delete_folder(my):
+    def delete_folder(self):
 
-        folder = my.kwargs.get("folder")
+        folder = self.kwargs.get("folder")
         folder = folder.replace("/", ".")
 
         search = Search("config/widget_config")
@@ -3362,10 +3422,10 @@ class CustomLayoutActionCbk(Command):
 
 
 
-    def copy_view(my):
+    def copy_view(self):
 
-        view = my.kwargs.get("view")
-        new_view = my.kwargs.get("new_view")
+        view = self.kwargs.get("view")
+        new_view = self.kwargs.get("new_view")
         if not new_view:
             new_view = "%s_copy" % view
 

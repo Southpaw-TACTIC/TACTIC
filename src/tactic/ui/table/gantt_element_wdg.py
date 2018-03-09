@@ -34,18 +34,18 @@ MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", 
 
 class GanttElementWdg(BaseTableElementWdg):
 
-    def init(my):
-        my.divider_pos = []
-        my.divider_html = None
+    def init(self):
+        self.divider_pos = []
+        self.divider_html = None
 
-        my.start_date = None
-        my.end_date = None
-        my.has_start_date = True
-        my.hide_bar = False
+        self.start_date = None
+        self.end_date = None
+        self.has_start_date = True
+        self.hide_bar = False
 
-        my.is_preprocessed = False
+        self.is_preprocessed = False
 
-        my.legend_dialog_id = 0
+        self.legend_dialog_id = 0
 
 
     ARGS_KEYS = {
@@ -143,7 +143,7 @@ class GanttElementWdg(BaseTableElementWdg):
     can_async_load = classmethod(can_async_load)
 
 
-    def get_colors(my, sobject, mode):
+    def get_colors(self, sobject, mode):
         # TODO: optimise
         if mode == 'status':
             pipeline_code = sobject.get_value("pipeline_code")
@@ -182,7 +182,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def preprocess(my):
+    def preprocess(self):
 
         # how to specify in the config?
         '''
@@ -207,11 +207,11 @@ class GanttElementWdg(BaseTableElementWdg):
 
         '''
 
-        my.options = my.get_option('options')
-        if my.options:
-            my.property_list = jsonloads(my.options)
+        self.options = self.get_option('options')
+        if self.options:
+            self.property_list = jsonloads(self.options)
         else: 
-            my.property_list = [{
+            self.property_list = [{
                 'start_date_expr':   '@GET(sthpw/task.bid_start_date)',
                 'end_date_expr':     '@GET(sthpw/task.bid_end_date)',
                 'color':            '#888',
@@ -228,51 +228,51 @@ class GanttElementWdg(BaseTableElementWdg):
 
         expr_parser = ExpressionParser()
 
-        my.end_sobj_dates = []
-        my.start_sobj_dates = []
+        self.end_sobj_dates = []
+        self.start_sobj_dates = []
 
         # fill in keys for all sobjects
-        my.range_data = {}
-        for sobject in my.sobjects:
+        self.range_data = {}
+        for sobject in self.sobjects:
             search_key = sobject.get_search_key()
-            my.range_data[search_key] = []
+            self.range_data[search_key] = []
 
         min_date = None
         max_date = None
-        for index, properties in enumerate(my.property_list):
+        for index, properties in enumerate(self.property_list):
 
             sobject_expr = properties.get("sobject_expr")
-            color_mode = my.kwargs.get("color_mode")
+            color_mode = self.kwargs.get("color_mode")
 
             start_date_col = properties.get("start_date_col")
-            my.hide_bar = properties.get("hide_empty_bar") == 'true'
+            self.hide_bar = properties.get("hide_empty_bar") == 'true'
             if start_date_col:
-                my.start_date_expr = '@GET(.%s)' % start_date_col
+                self.start_date_expr = '@GET(.%s)' % start_date_col
             else:
-                my.start_date_expr = properties.get("start_date_expr")
-                if not my.start_date_expr:
-                    my.start_date_expr = '@GET(sthpw/task.bid_start_date)'
+                self.start_date_expr = properties.get("start_date_expr")
+                if not self.start_date_expr:
+                    self.start_date_expr = '@GET(sthpw/task.bid_start_date)'
                     # provide a default so that the color for default task_schedule column works
                     if not sobject_expr:
                         sobject_expr = '@SOBJECT(sthpw/task)'
-                        my.start_date_expr = '@GET(.bid_start_date)'
+                        self.start_date_expr = '@GET(.bid_start_date)'
                 
             end_date_col = properties.get("end_date_col")
             if end_date_col:
-                my.end_date_expr = '@GET(.%s)' % end_date_col
+                self.end_date_expr = '@GET(.%s)' % end_date_col
             else:
-                my.end_date_expr = properties.get("end_date_expr")
-                if not my.end_date_expr:
-                    my.end_date_expr = '@GET(sthpw/task.bid_end_date)'
+                self.end_date_expr = properties.get("end_date_expr")
+                if not self.end_date_expr:
+                    self.end_date_expr = '@GET(sthpw/task.bid_end_date)'
                     # provide a default so that the color for default task_schedule column works
                     if not sobject_expr:
                         sobject_expr = '@SOBJECT(sthpw/task)'
-                        my.end_date_expr = '@GET(.bid_end_date)'
+                        self.end_date_expr = '@GET(.bid_end_date)'
 
             if sobject_expr:
-                # the current parser doesn't support 2 separate calls due to the use of my.related_types. 
+                # the current parser doesn't support 2 separate calls due to the use of self.related_types. 
                 # Just use one single call 
-                gantt_data = expr_parser.eval(sobject_expr, my.sobjects, dictionary=True)
+                gantt_data = expr_parser.eval(sobject_expr, self.sobjects, dictionary=True)
                 #gantt_data = expr_parser.get_flat_cache(filter_leaf=True)   
 
                 
@@ -284,7 +284,7 @@ class GanttElementWdg(BaseTableElementWdg):
             end_sobj_dates = []
             from pyasm.search import SObject
             # go through each row sobject
-            for sobject in my.sobjects:
+            for sobject in self.sobjects:
                 sub_search_keys = []
                 if sobject_expr:
                     search_key = sobject.get_search_key()
@@ -297,8 +297,8 @@ class GanttElementWdg(BaseTableElementWdg):
                             gantt_sobjects = ProcessElementWdg.process_sobjects(gantt_sobjects)
 
 
-                    xstart_values = expr_parser.eval(my.start_date_expr, gantt_sobjects, dictionary=True)
-                    xend_values = expr_parser.eval(my.end_date_expr, gantt_sobjects, dictionary=True)
+                    xstart_values = expr_parser.eval(self.start_date_expr, gantt_sobjects, dictionary=True)
+                    xend_values = expr_parser.eval(self.end_date_expr, gantt_sobjects, dictionary=True)
 
                     start_values = []
                     end_values = []
@@ -312,12 +312,12 @@ class GanttElementWdg(BaseTableElementWdg):
 
                         if color_mode:
                             value = x.get_value(color_mode)
-                            xxcolors = my.get_colors(x, color_mode)
+                            xxcolors = self.get_colors(x, color_mode)
                             colors.append(xxcolors.get(value))
 
                 else:
-                    start_values = expr_parser.eval(my.start_date_expr, sobject, list=True)
-                    end_values = expr_parser.eval(my.end_date_expr, sobject, list=True)
+                    start_values = expr_parser.eval(self.start_date_expr, sobject, list=True)
+                    end_values = expr_parser.eval(self.end_date_expr, sobject, list=True)
 
                     search_key = sobject.get_search_key()
                     sub_search_keys.append(search_key)
@@ -327,7 +327,7 @@ class GanttElementWdg(BaseTableElementWdg):
                     # but not the user-provided type
                     if color_mode and start_date_col:
                         color_value = sobject.get_value(color_mode)
-                        color_dict = my.get_colors(sobject, color_mode)
+                        color_dict = self.get_colors(sobject, color_mode)
                         colors.append(color_dict.get(color_value))
 
 
@@ -361,13 +361,13 @@ class GanttElementWdg(BaseTableElementWdg):
                     if end_value and (not max_date or end_value > max_date):
                         max_date = end_value
 
-                my.range_data.get(search_key).append(range_data)
+                self.range_data.get(search_key).append(range_data)
 
 
 
 
-            my.start_sobj_dates.append( start_sobj_dates )
-            my.end_sobj_dates.append( end_sobj_dates )
+            self.start_sobj_dates.append( start_sobj_dates )
+            self.end_sobj_dates.append( end_sobj_dates )
 
 
 
@@ -384,23 +384,23 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # override
-        start_date_option = my.get_option("range_start_date")
-        end_date_option = my.get_option("range_end_date")
+        start_date_option = self.get_option("range_start_date")
+        end_date_option = self.get_option("range_end_date")
 
 
-        my.start_date = None
-        my.end_date = None
+        self.start_date = None
+        self.end_date = None
 
 
-        my.total_width = 1000
-        my.offset_width = -300 
-        my.visible_width = 800
+        self.total_width = 1000
+        self.offset_width = -300 
+        self.visible_width = 800
 
-        if my.kwargs.get("test"):
-            test_width = my.kwargs.get("test")
-            my.total_width = test_width
-            my.offset_width = 0
-            my.visible_width = test_width
+        if self.kwargs.get("test"):
+            test_width = self.kwargs.get("test")
+            self.total_width = test_width
+            self.offset_width = 0
+            self.visible_width = test_width
 
         if gantt_data:
             gantt_data = jsonloads(gantt_data)
@@ -416,13 +416,13 @@ class GanttElementWdg(BaseTableElementWdg):
         if gantt_data:
 
             #gantt_data = gantt_data.get('__data__')
-            my.total_width = float(gantt_data.get('_width'))
-            my.offset_width = float(gantt_data.get('_offset'))
+            self.total_width = float(gantt_data.get('_width'))
+            self.offset_width = float(gantt_data.get('_offset'))
 
             if gantt_data.get('_range_start_date'):
-                my.start_date = parser.parse( gantt_data.get('_range_start_date') )
+                self.start_date = parser.parse( gantt_data.get('_range_start_date') )
             if gantt_data.get('_range_end_date'):
-                my.end_date = parser.parse( gantt_data.get('_range_end_date') )
+                self.end_date = parser.parse( gantt_data.get('_range_end_date') )
 
         elif start_date_option and end_date_option:
             if start_date_option.startswith("{"):
@@ -430,32 +430,32 @@ class GanttElementWdg(BaseTableElementWdg):
             if end_date_option.startswith("{"):
                 end_date_option = Search.eval(end_date_option)
             try:
-                my.start_date = parser.parse( start_date_option )
-                my.end_date = parser.parse( end_date_option )
+                self.start_date = parser.parse( start_date_option )
+                self.end_date = parser.parse( end_date_option )
 
                 #buffer = 45
                 buffer = 0
 
                 # buffer start date and end date
-                my.start_date = my.start_date - datetime.timedelta(days=buffer)
-                my.end_date = my.end_date + datetime.timedelta(days=buffer)
+                self.start_date = self.start_date - datetime.timedelta(days=buffer)
+                self.end_date = self.end_date + datetime.timedelta(days=buffer)
             except:
                 print "ERROR: could not parse either [%s] or [%s]" % (start_date_option, end_date_option)
 
-        if not my.start_date or not my.end_date:
+        if not self.start_date or not self.end_date:
             # find the min and max
             if min_date:
-                my.start_date = min_date
+                self.start_date = min_date
             if max_date:
-                my.end_date = max_date
+                self.end_date = max_date
 
-            if not my.start_date or my.start_date == 'None':
-                my.start_date = datetime.datetime.now()
-            if not my.end_date or my.end_date == 'None':
-                my.end_date = datetime.datetime.now()
+            if not self.start_date or self.start_date == 'None':
+                self.start_date = datetime.datetime.now()
+            if not self.end_date or self.end_date == 'None':
+                self.end_date = datetime.datetime.now()
 
 
-            diff = my.end_date - my.start_date
+            diff = self.end_date - self.start_date
             days = diff.days
             if days == 0:
                 buffer = 45
@@ -464,54 +464,54 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
             # buffer start date and end date
-            my.start_date = my.start_date - datetime.timedelta(days=buffer)
-            my.end_date = my.end_date + datetime.timedelta(days=buffer)
+            self.start_date = self.start_date - datetime.timedelta(days=buffer)
+            self.end_date = self.end_date + datetime.timedelta(days=buffer)
 
 
 
-        my.total_days = (my.end_date - my.start_date).days + 1
-        my.percent_width = 100 
-        if my.total_days:
-            my.percent_per_day = float(my.percent_width) / float(my.total_days)
+        self.total_days = (self.end_date - self.start_date).days + 1
+        self.percent_width = 100 
+        if self.total_days:
+            self.percent_per_day = float(self.percent_width) / float(self.total_days)
         else:
-            my.percent_per_day = 0
+            self.percent_per_day = 0
 
-        my.is_preprocessed = True
+        self.is_preprocessed = True
 
 
 
         # handle the color
-        my.color_results = []
+        self.color_results = []
         color_parser = ExpressionParser()
-        for index, properties in enumerate(my.property_list):
+        for index, properties in enumerate(self.property_list):
             color_expr = properties.get('color')
-            color_parser.eval(color_expr, my.sobjects)
+            color_parser.eval(color_expr, self.sobjects)
 
             results = color_parser.get_result_by_sobject_dict()
-            my.color_results.append(results)
+            self.color_results.append(results)
 
 
 
 
-    def handle_th(my, th, cell_index=None):
-        th.add_style("width: %s" % my.visible_width)
+    def handle_th(self, th, cell_index=None):
+        th.add_style("width: %s" % self.visible_width)
         th.add_class("spt_table_scale")
         # this is for general classification, we need spt_input_type = gantt still
         th.add_attr('spt_input_type', 'inline')
 
         th.add_behavior( {
             'type': 'load',
-            'width': my.total_width,
-            'offset': my.offset_width,
+            'width': self.total_width,
+            'offset': self.offset_width,
             'cbjs_action': get_onload_js()
         } )
 
 
-    def handle_td(my, td):
+    def handle_td(self, td):
 
         # info sent over to drag callbacks
         info = {}
-        info['percent_per_day'] = my.percent_per_day
+        info['percent_per_day'] = self.percent_per_day
        
         td.add_behavior( {
             "type": 'drag',
@@ -538,7 +538,7 @@ class GanttElementWdg(BaseTableElementWdg):
         td.add_class("spt_input_inline")
 
         
-        if my.kwargs.get("date_mode") == 'hover':
+        if self.kwargs.get("date_mode") == 'hover':
             td.add_behavior( {
                 'type': 'hover',
                 'cbjs_action_over': '''
@@ -561,16 +561,16 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def get_title(my):
-        if not my.is_preprocessed:
-            my.preprocess()
+    def get_title(self):
+        if not self.is_preprocessed:
+            self.preprocess()
 
-        if my.get_option("show_title") == 'false':
+        if self.get_option("show_title") == 'false':
             return DivWdg()
 
         top = DivWdg()
         top.add_class("spt_gantt_top")
-        top.add_attr("spt_percent_per_day", my.percent_per_day)
+        top.add_attr("spt_percent_per_day", self.percent_per_day)
         top.add_style("margin-left: -3px")
         top.add_style("margin-right: -6px")
 
@@ -581,7 +581,7 @@ class GanttElementWdg(BaseTableElementWdg):
         left_div.add_style("float: left")
         left_div.add_behavior( {
             'type': 'click_up',
-            'percent_per_day': my.percent_per_day,
+            'percent_per_day': self.percent_per_day,
             'cbjs_action': '''
             // get the start and end date of the current range
             var top = bvr.src_el.getParent(".spt_gantt_top");
@@ -610,56 +610,56 @@ class GanttElementWdg(BaseTableElementWdg):
         #nav.add(calendar)
 
 
-        top.add(my.get_legend_dialog())
+        top.add(self.get_legend_dialog())
 
 
 
         dates_div = DivWdg()
         dates_div.add_class("spt_table_scale")
-        dates_div.add_style("width: %s" % my.visible_width)
+        dates_div.add_style("width: %s" % self.visible_width)
 
         dates_div.add_style("overflow: hidden")
         top.add(dates_div)
 
         inner_div = DivWdg()
-        inner_div.add_style("width: %s" % my.total_width)
+        inner_div.add_style("width: %s" % self.total_width)
         inner_div.add_class("spt_gantt_scroll")
-        inner_div.add_style("margin-left: %s" % my.offset_width)
+        inner_div.add_style("margin-left: %s" % self.offset_width)
         dates_div.add(inner_div)
 
 
         # find the pixels per day
-        pixel_per_day = my.percent_per_day * my.total_width / 100;
+        pixel_per_day = self.percent_per_day * self.total_width / 100;
 
 
-        year_display = my.kwargs.get("year_display")
+        year_display = self.kwargs.get("year_display")
         if not year_display:
             year_display = 'none'
         if year_display != 'none':
-            inner_div.add( my.get_year_wdg(my.start_date, my.end_date) )
+            inner_div.add( self.get_year_wdg(self.start_date, self.end_date) )
 
 
-        month_wdg = my.get_month_wdg(my.start_date, my.end_date)
+        month_wdg = self.get_month_wdg(self.start_date, self.end_date)
         inner_div.add( month_wdg )
         inner_div.add( "<br clear=all'/>")
 
-        week_display = my.kwargs.get("week_display")
+        week_display = self.kwargs.get("week_display")
         if not week_display:
             week_display = 'none'
         if week_display != 'none':
-            week_wdg = my.get_week_wdg(my.start_date, my.end_date)
+            week_wdg = self.get_week_wdg(self.start_date, self.end_date)
             inner_div.add( week_wdg )
             if pixel_per_day < 1.5:
                 week_wdg.add_style("display", "none")
 
 
-        #wday_wdg = my.get_wday_wdg(my.start_date, my.end_date)
+        #wday_wdg = self.get_wday_wdg(self.start_date, self.end_date)
         #inner_div.add( wday_wdg )
-        #day_wdg = my.get_day_wdg(my.start_date, my.end_date)
+        #day_wdg = self.get_day_wdg(self.start_date, self.end_date)
         #inner_div.add( day_wdg )
 
         # only put in hour if the range is small enough
-        #hour_wdg = my.get_hour_wdg(my.start_date, my.end_date)
+        #hour_wdg = self.get_hour_wdg(self.start_date, self.end_date)
         #inner_div.add( hour_wdg )
         """
         if pixel_per_day < 15:
@@ -690,9 +690,9 @@ class GanttElementWdg(BaseTableElementWdg):
         day_wdg.add_attr("spt_color2", color2)
         day_wdg.add_behavior( {
         'type': 'load',
-        'start_date': my.start_date.strftime("%Y-%m-%d"),
-        'end_date': my.end_date.strftime("%Y-%m-%d"),
-        'percent_per_day': my.percent_per_day,
+        'start_date': self.start_date.strftime("%Y-%m-%d"),
+        'end_date': self.end_date.strftime("%Y-%m-%d"),
+        'percent_per_day': self.percent_per_day,
         'color1': color1,
         'color2': color2,
         'weekend_bgcolor':  weekend_bgcolor,
@@ -712,12 +712,12 @@ class GanttElementWdg(BaseTableElementWdg):
         return top
 
 
-    def get_legend_dialog(my):
+    def get_legend_dialog(self):
 
         # selection for color
         from tactic.ui.container import DialogWdg
         legend_dialog = DialogWdg(z_index=1000, show_pointer=False, display="false")
-        my.legend_dialog_id = legend_dialog.get_unique_id()
+        self.legend_dialog_id = legend_dialog.get_unique_id()
         legend_dialog.add_title("Gantt Legend")
         legend_dialog.add_class("spt_color_top")
         legend_dialog.add_class("SPT_PUW")
@@ -733,7 +733,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def get_year_wdg(my, start_date, end_date):
+    def get_year_wdg(self, start_date, end_date):
 
         dates = list(rrule.rrule(rrule.YEARLY, byyearday=1, dtstart=start_date, until=end_date))
         if not dates or dates[0] != start_date:
@@ -741,10 +741,10 @@ class GanttElementWdg(BaseTableElementWdg):
         if not dates or dates[-1] != end_date:
             dates.append(end_date)
            
-        return my.get_dates_display(dates, "date.year", is_scalable=True, name='year')
+        return self.get_dates_display(dates, "date.year", is_scalable=True, name='year')
 
 
-    def get_month_wdg(my, start_date, end_date):
+    def get_month_wdg(self, start_date, end_date):
 
         dates = list(rrule.rrule(rrule.MONTHLY, bymonthday=1, dtstart=start_date, until=end_date))
 
@@ -753,11 +753,11 @@ class GanttElementWdg(BaseTableElementWdg):
         if not dates or dates[-1] != end_date:
             dates.append(end_date)
 
-        return my.get_dates_display(dates, "MONTHS[date.month-1]", is_scalable=True, name='month')
+        return self.get_dates_display(dates, "MONTHS[date.month-1]", is_scalable=True, name='month')
 
 
 
-    def get_week_wdg(my, start_date, end_date):
+    def get_week_wdg(self, start_date, end_date):
 
         dates = list(rrule.rrule(rrule.WEEKLY, byweekday=0, dtstart=start_date, until=end_date))
         if not dates or dates[0] != start_date:
@@ -765,10 +765,10 @@ class GanttElementWdg(BaseTableElementWdg):
         if not dates or dates[-1] != end_date:
             dates.append(end_date)
            
-        return my.get_dates_display(dates, "date.strftime('Wk.%W')", record_divider_pos=True,name='week', is_scalable=True)
+        return self.get_dates_display(dates, "date.strftime('%d')", record_divider_pos=True,name='week', is_scalable=True)
 
 
-    def get_day_wdg(my, start_date, end_date):
+    def get_day_wdg(self, start_date, end_date):
         dates = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date))
 
         if not dates or dates[0] != start_date:
@@ -776,10 +776,10 @@ class GanttElementWdg(BaseTableElementWdg):
         if not dates or dates[-1] != end_date:
             dates.append(end_date)
 
-        return my.get_dates_display(dates, "date.strftime('%d')",name='day')
+        return self.get_dates_display(dates, "date.strftime('%d')",name='day')
 
 
-    def get_wday_wdg(my, start_date, end_date):
+    def get_wday_wdg(self, start_date, end_date):
 
         dates = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date))
 
@@ -788,10 +788,10 @@ class GanttElementWdg(BaseTableElementWdg):
         if not dates or dates[-1] != end_date:
             dates.append(end_date)
 
-        return my.get_dates_display(dates, "date.strftime('%a')",name='wday')
+        return self.get_dates_display(dates, "date.strftime('%a')",name='wday')
 
 
-    def get_hour_wdg(my, start_date, end_date):
+    def get_hour_wdg(self, start_date, end_date):
 
         dates = list(rrule.rrule(rrule.HOURLY, dtstart=start_date, until=end_date))
         if not dates or dates[0] != start_date:
@@ -799,12 +799,12 @@ class GanttElementWdg(BaseTableElementWdg):
         if not dates or dates[-1] != end_date:
             dates.append(end_date)
 
-        return my.get_dates_display(dates, "date.strftime('%H')",name='hour')
+        return self.get_dates_display(dates, "date.strftime('%H')",name='hour')
 
 
 
 
-    def get_dates_display(my, dates, date_expr, record_divider_pos=False,name=None, is_scalable=False):
+    def get_dates_display(self, dates, date_expr, record_divider_pos=False,name=None, is_scalable=False):
         top = DivWdg()
         if name:
             top.add_class("spt_gantt_%s" % name)
@@ -828,7 +828,7 @@ class GanttElementWdg(BaseTableElementWdg):
         for i, date in enumerate(dates[:-1]):
             date2 = dates[i+1]
             diff = date2 - date
-            width = (diff.days + float(diff.seconds)/3600/24) * my.percent_per_day
+            width = (diff.days + float(diff.seconds)/3600/24) * self.percent_per_day
             if total + width > 100:
                 width = 100 - total
             total += width
@@ -858,19 +858,19 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
             # unscaled pixels
-            pixels = (width/100) * my.total_width
+            pixels = (width/100) * self.total_width
 
             # to fit in the whole visible range, we need find the scale relative
             # to the visible width
             if pixels:
-                scale = my.visible_width / pixels
+                scale = self.visible_width / pixels
             else:
                 scale = 1
 
             # now that we have the scale, we have to push it back based on the
             # current total width
-            click_offset = -(total_width/100*my.total_width) * scale
-            click_width = scale * my.total_width
+            click_offset = -(total_width/100*self.total_width) * scale
+            click_width = scale * self.total_width
 
 
             # find the width and offset to
@@ -894,7 +894,7 @@ class GanttElementWdg(BaseTableElementWdg):
             count += 1
 
         if record_divider_pos:
-            my.divider_pos = divider_widths
+            self.divider_pos = divider_widths
 
         if not count:
             avg_width = 0
@@ -908,16 +908,16 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def calculate_widths(my, date1, date2):
+    def calculate_widths(self, date1, date2):
 
-        diff1 = (date1 - my.start_date)
-        width1 = float(diff1.days) * my.percent_per_day
+        diff1 = (date1 - self.start_date)
+        width1 = float(diff1.days) * self.percent_per_day
         if width1 < 0:
             width1 = 0
         
         one_day = datetime.timedelta(days=1)
-        diff2 = (date2 - my.start_date + one_day )
-        width2 = float(diff2.days) * my.percent_per_day
+        diff2 = (date2 - self.start_date + one_day )
+        width2 = float(diff2.days) * self.percent_per_day
         if width2 < 0:
             width2 = 0
         return width1, width2
@@ -925,7 +925,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def handle_layout_behavior(my, layout):
+    def handle_layout_behavior(self, layout):
         pass
 
         """
@@ -963,11 +963,11 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         # FIXME: not sure why use_id = used here?
-        my.search_key = SearchKey.get_by_sobject(sobject, use_id=True)
+        self.search_key = SearchKey.get_by_sobject(sobject, use_id=True)
 
         top = DivWdg()
         top.add_class("spt_gantt_top")
@@ -981,10 +981,10 @@ class GanttElementWdg(BaseTableElementWdg):
 
         # set the initial values
         data = {
-            '_range_start_date': my.start_date.strftime("%Y-%m-%d"),
-            '_range_end_date': my.end_date.strftime("%Y-%m-%d"),
-            '_offset': my.offset_width,
-            '_width': my.total_width
+            '_range_start_date': self.start_date.strftime("%Y-%m-%d"),
+            '_range_end_date': self.end_date.strftime("%Y-%m-%d"),
+            '_offset': self.offset_width,
+            '_width': self.total_width
         }
         # Need to set form value to false so that this info is not reused
         # on insert when draw FastTable.  This is probably a vestigial
@@ -993,7 +993,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # dummy for triggering the display of Commit button
-        value_wdg = HiddenWdg(my.get_name())
+        value_wdg = HiddenWdg(self.get_name())
         value_wdg.add_class("spt_gantt_value")
         top.add( value_wdg )
 
@@ -1005,12 +1005,12 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         outer_div.add_class("spt_table_scale")
-        outer_div.add_style("width: %s" % my.visible_width)
+        outer_div.add_style("width: %s" % self.visible_width)
         outer_div.add_style("overflow: hidden")
         inner_div = DivWdg()
         inner_div.add_class("spt_gantt_scroll")
-        inner_div.add_style("width: %s" % my.total_width)
-        inner_div.add_style("margin-left: %s" % my.offset_width)
+        inner_div.add_style("width: %s" % self.total_width)
+        inner_div.add_style("margin-left: %s" % self.offset_width)
         inner_div.add_style("position: relative")
         outer_div.add(inner_div)
         inner_div.add_style("overflow: hidden")
@@ -1018,11 +1018,11 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # draw the day widgets
-        day_wdg = my.get_special_day_wdg()
+        day_wdg = self.get_special_day_wdg()
         inner_div.add( day_wdg )
 
 
-        height = my.kwargs.get("bar_height");
+        height = self.kwargs.get("bar_height");
         if not height:
             height = 12
             padding = 3
@@ -1041,20 +1041,20 @@ class GanttElementWdg(BaseTableElementWdg):
         inner_div.add_style("min-height: %spx" % (height+padding*2))
 
         # draw the dividers
-        divider_wdg = my.get_divider_wdg()
+        divider_wdg = self.get_divider_wdg()
         inner_div.add( divider_wdg )
 
 
 
-        my.overlap = my.kwargs.get("overlap")
-        if my.overlap in [True, "true"]:
-            my.overlap = True
+        self.overlap = self.kwargs.get("overlap")
+        if self.overlap in [True, "true"]:
+            self.overlap = True
         else:
-            my.overlap = False
+            self.overlap = False
 
 
-        for index, properties in enumerate(my.property_list):
-            color_results = my.color_results[index]
+        for index, properties in enumerate(self.property_list):
+            color_results = self.color_results[index]
             color = color_results.get(sobject.get_search_key())
             if not color:
                 color = properties.get("color")
@@ -1072,16 +1072,16 @@ class GanttElementWdg(BaseTableElementWdg):
                 editable = True
             else:
                 editable = False
-            if my.overlap:
+            if self.overlap:
                 editable = False
 
             default = properties.get('default')
 
 
 
-            sobject = my.get_current_sobject()
+            sobject = self.get_current_sobject()
             search_key = SearchKey.get_by_sobject(sobject)
-            sobject_data = my.range_data.get(search_key)
+            sobject_data = self.range_data.get(search_key)
             if sobject_data:
                 sobject_data = sobject_data[index]
             if not sobject_data:
@@ -1106,7 +1106,7 @@ class GanttElementWdg(BaseTableElementWdg):
                     key = "%s_%s" %(auto_key, bar_idx)
                  
 
-                bar = my.draw_bar(index, key, cur_color, editable, default=default, height=height, range_data=range_data, day_data=day_data)
+                bar = self.draw_bar(index, key, cur_color, editable, default=default, height=height, range_data=range_data, day_data=day_data)
 
                 bar.add_style("z-index: 2")
                 #bar.add_style("position: absolute")
@@ -1114,12 +1114,12 @@ class GanttElementWdg(BaseTableElementWdg):
                 bar.add_style("padding-bottom: %spx" % (padding-2))
                 #bar.add_style("border: solid 1px red")
 
-                if not my.has_start_date and my.hide_bar:
+                if not self.has_start_date and self.hide_bar:
                     pass
                 else:
                     inner_div.add(bar)
 
-                if not my.overlap:
+                if not self.overlap:
                     inner_div.add("<br clear='all'>")
                     bar.add_style("padding-top: 13px !important")
                     bar.add_style("position: relative")
@@ -1128,19 +1128,19 @@ class GanttElementWdg(BaseTableElementWdg):
                     inner_div.add("<br class='spt_overlap' style='display: none' clear='all'>")
 
 
-        #if not my.overlap:
+        #if not self.overlap:
         #    inner_div.add("<br clear='all'/>")
         return top
 
 
-    def draw_bar(my, count, key, color='grey', editable=True, default='now', height=5, range_data=None, day_data={}):
+    def draw_bar(self, count, key, color='grey', editable=True, default='now', height=5, range_data=None, day_data={}):
         '''draw the Gantt bar with db col name and color'''
 
         if not default:
             default = 'now'
 
         show_dates = 'true'
-        my.has_start_date = True
+        self.has_start_date = True
 
         widget = DivWdg()
         widget.add_style("width: 100%")
@@ -1157,11 +1157,11 @@ class GanttElementWdg(BaseTableElementWdg):
         widget.add(hidden)
 
 
-        version = my.parent_wdg.get_layout_version()
+        version = self.parent_wdg.get_layout_version()
         if version == "2":
-            index = my.get_current_index()
+            index = self.get_current_index()
         else:
-            index = my.get_current_index() - 2
+            index = self.get_current_index() - 2
 
         #range_data = None
         search_key = None
@@ -1171,12 +1171,12 @@ class GanttElementWdg(BaseTableElementWdg):
 
             search_key = range_data.get('search_key')
 
-        elif index < 0 or index >= len(my.start_sobj_dates[count]):
+        elif index < 0 or index >= len(self.start_sobj_dates[count]):
             start_sobj_date = None
             end_sobj_date = None
         else:
-            start_sobj_date = my.start_sobj_dates[count][index]
-            end_sobj_date = my.end_sobj_dates[count][index]
+            start_sobj_date = self.start_sobj_dates[count][index]
+            end_sobj_date = self.end_sobj_dates[count][index]
 
 
         # if there is none default, then get out
@@ -1186,7 +1186,7 @@ class GanttElementWdg(BaseTableElementWdg):
         if not start_sobj_date:
             if default == 'now':
                 start_sobj_date = datetime.datetime.now()
-                my.has_start_date = False
+                self.has_start_date = False
             
         if not end_sobj_date:
             if default == 'now':
@@ -1223,12 +1223,12 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-        #if end_sobj_date < my.start_date:
+        #if end_sobj_date < self.start_date:
         #    return widget
         
         # draw up all of the ranges
         info = {}
-        width1, width2 = my.calculate_widths(start_sobj_date,end_sobj_date)
+        width1, width2 = self.calculate_widths(start_sobj_date,end_sobj_date)
         
         info['width'] = [width1, width2]
 
@@ -1242,16 +1242,16 @@ class GanttElementWdg(BaseTableElementWdg):
 
         info['start_date'] = start_date_str
         info['end_date'] = end_date_str
-        info['percent_per_day'] = my.percent_per_day
-        info['max_width'] = my.total_width
-        info['range_start_date'] = str(my.start_date)
-        info['range_end_date'] = str(my.end_date)
-        #info['search_key'] = my.search_key
+        info['percent_per_day'] = self.percent_per_day
+        info['max_width'] = self.total_width
+        info['range_start_date'] = str(self.start_date)
+        info['range_end_date'] = str(self.end_date)
+        #info['search_key'] = self.search_key
         # under most cases, the bar's search key is available and used
         if search_key:
             info['search_key'] = search_key
         else:
-            info['search_key'] = my.search_key
+            info['search_key'] = self.search_key
         start_width, end_width = info.get('width')
 
 
@@ -1266,7 +1266,7 @@ class GanttElementWdg(BaseTableElementWdg):
         widget.add(spacer)
 
         start_div = DivWdg()
-        if my.kwargs.get("date_mode") == "none" or not my.overlap:
+        if self.kwargs.get("date_mode") == "none" or not self.overlap:
             widget.add(start_div)
         start_div.add_style("float: left")
         start_div.add_style("margin-left: -42px")
@@ -1283,7 +1283,7 @@ class GanttElementWdg(BaseTableElementWdg):
         start_div.add_style("opacity: 0.4")
 
         start_div.add_class("spt_start_date")
-        if my.kwargs.get("date_mode") == 'hover':
+        if self.kwargs.get("date_mode") == 'hover':
             start_div.add_style("display: none")
 
     
@@ -1335,13 +1335,13 @@ class GanttElementWdg(BaseTableElementWdg):
         diff = end_sobj_date - start_sobj_date
 
 
-        my.days = diff.days + 1
+        self.days = diff.days + 1
 
-        duration = my.get_duration_wdg( duration_width, color, height, corners=corners, day_data=day_data)
+        duration = self.get_duration_wdg( duration_width, color, height, corners=corners, day_data=day_data)
         widget.add(duration)
-        #duration.add("%s days" % my.days)
+        #duration.add("%s days" % self.days)
 
-        duration.set_attr("title", "%s - %s (%s days)" % (start_display_date, end_display_date, my.days) )
+        duration.set_attr("title", "%s - %s (%s days)" % (start_display_date, end_display_date, self.days) )
 
 
         if editable:
@@ -1381,7 +1381,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         end_div = DivWdg()
-        if my.kwargs.get("date_mode") == "none" or not my.overlap:
+        if self.kwargs.get("date_mode") == "none" or not self.overlap:
             widget.add(end_div)
 
         end_div.add_style('float: left')
@@ -1401,7 +1401,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         end_div.add_class("spt_end_date unselectable")
-        if my.kwargs.get("date_mode") == 'hover':
+        if self.kwargs.get("date_mode") == 'hover':
                 end_div.add_style("display: none")
 
         if editable:
@@ -1443,7 +1443,7 @@ class GanttElementWdg(BaseTableElementWdg):
         #duration_width = 3
         #colors = ['#F00', '#0F0', '#00f']
         #for i in range(0,3):
-        #    widget.add( my.get_duration_wdg( duration_width+10, colors[i], height, top_margin=i*2, opacity=0.5, position='absolute', left=width1+i*3-10) )
+        #    widget.add( self.get_duration_wdg( duration_width+10, colors[i], height, top_margin=i*2, opacity=0.5, position='absolute', left=width1+i*3-10) )
 
 
         # TEST key up !!!
@@ -1493,12 +1493,12 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def get_duration_wdg(my, duration_width, color, height, opacity=0.8, top_margin=0, position='relative', left=None, corners=['TL','TR','BL','BR'], day_data={}):
+    def get_duration_wdg(self, duration_width, color, height, opacity=0.8, top_margin=0, position='relative', left=None, corners=['TL','TR','BL','BR'], day_data={}):
 
 
         duration = DivWdg()
 
-        duration.add_attr("spt_days", my.days)
+        duration.add_attr("spt_days", self.days)
         duration.add_class("SPT_DTS")
 
         duration.add_style("position: %s" % position)
@@ -1528,7 +1528,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
         duration.add_behavior( {
             'type': 'load',
-            'days': my.days,
+            'days': self.days,
             'day_data': day_data,
             'cbjs_action': '''
             colors = bvr.day_data['colors'];
@@ -1541,7 +1541,7 @@ class GanttElementWdg(BaseTableElementWdg):
         """
         duration.add_relay_behavior( {
             'type': 'dblclick',
-            'legend_dialog_id': my.legend_dialog_id,
+            'legend_dialog_id': self.legend_dialog_id,
             'bvr_match_class': 'spt_duration_unit',
             'cbjs_action': '''
             alert('doubleclick');
@@ -1552,7 +1552,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject:
             pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
         else:
@@ -1564,7 +1564,7 @@ class GanttElementWdg(BaseTableElementWdg):
         duration.add_relay_behavior( {
             'type': 'mouseup',
             'modkeys': 'SHIFT',
-            'legend_dialog_id': my.legend_dialog_id,
+            'legend_dialog_id': self.legend_dialog_id,
             'pipeline_code': pipeline_code,
             'bvr_match_class': 'spt_duration_unit',
             'cbjs_action': '''
@@ -1614,21 +1614,21 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def get_special_day_wdg(my):
+    def get_special_day_wdg(self):
         # add in the divider
         day_wdg = DivWdg()
 
         # add todays divider
-        #draw_div = my.get_day_bar_wdg(datetime.datetime.today(), "blue", opacity=1.0)
+        #draw_div = self.get_day_bar_wdg(datetime.datetime.today(), "blue", opacity=1.0)
         #day_wdg.add(draw_div)
 
 
 
         # milestones
-        show_milestones = my.kwargs.get("show_milestones")
+        show_milestones = self.kwargs.get("show_milestones")
         if show_milestones == "task":
             search = Search("sthpw/milestone")
-            sobject = my.get_current_sobject()
+            sobject = self.get_current_sobject()
             milestone_code = sobject.get_value("milestone_code")
             search.add_filter("code", milestone_code)
             milestones = search.get_sobjects()
@@ -1648,7 +1648,7 @@ class GanttElementWdg(BaseTableElementWdg):
                 color = "#F00"
 
             if due_date:
-                draw_div = my.get_day_bar_wdg(due_date, color)
+                draw_div = self.get_day_bar_wdg(due_date, color)
                 day_wdg.add(draw_div)
                 draw_div.add_attr("title", "Milestone: %s [%s]" % (due_date, description))
 
@@ -1656,9 +1656,9 @@ class GanttElementWdg(BaseTableElementWdg):
         return day_wdg
 
 
-    def get_divider_wdg(my):
-        if my.divider_html:
-            return my.divider_html
+    def get_divider_wdg(self):
+        if self.divider_html:
+            return self.divider_html
 
         # add in the divider
         divider_wdg = DivWdg()
@@ -1669,14 +1669,14 @@ class GanttElementWdg(BaseTableElementWdg):
         divider_wdg.add_style("position: absolute")
 
         mul = 1
-        if len(my.divider_pos) > 50:
+        if len(self.divider_pos) > 50:
             mul = 3
-        if len(my.divider_pos) > 100:
+        if len(self.divider_pos) > 100:
             return
 
 
         total_width = 0
-        for i, divider_width in enumerate(my.divider_pos):
+        for i, divider_width in enumerate(self.divider_pos):
             total_width += divider_width
             if not (i % mul == 0):
                 continue
@@ -1689,7 +1689,7 @@ class GanttElementWdg(BaseTableElementWdg):
             draw_div.add_style("border-width: 0px 0px 0px 1px")
             draw_div.add_style("border-style: dashed")
             draw_div.add_style("height: 100%")
-            #draw_div.add_style("width: %s%%" % my.percent_per_day)
+            #draw_div.add_style("width: %s%%" % self.percent_per_day)
             draw_div.add_style("margin-left: %s%%" % total_width)
 
 
@@ -1698,7 +1698,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # draw today's vertical bar
-        draw_div = my.get_day_bar_wdg(datetime.datetime.today(), "blue", opacity=0.5)
+        draw_div = self.get_day_bar_wdg(datetime.datetime.today(), "blue", opacity=0.5)
         divider_wdg.add(draw_div)
 
 
@@ -1707,7 +1707,7 @@ class GanttElementWdg(BaseTableElementWdg):
         show_milestone = False
         if show_milestone:
             search = Search("sthpw/milestone")
-            sobject = my.get_current_sobject()
+            sobject = self.get_current_sobject()
             milestone_code = sobject.get_value("milestone_code")
             search.add_filter("code", milestone_code)
             milestone = search.get_sobject()
@@ -1715,39 +1715,39 @@ class GanttElementWdg(BaseTableElementWdg):
                 due_date = milestone.get_value("due_date")
                 if due_date:
                     color = "#F00"
-                    draw_div = my.get_day_bar_wdg(due_date, color)
+                    draw_div = self.get_day_bar_wdg(due_date, color)
                     divider_wdg.add(draw_div)
 
 
 
-        week_start = my.get_option('week_start') or "6"
+        week_start = self.get_option('week_start') or "6"
         week_start = int(week_start) - 1
         if week_start == -1:
             week_start = 6
 
-        dates = list(rrule.rrule(rrule.WEEKLY, byweekday=week_start, dtstart=my.start_date, until=my.end_date))
+        dates = list(rrule.rrule(rrule.WEEKLY, byweekday=week_start, dtstart=self.start_date, until=self.end_date))
 
         if len(dates) > 75:
-            dates = list(rrule.rrule(rrule.MONTHLY, bymonthday=1, dtstart=my.start_date, until=my.end_date))
+            dates = list(rrule.rrule(rrule.MONTHLY, bymonthday=1, dtstart=self.start_date, until=self.end_date))
         if len(dates) > 75:
-            dates = list(rrule.rrule(rrule.YEARLY, byyearday=1, dtstart=my.start_date, until=my.end_date))
+            dates = list(rrule.rrule(rrule.YEARLY, byyearday=1, dtstart=self.start_date, until=self.end_date))
 
         for date in dates:
             color = '#999'
             # draw weekend bar
-            draw_div = my.get_day_bar_wdg(date, color, opacity=0.35, days=2)
+            draw_div = self.get_day_bar_wdg(date, color, opacity=0.35, days=2)
             divider_wdg.add(draw_div)
 
 
 
 
-        my.divider_html = divider_wdg.get_buffer_display()
-        return my.divider_html
+        self.divider_html = divider_wdg.get_buffer_display()
+        return self.divider_html
 
         #return divider_wdg
 
 
-    def get_day_bar_wdg(my, date, color, opacity=0.5, days=1):
+    def get_day_bar_wdg(self, date, color, opacity=0.5, days=1):
         # this is required to fix the 1 day off issue
         one_day = datetime.timedelta(days=1)
         
@@ -1755,13 +1755,13 @@ class GanttElementWdg(BaseTableElementWdg):
             date = parser.parse(date)
 
         date = date - one_day
-        tmp, width = my.calculate_widths(my.start_date, date)
+        tmp, width = self.calculate_widths(self.start_date, date)
         
         # draw a div with the border
         draw_div = DivWdg()
         draw_div.add_style("float: left")
         draw_div.add_style("position: absolute")
-        draw_div.add_style("width: %s%%" % (my.percent_per_day * days))
+        draw_div.add_style("width: %s%%" % (self.percent_per_day * days))
         draw_div.add_style("height: 100%")
         draw_div.add_style("background: %s" % color)
         total_width = width
@@ -1776,7 +1776,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
 
-    def get_group_bottom_wdg(my, sobjects):
+    def get_group_bottom_wdg(self, sobjects):
         return
 
         # figure out the overlaps
@@ -1794,10 +1794,10 @@ class GanttElementWdg(BaseTableElementWdg):
 
         for i in ['12', '24', '36', '48', '60']:
             color = "#900"
-            duration = my.get_duration_wdg( duration_width, color, height, opacity=0.8, top_margin=0, position='relative', left=i)
+            duration = self.get_duration_wdg( duration_width, color, height, opacity=0.8, top_margin=0, position='relative', left=i)
             div.add(duration)
 
-        #div.add( my.get_divider_wdg() )
+        #div.add( self.get_divider_wdg() )
 
         return div
 
@@ -1816,16 +1816,16 @@ class GanttCbk(DatabaseAction):
         }]
         <options>
         '''
-    def get_title(my):
+    def get_title(self):
         return "Dates Changed"
 
-    def set_sobject(my, sobject):
-        my.sobject = sobject
+    def set_sobject(self, sobject):
+        self.sobject = sobject
 
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
-        if not my.sobject:
+        if not self.sobject:
             return
 
         gantt_data = web.get_form_value("gantt_data")
@@ -1842,16 +1842,16 @@ class GanttCbk(DatabaseAction):
 
 
         # get the options
-        options = my.get_option("options")
+        options = self.get_option("options")
         if options:
             options_list = jsonloads(options)
             expression = options_list[0].get("sobjects")
         else:
             # get the tasks
-            options_list = [my.options]
+            options_list = [self.options]
 
 
-        #tasks = Search.eval(expression, [my.sobject])
+        #tasks = Search.eval(expression, [self.sobject])
 
         if not web_data:
             gantt_data = jsonloads(gantt_data)
@@ -1886,7 +1886,7 @@ class GanttCbk(DatabaseAction):
             # cascade would apply timedelta to each task
             mode = options.get("mode")
             # get the tasks
-            tasks = Search.eval(expression, [my.sobject])
+            tasks = Search.eval(expression, [self.sobject])
             task_dict = {}
             for task in tasks:
                 task_dict[task.get_search_key()] = task
@@ -1919,7 +1919,8 @@ class GanttCbk(DatabaseAction):
             end_date = parser.parse(end_date)
             orig_start_date = parser.parse(orig_start_date)
             orig_end_date = parser.parse(orig_end_date)
-           
+
+
             # cascade tries to shift all related tasks by the same delta range,
             # using start delta if available, or end delta as second choice
             if mode == 'cascade':
@@ -1968,11 +1969,11 @@ class GanttCbk(DatabaseAction):
 
 class GanttLegendWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
 
         div = DivWdg()
-        my.set_as_panel(div)
+        self.set_as_panel(div)
 
         div.add_color("background", "background")
         div.add_style("padding: 0px 20px 20px 20px")
@@ -2085,7 +2086,7 @@ class GanttLegendWdg(BaseRefreshWdg):
         """
 
 
-        cur_pipeline_code = my.kwargs.get("pipeline_code")
+        cur_pipeline_code = self.kwargs.get("pipeline_code")
         if not cur_pipeline_code:
             cur_pipeline_code = 'task'
 
@@ -2152,17 +2153,17 @@ class GanttLegendWdg(BaseRefreshWdg):
             list_wdg = DynamicListWdg()
             pipeline_div.add(list_wdg)
 
-            list_wdg.add_template(my.get_process_wdg() )
+            list_wdg.add_template(self.get_process_wdg() )
 
             for process_sobj in processes:
-                list_wdg.add_item( my.get_process_wdg( process_sobj) )
+                list_wdg.add_item( self.get_process_wdg( process_sobj) )
 
 
         return div
 
 
 
-    def get_process_wdg(my, process_sobj=None):
+    def get_process_wdg(self, process_sobj=None):
         div = DivWdg()
 
         if process_sobj:
@@ -2208,16 +2209,16 @@ class GanttLegendWdg(BaseRefreshWdg):
 
 class GanttLegendCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        pipeline_code = my.kwargs.get("pipeline")[0]
+        pipeline_code = self.kwargs.get("pipeline")[0]
         pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
 
         #print pipeline.get_process_names()
 
 
 
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
 
 
 

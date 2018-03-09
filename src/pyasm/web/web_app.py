@@ -30,11 +30,11 @@ class WebAppException(Exception):
 
 class WebApp(Base):
     """Defines a pipeline for displaying a web application"""
-    def __init__(my):
+    def __init__(self):
         pass
 
 
-    def get_display(my, widget):
+    def get_display(self, widget):
         """run through the full web app pipeline"""
 
         if widget == None:
@@ -70,7 +70,6 @@ class WebApp(Base):
             duration = float(int(duration * 1000)) / 1000
             access_log.set_value("duration", str(duration) )
             access_log.commit()
-
 
 
 

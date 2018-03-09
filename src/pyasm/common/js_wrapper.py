@@ -51,7 +51,7 @@ class MyConsole(PyV8.JSClass):
 
 class ApiDelegator(PyV8.JSClass):
 
-    def execute(my, func_name, args=[], kwargs={}):
+    def execute(self, func_name, args=[], kwargs={}):
 
         server = TacticServerStub.get()
 
@@ -82,11 +82,11 @@ class ApiDelegator(PyV8.JSClass):
 
 class JSFile(object):
 
-    def copy(my, src, dst):
+    def copy(self, src, dst):
         print "src: ", src
         print "dst: ", dst
 
-    def move(my, src, dst):
+    def move(self, src, dst):
         pass
 
 
@@ -104,12 +104,13 @@ class GlobalContext(PyV8.JSClass):
 
 class JsWrapper(object):
 
-    def __init__(my):
-        with PyV8.JSLocker():
-            my.ctx = PyV8.JSContext(GlobalContext())
-            my.ctx.enter()
-            my.init()
-            my.ctx.leave()
+    def __init__(self):
+        if HAS_PYV8:
+            with PyV8.JSLocker():
+                self.ctx = PyV8.JSContext(GlobalContext())
+                self.ctx.enter()
+                self.init()
+                self.ctx.leave()
 
 
 
@@ -124,23 +125,26 @@ class JsWrapper(object):
 
 
     def set_value(name, value):
-        my.ctx.locals[name] = value
+        self.ctx.locals[name] = value
 
 
-    def execute(my, js, kwargs={}):
-        with PyV8.JSLocker():
-            my.ctx.enter()
+    def execute(self, js, kwargs={}):
+        if HAS_PYV8:
+            with PyV8.JSLocker():
+                self.ctx.enter()
+                try:
 
-            for name, value in kwargs.items():
-                my.ctx.locals[name] = value
+                    for name, value in kwargs.items():
+                        self.ctx.locals[name] = value
 
-            data = my.ctx.eval(js)
-            my.ctx.leave()
-        return data
+                    data = self.ctx.eval(js)
+                finally:
+                    self.ctx.leave()
+            return data
 
 
 
-    def execute_func(my, js, kwargs={}):
+    def execute_func(self, js, kwargs={}):
 
         js = '''
         var func = function() {
@@ -149,13 +153,14 @@ class JsWrapper(object):
         var ret_val = func();
         ret_val = JSON.stringify(ret_val);
         ''' % js
-        ret_val = my.execute(js, kwargs)
+        ret_val = self.execute(js, kwargs)
+        ret_val = jsonloads(ret_val)
 
         return ret_val
 
 
 
-    def init(my):
+    def init(self):
 
         install_dir = Environment.get_install_dir()
 
@@ -170,7 +175,7 @@ class JsWrapper(object):
             throw(error);
         }
         '''
-        my.ctx.eval(js)
+        self.ctx.eval(js)
        
         sources = [
                 "environment.js",
@@ -180,7 +185,7 @@ class JsWrapper(object):
             #path = "tactic/%s" % source
             path = "%s/src/context/spt_js/%s" % (install_dir, source)
             js = open(path).read()
-            my.ctx.eval(js)
+            self.ctx.eval(js)
 
         js = '''
 spt._delegate = function(func_name, args, kwargs) {
@@ -206,7 +211,7 @@ spt._delegate = function(func_name, args, kwargs) {
 
 var server = TacticServerStub.get();
         '''
-        my.ctx.eval(js)
+        self.ctx.eval(js)
 
 
 

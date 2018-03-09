@@ -51,12 +51,12 @@ class DirListWdg(BaseRefreshWdg):
 
  
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
-    def get_depth(my):
-        depth = my.kwargs.get("depth")
+    def get_depth(self):
+        depth = self.kwargs.get("depth")
         if depth == None:
             depth = -1
         elif isinstance(depth, basestring):
@@ -65,98 +65,98 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def get_relative_paths(my, base_dir):
+    def get_relative_paths(self, base_dir):
 
         # put a maximum for now
-        depth = my.kwargs.get("depth")
+        depth = self.kwargs.get("depth")
         if depth == None:
             depth = -1
         elif isinstance(depth, basestring):
             depth = int(depth)
 
 
-        location = my.kwargs.get("location")
-        my.paths = my.kwargs.get("paths")
+        location = self.kwargs.get("location")
+        self.paths = self.kwargs.get("paths")
 
         # a little hacky
-        if isinstance(my.paths, basestring):
-            my.paths = my.paths.replace("'", '"');
-            my.paths = jsonloads(my.paths)
-            return my.paths
+        if isinstance(self.paths, basestring):
+            self.paths = self.paths.replace("'", '"');
+            self.paths = jsonloads(self.paths)
+            return self.paths
 
-        my.directory = None
+        self.directory = None
         from pyasm.common.directory import Directory
-        if my.paths == []:
+        if self.paths == []:
             pass
-        elif my.paths is None and location == 'server':
-            my.directory = Directory(base_dir=base_dir, depth=depth)
-            my.paths = my.directory.get_all_paths()
-            #my.paths = []
+        elif self.paths is None and location == 'server':
+            self.directory = Directory(base_dir=base_dir, depth=depth)
+            self.paths = self.directory.get_all_paths()
+            #self.paths = []
         elif location == 'scm':
-            my.directory = Directory(paths=my.paths, base_dir=base_dir)
+            self.directory = Directory(paths=self.paths, base_dir=base_dir)
         else:
-            my.directory = Directory(paths=my.paths, base_dir=base_dir)
+            self.directory = Directory(paths=self.paths, base_dir=base_dir)
 
-        if my.directory:
-            my.paths = my.directory.get_all_paths()
+        if self.directory:
+            self.paths = self.directory.get_all_paths()
 
-        if not my.paths:
-            my.paths = []
+        if not self.paths:
+            self.paths = []
 
         # switching "\" to "/"
-        my.paths = [path.replace("\\","/") for path in my.paths]
-        my.paths.sort()
+        self.paths = [path.replace("\\","/") for path in self.paths]
+        self.paths.sort()
 
-        return my.paths
-
-
-
-    def init(my):
-
-        my.data = {}
-
-        my.level = my.kwargs.get("level")
-        if not my.level:
-            my.level = 0
+        return self.paths
 
 
-        my.base_dir = my.kwargs.get("base_dir")
+
+    def init(self):
+
+        self.data = {}
+
+        self.level = self.kwargs.get("level")
+        if not self.level:
+            self.level = 0
+
+
+        self.base_dir = self.kwargs.get("base_dir")
 
         # root directory is starts at the first base_dir
-        my.root_dir = my.kwargs.get("root_dir")
-        if not my.root_dir:
-            my.root_dir = my.base_dir
+        self.root_dir = self.kwargs.get("root_dir")
+        if not self.root_dir:
+            self.root_dir = self.base_dir
 
 
 
-        my.paths = my.kwargs.get("paths")
-        if not my.paths:
-            my.paths = []
+        self.paths = self.kwargs.get("paths")
+        if not self.paths:
+            self.paths = []
 
 
-        my.handler_kwargs = my.kwargs.get('handler_kwargs')
-        my.preselected = {}
-        my.use_applet = True
-        my.preprocess()
+        self.handler_kwargs = self.kwargs.get('handler_kwargs')
+        self.preselected = {}
+        self.use_applet = True
+        self.preprocess()
 
 
 
 
-    def preprocess(my):
+    def preprocess(self):
         # provide the opportunity to preprocess information
         pass
 
 
-    def get_paths(my):
-        raise Exception("What runs this??")
-        return my.paths
+    def get_paths(self):
+        #raise Exception("What runs this??")
+        return self.paths
 
 
-    def get_num_paths(my):
-        return len(my.paths)
+    def get_num_paths(self):
+        return len(self.paths)
 
 
-    def get_selection_wdg(my, bg_color, hilight_color):
+    def get_selection_wdg(self, bg_color, hilight_color):
         '''get the Select All checkbox menu widget'''
         select_all_wdg = DivWdg()
         select_all_wdg.add("Select All ")
@@ -301,7 +301,7 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def get_no_paths_wdg(my):
+    def get_no_paths_wdg(self):
         no_files_wdg = DivWdg()
         no_files_wdg.add("&nbsp;"*5)
         no_files_wdg.add("<i>-- No files found --</i>")
@@ -324,16 +324,16 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_dir_list_top")
         top.add_class("SPT_DTS")
 
 
-        my.add_load_behavior()
-        my.add_top_behaviors(top)
+        self.add_load_behavior()
+        self.add_top_behaviors(top)
 
 
         # FIXME: these break selection in Check-in widget
@@ -373,17 +373,17 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
 
-        location = my.kwargs.get("location")
+        location = self.kwargs.get("location")
         if not location:
             location = 'server'
 
-        show_selection = my.kwargs.get("show_selection")
+        show_selection = self.kwargs.get("show_selection")
         if show_selection == None:
             show_selection = False
 
-        show_base_dir = my.kwargs.get("show_base_dir")
+        show_base_dir = self.kwargs.get("show_base_dir")
         if not base_dir and show_base_dir:
             top.add("No folder specified")
             return top
@@ -409,18 +409,18 @@ class DirListWdg(BaseRefreshWdg):
             dir_title.add_style("margin-bottom: 8px")
             dir_title.add_attr("spt_path", base_dir)
 
-            my.add_base_dir_behaviors(title_div, base_dir)
+            self.add_base_dir_behaviors(title_div, base_dir)
 
             top.add(dir_title)
 
-            background = my.kwargs.get("background")
+            background = self.kwargs.get("background")
             if not background:
                 background = "background"
             bg_color = dir_title.get_color(background)
             hilight_color =  dir_title.get_color(background, -20)
 
             if show_selection:
-                select_wdg = my.get_selection_wdg(bg_color, hilight_color)
+                select_wdg = self.get_selection_wdg(bg_color, hilight_color)
                 select_div = DivWdg(select_wdg)
                 select_div.add_style('float: right')
 
@@ -432,14 +432,14 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-        depth = my.kwargs.get("depth")
+        depth = self.kwargs.get("depth")
         if depth == None:
             depth = -1
-        open_depth = my.kwargs.get("open_depth")
+        open_depth = self.kwargs.get("open_depth")
         if open_depth == None:
             open_depth = 0
 
-        dynamic = my.kwargs.get("dynamic")
+        dynamic = self.kwargs.get("dynamic")
         if dynamic in ["true", True]:
             dynamic = True
         else:
@@ -447,51 +447,47 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-        handler_class = Common.get_full_class_name(my)
+        handler_class = Common.get_full_class_name(self)
 
 
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
         if not search_keys:
             search_keys = []
         top.add_attr("spt_search_keys", "|".join(search_keys) )
 
-        search_types = my.kwargs.get("search_types")
+        search_types = self.kwargs.get("search_types")
         if not search_types:
             search_types = []
         top.add_attr("spt_search_types", "|".join(search_types) )
 
 
-
         # This is the package that gets passed around
         core_handler_kwargs = {
-            'base_dir': my.base_dir,
-            'root_dir': my.root_dir,
-
-            'search_types': my.kwargs.get("search_types"),
-            'search_keys': my.kwargs.get("search_keys"),
+            'base_dir': self.base_dir,
+            'root_dir': self.root_dir,
+            'search_types': self.kwargs.get("search_types"),
+            'search_keys': self.kwargs.get("search_keys"),
         }
-        if my.handler_kwargs:
-            core_handler_kwargs.update(my.handler_kwargs)
-
-
+        if self.handler_kwargs:
+            core_handler_kwargs.update(self.handler_kwargs)
 
         if dynamic:
             dir_list = DirListPathHandler(
                 location=location,
                 level=0,
-                base_dir=my.base_dir,
-                root_dir=my.root_dir,
+                base_dir=self.base_dir,
+                root_dir=self.root_dir,
                 handler_class=handler_class,
                 handler_kwargs=core_handler_kwargs,
-                depth=0,
+                depth=depth,
                 all_open=False,
                 # Open depth is not really supported on dynamic mode yet
                 #open_depth=open_depth,
-                dynamic=True,
+                dynamic=dynamic,
             )
             top.add(dir_list)
         else:
-            all_open = my.kwargs.get("all_open")
+            all_open = self.kwargs.get("all_open")
             if all_open in [True, 'true']:
                 all_open = True
             else:
@@ -500,13 +496,15 @@ class DirListWdg(BaseRefreshWdg):
             dir_list = DirListPathHandler(
                 location=location,
                 level=0,
-                base_dir=my.base_dir,
-                root_dir=my.root_dir,
-                handler=my,
+                base_dir=self.base_dir,
+                root_dir=self.root_dir,
+                handler_kwargs=core_handler_kwargs,
+                handler=self,
+                handler_class=handler_class,
                 depth=depth,
                 all_open=all_open,
                 open_depth=open_depth,
-                paths=my.paths,
+                paths=self.paths,
                 dynamic=False,
             )
             top.add(dir_list)
@@ -518,13 +516,13 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def add_load_behavior(my):
+    def add_load_behavior(self):
         pass
 
 
 
 
-    def _get_dir_item(my, dir, item, is_open=False):
+    def _get_dir_item(self, dir, item, is_open=False):
 
         div = DivWdg()
         div.add_class("hand")
@@ -540,21 +538,37 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_basename", item)
 
         path = "%s/%s" % (dir, item)
+ 
+        # Dynamic loading of swap content
+        dynamic = self.kwargs.get("dynamic")
+        if dynamic in ["true", "True", True]:
+            dynamic = True
+        else:
+            dynamic = False
+ 
+        if dynamic:
+            div.add_class("spt_dynamic")
+        
+        if is_open:
+            div.add_class("spt_open")
+
+        # Swap display will be set off when opened
+        if dynamic:
+            swap_open = False
+        else:
+            swap_open = is_open
 
         from pyasm.widget import SwapDisplayWdg
-        swap = SwapDisplayWdg.get_triangle_wdg(is_open=is_open)
+        swap = SwapDisplayWdg.get_triangle_wdg(is_open=swap_open)
         div.add(swap)
 
         swap.add_style("margin-right: -7px")
         swap.add_class("spt_dir_swap")
         swap.add_style("float: left")
-
-        #if is_open:
-        #    swap.set_off()
-
-        reldir = dir.replace(my.base_dir, "")
+ 
+        # FIXME: self.base_dir = dir
+        reldir = dir.replace(self.base_dir, "")
         reldir = reldir.lstrip("/")
-
         if reldir:
             reldir = reldir + "/" + item
         else:
@@ -562,26 +576,102 @@ class DirListWdg(BaseRefreshWdg):
         div.add_attr("spt_reldir", reldir)
 
         div.add_attr("spt_dir", path)
-        div.add_attr("spt_root_dir", my.root_dir)
+        div.add_attr("spt_root_dir", self.root_dir)
 
-        # Dynamic loading of swap content
-        dynamic = my.kwargs.get("dynamic")
-        if dynamic in ["true", "True", True]:
-            dynamic = True
-        else:
-            dynamic = False
-
-        if dynamic:
-            div.add_class("spt_dynamic")
         
 
 
-        class_path = Common.get_full_class_name(my)
+        class_path = Common.get_full_class_name(self)
         div.add_attr("spt_handler_class", class_path)
-        div.add_attr("spt_level", my.level+1)
+        div.add_attr("spt_level", self.level+1)
+
+        swap_action = self.get_swap_action()
+        swap.add_action_script(swap_action)
 
 
-        swap_action = '''
+        # Open if is_open or it is the first folder
+        if dynamic and (is_open or self.get_depth() == 0):
+            swap.get_widget("div1").add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                bvr.src_el.click();
+                '''
+            } )
+
+
+
+        background = self.kwargs.get("background")
+        if not background:
+            background = "background"
+        hover = div.get_color(background, -5)
+        div.add_color("background", background)
+        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
+        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+     
+ 
+
+
+        div.add_attr("spt_path", "%s/%s" % (dir, item) )
+        self.add_dir_behaviors(div, dir, item)
+
+        location = self.kwargs.get("location")
+        if location == 'server':
+            # to improve speed, skip collecting dir info for each sub dir
+            info = Common.get_dir_info(path, skip_dir_details=True)
+        elif location == 'scm':
+            info = {}
+        else:
+            info = {}
+
+        
+        icon_div = self.get_dir_icon_wdg(dir, item)
+        if not icon_div:
+            if info.get("file_type") == 'missing':
+                icon_string = IconWdg.DELETE
+            else:
+                icon_string = self.get_dir_icon(dir, item)
+
+            icon_div = DivWdg()
+            icon = IconWdg(path, icon_string)
+            icon_div.add(icon)
+
+        div.add(icon_div)
+        icon_div.add_style("float: left")
+        icon_div.add_style("margin-left: 3px")
+        icon_div.add_style("margin-top: -1px")
+
+        location = self.kwargs.get("location")
+        if location in ['server', 'scm']:
+            item_div = DivWdg()
+            div.add(item_div)
+
+            item_div.add_attr("spt_dirname", dir)
+            item_div.add_attr("spt_basename", item)
+
+            item_div.add_style("float: left")
+            item_div.add_style("margin-left: 3px")
+            item_div.add_class("spt_dir")
+            self.handle_dir_div(item_div, dir, item)
+        else:
+            div.add_class("spt_dir")
+            self.handle_dir_div(div, dir, item)
+       
+
+        view_indicator = self.get_view_indicator(dir, item)
+        if view_indicator:
+            div.add(view_indicator)
+
+
+        div.add("<br clear='all'/>")
+
+        return div
+
+    def get_view_indicator(self, dir, basename):
+        '''Indicator used in tactic.ui.tools.RepoBrowserWdg'''
+        return None
+
+    def get_swap_action(self):
+        return r'''
         var item_top = bvr.src_el.getParent(".spt_dir_item");
         var sibling = item_top.getNext(".spt_dir_content");
 
@@ -693,95 +783,20 @@ class DirListWdg(BaseRefreshWdg):
         folder_state = items.join("|");
         folder_state_el.value = folder_state;
 
-        '''%(jsondumps(my.handler_kwargs))
+        ''' % (jsondumps(self.handler_kwargs))
 
-
-        swap.add_action_script(swap_action)
-
-
-        # open the first folder
-        if dynamic and my.get_depth() == 0:
-            swap.get_widget("div1").add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                bvr.src_el.click();
-                '''
-            } )
-
-
-
-        background = my.kwargs.get("background")
-        if not background:
-            background = "background"
-        hover = div.get_color(background, -5)
-        div.add_color("background", background)
-        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
-     
- 
-
-
-        div.add_attr("spt_path", "%s/%s" % (dir, item) )
-        my.add_dir_behaviors(div, dir, item)
-
-        location = my.kwargs.get("location")
-        if location == 'server':
-            # to improve speed, skip collecting dir info for each sub dir
-            info = Common.get_dir_info(path, skip_dir_details=True)
-        elif location == 'scm':
-            info = {}
-        else:
-            info = {}
-
-        
-        icon_div = my.get_dir_icon_wdg(dir, item)
-        if not icon_div:
-            if info.get("file_type") == 'missing':
-                icon_string = IconWdg.DELETE
-            else:
-                icon_string = my.get_dir_icon(dir, item)
-
-            icon_div = DivWdg()
-            icon = IconWdg(path, icon_string)
-            icon_div.add(icon)
-
-        div.add(icon_div)
-        icon_div.add_style("float: left")
-        icon_div.add_style("margin-left: 3px")
-        icon_div.add_style("margin-top: -1px")
-
-        location = my.kwargs.get("location")
-        if location in ['server', 'scm']:
-            item_div = DivWdg()
-            div.add(item_div)
-
-            item_div.add_attr("spt_dirname", dir)
-            item_div.add_attr("spt_basename", item)
-
-            item_div.add_style("float: left")
-            item_div.add_style("margin-left: 3px")
-            item_div.add_class("spt_dir")
-            my.handle_dir_div(item_div, dir, item)
-        else:
-            div.add_class("spt_dir")
-            my.handle_dir_div(div, dir, item)
-        div.add("<br clear='all'/>")
-
-        return div
-
-
-    def get_info(my, dirname, basename):
-        location = my.kwargs.get("location")
+    def get_info(self, dirname, basename):
+        location = self.kwargs.get("location")
         # get some info about the file
         path = "%s/%s" % (dirname, basename)
         if location == 'server':
-            my.info = Common.get_dir_info(path)
+            self.info = Common.get_dir_info(path)
         else:
-            my.info = {}
-        return my.info
+            self.info = {}
+        return self.info
 
 
-    def _get_file_item(my, dirname, basename):
+    def _get_file_item(self, dirname, basename):
 
         item_div = DivWdg()
         item_div.add_class("spt_item");
@@ -792,16 +807,16 @@ class DirListWdg(BaseRefreshWdg):
 
         item_div.add_styles("margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 2px")
 
-        left_padding = my.level*11+15
+        left_padding = self.level*11+15
         item_div.add_style("padding-left: %spx" % left_padding)
         item_div.add_attr("spt_padding_left", left_padding)
         item_div.add_class("hand")
 
 
-        my.add_file_behaviors(item_div, dirname, basename)
+        self.add_file_behaviors(item_div, dirname, basename)
 
 
-        background = my.kwargs.get("background")
+        background = self.kwargs.get("background")
         if not background:
             background = "background"
         hover = item_div.get_color(background, -5)
@@ -814,9 +829,9 @@ class DirListWdg(BaseRefreshWdg):
  
 
      
-        # my.info is used in SnapshotDirLIstWdg also
-        my.info = my.get_info(dirname, basename)
-        location = my.kwargs.get("location")
+        # self.info is used in SnapshotDirLIstWdg also
+        self.info = self.get_info(dirname, basename)
+        location = self.kwargs.get("location")
 
         if location == 'xxxserver':
             # DEPRECATED
@@ -835,7 +850,7 @@ class DirListWdg(BaseRefreshWdg):
             filename_div.add_style("overflow: hidden")
 
 
-            size = my.info.get('size')
+            size = self.info.get('size')
             from pyasm.common import FormatValue
             size = FormatValue().get_format_value(size, 'KB')
 
@@ -846,27 +861,31 @@ class DirListWdg(BaseRefreshWdg):
             filesize_div.add_style("text-align: right")
         else:
             item_div.add_class("spt_dir_list_item")
-            my.handle_item_div(item_div, dirname, basename)
+            self.handle_item_div(item_div, dirname, basename)
             #item_div.add("<br/>")
 
         return item_div
 
 
-    def handle_dir_div(my, dir_div, dirname, basename):
+    def handle_dir_div(self, dir_div, dirname, basename):
         span = SpanWdg()
-        span.add(my.get_dirname(dirname, basename))
+        span.add(self.get_dirname(dirname, basename))
         span.add_class("spt_value")
         span.add_class("spt_dir_value")
         dir_div.add(span)
 
 
-    def handle_item_div(my, item_div, dirname, basename):
+    def handle_item_div(self, item_div, dirname, basename):
+ 
         path = "%s/%s" % (dirname, basename)
-        if my.info.get("file_type") == 'missing':
+        if self.info.get("file_type") == 'missing':
             icon_string = IconWdg.DELETE
             tip = 'Missing [%s]' %path
+        elif self.info.get("file_type") == 'sequence':
+            icon_string = "BS_FILM"
+            tip = 'Sequence [%s]' %path
         else:
-            icon_string = my.get_file_icon(dirname, basename)
+            icon_string = self.get_file_icon(dirname, basename)
             tip = path
 
 
@@ -880,7 +899,7 @@ class DirListWdg(BaseRefreshWdg):
         # add the file name
         filename_div = DivWdg()
         item_div.add(filename_div)
-        filename_div.add(my.get_basename(dirname, basename) )
+        filename_div.add(self.get_basename(dirname, basename) )
         filename_div.add_style("float: left")
         filename_div.add_style("overflow: hidden")
         filename_div.add_class("spt_item_value")
@@ -892,19 +911,25 @@ class DirListWdg(BaseRefreshWdg):
         #checkbox.add_style("float: right")
         #item_div.add(checkbox)
 
+
+        view_indicator = self.get_view_indicator(dirname, basename)
+        if view_indicator:
+            item_div.add(view_indicator)
+
+
         item_div.add("<br clear='all'/>")
 
 
-    def get_basename(my, dirname, basename):
+    def get_basename(self, dirname, basename):
         return basename
 
 
-    def get_dirname(my, dirname, basename):
+    def get_dirname(self, dirname, basename):
         return basename
 
 
 
-    def add_top_behaviors(my, top):
+    def add_top_behaviors(self, top):
 
         top.add_behavior( {
             'type': 'smart_click_up',
@@ -926,7 +951,7 @@ class DirListWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         folder_state = web.get_form_value("folder_state")
         if not folder_state:
-            folder_state = my.kwargs.get("folder_state")
+            folder_state = self.kwargs.get("folder_state")
         #text_wdg = TextWdg("folder_state")
         #text_wdg.add_style("width: 400px")
         text_wdg = HiddenWdg("folder_state")
@@ -938,11 +963,11 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def add_base_dir_behaviors(my, div, base_dir):
+    def add_base_dir_behaviors(self, div, base_dir):
 
         pass
         """
-        location = my.kwargs.get("location")
+        location = self.kwargs.get("location")
         if location == 'server':
             base_dir = Environment.get_client_repo_dir()
 
@@ -961,11 +986,11 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def add_dir_behaviors(my, item_div, dir, item):
+    def add_dir_behaviors(self, item_div, dir, item):
 
-        location = my.kwargs.get("location")
+        location = self.kwargs.get("location")
         if location == 'server':
-            base_dir = my.kwargs.get("base_dir")
+            base_dir = self.kwargs.get("base_dir")
             repo_dir = Environment.get_client_repo_dir()
             dir = dir.replace(base_dir,'')
             dir = repo_dir + dir
@@ -987,8 +1012,8 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def add_file_behaviors(my, item_div, dir, item):
-        location = my.kwargs.get("location")
+    def add_file_behaviors(self, item_div, dir, item):
+        location = self.kwargs.get("location")
 
         item_div.add_class("SPT_DTS")
 
@@ -1052,21 +1077,21 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def get_file_icon_wdg(my, dirname, basename):
+    def get_file_icon_wdg(self, dirname, basename):
         return
 
 
-    def get_dir_icon_wdg(my, dirname, basename):
+    def get_dir_icon_wdg(self, dirname, basename):
         return
 
 
-    def get_file_icon(my, dir, item):
+    def get_file_icon(self, dir, item):
         return IconWdg.DETAILS
 
 
         # FIXME: this is for ingestion ... should be moved
         path = "%s/%s" % (dir, item)
-        info = my.data.get(path)
+        info = self.data.get(path)
         if not info:
             info = {}
         if info.get("status") == 'scan':
@@ -1078,31 +1103,31 @@ class DirListWdg(BaseRefreshWdg):
 
 
 
-    def get_dir_icon(my, dir, item):
+    def get_dir_icon(self, dir, item):
         return IconWdg.LOAD
 
         """
         # FIXME: this is for ingestion ... should be moved
         path = "%s/%s" % (dir, item)
 
-        if my.data.get("%s/" % path):
+        if self.data.get("%s/" % path):
             return IconWdg.DOT_YELLOW
 
-        paths = my.directory.find(path)
+        paths = self.directory.find(path)
         if len(paths) == 0:
             return IconWdg.LOAD
 
         status = None
         for tmp_path in paths:
             # if one path is not there, then it is unhandled
-            info = my.data.get(tmp_path)
+            info = self.data.get(tmp_path)
             if not info:
                 status = 'unhandled'
                 break
 
         if not status: 
             for tmp_path in paths:
-                info = my.data.get(tmp_path)
+                info = self.data.get(tmp_path)
                 # if there is one status that is scan, then the whole
                 # status scane
                 sub_status = info.get("status")
@@ -1129,16 +1154,16 @@ class DirListWdg(BaseRefreshWdg):
 __all__.append("DirListPathHandler")
 class DirListPathHandler(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
-        my.set_as_panel(top)
+    def get_display(self):
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_dir_list_handler_top")
 
         inner = DivWdg(css="spt_dir_list_handler_content")
         top.add(inner)
 
 
-        all_open = my.kwargs.get("all_open")
+        all_open = self.kwargs.get("all_open")
         if all_open in ["True", 'true']:
             all_open = True
         elif all_open in ["False", 'false']:
@@ -1147,44 +1172,45 @@ class DirListPathHandler(BaseRefreshWdg):
             all_open = False
 
 
-        my.level = my.kwargs.get("level")
-        if not my.level:
-            my.level = 0
+        self.level = self.kwargs.get("level")
+        if not self.level:
+            self.level = 0
         else:
-            my.level = int(my.level)
+            self.level = int(self.level)
 
-        padding = my.level * 11
+        padding = self.level * 11
         top.add_style("padding-left: %spx" % padding)
 
-        my.handler = my.kwargs.get("handler")
-        if not my.handler or isinstance(my.handler, basestring):
-            handler_class = my.kwargs.get("handler_class")
-            handler_kwargs = my.kwargs.get("handler_kwargs")
+        self.handler = self.kwargs.get("handler")
+        if not self.handler or isinstance(self.handler, basestring):
+            handler_class = self.kwargs.get("handler_class")
+            handler_kwargs = self.kwargs.get("handler_kwargs")
             if not handler_kwargs:
                 handler_kwargs = {}
             if isinstance(handler_kwargs, basestring):
                 handler_kwargs = eval(handler_kwargs)
 
-            handler_kwargs['location'] = my.kwargs.get("location")
+            handler_kwargs['location'] = self.kwargs.get("location")
             handler_kwargs['all_open'] = all_open
-            handler_kwargs['depth'] = my.kwargs.get("depth")
-            handler_kwargs['open_depth'] = my.kwargs.get("open_depth")
-            #handler_kwargs['search_type'] = my.kwargs.get("search_type")
-            handler_kwargs['dynamic'] = my.kwargs.get("dynamic")
+            handler_kwargs['depth'] = self.kwargs.get("depth")
+            handler_kwargs['open_depth'] = self.kwargs.get("open_depth")
+            #handler_kwargs['search_type'] = self.kwargs.get("search_type")
+            handler_kwargs['dynamic'] = self.kwargs.get("dynamic")
+            handler_kwargs['folder_state'] = self.kwargs.get("folder_state")
+            
+            self.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
 
-            my.handler = Common.create_from_class_path(handler_class, [], handler_kwargs)
 
 
-
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
         assert(base_dir)
 
-        my.paths = my.kwargs.get("paths")
-        if isinstance(my.paths, basestring):
-            my.paths = []
-        if not my.paths: 
-            my.paths = my.handler.get_relative_paths(base_dir)
-        my.paths.sort()
+        self.paths = self.kwargs.get("paths")
+        if isinstance(self.paths, basestring):
+            self.paths = []
+        if not self.paths: 
+            self.paths = self.handler.get_relative_paths(base_dir)
+        self.paths.sort()
 
         """
         paths = []
@@ -1200,25 +1226,25 @@ class DirListPathHandler(BaseRefreshWdg):
         """
 
 
-        depth = my.kwargs.get("depth")
+        depth = self.kwargs.get("depth")
         if depth == None:
             depth = -1
 
-        open_depth = my.kwargs.get("open_depth")
+        open_depth = self.kwargs.get("open_depth")
         if open_depth == None:
             open_depth = -1
 
 
-        my.handle_paths(my.paths, base_dir, inner, depth=depth, all_open=all_open, open_depth=open_depth)
+        self.handle_paths(self.paths, base_dir, inner, depth=depth, all_open=all_open, open_depth=open_depth)
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
 
 
-    def handle_paths(my, paths, base_dir, div, depth=-1, all_open=False, open_depth=-1 ):
+    def handle_paths(self, paths, base_dir, div, depth=-1, all_open=False, open_depth=-1 ):
         '''assume path ending with / is a directory'''
         new_paths = []
         last_parts = []
@@ -1268,28 +1294,28 @@ class DirListPathHandler(BaseRefreshWdg):
 
 
         count = 0
-        my.file_count = 0
+        self.file_count = 0
 
-        my.max_level = depth
+        self.max_level = depth
         for path in new_paths:
 
             level = len(path.rstrip("/").split("/")) - base_length - 1
 
-            if my.max_level != -1 and level > my.max_level:
+            if self.max_level != -1 and level > self.max_level:
                 continue
 
             # put an artificial maximum
-            if my.max_level == -1:
+            if self.max_level == -1:
                 count += 1
                 if count > 1000:
-                    print "Hitting maximum of 1000 entries"
+                    print("Hitting maximum of 1000 entries")
                     break
 
 
 
             # set the current level
-            my.level = level
-            my.handler.level = level
+            self.level = level
+            self.handler.level = level
 
 
             # check if this is a directory, which ends in a /
@@ -1297,24 +1323,29 @@ class DirListPathHandler(BaseRefreshWdg):
                 dirname = os.path.dirname(path.rstrip("/"))
                 basename = os.path.basename(path.rstrip("/"))
 
-                #print " "*level, level, path, basename
+                #print(" "*level, level, path, basename)
 
                 # FIXME: hard coded
                 if basename == '.versions':
                     xis_open = False
                 else:
+
                     web = WebContainer.get_web()
                     folder_state = web.get_form_value("folder_state")
                     if not folder_state:
-                        folder_state = my.kwargs.get("folder_state")
+                        folder_state = self.kwargs.get("folder_state")
                     if folder_state:
                         folder_state = folder_state.split("|")
                     else:
                         folder_state = []
-
-
-
+                    
                     rel_dir = path.replace(base_dir + "/", "").rstrip("/")
+                    
+                    # The repo_browser stores dir in folder_state relative to
+                    # asset_base_dir.
+                    asset_base_dir = Environment.get_asset_dir()
+                    rel_dir2 = path.replace("%s/" % asset_base_dir, "").rstrip("/")
+
                     if not folder_state:
                         if open_depth != -1 and level < open_depth:
                             xis_open = True
@@ -1322,19 +1353,19 @@ class DirListPathHandler(BaseRefreshWdg):
                             xis_open = all_open
                     elif rel_dir in folder_state:
                         xis_open = True
+                    elif rel_dir2 in folder_state:
+                        xis_open = True
                     else:
                         xis_open = False
-
-
+                    
                 # get the level_div and add the directory to it
-
                 level_divs = level_divs[:level+1]
                 # put some protection here so that there is minimum level
                 if not level_divs:
                     level_divs = [div]
                 level_div = level_divs[-1]
 
-                dir_item_div = my.handler._get_dir_item(dirname, basename, is_open=xis_open)
+                dir_item_div = self.handler._get_dir_item(dirname, basename, is_open=xis_open)
                 if dir_item_div:
                     dir_item_div.add_style("padding-left: %spx" % ((level)*11))
                     level_div.add( dir_item_div )
@@ -1368,9 +1399,9 @@ class DirListPathHandler(BaseRefreshWdg):
                 else:
                     level_div = level_divs[-1]
 
-                level_div.add( my.handler._get_file_item(dirname, basename))
+                level_div.add( self.handler._get_file_item(dirname, basename))
 
-                my.file_count += 1
+                self.file_count += 1
 
 
 
@@ -1378,12 +1409,12 @@ class DirListPathHandler(BaseRefreshWdg):
 
 
 class DirInfoWdg(BaseRefreshWdg):
-    def get_display(my):
-        dirname = my.kwargs.get("dirname")
+    def get_display(self):
+        dirname = self.kwargs.get("dirname")
 
         top = DivWdg()
 
-        is_local = my.kwargs.get("is_local")
+        is_local = self.kwargs.get("is_local")
         if is_local in [True, 'true']:
             is_local = True
         else:
@@ -1396,8 +1427,8 @@ class DirInfoWdg(BaseRefreshWdg):
             top.add("<br/>Does not exist - Please refresh")
             return top
 
-        size = my.kwargs.get("size")
-        count = my.kwargs.get("count")
+        size = self.kwargs.get("size")
+        count = self.kwargs.get("count")
 
 
         if not size:
@@ -1459,10 +1490,10 @@ class DirInfoWdg(BaseRefreshWdg):
 
 
 class FileInfoWdg(BaseRefreshWdg):
-    def get_display(my):
+    def get_display(self):
 
-        dirname = my.kwargs.get("dirname")
-        basename = my.kwargs.get("basename")
+        dirname = self.kwargs.get("dirname")
+        basename = self.kwargs.get("basename")
 
         path = "%s/%s" % (dirname, basename)
 
@@ -1495,8 +1526,8 @@ class FileInfoWdg(BaseRefreshWdg):
 
 
 class SObjectSearchWdg(BaseRefreshWdg):
-    def get_display(my):
-        search_types = my.kwargs.get("search_types")
+    def get_display(self):
+        search_types = self.kwargs.get("search_types")
         if isinstance(search_types, basestring):
             search_types = eval(search_types)
         if not search_types:
@@ -1505,7 +1536,7 @@ class SObjectSearchWdg(BaseRefreshWdg):
 
         top = DivWdg()
         top.add_class("spt_search_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         web = WebContainer.get_web()
 
@@ -1655,9 +1686,9 @@ class SObjectSearchWdg(BaseRefreshWdg):
 __all__.append("FileIngestCmd")
 class FileIngestCmd(DatabaseAction):
 
-    def execute(my):
+    def execute(self):
 
-        dirs_str = my.get_value()
+        dirs_str = self.get_value()
         if dirs_str:
             dirs = jsonloads(dirs_str)
         else:
@@ -1668,50 +1699,50 @@ class FileIngestCmd(DatabaseAction):
 
 
         # autoname code
-        if not my.sobject.get_value("code"):
+        if not self.sobject.get_value("code"):
             basename = os.path.basename(dirs[0])
-            my.sobject.set_value("code", basename);
-            my.sobject.commit()
+            self.sobject.set_value("code", basename);
+            self.sobject.commit()
 
 
-    def postprocess(my):
+    def postprocess(self):
 
         web = WebContainer.get_web()
-        my.kwargs = jsonloads( web.get_form_value("input_data") )
-        transfer_mode = my.kwargs.get("transfer_mode")
+        self.kwargs = jsonloads( web.get_form_value("input_data") )
+        transfer_mode = self.kwargs.get("transfer_mode")
         if transfer_mode:
             transfer_mode = transfer_mode[0]
         else:
             trasfer_mode = 'free_copy'
         
-        checkin_mode = my.kwargs.get("checkin_mode")
+        checkin_mode = self.kwargs.get("checkin_mode")
         if checkin_mode:
             checkin_mode = checkin_mode[0]
         else:
             checkin_mode = "default"
 
-        context = my.kwargs.get("context")
+        context = self.kwargs.get("context")
         if context:
             context = context[0]
         if not context:
             context = "publish"
 
 
-        subcontext_mode = my.kwargs.get("subcontext_mode")
+        subcontext_mode = self.kwargs.get("subcontext_mode")
         if subcontext_mode:
             subcontext_mode = subcontext_mode[0]
         if not subcontext_mode:
             subcontext_mode = "{none}"
 
 
-        subcontext = my.kwargs.get("subcontext")
+        subcontext = self.kwargs.get("subcontext")
         if subcontext:
             subcontext = subcontext[0]
         else:
             subcontext = ""
 
 
-        dirs_str = my.get_value()
+        dirs_str = self.get_value()
         if dirs_str:
             dirs = jsonloads(dirs_str)
         else:
@@ -1755,11 +1786,11 @@ class FileIngestCmd(DatabaseAction):
             paths = dirs
 
         if checkin_mode in ['file_group','file']:
-           my.file_group_checkin(paths, context, subcontext_mode, subcontext, transfer_mode)
+           self.file_group_checkin(paths, context, subcontext_mode, subcontext, transfer_mode)
         else:
-           my.default_checkin(paths, context, subcontext_mode, subcontext, transfer_mode)
+           self.default_checkin(paths, context, subcontext_mode, subcontext, transfer_mode)
 
-    def file_group_checkin(my, paths, context, subcontext_mode, subcontext, transfer_mode):
+    def file_group_checkin(self, paths, context, subcontext_mode, subcontext, transfer_mode):
         '''having multiple files in one single check-in'''
         from pyasm.checkin import FileCheckin
         if subcontext_mode == '{leaf}':
@@ -1778,8 +1809,8 @@ class FileIngestCmd(DatabaseAction):
         for idx, path in enumerate(paths):
 	    file_types.append('ingest%s'%idx)
         
-        checkin = FileCheckin(my.sobject, paths, context=checkin_context, mode=transfer_mode,\
-              file_types=file_types, description='Ingest Files as group  check-in [%s]'% my.sobject.get_code())
+        checkin = FileCheckin(self.sobject, paths, context=checkin_context, mode=transfer_mode,\
+              file_types=file_types, description='Ingest Files as group  check-in [%s]'% self.sobject.get_code())
         checkin.execute()
        
         for path in paths:   
@@ -1797,7 +1828,7 @@ class FileIngestCmd(DatabaseAction):
 
 	
             
-    def default_checkin(my, paths, context, subcontext_mode, subcontext, transfer_mode):
+    def default_checkin(self, paths, context, subcontext_mode, subcontext, transfer_mode):
 
         from pyasm.checkin import FileCheckin
 
@@ -1815,7 +1846,7 @@ class FileIngestCmd(DatabaseAction):
                 ext = ext.replace(".", "")
                 file_types.append(ext)
 
-            checkin = FileCheckin(my.sobject, paths, context=checkin_context, mode=transfer_mode, file_types=file_types, snapshot_type=snapshot_type, description='Ingest check-in [%s]'% my.sobject.get_code())
+            checkin = FileCheckin(self.sobject, paths, context=checkin_context, mode=transfer_mode, file_types=file_types, snapshot_type=snapshot_type, description='Ingest check-in [%s]'% self.sobject.get_code())
             checkin.execute()
 
             return
@@ -1839,7 +1870,7 @@ class FileIngestCmd(DatabaseAction):
             snapshot_type = "file"
             if os.path.isdir(path):
                 snapshot_type = "dir"
-            checkin = FileCheckin(my.sobject, path, context=checkin_context, mode=transfer_mode, file_types=['main'], snapshot_type=snapshot_type, description='Ingest check-in [%s]'% my.sobject.get_code())
+            checkin = FileCheckin(self.sobject, path, context=checkin_context, mode=transfer_mode, file_types=['main'], snapshot_type=snapshot_type, description='Ingest check-in [%s]'% self.sobject.get_code())
             checkin.execute()
 
             basedir = path
@@ -1878,10 +1909,10 @@ class FileIngestCmd(DatabaseAction):
 
 
 class IngestWdg(BaseRefreshWdg):
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_ingest_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
 
         text = TextWdg("dir")
@@ -1954,8 +1985,8 @@ from pyasm.search import Search
 
 class IngestCmd(Command):
 
-    def execute(my):
-        dir = my.kwargs.get("dir")
+    def execute(self):
+        dir = self.kwargs.get("dir")
         assert dir
 
         #dir = "/home/apache/tactic_plugin"
@@ -1965,23 +1996,23 @@ class IngestCmd(Command):
         items = os.listdir(dir)
         for item in items:
             path = "%s/%s" % (dir, item)
-            my.handle_path(path)
+            self.handle_path(path)
 
 
-    def handle_path(my, path):
+    def handle_path(self, path):
         path = str(path)
         if os.path.isdir(path):
             items = os.listdir(path)
             for item in items:
                 sub_path = "%s/%s" % (path, item)
-                my.handle_path(sub_path)
+                self.handle_path(sub_path)
         else:
             print "path: ", path
-            my.checkin_file(path)
+            self.checkin_file(path)
 
 
 
-    def checkin_file(my, path):
+    def checkin_file(self, path):
 
         context = 'ingest'
         version = 1
@@ -2025,8 +2056,7 @@ class IngestCmd(Command):
         # set the snapshot code
         snapshot_code = snapshot.get_value("code")
         file.set_value("snapshot_code", snapshot_code)
-        file.commit()
-        
+        file.commit() 
 
 
 
@@ -2034,14 +2064,14 @@ class IngestCmd(Command):
 # This is really the IngestionTool
 class FileBrowserWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        my.level = 0 
-        my.max_level = 4
+    def get_display(self):
+        self.level = 0 
+        self.max_level = 4
 
 
         top = DivWdg()
         top.add_class("spt_file_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
 
 
@@ -2050,10 +2080,10 @@ class FileBrowserWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         base_dir = web.get_form_value("base_dir")
         if not base_dir:
-            base_dir = my.kwargs.get("base_dir")
+            base_dir = self.kwargs.get("base_dir")
         location = web.get_form_value("location")
         if not location:
-            location = my.kwargs.get("location")
+            location = self.kwargs.get("location")
 
        
         table = Table()
@@ -2208,7 +2238,7 @@ class FileBrowserWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         paths = web.get_form_value("paths")
         if not paths:
-            paths = my.kwargs.get("paths")
+            paths = self.kwargs.get("paths")
         if paths:
             paths = paths.split("|");
         if not paths:

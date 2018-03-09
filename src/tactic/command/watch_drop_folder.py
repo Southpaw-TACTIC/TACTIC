@@ -20,7 +20,6 @@ import time, os, shutil, sys
 import os.path
 import sys
 
-from dateutil import parser
 from pyasm.common import Environment, Config, Common
 from pyasm.security import Batch
 from pyasm.biz import Project
@@ -31,12 +30,13 @@ from tactic.command import SchedulerTask, Scheduler
 from time import gmtime, strftime
 from optparse import OptionParser
 from tactic.command import PythonCmd
+from dateutil import parser
 
 import threading
 
 
 import logging
-logging.basicConfig(filename='/tmp/myapp.log', level=logging.INFO)
+#logging.basicConfig(filename='/tmp/myapp.log', level=logging.INFO)
 
 try:
     from watchdog.observers import Observer
@@ -76,46 +76,60 @@ class TestLoggingEventHandler(LoggingEventHandler):
 
 
 class WatchFolderFileActionThread(threading.Thread):
+    
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(WatchFolderFileActionThread, self).__init__()
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(WatchFolderFileActionThread, my).__init__()
+    def run(self):
 
-    def run(my):
-
-        Batch()
+        task = self.kwargs.get("task")
+        site = task.site
+        project_code = task.project_code
+        Batch(site=site, project_code=project_code)
         try:
-            my._run()
+            self._run()
         finally:
-            task = my.kwargs.get("task")
+            task = self.kwargs.get("task")
             paths = task.get_paths()
+            task.set_clean(True)
             for path in paths:
-                checkin_path = "%s.lock" % path
-                if os.path.exists(checkin_path):
-                    os.unlink(checkin_path)
+                lock_path = "%s.lock" % path
+                if os.path.exists(lock_path):
+                    os.unlink(lock_path)
+            task.set_clean(False)
 
 
-    def _run(my):
+    def _run(self):
 
-        task = my.kwargs.get("task")
+        task = self.kwargs.get("task")
         paths = task.get_paths()
-        
         count = 0
         restart = False
 
         while True:
+            
             if not paths:
                 time.sleep(1)
                 continue
-
+            
             path = paths.pop(0)
-
             checkin_path = "%s.checkin" % path
+            lock_path = "%s.lock" % path
             error_path = "%s.error" % path
 
-            if not os.path.exists(checkin_path):
-                print "ERROR: no lock path [%s]" % checkin_path
+            if not os.path.exists(path):
                 continue
+            if not os.path.exists(checkin_path):
+                #print "Action Thread SKIP: no checkin path [%s]" % checkin_path
+                continue
+            else:
+                # Exit if another process is also checking this file in.                
+                f = open(checkin_path, "r")
+                pid = f.readline()
+                f.close()
+                if pid != str(os.getpid()):
+                    continue
 
             try:
 
@@ -124,15 +138,18 @@ class WatchFolderFileActionThread(threading.Thread):
                     "search_type": task.search_type,
                     "base_dir": task.base_dir,
                     "process": task.process,
-                    "script_path":task.script_path,
+                    "script_path": task.script_path,
                     "path": path
                 }
 
+                handler = task.get("handler")
+                if handler:
+                    cmd = Common.create_from_class_path(handler, [], kwargs)
+                else:
+                    # create a "custom" command that will act on the file
+                    cmd = CheckinCmd(**kwargs)
 
-                # create a "custom" command that will act on the file
-                cmd = CustomCmd(
-                        **kwargs
-                )
+                #print "Process [%s] checking in [%s]" % (os.getpid(), path)
                 cmd.execute()
 
                 # TEST
@@ -141,12 +158,13 @@ class WatchFolderFileActionThread(threading.Thread):
                 #    os.unlink(path)
 
                 count += 1
-                if count > 50:
+                if count == 20:
                     restart = True
+                    task.set_clean(True)
                     break
 
 
-            except Exception, e:
+            except Exception as e:
                 print "Error: ", e
                 f = open(error_path,"w")
                 f.write(str(e))
@@ -154,69 +172,96 @@ class WatchFolderFileActionThread(threading.Thread):
                 #raise
 
             finally:
-                os.unlink(checkin_path)
+
+                task.set_clean(True)
+                if os.path.exists(checkin_path):
+                    os.unlink(checkin_path)
+                if os.path.exists(lock_path):
+                    os.unlink(lock_path)
+                task.set_clean(False)
+                
+                if restart:
+                    task.set_clean(True)
+
+
 
         # restart every 20 check-ins
         if restart:
             for path in paths:
                 checkin_path = "%s.checkin" % path
+                lock_path = "%s.lock" % path
                 if os.path.exists(checkin_path):
                     os.unlink(checkin_path)
-            Common.restart()
+                if os.path.exists(lock_path):
+                    os.unlink(lock_path)
+            # this exaggerates the effect of not pausing check thread for cleaning
+            #time.sleep(10)
+            Common.kill()
+
 
 
 class WatchFolderCheckFileThread(threading.Thread):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(WatchFolderCheckFileThread, my).__init__()
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(WatchFolderCheckFileThread, self).__init__()
 
-        path = my.kwargs.get("path")
-        my.lock_path = "%s.lock" % path
-        my.error_path = "%s.error" % path
-        my.checkin_path = "%s.checkin" % path
+        path = self.kwargs.get("path")
+        self.lock_path = "%s.lock" % path
+        self.error_path = "%s.error" % path
+        self.checkin_path = "%s.checkin" % path
 
 
-    def run(my):
+    def run(self):
 
         try:
-            path = my.kwargs.get("path")
-
-            if os.path.exists(my.lock_path):
+            path = self.kwargs.get("path")
+           
+            # this extra checkin_path check may not be needed
+            if os.path.exists(self.lock_path) or os.path.exists(self.checkin_path):
                 return
 
-            f = open(my.lock_path, "w")
+            task = self.kwargs.get("task")
+ 
+            if task.in_clean():
+                return
+            
+            pid = os.getpid()
+            f = open(self.lock_path, "w")
             f.close()
 
-            changed = my.verify_file_size(path)
-
-
+            changed = self.verify_file_size(path)
             if changed:
-                if os.path.exists(my.lock_path):
-                    os.unlink(my.lock_path)
+                if os.path.exists(self.lock_path):
+                    os.unlink(self.lock_path)
+                return
+
+            # time has passed, check again
+            if task.in_clean():
                 return
 
 
-            f = open(my.checkin_path, "w")
+
+            f = open(self.checkin_path, "w")
+            f.write(str(pid))
             f.close()
 
-            task = my.kwargs.get("task")
             task.add_path(path)
 
 
-        except Exception, e:
+        except Exception as e:
             print "Error: ", e
-            f = open(my.error_path, "w")
+            f = open(self.error_path, "w")
             f.write(str(e))
             f.close()
             raise
 
         finally:
-            if os.path.exists(my.lock_path):
-                os.unlink(my.lock_path)
+            if os.path.exists(self.lock_path):
+                os.unlink(self.lock_path)
 
 
-    def verify_file_size(my, file_path):
+    def verify_file_size(self, file_path):
         '''Check if the file size changes over a period of 5 seconds. If so, file is not ready'''
 
         # assume nothing has changed
@@ -238,7 +283,11 @@ class WatchFolderCheckFileThread(threading.Thread):
                 changed = True
                 break
 
-            file_size2 = os.path.getsize(file_path)
+            if os.path.isdir(file_path):
+                file_size2 = os.path.getsize(file_path)
+            else:
+                file_size2 = os.path.getsize(file_path)
+
             mtime2 = os.path.getmtime(file_path)
             #print "file_size2: ", file_size2
             #print "mtime2: ", mtime2
@@ -254,15 +303,28 @@ class WatchFolderCheckFileThread(threading.Thread):
         return changed
 
 
+from pyasm.command import Command
+__all__.append("TestCmd")
+class TestCmd(Command):
+
+    def execute(self):
+
+        path = self.kwargs.get("path")
+
+        # do something
+        print "path: ", path
 
 
-class CustomCmd(object):
-
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
 
 
-    def is_image(my, file_name):
+
+class CheckinCmd(object):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+
+    def is_image(self, file_name):
         base, ext = os.path.splitext(file_name)
         ext = ext.lstrip(".").lower()
         if ext in ['tif','tiff','jpg','jpeg','png','pic','bmp','gif','psd']:
@@ -270,7 +332,7 @@ class CustomCmd(object):
         else:
             return False
 
-    def is_movie(my, file_name):
+    def is_movie(self, file_name):
         base, ext = os.path.splitext(file_name)
         ext = ext.lstrip(".").lower()
         if ext in ['mov','wmv','mpg','mpeg','m1v','mp2','mpa','mpe','mp4','wma','asf','asx','avi','wax','wm','wvx']:
@@ -278,16 +340,16 @@ class CustomCmd(object):
         else:
             return False
 
-    def get_asset_type(my, file_path):
-        if my.is_movie(file_path):
+    def get_asset_type(self, file_path):
+        if self.is_movie(file_path):
             return 'movie'
-        elif my.is_image(file_path):
+        elif self.is_image(file_path):
             return 'image'
         else:
             return 'other'
 
-    def create_checkin_log(my):
-        base_dir = my.kwargs.get("base_dir")
+    def create_checkin_log(self):
+        base_dir = self.kwargs.get("base_dir")
         log_path = '%s/TACTIC_log.txt' %(base_dir)
         if not (os.path.isfile(log_path)):
             file = open(log_path, 'w')   
@@ -299,20 +361,21 @@ class CustomCmd(object):
 
 
 
-    def execute(my):
+    def execute(self):
 
-        file_path = my.kwargs.get("path")
-        project_code = my.kwargs.get("project_code")
-        base_dir = my.kwargs.get("base_dir")
-        search_type = my.kwargs.get("search_type")
-        process = my.kwargs.get("process")
-        watch_script_path =  my.kwargs.get("script_path")
+        file_path = self.kwargs.get("path")
+        site = self.kwargs.get("site")
+        project_code = self.kwargs.get("project_code")
+        base_dir = self.kwargs.get("base_dir")
+        search_type = self.kwargs.get("search_type")
+        process = self.kwargs.get("process")
+        watch_script_path = self.kwargs.get("script_path")
         if not process:
             process = "publish"
 
         basename = os.path.basename(file_path)
 
-        context = my.kwargs.get("context")
+        context = self.kwargs.get("context")
         if not context:
             context = '%s/%s'  % (process, basename)
 
@@ -323,10 +386,10 @@ class CustomCmd(object):
 
         file_name = os.path.basename(file_path)
         log_path = '%s/TACTIC_log.txt' %(base_dir)
-        my.create_checkin_log()
+        self.create_checkin_log()
 
         # Define asset type of the file
-        asset_type = my.get_asset_type(file_path)
+        asset_type = self.get_asset_type(file_path)
         description = "drop folder check-in of %s" %file_name
 
         from client.tactic_client_lib import TacticServerStub
@@ -359,7 +422,7 @@ class CustomCmd(object):
 
                 if SearchType.column_exists(search_type, "keywords"):
                     relative_path = relative_path
-                    keywords = Common.get_keywords_from_path(relative_path)
+                    keywords = Common.extract_keywords_from_path(relative_path)
                     keywords = " ".join( keywords )
                     sobj.set_value("keywords", keywords)
 
@@ -371,8 +434,23 @@ class CustomCmd(object):
 
             #task = server.create_task(sobj.get('__search_key__'),process='publish')
             #server.update(task, {'status': 'New'})
-
-
+            
+            """
+            #TEST: simulate different check-in duration
+            from random import randint
+            sec = randint(1, 5)
+            print "checking in for ", sec, "sec"
+            server.eval("@SOBJECT(sthpw/login)")
+            import shutil
+            dir_name,base_name = os.path.split(file_path)
+            dest_dir = 'C:/ProgramData/Southpaw/watch_temp'
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+            shutil.move(file_path, '%s/%s'%(dest_dir, base_name))
+            time.sleep(sec)
+            # move back the file in a few seconds 
+            shutil.move('%s/%s'%(dest_dir, base_name), file_path)
+            """
             server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='move')
 
             if watch_script_path:
@@ -381,9 +459,8 @@ class CustomCmd(object):
 
 
 
-
             
-        except Exception, e:
+        except Exception as e:
             print "Error occurred", e
             error_message=str(e)
 
@@ -431,10 +508,17 @@ class CustomCmd(object):
             f.write(pre_log)
             f.close()
 
-            # Delete the sourse file after check-in step.
-            print "File checked in."
+            # Invoke Trigger:called_triggers
+            from pyasm.command import Trigger
+            Trigger.call_all_triggers()
+
+            # Delete the source file after check-in step.
+            print "File handled."
             if os.path.exists(file_path):
-                os.unlink(file_path)
+                if os.path.isdir(file_path):
+                    os.rmdirs(file_path)
+                else:
+                    os.unlink(file_path)
                 print "Source file [%s] deleted: " %file_name
 
 
@@ -445,31 +529,44 @@ class CustomCmd(object):
 
 class WatchDropFolderTask(SchedulerTask):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
-        my.base_dir = kwargs.get("base_dir")
-        my.project_code = kwargs.get("project_code")
-        my.search_type = kwargs.get("search_type")
-        my.process = kwargs.get("process")
-        my.script_path = kwargs.get("script_path")
+        self.input_kwargs = kwargs
+        self.base_dir = kwargs.get("base_dir")
+        self.site = kwargs.get("site")
+        self.project_code = kwargs.get("project_code")
+        self.search_type = kwargs.get("search_type")
+        self.process = kwargs.get("process")
+        self.script_path = kwargs.get("script_path")
+        self.watch_folder_code = kwargs.get("watch_folder_code")
 
-        super(WatchDropFolderTask, my).__init__()
+        super(WatchDropFolderTask, self).__init__()
 
-        my.checkin_paths = []
+        self.checkin_paths = []
+        self.in_clean_mode = False
+
+        self.files_checked = 0
+
+    def add_path(self, path):
+        self.checkin_paths.append(path)
+
+    def get_paths(self):
+        return self.checkin_paths
 
 
-    def add_path(my, path):
-        my.checkin_paths.append(path)
-
-    def get_paths(my):
-        return my.checkin_paths
+    def get(self, key):
+        return self.input_kwargs.get(key)
 
 
+    def set_clean(self, clean):
+        self.in_clean_mode = clean
 
+    def in_clean(self):
+        return self.in_clean_mode
 
-    def _execute(my):
+    def _execute(self):
 
-        base_dir = my.base_dir
+        base_dir = self.base_dir
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
 
@@ -500,41 +597,41 @@ class WatchDropFolderTask(SchedulerTask):
         if not dirs:
             return
 
-        #print "Found new: ", dirs
+        
 
         # go thru the list to check each file
         for file_name in dirs:
-
-            file_path = '%s/%s' %(my.base_dir, file_name)
+            file_path = '%s/%s' %(self.base_dir, file_name)
+            if file_path in self.get_paths():
+                continue
             thread = WatchFolderCheckFileThread(
-                    task=my,
+                    task=self,
                     path=file_path
                     )
             thread.daemon = True
             thread.start()
 
+            #print "count: ", threading.active_count()
 
 
-    def execute(my):
+    def execute(self):
 
-        base_dir = my.base_dir
+        base_dir = self.base_dir
         if not base_dir:
             print "WARNING: No base dir defined."
             return
 
-
-        # Start check-in thread
-        
+        # Start action thread
         checkin = WatchFolderFileActionThread(
-                task=my,
-                )
+                task=self,
+        )
         checkin.start()
 
         # execute and react based on a loop every second
         mode = "loop"
         if mode == "loop":
             while True:
-                my._execute()
+                self._execute()
                 time.sleep(1)
 
 
@@ -544,12 +641,12 @@ class WatchDropFolderTask(SchedulerTask):
                 event_handler = TestLoggingEventHandler()
                 observer = Observer()
 
-                print "base: ", my.base_dir
-                path = my.base_dir
+                print "base: ", self.base_dir
+                path = self.base_dir
                 observer.schedule(event_handler, path=path, recursive=True)
                 observer.start()
 
-            except Exception, e:
+            except Exception as e:
                 print "... skipping: ", e
                 raise
 
@@ -569,6 +666,8 @@ class WatchDropFolderTask(SchedulerTask):
 
         print "Running Watch Folder ..."
 
+
+
         # Check whether the user define the drop folder path.
         # Default dop folder path: /tmp/drop
         parser = OptionParser()
@@ -577,6 +676,12 @@ class WatchDropFolderTask(SchedulerTask):
         parser.add_option("-s", "--search_type", dest="search_type", help="Define search_type.")
         parser.add_option("-P", "--process", dest="process", help="Define process.")
         parser.add_option("-S", "--script_path",dest="script_path", help="Define script_path.")
+        parser.add_option("-w", "--watch_folder_code",dest="watch_folder_code", 
+				help="Define watch folder code. If no code is used, then it assumed that this process \
+				is managed in a standalone script.")
+        parser.add_option("-x", "--site",dest="site", help="Define site.")
+
+        parser.add_option("-c", "--handler",dest="handler", help="Define Custom Handler Class.")
         (options, args) = parser.parse_args()
 
         
@@ -586,7 +691,8 @@ class WatchDropFolderTask(SchedulerTask):
         if options.project != None :
             project_code= options.project
         else:
-            project_code= 'jobs'
+            raise Exception("No project specified")
+
 
         if options.drop_path!=None :
             drop_path= options.drop_path
@@ -600,23 +706,55 @@ class WatchDropFolderTask(SchedulerTask):
         if options.search_type!=None :
             search_type = options.search_type
         else:
-            search_type = 'jobs/media'
+            search_type = None
+
 
         if options.process!=None :
             process = options.process
         else:
             process= 'publish'
 
-        if options.script_path!=None :
+        if options.script_path != None :
             script_path = options.script_path
         else:
-            script_path="None"
+            script_path = None
           
+        if options.site != None:
+            site = options.site
+        else:
+            site = None
+
+        if options.handler != None:
+            handler = options.handler
+        else:
+            handler = None
+
+        if options.watch_folder_code != None:
+            watch_folder_code = options.watch_folder_code
+        else:
+            watch_folder_code = None
+        if watch_folder_code:   
+            # record pid in watch folder pid file
+            pid = os.getpid()
+            pid_file = "%s/log/watch_folder.%s" % (Environment.get_tmp_dir(), watch_folder_code)
+            f = open(pid_file, "w")
+            f.write(str(pid))
+            f.close()
+
+        Batch(project_code=project_code, site=site)
 
 
 
-
-        task = WatchDropFolderTask(base_dir=drop_path, project_code=project_code,search_type=search_type, process=process,script_path=script_path)
+        task = WatchDropFolderTask(
+            base_dir=drop_path, 
+            site=site, 
+            project_code=project_code,
+            search_type=search_type, 
+            process=process,
+            script_path=script_path, 
+            handler=handler,
+            watch_folder_code=watch_folder_code
+        )
         
         scheduler = Scheduler.get()
         scheduler.add_single_task(task, delay=1)
@@ -625,7 +763,6 @@ class WatchDropFolderTask(SchedulerTask):
     start = classmethod(start)
 
 if __name__ == '__main__':
-    Batch()
     WatchDropFolderTask.start()
     while 1:
         try:

@@ -26,14 +26,14 @@ from tactic.ui.common import BaseRefreshWdg
 
 class GalleryWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.curr_path = None
+    def init(self):
+        self.curr_path = None
 
-    def get_display(my):
+    def get_display(self):
 
-        my.sobject_data = {}
+        self.sobject_data = {}
 
-        top = my.top
+        top = self.top
         top.add_style
         top.add_class("spt_gallery_top")
 
@@ -43,8 +43,8 @@ class GalleryWdg(BaseRefreshWdg):
         # make the whole Gallery unselectable
         inner.add_class('unselectable')
         inner.add_style("position: fixed")
-        inner.add_style("top: 0")
-        inner.add_style("left: 0")
+        inner.add_style("top: 0px")
+        inner.add_style("left: 0px")
         inner.add_style("width: 100%")
         #inner.add_style("height: 100%")
         inner.add_style("bottom: 0px")
@@ -52,14 +52,14 @@ class GalleryWdg(BaseRefreshWdg):
 
         #inner.add_style("background: rgba(0,0,0,0.5)")
         inner.add_style("background: rgba(0,0,0,1)")
-        inner.add_style("z-index: 1000")
+        inner.add_style("z-index: 2000")
 
 
-        width = my.kwargs.get("width")
-        height = my.kwargs.get("height")
+        width = self.kwargs.get("width")
+        height = self.kwargs.get("height")
         
         # default to top.
-        align = my.kwargs.get("align")
+        align = self.kwargs.get("align")
         if not align:
             align = "top"
 
@@ -70,13 +70,13 @@ class GalleryWdg(BaseRefreshWdg):
             width = int(width)
 
 
-        paths = my.get_paths(file_type='main')
+        paths = self.get_paths(file_type='main')
         # icon type may be too small
-        thumb_paths = my.get_paths(file_type='web')
+        thumb_paths = self.get_paths(file_type='web')
         
         descriptions = []
         for path in paths:
-            sobject = my.sobject_data.get(path)
+            sobject = self.sobject_data.get(path)
             if not sobject:
                 descriptions.append("")
             else:
@@ -95,39 +95,14 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery = {};
         // 1250 is defined also in the css styles
         spt.gallery.portrait = window.innerWidth < 1250;
+        spt.gallery.portrait = false
 
-       
         
         spt.gallery.top = bvr.src_el;
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
         spt.gallery.content.setStyle('opacity','0.1')
         spt.gallery.desc_el = spt.gallery.top.getElement(".spt_gallery_description");
         
-        var height_factor = '100%'; 
-        if (spt.gallery.portrait) {
-            bvr.width = bvr.width * 0.8;
-            var scroll = bvr.src_el.getElement('.spt_gallery_scroll');
-            scroll.setStyle('width', bvr.width);
-            scroll.setStyle('height', '80%');
-            scroll.setStyle('position', 'relative');
-            scroll.setStyle('top', '500px');
-            
-            var items = bvr.src_el.getElements('.spt_gallery_item');
-            for (var k=0; k < items.length; k++) {
-                items[k].setStyle('width', bvr.width);
-                items[k].setStyle('height', '80%');
-            }
-            var left = bvr.src_el.getElement('.spt_left_arrow');
-            var right = bvr.src_el.getElement('.spt_right_arrow');
-            left.setStyle('top','88%')
-            left.setStyle('left','35%')
-            right.setStyle('top','88%')
-            
-            right.setStyle('right','35%')
-            
-            height_factor = '70%';
-            
-        }
         //window.addEvent('domready', function() {
         setTimeout(function() {
 		// set the img h or w directly
@@ -135,21 +110,26 @@ class GalleryWdg(BaseRefreshWdg):
 		// fade in
         spt.gallery.content.set('tween', {duration: 250}).fade('in');
 
+        /*
 		for (var k=0; k < items.length; k++) {
 		    var sizes = items[k].getSize();
 		    var item_h = sizes.y;
 		    var item_w = sizes.x;
 		    if (item_h >= item_w){
-			    items[k].setStyle('width', '');
-			    items[k].setStyle('height', height_factor);
+			    //items[k].setStyle('width', 'auto');
+			    //items[k].setStyle('height', '100%');
 		    }
 		    else {
-			    items[k].setStyle('width','100%');
-			    items[k].setStyle('height','');
+			    //items[k].setStyle('width','auto');
+			    //items[k].setStyle('height','100%');
 		    }
 		    
 		}
+        */
+
+
         }, 50)
+
         spt.gallery.width = bvr.width;
         spt.gallery.descriptions = bvr.descriptions;
         spt.gallery.index = 0;
@@ -216,11 +196,16 @@ class GalleryWdg(BaseRefreshWdg):
                 catch(e) {
                 }
             }
+
+
+            // can't tween percentage with this library???
             var width = spt.gallery.width;
             var margin = - width * index;
             var content = spt.gallery.content;
             //content.setStyle("margin-left", margin + "px");
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
+ 
+
 
             spt.gallery.index = index;
             var total = spt.gallery.total;
@@ -365,7 +350,7 @@ class GalleryWdg(BaseRefreshWdg):
             path_div.add_style("display: inline-block")
             path_div.add_style("vertical-align: middle")
 
-            if path == my.curr_path:
+            if path == self.curr_path:
                 curr_index = i
 
             try:
@@ -374,36 +359,18 @@ class GalleryWdg(BaseRefreshWdg):
                 print "Cannot find the thumb_path [%s] "%i 
                 thumb_path = ''
 
-            path_div.add_style("width: %s" % width)
-            if height:
-                path_div.add_style("height: %s" % height)
+            #path_div.add_style("width: %s" % width)
+            #if height:
+            #    path_div.add_style("height: %s" % height)
+            path_div.add_style("width: 100%")
+            path_div.add_style("height: 100%")
+            path_div.add_style("overflow-x: hidden")
+            path_div.add_style("overflow-y: hidden")
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i)
+            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i, controls="true")
             path_div.add(embed)
-            path_div.add_style("width: 100%")
 
-            #embed.add_style("position: absolute")
-            embed.add_style("margin-top: 25%")
-            embed.add_style("transform: translate(0%, -50%)")
-
-            """
-            path_div.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                var el = bvr.src_el.child();
-                alert(el);
-                var size = el.getSize();
-                bvr.src_el.setStyle("width", size.x);
-
-                '''
-            } )
-            """
-            
-
-            #img = HtmlElement.img(path)
-            #path_div.add(img)
-            #img.add_style("width: 100%")
 
 
 
@@ -423,8 +390,8 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add(icon)
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
-        icon.add_style("bottom: 80px")
-        icon.add_style("left: 38px")
+        icon.add_style("top: 30px")
+        icon.add_style("right: 38px")
         icon.add_style("opacity: 0.5")
         icon.add_behavior( {
             'type': 'click_up' ,
@@ -504,30 +471,18 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-    def get_paths(my, file_type='main'):
+    def get_paths(self, file_type='main'):
 
         # this is the selected one
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
       
-        search_keys = my.kwargs.get("search_keys")
-        paths = my.kwargs.get("paths")
+        search_keys = self.kwargs.get("search_keys")
+        paths = self.kwargs.get("paths")
 
         if not paths:
             paths = []
-        """
-        if search_keys:
-            sobjects = Search.get_by_search_keys(search_keys)
-            snapshots = Snapshot.get_by_sobjects(sobjects, is_latest=True)
-            file_objects = File.get_by_snapshots(snapshots, file_type='main')
-            paths = [x.get_web_path() for x in file_objects]
 
-            web_file_objects = File.get_by_snapshots(snapshots, file_type='web')
-            web_paths = [x.get_web_path() for x in web_file_objects]
-            #paths = web_paths
 
-            for sobject, path in zip(sobjects, paths):
-                my.sobject_data[path] = sobject
-        """
         if search_keys:
             sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
 
@@ -546,7 +501,6 @@ class GalleryWdg(BaseRefreshWdg):
                 snapshots = sobj_snapshot_dict.values()
 
             file_dict = Snapshot.get_files_dict_by_snapshots(snapshots, file_type=file_type)
-
             for sobject in sobjects:
                 path = ''
                 snapshot = sobj_snapshot_dict.get(sobject.get_search_key())
@@ -558,15 +512,29 @@ class GalleryWdg(BaseRefreshWdg):
 
                 file_list = file_dict.get(snapshot.get_code())
                 if not file_list: 
+                    paths.append("")
                     continue
-                
+
+
+               
+                # NOTE: there should only be one file
+                tmp_paths = []
                 for file_object in file_list:
                     path = file_object.get_web_path()
-                    my.sobject_data[path] = sobject
-                    paths.append(path)  
+
+                    if path.find("#") != -1:
+                        expanded_paths = snapshot.get_expanded_web_paths()
+                        path = "|".join(expanded_paths)
+
+                    tmp_paths.append(path)  
+
+                path = "|".join(tmp_paths)
+                self.sobject_data[path] = sobject
+                paths.append(path)
+
 	            # set the current path the user clicks on
-                if not my.curr_path and sobject.get_search_key() == search_key and file_type=='main':
-                    my.curr_path = path
+                if not self.curr_path and sobject.get_search_key() == search_key and file_type=='main':
+                    self.curr_path = path
                         
 
         elif paths:
@@ -580,9 +548,11 @@ class GalleryWdg(BaseRefreshWdg):
                 '/assets/test/store/Whatever_v001.jpg'
             ]
 
+        """
         for index,path in enumerate(paths):
             path = urllib.pathname2url(path)
             paths[index] = path
+        """
 
         return paths
 

@@ -25,7 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 class FormatDefinitionEditWdg(BaseRefreshWdg):
     '''Used in ElementDefinitionWdg to draw the options for simple display'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'prefix': 'prefix of the options',
         'name': 'name given to the widget',
@@ -33,21 +33,21 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
         'display_options': 'options provided by the config',
         }
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_element_top")
 
-        prefix = my.kwargs.get('prefix')
+        prefix = self.kwargs.get('prefix')
         # this should be name to be consistent with the BaseInputWdg interface
-        widget_name = my.kwargs.get('name')
+        widget_name = self.kwargs.get('name')
         if not widget_name:
             widget_name = 'data_type'
 
-        display_options = my.kwargs.get('display_options')
+        display_options = self.kwargs.get('display_options')
         if not display_options:
             display_options = {}
 
-        option = my.kwargs.get('option')
+        option = self.kwargs.get('option')
         if not option:
             option = {}
 
@@ -59,11 +59,15 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
 
         select = SelectWdg(widget_name)
         top.add(select)
+        select.add_style("width: 30%")
+        select.add_style("display: inline-block")
+
         default = option.get('default')
         if default:
             select.set_value(default)
         else:
             select.add_empty_option('-- Select --')
+
 
         values = option.get('values')
         if not values:
@@ -83,7 +87,7 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
         for (var i = 0; i < selects.length; i++) {
             var type = selects[i].getAttribute("spt_type");
             if (value == type) {
-                selects[i].setStyle("display", "");
+                selects[i].setStyle("display", "inline-block");
                 selects[i].removeAttribute("disabled");
             }
             else {
@@ -143,7 +147,8 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
                              '01:37:46 PM',
                              '31/12/99 13:37',
                              '31/12/99 13:37:46',
-                             'DATETIME'],
+                             'DATETIME',
+                             'TIME_AGO'],
 
             'scientific':   ['-1.23E+03',
                              '-1.234E+03'],
@@ -182,6 +187,8 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
                 select.add_style("display", "none")
                 select.add_attr("disabled", "disabled")
 
+            select.add_style("width: 30%")
+
             select.set_option("values", select_values)
             select.add_empty_option("-- Format --")
             top.add(select)
@@ -203,6 +210,7 @@ class FormatDefinitionEditWdg(BaseRefreshWdg):
                 select.set_option("labels", "12 fps|24 fps|25 fps|30 fps|60 fps")
                 select.add_empty_option("-- fps --")
                 top.add(select)
+                select.add_style("width: 30%")
                
 
         return top

@@ -20,7 +20,7 @@ from header_wdg import ProjectSwitchWdg
 class ErrorWdg(Widget):
 
     LOGIN_MSG = 'login_message'
-    def get_display(my):
+    def get_display(self):
 
         box = DivWdg(css='login')
 
@@ -39,9 +39,9 @@ class ErrorWdg(Widget):
         div.add_style("margin: 0px 0px")
         div.add_class("centered")
 
-        div.add( HtmlElement.br(6) )
+        div.add( HtmlElement.br(3) )
 
-        div.add(my.get_error_wdg() )
+        div.add(self.get_error_wdg() )
         box.add(div)
 
         widget = Widget()
@@ -60,37 +60,48 @@ class ErrorWdg(Widget):
         return widget
 
 
-    def get_error_wdg(my):
+    def get_error_wdg(self):
         '''function to override'''
         pass
 
 
-    def set_message(my, message):
-        my.message = message
+    def set_message(self, message):
+        self.message = message
 
-    def set_status(my, status):
-        my.status = status
+    def set_status(self, status):
+        self.status = status
 
 class Error404Wdg(ErrorWdg):
     ''' this should be displaying the error status and message, not necessarily 404'''
 
-    def __init__(my):
+    def __init__(self):
         # just defaults to 404
-        my.status = 404
-        my.message = ''
-        super(Error404Wdg, my).__init__()
+        self.status = 404
+        self.message = ''
+        super(Error404Wdg, self).__init__()
 
-    def get_error_wdg(my):
+    def get_error_wdg(self):
+
+        kwargs = {
+        }
+        from tactic.ui.panel import HashPanelWdg 
+        widget = HashPanelWdg.get_widget_from_hash("/error404", return_none=True, kwargs=kwargs)
+        if widget:
+            return widget
+
         div = DivWdg()
         error_div = DivWdg()
-        error_div.add("Error %s" % my.status)
+        error_div.add("<hr/>")
+        error_div.add("Error %s" % self.status)
+        error_div.add("<hr/>")
         div.add(error_div)
         error_div.add_style("font-size: 18px")
         error_div.add_style("font-weight: bold")
         error_div.add_style("padding: 10px")
         error_div.add_style("width: auto")
-        error_div.add_gradient("background", "background")
-        error_div.add_border()
+        error_div.add_color("background", "background", -3)
+        error_div.add_color("color", "color")
+        #error_div.add_border()
         error_div.add_style("margin-left: 5px")
         error_div.add_style("margin-right: 5px")
         error_div.add_style("margin-top: -10px")
@@ -100,16 +111,16 @@ class Error404Wdg(ErrorWdg):
 
         span = DivWdg()
         #span.add_color("color", "color")
-        span.add_style("color", "#FFF")
-        if my.status == 404:
+        #span.add_style("color", "#FFF")
+        if self.status == 404:
             span.add(HtmlElement.b("You have tried to access a url that is not recognized."))
         else:
-            span.add(HtmlElement.b(my.message))
+            span.add(HtmlElement.b(self.message))
         span.add(HtmlElement.br(2))
 
         web = WebContainer.get_web()
         root = web.get_site_root()
-        if my.message.startswith('No project ['):
+        if self.message.startswith('No project ['):
             label = 'You may need to correct the default_project setting in the TACTIC config.'
         else:
             label = "Go to the Main page for a list of valid projects"
@@ -137,50 +148,30 @@ class Error404Wdg(ErrorWdg):
         return div
 
 
-"""
-class Error403Wdg(ErrorWdg):
-    def get_error_wdg(my):
-        div = DivWdg()
-        #div.add_color("color", "color3")
-        div.add_style("color", "white")
-        div.add("<h3>Error 403: Permission Denied</h3>")
-        span = SpanWdg()
-        span.add("<b>You have tried to access a url that is not permitted.</b>")
-        span.add(HtmlElement.br(2))
-        #inner_div = DivWdg(my._get_project_switch())
-        inner_div.add_style('margin-right', '130px')
-        span.add(inner_div)
-        #span.add(SignOutLinkWdg())
-        div.add(span)
-        return div
-
-    def _get_project_switch(my):
-        # can't use anything relying on behavior here
-        widget = ProjectSwitchWdg()
-        return widget
-"""
 
 
 
 class Error403Wdg(ErrorWdg):
     ''' this should be displaying the error status and message, not necessarily 404'''
 
-    def __init__(my):
+    def __init__(self):
         # just defaults to 404
-        my.status = 403
-        my.message = ''
-        super(Error403Wdg, my).__init__()
+        self.status = 403
+        self.message = ''
+        super(Error403Wdg, self).__init__()
 
-    def get_error_wdg(my):
+    def get_error_wdg(self):
         div = DivWdg()
 
         error_div = DivWdg()
-        error_div.add("Error %s - Permission Denied" % my.status)
+        error_div.add("<hr/>")
+        error_div.add("Error %s - Permission Denied" % self.status)
+        error_div.add("<hr/>")
         div.add(error_div)
         error_div.add_style("font-size: 16px")
         error_div.add_style("font-weight: bold")
         error_div.add_style("width: 97%")
-        error_div.add_gradient("background", "background")
+        error_div.add_color("background", "background", -3)
         error_div.add_border()
         error_div.add_style("margin-left: 5px")
         error_div.add_style("margin-top: -10px")
@@ -190,11 +181,11 @@ class Error403Wdg(ErrorWdg):
 
         span = DivWdg()
         #span.add_color("color", "color")
-        span.add_style("color", "#FFF")
-        if my.status == 403:
+        #span.add_style("color", "#FFF")
+        if self.status == 403:
             span.add("<b>You have tried to access a url that is not permitted.</b>")
         else:
-            span.add(HtmlElement.b(my.message))
+            span.add(HtmlElement.b(self.message))
         span.add(HtmlElement.br(2))
 
         web = WebContainer.get_web()

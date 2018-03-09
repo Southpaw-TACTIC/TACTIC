@@ -32,15 +32,15 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
     '''Panel to manage search types ... this is meant to be a generic interface
     for manipulating the search types'''
 
-    def init(my):
-        my.search_type = my.kwargs.get('search_type')
-        if not my.search_type:
-            my.search_type = WebContainer.get_web().get_form_value('search_type')
-        my.view = my.kwargs.get('view')
-        if not my.view:
-            my.view = "database_definition"
+    def init(self):
+        self.search_type = self.kwargs.get('search_type')
+        if not self.search_type:
+            self.search_type = WebContainer.get_web().get_form_value('search_type')
+        self.view = self.kwargs.get('view')
+        if not self.view:
+            self.view = "database_definition"
     
-    def get_tool_bar(my):
+    def get_tool_bar(self):
         widget = Widget()
         trash_div = SpanWdg()
         trash_div.set_id('trash_me')
@@ -62,12 +62,12 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         save_div.add(IconWdg('Save', IconWdg.SAVE))
         
         bvr = { "type": "click_up",\
-                'cbjs_action': "spt.custom_project.manage_action_cbk({'value':'save'},'%s');" % my.view} 
+                'cbjs_action': "spt.custom_project.manage_action_cbk({'value':'save'},'%s');" % self.view} 
         save_div.add_behavior(bvr)
         widget.add(save_div)
         return widget
  
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
 
         
@@ -77,16 +77,16 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         
         div.add(top_div)
 
-        top_div.add( my.get_action_wdg(my.search_type) ) 
+        top_div.add( self.get_action_wdg(self.search_type) ) 
         top_div.add(HtmlElement.br())
 
         div.add(HtmlElement.br())
-        if not my.search_type:
+        if not self.search_type:
             return div
 
         # check to see that the search type actually exists
         try:
-            SearchType.get(my.search_type)
+            SearchType.get(self.search_type)
         except SearchException:
             return div
 
@@ -95,7 +95,7 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         from tactic.ui.panel import TableLayoutWdg
         table = TableLayoutWdg(search_type="sthpw/search_object",view="table",show_insert='false', show_row_select='false', do_search='false', show_gear='false', show_refresh='false', show_search_limit='false')
         search = Search("sthpw/search_object")
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("search_type", self.search_type)
         search_type_obj = search.get_sobject()
         table.set_sobject(search_type_obj)
 
@@ -139,15 +139,15 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         menu_div = DivWdg()
         menu_div.set_id("menu_item_template")
         menu_div.add_style("display: none")
-        menu_div.add( my.get_section_wdg("template") )
+        menu_div.add( self.get_section_wdg("template") )
         td.add(menu_div) 
 
         # add the widget column
-        show_definition = my.kwargs.get("show_definition")
+        show_definition = self.kwargs.get("show_definition")
         if  not show_definition in ['false', False]:
             definition_view = DivWdg()
             definition_view.set_id("menu_item_list")
-            definition_view.add( my.get_section_wdg("definition", title='Widget Column', editable=False, default=True) )
+            definition_view.add( self.get_section_wdg("definition", title='Widget Column', editable=False, default=True) )
             td.add(definition_view)
 
         td.add("<br/>")
@@ -156,7 +156,7 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         definition_view = DivWdg()
         definition_view.add_style('min-width: 200px')
         definition_view.set_id("menu_item_list")
-        definition_view.add( my.get_section_wdg("db_column", title='Database Columns', editable=False) )
+        definition_view.add( self.get_section_wdg("db_column", title='Database Columns', editable=False) )
 
         td.add(definition_view)
         td.add_style("vertical-align: top")
@@ -171,12 +171,12 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         menu_div.set_id("menu_item_custom_definition")
         menu_div.add_style("display: block")
 
-        menu_div.add( my.get_section_wdg("custom_definition") )
+        menu_div.add( self.get_section_wdg("custom_definition") )
         td.add(menu_div)
         """
 
         # add detail information
-        detail_wdg = ManageSearchTypeDetailWdg(search_type=my.search_type)
+        detail_wdg = ManageSearchTypeDetailWdg(search_type=self.search_type)
         td = table.add_cell( detail_wdg )
 
         # set the panel information
@@ -184,7 +184,7 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         td.add_class('spt_view_manager_detail')
         td.add_style("display", "table-cell")
         td.add_attr("spt_class_name", "tactic.ui.panel.ManageSearchTypeDetailWdg")
-        td.add_attr("spt_search_type", my.search_type)
+        td.add_attr("spt_search_type", self.search_type)
 
         td.add_style("padding: 0 20px 20px 20px")
         td.add_style("vertical-align: top")
@@ -194,14 +194,14 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
 
         top_div.add(table)
         # add the predefined list
-        predefined = my.get_predefined_wdg()
+        predefined = self.get_predefined_wdg()
         top_div.add(predefined)
 
         return div
 
-    def get_action_wdg(my, search_type):
+    def get_action_wdg(self, search_type):
         div = DivWdg()
-        menus = [ my.get_action_menu_details(search_type) ]
+        menus = [ self.get_action_menu_details(search_type) ]
         dd_activator = ButtonForDropdownMenuWdg( id="SideBarManagerActionDropDown", title="-- Action --", menus=menus,
                                                  width=150, match_width=True)
 
@@ -222,7 +222,7 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         div.add( dd_activator )
         return div
 
-    def get_action_menu_details(my, search_type):
+    def get_action_menu_details(self, search_type):
         spec_list = [ { "type": "action", "label": "New SType...", "bvr_cb":
                     {'cbjs_action': "spt.popup.open('create_search_type_wizard');" } }]
         if search_type:
@@ -238,23 +238,23 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         ''' #TODO: add this back and work on the pp_action on dropping
          """
                 { "type": "action", "label": "New Column", "bvr_cb":
-                    {'cbjs_action': "spt.custom_project.manage_action_cbk({'value':'new_column'},'%s', bvr);" % my.view}},"""
+                    {'cbjs_action': "spt.custom_project.manage_action_cbk({'value':'new_column'},'%s', bvr);" % self.view}},"""
                 { "type": "separator" },
                 { "type": "action", "label": "Show Predefined", "bvr_cb":
-                    {'cbjs_action': "spt.custom_project.manage_action_cbk({'value':'predefined'},'%s');" % my.view} }'''  
+                    {'cbjs_action': "spt.custom_project.manage_action_cbk({'value':'predefined'},'%s');" % self.view} }'''  
 
-    def get_predefined_wdg(my):
+    def get_predefined_wdg(self):
         project = Project.get()
         project_type = project.get_type()
 
         from tactic.ui.container import PopupWdg
         popup = PopupWdg(id="predefined_db_columns", allow_page_activity=True, width="320px")
         popup.add_title("Predefined Database Columns")
-        popup.add( my.get_section_wdg(view='predefined', default=True))
+        popup.add( self.get_section_wdg(view='predefined', default=True))
 
         return popup
     
-    def get_section_wdg(my, view, title='', editable=True, default=False):
+    def get_section_wdg(self, view, title='', editable=True, default=False):
         '''editable really means draggable'''
         if not title:
             title = view 
@@ -272,7 +272,7 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
             'prefix': 'manage_side_bar',
             'mode': edit_mode,
             'default': str(default),
-            'config_search_type': my.search_type
+            'config_search_type': self.search_type
         }
         if view == "database_definition":
             kwargs['recurse'] = "false"
@@ -294,7 +294,7 @@ from tactic.ui.manager import BaseSectionWdg
 #from manage_view_panel_wdg import ManageSideBarBookmarkMenuWdg
 class ManageSearchTypeMenuWdg(BaseSectionWdg):
 
-    def get_detail_class_name(my):
+    def get_detail_class_name(self):
         return "tactic.ui.panel.ManageSearchTypeDetailWdg"
 
 
@@ -338,7 +338,7 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
                         for elem in user_element_names:
                             user_node = user_config.get_element_node(elem)
                             default_config.append_xml_element(elem, node=user_node)
-                except SqlException, e:
+                except SqlException as e:
                      print "Search ERROR: ", e.__str__()
                      default_config = None
                 
@@ -394,7 +394,7 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
                 # add the schema config definiiton
                 schema_config = SearchType.get_schema_config(search_type)
                 widget_config_list = [schema_config]
-            except SqlException, e:
+            except SqlException as e:
                 widget_config_list = []
         if not config_view:
             config_view = WidgetConfigView(search_type, view, widget_config_list)
@@ -402,7 +402,7 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
 
     get_config = classmethod(get_config)
 
-    def add_link_behavior(my, link_wdg, element_name, config, options):
+    def add_link_behavior(self, link_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a link'''
 
         # check security
@@ -412,13 +412,13 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
         #    return
 
         # avoid editing id and s_status 
-        if my.kwargs.get('view')=='db_column' and element_name in ['id','s_status']:
+        if self.kwargs.get('view')=='db_column' and element_name in ['id','s_status']:
             link_wdg.add_style('color: black')
             return
 
         # make it draggable
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
                 # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -426,7 +426,7 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
                 "drop_code": 'manageSideBar',
                 "cb_set_prefix": 'spt.side_bar.pp',
                 'cbjs_action_onnomotion':  'spt.side_bar.display_element_info_cbk(evt,bvr);',
-                'class_name':   my.get_detail_class_name()
+                'class_name':   self.get_detail_class_name()
             }
         else:
             behavior = {
@@ -435,17 +435,17 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
                 #"drop_code": 'manageSideBar',
                 #"cb_set_prefix": 'spt.side_bar.pp',
                 'cbjs_action':  'spt.side_bar.display_element_info_cbk(evt,bvr);',
-                'class_name':   my.get_detail_class_name()
+                'class_name':   self.get_detail_class_name()
             }
         if config.get_view() == 'template':
-            template_config = my._get_template_config()
+            template_config = self._get_template_config()
             node = template_config.get_element_node('new_column')
             behavior['config_xml'] = template_config.get_xml().to_string(node)
         link_wdg.add_behavior(behavior)
         link_wdg.set_attr("SPT_ACCEPT_DROP", "manageSideBar")
-        link_wdg.add_attr("spt_default", my.default)
+        link_wdg.add_attr("spt_default", self.default)
         
-    def _get_template_config(my):
+    def _get_template_config(self):
 
         base_dir = Environment.get_install_dir()
         file_path="%s/src/config2/search_type/search/DEFAULT-conf.xml" % base_dir
@@ -459,81 +459,81 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
     MODIFY_COLUMN = "Modify Column"
     REMOVE_COLUMN = "Remove Column"
 
-    def get_config(my, search_type, view,  default=False, personal=False):
+    def get_config(self, search_type, view,  default=False, personal=False):
         config = ManageSearchTypeMenuWdg.get_config(search_type, view, default=default)
         return config
 
 
-    def init(my):
+    def init(self):
         '''initialize the widget_config, and from there retrieve the schema_config'''
         web = WebContainer.get_web()
-        my.search_type = my.kwargs.get('search_type')
+        self.search_type = self.kwargs.get('search_type')
         
-        element_name = my.kwargs.get('element_name')
-        my.view = my.kwargs.get('view')
+        element_name = self.kwargs.get('element_name')
+        self.view = self.kwargs.get('view')
         
         # FIXME: comment out the assert for now to avoid error screen
-        if not my.view:
-            my.view = 'table'
-        #assert my.view
+        if not self.view:
+            self.view = 'table'
+        #assert self.view
 
-        my.config_xml = my.kwargs.get('config_xml')
-        if not my.config_xml:
-            my.config_xml = web.get_form_value('config_xml')
+        self.config_xml = self.kwargs.get('config_xml')
+        if not self.config_xml:
+            self.config_xml = web.get_form_value('config_xml')
         
-        my.default = my.kwargs.get('default') == 'True'
+        self.default = self.kwargs.get('default') == 'True'
 
-        cbk = ManageSearchTypeDetailCbk(search_type=my.search_type, view=my.view, \
+        cbk = ManageSearchTypeDetailCbk(search_type=self.search_type, view=self.view, \
                 element_name=element_name)
         Command.execute_cmd(cbk)
 
-        my.config_string = ""
-        my.data_type_string = ""
-        my.name_string = ""
-        my.title_string = ""
-        my.nullable_string = ""
-        my.has_column = True
+        self.config_string = ""
+        self.data_type_string = ""
+        self.name_string = ""
+        self.title_string = ""
+        self.nullable_string = ""
+        self.has_column = True
 
 
        
         if element_name:
-            if my.config_xml:
-                my.config_string = my.config_xml
-                whole_config_string = "<config><%s>%s</%s></config>"%(my.view, my.config_xml, my.view)
-                config = WidgetConfig.get(xml=whole_config_string, view=my.view)
-                my.config = WidgetConfigView(my.search_type, my.view, [config])
+            if self.config_xml:
+                self.config_string = self.config_xml
+                whole_config_string = "<config><%s>%s</%s></config>"%(self.view, self.config_xml, self.view)
+                config = WidgetConfig.get(xml=whole_config_string, view=self.view)
+                self.config = WidgetConfigView(self.search_type, self.view, [config])
             else:
                 # don't pass in default here
-                my.config = my.get_config(my.search_type, my.view)
-                node = my.config.get_element_node(element_name)
+                self.config = self.get_config(self.search_type, self.view)
+                node = self.config.get_element_node(element_name)
                 if node is not None:
-                    config_xml = my.config.get_xml()
+                    config_xml = self.config.get_xml()
                     
 
-                    my.config_string = config_xml.to_string(node)
-                    my.title_string = config_xml.get_attribute(node, 'title')
-            schema_config = SearchType.get_schema_config(my.search_type)
+                    self.config_string = config_xml.to_string(node)
+                    self.title_string = config_xml.get_attribute(node, 'title')
+            schema_config = SearchType.get_schema_config(self.search_type)
             
             attributes = schema_config.get_element_attributes(element_name)
-            my.data_type_string = attributes.get("data_type")
+            self.data_type_string = attributes.get("data_type")
             
             # double_precision is float
-            if my.data_type_string == 'double precision':
-                my.data_type_string = 'float'
+            if self.data_type_string == 'double precision':
+                self.data_type_string = 'float'
 
-            my.name_string = attributes.get("name")
-            my.nullable_string = attributes.get("nullable")
-            my.is_new_column = attributes.get("new") == 'True'
+            self.name_string = attributes.get("name")
+            self.nullable_string = attributes.get("nullable")
+            self.is_new_column = attributes.get("new") == 'True'
 
             # a database columnless widget
-            if not my.name_string:
-                my.has_column = False
+            if not self.name_string:
+                self.has_column = False
                                 
-    def get_display(my):
+    def get_display(self):
 
         # add the detail widget
         detail_wdg = DivWdg(css='spt_detail_panel')
-        if not my.name_string and not my.config_string:
+        if not self.name_string and not self.config_string:
             detail_wdg.add("<br/>"*3)
             detail_wdg.add('<- Click on an item on the left for modification.')
             detail_wdg.add_style("padding: 10px")
@@ -544,7 +544,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
 
             return detail_wdg
 
-        if my.kwargs.get("mode") == "empty":
+        if self.kwargs.get("mode") == "empty":
             overlay = DivWdg()
             detail_wdg.add(overlay)
 
@@ -578,15 +578,15 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         #detail_wdg.add(simple_mode_wdg)
         #detail_wdg.add(HtmlElement.br(2))
 
-        if my.is_new_column:
-            detail_wdg.add( my.get_new_definition_wdg() )
+        if self.is_new_column:
+            detail_wdg.add( self.get_new_definition_wdg() )
         else:
             
-            simple_wdg = my.get_simple_definition_wdg()
+            simple_wdg = self.get_simple_definition_wdg()
            
             simple_wdg.add_class("config_simple")
             detail_wdg.add( simple_wdg )
-            adv_wdg = my.get_advanced_definition_wdg()
+            adv_wdg = self.get_advanced_definition_wdg()
             adv_wdg.add_class("config_advanced")
             if config_mode == 'simple':
                 adv_wdg.add_style('display: none')
@@ -596,7 +596,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         detail_wdg.add(HtmlElement.br(2))
 
 
-        security_wdg = my.get_security_wdg()
+        security_wdg = self.get_security_wdg()
         detail_wdg.add(security_wdg)
 
 
@@ -604,14 +604,14 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         # we are only interested in whether it is project_view or definition
         # sub-views of project_view is not of our interest
 
-        #if my.view != 'project_view':
-        #    my.view = 'custom_definition'
-        detail_wdg.add(HiddenWdg('view', my.view))
+        #if self.view != 'project_view':
+        #    self.view = 'custom_definition'
+        detail_wdg.add(HiddenWdg('view', self.view))
 
 
         return detail_wdg
 
-    def get_advanced_definition_wdg(my):
+    def get_advanced_definition_wdg(self):
         # add the advanced entry
         advanced = DivWdg()
         advanced.add_style("margin-top: 10px")
@@ -628,7 +628,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         input.set_id("config_xml")
         input.set_option("rows", "10")
         input.set_option("cols", "70")
-        input.set_value(my.config_string)
+        input.set_value(self.config_string)
         advanced.add(input)
         advanced.add(HtmlElement.br(2))
 
@@ -645,7 +645,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
 
         return advanced
 
-    def get_new_definition_wdg(my):
+    def get_new_definition_wdg(self):
         detail_wdg = DivWdg()
         detail_wdg.add_style("color: black")
         detail_wdg.add_style("width: 350px")
@@ -667,10 +667,10 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         input.add_style('padding-top: 6px')
         input.set_id("config_element_name")
         text = TextWdg('column_name')
-        text.set_value(my.name_string)
+        text.set_value(self.name_string)
         input.add(text)
         detail_wdg.add(input)
-        hidden = HiddenWdg('target_search_type', my.search_type)
+        hidden = HiddenWdg('target_search_type', self.search_type)
         detail_wdg.add(hidden)
 
         detail_wdg.add(HtmlElement.br(2))
@@ -681,7 +681,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         select = SelectWdg('config_data_type', label ='Data Type: ')
         #detail_wdg.add(": ")
         select.set_option('values', default_data_types )
-        select.set_value(my.data_type_string)
+        select.set_value(self.data_type_string)
         
         select.add_behavior({'type': 'change', 
             'cbjs_action': "if (bvr.src_el.value=='Other...') {spt.show('config_data_type_custom');}\
@@ -693,7 +693,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         span.add(text)
         span.set_id('config_data_type_custom')
         span.add_style('display','none')
-        text.set_value(my.data_type_string)
+        text.set_value(self.data_type_string)
 
         data_type.add("<br/>")
         data_type.add(span)
@@ -705,14 +705,14 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         checkbox = CheckboxWdg('config_nullable', label ='Allow null(empty) value: ')
         nullable.add(checkbox)
 
-        if my.nullable_string in ['True', 'true']:
+        if self.nullable_string in ['True', 'true']:
             checkbox.set_checked()
         
         detail_wdg.add(nullable)
 
         return detail_wdg
 
-    def get_simple_definition_wdg(my):
+    def get_simple_definition_wdg(self):
 
         detail_wdg = DivWdg()
         detail_wdg.add_color("color", "color")
@@ -723,7 +723,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         title = DivWdg()
         title.add_style("margin-top: -23px")
         detail_wdg.add(title)
-        if not my.name_string:
+        if not self.name_string:
             title.add('No database column')
             return detail_wdg
         
@@ -739,11 +739,11 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         input = SpanWdg()
         input.add_style('padding-top: 6px')
         input.set_id("config_element_name")
-        input.add(HtmlElement.b(my.name_string))
+        input.add(HtmlElement.b(self.name_string))
         detail_wdg.add(input)
-        hidden = HiddenWdg('column_name', my.name_string)
+        hidden = HiddenWdg('column_name', self.name_string)
         detail_wdg.add(hidden)
-        hidden = HiddenWdg('target_search_type', my.search_type)
+        hidden = HiddenWdg('target_search_type', self.search_type)
         detail_wdg.add(hidden)
 
         detail_wdg.add(HtmlElement.br(2))
@@ -754,7 +754,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         select = SelectWdg('config_data_type', label ='Data Type: ')
         #detail_wdg.add(": ")
         select.set_option('values', default_data_types )
-        select.set_value(my.data_type_string)
+        select.set_value(self.data_type_string)
         
         select.add_behavior({'type': 'change', 
             'cbjs_action': "if (bvr.src_el.value=='Other...') {spt.show('config_data_type_custom');}\
@@ -766,7 +766,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         span.add(text)
         span.set_id('config_data_type_custom')
         span.add_style('display','none')
-        text.set_value(my.data_type_string)
+        text.set_value(self.data_type_string)
 
         data_type.add("<br/>")
         data_type.add(span)
@@ -780,7 +780,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         nullable.add(checkbox)
    
 
-        if my.nullable_string in ['True', 'true']:
+        if self.nullable_string in ['True', 'true']:
             checkbox.set_checked()
         
         detail_wdg.add(nullable)
@@ -843,13 +843,13 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
 
         detail_wdg.add(button_div)
         button_div.add("<hr/><br/>")
-        if my.is_new_column:
+        if self.is_new_column:
             button = ActionButtonWdg(title="Commit") 
             #button = ProdIconButtonWdg("Commit New Column")
             button.add_behavior({"type": "click_up", 
                 "cbjs_action": "spt.manage_search_type.change_column_cbk(bvr)", \
                         
-                        "alter_mode": my.ADD_COLUMN})
+                        "alter_mode": self.ADD_COLUMN})
             button_div.add(button)
         else:
 
@@ -863,9 +863,9 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
             button.add_behavior({"type": "click_up", 
             "cbjs_action": '''spt.manage_search_type.change_column_cbk(bvr);
                            ''',
-                    "alter_mode": my.MODIFY_COLUMN,
-                    "column": my.name_string,
-                    "title": my.title_string
+                    "alter_mode": self.MODIFY_COLUMN,
+                    "column": self.name_string,
+                    "title": self.title_string
                     })
             table.add_cell(button)
 
@@ -881,8 +881,8 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
                 }
                 spt.confirm("Are you sure you wish to delete this column?", yes) 
                 ''',
-                "alter_mode": my.REMOVE_COLUMN,
-                "column": my.name_string
+                "alter_mode": self.REMOVE_COLUMN,
+                "column": self.name_string
                 
                 })
             table.add_cell(button)
@@ -891,7 +891,7 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
 
         return detail_wdg
 
-    def get_security_wdg(my):
+    def get_security_wdg(self):
         return None
 
 
@@ -899,14 +899,14 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
 
 class WidgetDetailSimpleModeWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'the search type that this detail belongs to',
         'view': 'the view that this detail belongs to',
         'name': 'the name of the element that detail belongs to'
         }
 
-    def get_display(my):
+    def get_display(self):
 
         top_wdg = DivWdg()
         top_wdg.add_style("color: black")
@@ -919,7 +919,7 @@ class WidgetDetailSimpleModeWdg(BaseRefreshWdg):
         title.add_style("margin-top: -22px")
 
         top_wdg.add(title)
-        #if not my.name_string:
+        #if not self.name_string:
         #    title.add('No database column')
         #    return top_wdg
         
@@ -1118,13 +1118,13 @@ class AlterSearchTypeCbk(Command):
 
     DEFAULT_VIEW = "definition"
 
-    def check(my):
+    def check(self):
         return True
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
-        alter_mode = my.kwargs.get("alter_mode")
-        title = my.kwargs.get("title")
+        alter_mode = self.kwargs.get("alter_mode")
+        title = self.kwargs.get("title")
         config_mode = web.get_form_value("config_mode")
         view = web.get_form_value('view')
         constraint = web.get_form_value("config_constraint")
@@ -1185,7 +1185,7 @@ class AlterSearchTypeCbk(Command):
 
             # handle the "default" view
             # update the widget config data type in the xml
-            view = my.DEFAULT_VIEW
+            view = self.DEFAULT_VIEW
             config = WidgetDbConfig.get_by_search_type(search_type, view)
             if config:
                 config.append_display_element(column_name, options={}, \
@@ -1211,35 +1211,35 @@ class AlterSearchTypeCbk(Command):
 class ManageSearchTypeDetailCbk(Command):
 
     '''FIXME: this function doesn't do anything'''
-    def get_args_key(my):
+    def get_args_key(self):
         return {
         'element_name': 'name of the element to get information from',
         'search_type': 'search_type',
         'view': 'view of the search type'
         }
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
         # this is set through js
         if web.get_form_value("update") != "true":
             return
 
-        my.element_name = my.kwargs.get('element_name')
-        my.search_type = my.kwargs.get('search_type')
-        my.view = web.get_form_value("view")
-        my.config_xml = web.get_form_value("config_xml")
-        #if my.config_xml:
-        #    my.config_xml = "<config><%s>%s</%s></config>" %(my.view, my.config_xml, my.view)
-        my.handle_config()
+        self.element_name = self.kwargs.get('element_name')
+        self.search_type = self.kwargs.get('search_type')
+        self.view = web.get_form_value("view")
+        self.config_xml = web.get_form_value("config_xml")
+        #if self.config_xml:
+        #    self.config_xml = "<config><%s>%s</%s></config>" %(self.view, self.config_xml, self.view)
+        self.handle_config()
 
 
-    def handle_config(my):
+    def handle_config(self):
         '''for search type display config'''
         web = WebContainer.get_web()
-        WidgetDbConfig.append(my.search_type, my.view, my.element_name, config_xml=my.config_xml)
+        WidgetDbConfig.append(self.search_type, self.view, self.element_name, config_xml=self.config_xml)
          
-    def handle_config2(my):
+    def handle_config2(self):
         '''for db column search config stuff, not used yet'''
         web = WebContainer.get_web()
 
@@ -1280,11 +1280,11 @@ class ManageSearchTypeDetailCbk(Command):
             # TAKEN FROM API: should be centralized or something
             from tactic.ui.panel import SideBarBookmarkMenuWdg
             config_view = SideBarBookmarkMenuWdg.get_config(search_type, view)
-            node = config_view.get_element_node(my.element_name)
+            node = config_view.get_element_node(self.element_name)
             if node:
                 config_xml = config_view.get_xml()
 
-                node = config_view.get_element_node(my.element_name)
+                node = config_view.get_element_node(self.element_name)
                 Xml.set_attribute(node, "data_type", config_data_type)
                 Xml.set_attribute(node, "nullable", config_nullable)
                 Xml.set_attribute(node, "new", "True")
@@ -1293,11 +1293,11 @@ class ManageSearchTypeDetailCbk(Command):
             else:
                 config_string = '''
                 <element name="%s" data_type="%s" nullable="%s" new="True"/>
-                ''' %(my.element_name, config_data_type, config_nullable)
+                ''' %(self.element_name, config_data_type, config_nullable)
         
-        config.append_xml_element(my.element_name,config_string)
+        config.append_xml_element(self.element_name,config_string)
         config.commit_config()
-        #WidgetDbConfig.append(search_type, view, my.element_name, class_name, display_options, element_attrs)
+        #WidgetDbConfig.append(search_type, view, self.element_name, class_name, display_options, element_attrs)
 
 
 
@@ -1305,19 +1305,19 @@ class ManageSearchTypeDetailCbk(Command):
 
 class ManageSideBarSecurityCbk(Command):
 
-    def get_args_key(my):
+    def get_args_key(self):
         return {
         'element_name': 'name of the element to get information from',
         }
 
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
         if web.get_form_value("update") != "true":
             return
 
-        my.element_name = my.kwargs.get("element_name")
+        self.element_name = self.kwargs.get("element_name")
 
         security_groups = web.get_form_values("security")
         from pyasm.security import AccessRuleBuilder, AccessManager
@@ -1337,7 +1337,7 @@ class ManageSideBarSecurityCbk(Command):
 
             # add the rule to each group
             builder = AccessRuleBuilder(access_rules)
-            builder.add_rule(rule_group, my.element_name, "deny")
+            builder.add_rule(rule_group, self.element_name, "deny")
 
             login_group.set_value("access_rules", builder.to_string())
             login_group.commit()

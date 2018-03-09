@@ -32,7 +32,7 @@ class FileCheckin(BaseCheckin):
     files gets checked into depends on the sobject and context
     '''
 
-    def __init__(my, sobject, file_paths, file_types=['main'], \
+    def __init__(self, sobject, file_paths, file_types=['main'], \
             context="publish", snapshot_type="file", column="snapshot", \
             description="", is_current=True, source_paths=[],
             level_type=None, level_id=None, mode=None, keep_file_name=False,
@@ -78,47 +78,47 @@ class FileCheckin(BaseCheckin):
            single_snapshot - if set to True, it raises a SingleSnapshotException if an existing snapshot already exists.
             
         '''
-        super(FileCheckin,my).__init__(sobject)
-        my.snapshot_type = snapshot_type
+        super(FileCheckin,self).__init__(sobject)
+        self.snapshot_type = snapshot_type
 
-        my.is_current = is_current
-        my.is_revision = is_revision
-        my.version = version
+        self.is_current = is_current
+        self.is_revision = is_revision
+        self.version = version
 
         if type(file_paths) in types.StringTypes:
-            my.file_paths = [file_paths]
+            self.file_paths = [file_paths]
         else:
-            my.file_paths = file_paths
+            self.file_paths = file_paths
 
-        for i, file_path in enumerate(my.file_paths):
+        for i, file_path in enumerate(self.file_paths):
             if not os.path.isdir(file_path):
-                my.file_paths[i] = file_path.rstrip("/")
+                self.file_paths[i] = file_path.rstrip("/")
             
 
         if source_paths: 
             if type(source_paths) != types.StringType:
-                my.source_paths = source_paths
+                self.source_paths = source_paths
             else:
-                my.source_paths = [source_paths]
+                self.source_paths = [source_paths]
         else:
-            my.source_paths = my.file_paths[:]
-        for i, source_path in enumerate(my.source_paths):
+            self.source_paths = self.file_paths[:]
+        for i, source_path in enumerate(self.source_paths):
             if not os.path.isdir(source_path):
-                my.source_paths[i] = source_path.rstrip("/")
+                self.source_paths[i] = source_path.rstrip("/")
 
 
-        my.sobject = sobject
-        my.base_dir_alias = None
+        self.sobject = sobject
+        self.base_dir_alias = None
 
         # rather than complicate the internals with the individual logic
         # for scms, we will, on first implementation, treat an scm check-in
         # as an inplace checkin and have a separate repo_type variable
         if mode in ['perforce']:
             mode = 'inplace'
-            my.repo_type = 'perforce'
+            self.repo_type = 'perforce'
 
         # if a base_dir is passed, then store this
-        if my.repo_type == 'perforce':
+        if self.repo_type == 'perforce':
             depot = sobject.get_project_code()
             base_dir = "//%s" % depot
         elif mode == "inplace" and not base_dir:
@@ -128,64 +128,64 @@ class FileCheckin(BaseCheckin):
             if alias_dict:
                 for key, value in alias_dict.items():
                     asset_base_dir = alias_dict[key]
-                    if my.file_paths[0].startswith(asset_base_dir):
+                    if self.file_paths[0].startswith(asset_base_dir):
                         base_dir = asset_base_dir
-                        my.base_dir_alias = key
+                        self.base_dir_alias = key
                         break
                 else: # default to the main asset_base_dir
                     base_dir = Environment.get_asset_dir()
             else:
                 base_dir = Environment.get_asset_dir()
-        my.base_dir = base_dir
+        self.base_dir = base_dir
        
 
         if type(file_types) != types.StringType:
-            my.file_types = file_types
+            self.file_types = file_types
         else:
-            my.file_types = [file_types]
-        assert len(my.file_types) == len(my.file_paths)
+            self.file_types = [file_types]
+        assert len(self.file_types) == len(self.file_paths)
 
-        my.column = column
+        self.column = column
         if context == "" or context == None:
-            my.context = Snapshot.get_default_context()
+            self.context = Snapshot.get_default_context()
         else:
-            my.context = context
+            self.context = context
 
-        if my.context.find("/") == -1:
-            parts = [my.context]
+        if self.context.find("/") == -1:
+            parts = [self.context]
         else:
-            parts = my.context.split("/")
+            parts = self.context.split("/")
 
         if not process:
-            my.process = parts[0]
+            self.process = parts[0]
         else:
-            my.process = process
+            self.process = process
 
-        my.checkin_type = checkin_type
+        self.checkin_type = checkin_type
 
-        if my.checkin_type and my.checkin_type not in ['strict','auto']:
+        if self.checkin_type and self.checkin_type not in ['strict','auto']:
             raise CheckinException("checkin_type can only be '', strict, or auto")
 
-        my.dir_naming = dir_naming
-        my.file_naming = file_naming
+        self.dir_naming = dir_naming
+        self.file_naming = file_naming
 
         # this must be after the above declaration, set the returned data
-        return_data =  my.process_checkin_type(my.checkin_type, sobject, my.process, my.context,\
-                my.file_paths[0], my.snapshot_type, is_revision=my.is_revision)
+        return_data =  self.process_checkin_type(self.checkin_type, sobject, self.process, self.context,\
+                self.file_paths[0], self.snapshot_type, is_revision=self.is_revision)
         if return_data.get('dir_naming'):
-            my.dir_naming = return_data.get('dir_naming')
+            self.dir_naming = return_data.get('dir_naming')
         
         if return_data.get('file_naming'):
-            my.file_naming = return_data.get('file_naming')
+            self.file_naming = return_data.get('file_naming')
 
-        my.naming = return_data.get('naming')
-        my.checkin_type = return_data.get('checkin_type')
+        self.naming = return_data.get('naming')
+        self.checkin_type = return_data.get('checkin_type')
 
         # use an index for the subcontext
         if context_index_padding:
             search = Search("sthpw/snapshot")
-            search.add_sobject_filter(my.sobject)
-            search.add_filter("context", "%s/%%" % my.context, op='like')
+            search.add_sobject_filter(self.sobject)
+            search.add_filter("context", "%s/%%" % self.context, op='like')
             search.add_order_by("context desc")
             last_snapshot = search.get_sobject()
             if not last_snapshot:
@@ -208,37 +208,37 @@ class FileCheckin(BaseCheckin):
                     last_index = 1
 
             expr = "%%s/%%0.%sd" % context_index_padding
-            my.context = expr % (my.context, last_index)
+            self.context = expr % (self.context, last_index)
 
         
 
-        my.level_type = level_type
-        my.level_id = level_id
+        self.level_type = level_type
+        self.level_id = level_id
 
-        my.description = description
-        my.file_dict = {}
+        self.description = description
+        self.file_dict = {}
         # add some command info
-        my.info['context'] = my.context
-        my.info['revision'] = str(my.is_revision)
+        self.info['context'] = self.context
+        self.info['revision'] = str(self.is_revision)
 
-        my.mode = mode
-        my.keep_file_name = keep_file_name
+        self.mode = mode
+        self.keep_file_name = keep_file_name
         
         if md5s:
             assert len(md5s) == len(file_paths)
         else:
             # Checkin may not provide md5s, make a None list
             md5s = [ None for x in xrange(len(file_paths))]
-        my.md5s = md5s
+        self.md5s = md5s
         
         if file_sizes:
             assert len(file_sizes) == len(file_sizes)
         else:
             # Checkin may not provide md5s, make a None list
             file_sizes = [ None for x in xrange(len(file_paths))]
-        my.file_sizes = file_sizes
+        self.file_sizes = file_sizes
         
-        my.single_snapshot = single_snapshot
+        self.single_snapshot = single_snapshot
 
 
 
@@ -335,12 +335,12 @@ class FileCheckin(BaseCheckin):
 
     process_checkin_type = classmethod(process_checkin_type)
 
-    def get_checkin_type(my):
-        return my.checkin_type
+    def get_checkin_type(self):
+        return self.checkin_type
 
     
-    def set_context(my, context):
-        my.context = context
+    def set_context(self, context):
+        self.context = context
 
 
     def get_upload_dir(cls):
@@ -353,13 +353,13 @@ class FileCheckin(BaseCheckin):
 
     
 
-    def create_files(my):
+    def create_files(self):
         # no files to create
-        return my.file_paths
+        return self.file_paths
 
 
 
-    def create_snapshot_xml(my, file_objects, snapshot_xml=None):
+    def create_snapshot_xml(self, file_objects, snapshot_xml=None):
         '''
         file_objects - list of file objects
         snapshot_xml - an existing snapshot to append
@@ -368,26 +368,26 @@ class FileCheckin(BaseCheckin):
         builder = SnapshotBuilder(snapshot_xml)
         root = builder.get_root_node()
         Xml.set_attribute(root, "timestamp", time.asctime() )
-        Xml.set_attribute(root, "context", my.context )
+        Xml.set_attribute(root, "context", self.context )
 
-        search_key = SearchKey.build_by_sobject(my.sobject)
+        search_key = SearchKey.build_by_sobject(self.sobject)
         Xml.set_attribute(root, "search_key", search_key)
 
         login = Environment.get_user_name()
         Xml.set_attribute(root, "login", login)
 
-        Xml.set_attribute(root, "checkin_type", my.checkin_type)
+        Xml.set_attribute(root, "checkin_type", self.checkin_type)
 
 
         for i, file_object in enumerate(file_objects):
 
-            file_type = my.file_types[i]
-            file_path = my.file_paths[i]
+            file_type = self.file_types[i]
+            file_path = self.file_paths[i]
 
             file_info = {}
             file_info['type'] = file_type
             #file_info['source_path'] = file_path
-            if my.mode == 'inplace':
+            if self.mode == 'inplace':
                 file_info['use_naming'] = 'false'
 
             builder.add_file(file_object, file_info)
@@ -396,17 +396,17 @@ class FileCheckin(BaseCheckin):
 
 
 
-    def get_snapshot_type(my):
-        return my.snapshot_type
+    def get_snapshot_type(self):
+        return self.snapshot_type
 
 
 
-    def create_snapshot(my, snapshot_xml):
+    def create_snapshot(self, snapshot_xml):
         '''add the snapshot to the sobject'''
 
-        snapshot_type = my.get_snapshot_type()
+        snapshot_type = self.get_snapshot_type()
 
-        if my.mode == 'local':
+        if self.mode == 'local':
             is_latest = False
             is_synced = False
         else:
@@ -414,66 +414,66 @@ class FileCheckin(BaseCheckin):
             is_synced = True
 
 
-        my.is_latest = is_latest
+        self.is_latest = is_latest
 
         # copy the snapshot and put it in the snapshot history
-        my.snapshot = Snapshot.create( my.sobject, snapshot_type,
-            my.context, my.column, my.description, snapshot_xml,
-            is_current=my.is_current, is_revision=my.is_revision,
-            level_type=my.level_type, level_id=my.level_id, is_latest=is_latest,
-            is_synced=is_synced, version=my.version, triggers="integral", set_booleans=False, process=my.process)
+        self.snapshot = Snapshot.create( self.sobject, snapshot_type,
+            self.context, self.column, self.description, snapshot_xml,
+            is_current=self.is_current, is_revision=self.is_revision,
+            level_type=self.level_type, level_id=self.level_id, is_latest=is_latest,
+            is_synced=is_synced, version=self.version, triggers="integral", set_booleans=False, process=self.process)
 
-        if my.single_snapshot and my.snapshot.get_version() > 1:
+        if self.single_snapshot and self.snapshot.get_version() > 1:
             raise SingleSnapshotException("There is an existing snapshot for \
-                    this sobject [%s] under the [%s] context."%(my.sobject.get_search_key(), my.context))
+                    this sobject [%s] under the [%s] context."%(self.sobject.get_search_key(), self.context))
             
 
-    def postprocess_snapshot(my):
+    def postprocess_snapshot(self):
 
         # do a post process on the snapshot xml.  This is because some
         # information is not known until after the snapshot is committed
-        snapshot_xml = my.snapshot.get_xml_value("snapshot")
+        snapshot_xml = self.snapshot.get_xml_value("snapshot")
 
-        version = my.snapshot.get_value("version")
+        version = self.snapshot.get_value("version")
         builder = SnapshotBuilder(snapshot_xml)
         root = builder.get_root_node()
         Xml.set_attribute(root, "version", version)
 
 
-        naming = Naming.get(my.sobject, my.snapshot) 
-        if naming and my.checkin_type:
+        naming = Naming.get(self.sobject, self.snapshot) 
+        if naming and self.checkin_type:
             checkin_type = naming.get_value('checkin_type')
-            if checkin_type and my.checkin_type != checkin_type:
+            if checkin_type and self.checkin_type != checkin_type:
                 print "Mismatch checkin_type!"
                 naming = None
             
         # find the path for each file
-        for i, file_object in enumerate(my.file_objects):
+        for i, file_object in enumerate(self.file_objects):
 
             to_name = file_object.get_full_file_name()
-            file_type = my.snapshot.get_type_by_file_name(to_name)
+            file_type = self.snapshot.get_type_by_file_name(to_name)
 
             file_node = snapshot_xml.get_node('snapshot/file[@name="%s"]' % to_name)
             assert file_node != None
 
-            if i < len(my.source_paths):
-                source_path = my.source_paths[i]
+            if i < len(self.source_paths):
+                source_path = self.source_paths[i]
                 file_object.set_value("source_path", source_path)
 
-            if my.mode == "inplace":
+            if self.mode == "inplace":
                 # if this is an inplace checkin, then the original path is the
                 # checked in path
-                file_path = my.file_paths[i]
+                file_path = self.file_paths[i]
                 file_dir = os.path.dirname(file_path)
                 file_object.set_value("checkin_dir", file_dir)
 
                 # set the relative dir.  Replace the base dir passed in
-                if my.repo_type == 'perforce':
+                if self.repo_type == 'perforce':
                     relative_dir = os.path.dirname(source_path)
-                    relative_dir = relative_dir.replace(my.base_dir, "")
+                    relative_dir = relative_dir.replace(self.base_dir, "")
 
-                elif my.base_dir and file_dir.startswith(my.base_dir):
-                    relative_dir = file_dir.replace(my.base_dir, "")
+                elif self.base_dir and file_dir.startswith(self.base_dir):
+                    relative_dir = file_dir.replace(self.base_dir, "")
                     # strip any leading /
                 else:
                       
@@ -484,12 +484,12 @@ class FileCheckin(BaseCheckin):
                 file_object.set_value("relative_dir", relative_dir)
             else:
                 if naming:
-                    my.base_dir_alias = naming.get_value("base_dir_alias")
-                    if my.base_dir_alias:
-                        file_object.set_value("base_dir_alias", my.base_dir_alias)
+                    self.base_dir_alias = naming.get_value("base_dir_alias")
+                    if self.base_dir_alias:
+                        file_object.set_value("base_dir_alias", self.base_dir_alias)
 
                 # all other modes use the lib dir
-                lib_dir = my.snapshot.get_lib_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=my.dir_naming)
+                lib_dir = self.snapshot.get_lib_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=self.dir_naming)
                 file_object.set_value("checkin_dir", lib_dir)
 
                 # determine base_dir alias
@@ -499,19 +499,19 @@ class FileCheckin(BaseCheckin):
                     if name == 'default':
                         continue
                     if lib_dir.startswith("%s/" % asset_dir):
-                        my.base_dir_alias = name
+                        self.base_dir_alias = name
                         break
 
 
                 # set the relative dir
-                relative_dir = my.snapshot.get_relative_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=my.dir_naming)
+                relative_dir = self.snapshot.get_relative_dir(file_type=file_type, file_object=file_object, create=True, dir_naming=self.dir_naming)
                 relative_dir = relative_dir.strip("/")
                 file_object.set_value("relative_dir", relative_dir)
 
                 relative_dir = file_object.get_value("relative_dir")
 
-            if my.base_dir_alias:
-                file_object.set_value("base_dir_alias", my.base_dir_alias)
+            if self.base_dir_alias:
+                file_object.set_value("base_dir_alias", self.base_dir_alias)
 
             # make sure checkin_dir and relative_dir are filled out
             checkin_dir = file_object.get_value("checkin_dir")
@@ -519,9 +519,9 @@ class FileCheckin(BaseCheckin):
 
             file_object.commit()
 
-        return my.snapshot
+        return self.snapshot
 
-    def preprocess_files(my, files):
+    def preprocess_files(self, files):
         # change the user and group owner of the file to apache or what TACTIC
         # is run as. Only applicable for Linux os
         if Config.get_value("checkin", "sudo_no_password") == 'true': 
@@ -537,23 +537,23 @@ class FileCheckin(BaseCheckin):
                     # apache should be made a sudoer for this to work
                     print "Error changing owner. %s" %e.__str__()
 
-    def handle_system_commands(my, files, file_objects):
+    def handle_system_commands(self, files, file_objects):
         '''delegate the system commands to the appropriate repo.'''
 
-        if my.mode == 'inplace':
+        if self.mode == 'inplace':
             # TODO: ? MD5?
             return
 
 
         # get the repo set it up
-        repo = my.sobject.get_repo(my.snapshot)
-        repo.handle_system_commands(my.snapshot, files, file_objects, my.mode, my.md5s, my.source_paths)
+        repo = self.sobject.get_repo(self.snapshot)
+        repo.handle_system_commands(self.snapshot, files, file_objects, self.mode, self.md5s, self.source_paths)
        
         # Call the checkin/move pipeline event
-        #event_caller = PipelineEventCaller(my, "checkin/move")
+        #event_caller = PipelineEventCaller(self, "checkin/move")
         #event_caller.run()
         trigger = PipelineEventTrigger()
-        Trigger.append_trigger(my, trigger, "checkin/move")
+        Trigger.append_trigger(self, trigger, "checkin/move")
 
 
 
@@ -678,8 +678,8 @@ class FileCheckin(BaseCheckin):
 
 from pyasm.command import Trigger
 class PipelineEventTrigger(Trigger):
-    def execute(my):
-        caller = my.get_caller()
+    def execute(self):
+        caller = self.get_caller()
         event_caller = PipelineEventCaller(caller, "checkin/move")
         event_caller.run()
 
@@ -688,20 +688,20 @@ class PipelineEventTrigger(Trigger):
 import threading
 class PipelineEventCaller(threading.Thread):
 
-    def __init__(my, command, event_name):
-        my.command = command
-        my.event_name = event_name
-        super(PipelineEventCaller,my).__init__()
+    def __init__(self, command, event_name):
+        self.command = command
+        self.event_name = event_name
+        super(PipelineEventCaller,self).__init__()
 
 
-    def run(my):
+    def run(self):
         try:
-            my.command.set_event_name(my.event_name)
-            my.command.set_process(my.command.context)
-            pipeline = Pipeline.get_by_sobject(my.command.sobject)
+            self.command.set_event_name(self.event_name)
+            self.command.set_process(self.command.context)
+            pipeline = Pipeline.get_by_sobject(self.command.sobject)
             if pipeline:
-                my.command.set_pipeline_code(pipeline.get_code() )
-                my.command.notify_listeners()
+                self.command.set_pipeline_code(pipeline.get_code() )
+                self.command.notify_listeners()
         except Exception, e:
             # print the stacktrace
             import traceback
@@ -724,7 +724,7 @@ class PipelineEventCaller(threading.Thread):
 
 class FileAppendCheckin(FileCheckin):
     '''Appends a bunch of files to an already existing snapshot'''
-    def __init__(my, snapshot_code, file_paths, file_types,  mode=None, keep_file_name=True,source_paths=[], dir_naming=None, file_naming=None, checkin_type='strict', do_update_versionless=True):
+    def __init__(self, snapshot_code, file_paths, file_types,  mode=None, keep_file_name=True,source_paths=[], dir_naming=None, file_naming=None, checkin_type='strict', do_update_versionless=True):
         '''
         snapshot_code - the already existing snapshot to append to
         file_paths - array of all the files to checkin
@@ -733,47 +733,47 @@ class FileAppendCheckin(FileCheckin):
         dir_naming - explicitly set the dir_naming expression to use
         file_naming - explicitly set the file_naming expression to use
         '''
-        my.append_snapshot = Snapshot.get_by_code(snapshot_code)
-        if not my.append_snapshot:
+        self.append_snapshot = Snapshot.get_by_code(snapshot_code)
+        if not self.append_snapshot:
             raise CheckinException('Snapshot code [%s] is unknown') 
-        sobject = my.append_snapshot.get_sobject()
-        context = my.append_snapshot.get_value("context")
-        snapshot_type = my.append_snapshot.get_value("snapshot_type")
-        column = my.append_snapshot.get_value("column_name")
+        sobject = self.append_snapshot.get_sobject()
+        context = self.append_snapshot.get_value("context")
+        snapshot_type = self.append_snapshot.get_value("snapshot_type")
+        column = self.append_snapshot.get_value("column_name")
         
-        super(FileAppendCheckin,my).__init__(sobject, file_paths, file_types, context, snapshot_type, column, mode=mode, keep_file_name=keep_file_name, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type)
+        super(FileAppendCheckin,self).__init__(sobject, file_paths, file_types, context, snapshot_type, column, mode=mode, keep_file_name=keep_file_name, source_paths=source_paths, dir_naming=dir_naming, file_naming=file_naming, checkin_type=checkin_type)
 
-        my.is_latest = my.append_snapshot.get_value('is_latest')
-        my.is_current = my.append_snapshot.get_value('is_current')
+        self.is_latest = self.append_snapshot.get_value('is_latest')
+        self.is_current = self.append_snapshot.get_value('is_current')
 
-        my.do_update_versionless = do_update_versionless
+        self.do_update_versionless = do_update_versionless
 
         
-    def create_snapshot_xml(my, file_objects):
+    def create_snapshot_xml(self, file_objects):
         # take the current snapshot
-        xml = my.append_snapshot.get_snapshot_xml()
-        return super(FileAppendCheckin,my).create_snapshot_xml(file_objects,xml)
+        xml = self.append_snapshot.get_snapshot_xml()
+        return super(FileAppendCheckin,self).create_snapshot_xml(file_objects,xml)
 
 
-    def get_snapshot(my):
-        return my.append_snapshot
+    def get_snapshot(self):
+        return self.append_snapshot
 
 
 
-    def create_snapshot(my, snapshot_xml):
+    def create_snapshot(self, snapshot_xml):
         # copy the snapshot and put it in the snapshot history
-        my.append_snapshot.set_value("snapshot", snapshot_xml)
-        my.append_snapshot.commit()
-        my.snapshot = my.append_snapshot
+        self.append_snapshot.set_value("snapshot", snapshot_xml)
+        self.append_snapshot.commit()
+        self.snapshot = self.append_snapshot
 
-        return my.snapshot
+        return self.snapshot
 
-    def get_trigger_prefix(my):
+    def get_trigger_prefix(self):
         return "add_file"
 
-    def update_versionless(my, snapshot_mode='current'):
-        if my.do_update_versionless:
-            return my.snapshot.update_versionless(snapshot_mode, sobject=my.sobject, checkin_type=my.checkin_type, naming=my.naming)
+    def update_versionless(self, snapshot_mode='current'):
+        if self.do_update_versionless:
+            return self.snapshot.update_versionless(snapshot_mode, sobject=self.sobject, checkin_type=self.checkin_type, naming=self.naming)
 
 
 
@@ -782,47 +782,48 @@ class FileGroupCheckin(FileCheckin):
     single entry.  This is useful for checking in large groups of related
     and similar files that are too cumbersome to treat as individual files'''
 
-    def __init__(my, sobject, file_paths, file_types, file_range, \
+    def __init__(self, sobject, file_paths, file_types, file_range, \
             context="publish", snapshot_type="file", column="snapshot", \
-            description="", keep_file_name=False, is_revision=False, mode=None, checkin_type=''):
+            description="", keep_file_name=False, is_revision=False, mode=None, checkin_type='', version=None, process=None):
 
-        super(FileGroupCheckin,my).__init__(sobject, file_paths, file_types, \
+        super(FileGroupCheckin,self).__init__(sobject, file_paths, file_types, \
             context=context, snapshot_type=snapshot_type, column=column,\
             description=description, keep_file_name=keep_file_name, \
-            is_revision=is_revision, mode=mode , checkin_type=checkin_type)
+            is_revision=is_revision, mode=mode , checkin_type=checkin_type, \
+            version=version, process=process)
        
-        my.file_range = file_range
-        my.expanded_paths = []
-        my.input_snapshots = []
+        self.file_range = file_range
+        self.expanded_paths = []
+        self.input_snapshots = []
 
 
-    def add_input_snapshot(my, snapshot):
-        my.input_snapshots.append(snapshot)
+    def add_input_snapshot(self, snapshot):
+        self.input_snapshots.append(snapshot)
 
 
-    def check_files(my, file_paths):
+    def check_files(self, file_paths):
         # do nothing here for now
         pass
 
-    def get_expanded_paths(my):
-        return my.expanded_paths
+    def get_expanded_paths(self):
+        return self.expanded_paths
 
-    def create_file_objects(my, files):
+    def create_file_objects(self, files):
 
         file_objects = []
 
         for idx, file_path in enumerate(files):
-            file_type = my.file_types[idx]
+            file_type = self.file_types[idx]
 
             # determine if this is a group or not
             if File.is_file_group(file_path):
-                file_object = FileGroup.create(file_path, my.file_range, \
-                    my.sobject.get_search_type(), my.sobject.get_id(), file_type=file_type )
+                file_object = FileGroup.create(file_path, self.file_range, \
+                    self.sobject.get_search_type(), self.sobject.get_id(), file_type=file_type )
             else:
                 # create file_object
                
                 file_object = File.create(file_path, \
-                    my.sobject.get_search_type(), my.sobject.get_id(), file_type=file_type, st_size=my.file_sizes[idx] )
+                    self.sobject.get_search_type(), self.sobject.get_id(), file_type=file_type, st_size=self.file_sizes[idx] )
                     
 
             if file_object == None:
@@ -835,7 +836,7 @@ class FileGroupCheckin(FileCheckin):
 
 
 
-    def create_snapshot_xml(my, file_objects, snapshot_xml=None):
+    def create_snapshot_xml(self, file_objects, snapshot_xml=None):
 
         builder = SnapshotBuilder(snapshot_xml)
         root = builder.get_root_node()
@@ -850,28 +851,28 @@ class FileGroupCheckin(FileCheckin):
             Xml.set_attribute(root, "timestamp", datetime.datetime.now())
         else:
             Xml.set_attribute(root, "timestamp", time.asctime() )
-        Xml.set_attribute(root, "context", my.context )
+        Xml.set_attribute(root, "context", self.context )
 
         for i in range(0, len(file_objects)):
 
             file_object = file_objects[i]
-            file_type = my.file_types[i]
+            file_type = self.file_types[i]
 
             file_info = {}
             file_info['type'] = file_type
             if file_object.get_file_range():
-                file_info['file_range'] = my.file_range.get_key()
+                file_info['file_range'] = self.file_range.get_key()
 
             builder.add_file(file_object, file_info)
 
-        for input_snapshot in my.input_snapshots:
+        for input_snapshot in self.input_snapshots:
             builder.add_ref_by_snapshot(input_snapshot)
 
 
         return builder.to_string()
 
 
-    def move_file(my, file_path, new_file_path):
+    def move_file(self, file_path, new_file_path):
     
         if file_path.find('#') == -1 and file_path.find('%') == -1:
             shutil.move(file_path, new_file_path)
@@ -883,8 +884,8 @@ class FileGroupCheckin(FileCheckin):
 
             #raise CheckinException('The naming convention should be returning\
             #a path name with #### or %%0.4d notation in it. [%s] found instead.' % new_file_path)
-        file_paths = FileGroup.expand_paths(file_path, my.file_range)
-        new_file_paths = FileGroup.expand_paths(new_file_path, my.file_range)
+        file_paths = FileGroup.expand_paths(file_path, self.file_range)
+        new_file_paths = FileGroup.expand_paths(new_file_path, self.file_range)
 
         for i in range(0, len(file_paths)):
             file_path = file_paths[i]
@@ -894,14 +895,14 @@ class FileGroupCheckin(FileCheckin):
         return new_file_path
 
 
-    def handle_system_commands(my, files, file_objects):
+    def handle_system_commands(self, files, file_objects):
         '''move the tmp files in the appropriate directory'''
-        if my.mode == 'inplace':
+        if self.mode == 'inplace':
             # TODO: ? MD5?
             return
-        if my.mode == 'copy':
+        if self.mode == 'copy':
             io_action = 'copy'
-        elif my.mode  == 'preallocate':
+        elif self.mode  == 'preallocate':
             io_action = False
         else:
             io_action = True
@@ -911,36 +912,36 @@ class FileGroupCheckin(FileCheckin):
             file_object = file_objects[i]
             # build the to paths
             to_name = file_object.get_full_file_name()
-            file_type = my.snapshot.get_type_by_file_name(to_name)
+            file_type = self.snapshot.get_type_by_file_name(to_name)
 
             file_object.set_value('type', file_type)
 
-            lib_dir = my.snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
+            lib_dir = self.snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
             if not os.path.exists(lib_dir):
                 System().makedirs(lib_dir)
             to_path = "%s/%s" % (lib_dir, to_name )
 
             if file_object.get_file_range():
-                from_expanded = FileGroup.expand_paths(files[i], my.file_range)
-                to_expanded = FileGroup.expand_paths(to_path, my.file_range)
+                from_expanded = FileGroup.expand_paths(files[i], self.file_range)
+                to_expanded = FileGroup.expand_paths(to_path, self.file_range)
             else:
                 from_expanded = [files[i]]
                 to_expanded = [to_path]
 
                 
-            my.expanded_paths.extend(from_expanded)
+            self.expanded_paths.extend(from_expanded)
 
             # iterate through each and copy to the lib
 
             for j in range(0, len(from_expanded) ):
 
                 # check before copying
-                if os.path.exists(to_expanded[j]) and my.mode not in ['inplace','preallocate']:
+                if os.path.exists(to_expanded[j]) and self.mode not in ['inplace','preallocate']:
                     raise CheckinException('This path [%s] already exists'%to_expanded[j])
                 '''
-                if my.mode =='free_copy':
+                if self.mode =='free_copy':
                     FlieUndo.copy(from_expanded[j], to_expanded[j])
-                elif my.mode == 'free_move':
+                elif self.mode == 'free_move':
                     FlieUndo.move(from_expanded[j], to_expanded[j])
                 else:
                 ''' 
@@ -958,7 +959,7 @@ class FileGroupCheckin(FileCheckin):
                 else:
                     FileUndo.create( from_expanded[j], to_expanded[j], io_action=io_action )
 
-                if my.mode == 'preallocate':
+                if self.mode == 'preallocate':
                     if not os.path.exists( from_expanded[j] ):
                         raise CheckinException("Source path does not exist [%s]" %from_expanded[j])
                     
@@ -976,7 +977,7 @@ class FileGroupAppendCheckin(FileGroupCheckin):
         Note: this is functionally the same as FileAppendCheckin but it 
         is derived from FileGroupCheckin
     '''
-    def __init__(my, snapshot_code, file_paths, file_types, file_range, keep_file_name=False, mode=None, checkin_type='strict'):
+    def __init__(self, snapshot_code, file_paths, file_types, file_range, keep_file_name=False, mode=None, checkin_type='strict'):
         '''
         @params
         snapshot_code - the already existing snapshot to append to
@@ -985,31 +986,31 @@ class FileGroupAppendCheckin(FileGroupCheckin):
         file_range - the file range of the paths
         mode - move, copy, preallocate, inplace
         '''
-        my.append_snapshot = Snapshot.get_by_code(snapshot_code)
-        sobject = my.append_snapshot.get_sobject()
-        context = my.append_snapshot.get_value("context")
-        snapshot_type = my.append_snapshot.get_value("snapshot_type")
-        column = my.append_snapshot.get_value("column_name")
+        self.append_snapshot = Snapshot.get_by_code(snapshot_code)
+        sobject = self.append_snapshot.get_sobject()
+        context = self.append_snapshot.get_value("context")
+        snapshot_type = self.append_snapshot.get_value("snapshot_type")
+        column = self.append_snapshot.get_value("column_name")
 
-        super(FileGroupAppendCheckin,my).__init__(sobject, file_paths, file_types, file_range, context=context, snapshot_type=snapshot_type, column=column, keep_file_name=keep_file_name, mode=mode, checkin_type=checkin_type )
+        super(FileGroupAppendCheckin,self).__init__(sobject, file_paths, file_types, file_range, context=context, snapshot_type=snapshot_type, column=column, keep_file_name=keep_file_name, mode=mode, checkin_type=checkin_type )
 
 
-    def create_snapshot_xml(my, file_objects):
+    def create_snapshot_xml(self, file_objects):
         # take the current snapshot
-        xml = my.append_snapshot.get_snapshot_xml()
-        return super(FileGroupAppendCheckin,my).create_snapshot_xml(file_objects,xml)
+        xml = self.append_snapshot.get_snapshot_xml()
+        return super(FileGroupAppendCheckin,self).create_snapshot_xml(file_objects,xml)
 
 
 
-    def create_snapshot(my, snapshot_xml):
+    def create_snapshot(self, snapshot_xml):
 
         # copy the snapshot and put it in the snapshot history
-        my.append_snapshot.set_value("snapshot", snapshot_xml)
-        my.append_snapshot.commit()
-        my.snapshot = my.append_snapshot
+        self.append_snapshot.set_value("snapshot", snapshot_xml)
+        self.append_snapshot.commit()
+        self.snapshot = self.append_snapshot
 
-        return my.snapshot
+        return self.snapshot
 
-    def get_trigger_prefix(my):
+    def get_trigger_prefix(self):
         return "add_group"
 

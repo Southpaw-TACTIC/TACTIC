@@ -22,11 +22,11 @@ from base_example_wdg import BaseExampleWdg
 
 class EfficientTableExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Distributed Drag Behaviors &amp; Smart Context Menus"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Example of using distributed drag behaviors and smart menus, that are defined once on a parent " \
                 "element and then utilized by (and actions run on) various child elements that are 'tagged' to " \
                 "use the drag behavior or 'tagged' to a given smart menu.<br/><br/>" \
@@ -40,17 +40,17 @@ class EfficientTableExampleWdg(BaseExampleWdg):
                 "subset context menu."
     
     
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
 
         # Smart Menu data ...
-        dog_menus = [ my.get_sm_dog_main_menu_details(),
-                      my.get_sm_dog_submenu_one_details(),
-                      my.get_sm_dog_submenu_two_details()
+        dog_menus = [ self.get_sm_dog_main_menu_details(),
+                      self.get_sm_dog_submenu_one_details(),
+                      self.get_sm_dog_submenu_two_details()
                     ]
 
-        cat_menus = [ my.get_sm_cat_main_menu_details() ]
+        cat_menus = [ self.get_sm_cat_main_menu_details() ]
 
         SmartMenu.attach_smart_context_menu( div, { 'DOG': dog_menus, 'CAT': cat_menus }, False )
 
@@ -131,7 +131,7 @@ class EfficientTableExampleWdg(BaseExampleWdg):
 
     # menu_tag_suffix is 'MAIN' or 'SUB1' or 'SUB2', etc
     #
-    def get_sm_dog_main_menu_details(my):
+    def get_sm_dog_main_menu_details(self):
         return { 'menu_tag_suffix': 'MAIN', 'width': 200, 'opt_spec_list': [
             { "type": "action", "label": "Dog Launches JS Logger",
                     "bvr_cb": {'cbjs_action': "spt.js_log.show();"} },
@@ -163,7 +163,7 @@ class EfficientTableExampleWdg(BaseExampleWdg):
         ] }
 
 
-    def get_sm_dog_submenu_one_details(my):
+    def get_sm_dog_submenu_one_details(self):
         return { 'menu_tag_suffix': 'SUB_1', 'width': 250, 'opt_spec_list': [
             { "type": "submenu", "label": "Nested Sub-menu", "submenu_tag_suffix": "SUB_2" },
 
@@ -188,7 +188,7 @@ class EfficientTableExampleWdg(BaseExampleWdg):
             # { "type": "submenu", "label": "Additional Nested Sub-menu", "submenu_id": "CtxMenu_Mike_Submenu_Three" }
         ] }
 
-    def get_sm_dog_submenu_two_details(my):
+    def get_sm_dog_submenu_two_details(self):
         return { 'menu_tag_suffix': 'SUB_2', 'width': 250, 'opt_spec_list': [
             { "type": "action", "label": "Make activator_el BLACK",
                     "bvr_cb": {'cbjs_action': "spt.smenu.get_activator(bvr).setStyle('background','#000000');"} },
@@ -203,7 +203,7 @@ class EfficientTableExampleWdg(BaseExampleWdg):
         ] }
 
 
-    def get_sm_cat_main_menu_details(my):
+    def get_sm_cat_main_menu_details(self):
         return { 'menu_tag_suffix': 'MAIN', 'width': 200, 'opt_spec_list': [
             { "type": "title", "label": "Cell contains: {cell_contents}" },
 

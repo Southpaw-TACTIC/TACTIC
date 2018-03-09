@@ -26,10 +26,10 @@ class CsvImportCmd(Command):
 
     ENTRY_ERROR_MSG = "Error creating new entry for row"
 
-    def get_title(my):
+    def get_title(self):
         return "CSV Import"
 
-    def strip_punctuation(my, word):
+    def strip_punctuation(self, word):
         '''strip punctuation and Cf BOM characters for unicode string'''
         chars = []
         for char in word:
@@ -39,45 +39,45 @@ class CsvImportCmd(Command):
             chars.append(char)
         return "".join(chars)
 
-    def check(my):
+    def check(self):
         # make this a callback for now
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
         
-        my.search_type = web.get_form_value("search_type_filter")
-        my.file_path = web.get_form_value("file_path")
-        my.web_url = web.get_form_value("web_url")
-        my.test_run = web.get_form_value("test_run")=='true'
+        self.search_type = web.get_form_value("search_type_filter")
+        self.file_path = web.get_form_value("file_path")
+        self.web_url = web.get_form_value("web_url")
+        self.test_run = web.get_form_value("test_run")=='true'
         
-        my.start_index = web.get_form_value("start_index")
-        if my.start_index:
+        self.start_index = web.get_form_value("start_index")
+        if self.start_index:
             try:
-                my.start_index = int(my.start_index)
+                self.start_index = int(self.start_index)
             except:
-                my.start_index = None
+                self.start_index = None
 
-        my.triggers_mode = web.get_form_value("triggers_mode")
-        if  my.triggers_mode in ['', 'True']:
-            my.triggers_mode = True
-        elif my.triggers_mode == 'False':
-            my.triggers_mode = False 
+        self.triggers_mode = web.get_form_value("triggers_mode")
+        if  self.triggers_mode in ['', 'True']:
+            self.triggers_mode = True
+        elif self.triggers_mode == 'False':
+            self.triggers_mode = False 
 
-        if my.web_url:
+        if self.web_url:
             import urllib2
             response = urllib2.urlopen(url)
             csv = response.read()
-            my.file_path = "/tmp/test.csv"
-            f = open(my.file_path, 'w')
+            self.file_path = "/tmp/test.csv"
+            f = open(self.file_path, 'w')
             f.write(csv)
             f.close()
 
 
 
         # either unknown or utf-8
-        my.encoder = web.get_form_value("encoder")
-        my.id_col = web.get_form_value("id_col")
-        if not my.id_col:
-            my.id_col = 'id'
+        self.encoder = web.get_form_value("encoder")
+        self.id_col = web.get_form_value("id_col")
+        if not self.id_col:
+            self.id_col = 'id'
         num_columns = web.get_form_value("num_columns")
         if num_columns:
             num_columns = int(num_columns)
@@ -85,65 +85,65 @@ class CsvImportCmd(Command):
             num_columns = 0
 
         # indices of the enabled columns
-        my.enabled_idx = []
-        my.columns = []
-        my.new_columns = []
-        my.new_column_types = []
-        my.note_processes = []
+        self.enabled_idx = []
+        self.columns = []
+        self.new_columns = []
+        self.new_column_types = []
+        self.note_processes = []
 
 
         for i in range(0, num_columns):
             enabled =  web.get_form_value("column_enabled_%s" % i)
             if enabled  in ['on','true']:
-                my.enabled_idx.append(i)
+                self.enabled_idx.append(i)
 
             # Default column name or '' for new columns
             column =  web.get_form_value("column_%s" % i)
-            my.columns.append(column)
+            self.columns.append(column)
  
             # New column name if column==''
             new_column = web.get_form_value("new_column_%s" % i)
             if isinstance(new_column, unicode):
-                new_column = my.strip_punctuation(new_column)
-            my.new_columns.append(new_column)
+                new_column = self.strip_punctuation(new_column)
+            self.new_columns.append(new_column)
             
             # New column type if column==''
             new_column_type = web.get_form_value("column_type_%s" % i)
-            my.new_column_types.append(new_column_type)
+            self.new_column_types.append(new_column_type)
 
             # New note process if column==('note')
             new_note_process = web.get_form_value("note_process_%s" % i)
-            my.note_processes.append(new_note_process)
+            self.note_processes.append(new_note_process)
 
         # check for required columns
-        sobj = SObjectFactory.create(my.search_type)
+        sobj = SObjectFactory.create(self.search_type)
         required_columns = sobj.get_required_columns()
         for required in required_columns:
-            if required in my.columns:
+            if required in self.columns:
                 continue
             else:
                 raise UserException('Missing required column [%s] in the input CSV' % required)
 
-        my.has_title = web.get_form_value("has_title") == 'on'
-        my.lowercase_title = web.get_form_value("lowercase_title") == 'on'
+        self.has_title = web.get_form_value("has_title") == 'on'
+        self.lowercase_title = web.get_form_value("lowercase_title") == 'on'
         return True
 
-    def execute(my):
+    def execute(self):
 
-        assert my.search_type
-        assert my.file_path
-        assert my.columns
+        assert self.search_type
+        assert self.file_path
+        assert self.columns
 
-        csv_parser = CsvParser(my.file_path)
-        if my.has_title:
+        csv_parser = CsvParser(self.file_path)
+        if self.has_title:
             csv_parser.set_has_title_row(True)
         else:
             csv_parser.set_has_title_row(False)
-        if my.lowercase_title:
+        if self.lowercase_title:
             csv_parser.set_lowercase_title(True)
 
-        if my.encoder:
-            csv_parser.set_encoder(my.encoder)
+        if self.encoder:
+            csv_parser.set_encoder(self.encoder)
 
         csv_parser.parse()
 
@@ -152,36 +152,36 @@ class CsvImportCmd(Command):
         csv_data = csv_parser.get_data()
         # make sure all of the new columns are created
         csv_titles = []
-        for i, column in enumerate(my.columns):
+        for i, column in enumerate(self.columns):
             if not column:
-                new_column = my.new_columns[i]
-                new_column_type = my.new_column_types[i]
+                new_column = self.new_columns[i]
+                new_column_type = self.new_column_types[i]
                 if new_column and new_column not in ['id', 'code'] and\
-                    i in my.enabled_idx:
+                    i in self.enabled_idx:
                     # create the new column
                     from pyasm.command import ColumnAddCmd
                     #col_type = "Name/Code"
-                    cmd = ColumnAddCmd(my.search_type, new_column, new_column_type)
+                    cmd = ColumnAddCmd(self.search_type, new_column, new_column_type)
                     cmd.execute()
 
                     # create the sobject for now
                     """
                     sobject = SObjectFactory.create("prod/custom_property")
-                    sobject.set_value("search_type", my.search_type)
+                    sobject.set_value("search_type", self.search_type)
                     sobject.set_value("name", new_column)
                     sobject.set_value("description", new_column)
                     sobject.commit()
                     """
 
-                csv_titles.append( my.new_columns[i] )
+                csv_titles.append( self.new_columns[i] )
             else:
                 csv_titles.append( column )
 
         try:
-            id_col = csv_titles.index(my.id_col)
+            id_col = csv_titles.index(self.id_col)
             # id is special we want it to be identifiable at all times
             # but not importable
-            if my.id_col != 'id' and id_col not in my.enabled_idx:
+            if self.id_col != 'id' and id_col not in self.enabled_idx:
                 id_col = -1
         except ValueError:
             id_col = -1
@@ -193,7 +193,7 @@ class CsvImportCmd(Command):
         
         # create entries or update values
         for row_count, row in enumerate(csv_data):
-            if my.start_index and row_count < my.start_index:
+            if self.start_index and row_count < self.start_index:
                 continue
 
             sobject = None
@@ -201,19 +201,19 @@ class CsvImportCmd(Command):
             is_new_entry = False
             
             if id_col == -1:
-                sobject = SObjectFactory.create(my.search_type)
+                sobject = SObjectFactory.create(self.search_type)
                 is_new_entry = True
             else:
                 id = row[id_col]
                 if id:
                     # this essentially updates the current sobject in db
-                    if my.id_col=='code':
-                        sobject = Search.get_by_code(my.search_type, id.strip())
-                    elif my.id_col=='id':
-                        sobject = Search.get_by_id(my.search_type, id.strip())
+                    if self.id_col=='code':
+                        sobject = Search.get_by_code(self.search_type, id.strip())
+                    elif self.id_col=='id':
+                        sobject = Search.get_by_id(self.search_type, id.strip())
                     else:
-                        u_search = Search(my.search_type)
-                        u_search.add_filter(my.id_col, id.strip())
+                        u_search = Search(self.search_type)
+                        u_search.add_filter(self.id_col, id.strip())
                         sobject = u_search.get_sobject()
                     #assert sobject
                 # in case a previously exported sobject with this code
@@ -223,14 +223,14 @@ class CsvImportCmd(Command):
                     continue
                   
                 if not sobject:
-                    sobject = SObjectFactory.create(my.search_type)
+                    sobject = SObjectFactory.create(self.search_type)
                     is_new_entry = True
 
             new_columns = 0
             note = None
             for cell_count, cell in enumerate(row):
                 '''
-                column_override = my.columns[cell_count]
+                column_override = self.columns[cell_count]
 
                 if column_override:
                     title = column_override
@@ -240,7 +240,7 @@ class CsvImportCmd(Command):
                         continue
                 '''
                 # skip if not enabled
-                if cell_count not in my.enabled_idx:
+                if cell_count not in self.enabled_idx:
                     continue
 
                 title = csv_titles[cell_count]
@@ -267,12 +267,12 @@ class CsvImportCmd(Command):
 
             
             try:
-                sobject.commit(triggers=my.triggers_mode)
+                sobject.commit(triggers=self.triggers_mode)
 
                 if note:
                     note_obj = SearchType.create("sthpw/note")
                     note_obj.set_value("note", note)
-                    note_process = my.note_processes[i]
+                    note_process = self.note_processes[i]
                     if not note_process:
                         note_process = "publish"
                     note_obj.set_value("process", note_process)
@@ -282,8 +282,8 @@ class CsvImportCmd(Command):
                     note_obj.commit()
 
             except SqlException, e:
-                msg = "%s [%s]: %s, %s" % (my.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
-                if my.test_run:
+                msg = "%s [%s]: %s, %s" % (self.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
+                if self.test_run:
                     error = True
                     error_entries.append(sobject.get_code())
                 raise SqlException(msg)
@@ -296,68 +296,68 @@ class CsvImportCmd(Command):
         new_entries_display = ''
         if new_entries:
             new_entries_display = '%s ...'%', '.join(new_entries[0:5])
-        my.description = "Total columns selected: %s\n\n  Imported %s new %s entries: %s " % (len(my.enabled_idx), len(new_entries), my.search_type, new_entries_display)
+        self.description = "Total columns selected: %s\n\n  Imported %s new %s entries: %s " % (len(self.enabled_idx), len(new_entries), self.search_type, new_entries_display)
         if updated_entries:
-            my.description = "%s.\n  Updated %s %s existing entries." %(my.description,  len(updated_entries), my.search_type)
+            self.description = "%s.\n  Updated %s %s existing entries." %(self.description,  len(updated_entries), self.search_type)
         
 
 class SimpleCsvImportCmd(Command):
     '''This Import does not require web values'''
 
-    def get_title(my):
+    def get_title(self):
         return "Simple CSV Import"
 
-    def __init__(my, **kwargs):
-        super(SimpleCsvImportCmd, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        super(SimpleCsvImportCmd, self).__init__(**kwargs)
         
-        my.initialized = True
-        my.search_type = my.kwargs.get("search_type_filter")
-        my.file_path = my.kwargs.get("file_path")
-        my.test_run = my.kwargs.get("test_run")=='true'
-        my.has_title =  my.kwargs.get('has_title')
+        self.initialized = True
+        self.search_type = self.kwargs.get("search_type_filter")
+        self.file_path = self.kwargs.get("file_path")
+        self.test_run = self.kwargs.get("test_run")=='true'
+        self.has_title =  self.kwargs.get('has_title')
 
         # either unknown or utf-8
-        my.encoder = my.kwargs.get("encoder")
-        my.id_col = my.kwargs.get("id_col")
-        if not my.id_col:
-            my.id_col = 'id'
+        self.encoder = self.kwargs.get("encoder")
+        self.id_col = self.kwargs.get("id_col")
+        if not self.id_col:
+            self.id_col = 'id'
     
         
-        my.columns = my.kwargs.get('columns')
-        my.new_columns = []
-        my.enabled_idx = my.kwargs.get("enabled_idx")
+        self.columns = self.kwargs.get('columns')
+        self.new_columns = []
+        self.enabled_idx = self.kwargs.get("enabled_idx")
 
-    def check(my):
+    def check(self):
         # make this a callback for now
-        my.init() 
+        self.init() 
        
         # check for required columns
-        sobj = SObjectFactory.create(my.search_type)
+        sobj = SObjectFactory.create(self.search_type)
         required_columns = sobj.get_required_columns()
         for required in required_columns:
-            if required in my.columns:
+            if required in self.columns:
                 continue
             else:
                 raise UserException('Missing required column [%s] in the input CSV' % required)
 
         return True
 
-    def execute(my):
-        if not my.initialized:
-            my.init()
+    def execute(self):
+        if not self.initialized:
+            self.init()
 
-        assert my.search_type
-        assert my.file_path
-        assert my.columns
+        assert self.search_type
+        assert self.file_path
+        assert self.columns
 
-        csv_parser = CsvParser(my.file_path)
-        if my.has_title:
+        csv_parser = CsvParser(self.file_path)
+        if self.has_title:
             csv_parser.set_has_title_row(True)
         else:
             csv_parser.set_has_title_row(False)
 
-        if my.encoder:
-            csv_parser.set_encoder(my.encoder)
+        if self.encoder:
+            csv_parser.set_encoder(self.encoder)
 
         csv_parser.parse()
 
@@ -366,34 +366,34 @@ class SimpleCsvImportCmd(Command):
         csv_data = csv_parser.get_data()
         # make sure all of the new columns are created
         csv_titles = []
-        for i, column in enumerate(my.columns):
+        for i, column in enumerate(self.columns):
             if not column:
-                new_column = my.new_columns[i]
-                new_column_type = my.new_column_types[i]
+                new_column = self.new_columns[i]
+                new_column_type = self.new_column_types[i]
                 if new_column and new_column not in ['id', 'code'] and\
-                    i in my.enabled_idx:
+                    i in self.enabled_idx:
                     # create the new column
                     from pyasm.command import ColumnAddCmd
                     #col_type = "Name/Code"
-                    cmd = ColumnAddCmd(my.search_type, new_column, new_column_type)
+                    cmd = ColumnAddCmd(self.search_type, new_column, new_column_type)
                     cmd.execute()
 
                     # create the sobject for now
                     sobject = SObjectFactory.create("prod/custom_property")
-                    sobject.set_value("search_type", my.search_type)
+                    sobject.set_value("search_type", self.search_type)
                     sobject.set_value("name", new_column)
                     sobject.set_value("description", new_column)
                     sobject.commit()
 
-                csv_titles.append( my.new_columns[i] )
+                csv_titles.append( self.new_columns[i] )
             else:
                 csv_titles.append( column )
 
         try:
-            id_col = csv_titles.index(my.id_col)
+            id_col = csv_titles.index(self.id_col)
             # id is special we want it to be identifiable at all times
             # but not importable
-            if my.id_col != 'id' and id_col not in my.enabled_idx:
+            if self.id_col != 'id' and id_col not in self.enabled_idx:
                 id_col = -1
         except ValueError:
             id_col = -1
@@ -410,19 +410,19 @@ class SimpleCsvImportCmd(Command):
             is_new_entry = False
             
             if id_col == -1:
-                sobject = SObjectFactory.create(my.search_type)
+                sobject = SObjectFactory.create(self.search_type)
                 is_new_entry = True
             else:
                 id = row[id_col]
                 if id:
                     # this essentially updates the current sobject in db
-                    if my.id_col=='code':
-                        sobject = Search.get_by_code(my.search_type, id.strip())
-                    elif my.id_col=='id':
-                        sobject = Search.get_by_id(my.search_type, id.strip())
+                    if self.id_col=='code':
+                        sobject = Search.get_by_code(self.search_type, id.strip())
+                    elif self.id_col=='id':
+                        sobject = Search.get_by_id(self.search_type, id.strip())
                     else:
-                        u_search = Search(my.search_type)
-                        u_search.add_filter(my.id_col, id.strip())
+                        u_search = Search(self.search_type)
+                        u_search.add_filter(self.id_col, id.strip())
                         sobject = u_search.get_sobject()
                     #assert sobject
                 # in case a previously exported sobject with this code
@@ -432,14 +432,14 @@ class SimpleCsvImportCmd(Command):
                     continue
                   
                 if not sobject:
-                    sobject = SObjectFactory.create(my.search_type)
+                    sobject = SObjectFactory.create(self.search_type)
                     is_new_entry = True
 
             new_columns = 0
             note = None
             for cell_count, cell in enumerate(row):
                 '''
-                column_override = my.columns[cell_count]
+                column_override = self.columns[cell_count]
 
                 if column_override:
                     title = column_override
@@ -449,7 +449,7 @@ class SimpleCsvImportCmd(Command):
                         continue
                 '''
                 # skip if not enabled
-                if cell_count not in my.enabled_idx:
+                if cell_count not in self.enabled_idx:
                     continue
 
                 title = csv_titles[cell_count]
@@ -490,7 +490,7 @@ class SimpleCsvImportCmd(Command):
 
             except SqlException, e:
                 msg = "Error creating new entry for row [%s]: %s, %s" % (row_count, str(row), e.__str__() )
-                if my.test_run:
+                if self.test_run:
                     error = True
                     error_entries.append(sobject.get_code())
                 raise SqlException(msg)
@@ -503,9 +503,9 @@ class SimpleCsvImportCmd(Command):
         new_entries_display = ''
         if new_entries:
             new_entries_display = '%s ...'%', '.join(new_entries[0:5])
-        my.description = "Total columns selected: %s\n\n  Imported %s new %s entries: %s " % (len(my.enabled_idx), len(new_entries), my.search_type, new_entries_display)
+        self.description = "Total columns selected: %s\n\n  Imported %s new %s entries: %s " % (len(self.enabled_idx), len(new_entries), self.search_type, new_entries_display)
         if updated_entries:
-            my.description = "%s.\n  Updated %s %s existing entries." %(my.description,  len(updated_entries), my.search_type)
+            self.description = "%s.\n  Updated %s %s existing entries." %(self.description,  len(updated_entries), self.search_type)
         
                 
 

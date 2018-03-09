@@ -28,66 +28,66 @@ from pyasm.widget import ProdIconButtonWdg
 
 class NamingInputWdg(BaseInputWdg):
 
-    def get_ajax_inputs(my):
+    def get_ajax_inputs(self):
         # how to determine 
         return ["search_type", "search_id", "naming", "widget_name"]
 
-    def get_ajax_elements(my):
+    def get_ajax_elements(self):
         return ['new_sample_name', 'edit|search_type']
 
-    def setup_ajax_inputs(my):
+    def setup_ajax_inputs(self):
         web = WebContainer.get_web()
-        ajax_inputs = my.get_ajax_inputs()
+        ajax_inputs = self.get_ajax_inputs()
         for input in ajax_inputs:
-            if not my.__dict__.get(input):
-                my.__dict__[input] = web.get_form_value(input)
-        ajax_elements = my.get_ajax_elements()
+            if not self.__dict__.get(input):
+                self.__dict__[input] = web.get_form_value(input)
+        ajax_elements = self.get_ajax_elements()
         for element in ajax_elements:
             name = element.replace("|", "_")
-            if not my.__dict__.get(name):
-                my.__dict__[name] = web.get_form_value(element)
+            if not self.__dict__.get(name):
+                self.__dict__[name] = web.get_form_value(element)
 
 
 
 
-    def setup_ajax(my, display_id):
+    def setup_ajax(self, display_id):
         # set up ajax
         ajax = AjaxLoader()
-        ajax.set_load_class(Common.get_full_class_name(my))
+        ajax.set_load_class(Common.get_full_class_name(self))
         ajax.set_display_id(display_id)
-        ajax_inputs = my.get_ajax_inputs()
+        ajax_inputs = self.get_ajax_inputs()
         for input in ajax_inputs:
-            ajax.set_option(input, my.__dict__.get(input))
+            ajax.set_option(input, self.__dict__.get(input))
 
-        ajax_elements = my.get_ajax_elements()
+        ajax_elements = self.get_ajax_elements()
         for element in ajax_elements:
             ajax.add_element_name(element)
         return ajax.get_on_script()
 
-    def init(my):
-        my.setup_ajax_inputs()
+    def init(self):
+        self.setup_ajax_inputs()
 
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         naming_util = NamingUtil()
 
-        if not my.widget_name:
-            my.widget_name = my.get_name()
+        if not self.widget_name:
+            self.widget_name = self.get_name()
 
         
 
         # get the sobject required by this input
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if not sobject:
-            sobject = Search.get_by_id(my.search_type, my.search_id)
+            sobject = Search.get_by_id(self.search_type, self.search_id)
 
 
-        if my.new_sample_name:
-            my.new_sample_name.replace("//", "/")
+        if self.new_sample_name:
+            self.new_sample_name.replace("//", "/")
         else:
-            my.new_sample_name = sobject.get_value(my.widget_name)
+            self.new_sample_name = sobject.get_value(self.widget_name)
 
 
         widget = DivWdg()
@@ -98,7 +98,7 @@ class NamingInputWdg(BaseInputWdg):
 
         # set the sample text
         div = DivWdg()
-        div.add("Sample name: <i>%s</i>" % my.new_sample_name)
+        div.add("Sample name: <i>%s</i>" % self.new_sample_name)
         div.add( HtmlElement.br(2) )
 
         new_sample_wdg = ProdIconButtonWdg("Set New Sample")
@@ -112,13 +112,13 @@ class NamingInputWdg(BaseInputWdg):
         sample_text = TextWdg("new_sample_name")
         sample_text.set_option("size", "30")
         #sample_text.set_persist_on_submit()
-        #if my.new_sample_name:
-        #    sample_text.set_value(my.new_sample_name)
+        #if self.new_sample_name:
+        #    sample_text.set_value(self.new_sample_name)
         generate.add(sample_text)
 
 
         button = IconButtonWdg("Generate", IconWdg.REFRESH, long=True)
-        on_script = my.setup_ajax("naming")
+        on_script = self.setup_ajax("naming")
         button.add_event("onclick", on_script)
         generate.add(button)
         generate.add( HtmlElement.br(2) )
@@ -126,10 +126,10 @@ class NamingInputWdg(BaseInputWdg):
         div.add(generate)
         widget.add(div)
 
-        hidden = TextWdg(my.widget_name)
-        value = my.naming
-        hidden.set_value( my.new_sample_name )
-        widget.add(my.widget_name)
+        hidden = TextWdg(self.widget_name)
+        value = self.naming
+        hidden.set_value( self.new_sample_name )
+        widget.add(self.widget_name)
         widget.add(hidden) 
 
         # get all of the parts
@@ -137,16 +137,16 @@ class NamingInputWdg(BaseInputWdg):
         # TODO: not sure if this should be dictated by the sample name
         # break up the name into parts
         import re
-        if my.new_sample_name:
-            tmp = my.new_sample_name.strip("/")
+        if self.new_sample_name:
+            tmp = self.new_sample_name.strip("/")
             parts = re.split( '[\\/._]', tmp)
             print "parts: ", parts
         else:
             return widget
 
         # if there is a naming, then populate that
-        if my.edit_search_type:
-            options = naming_util.get_options(my.edit_search_type)
+        if self.edit_search_type:
+            options = naming_util.get_options(self.edit_search_type)
         else:
             options = naming_util.get_options(sobject.get_value("search_type"))
 
@@ -172,10 +172,10 @@ class NamingInputWdg(BaseInputWdg):
 
 
 class XXNamingAction(DatabaseAction):
-    def execute(my):
-        sobject = my.sobject
+    def execute(self):
+        sobject = self.sobject
 
-        name = my.get_name()
+        name = self.get_name()
 
         web = WebContainer.get_web()
 
@@ -216,10 +216,10 @@ class XXNamingAction(DatabaseAction):
 
 
 class NamingAction(DatabaseAction):
-    def execute(my):
-        sobject = my.sobject
+    def execute(self):
+        sobject = self.sobject
 
-        name = my.get_name()
+        name = self.get_name()
 
         web = WebContainer.get_web()
 
@@ -253,10 +253,10 @@ class NamingAction(DatabaseAction):
 
 class NamingElementWdg(BaseTableElementWdg):
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
-        name = my.get_name()
+        name = self.get_name()
 
         naming = sobject.get_value(name)
         if naming:
@@ -275,11 +275,11 @@ class NamingElementWdg(BaseTableElementWdg):
 
 
 class NamingInputWdg2(BaseInputWdg):
-    def get_display(my):
-        name = my.get_name()
+    def get_display(self):
+        name = self.get_name()
 
         # get the sobject required by this input
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         widget = DivWdg()
 
@@ -300,10 +300,10 @@ class NamingInputWdg2(BaseInputWdg):
 @DEPRECATED
 class NamingAction2(DatabaseAction):
 
-    def execute(my):
-        sobject = my.sobject
+    def execute(self):
+        sobject = self.sobject
 
-        name = my.get_input_name()
+        name = self.get_input_name()
 
         web = WebContainer.get_web()
 
@@ -320,7 +320,7 @@ class NamingAction2(DatabaseAction):
             naming = naming.replace("{%d}" % idx, type_value)
 
         print "naming: ", name, naming
-        sobject.set_value(my.get_name(), naming)
+        sobject.set_value(self.get_name(), naming)
 """
 
 

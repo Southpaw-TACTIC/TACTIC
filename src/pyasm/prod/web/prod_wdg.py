@@ -23,55 +23,55 @@ from pyasm.prod.load import ProdLoaderContext
 
 class ProdIconButtonWdg(IconButtonWdg):
     
-    def __init__(my, name=None, icon=None, long=True, icon_pos="left"):
-        super(ProdIconButtonWdg,my).__init__(name, icon, long, icon_pos)
-        my.add_style("line-height: 14px")
-        my.add_style("font-size: 0.8em")
-        my.add_style("padding: 3px 10px 3px 10px")
+    def __init__(self, name=None, icon=None, long=True, icon_pos="left"):
+        super(ProdIconButtonWdg,self).__init__(name, icon, long, icon_pos)
+        self.add_style("line-height: 14px")
+        self.add_style("font-size: 0.8em")
+        self.add_style("padding: 3px 10px 3px 10px")
 
 class ProdIconSubmitWdg(IconSubmitWdg):
     
-    def __init__(my, name=None, icon=None, long=True, icon_pos="left"):
-        super(ProdIconSubmitWdg,my).__init__(name, icon, long, icon_pos)
-        my.add_style("line-height: 14px")
-        my.add_style("font-size: 0.8em")
-        my.add_style("padding: 3px 10px 3px 10px")
+    def __init__(self, name=None, icon=None, long=True, icon_pos="left"):
+        super(ProdIconSubmitWdg,self).__init__(name, icon, long, icon_pos)
+        self.add_style("line-height: 14px")
+        self.add_style("font-size: 0.8em")
+        self.add_style("padding: 3px 10px 3px 10px")
 
 class IntrospectWdg(ProdIconSubmitWdg):
     '''a widget that does introspection to analyze/update what 
         assets(versions) are loaded in the session of the app'''
 
-    def __init__(my):
-        super(IntrospectWdg, my).__init__("Introspect", long=True)
-        my.add_style("height: 14px")
-        my.add_style("font-size: 0.8em")
-        #my.add_style("padding: 3px 10px 2px 10px")
-        my.add_behavior({'type': "click", 'cbjs_action': "introspect(bvr)"})
+    def __init__(self):
+        super(IntrospectWdg, self).__init__("Introspect", long=True)
+        self.add_style("height: 14px")
+        self.add_style("font-size: 0.8em")
+        #self.add_style("padding: 3px 10px 2px 10px")
+        self.add_behavior({'type': "click", 'cbjs_action': "introspect(bvr)"})
 
 class IntrospectSelectWdg(ProdIconSubmitWdg):
     '''a widget that does selected introspection to analyze/update 
         what assets(versions) are loaded in the session of the app'''
 
-    def __init__(my):
-        super(IntrospectSelectWdg, my).__init__("Introspect Select", long=True)
-        my.add_style("height: 14px")
-        my.add_style("font-size: 0.8em")
-        my.add_event("onclick", "introspect_select()")
+    def __init__(self):
+        super(IntrospectSelectWdg, self).__init__("Introspect Select", long=True)
+        self.add_style("height: 14px")
+        self.add_style("font-size: 0.8em")
+        self.add_event("onclick", "introspect_select()")
 
         
 class SnapshotInfoWdg(BaseTableElementWdg):
     '''a widget that extracts the info of the xml snippet of a snapshot'''
 
-    def preprocess(my):
-        search_type_list  = SObject.get_values(my.sobjects, 'search_type', unique=True)
+    def preprocess(self):
+        search_type_list  = SObject.get_values(self.sobjects, 'search_type', unique=True)
         search_id_dict = {}
-        my.ref_sobject_cache = {}
+        self.ref_sobject_cache = {}
 
         # initialize the search_id_dict
         for type in search_type_list:
             search_id_dict[type] = []
         # cache it first
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
             search_type = sobject.get_value('search_type')
             search_id_list = search_id_dict.get(search_type)
             search_id_list.append(sobject.get_value('search_id'))
@@ -87,17 +87,17 @@ class SnapshotInfoWdg(BaseTableElementWdg):
                 sobj_dict = {}
 
             # store a dict of dict with the search_type as key
-            my.ref_sobject_cache[key] = sobj_dict
+            self.ref_sobject_cache[key] = sobj_dict
             
             
 
-    def get_display(my):
-        search_type = my.get_current_sobject().get_value('search_type')
-        search_id = my.get_current_sobject().get_value('search_id')
+    def get_display(self):
+        search_type = self.get_current_sobject().get_value('search_type')
+        search_id = self.get_current_sobject().get_value('search_id')
 
         sobject = None
-        if my.ref_sobject_cache:
-            sobj_dict = my.ref_sobject_cache.get(search_type)
+        if self.ref_sobject_cache:
+            sobj_dict = self.ref_sobject_cache.get(search_type)
             if sobj_dict:
                 sobject = sobj_dict.get(str(search_id))
         else:
@@ -117,9 +117,9 @@ class SnapshotInfoWdg(BaseTableElementWdg):
 
 class SnapshotLabelWdg(BaseTableElementWdg):
 
-    def get_snapshot(my, mode):
+    def get_snapshot(self, mode):
         ''' get the snapshot depending on the mode i.e. input, output'''
-        dict = my.get_current_aux_data()
+        dict = self.get_current_aux_data()
         output_snapshots = input_snapshots = None
         # the check for key is needed since snapshot can be None
         if dict and dict.has_key('%s_snapshots' %mode):
@@ -128,8 +128,8 @@ class SnapshotLabelWdg(BaseTableElementWdg):
             else:
                 input_snapshots = dict.get('%s_snapshots' %mode)
         else:
-            sobject = my.get_current_sobject()
-            context = my.get_context()
+            sobject = self.get_current_sobject()
+            context = self.get_context()
             loader = ProdLoaderContext()
 
             output_snapshots = loader.get_output_snapshots(sobject, context)
@@ -137,7 +137,7 @@ class SnapshotLabelWdg(BaseTableElementWdg):
 
             # this is for sharing with AssetLoaderWdg
             # should only be called once per sobject
-            my.append_aux_data({'output_snapshots': output_snapshots, \
+            self.append_aux_data({'output_snapshots': output_snapshots, \
                 'input_snapshots': input_snapshots})
 
         if mode == 'output':
@@ -148,7 +148,7 @@ class SnapshotLabelWdg(BaseTableElementWdg):
 
 
 
-    def get_context(my):
+    def get_context(self):
         context_select = Container.get('context_filter')
         context = 'publish'
         if context_select:
@@ -158,8 +158,8 @@ class SnapshotLabelWdg(BaseTableElementWdg):
             context = values[len(values)-1]
         return context
     
-    def get_display(my):
-        snapshot = my.get_snapshot('output')
+    def get_display(self):
+        snapshot = self.get_snapshot('output')
         label = None
         if snapshot:
             label = snapshot.get_label()
@@ -173,12 +173,12 @@ class SnapshotLabelWdg(BaseTableElementWdg):
     
 class AssetLibrarySelectionWdg(SelectWdg):
     
-    def get_display(my):
+    def get_display(self):
         search = Search('prod/asset_library')
-        my.set_search_for_options(search, 'code', 'title')
-        my.set_option('web_state', 'true')
-        my.add_empty_option()
-        select = super(AssetLibrarySelectionWdg, my).get_display()
+        self.set_search_for_options(search, 'code', 'title')
+        self.set_option('web_state', 'true')
+        self.add_empty_option()
+        select = super(AssetLibrarySelectionWdg, self).get_display()
         
         span = SpanWdg(select)
         
@@ -191,15 +191,15 @@ class AssetLibrarySelectionWdg(SelectWdg):
 
 class SObjectSelectionWdg(SelectWdg):
     
-    def get_display(my):
-        search_type = my.get_option('search_type')
+    def get_display(self):
+        search_type = self.get_option('search_type')
         if not search_type:
             return 
         search = Search(search_type)
-        my.set_search_for_options(search, 'code', 'code')
-        my.set_option('web_state', 'true')
-        my.add_empty_option()
-        select = super(SObjectSelectionWdg, my).get_display()
+        self.set_search_for_options(search, 'code', 'code')
+        self.set_option('web_state', 'true')
+        self.add_empty_option()
+        select = super(SObjectSelectionWdg, self).get_display()
         span = SpanWdg(select)
         
         insert_wdg = IframeInsertLinkWdg(search.get_search_type())

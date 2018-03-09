@@ -21,142 +21,143 @@ from pyasm.common import *
 
 class CommonTest(unittest.TestCase):
 
-    def test_all(my):
-        my._test_filesystem_name()
-        my._test_container()
-        my._test_counter()
-        my._test_xpath()
-        my._test_marshalling()
-        my._test_relative_dir()
+    def test_all(self):
+        self._test_keyword_extract()
+        self._test_filesystem_name()
+        self._test_container()
+        self._test_counter()
+        self._test_xpath()
+        self._test_marshalling()
+        self._test_relative_dir()
 
 
-    def _test_filesystem_name(my):
+    def _test_filesystem_name(self):
 
         # remove -
         name = 'chr001_.jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove -_
         name = 'chr001-_.jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove double ..
         name = 'chr001..jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove triple ...
         name = 'chr001...jpg'
         exp  = 'chr001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove -
         name = 'chr001-_model.jpg'
         exp  = 'chr001_model.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # keep double --, keep double __
         name = 'chr001--model__v001.jpg'
         exp = 'chr001--model__v001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # change space to underscore
         name = 'chr001 model_v001.jpg'
         exp = 'chr001_model_v001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
         # change space to underscore, but keep .
         name = 'chr001_model_v001 .jpg'
         exp = 'chr001_model_v001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # remove bad characters
         name = 'ch%r001_model_v001?! .jpg'
         exp = 'chr001_model_v001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # allow %0.4d convention 
         name = 'chr001_model.%0.4d.jpg'
         exp = 'chr001_model.%0.4d.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # start with a .
         name = '.chr001.jpg'
         exp = '.chr001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
         
         # ends with a .
         name = 'chr001.jpg.'
         exp = 'chr001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
         # start with a -
         name = '-!chr001.jpg'
         exp = '-chr001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001_!_v001.jpg'
         exp = 'chr001_v001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001_!!_v001.jpg'
         exp = 'chr001_v001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001__!v001.jpg'
         exp = 'chr001__v001.jpg'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
 
         # handle python special naming
         name = '__init__.py'
         exp = '__init__.py'
-        my.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEquals(exp, Common.clean_filesystem_name(name))
 
 
 
 
 
 
-    def _test_container(my):
+    def _test_container(self):
         value = "Hello World"
         key = "message"
         Container.put(key,value)
 
         value2 = Container.get(key)
 
-        my.assertEqual(value,value2)
+        self.assertEqual(value,value2)
 
-    def _test_counter(my):
+    def _test_counter(self):
 
         KEY = "CoreTest:counter"
         Container.start_counter(KEY)
         count = Container.get(KEY)
-        my.assertEquals(count, 0)
+        self.assertEquals(count, 0)
 
         Container.increment(KEY)
         Container.increment(KEY)
 
         count = Container.get(KEY)
-        my.assertEquals(count, 2)
+        self.assertEquals(count, 2)
 
         Container.decrement(KEY)
 
         count = Container.get(KEY)
-        my.assertEquals(count, 1)
+        self.assertEquals(count, 1)
 
 
 
 
-    def _test_xpath(my):
+    def _test_xpath(self):
         xml_string = """
         <snapshot>
             <a>pig</a>
@@ -173,32 +174,32 @@ class CommonTest(unittest.TestCase):
 
         # test get_node
         nodes = xml.get_nodes("snapshot/a")
-        my.assertEquals(3, len(nodes) )
+        self.assertEquals(3, len(nodes) )
         node = xml.get_node("snapshot/b")
-        my.assertEquals(1, node != None)
+        self.assertEquals(1, node != None)
 
 
         xpath = "snapshot/a"
         values = xml.get_values(xpath)
 
-        my.assertEqual("pig",values[0])
-        my.assertEqual("cow",values[1])
-        my.assertEqual("horse",values[2])
+        self.assertEqual("pig",values[0])
+        self.assertEqual("cow",values[1])
+        self.assertEqual("horse",values[2])
 
         # test single value
         value = xml.get_value("snapshot/b")
-        my.assertEqual("child",value)
+        self.assertEqual("child",value)
 
         # test getting an attribute
         value = xml.get_value("snapshot/c/@name")
-        my.assertEqual("horse",value)
+        self.assertEqual("horse",value)
 
         #xml.dump()
 
 
 
 
-    def _test_marshalling(my):
+    def _test_marshalling(self):
         seq_code = "434TTT"
         shot_code = "8324"
 
@@ -222,59 +223,87 @@ class CommonTest(unittest.TestCase):
         pickle2 = pickle.dumps(marshaller)
 
 
-        my.assertEquals(pickle1, pickle2)
+        self.assertEquals(pickle1, pickle2)
 
 
-    def _test_relative_dir(my):
+    def _test_relative_dir(self):
 
         b = "/data/home/apache/assets/prod/textures"
         a = "/data/home/apache/assets/prod/textures"
         rel = Common.relative_dir(a,b)
         exp = "."
-        my.assertEquals(exp,rel)
+        self.assertEquals(exp,rel)
 
 
         a = "/data/home/apache/assets/prod/textures"
         b = "/data/home/apache/assets/prod/textures/prod/product100/final"
         rel = Common.relative_dir(a,b)
         exp = "prod/product100/final"
-        my.assertEquals(exp,rel)
+        self.assertEquals(exp,rel)
 
         a = "/data/home/apache/assets/prod/textures/prod/product100/final"
         b = "/data/home/apache/assets/prod/textures"
         rel = Common.relative_dir(a,b)
         exp = "../../.."
-        my.assertEquals(exp,rel)
+        self.assertEquals(exp,rel)
 
         a = "/data/home/apache/assets/prod/textures/prod/product100/final"
         b = "/data/home/apache/assets/prod/assets/product100/final"
         rel = Common.relative_dir(a,b)
         exp = "../../../../assets/product100/final"
-        my.assertEquals(exp,rel)
+        self.assertEquals(exp,rel)
 
         a = "/data/home/apache/assets/prod/"
         b = "/data/home/apache/assets/prod"
         rel = Common.relative_dir(a,b)
         exp = ""
-        my.assertEquals(exp,rel)
+        self.assertEquals(exp,rel)
 
         # real example
         a = "/home/apache/html/sthpw/assets/prod2/asset/product/product300/final"
         b = "/home/apache/html/sthpw/assets/prod2/asset/product/product300/texture/torus"
         rel = Common.relative_dir(a,b)
         exp = "../texture/torus"
-        my.assertEquals(exp,rel)
+        self.assertEquals(exp,rel)
 
         # real example
         a = "/home/apache/html/sthpw/assets/mainframe/asset/bar/bar0002/rig"
         b = "/home/apache/html/sthpw/assets/mainframe/asset/bar/bar0001/model"
         rel = Common.relative_dir(a,b)
         exp = "../../bar0001/model"
-        my.assertEquals(exp,rel)
+        self.assertEquals(exp,rel)
 
 
 
+    def _test_keyword_extract(self):
 
+        path = "/theLongAndWindingRoad.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['the', 'long', 'and', 'winding', 'road', 'jpg']:
+            self.assertEquals(True, item in keywords)
+
+
+        path = "/bigUglyDog-dangerous_black.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['big','ugly','dog','dangerous','black','jpg']:
+            self.assertEquals(True, item in keywords)
+
+        path = "/BOBtheMan.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['bob', 'the', 'man']:
+            self.assertEquals(True, item in keywords)
+
+
+        path = "/BOB123.jpg"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['bob', 'jpg']:
+            self.assertEquals(True, item in keywords)
+
+
+        path = "/testURLagain-main.txt"
+        keywords = Common.extract_keywords_from_path(path)
+        for item in ['test', 'url', 'again', 'main', 'txt']:
+            self.assertEquals(True, item in keywords)
 
 
 if __name__ == '__main__':

@@ -24,31 +24,31 @@ from tactic.ui.common import BaseTableElementWdg
 class SObjectGroupUtil(object):
     '''container widget groupings in tables'''
 
-    def __init__(my):
-        my.prev_sobj = None
+    def __init__(self):
+        self.prev_sobj = None
 
 
-    def is_new_group(my, prev_sobj, sobj):
+    def is_new_group(self, prev_sobj, sobj):
         '''check if this task belong to a new parent ''' 
         if not prev_sobj:
             return True
 
         # let the widget determine if it is new
-        is_new = my.widget.is_new_group(prev_sobj, sobj)
+        is_new = self.widget.is_new_group(prev_sobj, sobj)
         if is_new != None:
             return is_new
 
 
         # if it is None, use the default
-        prev_value = prev_sobj.get_value(my.column)
-        sobj_value = sobj.get_value(my.column, no_exception=True)
+        prev_value = prev_sobj.get_value(self.column)
+        sobj_value = sobj.get_value(self.column, no_exception=True)
 
 
         # Now check for timestamp values and if found group by each calendar day (as default behavior),
         # otherwise you get one grouping for each row if the time part of the timestamp is not the same ...
         #
         st = sobj.get_search_type()
-        value_type = SearchType.get_tactic_type(st, my.column)
+        value_type = SearchType.get_tactic_type(st, self.column)
         
         if value_type == 'timestamp':
             from dateutil import parser
@@ -67,33 +67,33 @@ class SObjectGroupUtil(object):
             return True
 
 
-    def set_widget(my, widget):
-        my.widget = widget
+    def set_widget(self, widget):
+        self.widget = widget
 
-    def set_sobject(my, sobject):
-        my.sobject = sobject
-
-
-    def get_group_wdg(my):
-        assert my.widget
-
-        if not my.sobject:
-            my.sobject = my.widget.get_current_sobject()
-
-        assert my.sobject
+    def set_sobject(self, sobject):
+        self.sobject = sobject
 
 
-        my.column = my.widget.get_name()
-        #if not my.column:
-        #    my.column = web.get_form_value(my.parent_wdg.get_order_by_id() )
+    def get_group_wdg(self):
+        assert self.widget
+
+        if not self.sobject:
+            self.sobject = self.widget.get_current_sobject()
+
+        assert self.sobject
+
+
+        self.column = self.widget.get_name()
+        #if not self.column:
+        #    self.column = web.get_form_value(self.parent_wdg.get_order_by_id() )
 
         div = None
 
-        if my.is_new_group(my.prev_sobj, my.sobject):
+        if self.is_new_group(self.prev_sobj, self.sobject):
             div = DivWdg()
             div.add_style("width: 100%")
 
-            group_wdg = my.widget.get_group_wdg(my.prev_sobj)
+            group_wdg = self.widget.get_group_wdg(self.prev_sobj)
             if group_wdg:
                 if type(group_wdg) in types.StringTypes:
                     div.add( group_wdg )
@@ -101,23 +101,23 @@ class SObjectGroupUtil(object):
                     div.add( group_wdg.get_buffer_display() )
 
             else:
-                value = my.sobject.get_value(my.column, no_exception=True)
+                value = self.sobject.get_value(self.column, no_exception=True)
                 if not value:
                     value = "-- empty --"
 
-                value = my.widget.get_buffer_display()
+                value = self.widget.get_buffer_display()
 
                 column_div = DivWdg()
                 div.add(column_div)
                 column_div.add_style("float: left")
-                column_div.add( "<i style='color: #666'/>%s:</i> &nbsp;&nbsp;" % my.column )
+                column_div.add( "<i style='color: #666'/>%s:</i> &nbsp;&nbsp;" % self.column )
                 div.add( value )
                 div.add_style("font-weight: bold")
                 div.add_style("font-size: 1.1em")
 
 
-        my.prev_sobj = my.sobject
-        #print my.sobject.get_code(), my.sobject.get_search_key()
+        self.prev_sobj = self.sobject
+        #print self.sobject.get_code(), self.sobject.get_search_key()
         return div
 
      
@@ -125,25 +125,25 @@ class SObjectGroupUtil(object):
 class ParentGroupTableElementWdg(BaseTableElementWdg):
     '''shows which sobject this sobject is attached to'''
 
-    def init(my):
-        my.last_search_key = None
-        my.swaps = []
-        my.row_ids = []
-        my.empty = True
-        my.is_preprocessed = False
-        my.preprocess()
+    def init(self):
+        self.last_search_key = None
+        self.swaps = []
+        self.row_ids = []
+        self.empty = True
+        self.is_preprocessed = False
+        self.preprocess()
 
-    #def is_in_column(my):
+    #def is_in_column(self):
     #    return False
 
-    def is_groupable(my):
+    def is_groupable(self):
         return True
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def get_text_value(my):
-        sobject = my.get_current_sobject()
+    def get_text_value(self):
+        sobject = self.get_current_sobject()
         parent = sobject.get_parent()
         if parent:
             return parent.get_code()
@@ -151,7 +151,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
             return ''
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         # remove the limit to get all the parents' id
         # add reapply the limit later.. This is needed for an accurate
         # result when limit and offset is applied later
@@ -197,7 +197,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
 
     '''
-    def post_alter_search(my, sobjects):
+    def post_alter_search(self, sobjects):
         #sobjects = search.get_sobjects()
         if not sobjects:
             return
@@ -217,27 +217,27 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
        
 
-    def preprocess(my):
+    def preprocess(self):
         
         # protect against the case where there is a single sobject that
         # is an insert (often seen in "insert")
-        if my.is_preprocessed == True:
+        if self.is_preprocessed == True:
             return
 
         skip = False
-        if len(my.sobjects) == 1:
-            if not my.sobjects[0].has_value("search_type"):
+        if len(self.sobjects) == 1:
+            if not self.sobjects[0].has_value("search_type"):
                 skip = True
 
         if not skip:
-            search_types = SObject.get_values(my.sobjects, 'search_type', unique=True)
+            search_types = SObject.get_values(self.sobjects, 'search_type', unique=True)
 
             try:
-                search_codes = SObject.get_values(my.sobjects, 'search_code', unique=True)
+                search_codes = SObject.get_values(self.sobjects, 'search_code', unique=True)
                 search_ids = None
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: ", e
-                search_ids = SObject.get_values(my.sobjects, 'search_id', unique=True)
+                search_ids = SObject.get_values(self.sobjects, 'search_id', unique=True)
                 search_codes = None
         else:
             search_types = []
@@ -250,7 +250,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
         ref_sobjs = []
         if len(search_types) > 1:
             ref_sobjs = []
-            for tmp_sobj in my.sobjects:
+            for tmp_sobj in self.sobjects:
                 try:
                     ref_sobj = tmp_sobj.get_parent()
                     if ref_sobj:
@@ -258,46 +258,46 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                     else:
                         warning = "Dangling reference: %s" % tmp_sobj.get_search_key()
                         Environment.add_warning(warning, warning)
-                except SearchException, e:
+                except SearchException as e:
                     # skips unknown search_type/project
                     print e.__str__()
                     continue
 
         elif len(search_types) == 1:
-            search_type =  my.sobjects[0].get_value("search_type")
+            search_type =  self.sobjects[0].get_value("search_type")
             try:
                 if search_codes != None:
                     ref_sobjs = Search.get_by_code(search_type, search_codes)
                 else:
                     ref_sobjs = Search.get_by_id(search_type, search_ids)
-            except SearchException, e:
+            except SearchException as e:
                 # skips unknown search_type/project
                 print e.__str__()
                 pass
 
         # TODO: None defaults to search_key, should be empty
-        my.ref_sobj_dict = SObject.get_dict(ref_sobjs, None)
+        self.ref_sobj_dict = SObject.get_dict(ref_sobjs, None)
 
         # when drawn as part of a TbodyWdg, we want to disable the calculation
         # of most things so that it will not try to display a prev row
-        if my.get_option('disable') == 'true':
-            my.ref_sobj_dict = None
-            my.empty = True
+        if self.get_option('disable') == 'true':
+            self.ref_sobj_dict = None
+            self.empty = True
   
-        my.is_preprocessed = True
+        self.is_preprocessed = True
 
-    #def handle_td(my, td):
+    #def handle_td(self, td):
     #    td.add_class("task_spacer_column")
     #    td.add_style("font-weight: bold")
-    #    if my.empty:
+    #    if self.empty:
     #        td.add_style("border-top: 0px")
 
-    def is_new_group(my, prev_sobj, sobj):
+    def is_new_group(self, prev_sobj, sobj):
         '''check if this task belong to a new parent ''' 
         if not prev_sobj:
             return True
-        prev_ref_sobj = my.get_ref_obj(prev_sobj)
-        ref_sobj = my.get_ref_obj(sobj)
+        prev_ref_sobj = self.get_ref_obj(prev_sobj)
+        ref_sobj = self.get_ref_obj(sobj)
              
         if not prev_ref_sobj or not ref_sobj:
             return False
@@ -309,13 +309,13 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
 
            
-    def get_group_wdg(my, prev_sobj):
-        if not my.is_preprocessed:
-            my.preprocess()
+    def get_group_wdg(self, prev_sobj):
+        if not self.is_preprocessed:
+            self.preprocess()
 
-        sobject = my.get_current_sobject()
-        ref_sobj = my.get_ref_obj(sobject)
-        my.current_ref_sobj = ref_sobj
+        sobject = self.get_current_sobject()
+        ref_sobj = self.get_ref_obj(sobject)
+        self.current_ref_sobj = ref_sobj
         
         if not ref_sobj:
             return "Undetermined parent: [%s]" % SearchKey.get_by_sobject(sobject)
@@ -344,7 +344,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
  
         label = "Attach"
-        label_option = my.get_option("label")
+        label_option = self.get_option("label")
         if label_option:
             label = label_option 
        
@@ -400,15 +400,15 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
 
 
-    def handle_group_table(my, table, tbody, tr, td):
+    def handle_group_table(self, table, tbody, tr, td):
         # add some data about the sobject 
-        if not my.current_ref_sobj:
+        if not self.current_ref_sobj:
             return
-        tbody.set_attr("spt_search_key", SearchKey.get_by_sobject(my.current_ref_sobj))
+        tbody.set_attr("spt_search_key", SearchKey.get_by_sobject(self.current_ref_sobj))
 
 
 
-    def get_ref_obj(my, sobject):
+    def get_ref_obj(self, sobject):
         search_type = sobject.get_value("search_type")
         search_code = sobject.get_value("search_code", no_exception=True)
         if not search_code:
@@ -418,7 +418,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
         key = SearchKey.build_search_key(search_type, search_code)
 
-        ref_sobject = my.ref_sobj_dict.get(str(key))
+        ref_sobject = self.ref_sobj_dict.get(str(key))
         if not ref_sobject:
             try:
                 if search_code:
@@ -428,24 +428,24 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
                 if not ref_sobject:
                     return None
-            except SearchException, e:
+            except SearchException as e:
                 print e.__str__()
                 return None
 
         return ref_sobject
 
 
-    def handle_td(my, td):
+    def handle_td(self, td):
         td.add_attr('spt_input_type', 'gantt')
         td.add_class("spt_input_inline")
 
 
-    def get_display(my):
+    def get_display(self):
         #return None
         div = DivWdg()
         div.add_class("spt_gantt_top")
 
-        value_wdg = HiddenWdg(my.get_name())
+        value_wdg = HiddenWdg(self.get_name())
         value_wdg.add_class("spt_gantt_value")
         div.add( value_wdg )
 
@@ -488,14 +488,14 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
             '''
         } )
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         try:
             parent = sobject.get_parent()
             if parent:
                 value = parent.get_code()
             else:
                 value = "&nbsp;"
-        except SearchException, e:
+        except SearchException as e:
             # skips unknown search_type/project
             print e.__str__()
             search_type =   sobject.get_search_type()
@@ -516,10 +516,10 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 from pyasm.command import DatabaseAction
 class ParentGroupAction(DatabaseAction):
 
-    def execute(my):
+    def execute(self):
 
-        sobject = my.sobject
-        value = my.get_value(my.get_input_name())
+        sobject = self.sobject
+        value = self.get_value(self.get_input_name())
         if not value:
             return
 

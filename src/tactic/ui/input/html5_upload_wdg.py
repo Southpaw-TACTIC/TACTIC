@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['Html5UploadWdg', 'UploadButtonWdg', 'CheckinButtonWdg', 'TestHtml5UploadWdg']
+__all__ = ['Html5UploadWdg', 'UploadButtonWdg', 'CheckinButtonWdg', 'TestHtml5UploadWdg', 'HtmlUploadWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -22,27 +22,27 @@ from pyasm.widget import TextWdg, HiddenWdg
 
 class Html5UploadWdg(BaseRefreshWdg):
 
-    def init(my):
-        name = my.kwargs.get("name")
+    def init(self):
+        name = self.kwargs.get("name")
         if not name:
             name = "table_upload"
 
-        my.form = HtmlElement.form()
+        self.form = HtmlElement.form()
 
-        my.form_id = my.kwargs.get("upload_id")
-        if my.form_id:
-            my.form.set_id(my.form_id)
+        self.form_id = self.kwargs.get("upload_id")
+        if self.form_id:
+            self.form.set_id(self.form_id)
         else:
-            my.form_id = my.form.set_unique_id(name)
+            self.form_id = self.form.set_unique_id(name)
 
 
-    def get_upload_id(my):
-        return my.form_id
+    def get_upload_id(self):
+        return self.form_id
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        form = my.form
+        top = self.top
+        form = self.form
         form.add_style("margin: 0px")
         form.add_style("padding: 0px")
         top.add(form)
@@ -56,7 +56,7 @@ class Html5UploadWdg(BaseRefreshWdg):
         input.add_style("position: absolute")
         input.add_style("margin-left: -5000px")
 
-        multiple = my.kwargs.get("multiple")
+        multiple = self.kwargs.get("multiple")
         if multiple in [True, 'true']:
             input.add_attr("multiple", "multiple")
 
@@ -64,7 +64,7 @@ class Html5UploadWdg(BaseRefreshWdg):
         if not Container.get_dict("JSLibraries", "spt_html5upload"):
             form.add_behavior( {
             'type': 'load',
-            'form_id': my.form_id,
+            'form_id': self.form_id,
             'cbjs_action': '''
 
 if (spt.html5upload)
@@ -142,18 +142,8 @@ spt.html5upload.select_files = function(onchange) {
         el.addEventListener("change", onchange, true);
     }
 
-    // This is necessary for Qt on a Mac??
-    if (spt.browser.is_Qt() || spt.browser.is_Safari()) {
-        setTimeout( function() {
-            el.click();
-            spt.html5upload.events[event_name] = onchange;
-        }, 100 );
-    }
-    else {
-        
-        el.click();
-        spt.html5upload.events[event_name] = onchange;
-    }
+    spt.html5upload.events[event_name] = onchange;
+    el.click();
 
     // FIXME: this is not very useful as the select file is async, but
     // is required for later code not to open a popup
@@ -284,34 +274,44 @@ spt.html5upload.upload_file = function(kwargs) {
 
 
 
-class UploadButtonWdg(BaseRefreshWdg):
+class BaseUploadWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.ticket = my.kwargs.get("ticket")
-        my.on_complete = my.kwargs.get("on_complete")
-        my.on_complete_kwargs = my.kwargs.get("on_complete_kwargs")
-        if not my.on_complete:
-            my.on_complete_kwargs = {}
-        my.upload_id = my.kwargs.get("upload_id")
-        super(UploadButtonWdg,my).init()
+    def init(self):
+        self.ticket = self.kwargs.get("ticket")
+        self.on_complete = self.kwargs.get("on_complete")
+        self.on_complete_kwargs = self.kwargs.get("on_complete_kwargs")
+        if not self.on_complete:
+            self.on_complete_kwargs = {}
+        self.upload_id = self.kwargs.get("upload_id")
+        super(BaseUploadWdg,self).init()
 
 
-    def set_on_complete(my, on_complete, **kwargs):
-        my.on_complete = on_complete
+    def set_on_complete(self, on_complete, **kwargs):
+        self.on_complete = on_complete
         if kwargs:
-            my.on_complete_kwargs = kwargs
+            self.on_complete_kwargs = kwargs
 
-    def get_on_complete(my):
-        return my.on_complete
+    def get_on_complete(self):
+        return self.on_complete
+
+    def get_activator_wdg(self, title):
+        div = DivWdg()
+        if not title:
+            html = self.kwargs.get("html")
+            div.add(html)
+        else:
+            div.add(title)
+        return div
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_upload_top")
+        top.add_style("display: inline-block")
 
-        title = my.kwargs.get("title")
-        name = my.kwargs.get("name")
+        title = self.kwargs.get("title")
+        name = self.kwargs.get("name")
 
         if not name:
             name = "upload"
@@ -319,48 +319,42 @@ class UploadButtonWdg(BaseRefreshWdg):
         if not title:
             title = Common.get_display_title(name)
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
 
 
         hidden = HiddenWdg(name)
         top.add(hidden)
 
 
-        multiple = my.kwargs.get("multiple")
+        multiple = self.kwargs.get("multiple")
         if multiple in [True, 'true']:
             multiple = True
         else:
             multiple = False
 
        
-        if my.upload_id:
-            upload_id = my.upload_id
+        if self.upload_id:
+            upload_id = self.upload_id
         else:
             upload = Html5UploadWdg(name=name, multiple=multiple)
             top.add(upload)
             upload_id = upload.get_upload_id()
 
 
+        button = self.get_activator_wdg(title)
 
-        color = my.kwargs.get("color")
-        width = my.kwargs.get("width")
-
-        from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title, color=color, width=width)
-
-
-        button_id = my.kwargs.get("id")
+        button_id = self.kwargs.get("id")
         if button_id:
             button.set_id(button_id)
         top.add(button)
 
-        upload_init = my.kwargs.get("upload_init")
+        upload_init = self.kwargs.get("upload_init")
         if not upload_init:
             upload_init = ""
 
 
 
-        upload_start = my.kwargs.get("upload_start")
+        upload_start = self.kwargs.get("upload_start")
         if not upload_start:
             upload_start = '''
             var top = bvr.src_el.getParent(".spt_upload_top");
@@ -372,7 +366,7 @@ class UploadButtonWdg(BaseRefreshWdg):
             hidden.value = file.name;
             '''
  
-        on_complete = my.get_on_complete()
+        on_complete = self.get_on_complete()
         if not on_complete:
             on_complete = '''
             var files = spt.html5upload.get_files();
@@ -386,14 +380,14 @@ class UploadButtonWdg(BaseRefreshWdg):
             spt.app_busy.hide();
             '''
 
-        upload_progress = my.kwargs.get("upload_progress")
+        upload_progress = self.kwargs.get("upload_progress")
         if not upload_progress:
             upload_progress = '''
             var percent = Math.round(evt.loaded * 100 / evt.total);
             spt.app_busy.show("Uploading ["+percent+"% complete]");
             '''
 
-        reader_load = my.kwargs.get("reader_load")
+        reader_load = self.kwargs.get("reader_load")
         if not reader_load:
             reader_load = ""
 
@@ -402,9 +396,9 @@ class UploadButtonWdg(BaseRefreshWdg):
             'type': 'click_up',
             'upload_id': upload_id,
             'search_key': search_key,
-            'ticket': my.ticket,
+            'ticket': self.ticket,
             'multiple': multiple,
-            'kwargs': my.on_complete_kwargs,
+            'kwargs': self.on_complete_kwargs,
             'cbjs_action': '''
             var search_key = bvr.search_key;
 
@@ -472,17 +466,73 @@ class UploadButtonWdg(BaseRefreshWdg):
 
 
 
+
+class HtmlUploadWdg(BaseUploadWdg):
+
+    def get_on_complete(self):
+
+        process = self.kwargs.get("process")
+        if not process:
+            process= "publish"
+
+
+        search_key = self.kwargs.get("search_key")
+
+        checkin_type = self.kwargs.get("checkin_type")
+        if not checkin_type:
+            checkin_type = 'auto'
+
+        return '''
+            var server = TacticServerStub.get();
+            var file = spt.html5upload.get_file();
+
+            if (file) {
+                var search_key = "%s";
+                var file_name = file.name;
+
+                var context = "%s/" + file_name;
+
+                server.simple_checkin(search_key, context, file_name, {mode:'uploaded', checkin_type:'%s'});
+                spt.notify.show_message("Check-in of ["+file_name+"] successful");
+            }
+            else  {
+              alert('Error: file object cannot be found.')
+            }
+            spt.app_busy.hide();
+        ''' % (search_key, process, checkin_type)
+
+
+
+
+
+class UploadButtonWdg(BaseUploadWdg):
+
+    def get_activator_wdg(self, title):
+
+        color = self.kwargs.get("color")
+        width = self.kwargs.get("width")
+ 
+        from tactic.ui.widget import ActionButtonWdg
+        button = ActionButtonWdg(title=title, color=color, width=width, size='b')
+        return button
+
+
+
+
+
+
+
 class CheckinButtonWdg(UploadButtonWdg):
 
-    def get_on_complete(my):
+    def get_on_complete(self):
 
-        context = my.kwargs.get("context")
+        context = self.kwargs.get("context")
         if not context:
             context = 'publish'
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
 
-        checkin_type = my.kwargs.get("checkin_type")
+        checkin_type = self.kwargs.get("checkin_type")
         if not checkin_type:
             checkin_type = 'auto'
 
@@ -508,16 +558,16 @@ class CheckinButtonWdg(UploadButtonWdg):
 
 class TestHtml5UploadWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         upload = Html5UploadWdg(name="formxyz")
         top.add(upload)
         upload_id = upload.get_upload_id()
 
-        color = my.kwargs.get("color")
-        width = my.kwargs.get("width")
+        color = self.kwargs.get("color")
+        width = self.kwargs.get("width")
 
         from tactic.ui.widget import ActionButtonWdg
         button = ActionButtonWdg(title="Upload", color=color, width=width)

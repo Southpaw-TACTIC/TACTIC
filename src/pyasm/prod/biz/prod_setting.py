@@ -24,7 +24,7 @@ class ProdSetting(SObject):
 
 
     # FIXME: what is this for?
-    def get_app_tabs(my):
+    def get_app_tabs(self):
         '''This controls what tabs are visible'''
         return ["3D Asset", "Checkin", "Sets", "Anim Loader", "Anim Checkin", "Layer Loader", "Layer Checkin", "Shot"]
                

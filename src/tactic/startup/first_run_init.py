@@ -21,8 +21,8 @@ import os, shutil
 import sys
 
 class FirstRunInit(object):
-    def execute(my):
-        my.copy_start()
+    def execute(self):
+        self.copy_start()
 
         # check to see if there is a server code
         server_code = Config.get_value("install", "server")
@@ -33,7 +33,7 @@ class FirstRunInit(object):
         #    Config.save_config()
 
 
-    def copy_start(my):
+    def copy_start(self):
 
         data_dir = Environment.get_data_dir(manual=True)
 
@@ -67,6 +67,12 @@ class FirstRunInit(object):
                     shutil.copytree(from_dir, to_dir)
             else:
                 shutil.copytree(install_data_path, data_dir)
+
+
+            # create the dist folder
+            to_dir = "%s/dist" % (data_dir)
+            if not os.path.exists(to_dir):
+                os.makedirs(to_dir)
 
 
             # copy the appropriate config file

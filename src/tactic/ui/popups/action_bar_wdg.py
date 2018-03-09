@@ -22,21 +22,21 @@ from pyasm.widget import ButtonWdg
 class ActionBarWdg(BaseRefreshWdg):
     '''Set of menus making different sets of tools available in one place'''
 
-    def init(my):
+    def init(self):
         pass
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'table_id': 'id of the table that this action operates on'
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.table_id = my.kwargs.get('table_id')
-        if not my.table_id:
-            my.table_id = 'main_body_table'
+        self.table_id = self.kwargs.get('table_id')
+        if not self.table_id:
+            self.table_id = 'main_body_table'
 
         action_bar_top_div = DivWdg()
         action_bar_top_div.set_id("ActionBarWdg")
@@ -47,12 +47,12 @@ class ActionBarWdg(BaseRefreshWdg):
         # Fill out content div here!
 
         btn_info_list = [
-                # {'id': 'ActionBar_FileMenu_Btn', 'title': 'File', 'menus': [ my.get_file_menu() ], 'match_w': False},
-                {'id': 'ActionBar_ViewMenu_Btn', 'title': 'View', 'menus': [ my.get_view_menu() ], 'match_w': False},
-                # {'id': 'ActionBar_EditMenu_Btn', 'title': 'Edit', 'menus': [ my.get_edit_menu() ], 'match_w': False},
-                # {'id': 'ActionBar_ItemsMenu_Btn', 'title': 'Items', 'menus': [ my.get_items_menu() ], 'match_w': False},
-                {'id': 'ActionBar_ToolsMenu_Btn', 'title': 'Tools', 'menus': [ my.get_tools_menu() ], 'match_w': False}
-                #{'id': 'ActionBar_ProjectMenu_Btn', 'title': 'Project', 'menus': [ my.get_project_menu() ], 'match_w': False},
+                # {'id': 'ActionBar_FileMenu_Btn', 'title': 'File', 'menus': [ self.get_file_menu() ], 'match_w': False},
+                {'id': 'ActionBar_ViewMenu_Btn', 'title': 'View', 'menus': [ self.get_view_menu() ], 'match_w': False},
+                # {'id': 'ActionBar_EditMenu_Btn', 'title': 'Edit', 'menus': [ self.get_edit_menu() ], 'match_w': False},
+                # {'id': 'ActionBar_ItemsMenu_Btn', 'title': 'Items', 'menus': [ self.get_items_menu() ], 'match_w': False},
+                {'id': 'ActionBar_ToolsMenu_Btn', 'title': 'Tools', 'menus': [ self.get_tools_menu() ], 'match_w': False}
+                #{'id': 'ActionBar_ProjectMenu_Btn', 'title': 'Project', 'menus': [ self.get_project_menu() ], 'match_w': False},
         ]
 
         table = Table()
@@ -110,43 +110,43 @@ class ActionBarWdg(BaseRefreshWdg):
         return action_bar_top_div
 
 
-    def get_view_menu(my):
+    def get_view_menu(self):
         is_admin = False
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
             is_admin = True
         menu_items = [
                 { "type": "action", "label": "Save Current View",
-                    "bvr_cb": {'cbjs_action': "spt.dg_table.view_action_cbk('save','%s', bvr);" % my.table_id, 
+                    "bvr_cb": {'cbjs_action': "spt.dg_table.view_action_cbk('save','%s', bvr);" % self.table_id, 
                                'is_admin': is_admin} },
                 
                 { "type": "action", "label": "Save My View As...",
-                    "bvr_cb": {'cbjs_action': "spt.dg_table.view_action_cbk('add_my_view','%s', bvr);" % my.table_id} },
+                    "bvr_cb": {'cbjs_action': "spt.dg_table.view_action_cbk('add_my_view','%s', bvr);" % self.table_id} },
         ]
 
         
         if is_admin:
-            menu_items.insert(2, { "type": "action", "label": "Save Project View As ...", "bvr_cb": {'cbjs_action': "spt.dg_table.view_action_cbk('save_project_view','%s', bvr);" % my.table_id} })
+            menu_items.insert(2, { "type": "action", "label": "Save Project View As ...", "bvr_cb": {'cbjs_action': "spt.dg_table.view_action_cbk('save_project_view','%s', bvr);" % self.table_id} })
 
         return {'menu_id': 'ActionBar_ViewMenu_Main', 'width': 150, 'allow_icons': False,
                 'opt_spec_list': menu_items}
 
 
 
-    def get_file_menu(my):
+    def get_file_menu(self):
 
         menu_items = [
                 { "type": "action", "label": "Export All...", "bvr_cb": {
                   'cbfn_action': "spt.dg_table_action.set_actionbar_aux_content",
                         'class_name': 'tactic.ui.widget.CsvExportWdg',
-                        'args': {"table_id": "%s" %my.table_id, \
+                        'args': {"table_id": "%s" %self.table_id, \
                                  "is_export_all": "true"}}},
 
 
                 { "type": "action", "label": "Export Selected", "bvr_cb": {
                     'cbfn_action': "spt.dg_table_action.set_actionbar_aux_content",
                         'class_name': 'tactic.ui.widget.CsvExportWdg',
-                        'args': {"table_id": "%s" %my.table_id}}},
+                        'args': {"table_id": "%s" %self.table_id}}},
                 
 
                 { "type": "separator" },
@@ -158,13 +158,13 @@ class ActionBarWdg(BaseRefreshWdg):
             menu_items.insert(0, { "type": "action", "label": "Import CSV", "bvr_cb": {
                     'cbfn_action':  "spt.dg_table_action.set_actionbar_aux_content",
                         'class_name': 'tactic.ui.widget.CsvImportWdg',
-                        'args': {"table_id": "%s" %my.table_id} }})
+                        'args': {"table_id": "%s" %self.table_id} }})
 
         return {'menu_id': 'ActionBar_FileMenu_Main', 'width': 150, 'allow_icons': False,
                 'opt_spec_list': menu_items}
 
 
-    def get_edit_menu(my):
+    def get_edit_menu(self):
         return {
             'menu_id': 'ActionBar_EditMenu_Main', 'width': 200, 'allow_icons': False,
             'opt_spec_list': [
@@ -191,7 +191,7 @@ class ActionBarWdg(BaseRefreshWdg):
                 #    "bvr_cb": {
                 #        'cbfn_action': 'spt.dg_table_action.get_popup_wdg',
                 #        'class_name': 'tactic.ui.panel.AddPredefinedColumnWdg',
-                #        'args': { 'search_type': my.search_type },
+                #        'args': { 'search_type': self.search_type },
                 #        'element_id':   'predefined_column_wdg',
                 #    }
                 #}, 
@@ -205,7 +205,7 @@ class ActionBarWdg(BaseRefreshWdg):
         }
 
 
-    def get_items_menu(my):
+    def get_items_menu(self):
         return {
             'menu_id': 'ActionBar_ItemsMenu_Main', 'width': 140, 'allow_icons': False,
             'opt_spec_list': [
@@ -214,14 +214,14 @@ class ActionBarWdg(BaseRefreshWdg):
                 #        "bvr_cb": {'cbjs_action': "spt.dg_table.add_item_cbk('main_body_table');"} },
                 #{ "type": "separator" },
                 { "type": "action", "label": "Retire Selected Items",
-                        "bvr_cb": {'cbjs_action': "spt.dg_table.retire_selected('%s');" % my.table_id} },
+                        "bvr_cb": {'cbjs_action': "spt.dg_table.retire_selected('%s');" % self.table_id} },
                 { "type": "action", "label": "Delete Selected Items",
-                        "bvr_cb": {'cbjs_action': "spt.dg_table.delete_selected('%s');" % my.table_id} },
+                        "bvr_cb": {'cbjs_action': "spt.dg_table.delete_selected('%s');" % self.table_id} },
             ]
         }
 
 
-    def get_tools_menu(my):
+    def get_tools_menu(self):
         menu_items = [
 
                 #{ "type": "action", "label": "Search Types Manager",
@@ -248,7 +248,7 @@ class ActionBarWdg(BaseRefreshWdg):
             'opt_spec_list': menu_items
         }
 
-    def get_project_menu(my):
+    def get_project_menu(self):
         return {
             'menu_id': 'ActionBar_ProjectMenu_Main', 'width': 200, 'allow_icons': False,
             'opt_spec_list': [

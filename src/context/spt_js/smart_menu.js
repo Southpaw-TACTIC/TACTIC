@@ -342,7 +342,7 @@ spt.smenu.get_main_menu = function( evt )
     }
     if( ! smenu_set ) {
         // TODO: big error message!
-        log.error( "ERROR: [spt.smenu.get_main_menu] NO smart-menu set found!" );
+        spt.js_log.error( "ERROR: [spt.smenu.get_main_menu] NO smart-menu set found!" );
         return null;
     }
 

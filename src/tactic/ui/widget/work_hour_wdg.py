@@ -21,10 +21,10 @@ from tactic.ui.panel import TableLayoutWdg
 class WorkHourWdg(BaseRefreshWdg):
     '''Special widget to add work hours'''
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         sobject = SearchType.create("sthpw/virtual")
         sobject.set_value("mon", "3")

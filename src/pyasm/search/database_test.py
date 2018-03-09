@@ -21,45 +21,45 @@ import unittest
 
 class DatabaseTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
 
-        my._test_project()
-        my._test_get_connect()
-        my._test_get_tables()
-
-
-    def _test_get_connect(my):
-        my.sql1 = Sql("sthpw", vendor="Sqlite")
-        my.sql1.connect()
-        print my.sql1
-        results1 = my.sql1.do_query("select * from login")
-
-        my.sql2 = Sql("sthpw", user="postgres", vendor="PostgreSQL")
-        my.sql2.connect()
-        print my.sql2
-        results2 = my.sql2.do_query("select * from login")
-
-        my.assertNotEquals(results1, results2)
-
-        my.sql3 = Sql("sthpw", user="postgres", vendor="MySQL")
-        my.sql3.connect()
-        print my.sql3
-        results2 = my.sql2.do_query("select * from login")
-
-        my.assertNotEquals(results1, results2)
+        self._test_project()
+        self._test_get_connect()
+        self._test_get_tables()
 
 
+    def _test_get_connect(self):
+        self.sql1 = Sql("sthpw", vendor="Sqlite")
+        self.sql1.connect()
+        print self.sql1
+        results1 = self.sql1.do_query("select * from login")
+
+        self.sql2 = Sql("sthpw", user="postgres", vendor="PostgreSQL")
+        self.sql2.connect()
+        print self.sql2
+        results2 = self.sql2.do_query("select * from login")
+
+        self.assertNotEquals(results1, results2)
+
+        self.sql3 = Sql("sthpw", user="postgres", vendor="MySQL")
+        self.sql3.connect()
+        print self.sql3
+        results2 = self.sql2.do_query("select * from login")
+
+        self.assertNotEquals(results1, results2)
 
 
 
-    def _test_get_tables(my):
+
+
+    def _test_get_tables(self):
 
         # This will fail because get_tables uses the default database to
         # get the table information
-        tables1 = my.sql1.get_tables()
+        tables1 = self.sql1.get_tables()
         print "tables1: ", len(tables1)
 
-        tables2 = my.sql2.get_tables()
+        tables2 = self.sql2.get_tables()
         print "tables2: ", len(tables2)
         print tables1 == tables2
 
@@ -71,7 +71,7 @@ class DatabaseTest(unittest.TestCase):
 
 
 
-    def _test_project(my):
+    def _test_project(self):
 
         # create a fake project
         #project = SearchType.create("sthpw/project")

@@ -22,7 +22,7 @@ exec( get_site_import(__file__) )
 class Sthpw(SitePage):
     '''wrapper class to load in Sthpw URLs'''
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         return BaseSthpwWdg()
 
 

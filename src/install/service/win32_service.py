@@ -32,35 +32,40 @@ from pyasm.common import Environment
 from pyasm.web import TacticMonitor
 
 
-def start():
-    monitor = TacticMonitor()
-    monitor.set_check_interval(0)
-    monitor.execute()
+class WinService(object):
+
+    def __init__(self):
+        self.monitor = TacticMonitor()
+
+   
+
+    def init(self):
+        self.monitor.mode = "init"
+        self.monitor.execute()
+
+    def run(self):
+        self.monitor.mode = "monitor"
+        self.monitor.execute()
     
+def write_stop_monitor():
+    '''write a stop.monitor file to notify TacticMonitor to exit'''
+    log_dir = "%s/log" % Environment.get_tmp_dir()
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
+   
+    file = open("%s/stop.monitor" % log_dir, "w")
+    pid = os.getpid()
+    file.write(str(pid))
+    file.close()
 
 def stop():
-    #startup.stop() 
+   
+    write_stop_monitor()
     
-    
-    log_dir = "%s/log" % Environment.get_tmp_dir()
-    files = os.listdir(log_dir)
-    ports = []
-    for filename in files:
-        base, ext = os.path.splitext(filename)
-        if base =='pid':
-            ports.append(ext[1:])
-    for port in ports:
-        try:
-            file_name = "%s/pid.%s" % (log_dir,port)
-            file = open(file_name, "r")
-            pid = file.readline().strip()
-            os.system('taskkill /F /PID %s'%pid)
-            file.close()
-        except IOError, e:
-            print "Error opening file [%s]" %file_name
-            continue
-
-
+    import time
+    time.sleep(3)
+    # let monitor.py handle killing of start_up and watch_folder
  
 class TacticService(win32serviceutil.ServiceFramework): 
     '''NT Service.'''
@@ -78,10 +83,11 @@ class TacticService(win32serviceutil.ServiceFramework):
     def SvcDoRun(self): 
 
         self.ReportServiceStatus(win32service.SERVICE_START_PENDING)
-
-        start()
+        service = WinService()
+        service.init()
         self.ReportServiceStatus(win32service.SERVICE_RUNNING)
-        # now, block until our event is set... 
+        service.run()
+        # run() needs to run after SERVICE_RUNNING... 
         win32event.WaitForSingleObject(self.stop_event, win32event.INFINITE) 
      
     def SvcStop(self): 

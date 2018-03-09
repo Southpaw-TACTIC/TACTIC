@@ -34,7 +34,7 @@ class CustomLayoutElementWdg(CustomLayoutWdg, BaseTableElementWdg):
             'description': 'The view defined in the widget config/Custom Layout Editor that contains the custom html',
             'type': 'TextWdg',
             'order': 0,
-            'category': ''
+            'category': 'Required'
         },
         'show_resize_scroll': {
             'description': 'Determines whether to show the scroll resize widget on elements',
@@ -54,9 +54,9 @@ class CustomLayoutElementWdg(CustomLayoutWdg, BaseTableElementWdg):
         }
     }
 
-    def init(my):
-        super(CustomLayoutElementWdg, my).init()
-        my.is_table_element = True
+    def init(self):
+        super(CustomLayoutElementWdg, self).init()
+        self.is_table_element = True
 
 
 
@@ -80,14 +80,14 @@ class LayoutElementWdg(BaseTableElementWdg):
         }
     }
 
-    def get_default_background(my):
+    def get_default_background(self):
         return None
-        #return my.get_color("background")
+        #return self.get_color("background")
 
 
-    def get_display(my):
+    def get_display(self):
         #element_names = ['asset_library', 'name', 'submit','code', 'num_tasks']
-        element_names = my.kwargs.get("elements")
+        element_names = self.kwargs.get("elements")
         if element_names:
             element_names = element_names.split("|")
         else:
@@ -97,20 +97,20 @@ class LayoutElementWdg(BaseTableElementWdg):
             return "<i>No elements defined</i>"
 
 
-        show_title = my.kwargs.get('show_title')
+        show_title = self.kwargs.get('show_title')
         if show_title == 'false':
             show_title = False
         else:
             show_title = True
 
-        layout = my.kwargs.get('layout')
+        layout = self.kwargs.get('layout')
         if not layout:
             layout = 'vertical'
 
 
-        layout_wdg = my.get_layout_wdg()
+        layout_wdg = self.get_layout_wdg()
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         div = DivWdg()
 

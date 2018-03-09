@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["Container"]
+__all__ = ["Container", "GlobalContainer"]
 
 
 import thread
@@ -52,16 +52,16 @@ class Container(object):
     '''general low level container object to store global information
     to the entire application'''
 
-    def __init__(my):
-        #print "INITIALIZING CONTAINER: ", thread.get_ident(), my
-        my.info = dict()
+    def __init__(self):
+        #print "INITIALIZING CONTAINER: ", thread.get_ident(), self
+        self.info = dict()
 
 
-    def get_data(my):
-        return my.info
+    def get_data(self):
+        return self.info
 
-    def clear_data(my):
-        my.info = {}
+    def clear_data(self):
+        self.info = {}
 
 
     def get_instance():
@@ -240,16 +240,27 @@ class Container(object):
 
 
 
+GLOBAL_CONTAINER = {}
 
-# use psyco if present
-try:
-    import psyco
-    psyco.bind(Container.get)
-    psyco.bind(_get_instance)
-except ImportError:
-    pass
+class GlobalContainer(object):
+    '''Global container that spans across all threads'''
+
+    def put(key, value):
+        GLOBAL_CONTAINER[key] = value
+    put = staticmethod(put)
+
+    def get(key):
+        return GLOBAL_CONTAINER.get(key)
+    get = staticmethod(get)
 
 
-    
+    def remove(key):
+        instance = GLOBAL_CONTAINER
+        if instance.has_key(key):
+            del(instance[key])
+    remove = staticmethod(remove)
+
+
+
 
 

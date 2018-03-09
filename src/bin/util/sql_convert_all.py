@@ -3,7 +3,7 @@ import tacticenv
 # Run sql_convert for all supported database types
 class SQLConvertAll(object):
 
-    def convert_all(my):    
+    def convert_all(self):    
         from pyasm.search.upgrade.mysql import sql_convert
         m = sql_convert.MySQLConverter()
         m.convert_bootstrap()

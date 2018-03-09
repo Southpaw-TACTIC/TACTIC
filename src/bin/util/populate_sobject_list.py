@@ -9,7 +9,7 @@ from pyasm.search import Search, SearchType, DbContainer
 
 class PopulateSObjectListCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         # go through all of the projects
         search = Search("sthpw/project")
@@ -17,10 +17,10 @@ class PopulateSObjectListCmd(Command):
 
         #search = Search("sthpw/sobject_list")
         #sobject_list_items = search.get_sobjects()
-        #my.sobject_list_dict = {}
+        #self.sobject_list_dict = {}
         #for x in sobject_list_items:
         #    key = "%s|%s" % ( x.get_value("search_type"), x.get_id() )
-        #    my.sobject_list_dict[key] = x
+        #    self.sobject_list_dict[key] = x
 
 
         for project in projects:
@@ -33,10 +33,10 @@ class PopulateSObjectListCmd(Command):
                 search_type.set_value('code', search_type.get_value('search_type'))
                 search_type.commit(triggers=False)
                 full_search_type = "%s?project=%s" % (search_type.get_value('search_type'), project_code)
-                my.populate_search_type(full_search_type)
+                self.populate_search_type(full_search_type)
 
 
-    def populate_search_type(my, search_type):
+    def populate_search_type(self, search_type):
 
         print search_type
         search = Search(search_type)

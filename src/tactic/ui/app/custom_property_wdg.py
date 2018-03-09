@@ -35,31 +35,31 @@ def get_template_view():
 
 class CustomPropertyAdderWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'The search type that this property will be added to',
         'view': 'The current view',
         'is_aux_title': 'True if it is in title mode'
         }
 
-    def init(my):
-        my.search_type = my.kwargs.get('search_type')
-        assert my.search_type
-        my.view = my.kwargs.get("view")
-        my.is_aux_title = my.kwargs.get("is_aux_title")
+    def init(self):
+        self.search_type = self.kwargs.get('search_type')
+        assert self.search_type
+        self.view = self.kwargs.get("view")
+        self.is_aux_title = self.kwargs.get("is_aux_title")
     
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         database = Project.get_project_code()
         
-        if my.is_aux_title == 'true':
+        if self.is_aux_title == 'true':
             return HtmlElement.b("Add Property for %s [%s]" \
-                %(SearchType.get(my.search_type).get_title(), my.search_type))
+                %(SearchType.get(self.search_type).get_title(), self.search_type))
         
         
-        if not my.view:
-            my.view = get_template_view()
+        if not self.view:
+            self.view = get_template_view()
         
 
         # show current custom
@@ -181,13 +181,13 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
         div.add_color("background", "background")
         div.add_border()
 
-        div.add( my.get_new_custom_widget(my.search_type, my.view) )
+        div.add( self.get_new_custom_widget(self.search_type, self.view) )
 
 
         return div
 
 
-    def get_new_custom_widget(my, search_type, view):
+    def get_new_custom_widget(self, search_type, view):
 
         div = DivWdg()
         div.add_style('width: 500px')
@@ -213,9 +213,9 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
 
         custom_table.set_max_width()
         mode = "simple"
-        my.handle_simple_mode(custom_table, mode)
-        #my.handle_widget_mode(custom_table, mode)
-        my.handle_xml_mode(custom_table, mode)
+        self.handle_simple_mode(custom_table, mode)
+        #self.handle_widget_mode(custom_table, mode)
+        self.handle_xml_mode(custom_table, mode)
         div.add(custom_table)
 
         div.add("<br/>")
@@ -231,7 +231,7 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
             'type': 'click',
             'mouse_btn': 'LMB',
             'cbfn_action': 'spt.custom_property_adder.add_property_cbk',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'view': view
 
         }
@@ -257,7 +257,7 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
 
 
 
-    def handle_simple_mode(my, custom_table, mode):
+    def handle_simple_mode(self, custom_table, mode):
 
         tbody = custom_table.add_tbody()
         tbody.add_class("spt_custom_simple")
@@ -391,7 +391,7 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
 
 
 
-    def handle_widget_mode(my, custom_table, mode):
+    def handle_widget_mode(self, custom_table, mode):
 
         tbody = custom_table.add_tbody()
         tbody.add_class("spt_custom_widget")
@@ -457,7 +457,7 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
         custom_table.close_tbody()
 
 
-    def handle_xml_mode(my, custom_table, mode):
+    def handle_xml_mode(self, custom_table, mode):
 
         tbody = custom_table.add_tbody()
         tbody.add_class("spt_custom_xml")
@@ -512,25 +512,25 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
 
 class CustomPropertyAdderCbk(Command):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'the search type that this command will operate on',
         'view': 'the current view',
         }
 
 
-    def get_title(my):
+    def get_title(self):
         return "Custom Add Property"
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
         # get command line options
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         assert search_type
 
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
         if not view:
             view = get_template_view()
 
@@ -571,9 +571,9 @@ class CustomPropertyAdderCbk(Command):
             columns = widget.get_required_columns()
 
             if columns:
-                print "WARNING: need to create columns: ", columns
+                print("WARNING: need to create columns: ", columns)
 
-            my.info['element_name'] = element_name
+            self.info['element_name'] = element_name
 
             return
 
@@ -725,10 +725,10 @@ class CustomPropertyAdderCbk(Command):
         """
 
         # set some information
-        my.description = "Added Property [%s] of type [%s] to [%s]" % \
+        self.description = "Added Property [%s] of type [%s] to [%s]" % \
             (name, type, search_type)
 
-        my.info['element_name'] = name
+        self.info['element_name'] = name
 
 
 

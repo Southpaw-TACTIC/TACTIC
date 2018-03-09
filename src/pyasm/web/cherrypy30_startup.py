@@ -29,11 +29,11 @@ from cherrypy_startup import CherryPyStartup as CherryPyStartup20
 class Root:
     '''Dummy Root page'''
 
-    def test(my):
+    def test(self):
         return "OK"
     test.exposed = True
 
-    def index(my):
+    def index(self):
         return '''<META http-equiv="refresh" content="0;URL=/tactic">'''
     index.exposed = True
 
@@ -41,7 +41,7 @@ class Root:
 
 class TacticIndex:
     '''Dummy Index file'''
-    def index(my):
+    def index(self):
         # check if this project exists
         response = cherrypy.response
         request = cherrypy.request
@@ -64,9 +64,9 @@ class TacticIndex:
 class CherryPyStartup(CherryPyStartup20):
 
 
-    def execute(my):
+    def execute(self):
         #import pprint
-        #pprint.pprint( my.config )
+        #pprint.pprint( self.config )
 
         #try:
         #    import setproctitle
@@ -75,10 +75,10 @@ class CherryPyStartup(CherryPyStartup20):
         #    pass
 
 
-        cherrypy.config.update( my.config )
+        cherrypy.config.update( self.config )
 
-        cherrypy.config.update({'error_page.404': my.error_page})
-        cherrypy.config.update({'error_page.403': my.error_page})
+        cherrypy.config.update({'error_page.404': self.error_page})
+        cherrypy.config.update({'error_page.403': self.error_page})
 
         cherrypy.engine.start()
         cherrypy.engine.block()
@@ -86,7 +86,7 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-    def error_page(my, status, message, traceback, version):
+    def error_page(self, status, message, traceback, version):
 
         # check if this project exists
         response = cherrypy.response
@@ -114,15 +114,7 @@ class CherryPyStartup(CherryPyStartup20):
         if site == "plugins":
             return
 
-        print "WARNING:"
-        print "    status: ", status
-        print "    message: ", message
-        print "    site: ", site
-        print "    project_code: ", project_code
 
-
-
-        # Dump out the error
         has_site = False
         try:
             from pyasm.security import TacticInit
@@ -135,23 +127,54 @@ class CherryPyStartup(CherryPyStartup20):
                 eval("cherrypy.root.tactic.%s" % project_code)
         # if project_code is empty , it raises SyntaxError
         except (AttributeError, SyntaxError), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
             has_project = False
             has_site = True
-        except Exception, e:
-            print "WARNING: ", e
+        except Exception as e:
+            print("WARNING: ", e)
             has_project = False
         else:
             has_project = True
             has_site = True
 
 
+        # only set this if there a site ... needed for UploadServerWdg
+        if has_site and project_code in ['default']:
+            startup = cherrypy.startup
+            config = startup.config
+            startup.register_project(project_code, config, site=site)
 
-        #if project_code in ['default']:
-        #    startup = cherrypy.startup
-        #    config = startup.config
-        #    startup.register_project(project_code, config, site=site)
-        #    return
+            if path.endswith("/UploadServer/"):
+                from pyasm.widget import UploadServerWdg
+                try:
+                    from pyasm.web import WebContainer
+                    from cherrypy30_adapter import CherryPyAdapter
+
+                    # clear the buffer
+                    WebContainer.clear_buffer()
+                    adapter = CherryPyAdapter()
+                    WebContainer.set_web(adapter)
+
+                    widget = UploadServerWdg().get_display()
+                except Exception as e:
+                    print("ERROR: ", e)
+                    widget = e
+
+            else:
+                widget = "ERROR 404"
+
+
+            return widget
+
+
+
+
+        print("WARNING:")
+        print("    status: ", status)
+        print("    message: ", message)
+        print("    site: ", site)
+        print("    project_code: ", project_code)
+
 
 
 
@@ -161,20 +184,43 @@ class CherryPyStartup(CherryPyStartup20):
         if has_site:
             try:
                 project = Project.get_by_code(project_code)
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 raise
+
 
         if not has_project and project and project.get_value("type") != 'resource':
 
+            # register the project
             startup = cherrypy.startup
             config = startup.config
             startup.register_project(project_code, config, site=site)
-            #cherrypy.config.update( config )
 
-            # give some time to refresh
-            #import time
-            #time.sleep(1)
+            # This is an issue ... if the project is not registered, then on a web
+            # page, it is simple just to refresh, but on requests like REST, this is not
+            # so feasible ... need a way to return the request after registering the
+            # project
+
+            """
+            # if there is hash, then attempt to get it
+            hash = "/rest"
+            if hash:
+                # clear the buffer
+                from pyasm.web import WebContainer
+                WebContainer.clear_buffer()
+                html = ""
+                try:
+                    from tactic.ui.panel import HashPanelWdg
+                    widget = HashPanelWdg.get_widget_from_hash(hash)
+                    if widget:
+                        html = widget.get_buffer_display()
+                except Exception as e:
+                    return "ERROR: %s" % str(e)
+
+                if html:
+                    return html
+            """
+
 
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
@@ -191,9 +237,8 @@ class CherryPyStartup(CherryPyStartup20):
             return html_response
      
 
-        # check to see if this project exists in the database?
-        #project = Project.get_by_code(project_code)
-        #print project
+
+        # return 404 error
         try:
         
             from pyasm.web import WebContainer, DivWdg
@@ -206,13 +251,16 @@ class CherryPyStartup(CherryPyStartup20):
             WebContainer.set_web(adapter)
 
             top = DivWdg()
-            top.add_style("background: #444")
+            top.add_color("background", "background", -5)
+            top.add_color("color", "color")
+            #top.add_style("background", "#444")
             top.add_style("height: 300")
             top.add_style("width: 500")
             top.add_style("margin: 150px auto")
-            top.add_style("border: solid 1px black")
-            top.add_style("border-radius: 15px")
-            top.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
+            top.add_border()
+            #top.add_style("border: solid 1px black")
+            #top.add_style("border-radius: 15px")
+            #top.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
 
 
             widget = Error404Wdg()
@@ -223,18 +271,18 @@ class CherryPyStartup(CherryPyStartup20):
             top.add(widget)
 
             return top.get_buffer_display()
-        except Exception, e:
-            print "ERROR: ", e
+        except Exception as e:
+            print("ERROR: ", e)
             return "ERROR: ", e
 
 
 
 
 
-    def setup_sites(my):
+    def setup_sites(self):
 
-        context_path = "%s/src/context" % my.install_dir
-        doc_dir = "%s/doc" % my.install_dir
+        context_path = "%s/src/context" % self.install_dir
+        doc_dir = "%s/doc" % self.install_dir
         plugin_dir = Environment.get_plugin_dir()
         builtin_plugin_dir = Environment.get_builtin_plugin_dir()
         dist_dir = Environment.get_dist_dir()
@@ -351,29 +399,26 @@ class CherryPyStartup(CherryPyStartup20):
             cherrypy.root.tactic = Index()
             cherrypy.root.projects = Index()
 
-
         for project in projects:
             project_code = project.get_code()
-            my.register_project(project_code, config)
-        my.register_project("default", config)
-
-        print
+            self.register_project(project_code, config)
+        self.register_project("default", config)
 
 
         from pyasm.security import Site
         site_obj = Site.get()
-        site_obj.register_sites(my, config)
+        site_obj.register_sites(self, config)
  
 
-        #my.register_project("vfx", config, site="vfx_demo")
-        #my.register_project("default", config, site="vfx_demo")
+        #self.register_project("vfx", config, site="vfx_demo")
+        #self.register_project("default", config, site="vfx_demo")
         return config
 
 
 
 
 
-    def register_project(my, project, config, site=None):
+    def register_project(self, project, config, site=None):
 
         # if there happend to be . in the project name, convert to _
         project = project.replace(".", "_")
@@ -382,9 +427,9 @@ class CherryPyStartup(CherryPyStartup20):
             return
 
         if site:
-            print "Registering project ... %s (%s)" % (project, site)
+            print("Registering project ... %s (%s)" % (project, site))
         else:
-            print "Registering project ... %s" % project
+            print("Registering project ... %s" % project)
 
 
         try:
@@ -407,12 +452,12 @@ class CherryPyStartup(CherryPyStartup20):
 
 
         except ImportError:
-            #print "... WARNING: SitePage not found"
+            #print("... WARNING: SitePage not found")
             exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
         except SyntaxError, e:
-            print e.__str__()
-            print "WARNING: skipping project [%s]" % project
+            print(e.__str__())
+            print("WARNING: skipping project [%s]" % project)
 
 
 
@@ -466,8 +511,8 @@ class CherryPyStartup(CherryPyStartup20):
                     exec("cherrypy.root.tactic.%s.%s = %s()" % (project,context,context) )
 
             except ImportError, e:
-                print str(e)
-                print "... failed to import '%s.%s.%s'" % (base, project, context)
+                print(str(e))
+                print("... failed to import '%s.%s.%s'" % (base, project, context))
                 raise
                 #return
 

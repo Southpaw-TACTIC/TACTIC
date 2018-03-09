@@ -39,15 +39,15 @@ def get_app_server():
 
     class CherryPyAppServer(base_cls):
 
-        def get_adapter(my):
+        def get_adapter(self):
             adapter = CherryPyAdapter()
             return adapter
             
 
         @cherrypy.expose()
-        def index(my, **args):
+        def index(self, **args):
             '''main method that returns the display'''
-            return my.get_display()
+            return self.get_display()
 
     return CherryPyAppServer
 
@@ -57,7 +57,7 @@ def get_xmlrpc_server():
     '''dynamically load in an xmlrpc server'''
 
     class XmlrpcServer(object):
-         def get_adapter(my):
+         def get_adapter(self):
             adapter = CherryPyAdapter()
             return adapter
 
@@ -69,36 +69,36 @@ def get_xmlrpc_server():
 class CherryPyAdapter(WebEnvironment):
     """Encapsulates webware environment. Implements the web interface"""
 
-    def __init__(my):
-        my.request = cherrypy.request
-        my.response = cherrypy.response
+    def __init__(self):
+        self.request = cherrypy.request
+        self.response = cherrypy.response
 
-        if my.get_web_server() == "IIS":
-            my.init_IIS()
+        if self.get_web_server() == "IIS":
+            self.init_IIS()
         else:
-            my.init_apache()
+            self.init_apache()
 
 
-    def get_web_server(my):
+    def get_web_server(self):
         '''Yet another "check if this is Microsoft" method.
         NOTE: With ASAPI_rewrite forwarding, there really isn't anything to
         solid to key on, so we will use X-FORWAREDED-HOST'''
-        check = my.get_env("HTTP_X_FORWARDED_HOST")
+        check = self.get_env("HTTP_X_FORWARDED_HOST")
         if check:
             return "IIS"
         else:
             return "Apache"
 
 
-    def init_IIS(my):
+    def init_IIS(self):
 
         # have to use the forwarded host
-        host = my.get_env("HTTP_X_FORWARDED_HOST")
+        host = self.get_env("HTTP_X_FORWARDED_HOST")
 
         # have to rebuild the request
-        path = my.request.path
-        query_string = my.request.query_string
-        protocol = my.request.protocol
+        path = self.request.path
+        query_string = self.request.query_string
+        protocol = self.request.protocol
         if protocol.startswith("HTTPS"):
             protocol = "https"
         else:
@@ -109,20 +109,20 @@ class CherryPyAdapter(WebEnvironment):
         else:
             url = "%s://%s%s" % (protocol, host, path)
 
-        my.set_env('HTTP_HOST', host)
-        my.set_env('REQUEST_URI', url)
+        self.set_env('HTTP_HOST', host)
+        self.set_env('REQUEST_URI', url)
 
 
-    def init_apache(my):
+    def init_apache(self):
         # map envrionment varibles
-        my.set_env('REQUEST_URI', my.request.browser_url)
+        self.set_env('REQUEST_URI', self.request.browser_url)
 
 
 
-    def get_context_name(my):
+    def get_context_name(self):
         '''this includes all of the subdirectories as well as the main
         context'''
-        dir = my.request.path
+        dir = self.request.path
         p = re.compile( r"/(tactic|projects)/?(\w+)/")
         m = p.search(dir)
         if not m:
@@ -132,67 +132,67 @@ class CherryPyAdapter(WebEnvironment):
         return context
 
 
-    def restart(my):
+    def restart(self):
         cherrypy.server.restart()
 
 
 
-    def get_request_method(my):
-        return my.request.method
+    def get_request_method(self):
+        return self.request.method
 
 
 
-    def set_content_type(my, content_type):
-        my.response.headers['Content-Type'] = content_type
+    def set_content_type(self, content_type):
+        self.response.headers['Content-Type'] = content_type
 
 
-    def get_content_type(my, content_type):
-        return my.response.headers['Content-Type']
+    def get_content_type(self, content_type):
+        return self.response.headers['Content-Type']
 
 
 
 
-    def set_force_download(my, filename):
-        my.response.headers['Content-Type'] = "application/force-download"
-        my.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
+    def set_force_download(self, filename):
+        self.response.headers['Content-Type'] = "application/force-download"
+        self.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
 
 
-    def set_csv_download(my, filename):
+    def set_csv_download(self, filename):
         filename = os.path.basename(filename)
-        my.response.headers['Content-Type'] = "text/x-csv"
-        my.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
+        self.response.headers['Content-Type'] = "text/x-csv"
+        self.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
 
 
 
     # form submission functions
-    def reset_form(my):
-        my.request.params = {}
+    def reset_form(self):
+        self.request.params = {}
    
-    def get_form_keys(my):
-        return my.request.params.keys()
+    def get_form_keys(self):
+        return self.request.params.keys()
 
-    def has_form_key(my, key):
-        return my.request.params.has_key(key)
+    def has_form_key(self, key):
+        return self.request.params.has_key(key)
 
-    def set_form_value(my, name, value):
+    def set_form_value(self, name, value):
         '''Set the form value to appear like it was submitted'''
         assert name
         if type(value) == types.UnicodeType:
-            value = my._process_unicode(value)
-        my.request.params[name] = value
+            value = self._process_unicode(value)
+        self.request.params[name] = value
 
 
-    def get_form_data(my):
-        return my.request.params
+    def get_form_data(self):
+        return self.request.params
 
 
-    def get_form_values(my, name, raw=False):
+    def get_form_values(self, name, raw=False):
         '''returns a string list of the values of a form element.
         If raw is True, then a nonexistant value returns None'''
         try:
-            values = my.request.params[name]
+            values = self.request.params[name]
             if type(values) == types.UnicodeType:
-                values = my._process_unicode(values)
+                values = self._process_unicode(values)
                 return [values]
             elif isinstance(values,basestring):
                 return [values]
@@ -206,7 +206,7 @@ class CherryPyAdapter(WebEnvironment):
                 new_values = []
                 for value in values:
                     if type(value) == types.UnicodeType:
-                        value = my._process_unicode(value)
+                        value = self._process_unicode(value)
                     new_values.append(value)
                 return new_values
             else:
@@ -218,7 +218,7 @@ class CherryPyAdapter(WebEnvironment):
                 return []
 
     # DEPRECATED: this is no longer needed
-    def _process_unicode(my, value):
+    def _process_unicode(self, value):
         return value
 
         '''
@@ -242,10 +242,10 @@ class CherryPyAdapter(WebEnvironment):
 
 
 
-    def get_form_value(my, name, raw=False):
+    def get_form_value(self, name, raw=False):
         '''returns the string value of the form element.
         If raw is True, then a nonexistant value returns None'''
-        values = my.get_form_values(name,raw)
+        values = self.get_form_values(name,raw)
         if values == None:
             return None
 
@@ -261,14 +261,14 @@ class CherryPyAdapter(WebEnvironment):
 
     # cookie functions
 
-    def set_cookie(my, name, value):
+    def set_cookie(self, name, value):
         """set a cookie"""
         cherrypy.response.simpleCookie[name] = value
         cherrypy.response.simpleCookie[name]['path'] = '/'
         cherrypy.response.simpleCookie[name]['max-age'] = 120*3600
 
 
-    def get_cookie(my, name):
+    def get_cookie(self, name):
         """get a cookie"""
         try:
             return cherrypy.request.simpleCookie[name].value
@@ -277,7 +277,7 @@ class CherryPyAdapter(WebEnvironment):
             return ""
 
 
-    def get_cookies(my):
+    def get_cookies(self):
         '''get a cookies'''
         try:
             return cherrypy.request.simpleCookie
@@ -290,19 +290,19 @@ class CherryPyAdapter(WebEnvironment):
 
     # environment functions
 
-    def get_env_keys(my):
-        env = my.request.wsgi_environ
+    def get_env_keys(self):
+        env = self.request.wsgi_environ
         return env.keys()
 
 
 
-    def get_env(my, env_var):
-        env = my.request.wsgi_environ
+    def get_env(self, env_var):
+        env = self.request.wsgi_environ
         return env.get(env_var)
 
 
-    def set_env(my, env_var, value):
-        my.request.wsgi_environ[env_var] = value
+    def set_env(self, env_var, value):
+        self.request.wsgi_environ[env_var] = value
 
 
 

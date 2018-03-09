@@ -18,20 +18,24 @@ import sys, re, getopt, os, shutil
 from pyasm.search import Search, SObject, DbContainer, Sql
 from pyasm.common import Container, Environment
 
+# load all the default modules
+from pyasm.search.upgrade.project import *
+
+ 
 __all__ = ['Upgrade']
 
 class Upgrade(object):
 
-    def __init__(my, version, is_forced=True, project_code=None, quiet=False, is_confirmed=False):
-        my.to_version = version
-        my.is_forced = is_forced
-        my.is_confirmed = is_confirmed
+    def __init__(self, version, is_forced=True, project_code=None, quiet=False, is_confirmed=False):
+        self.to_version = version
+        self.is_forced = is_forced
+        self.is_confirmed = is_confirmed
 
-        my.project_code = project_code
-        my.quiet = quiet
+        self.project_code = project_code
+        self.quiet = quiet
 
         
-    def execute(my):
+    def execute(self):
         error_list = []
         from pyasm.biz import Project
         Project.clear_cache()
@@ -42,8 +46,8 @@ class Upgrade(object):
         sthpw_proj = sthpw_search.get_sobject()
 
         search = Search("sthpw/project")
-        if my.project_code:
-            search.add_filter("code", my.project_code)
+        if self.project_code:
+            search.add_filter("code", self.project_code)
         else:
             #search.add_enum_order_by("type", ['sthpw','prod','game','design','simple', 'unittest'])
             search.add_enum_order_by("code", ['sthpw'])
@@ -52,7 +56,7 @@ class Upgrade(object):
         project_codes = SObject.get_values(projects, 'code')
         # append sthpw project in case it's retired
         if 'sthpw' not in project_codes and sthpw_proj:
-            if not my.project_code:
+            if not self.project_code:
                 projects.insert(0, sthpw_proj)
             sthpw_proj.reactivate()
 
@@ -105,10 +109,6 @@ class Upgrade(object):
                 exec("%s = module.%s" % (class_name, class_name) )
 
 
-
-        # load all the default modules
-        from pyasm.search.upgrade.project import *
-
         for project in projects:
             
             code = project.get_code()
@@ -121,7 +121,7 @@ class Upgrade(object):
                 type = 'default'
 
 
-            if not my.quiet:
+            if not self.quiet:
                 print project.get_code(), type
                 print "-"*30
 
@@ -150,10 +150,10 @@ class Upgrade(object):
 
             # upgrade config (done for every project but sthpw)
             conf_upgrade.set_project(project.get_code())
-            conf_upgrade.set_to_version(my.to_version)
-            conf_upgrade.set_forced(my.is_forced)
-            conf_upgrade.set_quiet(my.quiet)
-            conf_upgrade.set_confirmed(my.is_confirmed)
+            conf_upgrade.set_to_version(self.to_version)
+            conf_upgrade.set_forced(self.is_forced)
+            conf_upgrade.set_quiet(self.quiet)
+            conf_upgrade.set_confirmed(self.is_confirmed)
             conf_upgrade.execute()
             
             # append the errors for each upgrade
@@ -165,10 +165,10 @@ class Upgrade(object):
             # perform the upgrade to the other tables
             if upgrade:
                 upgrade.set_project(project.get_code() )
-                upgrade.set_to_version(my.to_version)
-                upgrade.set_forced(my.is_forced)
-                upgrade.set_quiet(my.quiet)
-                upgrade.set_confirmed(my.is_confirmed)
+                upgrade.set_to_version(self.to_version)
+                upgrade.set_forced(self.is_forced)
+                upgrade.set_quiet(self.quiet)
+                upgrade.set_confirmed(self.is_confirmed)
                 #Command.execute_cmd(upgrade)
                 # put each upgrade function in its own transaction
                 # carried out in BaseUpgrade
@@ -184,8 +184,8 @@ class Upgrade(object):
             
             if project.has_value('last_version_update'):
                 last_version = project.get_value('last_version_update')
-                if my.to_version > last_version:
-                    project.set_value("last_version_update", my.to_version)
+                if self.to_version > last_version:
+                    project.set_value("last_version_update", self.to_version)
             else: 
                 # it should be getting the upgrade now, redo the search
                 print "Please run upgrade_db.py again, the sthpw db has just been updated"
@@ -196,15 +196,15 @@ class Upgrade(object):
 
         # print the errors for each upgrade
         for cls_name, project_code, errors in error_list:
-            if not my.quiet:
+            if not self.quiet:
                 print
                 print "Errors for %s [%s]:" %(project_code, cls_name)
             ofile.write("Errors for %s [%s]:\n" %(project_code, cls_name))
-            if not my.quiet:
+            if not self.quiet:
                 print "*" * 80
             ofile.write("*" * 80 + '\n')
             for func, error in errors:
-                if not my.quiet:
+                if not self.quiet:
                     print '[%s]' % func
                     print "-" * 70
                     print error
@@ -213,7 +213,7 @@ class Upgrade(object):
                 ofile.write('%s\n' %error)
         ofile.close()
 
-        if my.quiet:
+        if self.quiet:
             print "Please refer to the file [%s] for any upgrade messages." %output_file
             print
         # handle sthpw database separately.  This ensures that the project entry
@@ -247,9 +247,4 @@ class Upgrade(object):
                     print "Default project template files have been updated."
                 else:
                     print "There was a problem copying the default template files to <TACTIC_DATA_DIR>/templates."
-
-
-    
-
-
 

@@ -30,22 +30,22 @@ class RenderException(Exception):
 class MayaAssetRenderCmd(Command):
     '''Render the latest checkin of an sobject'''
 
-    def set_project(my, project):
-        my.project = project
+    def set_project(self, project):
+        self.project = project
 
-    def set_search_key(my, search_key):
-        my.search_key = search_key
+    def set_search_key(self, search_key):
+        self.search_key = search_key
 
 
-    def get_title(my):
+    def get_title(self):
         return "Asset Render"
 
 
-    def execute(my):
+    def execute(self):
 
-        SearchType.set_project(my.project)
+        SearchType.set_project(self.project)
 
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
 
         # set the render policy
         render_policy = MayaBeautyRenderPolicy()
@@ -67,30 +67,30 @@ class MayaAssetRenderCmd(Command):
 class MayaRenderCmd(Command):
     '''Very basic render command that renders a snapshot'''
 
-    def __init__(my):
-        super(MayaRenderCmd, my).__init__()
-        my.render_context = None
+    def __init__(self):
+        super(MayaRenderCmd, self).__init__()
+        self.render_context = None
 
 
-    def get_title(my):
+    def get_title(self):
         return "Maya Render"
 
 
-    def set_render_context(my, render_context):
-        my.render_context = render_context
+    def set_render_context(self, render_context):
+        self.render_context = render_context
 
 
 
-    def execute(my):
+    def execute(self):
 
-        assert my.render_context
+        assert self.render_context
 
 
         # get the build file
-        execute_xml = my.build_maya_file()
+        execute_xml = self.build_maya_file()
 
         # write xml to a temp file
-        render_dir = my.render_context.get_render_dir()
+        render_dir = self.render_context.get_render_dir()
         path = "%s/maya_render" % render_dir
         file = open(path, 'w')
         file.write(execute_xml)
@@ -104,23 +104,23 @@ class MayaRenderCmd(Command):
         maya_builder_exec(path, ticket)
 
         # get the render command and execute
-        render_command = my.get_render_command()
+        render_command = self.get_render_command()
         print render_command
         os.system(render_command)
 
-        my.convert_images()
-        #my.checkin_render()
+        self.convert_images()
+        #self.checkin_render()
 
 
 
-    def build_maya_file(my):
+    def build_maya_file(self):
 
         # get the necessary info from the render context
-        snapshot = my.render_context.get_snapshot()
-        snapshot_xml = my.render_context.get_snapshot_xml()
-        shot = my.render_context.get_shot()
-        context = my.render_context.get_context()
-        render_dir = my.render_context.get_render_dir()
+        snapshot = self.render_context.get_snapshot()
+        snapshot_xml = self.render_context.get_snapshot_xml()
+        shot = self.render_context.get_shot()
+        context = self.render_context.get_context()
+        render_dir = self.render_context.get_render_dir()
 
 
         # set up the loader context
@@ -142,23 +142,23 @@ class MayaRenderCmd(Command):
 
 
 
-    def get_render_command(my):
+    def get_render_command(self):
         '''render in a separate process'''
         '''NOTE: Highly specific to Maya render'''
 
         options = {}
 
         # get information from the context
-        #frame_range = my.render_context.get_frame_range()
+        #frame_range = self.render_context.get_frame_range()
         #frame_range_values = frame_range.get_values()
         #options['frame_range'] = "-s %s -e %s -b %s" % frame_range_values
 
 	quality = "-uf true -oi true -eaa 0 -ert true -of iff"
         options['quality'] = quality
 
-        options['camera'] = "-cam %s" % my.render_context.get_camera()
+        options['camera'] = "-cam %s" % self.render_context.get_camera()
 
-        xres, yres = my.render_context.get_resolution()
+        xres, yres = self.render_context.get_resolution()
         options['resolution'] = "-x %s -y %s" % (xres, yres)
 
 
@@ -168,7 +168,7 @@ class MayaRenderCmd(Command):
 	type = "png"
 
 
-        render_dir = my.render_context.get_render_dir()
+        render_dir = self.render_context.get_render_dir()
         maya_path = "%s/%s.ma" % (render_dir,file_root)
         options['render_dir'] = "-rd %s -pad %s" % (render_dir, padding)
 
@@ -182,9 +182,9 @@ class MayaRenderCmd(Command):
 
 
 
-    def convert_images(my):
+    def convert_images(self):
 
-        render_dir = my.render_context.get_render_dir()
+        render_dir = self.render_context.get_render_dir()
 
         # copy for now
         file_root = "maya_render"
@@ -209,10 +209,10 @@ class MayaRenderCmd(Command):
             file.close()
 
             # attach the sobject and snapshot to the render
-            snapshot = my.render_context.get_snapshot()
-            sobject = my.render_context.get_sobject()
+            snapshot = self.render_context.get_snapshot()
+            sobject = self.render_context.get_sobject()
 
-            frame_range = my.render_context.get_frame_range()
+            frame_range = self.render_context.get_frame_range()
 
             render = Render.create(sobject, snapshot, session_xml, frame_range.get_key(), version=1)
 
@@ -225,7 +225,7 @@ class MayaRenderCmd(Command):
             paths = [final_path,web,icon]
             types = ["main","web","icon"]
 
-            my.description = "Rendered image"
+            self.description = "Rendered image"
 
             # check in the sobject
             checkin = FileCheckin(sobject, paths, types, \
@@ -244,7 +244,7 @@ class MayaRenderCmd(Command):
             render_path = "%s/%s.iff.####" % (render_dir,file_root)
             final_path = "%s/%s.####.%s" % (render_dir,file_root,type)
 
-            frame_range = my.render_context.get_frame_range()
+            frame_range = self.render_context.get_frame_range()
             render_paths = FileGroup.expand_paths(render_path,frame_range.get_key())
             final_paths = FileGroup.expand_paths(final_path,frame_range.get_key())
 
@@ -261,9 +261,9 @@ class MayaRenderCmd(Command):
 
 
 
-    def checkin_render(my):
+    def checkin_render(self):
 
-        render_dir = my.render_context.get_render_dir()
+        render_dir = self.render_context.get_render_dir()
 
 
         # create a render log entry
@@ -272,12 +272,12 @@ class MayaRenderCmd(Command):
         file.close()
 
         # attach the sobject and snapshot to the render
-        snapshot = my.render_context.get_snapshot()
-        sobject = my.render_context.get_sobject()
-        file_range = my.render_context.get_frame_range().get_key()
+        snapshot = self.render_context.get_snapshot()
+        sobject = self.render_context.get_sobject()
+        file_range = self.render_context.get_frame_range().get_key()
         render = Render.create(sobject, snapshot, file_range, session_xml)
 
-        my.description = "Rendered image"
+        self.description = "Rendered image"
 
         # create a reference snapshot
         snapshot_builder = SnapshotBuilder()
@@ -294,7 +294,7 @@ class MayaRenderCmd(Command):
         paths.append( final_path )
         types.append( "frame" )
 
-        file_range = my.render_context.get_frame_range()
+        file_range = self.render_context.get_frame_range()
         snapshot_type = "frame"
 
         checkin = FileGroupCheckin(render, snapshot_type, "render", "snapshot", paths, types, file_range.get_key() )

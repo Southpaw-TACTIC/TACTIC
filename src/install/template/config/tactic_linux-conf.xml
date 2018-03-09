@@ -42,7 +42,7 @@
     <user>postgres</user>
     <password>none</password>
     <sobject_database>sthpw</sobject_database>
-    <pool_max_connections>1</pool_max_connections>
+    <pool_max_connections>0</pool_max_connections>
 </database>
 
 

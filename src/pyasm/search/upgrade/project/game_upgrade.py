@@ -21,30 +21,30 @@ from pyasm.search.upgrade.project import *
 
 class GameUpgrade(BaseUpgrade):
 
-    def upgrade_v1_9_0_a1_005(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_005(self):
+        self.run_sql('''
         ALTER TABLE art_reference add column code varchar(256);
         ''') 
 
 
-    def upgrade_v1_9_0_a1_004(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_004(self):
+        self.run_sql('''
         ALTER TABLE asset ALTER COLUMN pipeline_code TYPE varchar(256);
         ''') 
 
 
-    def upgrade_v1_9_0_a1_003(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_003(self):
+        self.run_sql('''
         ALTER TABLE level ADD COLUMN pipeline_code varchar(256);
         ''') 
 
-    def upgrade_v1_9_0_a1_002(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_002(self):
+        self.run_sql('''
         ALTER TABLE prod_setting ADD COLUMN category varchar(256);
         ''') 
 
-    def upgrade_v1_9_0_a1_001(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_001(self):
+        self.run_sql('''
         CREATE TABLE custom_property (
             id serial NOT NULL,
             search_type varchar(256),
@@ -56,8 +56,8 @@ class GameUpgrade(BaseUpgrade):
         ''') 
 
 
-    def upgrade_20071015(my):
-        my.run_sql('''
+    def upgrade_20071015(self):
+        self.run_sql('''
         CREATE TABLE naming (
             id serial PRIMARY KEY,
             search_type varchar(100),
@@ -67,13 +67,13 @@ class GameUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_20061110(my):
-        my.run_sql('''
+    def upgrade_20061110(self):
+        self.run_sql('''
         alter table asset rename column pipeline to pipeline_code;
         ''')   
 
-    def upgrade_20060918(my):
-        my.run_sql('''
+    def upgrade_20060918(self):
+        self.run_sql('''
         -- add repo_path to asset_library
         alter table asset_library add column repo_path text;
         -- rename column instance to name

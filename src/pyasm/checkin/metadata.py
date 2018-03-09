@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser']
+__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser']
 
 
 import os, sys, re, subprocess
@@ -43,17 +43,30 @@ try:
 except:
     HAS_EXIF = False
 
+try:
+    import iptcinfo
+    HAS_IPTC = True
+except:
+    HAS_IPTC = False
+
+try:
+    import libxmp
+    HAS_XMP = True
+except:
+    HAS_XMP = False
+
+
 
 
 class CheckinMetadataHandler():
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def execute(my):
+    def execute(self):
 
         # extra data from the file check-in
 
-        commit = my.kwargs.get("commit")
+        commit = self.kwargs.get("commit")
         if commit in ['false', False]:
             commit = False
         else:
@@ -61,12 +74,12 @@ class CheckinMetadataHandler():
 
         # metadata can only be associated with a single file on the
         # snapshot.
-        files = my.kwargs.get("files")
-        file_objects = my.kwargs.get("file_objects")
+        files = self.kwargs.get("files")
+        file_objects = self.kwargs.get("file_objects")
 
         snapshot_metadata = None
 
-        parser_type = my.kwargs.get("parser")
+        parser_type = self.kwargs.get("parser")
 
         for i, file in enumerate(files):
             path = file
@@ -138,21 +151,21 @@ class CheckinMetadataHandler():
 
             if metadata and not file_object.get_value("metadata"):
                 file_object.add_metadata(metadata, replace=True)
-                searchable = my.get_searchable(metadata)
+                searchable = self.get_searchable(metadata)
                 file_object.set_value("metadata_search", searchable)
 
                 file_object.commit()
 
 
                 if i == 0:
-                    snapshot = my.kwargs.get("snapshot")
+                    snapshot = self.kwargs.get("snapshot")
                     snapshot.add_metadata(metadata, replace=True)
                     if commit:
                         snapshot.commit()
 
 
 
-    def get_searchable(my, metadata):
+    def get_searchable(self, metadata):
         pairs = []
         pairs_set = set()
         for name, value in metadata.items():
@@ -208,41 +221,45 @@ class CheckinMetadataHandler():
 #from PIL.ExifTags import TAGS
 
 class BaseMetadataParser(object):
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def get_media_type(my):
+
+    def get_title(self):
+        return "Base"
+
+    def get_media_type(self):
         return "image"
 
-    def get_metadata(my):
+    def get_metadata(self):
         return {}
 
-    def get_tactic_mapping(my):
+    def get_tactic_mapping(self):
         return {}
 
-    def process_tactic_mapping(my, tactic_data, metadata):
+    def process_tactic_mapping(self, tactic_data, metadata):
         pass
 
 
-    def get_initial_data(my):
+    def get_initial_data(self):
         return {
         }
 
-    def get_tactic_metadata(my):
+    def get_tactic_metadata(self):
 
-        tactic_data = my.get_initial_data()
+        tactic_data = self.get_initial_data()
 
-        metadata = my.get_metadata()
+        metadata = self.get_metadata()
 
-        mapping = my.get_tactic_mapping()
+        mapping = self.get_tactic_mapping()
         for name, name2 in mapping.items():
             tactic_data[name] = metadata.get(name2)
 
-        my.process_tactic_mapping(tactic_data, metadata)
+        self.process_tactic_mapping(tactic_data, metadata)
 
         return tactic_data
     
-    def sanitize_data(my, data):
+    def sanitize_data(self, data):
         # sanitize output
         RE_ILLEGAL_XML = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                  u'|' + u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
@@ -279,6 +296,10 @@ class BaseMetadataParser(object):
     def get_parser(cls, parser_str, path):
         if parser_str == "EXIF":
             parser = ExifMetadataParser(path=path)
+        elif parser_str == "IPTC":
+            parser = IPTCMetadataParser(path=path)
+        elif parser_str == "XMP":
+            parser = XMPMetadataParser(path=path)
         elif parser_str == "ImageMagick":
             parser = ImageMagickMetadataParser(path=path)
         elif parser_str == "PIL":
@@ -296,28 +317,31 @@ class BaseMetadataParser(object):
 
 class PILMetadataParser(BaseMetadataParser):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def get_initial_data(my):
+    def get_title(self):
+        return "PIL"
+
+    def get_initial_data(self):
         return {
             'media_type': 'image',
             'parser': 'PIL'
         }
 
-    def get_metadata(my):
-        path = my.kwargs.get("path")
+    def get_metadata(self):
+        path = self.kwargs.get("path")
 
         try:
             from PIL import Image
             im = Image.open(path)
-            return my._get_data(im)
+            return self._get_data(im)
         except Exception, e:
             print "WARNING: ", e
             return {}
 
  
-    def _get_data(my, im):
+    def _get_data(self, im):
         #info = im._getexif()
         ret = {}
         #if info:
@@ -334,7 +358,7 @@ class PILMetadataParser(BaseMetadataParser):
         return ret
 
 
-    def get_tactic_mapping(my):
+    def get_tactic_mapping(self):
         return {
             'width': 'width',
             'height': 'height',
@@ -347,11 +371,16 @@ class PILMetadataParser(BaseMetadataParser):
 
 class ExifMetadataParser(BaseMetadataParser):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
 
-    def get_initial_data(my):
+    def get_title(self):
+        return "EXIF"
+
+
+
+    def get_initial_data(self):
         return {
             'media_type': 'image',
             'parser': 'Exif'
@@ -359,33 +388,127 @@ class ExifMetadataParser(BaseMetadataParser):
 
 
 
-    def get_metadata(my):
-        path = my.kwargs.get("path")
+    def get_metadata(self):
+        path = self.kwargs.get("path")
 
         from pyasm.checkin import exifread
         #import exifread
 
         f = open(path)
         tags = exifread.process_file(f)
+        f.close()
 
         return tags
+
+
+
+class IPTCMetadataParser(BaseMetadataParser):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def get_title(self):
+        return "IPTC"
+
+    def get_initial_data(self):
+        return {
+            'media_type': 'image',
+            'parser': 'IPTC'
+        }
+
+
+
+    def get_metadata(self):
+        path = self.kwargs.get("path")
+
+        from pyasm.checkin.iptcinfo import IPTCInfo, c_datasets, c_datasets_r
+
+        try:
+
+            info = IPTCInfo(path)
+            data = info.data 
+
+            metadata = {}
+            for key, value in data.items():
+                real_key = c_datasets.get(key)
+                if not real_key:
+                    real_key = key
+                metadata[real_key] = value
+
+
+            return metadata
+        except Exception, e:
+            info = {
+                    "Message": str(e)
+            }
+            return info
+
+
+
+class XMPMetadataParser(BaseMetadataParser):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def get_title(self):
+        return "XMP"
+
+    def get_initial_data(self):
+        return {
+            'media_type': 'image',
+            'parser': 'XMP'
+        }
+
+
+
+    def get_metadata(self):
+        path = self.kwargs.get("path")
+
+        from libxmp.utils import file_to_dict
+        from libxmp import consts
+
+        try:
+
+            metadata = {}
+
+            xmp = file_to_dict(path)
+            for space in xmp.keys():
+                #dc = xmp[consts.XMP_NS_DC]
+                dc = xmp[space]
+
+                for key, value, options in dc:
+                    metadata[key] = value
+
+
+            return metadata
+        except Exception, e:
+            info = {
+                    "Message": str(e)
+            }
+            return info
+
+
 
 
 
 
 class ImageMagickMetadataParser(BaseMetadataParser):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def get_initial_data(my):
+    def get_title(self):
+        return "ImageMagick"
+
+
+    def get_initial_data(self):
         return {
             'media_type': 'image',
             'parser': 'ImageMagick'
         }
 
-    def get_metadata(my):
-        path = my.kwargs.get("path")
+    def get_metadata(self):
+        path = self.kwargs.get("path")
 
         import subprocess, re
 
@@ -396,7 +519,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         if error:
             return ret
 
-        ret_val = my.sanitize_data(ret_val)
+        ret_val = self.sanitize_data(ret_val)
         p = re.compile(":\ +")
 
         level = 0
@@ -452,7 +575,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
 
 
-    def get_tactic_mapping(my):
+    def get_tactic_mapping(self):
         return {
             'format_description': 'Format',
             'colorspace': 'Colorspace',
@@ -460,7 +583,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         }
 
 
-    def process_tactic_mapping(my, tactic_data, metadata):
+    def process_tactic_mapping(self, tactic_data, metadata):
 
         geometry = metadata.get("Geometry")
 
@@ -479,28 +602,32 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
 
 class FFProbeMetadataParser(BaseMetadataParser):
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def get_initial_data(my):
+    def get_initial_data(self):
         return {
             'media_type': 'video',
             'parser': 'FFProbe'
         }
 
-    def get_metadata(my):
-        path = my.kwargs.get("path")
+
+    def get_title(self):
+        return "FFProbe"
+
+    def get_metadata(self):
+        path = self.kwargs.get("path")
         
         try:
-            out = my.probe_file(path)
+            out = self.probe_file(path)
         except:
             out = ''
 
         # sanitize output
         
-        out = my.sanitize_data(out)
+        out = self.sanitize_data(out)
 
-        metadata = my.parse_output(out)
+        metadata = self.parse_output(out)
 
         return metadata
 
@@ -508,14 +635,14 @@ class FFProbeMetadataParser(BaseMetadataParser):
         
 
 
-    def probe_file(my, fpath):
+    def probe_file(self, fpath):
         cmd = ['ffprobe', '-show_streams', '-pretty', '-loglevel', 'quiet', fpath]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         return out 
 
 
-    def parse_output(my, out):
+    def parse_output(self, out):
 
         index = 0
         metadata_list = {}
@@ -552,23 +679,28 @@ class FFProbeMetadataParser(BaseMetadataParser):
         return flat_metadata
 
 
-    def get_tactic_mapping(my):
+    def get_tactic_mapping(self):
         return {
             'width': 'video:width',
             'height': 'video:height',
             'frames': 'video:nb_frames',
             'fps': 'video:r_frame_rate',
-            'codec': 'video:codec_name'
+            'codec': 'video:codec_name',
+            'video_codec': 'video:codec_name',
+            'video_bitrate': 'video:bit_rate',
+            'audio_codec': 'audio:codec_name',
+            'audio_bitrate': 'audio:bit_rate',
         }
 
 
 
-class IPTCMetadataParser(BaseMetadataParser):
+# DEPRECATED: use python one
+class IPTCMetadataParserX(BaseMetadataParser):
     '''Grab IPTC data from files. This requires use of exif metadata extractor.
     Basically read xmp metadata of a file and consider IPTC data points'''
 
     
-    def get_iptc_keywords(my, path, parser_path = ""):
+    def get_iptc_keywords(self, path, parser_path = ""):
         '''Extracts IPTC metadata given a path to an image.
         Returns IPTC metadata as a dictionary'''
 
@@ -607,8 +739,8 @@ class IPTCMetadataParser(BaseMetadataParser):
             return ret
 
         # parse and clean the metadata
-        keyword_values = my.get_keywords_metadata_from_xmp(ret_val)
-        description_values = my.get_description_metadata_from_xmp(ret_val)
+        keyword_values = self.get_keywords_metadata_from_xmp(ret_val)
+        description_values = self.get_description_metadata_from_xmp(ret_val)
 
         # add keywords metadata to the dictionary to be returned: "ret"
         ret["Keywords"] = keyword_values
@@ -618,7 +750,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
 
     
-    def get_keywords_metadata_from_xmp(my, xmp_data):
+    def get_keywords_metadata_from_xmp(self, xmp_data):
         '''Given XMP data as a string, parse it for Keywords of IPTC metadata, and
        return it as a string, with values separated by spaces.'''
 
@@ -645,7 +777,7 @@ class IPTCMetadataParser(BaseMetadataParser):
         return keywords_list
 
 
-    def get_description_metadata_from_xmp(my, xmp_data):
+    def get_description_metadata_from_xmp(self, xmp_data):
         '''Given XMP data as a string, retrieve the description.'''
 
         description_list = []
@@ -671,21 +803,21 @@ class IPTCMetadataParser(BaseMetadataParser):
         return description_list
 
 
-    def get_metadata(my):
-        path = my.kwargs.get("path")
+    def get_metadata(self):
+        path = self.kwargs.get("path")
 
         import subprocess, re
 
         iptc_data = {} # dictionary to hold iptc data
 
         # make it an option to extract IPTC data from a file
-        if my.kwargs.get("extract_iptc_keywords_only") in ["true", "True", True]:
+        if self.kwargs.get("extract_iptc_keywords_only") in ["true", "True", True]:
             # Option to specify where exiftool is.
-            parser_path = my.kwargs.get('parser_path')
+            parser_path = self.kwargs.get('parser_path')
             if parser_path:
-                iptc_data = my.get_iptc_keywords(path, parser_path=parser_path)
+                iptc_data = self.get_iptc_keywords(path, parser_path=parser_path)
             else:
-                iptc_data = my.get_iptc_keywords(path)
+                iptc_data = self.get_iptc_keywords(path)
             return iptc_data
 
 

@@ -19,11 +19,11 @@ import unittest
 
 class WidgetTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         # intitialize the framework as a batch process
-        my.batch = Batch()
+        self.batch = Batch()
 
-    def test(my):
+    def test(self):
         pass
 
 

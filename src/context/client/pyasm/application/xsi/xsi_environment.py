@@ -34,8 +34,8 @@ class XSIEnvironment(AppEnvironment):
 
     set_up = staticmethod(set_up)
 
-    def get_save_dir(my):
-        dir = my.app.get_project()
+    def get_save_dir(self):
+        dir = self.app.get_project()
         dir = '%s/TacticTemp' % dir
         if not os.path.exists(dir):
             os.makedirs(dir)

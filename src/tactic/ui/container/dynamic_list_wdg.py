@@ -24,25 +24,25 @@ class DynamicListWdg(BaseRefreshWdg):
     'show_enabled': 'determines whether or not to show enabled checkboxes'
     }
 
-    def init(my):
-        my.items = []
-        my.template = None
+    def init(self):
+        self.items = []
+        self.template = None
 
-        my.show_enabled = my.kwargs.get('show_enabled')
-        if my.show_enabled in ['true', True]:
-            my.show_enabled = True
+        self.show_enabled = self.kwargs.get('show_enabled')
+        if self.show_enabled in ['true', True]:
+            self.show_enabled = True
         else:
-            my.show_enabled = False
+            self.show_enabled = False
 
 
-    def add_item(my, item):
-        my.items.append(item)
+    def add_item(self, item):
+        self.items.append(item)
 
-    def add_template(my, template):
-        my.template = template
+    def add_template(self, template):
+        self.template = template
 
-    def get_display(my):
-        #assert my.template
+    def get_display(self):
+        #assert self.template
 
 
         top = DivWdg()
@@ -78,19 +78,19 @@ class DynamicListWdg(BaseRefreshWdg):
         } )
 
 
-        if my.template:
-            template_wdg = my.get_item_wdg(my.template, is_template=True)
+        if self.template:
+            template_wdg = self.get_item_wdg(self.template, is_template=True)
             top.add(template_wdg )
 
-        for item in my.items:
-            item_wdg = my.get_item_wdg(item)
+        for item in self.items:
+            item_wdg = self.get_item_wdg(item)
             top.add( item_wdg )
 
         return top
 
 
 
-    def get_item_wdg(my, item, is_template=False):
+    def get_item_wdg(self, item, is_template=False):
         item_div = DivWdg()
         item_div.add_style("margin-top: 3px")
 
@@ -107,7 +107,7 @@ class DynamicListWdg(BaseRefreshWdg):
         outer.add(item)
 
 
-        if my.show_enabled:
+        if self.show_enabled:
             checkbox = CheckboxWdg("enabled")
             checkbox.add_style("float: left")
             checkbox.set_checked()
@@ -118,18 +118,18 @@ class DynamicListWdg(BaseRefreshWdg):
         #item_div.add(item)
         item_div.add(outer)
 
+        from tactic.ui.widget import IconButtonWdg
 
         add_wdg = DivWdg()
         add_wdg.add_class("hand")
         add_wdg.add_class("SPT_DTS")
-        add_wdg.add("(+)")
+        #add_wdg.add("(+)")
         add_wdg.add_class("spt_add")
-        #from tactic.ui.widget import IconButtonWdg
-        #button = IconButtonWdg(title="Add Entry", icon=IconWdg.ADD)
-        #add_wdg.add(button)
-        #button.add_behavior( {
+        button = IconButtonWdg(title="Add Entry", icon="BS_PLUS")
+        add_wdg.add(button)
         add_wdg.add_style("float: left")
-        add_wdg.add_style("margin: 3px")
+        add_wdg.add_style("opacity: 0.5")
+        #add_wdg.add_style("margin: 3px")
         item_div.add(add_wdg)
 
 
@@ -137,20 +137,20 @@ class DynamicListWdg(BaseRefreshWdg):
         remove_wdg = DivWdg()
         remove_wdg.add_class("hand")
         remove_wdg.add_class("SPT_DTS")
-        remove_wdg.add("(-)")
+        #remove_wdg.add("(-)")
         remove_wdg.add_class("spt_remove")
-        #button = IconButtonWdg(title="Remove Entry", icon=IconWdg.DELETE)
-        #remove_wdg.add(button)
-        #button.add_behavior( {
+        button = IconButtonWdg(title="Remove Entry", icon="BS_REMOVE")
+        remove_wdg.add(button)
         remove_wdg.add_style("float: left")
-        remove_wdg.add_style("margin: 3px")
+        remove_wdg.add_style("opacity: 0.5")
+        #remove_wdg.add_style("margin: 3px")
         item_div.add(remove_wdg)
         item_div.add("<br clear='all'/>")
 
         return item_div
 
 
-    def get_values_script(my):
+    def get_values_script(self):
         save_button = IconButtonWdg("Save Settings", IconWdg.SAVE)
         save_button.add_behavior( {
             'type': 'click_up',

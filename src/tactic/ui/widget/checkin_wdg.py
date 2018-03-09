@@ -65,131 +65,130 @@ class CheckinWdg(BaseRefreshWdg):
 
 
 
-    def get_value(my, key):
+    def get_value(self, key):
         web = WebContainer.get_web()
         value = web.get_form_value(key)
         if not value:
-            value = my.kwargs.get(key)
+            value = self.kwargs.get(key)
         return value
 
 
 
-    def init(my):
-        my.search_key = my.kwargs.get('search_key')
-        my.validate_script_path = my.kwargs.get('validate_script_path')
-        my.create_sandbox_script_path = my.kwargs.get('create_sandbox_script_path')
-        my.checkin_script_path = my.kwargs.get('checkin_script_path')
-        my.sobject = Search.get_by_search_key(my.search_key)
-        if not my.sobject:
-            raise TacticException('This search_key [%s] is no longer valid. It may have been retired or deleted.' %my.search_key)
-        my.search_type = my.sobject.get_base_search_type()
-        assert my.sobject
+    def init(self):
+        self.search_key = self.kwargs.get('search_key')
+        self.validate_script_path = self.kwargs.get('validate_script_path')
+        self.create_sandbox_script_path = self.kwargs.get('create_sandbox_script_path')
+        self.checkin_script_path = self.kwargs.get('checkin_script_path')
+        self.sobject = Search.get_by_search_key(self.search_key)
+        if not self.sobject:
+            raise TacticException('This search_key [%s] is no longer valid. It may have been retired or deleted.' %self.search_key)
+        self.search_type = self.sobject.get_base_search_type()
+        assert self.sobject
 
-        my.snapshot_code = my.kwargs.get("snapshot_code")
-        if my.snapshot_code:
-            my.snapshot = Snapshot.get_by_code(my.snapshot_code)
-        elif isinstance(my.sobject, Snapshot):
-            my.snapshot = my.sobject
-            my.snapshot_code = my.snapshot.get_code()
+        self.snapshot_code = self.kwargs.get("snapshot_code")
+        if self.snapshot_code:
+            self.snapshot = Snapshot.get_by_code(self.snapshot_code)
+        elif isinstance(self.sobject, Snapshot):
+            self.snapshot = self.sobject
+            self.snapshot_code = self.snapshot.get_code()
         else:
-            my.snapshot = None
+            self.snapshot = None
 
         # the one in the UI should take prescedence
         web = WebContainer.get_web()
-        my.transfer_mode = web.get_form_value('transfer_mode')
-        if not my.transfer_mode:
-            my.transfer_mode = my.kwargs.get('transfer_mode')
+        self.transfer_mode = web.get_form_value('transfer_mode')
+        if not self.transfer_mode:
+            self.transfer_mode = self.kwargs.get('transfer_mode')
         # don't set default here as auto detection in js will take care
         # of the rest.  Also note, that the transfer mode can be dictated by
         # the process later one
         """
-        if not my.transfer_mode:
-            my.transfer_mode = 'upload'
+        if not self.transfer_mode:
+            self.transfer_mode = 'upload'
         """
 
 
-        my.mode = my.kwargs.get('mode')
-        my.use_applet = my.kwargs.get('use_applet')
-        if my.use_applet in ['false', 'False', False]:
-            my.use_applet = False
+        self.mode = self.kwargs.get('mode')
+        self.use_applet = self.kwargs.get('use_applet')
+        if self.use_applet in ['false', 'False', False]:
+            self.use_applet = False
         else:
-            my.use_applet = Config.get_value("checkin", "use_applet")
-            if my.use_applet in ['false', 'False', False]:
-                my.use_applet = False
+            self.use_applet = Config.get_value("checkin", "use_applet")
+            if self.use_applet in ['false', 'False', False]:
+                self.use_applet = False
             else:
-                my.use_applet = True
+                self.use_applet = True
 
 
-        my.checkin_command = my.kwargs.get('checkin_command')
-        my.show_file_selector = my.kwargs.get('show_file_selector') != 'false'
-        my.checkout_script_path = my.kwargs.get('checkout_script_path')
-        my.checkin_ui_options = my.kwargs.get('checkin_ui_options')
+        self.checkin_command = self.kwargs.get('checkin_command')
+        self.show_file_selector = self.kwargs.get('show_file_selector') != 'false'
+        self.checkout_script_path = self.kwargs.get('checkout_script_path')
+        self.checkin_ui_options = self.kwargs.get('checkin_ui_options')
 
 
-        my.panel_cls = None
+        self.panel_cls = None
 
-        #my.process = my.kwargs.get("process")
-        #my.context = my.kwargs.get("context")
-        #my.subcontext = web.get_form_value('subcontext')
+        #self.process = self.kwargs.get("process")
+        #self.context = self.kwargs.get("context")
+        #self.subcontext = web.get_form_value('subcontext')
 
-        my.process = my.get_value("process")
-        my.context = None
-        my.subcontext = my.get_value("subcontext")
-        my.folder_state = my.get_value("folder_state")
+        self.process = self.get_value("process")
+        self.context = None
+        self.subcontext = self.get_value("subcontext")
+        self.folder_state = self.get_value("folder_state")
  
         # get the pipeline
 
-        my.pipeline = Pipeline.get_by_sobject(my.sobject)
-        my.auto_process = False
-        if not my.pipeline:
-            my.processes = ['publish']
-            my.auto_process = True
+        self.pipeline = Pipeline.get_by_sobject(self.sobject)
+        self.auto_process = False
+        if not self.pipeline:
+            self.processes = ['publish']
+            self.auto_process = True
         else:
-            my.processes = my.pipeline.get_process_names(type=["manual"])
-            if not my.processes:
-                my.processes = ['publish']
-                my.auto_process = True
+            self.processes = self.pipeline.get_process_names(type=["manual"])
+            if not self.processes:
+                self.processes = ['publish']
+                self.auto_process = True
 
-        if not my.process:
+        if not self.process:
             # get the last process
             current_process = WidgetSettings.get_value_by_key("current_process")
-            if current_process and current_process in my.processes:
-                my.process = current_process
+            if current_process and current_process in self.processes:
+                self.process = current_process
             else:
-                my.process = my.processes[0]
-        WidgetSettings.set_value_by_key("current_process", my.process)
+                self.process = self.processes[0]
+        WidgetSettings.set_value_by_key("current_process", self.process)
 
-        if not my.context:
-            my.context = my.process
+        if not self.context:
+            self.context = self.process
 
         # if a subcontext is provided, then replace it in the current
         # context
-        if my.subcontext:
-            parts = my.context.split("/")
-            my.context = "%s/%s" % (parts[0], my.subcontext)
+        if self.subcontext:
+            parts = self.context.split("/")
+            self.context = "%s/%s" % (parts[0], self.subcontext)
 
 
-        if not my.subcontext and my.context.find("/") != -1:
-            parts = my.context.split("/")
+        if not self.subcontext and self.context.find("/") != -1:
+            parts = self.context.split("/")
             if len(parts) > 1:
-                my.subcontext = "/".join(parts[1:])
+                self.subcontext = "/".join(parts[1:])
             else:
-                my.subcontext = ""
+                self.subcontext = ""
         else:
-            my.subcontext = ""
+            self.subcontext = ""
 
         """
-        print "process: ", my.process
-        print "context: ", my.context
-        print "subcontext: ", my.subcontext
+        print "process: ", self.process
+        print "context: ", self.context
+        print "subcontext: ", self.subcontext
         """
 
 
 
-    def get_title_wdg(my):
+    def get_title_wdg(self):
         
         title_div = DivWdg()
-        #title_div.add_class("maq_search_bar")
         title_div.add_color("background", "background", -10)
         title_div.add_style("height: 30px")
         title_div.add_style("padding: 5px")
@@ -221,41 +220,41 @@ class CheckinWdg(BaseRefreshWdg):
 
         thumb = ThumbWdg()
         thumb_div.add(thumb)
-        thumb.set_sobject(my.sobject)
+        thumb.set_sobject(self.sobject)
         thumb.set_icon_size(28)
         thumb.set_option("aspect", "height")
 
-        if not my.sobject.column_exists("name"):
-            title = "%s" % my.sobject.get_code() 
+        if not self.sobject.column_exists("name"):
+            title = "%s" % self.sobject.get_code() 
         else:
-            name = my.sobject.get_value("name", no_exception=True)
-            code = "<span style='opacity: 0.5; font-size: 0.8em; font-style: italic'/>( %s )</span>" % my.sobject.get_code()
+            name = self.sobject.get_value("name", no_exception=True)
+            code = "<span style='opacity: 0.5; font-size: 0.8em; font-style: italic'/>( %s )</span>" % self.sobject.get_code()
             title = "%s %s" % (name, code )
 
-        if my.snapshot:
-            title = "Append Check-in - %s" % my.sobject.get_code() 
+        if self.snapshot:
+            title = "Append Check-in - %s" % self.sobject.get_code() 
             title_div.add_style('background: #5B7A3A')
         title_div.add(title)
         return title_div
 
 
 
-    def get_display(my): 
+    def get_display(self): 
 
-        my.lock_process = my.kwargs.get("lock_process") == 'true'
-        if my.lock_process and not my.process:
+        self.lock_process = self.kwargs.get("lock_process") == 'true'
+        if self.lock_process and not self.process:
             raise TacticException("Cannot lock to a process without specifying a process")
 
-        checkin_relative_dir = my.kwargs.get('checkin_relative_dir')
+        checkin_relative_dir = self.kwargs.get('checkin_relative_dir')
         # avoid sending None as a string later
         if not checkin_relative_dir:
             checkin_relative_dir = ''
 
-        is_refresh = my.kwargs.get('is_refresh')== 'true'
-        default_sandbox_dir = my._get_sandbox_dir(use_default=True)
+        is_refresh = self.kwargs.get('is_refresh')== 'true'
+        default_sandbox_dir = self._get_sandbox_dir(use_default=True)
 
-        title_div = my.get_title_wdg()
-        if my.kwargs.get("show_header") in ['false', False]:
+        title_div = self.get_title_wdg()
+        if self.kwargs.get("show_header") in ['false', False]:
             title_div.add_style("display: none")
 
         if is_refresh:
@@ -270,8 +269,8 @@ class CheckinWdg(BaseRefreshWdg):
             top = DivWdg()
             top.add_color("background", "background")
             top.add_color("color", "color")
-            my.set_as_panel(top)
-            width = my.kwargs.get('width')
+            self.set_as_panel(top)
+            width = self.kwargs.get('width')
             if width:
                 top.add_style("width", width)
             else:
@@ -281,7 +280,7 @@ class CheckinWdg(BaseRefreshWdg):
             #top.add_style("max-width: 1000px")
 
 
-            top.add_attr("spt_sandbox_dir", my._get_sandbox_dir())
+            top.add_attr("spt_sandbox_dir", self._get_sandbox_dir())
 
 
             js_div = DivWdg()
@@ -289,14 +288,14 @@ class CheckinWdg(BaseRefreshWdg):
             if not Container.get_dict("JSLibraries", "spt_checkin"):
                 js_div.add_behavior( {
                     'type': 'load',
-                    'cbjs_action': my.get_onload_js()
+                    'cbjs_action': self.get_onload_js()
                 } )
 
 
             # initialize the widget
             js_div.add_behavior( {
                 'type': 'load',
-                'search_key': my.search_key,
+                'search_key': self.search_key,
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_checkin_top");
                 spt.checkin.set_top(top);
@@ -317,12 +316,12 @@ class CheckinWdg(BaseRefreshWdg):
             # set the transfer mode based on the users environment
             # TODO: maybe should have a separate transfer mode for checkin
             # and checkout?
-            if my.use_applet:
+            if self.use_applet:
                 js_div.add_behavior( {
                 'type': 'load',
                 'handoff_dir': handoff_dir,
                 'asset_dir': asset_dir,
-                'wdg_transfer_mode': my.transfer_mode,
+                'wdg_transfer_mode': self.transfer_mode,
                 'cbjs_action': '''
                 
                 var env = spt.Environment.get();
@@ -359,7 +358,7 @@ class CheckinWdg(BaseRefreshWdg):
                     'type': 'load',
                     'handoff_dir': handoff_dir,
                     'asset_dir': asset_dir,
-                    'wdg_transfer_mode': my.transfer_mode,
+                    'wdg_transfer_mode': self.transfer_mode,
                     'cbjs_action': '''
                     
                     var env = spt.Environment.get();
@@ -389,18 +388,18 @@ class CheckinWdg(BaseRefreshWdg):
 
 
         # we are interested in the parent for snapshots
-        if isinstance(my.sobject, Snapshot):
-            sobject = my.sobject.get_parent()
-            my.search_key = SearchKey.get_by_sobject(sobject)
+        if isinstance(self.sobject, Snapshot):
+            sobject = self.sobject.get_parent()
+            self.search_key = SearchKey.get_by_sobject(sobject)
         
 
         pipeline_code = None
-        if my.pipeline:
-            pipeline_code = my.pipeline.get_code()
+        if self.pipeline:
+            pipeline_code = self.pipeline.get_code()
 
-        show_history = my.kwargs.get("show_history")
-        show_links = my.kwargs.get("show_links")
-        close_on_publish = my.kwargs.get("close_on_publish")
+        show_history = self.kwargs.get("show_history")
+        show_links = self.kwargs.get("show_links")
+        close_on_publish = self.kwargs.get("close_on_publish")
 
 
         # put many of the options in a data structure so we don't
@@ -409,42 +408,42 @@ class CheckinWdg(BaseRefreshWdg):
             'show_links': show_links,
             'show_history': show_history,
             'close_on_publish': close_on_publish,
-            'folder_state': my.folder_state,
+            'folder_state': self.folder_state,
         }
 
 
-        action_wdg = my.get_action_wdg()
+        action_wdg = self.get_action_wdg()
 
 
-        if not my.panel_cls:
-            my.panel_cls = 'tactic.ui.widget.CheckinInfoPanelWdg'
+        if not self.panel_cls:
+            self.panel_cls = 'tactic.ui.widget.CheckinInfoPanelWdg'
        
         panel_kwargs = {
                 'action_wdg': action_wdg,
-                'search_key':my.search_key,
-                'context':my.context,
-                'process':my.process,
-                'snapshot_code':my.snapshot_code,
+                'search_key':self.search_key,
+                'context':self.context,
+                'process':self.process,
+                'snapshot_code':self.snapshot_code,
                 'pipeline_code' : pipeline_code,
-                'transfer_mode':my.transfer_mode,
-                'mode':my.mode,
-                'use_applet':my.use_applet,
-                'checkin_command':my.checkin_command,
-                'show_file_selector':my.show_file_selector,
-                'checkout_script_path':my.checkout_script_path,
-                'checkin_script_path': my.checkin_script_path,
-                'validate_script_path': my.validate_script_path,
-                'create_sandbox_script_path': my.create_sandbox_script_path,
-                'sandbox_dir': my._get_sandbox_dir(),
+                'transfer_mode':self.transfer_mode,
+                'mode':self.mode,
+                'use_applet':self.use_applet,
+                'checkin_command':self.checkin_command,
+                'show_file_selector':self.show_file_selector,
+                'checkout_script_path':self.checkout_script_path,
+                'checkin_script_path': self.checkin_script_path,
+                'validate_script_path': self.validate_script_path,
+                'create_sandbox_script_path': self.create_sandbox_script_path,
+                'sandbox_dir': self._get_sandbox_dir(),
                 'checkin_relative_dir':checkin_relative_dir,
-                'checkin_ui_options' : my.checkin_ui_options,
+                'checkin_ui_options' : self.checkin_ui_options,
                 'show_history': show_history,
                 'show_links': show_links,
                 'options': options
 
         }
 
-        info_panel = Common.create_from_class_path(my.panel_cls, {}, panel_kwargs)
+        info_panel = Common.create_from_class_path(self.panel_cls, {}, panel_kwargs)
         top.add(info_panel)
 
 
@@ -456,31 +455,31 @@ class CheckinWdg(BaseRefreshWdg):
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
         '''displays the checkin buttons'''
 
         div = DivWdg()
         div.add_style("height: 25px")
 
-        if my.snapshot:
+        if self.snapshot:
             snapshot_div = DivWdg()
-            snapshot_div.add("Snapshot Code: %s<br/>" % my.snapshot.get_code() )
-            #snapshot_div.add("Process: %s<br/>" % my.snapshot.get_value("process") )
-            snapshot_div.add("Context: %s<br/>" % my.snapshot.get_value("context") )
-            snapshot_div.add("Version: v%0.3d<br/>" % my.snapshot.get_value("version") )
-            snapshot_div.add("Revision: v%0.3d<br/>" % my.snapshot.get_value("revision") )
-            snapshot_div.add("Desc: %s<br/>" % my.snapshot.get_value("description") )
+            snapshot_div.add("Snapshot Code: %s<br/>" % self.snapshot.get_code() )
+            #snapshot_div.add("Process: %s<br/>" % self.snapshot.get_value("process") )
+            snapshot_div.add("Context: %s<br/>" % self.snapshot.get_value("context") )
+            snapshot_div.add("Version: v%0.3d<br/>" % self.snapshot.get_value("version") )
+            snapshot_div.add("Revision: v%0.3d<br/>" % self.snapshot.get_value("revision") )
+            snapshot_div.add("Desc: %s<br/>" % self.snapshot.get_value("description") )
             snapshot_div.add_style("padding: 10px")
             snapshot_div.add_style("border: solid %s 1px" % snapshot_div.get_color("border"))
             div.add(snapshot_div)
 
-            my.context = my.snapshot.get_value("context")
+            self.context = self.snapshot.get_value("context")
             
             # these are not needed.. just for js to run smoothly
             hidden = HiddenWdg("process")
             hidden.add_class("spt_checkin_process")
             div.add(hidden)
-            hidden = HiddenWdg("context", my.context)
+            hidden = HiddenWdg("context", self.context)
             hidden.add_class("spt_checkin_context")
             div.add(hidden)
             hidden = HiddenWdg("subcontext")
@@ -497,38 +496,38 @@ class CheckinWdg(BaseRefreshWdg):
             process_div.add_style("font-size: 14px")
             process_div.add_style("padding-top: 5px")
           
-            if my.processes == ['publish'] and my.auto_process == True:
+            if self.processes == ['publish'] and self.auto_process == True:
                 # in case a single pipeline with one process called "publish" is defined
                 # we should not hide it
                 process_div.add_style("display: none")
 
-            if my.lock_process:
+            if self.lock_process:
                 div.add(process_div)
 
                 # show the full context
-                locked_div = FloatDivWdg(my.context)
+                locked_div = FloatDivWdg(self.context)
 
 
                 div.add(locked_div)
                 locked_div.add_style('margin-left: 8px')
                 locked_div.add_styles('font-weight: bold; font-size: 1.1em')
                 locked_div.add_style("margin-top: 6px")
-                hidden = HiddenWdg("process", my.process)
+                hidden = HiddenWdg("process", self.process)
                 process_div.add(hidden)
                 hidden.add_class("spt_checkin_process")
 
-                context_div = ContextPanelWdg(process=my.process, search_type=my.search_type, context= my.context)
-                my.context = context_div.get_context()
+                context_div = ContextPanelWdg(process=self.process, search_type=self.search_type, context= self.context)
+                self.context = context_div.get_context()
 
                 div.add(context_div)
             else:
                 div.add(process_div)
 
                 
-                if my.subcontext:
+                if self.subcontext:
                     show_sub_context = True
                 else:
-                    show_sub_context = my.kwargs.get("show_sub_context") in [True, 'true']
+                    show_sub_context = self.kwargs.get("show_sub_context") in [True, 'true']
 
                 # create a process selector
                 process_select = SelectWdg("process")
@@ -537,8 +536,8 @@ class CheckinWdg(BaseRefreshWdg):
                 process_select.add_style("width: 150px")
                 process_select.add_style("margin-top: -5px")
                 process_select.add_class("spt_checkin_process")
-                process_select.set_option("values", my.processes)
-                show_links = my.kwargs.get("show_links") not in [False, 'false']
+                process_select.set_option("values", self.processes)
+                show_links = self.kwargs.get("show_links") not in [False, 'false']
                 if show_links:
                     process_select.add_behavior( {
                     'type': 'change',
@@ -583,13 +582,13 @@ class CheckinWdg(BaseRefreshWdg):
                     
                 
             
-                if my.process:
-                    process_select.set_value(my.process)
+                if self.process:
+                    process_select.set_value(self.process)
                 else:
-                    if not my.processes:
-                        my.process = 'publish'
+                    if not self.processes:
+                        self.process = 'publish'
                     else:
-                        my.process = my.processes[0]
+                        self.process = self.processes[0]
 
 
 
@@ -598,23 +597,23 @@ class CheckinWdg(BaseRefreshWdg):
 
 
 
-    def _get_sandbox_dir(my, use_default=False):
+    def _get_sandbox_dir(self, use_default=False):
         '''get the sandbox directory'''
 
-        if not use_default and my.kwargs.get("sandbox_override") == "true":
-            sandbox_dir = my.kwargs.get("sandbox_dir")
+        if not use_default and self.kwargs.get("sandbox_override") == "true":
+            sandbox_dir = self.kwargs.get("sandbox_dir")
             if sandbox_dir:
                 return sandbox_dir
 
 
-        search_key = my.sobject.get_search_key()
+        search_key = self.sobject.get_search_key()
         key = "sandbox_dir:%s" % search_key
         from pyasm.web import WidgetSettings
         sandbox_dir = WidgetSettings.get_value_by_key(key)
         if sandbox_dir:
             return sandbox_dir
 
-        sandbox_dir = CheckinWdg.get_sandbox_dir(my.sobject, my.process, my.context)
+        sandbox_dir = CheckinWdg.get_sandbox_dir(self.sobject, self.process, self.context)
 
         return sandbox_dir
 
@@ -1223,7 +1222,7 @@ spt.checkin.drop_files = function(evt, el) {
 
 class CheckoutWdg(CheckinWdg):
     
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_key': 'the search key of the object boing checked into',
         'process': 'force set the process',
@@ -1234,18 +1233,18 @@ class CheckoutWdg(CheckinWdg):
         'transfer_mode': '',
         }
 
-    def init(my):
-        super(CheckoutWdg, my).init()
-        my.show_file_selector = 'false'
+    def init(self):
+        super(CheckoutWdg, self).init()
+        self.show_file_selector = 'false'
    
-    def get_title_wdg(my):
+    def get_title_wdg(self):
         
         title_div = DivWdg()
         title_div.add_class("maq_search_bar")
         
-        title = "Check-out [%s]" % my.sobject.get_code() 
-        if my.snapshot:
-            title = "Check-out snapshot [%s]" % my.sobject.get_code() 
+        title = "Check-out [%s]" % self.sobject.get_code() 
+        if self.snapshot:
+            title = "Check-out snapshot [%s]" % self.sobject.get_code() 
             title_div.add_style('background: #5B7A3A')
         title_div.add(title)
         return title_div
@@ -1257,156 +1256,156 @@ class CheckoutWdg(CheckinWdg):
 
 class CheckinInfoPanelWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.search_key = my.kwargs.get('search_key')
-        my.sobject = Search.get_by_search_key(my.search_key)
-        my.search_type = my.sobject.get_base_search_type()
-        assert my.sobject
+    def init(self):
+        self.search_key = self.kwargs.get('search_key')
+        self.sobject = Search.get_by_search_key(self.search_key)
+        self.search_type = self.sobject.get_base_search_type()
+        assert self.sobject
 
-        my.snapshot_code = my.kwargs.get("snapshot_code")
-        if my.snapshot_code:
-            my.snapshot = Snapshot.get_by_code(my.snapshot_code)
-        elif isinstance(my.sobject, Snapshot):
-            my.snapshot = my.sobject
+        self.snapshot_code = self.kwargs.get("snapshot_code")
+        if self.snapshot_code:
+            self.snapshot = Snapshot.get_by_code(self.snapshot_code)
+        elif isinstance(self.sobject, Snapshot):
+            self.snapshot = self.sobject
         else:
-            my.snapshot = None
+            self.snapshot = None
 
 
-        my.pipeline_code = my.kwargs.get('pipeline_code')
-        my.pipeline = Pipeline.get_by_code(my.pipeline_code)
+        self.pipeline_code = self.kwargs.get('pipeline_code')
+        self.pipeline = Pipeline.get_by_code(self.pipeline_code)
       
-        my.show_links = my.kwargs.get('show_links')
-        my.options = my.kwargs.get('options')
+        self.show_links = self.kwargs.get('show_links')
+        self.options = self.kwargs.get('options')
 
-        my.warning_msg = []
+        self.warning_msg = []
 
 
 
         
         # these may be changed by the user in the UI, which take precedence
         web = WebContainer.get_web()
-        my.process = web.get_form_value('process')
-        if not my.process:
-            my.process = my.kwargs.get('process')
+        self.process = web.get_form_value('process')
+        if not self.process:
+            self.process = self.kwargs.get('process')
 
-        # my.process is supposed to be the same as the my.process_sobj process
-        # the publish wdg uses the my.process passed in here assuming sometimes
-        # my.process_sobj has not been updated/outdated or there is no pipeline
-        my.context = web.get_form_value('context')
+        # self.process is supposed to be the same as the self.process_sobj process
+        # the publish wdg uses the self.process passed in here assuming sometimes
+        # self.process_sobj has not been updated/outdated or there is no pipeline
+        self.context = web.get_form_value('context')
         subcontext = web.get_form_value('subcontext')
         
 
-        if not my.context:
-            my.context = my.kwargs.get('context')
+        if not self.context:
+            self.context = self.kwargs.get('context')
         elif subcontext:
-            my.context = '%s/%s'%(my.context, subcontext)
+            self.context = '%s/%s'%(self.context, subcontext)
 
         
         # get all of the process sobjects for this pipeline
-        if my.pipeline:
-            pipeline_code = my.pipeline.get_value("code")
+        if self.pipeline:
+            pipeline_code = self.pipeline.get_value("code")
 
-            pipe_proj_code = my.pipeline.get_value('project_code')
+            pipe_proj_code = self.pipeline.get_value('project_code')
             #search = Search("config/process")
             #search.add_filter("pipeline_code", pipeline_code)
-            #my.process_sobjs = search.get_sobjects()
+            #self.process_sobjs = search.get_sobjects()
             search = Search("config/process", project_code=pipe_proj_code)
             search.add_filter("pipeline_code", pipeline_code)
-            search.add_filter("process", my.process)
-            my.process_sobj = search.get_sobject()
+            search.add_filter("process", self.process)
+            self.process_sobj = search.get_sobject()
 
         else:
-            #my.process_sobjs = []
-            my.process_sobj = None
+            #self.process_sobjs = []
+            self.process_sobj = None
 
 
-        my.transfer_mode = my.kwargs.get('transfer_mode')
+        self.transfer_mode = self.kwargs.get('transfer_mode')
 
         # get the repo type
-        if my.process_sobj:
-            my.repo_type = my.process_sobj.get_value("repo_type", no_exception=True)
-            if not my.transfer_mode:
-                my.transfer_mode = my.process_sobj.get_value("transfer_mode", no_exception=True)
+        if self.process_sobj:
+            self.repo_type = self.process_sobj.get_value("repo_type", no_exception=True)
+            if not self.transfer_mode:
+                self.transfer_mode = self.process_sobj.get_value("transfer_mode", no_exception=True)
         else:
-            my.repo_type = None
+            self.repo_type = None
 
-        if not my.repo_type:
-            my.repo_type = Config.get_value("checkin", "repo_type")
-        if not my.repo_type:
-            my.repo_type = 'tactic'
-
-
-        my.create_sandbox_script_path = my.kwargs.get("create_sandbox_script_path")
-        if not my.create_sandbox_script_path and my.process_sobj:
-            my.create_sandbox_script_path = my.process_sobj.get_value("sandbox_create_script_path", no_exception=True)
+        if not self.repo_type:
+            self.repo_type = Config.get_value("checkin", "repo_type")
+        if not self.repo_type:
+            self.repo_type = 'tactic'
 
 
-        my.mode = my.kwargs.get("mode")
-        my.context_options = []
-        my.subcontext_options = []
+        self.create_sandbox_script_path = self.kwargs.get("create_sandbox_script_path")
+        if not self.create_sandbox_script_path and self.process_sobj:
+            self.create_sandbox_script_path = self.process_sobj.get_value("sandbox_create_script_path", no_exception=True)
 
-        if not my.mode and my.process_sobj:
-            my.mode = my.process_sobj.get_value("checkin_mode", no_exception=True)
+
+        self.mode = self.kwargs.get("mode")
+        self.context_options = []
+        self.subcontext_options = []
+
+        if not self.mode and self.process_sobj:
+            self.mode = self.process_sobj.get_value("checkin_mode", no_exception=True)
        
-        if my.process_sobj:
+        if self.process_sobj:
             # we are not passing in this thru kwargs
-            my.context_options = my.process_sobj.get_value("context_options", no_exception=True)
-            my.context_options = my.context_options.strip()
+            self.context_options = self.process_sobj.get_value("context_options", no_exception=True)
+            self.context_options = self.context_options.strip()
             
-            if re.search(r'\(auto\)|\(main\)|\(text\)', my.context_options):
-                my.warning_msg.append('context_options do not use (main), (auto) or (text). They should be set in subcontext_options.')
-            if my.context_options:
-                my.context_options = my.context_options.split("|")
+            if re.search(r'\(auto\)|\(main\)|\(text\)', self.context_options):
+                self.warning_msg.append('context_options do not use (main), (auto) or (text). They should be set in subcontext_options.')
+            if self.context_options:
+                self.context_options = self.context_options.split("|")
             else:
-                my.context_options = []
+                self.context_options = []
 
 
             # get the subcontext_options
-            my.subcontext_options = my.kwargs.get("subcontext_options")
+            self.subcontext_options = self.kwargs.get("subcontext_options")
 
-            if not my.subcontext_options:
-                my.subcontext_options = my.process_sobj.get_value("subcontext_options", no_exception=True)
+            if not self.subcontext_options:
+                self.subcontext_options = self.process_sobj.get_value("subcontext_options", no_exception=True)
 
-            if re.search(r'\(text\).+|.+\(text\)', my.subcontext_options):
-                my.warning_msg.append('(text) cannot be mixed with others options in subcontext_options.')
-            elif re.search(r'{main}|{text}|{auto}', my.subcontext_options):
-                my.warning_msg.append('Use ( ) instead of { } for (main), (auto), or (text) in subcontext_options.')
-            my.subcontext_options = my.subcontext_options.strip()
-            if my.subcontext_options:
-                my.subcontext_options = my.subcontext_options.split("|")
+            if re.search(r'\(text\).+|.+\(text\)', self.subcontext_options):
+                self.warning_msg.append('(text) cannot be mixed with others options in subcontext_options.')
+            elif re.search(r'{main}|{text}|{auto}', self.subcontext_options):
+                self.warning_msg.append('Use ( ) instead of { } for (main), (auto), or (text) in subcontext_options.')
+            self.subcontext_options = self.subcontext_options.strip()
+            if self.subcontext_options:
+                self.subcontext_options = self.subcontext_options.split("|")
             else:
-                my.subcontext_options = []
+                self.subcontext_options = []
 
       
 
 
-        my.checkin_command = my.kwargs.get("checkin_command")
-        my.show_file_selector = my.kwargs.get('show_file_selector') not in ['false', False]
-        my.checkout_script_path = my.kwargs.get('checkout_script_path')
+        self.checkin_command = self.kwargs.get("checkin_command")
+        self.show_file_selector = self.kwargs.get('show_file_selector') not in ['false', False]
+        self.checkout_script_path = self.kwargs.get('checkout_script_path')
 
         # get the sandbox directory
-        my.sandbox_dir = my.kwargs.get("sandbox_dir")
+        self.sandbox_dir = self.kwargs.get("sandbox_dir")
 
-        my.checkin_relative_dir = my.kwargs.get('checkin_relative_dir')
-        my.checkin_ui_options = my.kwargs.get('checkin_ui_options')
+        self.checkin_relative_dir = self.kwargs.get('checkin_relative_dir')
+        self.checkin_ui_options = self.kwargs.get('checkin_ui_options')
 
-        if my.checkin_ui_options and isinstance(my.checkin_ui_options, basestring):
+        if self.checkin_ui_options and isinstance(self.checkin_ui_options, basestring):
             # avoid using jsonloads for simple dict,
             # since it requires replacing ' with ''
 
-            #my.checkin_ui_options = my.checkin_ui_options.replace("'", '"')
-            #my.checkin_ui_options = jsonloads(my.checkin_ui_options)
-            my.checkin_ui_options = eval(my.checkin_ui_options)
+            #self.checkin_ui_options = self.checkin_ui_options.replace("'", '"')
+            #self.checkin_ui_options = jsonloads(self.checkin_ui_options)
+            self.checkin_ui_options = eval(self.checkin_ui_options)
 
 
 
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_class("spt_checkin_info")
-        if my.context_options:
+        if self.context_options:
             top.add_attr('context_mode','true')
 
 
@@ -1419,15 +1418,15 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         table.add_row()
         #table.add_style("margin: 8px 5px 5px 5px")
         table.add_style("width: 100%")
-        if my.warning_msg:
+        if self.warning_msg:
             top.add_behavior( {'type': 'load',
-                        'msg': "Warning: %s" %'<br/>'.join(my.warning_msg),
+                        'msg': "Warning: %s" %'<br/>'.join(self.warning_msg),
                         'cbjs_action' : 'spt.alert(bvr.msg, {type: "html"})'})
 
 
         file_path = ''
-        if my.checkin_relative_dir:
-            file_path = '%s/%s' %(my.sandbox_dir, my.checkin_relative_dir)
+        if self.checkin_relative_dir:
+            file_path = '%s/%s' %(self.sandbox_dir, self.checkin_relative_dir)
 
 
 
@@ -1436,11 +1435,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         td.add_style('width: 250px')
         td.add_border()
 
-        action_wdg = my.kwargs.get("action_wdg")
+        action_wdg = self.kwargs.get("action_wdg")
         td.add(action_wdg)
 
 
-        publish_wdg = my.get_publish_wdg(my.search_key, my.snapshot, my.process, my.pipeline, my.transfer_mode)  
+        publish_wdg = self.get_publish_wdg(self.search_key, self.snapshot, self.process, self.pipeline, self.transfer_mode)  
         td.add( publish_wdg )
         td.add_color("background", "background3")
         td.add_style("vertical-align: top")
@@ -1460,33 +1459,33 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         tab.add_style("margin: 5px -2px -2px -2px")
         td.add(tab)
 
-        show_inputs = my.kwargs.get("show_inputs")
+        show_inputs = self.kwargs.get("show_inputs")
         if show_inputs not in ['false', False]:
-            input_wdg = my.get_input_wdg()
+            input_wdg = self.get_input_wdg()
             if input_wdg:
                 tab.add(input_wdg)
 
-        if my.show_file_selector:
-            my.use_applet = my.kwargs.get("use_applet")
+        if self.show_file_selector:
+            self.use_applet = self.kwargs.get("use_applet")
             kwargs = {
-                'search_key': my.search_key,
-                'process': my.process,
-                'pipeline_code': my.pipeline_code,
-                'context': my.context,
-                'mode': my.mode,
-                'use_applet': my.use_applet,
+                'search_key': self.search_key,
+                'process': self.process,
+                'pipeline_code': self.pipeline_code,
+                'context': self.context,
+                'mode': self.mode,
+                'use_applet': self.use_applet,
                 'file_path': file_path,
-                'sandbox_dir': my.sandbox_dir,
-                'context_options': my.context_options,
-                'subcontext_options': my.subcontext_options,
-                'create_sandbox_script_path': my.create_sandbox_script_path,
-                'options': my.options,
-                'show_links': my.show_links
+                'sandbox_dir': self.sandbox_dir,
+                'context_options': self.context_options,
+                'subcontext_options': self.subcontext_options,
+                'create_sandbox_script_path': self.create_sandbox_script_path,
+                'options': self.options,
+                'show_links': self.show_links
                 
             }
 
 
-            if my.repo_type == 'perforce':
+            if self.repo_type == 'perforce':
                 from tactic.ui.checkin import ScmFileSelectorWdg
                 selector = ScmFileSelectorWdg(**kwargs)
             else:
@@ -1496,12 +1495,12 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             selector.set_name("Sandbox")
 
 
-        show_history = my.kwargs.get("show_history")
+        show_history = self.kwargs.get("show_history")
         if show_history not in ['false', False]:
-            new_context = my.context 
-            if re.match(r'.*/.*\d{3}', my.context):
-                new_context = my.context.split("/")[0]
-            history = SObjectCheckinHistoryWdg(search_key=my.search_key, history_context=new_context)
+            new_context = self.context 
+            if re.match(r'.*/.*\d{3}', self.context):
+                new_context = self.context.split("/")[0]
+            history = SObjectCheckinHistoryWdg(search_key=self.search_key, history_context=new_context)
             tab.add(history)
             history.set_name("History")
 
@@ -1510,11 +1509,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         return top
 
 
-    def get_input_wdg(my):
+    def get_input_wdg(self):
 
         # handle deliveries to other processes
-        if my.pipeline:
-            input_connects = my.pipeline.get_input_connects(my.process)
+        if self.pipeline:
+            input_connects = self.pipeline.get_input_connects(self.process)
         else:
             input_connects = None
 
@@ -1536,7 +1535,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         button.add_behavior( {
             'type': 'click_up',
-            'sandbox_dir': my.sandbox_dir,
+            'sandbox_dir': self.sandbox_dir,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_inputs_top");
             var values = spt.api.get_input_values(top, null, false);
@@ -1579,7 +1578,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         button.add_behavior( {
             'type': 'click_up',
-            'sandbox_dir': my.sandbox_dir,
+            'sandbox_dir': self.sandbox_dir,
             'cbjs_action': '''
 
             var server = TacticServerStub.get();
@@ -1624,8 +1623,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
             if from_expression:
                 try:
-                    from_sobjects = Search.eval(from_expression, my.sobject)
-                except SearchException, e:
+                    from_sobjects = Search.eval(from_expression, self.sobject)
+                except SearchException as e:
                     print "WARNINIG: expression [%s] gave error: " % from_expression, e
 
             elif from_pipeline:
@@ -1636,14 +1635,14 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
                     search_type = pipeline.get_value("search_type")
                     sobject_expr = "@SOBJECT(%s)" % search_type
-                    from_sobjects = Search.eval(sobject_expr, my.sobject)
+                    from_sobjects = Search.eval(sobject_expr, self.sobject)
 
 
             else:
                 from_expression = "@SOBJECT()"
                 try:
-                    from_sobjects = Search.eval(from_expression, my.sobject)
-                except SearchException, e:
+                    from_sobjects = Search.eval(from_expression, self.sobject)
+                except SearchException as e:
                     print "WARNINIG: expression [%s] gave error: " % from_expression, e
 
 
@@ -1769,7 +1768,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_publish_options_wdg(my):
+    def get_publish_options_wdg(self):
 
 
         options_div = DivWdg()
@@ -1782,7 +1781,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         transfer_div.add_style('margin-bottom: 6px')
         transfer_div.add_behavior( {
             'type': 'load',
-            'transfer_mode': my.transfer_mode,
+            'transfer_mode': self.transfer_mode,
             'cbjs_action': '''
             var env = spt.Environment.get();
             var transfer_mode = bvr.transfer_mode;
@@ -1796,7 +1795,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         
         # COMMENT this out until it is needed
         """    
-        hidden = HiddenWdg('transfer_mode', my.transfer_mode)
+        hidden = HiddenWdg('transfer_mode', self.transfer_mode)
         hidden.add_class("spt_checkin_transfer_mode")
         transfer_div.add(hidden)
         transfer_div.add_behavior( {
@@ -1823,8 +1822,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         current_cb = CheckboxWdg('current_snapshot', label='Is Current')
         # check is_current
         is_current = None
-        if my.checkin_ui_options:
-           is_current =  my.checkin_ui_options.get('is_current')
+        if self.checkin_ui_options:
+           is_current =  self.checkin_ui_options.get('is_current')
         if is_current != None:
             if is_current=='false':
                 current_cb = HiddenWdg('current_snapshot', 'false' )
@@ -1867,7 +1866,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         select.add_style("margin: 4px")
         file_type = None
         hint = None
-        mode = my.mode
+        mode = self.mode
     
 
       
@@ -1907,10 +1906,10 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             select.set_option("labels", "A File|A Sequence|A Directory|Multiple Individual Files|Work Area Check-in")
             select.set_option("values", "file_checkin|group_checkin|dir_checkin|multi_file_checkin|workarea_checkin")
 
-            if my.pipeline:
-                my.process_obj = my.pipeline.get_process(my.process)
-                if my.process_obj:
-                    attributes = my.process_obj.get_attributes()
+            if self.pipeline:
+                self.process_obj = self.pipeline.get_process(self.process)
+                if self.process_obj:
+                    attributes = self.process_obj.get_attributes()
                     if attributes.get("mode") == 'directory':
                         select.set_value("dir_checkin")
                     elif attributes.get("mode") == 'workarea':
@@ -1927,7 +1926,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
             elif len(values) > 1:
                 select.set_value("multi_file_checkin")
 
-            paths = my.kwargs.get('paths')
+            paths = self.kwargs.get('paths')
             select.add_behavior({'type': 'change', 'cbjs_action': select.get_save_script()})
 
         if file_type:
@@ -1936,8 +1935,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
 
-        if my.validate_script_path:
-            validate_div = DivWdg('Validate: %s'%my.validate_script_path)
+        if self.validate_script_path:
+            validate_div = DivWdg('Validate: %s'%self.validate_script_path)
             validate_div.add_style("margin: 2px")
             options_div.add(validate_div)
 
@@ -1956,11 +1955,11 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         return widget
 
 
-    def get_publish_wdg(my, search_key, snapshot, process, pipeline, transfer_mode):
+    def get_publish_wdg(self, search_key, snapshot, process, pipeline, transfer_mode):
 
-        if my.repo_type == 'perforce':
+        if self.repo_type == 'perforce':
             from tactic.ui.checkin import ScmPublishWdg
-            top = ScmPublishWdg(sobject=my.sobject)
+            top = ScmPublishWdg(sobject=self.sobject)
             return top
 
 
@@ -2005,7 +2004,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
             delivery_div.add("Deliver to: ")
             top.add(delivery_div)
-            if my.context_options:
+            if self.context_options:
                 checkbox.add_class('disabled')
                 checkbox.set_attr('disabled', 'disabled')
                 checkbox.add_attr('title','Disabled since context options is set for this process')
@@ -2042,8 +2041,8 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
                 if to_expression:
                     try: 
-                        to_sobjects = Search.eval(to_expression, my.sobject)
-                    except SearchException, e:
+                        to_sobjects = Search.eval(to_expression, self.sobject)
+                    except SearchException as e:
                         print "WARNINIG: expression [%s] gave error: " % to_expression, e
 
                 if to_pipeline:
@@ -2054,7 +2053,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
                         search_type = pipeline.get_value("search_type")
                         sobject_expr = "@SOBJECT(%s)" % search_type
-                        to_sobjects = Search.eval(sobject_expr, my.sobject)
+                        to_sobjects = Search.eval(sobject_expr, self.sobject)
 
 
                 if to_sobjects == None:
@@ -2096,7 +2095,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 #disable the checkbox
                 checkbox.set_attr('disabled','disabled')
             
-            if my.context_options:
+            if self.context_options:
                 select.add_class('disabled')
                 select.set_attr('disabled', 'disabled')
 
@@ -2133,16 +2132,16 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         options_div.add_class("spt_custom_options_top")
 
         try:
-            custom_options_view = my.kwargs.get("checkin_options_view")
-            if not custom_options_view and my.process_sobj:
-                custom_options_view = my.process_sobj.get_value("checkin_options_view", no_exception=True)
+            custom_options_view = self.kwargs.get("checkin_options_view")
+            if not custom_options_view and self.process_sobj:
+                custom_options_view = self.process_sobj.get_value("checkin_options_view", no_exception=True)
 
             if custom_options_view:
                 from tactic.ui.panel import CustomLayoutWdg
                 custom_layout = CustomLayoutWdg(view=custom_options_view)
                 options_div.add(custom_layout.get_buffer_display())
                 top.add(options_div)
-        except Exception, e:
+        except Exception as e:
             from pyasm.widget import ExceptionWdg
             options_div.add( ExceptionWdg(e) )
             #options_div.add("Error")
@@ -2151,16 +2150,16 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
 
 
-        my.validate_script_path = my.get_checkin_script_path(key='validate_script_path')
-        if not my.validate_script_path and my.process_sobj:
-            my.validate_script_path = my.process_sobj.get_value("checkin_validate_script_path", no_exception=True)
+        self.validate_script_path = self.get_checkin_script_path(key='validate_script_path')
+        if not self.validate_script_path and self.process_sobj:
+            self.validate_script_path = self.process_sobj.get_value("checkin_validate_script_path", no_exception=True)
 
 
 
        
-        script = my.kwargs.get("checkin_script")
+        script = self.kwargs.get("checkin_script")
         if not script:
-            script_path = my.get_checkin_script_path()
+            script_path = self.get_checkin_script_path()
             script = None
         else:
             script_path = None
@@ -2173,13 +2172,13 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
 
         # checkin_mode is true if context_options are set
         # main check-in
-        my.sandbox_dir = my.sandbox_dir.rstrip('/') 
+        self.sandbox_dir = self.sandbox_dir.rstrip('/') 
 
 
         # separate behavior for html5 check-in
         html5_behavior = {
             'type': 'click_up',
-            'validate_script_path': my.validate_script_path,
+            'validate_script_path': self.validate_script_path,
             'script_path': script_path,
             'cbjs_action': '''
 
@@ -2389,13 +2388,13 @@ spt.checkin.html5_checkin(selected_files);
             'search_key': search_key,
             'snapshot_code': snapshot_code,
             'transfer_mode': transfer_mode,
-            'checkin_command': my.checkin_command,
+            'checkin_command': self.checkin_command,
             'script_path': script_path,
-            'validate_script_path': my.validate_script_path,
+            'validate_script_path': self.validate_script_path,
             'inline_script': script,
-            'sandbox_dir': my.sandbox_dir,
+            'sandbox_dir': self.sandbox_dir,
             'top': 'spt_checkin_top',
-            'options': my.options,
+            'options': self.options,
             'cbjs_action': r'''
 
 var file_paths = [];
@@ -2912,7 +2911,7 @@ else {
 
 
         # add the publish options
-        top.add(my.get_publish_options_wdg())
+        top.add(self.get_publish_options_wdg())
 
 
 
@@ -2940,19 +2939,19 @@ else {
 
 
 
-    def get_checkin_script_path(my, key='checkin_script_path'):
+    def get_checkin_script_path(self, key='checkin_script_path'):
 
-        script_path = my.kwargs.get(key)
+        script_path = self.kwargs.get(key)
         if script_path:
             return script_path
 
         event_names = []
         # CheckinWdg|key|<search_type>
-        event_name = 'CheckinWdg|%s|%s' % (key, my.search_type)
+        event_name = 'CheckinWdg|%s|%s' % (key, self.search_type)
         event_names.append(event_name)
 
         # CheckinWdg|key|<search_type>|<process>
-        event_name = 'CheckinWdg|%s|%s|%s' % (key, my.search_type, my.process)
+        event_name = 'CheckinWdg|%s|%s|%s' % (key, self.search_type, self.process)
         event_names.append(event_name)
 
         # get triggers with this event
@@ -2974,48 +2973,48 @@ else {
 
 class ContextPanelWdg(BaseRefreshWdg):
 
-    def get_context(my):
-        return my.context
+    def get_context(self):
+        return self.context
 
 
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
-        my.process= web.get_form_value('process')
-        if not my.process:
-            my.process = my.kwargs.get('process')
-        my.context = web.get_form_value('context')
-        if not my.context:
-            my.context = my.kwargs.get('context')
+        self.process= web.get_form_value('process')
+        if not self.process:
+            self.process = self.kwargs.get('process')
+        self.context = web.get_form_value('context')
+        if not self.context:
+            self.context = self.kwargs.get('context')
 
-        if my.context.find("/") != -1:
-            parts = my.context.split("/")
-            my.subcontext = "/".join(parts[1:])
+        if self.context.find("/") != -1:
+            parts = self.context.split("/")
+            self.subcontext = "/".join(parts[1:])
         else:
-            my.subcontext = ''
+            self.subcontext = ''
 
 
-        my.search_type = my.kwargs.get('search_type')
-        my.refresh = my.kwargs.get('is_refresh')
+        self.search_type = self.kwargs.get('search_type')
+        self.refresh = self.kwargs.get('is_refresh')
 
-        context_obj = Context(my.search_type, my.process)
-        my.context_list = context_obj.get_context_list()
-        if not my.context_list:
+        context_obj = Context(self.search_type, self.process)
+        self.context_list = context_obj.get_context_list()
+        if not self.context_list:
             # TODO: we need some way to tell the user that either
             # the search type or the pipeline code doesn't belong to the current
             # project
-            my.context_list = [my.process]
-        if not my.context:
-            my.context = my.context_list[0]
+            self.context_list = [self.process]
+        if not self.context:
+            self.context = self.context_list[0]
 
-        my.context_option = my.kwargs.get('context_list')
-        my.context_expr_option = my.kwargs.get('context_expr')
+        self.context_option = self.kwargs.get('context_list')
+        self.context_expr_option = self.kwargs.get('context_expr')
        
 
 
-    def get_subcontext_wdg(my, context, subcontext_value):
+    def get_subcontext_wdg(self, context, subcontext_value):
         # if specified as a project setting, add a sub_context SelectWdg
         settings = ProdSetting.get_value_by_key(
-                "%s/sub_context" % context, my.search_type)
+                "%s/sub_context" % context, self.search_type)
         sub_context = None
         
         if settings:
@@ -3044,29 +3043,29 @@ class ContextPanelWdg(BaseRefreshWdg):
         sub_context.add_attr('title', 'subcontext')
         return sub_context
 
-    def get_display(my):
+    def get_display(self):
 
         show_context = False
-        show_sub_context = my.kwargs.get("show_sub_context") in [True, 'true', 'True']
-        if my.refresh:
+        show_sub_context = self.kwargs.get("show_sub_context") in [True, 'true', 'True']
+        if self.refresh:
             div = Widget()
         else:
             div = FloatDivWdg(css='spt_context_panel')
-            my.set_as_panel(div)
+            self.set_as_panel(div)
 
 
         if show_context:
             context_select = SelectWdg("context")
             context_select.add_class("spt_checkin_context")
-            if my.context_expr_option:
-                context_select.set_option('values_expr', my.context_expr_option)
-            elif my.context_option:
-                context_select.set_option('values', my.context_option)
+            if self.context_expr_option:
+                context_select.set_option('values_expr', self.context_expr_option)
+            elif self.context_option:
+                context_select.set_option('values', self.context_option)
             else:
-                context_select.set_option("values", my.context_list)
-                context_select.set_option("labels", my.context_list)
-            if my.context:
-                context_select.set_value(my.context)
+                context_select.set_option("values", self.context_list)
+                context_select.set_option("labels", self.context_list)
+            if self.context:
+                context_select.set_value(self.context)
             context_select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
@@ -3085,8 +3084,8 @@ class ContextPanelWdg(BaseRefreshWdg):
 
             context_hidden = HiddenWdg("context")
             context_hidden.add_class("spt_checkin_context")
-            if my.context:
-                context_hidden.set_value(my.context)
+            if self.context:
+                context_hidden.set_value(self.context)
             div.add(context_hidden)
 
         # DEPRECATED: subcontext is now on each file
@@ -3128,52 +3127,52 @@ class FileSelectorWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
-        file_path = my.kwargs.get('file_path')
-        my.sandbox_dir = my.kwargs.get('sandbox_dir')
+        file_path = self.kwargs.get('file_path')
+        self.sandbox_dir = self.kwargs.get('sandbox_dir')
         
         file_paths = web.get_form_values("file_paths")
         if not file_paths:
-            file_paths = my.kwargs.get("file_paths")
+            file_paths = self.kwargs.get("file_paths")
             if not file_paths:
                 file_paths = []
       
-        my.file_paths = file_paths
+        self.file_paths = file_paths
         file_info = web.get_form_values("file_info")
         if not file_info:
-            file_info = my.kwargs.get("file_info")
+            file_info = self.kwargs.get("file_info")
             if not file_info:
                 file_info = []
 
 
-        my.search_key = my.kwargs.get("search_key")
+        self.search_key = self.kwargs.get("search_key")
 
-        my.pipeline_code = web.get_form_value("pipeline_code")
-        if not my.pipeline_code:
-            my.pipeline_code = my.kwargs.get("pipeline_code")
+        self.pipeline_code = web.get_form_value("pipeline_code")
+        if not self.pipeline_code:
+            self.pipeline_code = self.kwargs.get("pipeline_code")
 
-        my.process = web.get_form_value("process")
-        if not my.process:
-            my.process = my.kwargs.get("process")
+        self.process = web.get_form_value("process")
+        if not self.process:
+            self.process = self.kwargs.get("process")
 
-        my.context = web.get_form_value("context")
+        self.context = web.get_form_value("context")
         subcontext = web.get_form_value('subcontext')
-        if not my.context:
-            my.context = my.kwargs.get("context")
+        if not self.context:
+            self.context = self.kwargs.get("context")
         elif subcontext:
-            my.context = '%s/%s' %(my.context, subcontext)
+            self.context = '%s/%s' %(self.context, subcontext)
 
-        my.mode = my.kwargs.get('mode')
+        self.mode = self.kwargs.get('mode')
 
-        my.create_sandbox_script_path = my.kwargs.get("create_sandbox_script_path")
-        my.show_links = my.kwargs.get('show_links')
+        self.create_sandbox_script_path = self.kwargs.get("create_sandbox_script_path")
+        self.show_links = self.kwargs.get('show_links')
         top = DivWdg()
         #top.add_style("padding: 15px")
         #top.add_style("margin: 5px")
         #top.add_style('margin-bottom','8px')
 
-        my.set_as_panel(top);
+        self.set_as_panel(top);
         top.add_class("spt_file_selector")
 
         content = DivWdg()
@@ -3182,20 +3181,20 @@ class FileSelectorWdg(BaseRefreshWdg):
 
 
         # add the local files in the sandbox
-        my.use_applet = my.kwargs.get("use_applet")
-        if not my.use_applet:
-            content.add( my.get_drag_files_wdg() )
+        self.use_applet = self.kwargs.get("use_applet")
+        if not self.use_applet:
+            content.add( self.get_drag_files_wdg() )
         else:
-            content.add( my.get_dir_list_wdg() )
+            content.add( self.get_dir_list_wdg() )
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return content
         else:
             return top
 
 
-    def get_drag_files_wdg(my):
+    def get_drag_files_wdg(self):
         div = DivWdg()
         
         title = DivWdg()
@@ -3216,10 +3215,10 @@ class FileSelectorWdg(BaseRefreshWdg):
         div.add_style("min-height: 400px")
         div.add_style("width: auto")
         div.add_style("padding: 10px")
-        div.add_attr("spt_search_key", my.search_key)
-        div.add_attr("spt_process", my.process)
-        context_options = my.kwargs.get("context_options")
-        subcontext_options = my.kwargs.get("subcontext_options")
+        div.add_attr("spt_search_key", self.search_key)
+        div.add_attr("spt_process", self.process)
+        context_options = self.kwargs.get("context_options")
+        subcontext_options = self.kwargs.get("subcontext_options")
       
         div.add_attr("spt_subcontext_options", '|'.join(subcontext_options))
         div.add_attr("spt_context_options", '|'.join(context_options))
@@ -3231,7 +3230,7 @@ class FileSelectorWdg(BaseRefreshWdg):
         return div
 
 
-    def get_dir_list_wdg(my):
+    def get_dir_list_wdg(self):
         div = DivWdg()
         div.add_style("min-width: 300px")
 
@@ -3241,43 +3240,43 @@ class FileSelectorWdg(BaseRefreshWdg):
         load_div.add_style("padding: 15px")
         load_div.add_style("font-size: 14px")
 
-        context_options = my.kwargs.get("context_options")
-        subcontext_options = my.kwargs.get("subcontext_options")
-        my.options = my.kwargs.get("options")
+        context_options = self.kwargs.get("context_options")
+        subcontext_options = self.kwargs.get("subcontext_options")
+        self.options = self.kwargs.get("options")
 
         # find all the files for this asset and this process
         # get all of the files
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         search = Search("sthpw/file")
         search.add_column("source_path", distinct=True)
         search2 = Search("sthpw/snapshot")
         search2.add_parent_filter(sobject)
-        #search2.add_filter("process", my.process)
-        search2.add_filter("process", my.process)
+        #search2.add_filter("process", self.process)
+        search2.add_filter("process", self.process)
 
         search.add_relationship_search_filter(search2)
 
         files = search.get_sobjects()
         source_paths = [x.get_value("source_path") for x in files]
 
-        if my.show_links == False:
+        if self.show_links == False:
             show_links = 'false'
         else:
             show_links = 'true'
 
         div.add_behavior( {
         'type': 'load',
-        'file_paths': my.file_paths,
-        'sandbox_dir': my.sandbox_dir,
+        'file_paths': self.file_paths,
+        'sandbox_dir': self.sandbox_dir,
         'source_paths': source_paths,
-        'pipeline_code': my.pipeline_code,
-        'process': my.process,
-        #'search_key': my.sobject.get_search_key(),
-        'search_key': my.search_key,
+        'pipeline_code': self.pipeline_code,
+        'process': self.process,
+        #'search_key': self.sobject.get_search_key(),
+        'search_key': self.search_key,
         'context_options': context_options,
         'subcontext_options': subcontext_options,
-        'options': my.options,
-        'create_sandbox_script_path': my.create_sandbox_script_path,
+        'options': self.options,
+        'create_sandbox_script_path': self.create_sandbox_script_path,
         'show_links': show_links,
         'cbjs_action': '''
 
@@ -3522,33 +3521,33 @@ setTimeout(spt.checkin.load_sandbox, 10);
 
 class CheckinSandboxListWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("spt_checkin_sandbox_top")
 
-        my.base_dir = my.kwargs.get("base_dir")
-        my.pipeline_code = my.kwargs.get("pipeline_code")
-        my.pipeline = Pipeline.get_by_code(my.pipeline_code)
-        my.process = my.kwargs.get("process")
+        self.base_dir = self.kwargs.get("base_dir")
+        self.pipeline_code = self.kwargs.get("pipeline_code")
+        self.pipeline = Pipeline.get_by_code(self.pipeline_code)
+        self.process = self.kwargs.get("process")
 
-        my.show_base_dir = my.kwargs.get("show_base_dir") 
-        my.preselected = my.kwargs.get("preselected")
+        self.show_base_dir = self.kwargs.get("show_base_dir") 
+        self.preselected = self.kwargs.get("preselected")
 
-        paths = my.kwargs.get("paths")
-        search_key = my.kwargs.get("search_key")
-        md5s = my.kwargs.get("md5s")
-        sizes = my.kwargs.get("sizes")
+        paths = self.kwargs.get("paths")
+        search_key = self.kwargs.get("search_key")
+        md5s = self.kwargs.get("md5s")
+        sizes = self.kwargs.get("sizes")
 
-        my.search_key = search_key
-        my.sobject = Search.get_by_search_key(search_key)
+        self.search_key = search_key
+        self.sobject = Search.get_by_search_key(search_key)
 
-        my.create_sandbox_script_path = my.kwargs.get("create_sandbox_script_path")
+        self.create_sandbox_script_path = self.kwargs.get("create_sandbox_script_path")
 
-        file_data = my.kwargs.get("file_data")
+        file_data = self.kwargs.get("file_data")
 
-        my.options = my.kwargs.get('options')
-        if isinstance(my.options, basestring):
-            my.options = eval(my.options)
+        self.options = self.kwargs.get('options')
+        if isinstance(self.options, basestring):
+            self.options = eval(self.options)
 
 
         inner = DivWdg()
@@ -3567,22 +3566,22 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         hilight_color =  table.get_color("background", -20)
 
         
-        show_links = my.kwargs.get("show_links")
+        show_links = self.kwargs.get("show_links")
         if show_links not in ['false', False]:
-            action_wdg = my.get_button_action_wdg()
+            action_wdg = self.get_button_action_wdg()
             action_wdg.add_style("float: right")
             td.add(action_wdg)
 
 
-            links_wdg = my.get_links_wdg()
+            links_wdg = self.get_links_wdg()
             td.add(links_wdg)
             hr = HtmlElement.hr()
             hr.add_style('width: 100%')
             td.add(hr)
 
 
-        subcontext_options = my.kwargs.get("subcontext_options")
-        context_options = my.kwargs.get("context_options")
+        subcontext_options = self.kwargs.get("subcontext_options")
+        context_options = self.kwargs.get("context_options")
         if subcontext_options == '[]':
             subcontext_options = []
 
@@ -3590,9 +3589,9 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         #if not subcontext_options:
         #    subcontext_options = ["(auto)"]
                 
-        file_info = my.kwargs.get("file_info")
+        file_info = self.kwargs.get("file_info")
 
-        folder_state = my.options.get("folder_state")
+        folder_state = self.options.get("folder_state")
 
 
         dir_div = DivWdg()
@@ -3616,7 +3615,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             depth = 2 
             open_depth = 0 
 
-            folder_mode = my.kwargs.get("folder_mode")
+            folder_mode = self.kwargs.get("folder_mode")
             if folder_mode == "thumb":
                 # TEST TEST TEST
                 list_dir_div = DivWdg()
@@ -3632,9 +3631,9 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             else:
                 from tactic.ui.checkin import CheckinDirListWdg
                 list_dir_wdg = CheckinDirListWdg(
-                        base_dir=my.base_dir,
+                        base_dir=self.base_dir,
                         location="client",
-                        show_base_dir=my.show_base_dir,
+                        show_base_dir=self.show_base_dir,
                         all_open=False,
                         paths=paths,
                         search_key=search_key,
@@ -3644,9 +3643,9 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
                         depth=depth,
                         open_depth=open_depth,
                         sizes=sizes,
-                        preselected=my.preselected,
+                        preselected=self.preselected,
                         show_selection=True,
-                        process=my.process,
+                        process=self.process,
                         folder_state=folder_state
                 )
                 dir_div.add(list_dir_wdg)
@@ -3666,10 +3665,10 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
             # look at the list of available namings
-            #search_type = my.sobject.get_base_search_type()
+            #search_type = self.sobject.get_base_search_type()
             #search = Search("config/naming")
             #search.add_filter("search_type",search_type)
-            #search.add_filter("process", my.process)
+            #search.add_filter("process", self.process)
             #num_base_dirs = search.get_count()
 
             client_os = Environment.get_env_object().get_client_os()
@@ -3680,17 +3679,17 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
             alias_dict = Config.get_dict_value("checkin", "%s_sandbox_dir" % prefix)
             if len(alias_dict.keys()) > 1:
-                search_key = my.sobject.get_search_key()
+                search_key = self.sobject.get_search_key()
                 from tactic.ui.checkin import SandboxSelectWdg
                 sandbox_wdg = SandboxSelectWdg(
-                        search_key=my.search_key,
-                        process=my.process
+                        search_key=self.search_key,
+                        process=self.process
                 )
 
             else:
                 sandbox_wdg = CheckinSandboxNotExistsWdg(
-                        process=my.process,
-                        sandbox_dir=my.base_dir
+                        process=self.process,
+                        sandbox_dir=self.base_dir
                 )
 
             dir_div.add(sandbox_wdg)
@@ -3703,7 +3702,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
  
 
 
-    def get_links_wdg(my):
+    def get_links_wdg(self):
         web = WebContainer.get_web() 
         client_os = web.get_client_os()
 
@@ -3734,14 +3733,14 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         button.set_show_arrow_menu(True)
         button_row.add(button)
 
-        menus = [my.get_folder_menu()]
+        menus = [self.get_folder_menu()]
         SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'FOLDER_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "FOLDER_BUTTON_CTX", True )
 
 
         behavior = {
         'type': 'click_up',
-        'base_dir': my.base_dir,
+        'base_dir': self.base_dir,
         'cbjs_action': '''
             var current_dir = bvr.base_dir;
             var is_sandbox = false;
@@ -3765,7 +3764,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
         behavior = {
         'type': 'click_up',
-        'base_dir': my.base_dir,
+        'base_dir': self.base_dir,
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_checkin_top");
             spt.checkin.set_top(top);
@@ -3872,7 +3871,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         button.set_show_arrow_menu(True)
         behavior = {
         'type': 'click_up',
-        'base_dir': my.base_dir,
+        'base_dir': self.base_dir,
         'cbjs_action': '''
             var applet = spt.Applet.get();
             applet.reset_current_dir();
@@ -3940,7 +3939,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
         behavior = {
         'type': 'click_up',
-        'base_dir': my.base_dir,
+        'base_dir': self.base_dir,
         'cbjs_action': '''
             var current_dir = bvr.base_dir;
             var is_sandbox = false;
@@ -3958,7 +3957,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-    def get_folder_menu(my):
+    def get_folder_menu(self):
 
         web = WebContainer.get_web() 
         client_os = web.get_client_os()
@@ -3973,7 +3972,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             menu.add(menu_item)
             behavior = {
             'type': 'click_up',
-            'base_dir': my.base_dir,
+            'base_dir': self.base_dir,
             'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var top = activator.getParent(".spt_checkin_top");
@@ -3990,7 +3989,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             menu.add(menu_item)
             behavior = {
             'type': 'click_up',
-            'base_dir': my.base_dir,
+            'base_dir': self.base_dir,
             'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var top = activator.getParent(".spt_checkin_top");
@@ -4008,7 +4007,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             menu.add(menu_item)
             behavior = {
             'type': 'click_up',
-            'base_dir': my.base_dir,
+            'base_dir': self.base_dir,
             'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
                 var top = activator.getParent(".spt_checkin_top");
@@ -4108,7 +4107,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
         behavior = {
         'type': 'click_up',
-        'base_dir': my.base_dir,
+        'base_dir': self.base_dir,
         'cbjs_action': '''
             var applet = spt.Applet.get();
             applet.reset_current_dir();
@@ -4133,8 +4132,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
         behavior = {
         'type': 'click_up',
-        'search_key': my.search_key,
-        'process': my.process,
+        'search_key': self.search_key,
+        'process': self.process,
         'cbjs_action': '''
 
         var class_name = 'tactic.ui.checkin.SandboxSelectWdg';
@@ -4161,9 +4160,9 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-    def get_button_action_wdg(my):
+    def get_button_action_wdg(self):
 
-        my.base_dir = my.kwargs.get("base_dir")
+        self.base_dir = self.kwargs.get("base_dir")
 
 
         div = DivWdg()
@@ -4183,15 +4182,15 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         transfer_mode = None
 
         # get the latest snapshot code
-        #snapshot = Snapshot.get_latest(my.sobject.get_search_type(), my.sobject.get_id(), my.context)
+        #snapshot = Snapshot.get_latest(self.sobject.get_search_type(), self.sobject.get_id(), self.context)
         #if snapshot:
         #    snapshot_code = snapshot.get_code()
         #else:
         #    snapshot_code = '__NONE__'
 
         search = Search("sthpw/snapshot")
-        search.add_sobject_filter(my.sobject)
-        search.add_filter("process", my.process)
+        search.add_sobject_filter(self.sobject)
+        search.add_filter("process", self.process)
         search.add_filter("is_latest", True)
         snapshots = search.get_sobjects()
         snapshot_codes = [x.get_code() for x in snapshots]
@@ -4210,13 +4209,13 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
 
-        cbjs_action = my.get_checkout_cbjs_action(my.process)
+        cbjs_action = self.get_checkout_cbjs_action(self.process)
 
         behavior = {
             'type': 'click_up',
             # Don't specify the sandbox dir at the moment because it will
             # remove the relative sub directories
-            #'sandbox_dir': my.base_dir,
+            #'sandbox_dir': self.base_dir,
             'snapshot_codes': snapshot_codes,
             'transfer_mode': transfer_mode,
             'file_types': ['main'],
@@ -4243,7 +4242,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         'type': 'click_up',
         # Don't specify the sanbox dir at the moment because it will
         # remove the relative sub directories
-        #'sandbox_dir': my.base_dir,
+        #'sandbox_dir': self.base_dir,
         'snapshot_codes': snapshot_codes,
         'transfer_mode': transfer_mode,
         'cbjs_action': cbjs_action,
@@ -4259,7 +4258,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         'type': 'click_up',
         # Don't specify the sanbox dir at the moment because it will
         # remove the relative sub directories
-        #'sandbox_dir': my.base_dir,
+        #'sandbox_dir': self.base_dir,
         'snapshot_codes': snapshot_codes,
         'transfer_mode': transfer_mode,
         'cbjs_action': cbjs_action,
@@ -4275,7 +4274,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         'type': 'click_up',
         # Don't specify the sanbox dir at the moment because it will
         # remove the relative sub directories
-        #'sandbox_dir': my.base_dir,
+        #'sandbox_dir': self.base_dir,
         'snapshot_codes': snapshot_codes,
         'transfer_mode': transfer_mode,
         'cbjs_action': cbjs_action,
@@ -4288,7 +4287,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click_up',
-            'sandbox_dir': my.base_dir,
+            'sandbox_dir': self.base_dir,
             'cbjs_action': r'''
             var server = TacticServerStub.get();
             var activator = spt.smenu.get_activator(bvr);
@@ -4331,7 +4330,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         'type': 'click_up',
         # Don't specify the sanbox dir at the moment because it will
         # remove the relative sub directories
-        #'sandbox_dir': my.base_dir,
+        #'sandbox_dir': self.base_dir,
         'snapshot_codes': snapshot_codes,
         'transfer_mode': transfer_mode,
         'cbjs_action': cbjs_action,
@@ -4346,8 +4345,8 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'search_key': my.search_key,
-        'process': my.process,
+        'search_key': self.search_key,
+        'process': self.process,
         'cbjs_action': '''
         var class_name = 'tactic.ui.checkin.SObjectDirListWdg'
         var kwargs = {
@@ -4391,7 +4390,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
         'type': 'click_up',
         'subdir': subdir,
-        'sandbox_dir': my.base_dir,
+        'sandbox_dir': self.base_dir,
         'cbjs_action': '''
         var applet = spt.Applet.get();
         applet.makedirs(bvr.sandbox_dir + "/" + bvr.subdir);
@@ -4411,12 +4410,12 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Explore Sandbox (%s)" % my.base_dir, icon=IconWdg.FOLDER_GO)
+        button = ButtonNewWdg(title="Explore Sandbox (%s)" % self.base_dir, icon=IconWdg.FOLDER_GO)
         button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.base_dir,
+        'sandbox_dir': self.base_dir,
         'cbjs_action': '''
         var applet = spt.Applet.get();
         if (! applet.exists(bvr.sandbox_dir)) {
@@ -4433,7 +4432,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
         button_row.add(button)
 
-        gear_menu = my.get_gear_menu()
+        gear_menu = self.get_gear_menu()
         SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': gear_menu } )
         SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
 
@@ -4446,7 +4445,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-    def get_gear_menu(my):
+    def get_gear_menu(self):
         from tactic.ui.container import DialogWdg, Menu, MenuItem
         menu = Menu(width=200)
 
@@ -4454,19 +4453,19 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
         menu.add(menu_item)
 
         security = Environment.get_security()
-        if my.pipeline and security.check_access("builtin", "view_site_admin", "allow"):
-            if my.pipeline:
-                pipe_proj_code = my.pipeline.get_value('project_code')
+        if self.pipeline and security.check_access("builtin", "view_site_admin", "allow"):
+            if self.pipeline:
+                pipe_proj_code = self.pipeline.get_value('project_code')
                 project_code = Project.get_project_code()
                 menu_item = MenuItem(type='action', label='Edit Process')
                 menu.add(menu_item)
 
                 menu_item.add_behavior( {
                     'type': 'click_up',
-                    'pipeline_code' : my.pipeline.get_code(),
+                    'pipeline_code' : self.pipeline.get_code(),
                     'project_code': project_code,
                     'pipeline_project_code': pipe_proj_code,
-                    'process': my.process,
+                    'process': self.process,
                     'cbjs_action': '''
                     var server = TacticServerStub.get();
                     if (bvr.project_code != bvr.pipeline_project_code) {
@@ -4500,7 +4499,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'type': 'click_up',
-                'process': my.process,
+                'process': self.process,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.panel.ViewPanelWdg';
                 var kwargs = {
@@ -4645,19 +4644,19 @@ __all__.append("GearMenuButtonWdg")
 
 class SandboxButtonWdg(ButtonNewWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        my.base_dir = my.kwargs.get("base_dir")
-        my.process = my.kwargs.get("process")
+        self.base_dir = self.kwargs.get("base_dir")
+        self.process = self.kwargs.get("process")
 
-        assert my.base_dir
-        assert my.process
+        assert self.base_dir
+        assert self.process
 
-        button = ButtonNewWdg(title="Set to Sandbox Folder for %s" % my.process, icon=IconWdg.SANDBOX)
+        button = ButtonNewWdg(title="Set to Sandbox Folder for %s" % self.process, icon=IconWdg.SANDBOX)
         button.add_style("float: left")
         behavior = {
         'type': 'click_up',
-        'base_dir': my.base_dir,
+        'base_dir': self.base_dir,
         'cbjs_action': '''
             var applet = spt.Applet.get();
             applet.reset_current_dir();
@@ -4675,26 +4674,26 @@ class SandboxButtonWdg(ButtonNewWdg):
 
 class CheckoutButtonWdg(ButtonNewWdg):       
 
-    def get_display(my):
+    def get_display(self):
 
-        my.sobject = my.kwargs.get("sobject")
-        my.search_key = my.sobject.get_search_key()
-        my.process = my.kwargs.get("process")
-        my.base_dir = my.kwargs.get("base_dir")
+        self.sobject = self.kwargs.get("sobject")
+        self.search_key = self.sobject.get_search_key()
+        self.process = self.kwargs.get("process")
+        self.base_dir = self.kwargs.get("base_dir")
 
         # Don't set the transfer mode
         transfer_mode = None
 
         # get the latest snapshot code
-        #snapshot = Snapshot.get_latest(my.sobject.get_search_type(), my.sobject.get_id(), my.context)
+        #snapshot = Snapshot.get_latest(self.sobject.get_search_type(), self.sobject.get_id(), self.context)
         #if snapshot:
         #    snapshot_code = snapshot.get_code()
         #else:
         #    snapshot_code = '__NONE__'
 
         search = Search("sthpw/snapshot")
-        search.add_sobject_filter(my.sobject)
-        search.add_filter("process", my.process)
+        search.add_sobject_filter(self.sobject)
+        search.add_filter("process", self.process)
         search.add_filter("is_latest", True)
         snapshots = search.get_sobjects()
         snapshot_codes = [x.get_code() for x in snapshots]
@@ -4752,7 +4751,7 @@ class CheckoutButtonWdg(ButtonNewWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.base_dir,
+        'sandbox_dir': self.base_dir,
         'snapshot_codes': snapshot_codes,
         'transfer_mode': transfer_mode,
         'cbjs_action': cbjs_action,
@@ -4767,7 +4766,7 @@ class CheckoutButtonWdg(ButtonNewWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.base_dir,
+        'sandbox_dir': self.base_dir,
         'snapshot_codes': snapshot_codes,
         'transfer_mode': transfer_mode,
         'cbjs_action': cbjs_action,
@@ -4779,7 +4778,7 @@ class CheckoutButtonWdg(ButtonNewWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.base_dir,
+        'sandbox_dir': self.base_dir,
         'snapshot_codes': snapshot_codes,
         'transfer_mode': transfer_mode,
         'cbjs_action': cbjs_action,
@@ -4791,8 +4790,8 @@ class CheckoutButtonWdg(ButtonNewWdg):
         menu.add(menu_item)
         menu_item.add_behavior( {
         'type': 'click_up',
-        'search_key': my.search_key,
-        'process': my.process,
+        'search_key': self.search_key,
+        'process': self.process,
         'cbjs_action': '''
         var class_name = 'tactic.ui.checkin.SObjectDirListWdg'
         var kwargs = {
@@ -4823,9 +4822,9 @@ class CheckoutButtonWdg(ButtonNewWdg):
 
 class FileActionButtonWdg(ButtonNewWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        my.base_dir = my.kwargs.get("base_dir")
+        self.base_dir = self.kwargs.get("base_dir")
 
         button = ButtonNewWdg(title="File Actions", icon=IconWdg.FOLDER_EDIT, show_arrow=True)
 
@@ -4841,7 +4840,7 @@ class FileActionButtonWdg(ButtonNewWdg):
         menu_item.add_behavior( {
         'type': 'click_up',
         'subdir': subdir,
-        'sandbox_dir': my.base_dir,
+        'sandbox_dir': self.base_dir,
         'cbjs_action': '''
         var applet = spt.Applet.get();
         applet.makedirs(bvr.sandbox_dir + "/" + bvr.subdir);
@@ -4864,14 +4863,14 @@ class FileActionButtonWdg(ButtonNewWdg):
 
 class ExploreButtonWdg(ButtonNewWdg):
 
-    def get_display(my):
-        my.base_dir = my.kwargs.get("base_dir")
+    def get_display(self):
+        self.base_dir = self.kwargs.get("base_dir")
 
-        button = ButtonNewWdg(title="Explore Sandbox (%s)" % my.base_dir, icon=IconWdg.FOLDER_GO)
+        button = ButtonNewWdg(title="Explore Sandbox (%s)" % self.base_dir, icon=IconWdg.FOLDER_GO)
 
         button.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.base_dir,
+        'sandbox_dir': self.base_dir,
         'cbjs_action': '''
         var applet = spt.Applet.get();
         if (! applet.exists(bvr.sandbox_dir)) {
@@ -4888,16 +4887,16 @@ class ExploreButtonWdg(ButtonNewWdg):
 
 class GearMenuButtonWdg(ButtonNewWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        my.pipeline_code = my.kwargs.get("pipeline_code")
-        my.pipeline = Pipeline.get_by_code(my.pipeline_code)
-        my.process = my.kwargs.get("process")
+        self.pipeline_code = self.kwargs.get("pipeline_code")
+        self.pipeline = Pipeline.get_by_code(self.pipeline_code)
+        self.process = self.kwargs.get("process")
 
 
         button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
 
-        gear_menu = my.get_gear_menu()
+        gear_menu = self.get_gear_menu()
         SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': gear_menu } )
         SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
 
@@ -4905,7 +4904,7 @@ class GearMenuButtonWdg(ButtonNewWdg):
         return button
 
 
-    def get_gear_menu(my):
+    def get_gear_menu(self):
         from tactic.ui.container import DialogWdg, Menu, MenuItem
         menu = Menu(width=200)
 
@@ -4913,14 +4912,14 @@ class GearMenuButtonWdg(ButtonNewWdg):
         menu.add(menu_item)
 
         security = Environment.get_security()
-        if my.pipeline and security.check_access("builtin", "view_site_admin", "allow"):
-            if my.pipeline:
+        if self.pipeline and security.check_access("builtin", "view_site_admin", "allow"):
+            if self.pipeline:
                 menu_item = MenuItem(type='action', label='Edit Process')
                 menu.add(menu_item)
                 menu_item.add_behavior( {
                     'type': 'click_up',
-                    'pipeline_code' : my.pipeline.get_code(),
-                    'process': my.process,
+                    'pipeline_code' : self.pipeline.get_code(),
+                    'process': self.process,
                     'cbjs_action': '''
                     var server = TacticServerStub.get();
                     var expr = "@SOBJECT(config/process['process','"+bvr.process+"']['pipeline_code', '" + bvr.pipeline_code +"'])";
@@ -4946,7 +4945,7 @@ class GearMenuButtonWdg(ButtonNewWdg):
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'type': 'click_up',
-                'process': my.process,
+                'process': self.process,
                 'cbjs_action': '''
                 var class_name = 'tactic.ui.panel.ViewPanelWdg';
                 var kwargs = {
@@ -5000,12 +4999,12 @@ class GearMenuButtonWdg(ButtonNewWdg):
 
 class CheckinSandboxNotExistsWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
-        my.process = my.kwargs.get("process")
-        my.base_dir = my.kwargs.get("sandbox_dir")
-        my.create_sandbox_script_path = my.kwargs.get("create_sandbox_script_path")
+        self.process = self.kwargs.get("process")
+        self.base_dir = self.kwargs.get("sandbox_dir")
+        self.create_sandbox_script_path = self.kwargs.get("create_sandbox_script_path")
 
         msg_div = DivWdg()
         top.add(msg_div)
@@ -5058,7 +5057,7 @@ class CheckinSandboxNotExistsWdg(BaseRefreshWdg):
 
         msg_div = DivWdg()
         td.add(msg_div)
-        msg_div.add('"%s"<br/><br/>' % my.base_dir)
+        msg_div.add('"%s"<br/><br/>' % self.base_dir)
         msg_div.add('The sandbox folder is a work folder allocated for this process.  It does not yet exist.  If you wish to work in the sandbox folder, press the "Create" button.')
         msg_div.add_styles("margin-top: 8px;margin-left: 16px")
 
@@ -5073,8 +5072,8 @@ class CheckinSandboxNotExistsWdg(BaseRefreshWdg):
 
         checkin.add_behavior( {
         'type': 'click_up',
-        'sandbox_dir': my.base_dir,
-        'create_sandbox_script': my.create_sandbox_script_path,
+        'sandbox_dir': self.base_dir,
+        'create_sandbox_script': self.create_sandbox_script_path,
         'cbjs_action': '''
 
         if (bvr.create_sandbox_script){
@@ -5112,23 +5111,23 @@ class CheckinHistoryWdg(BaseRefreshWdg):
         }
 
 
-    def get_display(my):
-        parent_key = my.kwargs.get("search_key")
+    def get_display(self):
+        parent_key = self.kwargs.get("search_key")
         sobject = Search.get_by_search_key(parent_key)
-        sandbox_dir = my.kwargs.get('sandbox_dir')
+        sandbox_dir = self.kwargs.get('sandbox_dir')
         web = WebContainer.get_web()
         context = web.get_form_value("context")
         subcontext = web.get_form_value('subcontext')
         if not context:
-            context = my.kwargs.get('context')
+            context = self.kwargs.get('context')
         #elif subcontext:
         #    context = '%s/%s'%(context, subcontext)
 
 
-        state = my.get_state()
+        state = self.get_state()
         state = {}
         state['context'] = context
-        my.set_state(state)
+        self.set_state(state)
 
 
         from tactic_client_lib import TacticServerStub
@@ -5139,7 +5138,7 @@ class CheckinHistoryWdg(BaseRefreshWdg):
         # check-in history
 
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_class("spt_checkin_history")
         top.add_style("padding: 10px")
 
@@ -5179,7 +5178,7 @@ class CheckinHistoryWdg(BaseRefreshWdg):
         hist_div.add(hist_table)
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return content
         else:
             return top
@@ -5196,8 +5195,8 @@ __all__.append('CustomCheckinInfoPanelWdg')
 class CustomCheckinInfoPanelWdg(CheckinInfoPanelWdg):
     '''stores the 3 components for CheckinWdg. We are customizing the publish options'''
 
-    def get_publish_options_wdg(my):
-        widget = super(CustomCheckinInfoPanelWdg, my).get_publish_options_wdg()
+    def get_publish_options_wdg(self):
+        widget = super(CustomCheckinInfoPanelWdg, self).get_publish_options_wdg()
         render_cb = CheckboxWdg('checkin_render',label='Check-in Render')
         render_cb.add_class('custom_checkin_render')
         widget.add(HtmlElement.br())
@@ -5215,22 +5214,22 @@ class CustomCheckinInfoPanelWdg(CheckinInfoPanelWdg):
 
 class CheckinGearMenuWdg(GearMenuWdg):
 
-    def __init__(my, client_lib_dir, sandbox_dir):
+    def __init__(self, client_lib_dir, sandbox_dir):
 
-        my.client_lib_dir = client_lib_dir
-        my.sandbox_dir = sandbox_dir
+        self.client_lib_dir = client_lib_dir
+        self.sandbox_dir = sandbox_dir
 
-        super(CheckinGearMenuWdg,my).__init__()
-
-
-    def init(my):
-
-        super(CheckinGearMenuWdg,my).init()
-        menus = [my.get_main_menu(), my.get_more_menu()]
-        my.menus = [x.get_data() for x in menus]
+        super(CheckinGearMenuWdg,self).__init__()
 
 
-    def get_main_menu(my):
+    def init(self):
+
+        super(CheckinGearMenuWdg,self).init()
+        menus = [self.get_main_menu(), self.get_more_menu()]
+        self.menus = [x.get_data() for x in menus]
+
+
+    def get_main_menu(self):
         menu = Menu(width=210)
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
@@ -5304,7 +5303,7 @@ class CheckinGearMenuWdg(GearMenuWdg):
         # sandbox dir
         menu_item = MenuItem(type='action', label='Explore Sandbox')
         menu_item.set_behavior( {
-            'sandbox_dir': my.sandbox_dir,
+            'sandbox_dir': self.sandbox_dir,
             'cbjs_action': '''
             var applet = spt.Applet.get();
             applet.makedirs(bvr.sandbox_dir);
@@ -5316,7 +5315,7 @@ class CheckinGearMenuWdg(GearMenuWdg):
         # client lib dir
         menu_item = MenuItem(type='action', label='Explore Repository')
         menu_item.set_behavior( {
-            'client_lib_dir': my.client_lib_dir,
+            'client_lib_dir': self.client_lib_dir,
             'cbjs_action': '''
             var applet = spt.Applet.get();
             applet.open_explorer(bvr.client_lib_dir);
@@ -5331,7 +5330,7 @@ class CheckinGearMenuWdg(GearMenuWdg):
         return menu
 
 
-    def get_more_menu(my):
+    def get_more_menu(self):
         menu = Menu(menu_tag_suffix='MORE', width=160)
 
         menu_item = MenuItem(type='title', label='... and more')
@@ -5345,7 +5344,7 @@ class CheckinGearMenuWdg(GearMenuWdg):
 
 class CheckinQueueData(object):
 
-    def __init__(my):
+    def __init__(self):
 
         # should the stored checkin be a json data structure? Yes
         queue = []
@@ -5398,15 +5397,15 @@ class CheckinQueueData(object):
         }
         queue.append(checkin)
 
-        my.queue = queue 
+        self.queue = queue 
 
 
 
 
 class CheckinQueueWdg(BaseRefreshWdg):
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         link_wdg = DivWdg()
         link_wdg.add("<a href='http://192.168.153.129/tactic/cg/#//checkin' target='_blank'>Open in New Tab</a>")
@@ -5489,7 +5488,7 @@ class CheckinQueueWdg(BaseRefreshWdg):
 
         queue_wdg = DivWdg()
         for job in queue:
-            job_wdg = my.get_job_wdg(job)
+            job_wdg = self.get_job_wdg(job)
             queue_wdg.add(job_wdg)
         inner.add(queue_wdg)
 
@@ -5497,7 +5496,7 @@ class CheckinQueueWdg(BaseRefreshWdg):
         return top
 
 
-    def get_job_wdg(my, job):
+    def get_job_wdg(self, job):
         job_wdg = DivWdg()
 
         search_key = job.get("search_key")
@@ -5523,79 +5522,79 @@ class CheckinQueueWdg(BaseRefreshWdg):
 
 class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
 
-        my.parent_key = my.kwargs.get("search_key")
-        if not my.parent_key:
-            my.parent_key = WebContainer.get_web().get_form_value('search_key')
+        self.parent_key = self.kwargs.get("search_key")
+        if not self.parent_key:
+            self.parent_key = WebContainer.get_web().get_form_value('search_key')
 
-        my.parent = Search.get_by_search_key(my.parent_key)
-        my.search_type = my.parent.get_search_type()
-        my.base_search_type = Project.extract_base_search_type(my.search_type)
+        self.parent = Search.get_by_search_key(self.parent_key)
+        self.search_type = self.parent.get_search_type()
+        self.base_search_type = Project.extract_base_search_type(self.search_type)
 
-        my.search_id = my.parent.get_id()
-        my.search_code = my.parent.get_code()
+        self.search_id = self.parent.get_id()
+        self.search_code = self.parent.get_code()
 
-        my.context = my.kwargs.get("history_context")
-        state = my.get_state()
+        self.context = self.kwargs.get("history_context")
+        state = self.get_state()
         if not state:
             state = {}
-        state['context'] = my.context
-        my.set_state(state)
+        state['context'] = self.context
+        self.set_state(state)
 
 
-    def _get_value(my, sobject, snapshot):
-        loader = AssetLoaderWdg(parent_key=my.parent_key)
+    def _get_value(self, sobject, snapshot):
+        loader = AssetLoaderWdg(parent_key=self.parent_key)
         value = loader.get_input_value(sobject, snapshot)
         return value
 
-    def get_default_versions_filter(my):
+    def get_default_versions_filter(self):
         return "latest"
 
 
-    def get_snapshot_contexts(my, search_type, search_code):
+    def get_snapshot_contexts(self, search_type, search_code):
         '''get the contexts for the snapshots'''
         return Snapshot.get_contexts(search_type, search_code)
 
 
-    def get_display(my):
+    def get_display(self):
         
         web = WebContainer.get_web()
         args = web.get_form_args()
 
-        if not my.search_type:
-            my.search_type = args.get('search_type')
-        if not my.search_id:
-            my.search_id = args.get('search_id')
-        if not my.search_code:
-            my.search_code = args.get('search_code')
+        if not self.search_type:
+            self.search_type = args.get('search_type')
+        if not self.search_id:
+            self.search_id = args.get('search_id')
+        if not self.search_code:
+            self.search_code = args.get('search_code')
         # get from cgi
-        if not my.search_type:
-            my.search_type = web.get_form_value("search_type")
-            my.search_id = web.get_form_value("search_id")
-            my.search_code = web.get_form_value("search_code")
+        if not self.search_type:
+            self.search_type = web.get_form_value("search_type")
+            self.search_id = web.get_form_value("search_id")
+            self.search_code = web.get_form_value("search_code")
 
 
 
         context_filter = web.get_form_value("history_context")
         versions_filter = web.get_form_value("versions")
         if not context_filter:
-            context_filter = my.context
+            context_filter = self.context
         else:
-            my.context = context_filter
-        my.is_refresh = my.kwargs.get('is_refresh') == 'true'
-        if my.is_refresh:
+            self.context = context_filter
+        self.is_refresh = self.kwargs.get('is_refresh') == 'true'
+        if self.is_refresh:
             div = Widget()
         else:
-            div = my.top
+            div = self.top
             div.add_class("spt_checkin_history_top")
-            my.set_as_panel(my.top)
+            self.set_as_panel(self.top)
 
 
-        div.add( my.get_filter_wdg(my.search_type, my.search_code) )
+        div.add( self.get_filter_wdg(self.search_type, self.search_code) )
 
         # get the sobject
-        sobject = Search.get_by_id(my.search_type, my.search_id)
+        sobject = Search.get_by_id(self.search_type, self.search_id)
 
         # get the snapshots
         search = Search(Snapshot.SEARCH_TYPE)
@@ -5606,15 +5605,15 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         if context_filter:
             # should listen to the user-chosen context
-            my.context = context_filter
+            self.context = context_filter
             search.add_op("begin")
             search.add_filter("context", context_filter)
             search.add_filter("context", "%s/%%" % context_filter, op='like')
             search.add_op("or")
             
         if not versions_filter:
-            versions_filter = my.get_default_versions_filter()
-            my.select.set_value(versions_filter)
+            versions_filter = self.get_default_versions_filter()
+            self.select.set_value(versions_filter)
 
         if versions_filter == 'current':
             search.add_filter("is_current", True)
@@ -5635,12 +5634,12 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         snapshots = search.do_search()
         
         div.add(HtmlElement.br()) 
-        div.add(my.get_table(sobject,snapshots) )
+        div.add(self.get_table(sobject,snapshots) )
 
         return div
 
 
-    def get_filter_wdg(my, search_type, search_code):
+    def get_filter_wdg(self, search_type, search_code):
         filter_wdg = DivWdg()
 
         color = filter_wdg.get_color("table_border", default="border")
@@ -5682,16 +5681,16 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
         # find all of the contexts that have been checked in
         
-        contexts = my.get_snapshot_contexts(search_type, search_code)
+        contexts = self.get_snapshot_contexts(search_type, search_code)
 
 
         # set the context if one has been passed in
-        if my.context:
+        if self.context:
 
-            if re.search('/', my.context):
-                new_context = my.context.split("/")[0]
+            if re.search('/', self.context):
+                new_context = self.context.split("/")[0]
             else:
-                new_context = my.context
+                new_context = self.context
             select.set_value(new_context)
             if new_context not in contexts:
                 contexts.append(new_context)
@@ -5711,11 +5710,11 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
         filter_wdg.add(span)
 
         # add a versions selector
-        my.select = SelectWdg("versions")
-        my.select.add_style("width: 125px")
-        my.select.add_style("display: inline")
-        my.select.add_empty_option("-- Select --")
-        my.select.add_behavior( {
+        self.select = SelectWdg("versions")
+        self.select.add_style("width: 125px")
+        self.select.add_style("display: inline")
+        self.select.add_empty_option("-- Select --")
+        self.select.add_behavior( {
             'type': 'change',
             'cbjs_action': '''
             spt.app_busy.show("Refreshing Check-in History")
@@ -5728,19 +5727,19 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
 
 
-        my.select.set_option("values", "latest|current|today|last 10|all")
-        my.select.set_persist_on_submit()
+        self.select.set_option("values", "latest|current|today|last 10|all")
+        self.select.set_persist_on_submit()
         span = DivWdg()
         span.add("Versions: ")
         span.add_style("float: left")
-        span.add(my.select)
+        span.add(self.select)
         span.add("&nbsp;"*5)
         filter_wdg.add(span)
 
         return filter_wdg
 
 
-    def get_table(my, sobject, snapshots):
+    def get_table(self, sobject, snapshots):
         parent_key = SearchKey.get_by_sobject(sobject)
 
         layout = 'default'
@@ -5759,7 +5758,7 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
             'parent_key': parent_key,
             'mode': 'simple',
             '__hidden__': True,
-            'state': my.get_state(),
+            'state': self.get_state(),
         }
  
         
@@ -5778,11 +5777,11 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
 __all__.append("CheckinAddDependencyCmd")
 class CheckinAddDependencyCmd(Command):
-    def execute(my):
+    def execute(self):
 
-        snapshot_key = my.kwargs.get("snapshot_key")
-        search_keys = my.kwargs.get("search_keys")
-        processes = my.kwargs.get("processes")
+        snapshot_key = self.kwargs.get("snapshot_key")
+        search_keys = self.kwargs.get("search_keys")
+        processes = self.kwargs.get("processes")
 
         snapshot = Search.get_by_search_key(snapshot_key)
 
@@ -5804,7 +5803,7 @@ class CheckinAddDependencyCmd(Command):
 
             ref_snapshots = prev_snapshot.get_all_ref_snapshots()
             for ref_snapshot in ref_snapshots:
-                my.add_dependency_by_code(builder, ref_snapshot)
+                self.add_dependency_by_code(builder, ref_snapshot)
 
         else:
             for i, search_key in enumerate(search_keys):
@@ -5812,14 +5811,14 @@ class CheckinAddDependencyCmd(Command):
                 sobject = Search.get_by_search_key(search_key)
                 ref_snapshot = Snapshot.get_latest_by_sobject(sobject, process=process)
                 if ref_snapshot:
-                    my.add_dependency_by_code(builder, ref_snapshot)
+                    self.add_dependency_by_code(builder, ref_snapshot)
 
 
         snapshot.set_value("snapshot", builder.to_string() )
         snapshot.commit()
 
 
-    def add_dependency_by_code(my, builder, from_snapshot, type='ref', tag='main'):
+    def add_dependency_by_code(self, builder, from_snapshot, type='ref', tag='main'):
         from_snapshot_code = from_snapshot.get("code")
 
         builder.add_ref_by_snapshot_code(from_snapshot_code, type=type, tag=tag)

@@ -28,9 +28,9 @@ import os
 
 class SyncImportWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
-        my.set_as_panel(top)
+    def get_display(self):
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_sync_import_top")
         top.add_style("width: 500px")
         top.add_color("background", "background")
@@ -40,16 +40,16 @@ class SyncImportWdg(BaseRefreshWdg):
         inner = DivWdg()
         top.add(inner)
 
-        inner.add(my.get_base_dir_wdg())
+        inner.add(self.get_base_dir_wdg())
 
-        is_refresh = my.kwargs.get("is_refresh") == 'true'
+        is_refresh = self.kwargs.get("is_refresh") == 'true'
 
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
         if base_dir:
-            data = my.kwargs.get("data")
+            data = self.kwargs.get("data")
             if data:
-                my.data = jsonloads(data)
+                self.data = jsonloads(data)
             else:
                 if not os.path.exists(base_dir):
                     msg_div = DivWdg()
@@ -78,12 +78,12 @@ class SyncImportWdg(BaseRefreshWdg):
                 manifest_path = "%s/tactic.txt" % base_dir
                 f = open(manifest_path)
                 data = f.read()
-                my.data = jsonloads(data)
+                self.data = jsonloads(data)
 
-                inner.add( my.get_import_wdg() )
+                inner.add( self.get_import_wdg() )
 
         else:
-            my.data = {}
+            self.data = {}
 
             msg_div = DivWdg()
             inner.add(msg_div)
@@ -98,13 +98,13 @@ class SyncImportWdg(BaseRefreshWdg):
             msg_div.add_color("color", "color3")
 
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
 
-    def get_base_dir_wdg(my):
+    def get_base_dir_wdg(self):
 
         div = DivWdg()
 
@@ -117,7 +117,7 @@ class SyncImportWdg(BaseRefreshWdg):
         div.add("<br/>")
 
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
 
         is_local = False
 
@@ -198,10 +198,10 @@ class SyncImportWdg(BaseRefreshWdg):
         return div
 
 
-    def get_import_wdg(my):
+    def get_import_wdg(self):
         div = DivWdg()
 
-        if my.data:
+        if self.data:
 
             div.add("<br/>"*2)
             div.add("The following TACTIC share was found: ")
@@ -211,8 +211,8 @@ class SyncImportWdg(BaseRefreshWdg):
             data_input.add_style("display: none")
             div.add(data_input)
 
-            #print "xxxx: ", my.data
-            data_str = jsondumps(my.data)
+            #print "xxxx: ", self.data
+            data_str = jsondumps(self.data)
             #data_str = data_str.replace('"', "'")
             print "data: ", data_str
             data_input.set_value(data_str)
@@ -226,7 +226,7 @@ class SyncImportWdg(BaseRefreshWdg):
             table.add_style("margin-left: 20px")
             table.add_style("margin-right: 20px")
 
-            for name, value in my.data.items():
+            for name, value in self.data.items():
                 name = Common.get_display_title(name)
                 table.add_row()
                 table.add_cell(name)
@@ -236,13 +236,13 @@ class SyncImportWdg(BaseRefreshWdg):
 
             div.add("<br/>"*2)
 
-            div.add( my.get_versions_wdg() )
+            div.add( self.get_versions_wdg() )
 
             div.add("<br/>"*2)
 
             # check to see if the project exists
-            project_code = my.data.get("project_code")
-            project_code = my.data.get("projects")
+            project_code = self.data.get("project_code")
+            project_code = self.data.get("projects")
             project = Project.get_by_code(project_code)
             #if project:
             if False:
@@ -264,7 +264,7 @@ class SyncImportWdg(BaseRefreshWdg):
 
 
 
-            if my.data.get("is_encrypted") == "true":
+            if self.data.get("is_encrypted") == "true":
                 div.add("The transactions in this share is encrypted.  Please provide an encryption key to decrypt the transactions<br/><br/>")
                 div.add("Encryption Key: ")
                 text = TextWdg("encryption_key")
@@ -296,7 +296,7 @@ class SyncImportWdg(BaseRefreshWdg):
         return div
 
 
-    def get_versions_wdg(my):
+    def get_versions_wdg(self):
 
         div = DivWdg()
         div.add_class("spt_imports")
@@ -307,7 +307,7 @@ class SyncImportWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 0px 0px 8px 0px")
 
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
         imports_dir = "%s/imports" % base_dir
         if not os.path.exists(imports_dir):
             imports_dir = base_dir
@@ -382,7 +382,7 @@ class SyncImportWdg(BaseRefreshWdg):
 
 
             version_wdg.add(table)
-            for name, value in my.data.items():
+            for name, value in self.data.items():
                 name = Common.get_display_title(name)
                 table.add_row()
                 table.add_cell(name)
@@ -410,22 +410,22 @@ class SyncImportWdg(BaseRefreshWdg):
 
 class SyncImportCmd(Command):
 
-    def execute(my):
+    def execute(self):
         print "SyncImportCmd"
 
         # extract the version
-        basename = my.kwargs.get("basename")
+        basename = self.kwargs.get("basename")
         root, ext = os.path.splitext(basename)
         parts = root.split("-")
         version = parts[-1]
 
-        encryption_key = my.kwargs.get("encryption_key")
-        base_dir = my.kwargs.get("base_dir")
+        encryption_key = self.kwargs.get("encryption_key")
+        base_dir = self.kwargs.get("base_dir")
         imports_dir = "%s/imports" % base_dir
 
 
 
-        data = my.kwargs.get("data")
+        data = self.kwargs.get("data")
         if data:
             data = eval(data)
         else:

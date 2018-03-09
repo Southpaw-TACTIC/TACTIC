@@ -28,7 +28,7 @@ from chart_wdg import ChartData as ChartData
 
 class BaseChartWdg(BaseRefreshWdg):
 
-    def get_title_wdg(my, title):
+    def get_title_wdg(self, title):
         #date = "@FORMAT(@STRING($TODAY),'Dec 31, 1999')"
         #date = Search.eval(date, single=True)
 
@@ -60,56 +60,53 @@ class SObjectChartWdg(BaseChartWdg):
     'y_axis': 'List of elements to put on the y_axis'
     }
 
-    def preprocess(my):
-        my.max_value = 0
-        my.min_value = 0
-        my.steps = 0
+    def preprocess(self):
+        self.max_value = 0
+        self.min_value = 0
+        self.steps = 0
 
         web = WebContainer.get_web()
-        my.width = web.get_form_value("width")
-        if not my.width:
-            my.width = my.kwargs.get("width")
+        self.width = web.get_form_value("width")
+        if not self.width:
+            self.width = self.kwargs.get("width")
 
 
-        my.chart_type = web.get_form_value("chart_type")
-        if not my.chart_type:
-            my.chart_type = my.kwargs.get("chart_type")
-        if not my.chart_type:
-            my.chart_type = 'bar'
+        self.chart_type = web.get_form_value("chart_type")
+        if not self.chart_type:
+            self.chart_type = self.kwargs.get("chart_type")
+        if not self.chart_type:
+            self.chart_type = 'bar'
 
 
-        my.x_axis = web.get_form_value("x_axis")
-        if not my.x_axis:
-            my.x_axis = my.kwargs.get("x_axis")
-        if not my.x_axis:
-            my.x_axis = 'code'
+        self.x_axis = web.get_form_value("x_axis")
+        if not self.x_axis:
+            self.x_axis = self.kwargs.get("x_axis")
+        if not self.x_axis:
+            self.x_axis = 'code'
 
 
         # FIXME: which should override???
-        my.y_axis = web.get_form_values("y_axis")
-        if not my.y_axis:
-            my.y_axis = my.kwargs.get("y_axis")
+        self.y_axis = web.get_form_values("y_axis")
+        if not self.y_axis:
+            self.y_axis = self.kwargs.get("y_axis")
 
-        if my.y_axis:
-            my.elements = my.y_axis
+        if self.y_axis:
+            self.elements = self.y_axis
         else:
-            my.elements = my.kwargs.get("elements")
-            if not my.elements:
-                my.elements = web.get_form_value("elements")
+            self.elements = self.kwargs.get("elements")
+            if not self.elements:
+                self.elements = web.get_form_value("elements")
 
-        if isinstance(my.elements,basestring):
-            if my.elements:
-                my.elements = my.elements.split('|')
+        if isinstance(self.elements,basestring):
+            if self.elements:
+                self.elements = self.elements.split('|')
             else:
-                my.elements = []
+                self.elements = []
 
 
-        my.colors = my.kwargs.get("colors")
-        if not my.colors:
-            if isinstance(my.colors,basestring):
-                my.colors = my.colors.split("|")
-            my.colors = ['#000099', '#009900', '#999900', '#009999', '#990099', '#990000', '#009900', '#000099', '#999900', '#990000']
-            my.colors = [
+        self.colors = self.kwargs.get("colors")
+        if not self.colors:
+            self.colors = [
                 'rgba(0,255,0,0.5)',
                 'rgba(0,0,255,0.5)',
                 'rgba(255,0,0,0.5)',
@@ -117,76 +114,79 @@ class SObjectChartWdg(BaseChartWdg):
                 'rgba(0,255,255,0.5)',
                 'rgba(255,0,255,0.5)',
             ]
-            while len(my.elements) >= len(my.colors):
-                my.colors.extend(my.colors)
-
-
-        chart_type = my.kwargs.get("chart_type")
-        if chart_type:
-            my.chart_types = [chart_type for x in my.elements]
+            while len(self.elements) >= len(self.colors):
+                self.colors.extend(self.colors)
         else:
-            my.chart_types = my.kwargs.get("chart_types")
-            if not my.chart_types:
-                my.chart_types = ['bar' for x in my.elements]
+            if isinstance(self.colors,basestring):
+                self.colors = self.colors.split("|")
+
+
+        chart_type = self.kwargs.get("chart_type")
+        if chart_type:
+            self.chart_types = [chart_type for x in self.elements]
+        else:
+            self.chart_types = self.kwargs.get("chart_types")
+            if not self.chart_types:
+                self.chart_types = ['bar' for x in self.elements]
 
 
 
         expression = web.get_form_value("expression")
         if not expression:
-            expression = my.kwargs.get("expression")
+            expression = self.kwargs.get("expression")
 
 
 
-        my.search_type = web.get_form_value("search_type")
-        if not my.search_type:
-            my.search_type = my.kwargs.get("search_type")
+        self.search_type = web.get_form_value("search_type")
+        if not self.search_type:
+            self.search_type = self.kwargs.get("search_type")
 
-        my.search_keys = my.kwargs.get("search_keys")
+        self.search_keys = self.kwargs.get("search_keys")
 
 
         if expression:
-            my.sobjects = Search.eval(expression)
-        elif my.search_type and my.search_type.startswith("@SOBJECT("):
-            my.sobjects = Search.eval(my.search_type)
-        elif my.search_keys:
-            if isinstance(my.search_keys, basestring):
-                my.search_keys = eval(my.search_keys)
-            my.sobjects = Search.get_by_search_keys(my.search_keys)
+            self.sobjects = Search.eval(expression)
+        elif self.search_type and self.search_type.startswith("@SOBJECT("):
+            self.sobjects = Search.eval(self.search_type)
+        elif self.search_keys:
+            if isinstance(self.search_keys, basestring):
+                self.search_keys = eval(self.search_keys)
+            self.sobjects = Search.get_by_search_keys(self.search_keys)
         else:
-            search = Search(my.search_type)
+            search = Search(self.search_type)
             search.add_limit(100)
-            my.sobjects = search.get_sobjects()
+            self.sobjects = search.get_sobjects()
 
 
-        if not my.sobjects:
+        if not self.sobjects:
             return
 
         # get the definition
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         if sobjects:
             sobject = sobjects[0]
             search_type = sobject.get_search_type()
             view = 'definition'
 
             from pyasm.widget import WidgetConfigView
-            my.config = WidgetConfigView.get_by_search_type(search_type, view)
+            self.config = WidgetConfigView.get_by_search_type(search_type, view)
         else:
-            my.config = None
+            self.config = None
 
 
-        my.widgets = {}
+        self.widgets = {}
 
 
-    def get_data(my, sobject):
+    def get_data(self, sobject):
 
         values = []
         labels = []
 
-        if not my.config:
+        if not self.config:
             return values, labels
 
 
-        for element in my.elements:
+        for element in self.elements:
 
             if element.startswith("{") and element.endswith("}"):
                 expr = element.strip("{}")
@@ -195,8 +195,8 @@ class SObjectChartWdg(BaseChartWdg):
 
             else:
 
-                options = my.config.get_display_options(element)
-                attrs = my.config.get_element_attributes(element)
+                options = self.config.get_display_options(element)
+                attrs = self.config.get_element_attributes(element)
 
 
                 label = attrs.get('title')
@@ -204,10 +204,10 @@ class SObjectChartWdg(BaseChartWdg):
                     label = Common.get_display_title(element)
                 labels.append(label)
 
-                widget = my.widgets.get(element)
+                widget = self.widgets.get(element)
                 if not widget:
-                    widget = my.config.get_display_widget(element)
-                    my.widgets[element] = widget
+                    widget = self.config.get_display_widget(element)
+                    self.widgets[element] = widget
 
                 widget.set_sobject(sobject)
 
@@ -231,8 +231,8 @@ class SObjectChartWdg(BaseChartWdg):
             #else:
             #    value = Search.eval(expression, sobject, single=True)
 
-            if value > my.max_value:
-                my.max_value = value
+            if value > self.max_value:
+                self.max_value = value
 
             values.append(value)        
 
@@ -241,35 +241,35 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
-    def get_display(my):
-        my.preprocess()
+    def get_display(self):
+        self.preprocess()
 
-        if not my.x_axis:
-            chart_labels = [x.get_code() for x in my.sobjects]
+        if not self.x_axis:
+            chart_labels = [x.get_code() for x in self.sobjects]
         else:
             try:
-                chart_labels = [x.get_value(my.x_axis) for x in my.sobjects]
+                chart_labels = [x.get_value(self.x_axis) for x in self.sobjects]
             except:
                 # FIXME ... put in some special logic for users since it
                 # is used so often in charting
-                if my.search_type == 'sthpw/login':
-                    chart_labels = [x.get_value("login") for x in my.sobjects]
+                if self.search_type == 'sthpw/login':
+                    chart_labels = [x.get_value("login") for x in self.sobjects]
                 else:
-                    chart_labels = [x.get_code() for x in my.sobjects]
+                    chart_labels = [x.get_code() for x in self.sobjects]
 
 
         top = DivWdg()
         top.add_class("spt_chart")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_style("position: relative")
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if title:
-            title_wdg = my.get_title_wdg(title)
+            title_wdg = self.get_title_wdg(title)
             top.add(title_wdg)
 
 
-        if not my.sobjects:
+        if not self.sobjects:
             top.add("No results found")
             return top
 
@@ -281,11 +281,11 @@ class SObjectChartWdg(BaseChartWdg):
         element_values = []
 
         # get the labels and values for each sobject
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
 
             chart_labels.append( sobject.get_code() )
 
-            values, labels = my.get_data(sobject)
+            values, labels = self.get_data(sobject)
             for value, label in zip(values, labels):
 
                 data = element_data.get(label)
@@ -296,10 +296,10 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = '800px'
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = '500px'
 
@@ -309,7 +309,7 @@ class SObjectChartWdg(BaseChartWdg):
         chart_div.add_style("height", height)
         chart_div.center()
 
-        if not my.sobjects:
+        if not self.sobjects:
             msg_div = DivWdg()
             msg_div.add_style("position: absolute")
             chart_div.add(msg_div)
@@ -331,21 +331,21 @@ class SObjectChartWdg(BaseChartWdg):
             width=width,
             height=height,
             chart_type='bar',
-            #legend=my.elements,
+            #legend=self.elements,
             labels=chart_labels,
             label_values=[i+0.5 for i,x in enumerate(chart_labels)]
         )
         chart_div.add(chart)
 
         top.add(chart_div)
-        top.add_color("background", "background", -5)
+        top.add_color("background", "background")
         top.add_color("color", "color")
 
 
 
         # draw a legend
         from chart_wdg import ChartLegend
-        legend = ChartLegend(labels=my.elements)
+        legend = ChartLegend(labels=self.elements)
         top.add(legend)
         #legend.add_style("width: 200px")
         legend.add_style("position: absolute")
@@ -356,15 +356,15 @@ class SObjectChartWdg(BaseChartWdg):
 
         for i, key in enumerate(element_data.keys()):
 
-            if my.colors:
-                color = my.colors[i]
+            if self.colors:
+                color = self.colors[i]
             else:
                 color = 'rgba(128, 0, 0, 1.0)'
 
             element_values = element_data.get(key)
 
             chart_data = ChartData(
-                chart_type=my.chart_types[i],
+                chart_type=self.chart_types[i],
                 color=color,
                 data=element_values,
                 x_data=[i+0.5 for i,x in enumerate(chart_labels)]
@@ -444,11 +444,11 @@ class CalendarChartWdg(BaseChartWdg):
     }
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        top.add_color("background", "background", -5)
+        top.add_color("background", "background")
         top.add_gradient("color", "color")
 
         #top.add_style("background", "#000")
@@ -458,30 +458,30 @@ class CalendarChartWdg(BaseChartWdg):
         #top.add_style("padding-top: 10px")
         top.add_style("position: relative")
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if title:
-            title_wdg = my.get_title_wdg(title)
+            title_wdg = self.get_title_wdg(title)
             top.add(title_wdg)
 
         # get the column to use as a date for searching
-        my.column = my.kwargs.get("column")
-        if not my.column:
-            my.column = 'timestamp'
+        self.column = self.kwargs.get("column")
+        if not self.column:
+            self.column = 'timestamp'
 
 
         # elements
-        elements = my.kwargs.get("elements")
+        elements = self.kwargs.get("elements")
         if elements:
             if isinstance(elements, basestring):
                 elements = elements.split("|")
-        elif my.kwargs.get("chart_data"):
+        elif self.kwargs.get("chart_data"):
             elements = []
         else:
             elements = ['{@COUNT()}']
 
 
         # set some start and end dates
-        start_date = my.kwargs.get("start_date")
+        start_date = self.kwargs.get("start_date")
         if not start_date:
             start_date = None
         else:
@@ -490,7 +490,7 @@ class CalendarChartWdg(BaseChartWdg):
 
             start_date = parser.parse(start_date)
 
-        end_date = my.kwargs.get("end_date")
+        end_date = self.kwargs.get("end_date")
         if not end_date:
             end_date = None
         else:
@@ -499,35 +499,32 @@ class CalendarChartWdg(BaseChartWdg):
             end_date = parser.parse(end_date)
 
 
-
-
-        expression = my.kwargs.get("expression")
-        search_type = my.kwargs.get("search_type")
+        expression = self.kwargs.get("expression")
+        search_type = self.kwargs.get("search_type")
         if expression:
             sobjects = Search.eval(expression)
         elif search_type:
             search = Search(search_type)
             if start_date:
-                search.add_filter(my.column, start_date, op=">")
+                search.add_filter(self.column, start_date, op=">")
             if end_date:
-                search.add_filter(my.column, end_date, op="<")
+                search.add_filter(self.column, end_date, op="<")
             sobjects = search.get_sobjects()
 
         else:
             sobjects = []
 
 
+
         # Is this a plot or a chart
         # A plot puts the X-axis at the right place.
         # A chart has a interval in which data is combined
 
-        my.interval = my.kwargs.get("interval")
-        if not my.interval:
-            my.interval = 'weekly'
-            #my.interval = 'monthly'
+        self.interval = self.kwargs.get("interval")
+        if not self.interval:
+            self.interval = 'weekly'
+            #self.interval = 'monthly'
 
-        min_date = None
-        max_date = None
 
         if not sobjects:
             if not start_date:
@@ -539,9 +536,13 @@ class CalendarChartWdg(BaseChartWdg):
                 max_date = datetime.today() + timedelta(days=30)
             else:
                 max_date = end_date
+        else:
+            min_date = start_date
+            max_date = end_date
+
 
         for sobject in sobjects:
-            timestamp = sobject.get_value(my.column)
+            timestamp = sobject.get_value(self.column)
             timestamp = parser.parse(timestamp)
             if min_date == None or timestamp < min_date:
                 min_date = timestamp
@@ -549,10 +550,9 @@ class CalendarChartWdg(BaseChartWdg):
                 max_date = timestamp
 
 
-
         # defined the buckets based on interval
         dates = [] 
-        if my.interval == 'weekly':
+        if self.interval == 'weekly':
             min_date = datetime(min_date.year, min_date.month, min_date.day)
             max_date = datetime(max_date.year, max_date.month, max_date.day)
             min_date = min_date - timedelta(days=8)
@@ -561,7 +561,7 @@ class CalendarChartWdg(BaseChartWdg):
             dates = list(rrule.rrule(rrule.WEEKLY, byweekday=0, dtstart=min_date, until=max_date))
 
 
-        elif my.interval == 'daily':
+        elif self.interval == 'daily':
             min_date = datetime(min_date.year, min_date.month, min_date.day)
             max_date = datetime(max_date.year, max_date.month, max_date.day)
             min_date = min_date - timedelta(days=1)
@@ -570,7 +570,7 @@ class CalendarChartWdg(BaseChartWdg):
             dates = list(rrule.rrule(rrule.DAILY, dtstart=min_date, until=max_date))
 
 
-        elif my.interval == 'monthly':
+        elif self.interval == 'monthly':
             min_date = datetime(min_date.year, min_date.month, 1)
             if max_date.month == 12:
                 year = max_date.year+1
@@ -583,29 +583,29 @@ class CalendarChartWdg(BaseChartWdg):
             dates = list(rrule.rrule(rrule.MONTHLY, bymonthday=1, dtstart=min_date, until=max_date))
 
 
-        my.dates_dict = {}
+        self.dates_dict = {}
         for date in dates:
-            my.dates_dict[str(date)] = []
+            self.dates_dict[str(date)] = []
 
 
         # put the appropriate sobjects in each date_dict item
         for sobject in sobjects:
-            timestamp = sobject.get_value(my.column)
+            timestamp = sobject.get_value(self.column)
             timestamp = parser.parse(timestamp)
 
-            if my.interval == "weekly":
+            if self.interval == "weekly":
                 # put in the week
                 timestamp = list(rrule.rrule(rrule.WEEKLY, byweekday=0, dtstart=timestamp-timedelta(days=7), count=1))
                 timestamp = timestamp[0]
                 timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
-            elif my.interval == "daily":
+            elif self.interval == "daily":
                 timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
 
             else:
                 timestamp = datetime(timestamp.year,timestamp.month,1)
 
-            if my.dates_dict:
-            	interval_sobjects = my.dates_dict[str(timestamp)]
+            if self.dates_dict:
+            	interval_sobjects = self.dates_dict[str(timestamp)]
             	interval_sobjects.append(sobject)
 
 
@@ -613,31 +613,31 @@ class CalendarChartWdg(BaseChartWdg):
         # get all the chart labels
         chart_labels = []
         for date in dates:
-            if my.interval == 'weekly':
+            if self.interval == 'weekly':
                 #chart_labels.append("Week %s" % date.strftime("%W"))
                 label = (date + timedelta(days=6)).strftime("%d")
                 chart_labels.append("%s - %s" % (date.strftime("%b %d"), label))
-            elif my.interval == 'daily':
+            elif self.interval == 'daily':
                 chart_labels.append(date.strftime("%b %d"))
             else:
                 chart_labels.append(date.strftime("%b %Y"))
 
 
-        my.sobjects = sobjects
+        self.sobjects = sobjects
 
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = "800px"
 
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = "500px"
 
 
-        x_title = my.kwargs.get("x_title")
+        x_title = self.kwargs.get("x_title")
         #x_title = Search.eval(x_title)
-        y_title = my.kwargs.get("y_title")
+        y_title = self.kwargs.get("y_title")
         #y_title = Search.eval(y_title)
 
 
@@ -646,7 +646,7 @@ class CalendarChartWdg(BaseChartWdg):
         # draw a legend
         legend = None
         from chart_wdg import ChartLegend
-        labels = my.kwargs.get("labels")
+        labels = self.kwargs.get("labels")
         if labels:
             legend = ChartLegend()
             labels = labels.split("|")
@@ -689,36 +689,47 @@ class CalendarChartWdg(BaseChartWdg):
 
 
 
-        rotate_x_axis = my.kwargs.get("rotate_x_axis")
+        rotate_x_axis = self.kwargs.get("rotate_x_axis")
+        y_axis_mode = self.kwargs.get("y_axis_mode")
 
         chart = ChartWdg(
             width=width,
             height=height,
             chart_type='bar',
-            #legend=my.elements,
+            #legend=self.elements,
             labels=chart_labels,
             label_values=[i+0.5 for i,x in enumerate(chart_labels)],
             rotate_x_axis=rotate_x_axis,
+            y_axis_mode=y_axis_mode
         )
         table.add_cell(chart)
 
 
-        chart_type = my.kwargs.get("chart_type")
+        chart_type = self.kwargs.get("chart_type")
         if not chart_type:
             chart_type = 'bar'
 
-        my.colors = [
-            'rgba(0,255,0,0.5)',
-            'rgba(0,0,255,0.5)',
-            'rgba(255,0,0,0.5)',
-            'rgba(255,255,0,0.5)',
-            'rgba(0,255,255,0.5)',
-            'rgba(255,0,255,0.5)',
-        ]
+
+
+        self.colors = self.kwargs.get("colors")
+        if not self.colors:
+            self.colors = [
+                'rgba(0,255,0,0.5)',
+                'rgba(0,0,255,0.5)',
+                'rgba(255,0,0,0.5)',
+                'rgba(255,255,0,0.5)',
+                'rgba(0,255,255,0.5)',
+                'rgba(255,0,255,0.5)',
+            ]
+            #while len(self.elements) >= len(self.colors):
+            #    self.colors.extend(self.colors)
+        else:
+            if isinstance(self.colors,basestring):
+                self.colors = self.colors.split("|")
 
 
         if legend:
-            legend.set_colors(my.colors)
+            legend.set_colors(self.colors)
 
 
         element_count = 0
@@ -727,12 +738,12 @@ class CalendarChartWdg(BaseChartWdg):
         for i, element in enumerate(elements):
 
 
-            data_values = my.get_data_values(my.dates_dict, dates, element, my.sobjects)
+            data_values = self.get_data_values(self.dates_dict, dates, element, self.sobjects)
 
             chart_data = ChartData(
                 chart_type=chart_type,
                 data=data_values,
-                color=my.colors[element_count],
+                color=self.colors[element_count],
                 x_data=x_data
             )
             chart.add(chart_data)
@@ -741,7 +752,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
         # add in individual charts
-        chart_data = my.kwargs.get("chart_data")
+        chart_data = self.kwargs.get("chart_data")
         if chart_data and isinstance(chart_data, basestring):
             chart_data = jsonloads(chart_data)
 
@@ -755,7 +766,7 @@ class CalendarChartWdg(BaseChartWdg):
 
             column = options.get("column")
             if not column:
-                column = my.column
+                column = self.column
 
 
             expression = options.get("expression")
@@ -771,18 +782,18 @@ class CalendarChartWdg(BaseChartWdg):
 
 
                 sobjects = Search.eval(expression, extra_filters=extra)
-                dates_dict = my.get_dates_dict(sobjects, dates, column)
+                dates_dict = self.get_dates_dict(sobjects, dates, column)
             else:
-                sobjects = my.sobjects
-                dates_dict = my.dates_dict
+                sobjects = self.sobjects
+                dates_dict = self.dates_dict
 
-            data = my.get_data_values(dates_dict, dates, options['element'], sobjects)
+            data = self.get_data_values(dates_dict, dates, options['element'], sobjects)
 
 
             options['data'] = data
             options['x_data'] = x_data
             if not options.get("color"):
-                options['color'] = my.colors[element_count]
+                options['color'] = self.colors[element_count]
 
             if not options.get("chart_type"):
                 options['chart_type'] = chart_type
@@ -822,7 +833,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
 
-    def get_dates_dict(my, sobjects, dates, column):
+    def get_dates_dict(self, sobjects, dates, column):
 
         dates_dict = {}
         for date in dates:
@@ -833,14 +844,14 @@ class CalendarChartWdg(BaseChartWdg):
             timestamp = sobject.get_value(column)
             timestamp = parser.parse(timestamp)
 
-            if my.interval == "weekly":
+            if self.interval == "weekly":
                 # put in the week
                 timestamp = list(rrule.rrule(rrule.WEEKLY, byweekday=0, dtstart=timestamp-timedelta(days=7), count=1))
                 timestamp = timestamp[0]
                 timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
 
 
-            elif my.interval == "daily":
+            elif self.interval == "daily":
 
                 timestamp = list(rrule.rrule(rrule.DAILY, dtstart=timestamp-timedelta(days=1), count=1))
                 timestamp = timestamp[0]
@@ -862,7 +873,7 @@ class CalendarChartWdg(BaseChartWdg):
         return dates_dict
 
 
-    def get_data_values(my, dates_dict, dates, element, all_sobjects):
+    def get_data_values(self, dates_dict, dates, element, all_sobjects):
         element_values = []
 
         if element.startswith("{") and element.endswith("}"):
@@ -873,8 +884,8 @@ class CalendarChartWdg(BaseChartWdg):
 
 
         vars = {}
-        if my.kwargs.get("total"):
-            total = Search.eval(my.kwargs.get("total"), sobjects=all_sobjects, single=True, vars=vars)
+        if self.kwargs.get("total"):
+            total = Search.eval(self.kwargs.get("total"), sobjects=all_sobjects, single=True, vars=vars)
             vars['total'] = total
         vars['running'] = 0
 
@@ -891,8 +902,8 @@ class CalendarChartWdg(BaseChartWdg):
             # add the display value
             element_values.append(value)
 
-            if my.kwargs.get("running"):
-                running = Search.eval(my.kwargs.get("running"), sobjects=sobjects, single=True, vars=vars)
+            if self.kwargs.get("running"):
+                running = Search.eval(self.kwargs.get("running"), sobjects=sobjects, single=True, vars=vars)
                 if not running:
                     running = 0
                 vars['running'] = running

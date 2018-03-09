@@ -19,50 +19,50 @@ from pyasm.prod.web import *
 
 class SetupTabWdg(Widget):
 
-    def init(my):
+    def init(self):
 
         #tab = TabWdg(css=TabWdg.SMALL)
         tab = TabWdg()
         tab.set_tab_key("setup_tab")
-        my.tab = tab
-        my.handle_tab(tab)
-        my.add(tab, "tab")
+        self.tab = tab
+        self.handle_tab(tab)
+        self.add(tab, "tab")
 
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
 
-        my.tab_names = ["Overview", "Users", "Create Project", "Pipeline", "Asset Libraries", "Asset Creation", "Sequence Creation", "Shot Creation", "Finished"]
+        self.tab_names = ["Overview", "Users", "Create Project", "Pipeline", "Asset Libraries", "Asset Creation", "Sequence Creation", "Shot Creation", "Finished"]
         
-        tab.add(my.get_overview_wdg, _("Overview") )
-        tab.add(my.get_user_wdg, _("Users") )
-        tab.add(my.get_project_wdg, _("Create Project") )
-        tab.add(my.get_pipeline_wdg, _("Pipeline") )
-        tab.add(my.get_asset_library_wdg, _("Asset Libraries") )
-        tab.add(my.get_asset_wdg, _("Asset Creation") )
-        tab.add(my.get_sequence_wdg, _("Sequence Creation") )
-        tab.add(my.get_shot_wdg, _("Shot Creation") )
-        tab.add(my.get_finished_wdg, _("Finished") )
+        tab.add(self.get_overview_wdg, _("Overview") )
+        tab.add(self.get_user_wdg, _("Users") )
+        tab.add(self.get_project_wdg, _("Create Project") )
+        tab.add(self.get_pipeline_wdg, _("Pipeline") )
+        tab.add(self.get_asset_library_wdg, _("Asset Libraries") )
+        tab.add(self.get_asset_wdg, _("Asset Creation") )
+        tab.add(self.get_sequence_wdg, _("Sequence Creation") )
+        tab.add(self.get_shot_wdg, _("Shot Creation") )
+        tab.add(self.get_finished_wdg, _("Finished") )
 
 
 
 
-    def get_next_button_wdg(my, current_tab):
+    def get_next_button_wdg(self, current_tab):
 
-        index = my.tab_names.index(current_tab)
-        redirect_tab = my.tab_names[index+1]
+        index = self.tab_names.index(current_tab)
+        redirect_tab = self.tab_names[index+1]
 
 
         button = IconSubmitWdg("Next", IconWdg.ARROW_RIGHT, long=True, icon_pos="right")
         redirect_tab_dict = {"setup_tab": redirect_tab}
-        button.add_event("onclick", my.tab.get_redirect_script(redirect_tab_dict) )
+        button.add_event("onclick", self.tab.get_redirect_script(redirect_tab_dict) )
         button.add_style("float: right")
         return button
 
 
 
-    def get_overview_wdg(my):
+    def get_overview_wdg(self):
         widget = Widget()
-        widget.add( my.get_next_button_wdg("Overview") )
+        widget.add( self.get_next_button_wdg("Overview") )
 
         widget.add("<h1>Welcome to TACTIC</h1>")
         widget.add("<h3>Now that you have successfully installed the software, you can take the next step to create and set up a project.</h3>")
@@ -88,7 +88,7 @@ class SetupTabWdg(Widget):
         return widget
 
 
-    def get_user_wdg(my):
+    def get_user_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")
@@ -97,7 +97,7 @@ class SetupTabWdg(Widget):
         div.add_style("padding: 0 20 0 20")
         div.add('''<p>Create users here</p>''')
         
-        widget.add( my.get_next_button_wdg("Users") )
+        widget.add( self.get_next_button_wdg("Users") )
         widget.add( HtmlElement.br(2))
         widget.add(div)
 
@@ -109,14 +109,14 @@ class SetupTabWdg(Widget):
 
 
 
-    def get_project_wdg(my):
+    def get_project_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")
         div.add_style("font-size: 1.4em")
         div.add_style("text-align: left")
         div.add_style("padding: 0 20 0 20")
-        widget.add( my.get_next_button_wdg("Create Project") )
+        widget.add( self.get_next_button_wdg("Create Project") )
         widget.add( HtmlElement.br(2))
         div.add('''<p>Create some users.</p>
         ''')
@@ -133,12 +133,12 @@ class SetupTabWdg(Widget):
         return widget
 
 
-    def get_pipeline_wdg(my):
+    def get_pipeline_wdg(self):
         widget = Widget()
 
         from pyasm.admin.creator import PipelineEditorWdg
 
-        widget.add( my.get_next_button_wdg("Pipeline") )
+        widget.add( self.get_next_button_wdg("Pipeline") )
         widget.add( HtmlElement.br(2))
 
         div = DivWdg(css="filter_box")
@@ -158,7 +158,7 @@ class SetupTabWdg(Widget):
         return widget
 
 
-    def get_asset_library_wdg(my):
+    def get_asset_library_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")
@@ -166,7 +166,7 @@ class SetupTabWdg(Widget):
         div.add_style("height: 3em")
         div.add_style("text-align: left")
         div.add_style("padding: 10 20 10 20")
-        widget.add( my.get_next_button_wdg("Asset Libraries") )
+        widget.add( self.get_next_button_wdg("Asset Libraries") )
         widget.add( HtmlElement.br(2))
         div.add('You can create asset libraries here.  These asset libraries categorize the assets.  Examples include characters, props, or locations.  For more information, please refer to the ')
         
@@ -188,14 +188,14 @@ class SetupTabWdg(Widget):
         return widget
 
 
-    def get_asset_wdg(my):
+    def get_asset_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")
         div.add_style("font-size: 1.4em")
         div.add_style("text-align: left")
         div.add_style("padding: 10 20 10 20")
-        widget.add( my.get_next_button_wdg("Asset Creation") )
+        widget.add( self.get_next_button_wdg("Asset Creation") )
         widget.add( HtmlElement.br(2))
 
         icon = IconWdg(icon=IconWdg.HELP)
@@ -216,7 +216,7 @@ class SetupTabWdg(Widget):
         return widget
 
 
-    def get_sequence_wdg(my):
+    def get_sequence_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")
@@ -224,7 +224,7 @@ class SetupTabWdg(Widget):
         div.add_style("text-align: left")
         div.add_style("height: 3em")
         div.add_style("padding: 10 20 10 20")
-        widget.add( my.get_next_button_wdg("Sequence Creation") )
+        widget.add( self.get_next_button_wdg("Sequence Creation") )
         widget.add( HtmlElement.br(2))
         div.add('You can create sequences here. For more information on creating sequence, please consult the ')
         icon = IconWdg(icon=IconWdg.HELP)
@@ -243,14 +243,14 @@ class SetupTabWdg(Widget):
         return widget
 
 
-    def get_shot_wdg(my):
+    def get_shot_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")
         div.add_style("font-size: 1.4em")
         div.add_style("text-align: left")
         div.add_style("padding: 0 20 0 20")
-        widget.add( my.get_next_button_wdg("Shot Creation") )
+        widget.add( self.get_next_button_wdg("Shot Creation") )
         widget.add( HtmlElement.br(2))
         div.add('''<p>Create a shot.</p>''') 
         
@@ -267,7 +267,7 @@ class SetupTabWdg(Widget):
 
 
 
-    def get_finished_wdg(my):
+    def get_finished_wdg(self):
         widget = Widget()
 
         div = DivWdg(css="filter_box")

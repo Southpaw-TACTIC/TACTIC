@@ -54,6 +54,8 @@ class ThumbWdg(BaseTableElementWdg):
             'order': 1,
             'category': 'Display'
             },
+
+
          "icon_size": {
             "description": "control the icon size by percentage. e.g. 80%",
             'type': 'TextWdg',
@@ -67,6 +69,13 @@ class ThumbWdg(BaseTableElementWdg):
             'category': 'Display',
             },
  
+        "cascade_search": {
+            "description": "determines whether to keep looking for any image to use as an icon",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'category': 'Display'
+            },
+
 
         "filename": {
             "description": "whether to display the main file name for download",
@@ -134,36 +143,36 @@ class ThumbWdg(BaseTableElementWdg):
 
 
 
-    def init(my):
-        my.top = DivWdg()
+    def init(self):
+        self.top = DivWdg()
 
 
-        my.icon_size = None
-        my.show_filename_flag = False
-        my.show_clipboard_flag = True
-        my.show_orig_icon = False
-        my.show_file_type = False
-        my.show_versionless = False
-        my.show_latest_icon = False
-        my.has_img_link = True
-        my.context = None
+        self.icon_size = None
+        self.show_filename_flag = False
+        self.show_clipboard_flag = True
+        self.show_orig_icon = False
+        self.show_file_type = False
+        self.show_versionless = False
+        self.show_latest_icon = False
+        self.has_img_link = True
+        self.context = None
         # it's getting is_latest by default
-        my.version = None
-        #my.icon_context = None
-        my.name = "snapshot"
+        self.version = None
+        #self.icon_context = None
+        self.name = "snapshot"
 
-        my.data = {}
-        my.file_objects = {}
-        my.info = {}
-        my.image_link_order = []
-        my.is_preprocess_run = False
+        self.data = {}
+        self.file_objects = {}
+        self.info = {}
+        self.image_link_order = []
+        self.is_preprocess_run = False
 
         # DetailWdg for instance can change this to display the web type as icon
-        my.icon_type = 'default'
-        my.aspect = "width"
+        self.icon_type = 'default'
+        self.aspect = "width"
 
 
-    def handle_layout_behaviors(my, layout):
+    def handle_layout_behaviors(self, layout):
         # Drag will allow the dragging of items from a table onto
         # anywhere else!
         layout.add_behavior( {
@@ -204,23 +213,22 @@ class ThumbWdg(BaseTableElementWdg):
         } )
 
 
-        script_path = my.options.get("script_path")
-        class_name = my.options.get("detail_class_name")
-
+        script_path = self.options.get("script_path")
+        class_name = self.options.get("detail_class_name")
         if script_path:
-            layout.add_behavior( {
-            'type': 'smart_click_up',
+            layout.add_relay_behavior( {
+            'type': 'click',
             'bvr_match_class': 'spt_thumb_script_path',
             'script_path': script_path,
             'cbjs_action': '''
-            var script = spt.CustomProject.get_script_by_path(bvr.script_path);
-            spt.CustomProject.exec_script(script);
+                var search_key = bvr.src_el.getAttribute("spt_search_key");
+                spt.CustomProject.run_script_by_path(bvr.script_path, {search_key: search_key});
             '''
             } )
 
         else:
-            layout.add_behavior( {
-            'type': 'smart_click_up',
+            layout.add_relay_behavior( {
+            'type': 'click',
             'bvr_match_class': 'spt_thumb_detail_class_name',
             'class_name': class_name,
             'cbjs_action': '''
@@ -257,10 +265,10 @@ class ThumbWdg(BaseTableElementWdg):
         
  
         #if False:
-        #if my.layout_wdg.kwargs.get("icon_generate_refresh") != False \
-        if my.layout_wdg and my.layout_wdg.kwargs.get('temp') != True:
-            #unique_id = my.layout_wdg.get_unique_id()
-            unique_id = my.layout_wdg.get_table_id()
+        #if self.layout_wdg.kwargs.get("icon_generate_refresh") != False \
+        if self.layout_wdg and self.layout_wdg.kwargs.get('temp') != True:
+            #unique_id = self.layout_wdg.get_unique_id()
+            unique_id = self.layout_wdg.get_table_id()
             layout.add_behavior( {
                 'type': 'listen',
                 'event_name': "loading|%s" % unique_id,
@@ -333,111 +341,121 @@ class ThumbWdg(BaseTableElementWdg):
  
 
 
-    def preprocess(my):
-        my.is_preprocess_run = True
+    def preprocess(self):
+        self.is_preprocess_run = True
 
-        if my.get_option('filename') == 'true':
-            my.show_filename_flag = True
-        if my.get_option('file_type') == 'true':
-            my.show_file_type = True
-        if my.get_option('original') == 'true':
-            my.show_orig_icon = True
-        if my.get_option('versionless') == 'true':
-            my.show_versionless = True
+        if self.get_option('filename') == 'true':
+            self.show_filename_flag = True
+        if self.get_option('file_type') == 'true':
+            self.show_file_type = True
+        if self.get_option('original') == 'true':
+            self.show_orig_icon = True
+        if self.get_option('versionless') == 'true':
+            self.show_versionless = True
 
-        if my.get_option('latest_icon') == 'true':
-            my.show_latest_icon = True
-        context = my.get_option('icon_context')
+        if self.get_option('latest_icon') == 'true':
+            self.show_latest_icon = True
+        context = self.get_option('icon_context')
 
-        if not context and my.sobjects:
-            sobject = my.sobjects[0]
+        if not context and self.sobjects:
+            sobject = self.sobjects[0]
             assert(sobject)
             if sobject:     # protect agains it being None
-                context = sobject.get_icon_context(my.context)
+                context = sobject.get_icon_context(self.context)
 
 
         if context:
-            my.context = context
+            self.context = context
         
-        if not my.image_link_order:
-            order = my.get_option('image_link_order')
+        if not self.image_link_order:
+            order = self.get_option('image_link_order')
             if order:
                 order = order.split('|')
-            my.set_image_link_order(order)
+            self.set_image_link_order(order)
         
         # preselect all of the snapshots (don't do this for redirect right now)
-        redirect = my.get_option("redirect")
-        redirect_expr = my.get_option("redirect_expr")
+        redirect = self.get_option("redirect")
+        redirect_expr = self.get_option("redirect_expr")
 
-        if not redirect and not redirect_expr and my.sobjects:
-            if not my.sobjects[0]:
+        if not redirect and not redirect_expr and self.sobjects:
+            if not self.sobjects[0]:
                 # retired
                 return
 
             snapshots = []
             # if it is snapshot, there is no need to search for it again
             # and we dont' try to to look for publish context icons for it to save time
-            if isinstance(my.sobjects[0], Snapshot):
+            if isinstance(self.sobjects[0], Snapshot):
                 
-                snapshots = my.sobjects
+                snapshots = self.sobjects
             else:
-                if my.show_latest_icon:
+                if self.show_latest_icon:
                     icon_context = None
                 else:
-                    icon_context = my.sobjects[0].get_icon_context(my.context)
+                    icon_context = self.sobjects[0].get_icon_context(self.context)
+
+
+                cascade_search = self.get_option('cascade_search') or 'true'
+
                 try:
-                    if my.version == None:
-                        my.data = Snapshot.get_by_sobjects(my.sobjects, icon_context, is_latest=True, return_dict=True)
-                        # verify if we get icon for all
-                        if len(my.data) < len(my.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, my.DEFAULT_CONTEXT, is_latest=True, return_dict=True)
-                            my._update_data(publish_data)
-
-                        # verify if we get icon for all
-                        if len(my.data) < len(my.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, process=my.DEFAULT_PROCESS, is_latest=True, return_dict=True)
-                            my._update_data(publish_data)
+                    if self.version == None:
+                        self.data = Snapshot.get_by_sobjects(self.sobjects, icon_context, is_latest=True, return_dict=True)
 
 
-                        # verify if we get icon for all
-                        if len(my.data) < len(my.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, is_latest=True, return_dict=True)
-                            my._update_data(publish_data)
+                        if cascade_search != "false":
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, self.DEFAULT_CONTEXT, is_latest=True, return_dict=True)
+                                self._update_data(publish_data)
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, process=self.DEFAULT_PROCESS, is_latest=True, return_dict=True)
+                                self._update_data(publish_data)
+
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, is_latest=True, return_dict=True)
+                                self._update_data(publish_data)
 
 
 
 
 
                     else:
-                        my.data = Snapshot.get_by_sobjects(my.sobjects, icon_context, version=my.version, return_dict=True)
+                        self.data = Snapshot.get_by_sobjects(self.sobjects, icon_context, version=self.version, return_dict=True)
 
-                        # verify if we get icon for all
-                        if len(my.data) < len(my.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, my.DEFAULT_CONTEXT, version=my.version, return_dict=True)
-                            my._update_data(publish_data)
+                        if cascade_search != "false":
 
-                        # verify if we get icon for all
-                        if len(my.data) < len(my.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, process=my.DEFAULT_PROCESS, version=my.version, return_dict=True)
-                            my._update_data(publish_data)
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, self.DEFAULT_CONTEXT, version=self.version, return_dict=True)
+                                self._update_data(publish_data)
 
-                        # verify if we get icon for all
-                        if len(my.data) < len(my.sobjects):
-                            publish_data =  Snapshot.get_by_sobjects(my.sobjects, version=my.version, return_dict=True)
-                            my._update_data(publish_data)
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, process=self.DEFAULT_PROCESS, version=self.version, return_dict=True)
+                                self._update_data(publish_data)
+
+                            # verify if we get icon for all
+                            if len(self.data) < len(self.sobjects):
+                                publish_data =  Snapshot.get_by_sobjects(self.sobjects, version=self.version, return_dict=True)
+                                self._update_data(publish_data)
 
 
 
 
  
 
-                except SqlException, e:
-                    my.SQL_ERROR = True 
+                except SqlException as e:
+                    self.SQL_ERROR = True 
                     DbContainer.abort_thread_sql()
                     return
 
 
-                snapshots = my.data.values()
+                snapshots = self.data.values()
 
                 
 
@@ -446,72 +464,72 @@ class ThumbWdg(BaseTableElementWdg):
             file_objects = File.get_by_snapshots(snapshots)
             for file_object in file_objects:
                 file_code = file_object.get_code()
-                my.file_objects[file_code] = file_object
+                self.file_objects[file_code] = file_object
 
 
 
-    def _update_data(my, publish_data):
-        '''update my.data with 2nd choice publish context data to display an icon'''
-        publish_data.update(my.data)
-        my.data = publish_data
+    def _update_data(self, publish_data):
+        '''update self.data with 2nd choice publish context data to display an icon'''
+        publish_data.update(self.data)
+        self.data = publish_data
 
 
-    def get_title(my):
-        return super(ThumbWdg,my).get_title();
+    def get_title(self):
+        return super(ThumbWdg,self).get_title();
 
-    #def is_editable(my):
-    #    sobject = my.get_current_sobject()
+    #def is_editable(self):
+    #    sobject = self.get_current_sobject()
     #    if sobject and sobject.get_id() == -1:
     #        return False
     #    else:
     #        return True
-    def is_editable(my):
+    def is_editable(self):
         return False
 
 
 
-    def get_info(my):
+    def get_info(self):
         # FIXME: temporary fix to make flash_swf_view_wdg.py work
-        return my.info
+        return self.info
 
 
-    def handle_th(my, th, cell_idx):
+    def handle_th(self, th, cell_idx):
         th.add_style("min-width", "55px")
         return
 
-        if not my.width:
+        if not self.width:
             th.add_style("width", "55px")
         else:
-            th.add_style("width: %s" % my.width)
+            th.add_style("width: %s" % self.width)
 
 
-    def handle_td(my, td):
+    def handle_td(self, td):
         td.set_attr('spt_input_type', 'upload')
         td.add_style("min-width", "55px")
         return
 
 
         #td.set_style("width: 1px")
-        if not my.width:
+        if not self.width:
             td.add_style("width", "55px")
         else:
-            td.add_style("width: %s" % my.width)
+            td.add_style("width: %s" % self.width)
 
 
 
-    def set_icon_size(my, size):
-        my.icon_size = str(size)
+    def set_icon_size(self, size):
+        self.icon_size = str(size)
     
 
-    def get_icon_size(my):
+    def get_icon_size(self):
         ICON_SIZE = 120
-        if not my.icon_size:
-            my.icon_size = 120
+        if not self.icon_size:
+            self.icon_size = 120
 
         unit = None
-        icon_size = my.icon_size
-        if isinstance(my.icon_size, basestring):
-            icon_size, unit = my.split_icon_size(my.icon_size)
+        icon_size = self.icon_size
+        if isinstance(self.icon_size, basestring):
+            icon_size, unit = self.split_icon_size(self.icon_size)
 
         icon_mult = PrefSetting.get_value_by_key("thumb_multiplier")
         if not icon_mult:
@@ -533,58 +551,58 @@ class ThumbWdg(BaseTableElementWdg):
         return size
 
 
-    def set_aspect(my, aspect):
-        my.aspect = aspect
+    def set_aspect(self, aspect):
+        self.aspect = aspect
 
-    def set_show_filename(my, flag):
-        my.show_filename_flag = flag
+    def set_show_filename(self, flag):
+        self.show_filename_flag = flag
 
-    def set_show_clipboard(my, flag):
-        my.show_clipboard_flag = flag
+    def set_show_clipboard(self, flag):
+        self.show_clipboard_flag = flag
 
-    def set_show_orig_icon(my, flag):
-        my.show_orig_icon = flag
+    def set_show_orig_icon(self, flag):
+        self.show_orig_icon = flag
 
-    def set_show_latest_icon(my, flag):
-        my.show_latest_icon = flag
+    def set_show_latest_icon(self, flag):
+        self.show_latest_icon = flag
 
-    def set_show_file_type(my, flag):
-        my.show_file_type = flag
+    def set_show_file_type(self, flag):
+        self.show_file_type = flag
 
-    def set_has_img_link(my, show):
-        my.has_img_link = show
+    def set_has_img_link(self, show):
+        self.has_img_link = show
 
-    def set_icon_type(my, icon_type):
-        my.icon_type = icon_type
+    def set_icon_type(self, icon_type):
+        self.icon_type = icon_type
 
 
-    def set_image_link_order(my, order):
+    def set_image_link_order(self, order):
         if order:
-            my.image_link_order = order
+            self.image_link_order = order
 
-    def set_context(my, context):
+    def set_context(self, context):
         ''' if set externally, the sobject's icon_context will be ignored '''
-        my.context = context
+        self.context = context
 
-    def set_version(my, version):
-        my.version = version
+    def set_version(self, version):
+        self.version = version
 
 
-    def get_no_icon_wdg(my, missing=False):
-        sobject = my.get_current_sobject()
+    def get_no_icon_wdg(self, missing=False):
+        sobject = self.get_current_sobject()
         if not sobject:
             return ''
 
-        div = my.top
+        div = self.top
         div.add_style("position: relative")
         div.add_style("margin: 3px")
         div.add_class("spt_thumb_top")
 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
-        icon_size = my.get_icon_size()
+        icon_size = self.get_icon_size()
 
         if icon_size:
-            div.add_style("%s: %s" % (my.aspect, icon_size) )
+            div.add_style("%s: %s" % (self.aspect, icon_size) )
 
         if missing:
             img = HtmlElement.img(ThumbWdg.get_missing_image())
@@ -604,7 +622,7 @@ class ThumbWdg(BaseTableElementWdg):
 
         div.add(img)
         div.add_class("hand")
-        if my.SQL_ERROR:
+        if self.SQL_ERROR:
             warning_div = DivWdg('<i>-- preprocess error --</i>')
             warning_div.add_styles('position: absolute; z-index: 100; float: left; top: 0; left: 0; font-size: smaller;')
             div.add_style('position: relative')
@@ -614,58 +632,58 @@ class ThumbWdg(BaseTableElementWdg):
         code = sobject.get_code()
        
         
-        detail = my.get_option("detail")
+        detail = self.get_option("detail")
         if detail != 'false':
-            my.add_icon_behavior(div, sobject)
+            self.add_icon_behavior(div, sobject)
 
         unit = None
         if isinstance(icon_size, basestring):
-            icon_size, unit = my.split_icon_size(icon_size)
+            icon_size, unit = self.split_icon_size(icon_size)
 
-            img.add_style("%s: 100%%" % my.aspect )
+            img.add_style("%s: 100%%" % self.aspect )
         else:
-            img.add_style("%s: %s" % (my.aspect, my.get_icon_size()) )
-            img.add_style("min-%s: 15px" % my.aspect)
+            img.add_style("%s: %s" % (self.aspect, self.get_icon_size()) )
+            img.add_style("min-%s: 15px" % self.aspect)
 
         return div
 
 
-    def is_simple_viewable(my):
+    def is_simple_viewable(self):
         return False
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
-    def get_display(my):
-        my.aspect = my.get_option('aspect')
-        if not my.aspect:
-            my.aspect = "width"
+    def get_display(self):
+        self.aspect = self.get_option('aspect')
+        if not self.aspect:
+            self.aspect = "width"
 
-        search_key = my.get_option('search_key')
+        search_key = self.get_option('search_key')
         if search_key:
             sobject = Search.get_by_search_key(search_key)
-            my.set_sobject(sobject)
+            self.set_sobject(sobject)
 
-        if not my.is_preprocess_run:
-            my.preprocess()
+        if not self.is_preprocess_run:
+            self.preprocess()
 
  
   
         # get the set size
-        icon_size = my.get_option("icon_size")
+        icon_size = self.get_option("icon_size")
         if icon_size:
-            my.set_icon_size(icon_size)
+            self.set_icon_size(icon_size)
         # get the real size
-        icon_size = my.get_icon_size()
+        icon_size = self.get_icon_size()
 
 
-        min_size = my.get_option("min_icon_size")
+        min_size = self.get_option("min_icon_size")
         if not min_size:
             min_size = 45 
 
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         # get it from the web container
         if not sobject:
             web = WebContainer.get_web()
@@ -674,15 +692,15 @@ class ThumbWdg(BaseTableElementWdg):
             search_id = web.get_form_value("search_id")
             icon_size = web.get_form_value("icon_size")
             if icon_size:
-                my.icon_size = icon_size
+                self.icon_size = icon_size
             if search_type and search_code:
                 sobject = Search.get_by_code(search_type, search_code)
-                my.set_sobject(sobject)
+                self.set_sobject(sobject)
             elif search_type and search_id:
                 sobject = Search.get_by_id(search_type, search_id)
-                my.set_sobject(sobject)
+                self.set_sobject(sobject)
             else:
-                return my.get_no_icon_wdg()
+                return self.get_no_icon_wdg()
         elif sobject.get_id() == -1:
             div = DivWdg()
             div.add("&nbsp;")
@@ -693,8 +711,8 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         # if there is a redirect to the sobject (a relation), use that
-        redirect = my.get_option("redirect")
-        redirect_expr = my.get_option("redirect_expr")
+        redirect = self.get_option("redirect")
+        redirect_expr = self.get_option("redirect_expr")
         parser = ExpressionParser()
         
         if redirect and sobject:
@@ -704,7 +722,7 @@ class ThumbWdg(BaseTableElementWdg):
                 # the parent may have a similar relationship
                 for i in range(0,2):
                     if not sobject:
-                        return my.get_no_icon_wdg()
+                        return self.get_no_icon_wdg()
 
                     if sobject.has_value("search_type"):
                         search_type = sobject.get_value("search_type")
@@ -727,19 +745,19 @@ class ThumbWdg(BaseTableElementWdg):
                 search.add_filter(col1, sobject.get_value(col2) )
                 sobject = search.get_sobject()
                 if not sobject:
-                    return my.get_no_icon_wdg()
+                    return self.get_no_icon_wdg()
 
         elif redirect_expr and sobject:
             redirect_sobject = parser.eval(redirect_expr, sobjects=[sobject], single=True)
             if redirect_sobject:
                 sobject = redirect_sobject
             else:
-                return my.get_no_icon_wdg()
+                return self.get_no_icon_wdg()
 
         # get the icon context from the sobject
-        icon_context = my.get_option("icon_context")
+        icon_context = self.get_option("icon_context")
         if not icon_context:
-            icon_context = sobject.get_icon_context(my.context)
+            icon_context = sobject.get_icon_context(self.context)
 
         # try to get an icon first
         if isinstance(sobject, Snapshot):
@@ -747,19 +765,19 @@ class ThumbWdg(BaseTableElementWdg):
             # check if the sobject actually exists
             try:
                 snapshot.get_sobject()
-            except SObjectNotFoundException, e:
+            except SObjectNotFoundException as e:
                 return IconWdg('sobject n/a for snapshot code[%s]' %snapshot.get_code(), icon=IconWdg.ERROR)
-            except SearchException, e:
+            except SearchException as e:
                 return IconWdg('parent for snapshot [%s] not found' %snapshot.get_code(), icon=IconWdg.ERROR)
        
         else:
             # this is to limit unnecessary queries
             snapshot = None
-            if my.data:
+            if self.data:
                 search_key = SearchKey.get_by_sobject(sobject, use_id=False)
-                snapshot = my.data.get(search_key)
-            elif my.is_ajax(check_name=False) or redirect or redirect_expr:
-                if my.show_latest_icon:
+                snapshot = self.data.get(search_key)
+            elif self.is_ajax(check_name=False) or redirect or redirect_expr:
+                if self.show_latest_icon:
                     icon_context = None
                     
                 snapshot = Snapshot.get_latest_by_sobject(sobject, icon_context, show_retired=False)
@@ -770,33 +788,33 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         if not snapshot:
-            icon = my.get_no_icon_wdg()
+            icon = self.get_no_icon_wdg()
             return icon
 
 
         xml = snapshot.get_xml_value("snapshot")
         
-        # data structure to store my.info
-        my.info = {}
+        # data structure to store self.info
+        self.info = {}
         # get the file objects if they have not already been cached
-        if not my.file_objects:
+        if not self.file_objects:
             file_objects = {}
             snapshot_file_objects = File.get_by_snapshot(snapshot)
             
             for file_object in snapshot_file_objects:
                 file_objects[file_object.get_code()] = file_object
         else:
-            file_objects = my.file_objects
+            file_objects = self.file_objects
 
-        protocol = my.get_option("protocol")
+        protocol = self.get_option("protocol")
         if not protocol:
             from pyasm.prod.biz import ProdSetting
             protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
 
         # go through the nodes and try to find appropriate paths
-        my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless, protocol=protocol) 
+        self.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, self.show_versionless, protocol=protocol) 
         # find the link that will be used when clicking on the icon
-        link_path = ThumbWdg.get_link_path(my.info, image_link_order=my.image_link_order)
+        link_path = ThumbWdg.get_link_path(self.info, image_link_order=self.image_link_order)
 
         if link_path == None:
             
@@ -812,11 +830,11 @@ class ThumbWdg(BaseTableElementWdg):
                 
             for file_object in snapshot_file_objects:
                 file_objects[file_object.get_code()] = file_object
-            my.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, my.show_versionless, protocol=protocol) 
-            link_path = ThumbWdg.get_link_path(my.info, image_link_order=my.image_link_order)
+            self.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, self.show_versionless, protocol=protocol) 
+            link_path = ThumbWdg.get_link_path(self.info, image_link_order=self.image_link_order)
             
         # define a div
-        div = my.top
+        div = self.top
         div.add_class("spt_thumb_top")
         div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
 
@@ -838,10 +856,10 @@ class ThumbWdg(BaseTableElementWdg):
       
         # if no link path is found, display the no icon image
         if link_path == None:
-            return my.get_no_icon_wdg()
+            return self.get_no_icon_wdg()
 
 
-        repo_path = ThumbWdg.get_link_path(my.info['_repo'], image_link_order=my.image_link_order)
+        repo_path = ThumbWdg.get_link_path(self.info['_repo'], image_link_order=self.image_link_order)
         #if repo_path and repo_path.startswith("//"):
         if False:
             # PERFORCE
@@ -851,7 +869,7 @@ class ThumbWdg(BaseTableElementWdg):
             link_path = "http://localhost:8080%s&rev=%s" % (link_path, version)
 
         elif not repo_path or not os.path.exists(repo_path):
-            return my.get_no_icon_wdg(missing=True)
+            return self.get_no_icon_wdg(missing=True)
 
         elif repo_path.endswith(".svg"):
             f = open(repo_path, 'r')
@@ -860,11 +878,11 @@ class ThumbWdg(BaseTableElementWdg):
             div.add(html)
             return div
 
-        if my.icon_type == 'default':
+        if self.icon_type == 'default':
             # Fix Template icon_size=100% icon_type always load web versions
             
             if isinstance(icon_size, basestring):
-                icon_size, unit = my.split_icon_size(icon_size)
+                icon_size, unit = self.split_icon_size(icon_size)
 
             icon_size_check = float(icon_size)
  
@@ -874,9 +892,9 @@ class ThumbWdg(BaseTableElementWdg):
             else:
                 icon_type = 'icon'
         else:
-            icon_type = my.icon_type
+            icon_type = self.icon_type
 
-        icon_info = my.get_icon_info(link_path, repo_path=repo_path, icon_type=icon_type)
+        icon_info = self.get_icon_info(link_path, repo_path=repo_path, icon_type=icon_type)
         icon_link = icon_info.get('icon_link')
         icon_size = icon_info.get('icon_size')
         icon_missing = icon_info.get('icon_missing')
@@ -907,15 +925,18 @@ class ThumbWdg(BaseTableElementWdg):
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         div.add_style( "display: block" )
         div.add_style("margin: 5px")
-        div.add_style("%s: %s" % (my.aspect, icon_size) )
-        div.add_style("min-%s: %s" % (my.aspect, min_size) )
+        div.add_style("%s: %s" % (self.aspect, icon_size) )
+        div.add_style("min-%s: %s" % (self.aspect, min_size) )
         #div.set_box_shadow("0px 0px 5px")
+        div.add_style("overflow: hidden")
+        div.add_style("text-overflow: ellipsis")
+        div.add_style("white-space: nowrap")
         div.add_border()
 
         div.add_style("text-align: left" )
 
 
-        if my.kwargs.get("shape") in ['circle']:
+        if self.kwargs.get("shape") in ['circle']:
             div.add_style("border-radius: %s" % icon_size)
             div.add_style("overflow: hidden")
 
@@ -973,17 +994,17 @@ class ThumbWdg(BaseTableElementWdg):
             img.add_style("background: #ccc")
 
             if isinstance(icon_size, basestring):
-                icon_size, unit = my.split_icon_size(icon_size)
-                img.add_style("%s: 100%%" % my.aspect)
+                icon_size, unit = self.split_icon_size(icon_size)
+                img.add_style("%s: 100%%" % self.aspect)
             else:
-                img.add_style("%s: %s" % (my.aspect, icon_size) )
+                img.add_style("%s: %s" % (self.aspect, icon_size) )
 
 
-        detail = my.get_option("detail")
+        detail = self.get_option("detail")
 
         #deals with the icon attributes
         if detail == "false":
-            if my.has_img_link:
+            if self.has_img_link:
                 if protocol =='file':
                     dir_naming = DirNaming()
                     client_base_dir = dir_naming.get_base_dir('client_repo')
@@ -1017,9 +1038,9 @@ class ThumbWdg(BaseTableElementWdg):
 
                     else:
                         href = HtmlElement.href(img, link_path)
-                        #href.set_attr("target", "_blank" )
                         href.add_class("spt_thumb_href")
                         href.add_attr("spt_href", link_path)
+                        href.add_attr("target", "_blank")
 
 
 
@@ -1028,19 +1049,21 @@ class ThumbWdg(BaseTableElementWdg):
 
             else:
                 div.add(img)
+        elif detail == "none":
+            div.add(img)
         else:
             div.add(img)
             div.add_class("hand")
 
-            my.add_icon_behavior(div, sobject)
+            self.add_icon_behavior(div, sobject)
 
 
         
         # add an optional source/original file icon
-        if my.show_orig_icon:
+        if self.show_orig_icon:
             # make sure main is first
             link_order = ['main', 'web'] 
-            link_path = ThumbWdg.get_link_path(my.info, link_order)
+            link_path = ThumbWdg.get_link_path(self.info, link_order)
             img = IconWdg("source file", icon= IconWdg.IMAGE)
             
             href = HtmlElement.href(img, link_path)
@@ -1052,13 +1075,13 @@ class ThumbWdg(BaseTableElementWdg):
             div.add(href)
 
         # add an optional text link
-        if my.show_filename_flag:
-            text_link = ThumbWdg.get_link_path(my.info, my.image_link_order)
-            my.set_text_link(div, div, text_link)
+        if self.show_filename_flag:
+            text_link = ThumbWdg.get_link_path(self.info, self.image_link_order)
+            self.set_text_link(div, div, text_link)
 
-        if my.show_file_type:
-            links_list = ThumbWdg.get_file_info_list(xml, file_objects, sobject, snapshot, my.show_versionless)
-            my.set_type_link(div, links_list) 
+        if self.show_file_type:
+            links_list = ThumbWdg.get_file_info_list(xml, file_objects, sobject, snapshot, self.show_versionless)
+            self.set_type_link(div, links_list) 
 
 
 
@@ -1066,15 +1089,15 @@ class ThumbWdg(BaseTableElementWdg):
 
 
 
-    def add_icon_behavior(my, widget, sobject):
+    def add_icon_behavior(self, widget, sobject):
         search_key = SearchKey.get_by_sobject(sobject)
         code = sobject.get_code()
 
         widget.add_attr("spt_search_key", search_key)
         widget.add_attr("spt_code", code)
 
-        script_path = my.options.get("script_path")
-        class_name = my.options.get("detail_class_name")
+        script_path = self.options.get("script_path")
+        class_name = self.options.get("detail_class_name")
 
         if script_path:
             widget.add_class("spt_thumb_script_path")
@@ -1123,7 +1146,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
     
-    def set_type_link(my, widget, link_path_list):
+    def set_type_link(self, widget, link_path_list):
         ''' set the format of the file type links '''
         type_div = DivWdg()
         for type, link_path in link_path_list:
@@ -1135,7 +1158,7 @@ class ThumbWdg(BaseTableElementWdg):
 
         widget.add(type_div)
     
-    def set_text_link(my, widget, div, link_path):
+    def set_text_link(self, widget, div, link_path):
         ''' set the format of the text link. Overridable for different formats '''
         filename = os.path.basename(link_path)
         if len(filename) > 30:
@@ -1149,7 +1172,7 @@ class ThumbWdg(BaseTableElementWdg):
             'to save to disk</i>' % filename) 
  
         # avoid double link break
-        if not my.show_orig_icon:
+        if not self.show_orig_icon:
             div.add(HtmlElement.br(2))
         widget.add(href)
 
@@ -1188,16 +1211,16 @@ class ThumbWdg(BaseTableElementWdg):
     get_link_path = staticmethod(get_link_path)
 
 
-    def get_icon_info(my, image_link, repo_path=None, icon_type='icon'):
+    def get_icon_info(self, image_link, repo_path=None, icon_type='icon'):
         ''' if no icon is specified then get the icon based on the main file,
         otherwise use the specified icon '''
 
         icon_info = {}
 
-        icon_size = my.get_icon_size()
+        icon_size = self.get_icon_size()
         icon_link = None
-        if my.info.has_key(icon_type):
-            icon_link = my.info[icon_type]
+        if self.info.has_key(icon_type):
+            icon_link = self.info[icon_type]
             if not os.path.exists(repo_path):
                 icon_link = ThumbWdg.get_no_image()
                 icon_info['icon_missing'] = True
@@ -1207,7 +1230,7 @@ class ThumbWdg(BaseTableElementWdg):
                 #check if icon_size is a string: integer num endswith unit
 
                 if isinstance(icon_size, basestring):
-                    icon_size, unit = my.split_icon_size(icon_size)
+                    icon_size, unit = self.split_icon_size(icon_size)
                     icon_size = int( 80.0 / 120.0 * float(icon_size) )
                     icon_size = '%s%s' %(icon_size, unit)
                         
@@ -1310,10 +1333,12 @@ class ThumbWdg(BaseTableElementWdg):
             icon = "adobe/Prelude.png"
         elif ext == 'pr':
             icon = "adobe/Premiere_Pro.png"
+        elif ext == 'swf':
+            icon = "adobe/SWF.png"
 
         #for web files
-        elif ext == "html":
-            icon = "html.png"
+        #elif ext == "html":
+        #    icon = "html.png"
         elif ext == "css":
             icon = "css.png"
         elif ext == "js":
@@ -1392,6 +1417,8 @@ class ThumbWdg(BaseTableElementWdg):
             path = "%s/%s" % (web_dir, file_name)
 
             if protocol != "file":
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
                 path = urllib.pathname2url(path)
 
             if isinstance(info, dict):
@@ -1406,7 +1433,7 @@ class ThumbWdg(BaseTableElementWdg):
     get_file_info = staticmethod(get_file_info)
 
     def get_refresh_script(sobject, icon_size=None, show_progress=True):
-        print "DEPRECATED: Snapshot.get_refresh_script!"
+        print("DEPRECATED: Snapshot.get_refresh_script!")
 
         # get the ajax loader for the thumbnail
         ajax = AjaxLoader("thumb_%s" % sobject.get_search_key() )
@@ -1430,7 +1457,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
 
-    def split_icon_size(my, icon_size):
+    def split_icon_size(self, icon_size):
         m = re.match('(\d+\.?\d*)(pt|em|%|px)*', icon_size)
         num = 0
         unit = ''
@@ -1443,23 +1470,24 @@ class ThumbWdg(BaseTableElementWdg):
 
 class ThumbCmd(Command):
 
-    def get_path(my):
-        return my.path
+    def get_path(self):
+        return self.path
 
-    def execute(my):
+    def execute(self):
 
-        search_keys  = my.kwargs.get("search_keys")
+        search_keys  = self.kwargs.get("search_keys")
+        self.path = None
 
         for search_key in search_keys:
-            my.generate_icon(search_key)
+            self.generate_icon(search_key)
 
 
-        my.info = {
+        self.info = {
             'search_keys': search_keys
         }
-        my.add_description('Generate Thumbnail with ThumbCmd')
+        self.add_description('Generate Thumbnail with ThumbCmd')
 
-    def generate_icon(my, search_key):
+    def generate_icon(self, search_key):
 
         sobject = Search.get_by_search_key(search_key)
         search_code = sobject.get_code()
@@ -1473,11 +1501,19 @@ class ThumbCmd(Command):
             file_type = "main"
             path = sobject.get_lib_path_by_type(file_type)
 
-            #To check if it is a sequence checkin
+            if path.find("#") != -1:
+                lib_dir = sobject.get_lib_dir()
+                file_name = sobject.get_expanded_file_names()[0]
+                path = "%s/%s" % (lib_dir, file_name)
+
+
+            """
+            # To check if it is a sequence checkin
             all_snapshots=sobject.get_all_file_objects()
             for single_snapshot in all_snapshots:
                 if single_snapshot.get('base_type') == 'sequence':
                     return
+            """
 
             icon_creator = IconCreator(path)
             icon_creator.execute()
@@ -1525,7 +1561,7 @@ class ThumbCmd(Command):
             """
 
             if not os.path.exists(path):
-                print "WARNING: path [%s] does not exist" % path
+                print("WARNING: path [%s] does not exist" % path)
                 return
 
             icon_creator = IconCreator(path)
@@ -1547,7 +1583,7 @@ class ThumbCmd(Command):
             #snapshot = Search.get_by_search_key(snapshot.get("__search_key__"))
 
 
-        my.path = snapshot.get_web_path_by_type("icon")
+        self.path = snapshot.get_web_path_by_type("icon")
 
 
 
@@ -1557,17 +1593,17 @@ class ThumbCmd(Command):
 
 class FileInfoWdg(BaseTableElementWdg):
 
-    def get_title(my):
+    def get_title(self):
         return "File Info"
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
-        if my.name == None:
-            my.name = "snapshot"
+        if self.name == None:
+            self.name = "snapshot"
 
-        xml = sobject.get_xml_value(my.name)
+        xml = sobject.get_xml_value(self.name)
 
         images = xml.get_values("snapshot/file/@name")
         if len(images) != 3:

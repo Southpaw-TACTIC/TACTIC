@@ -55,22 +55,22 @@ class BaseAppServer(Base):
         profile.object = None
 
 
-    def __init__(my):
-        my.top = None
-        my.hash = None
-        super(BaseAppServer,my).__init__()
+    def __init__(self):
+        self.top = None
+        self.hash = None
+        super(BaseAppServer,self).__init__()
 
 
-    def writeln(my, string):
-        my.buffer.write(string)
+    def writeln(self, string):
+        self.buffer.write(string)
 
 
-    def get_display(my):
+    def get_display(self):
 
         profile_flag = False
 
         if profile_flag:
-            BaseAppServer.profile.object = my
+            BaseAppServer.profile.object = self
             if os.name == 'nt':
                 path = "C:/sthpw/profile"
             else:
@@ -78,27 +78,30 @@ class BaseAppServer(Base):
             profile.run( "from pyasm.web.app_server import BaseAppServer; BaseAppServer.profile()", path)
             p = pstats.Stats(path)
             p.sort_stats('cumulative').print_stats(30)
-            print "*"*30
+            print("*"*30)
             p.sort_stats('time').print_stats(30)
 
         else:
-            my.execute()
+            self.execute()
 
         value = WebContainer.get_buffer().getvalue()
         WebContainer.clear_buffer()
+
+
         return value
 
 
 
     def profile():
-        my = BaseAppServer.profile.object
-        my.execute()
+        self = BaseAppServer.profile.object
+        self.execute()
     profile = staticmethod(profile)
 
 
 
-    def execute(my):
-        my.buffer = cStringIO.StringIO()
+    def execute(self):
+        self.buffer = cStringIO.StringIO()
+        error = None
 
         try:
             try:
@@ -110,36 +113,39 @@ class BaseAppServer(Base):
                 WebContainer.clear_buffer()
 
                 # initialize the web environment object and register it
-                adapter = my.get_adapter()
+                adapter = self.get_adapter()
                 WebContainer.set_web(adapter)
 
                 # get the display
-                my._get_display()
+                self._get_display()
 
-            except SetupException, e:
+            except SetupException as e:
                 '''Display setup exception in the interface'''
-                print "Setup exception: ", e.__str__()
+                print("Setup exception: ", e.__str__())
                 DbContainer.rollback_all()
                 ExceptionLog.log(e)
-                my.writeln("<h3>Tactic Setup Error</h3>" )
-                my.writeln("<pre>" )
-                my.writeln(e.__str__() )
-                my.writeln("</pre>" )
+                self.writeln("<h3>Tactic Setup Error</h3>" )
+                self.writeln("<pre>" )
+                self.writeln(e.__str__() )
+                self.writeln("</pre>" )
+                error = "405: TACTIC Setup Error"
 
-            except DatabaseException, e:
+            except DatabaseException as e:
                 from tactic.ui.startup import DbConfigPanelWdg
                 config_wdg = DbConfigPanelWdg()
-                my.writeln("<pre>")
-                my.writeln(config_wdg.get_buffer_display())
-                my.writeln("</pre>")
+                self.writeln("<pre>")
+                self.writeln(config_wdg.get_buffer_display())
+                self.writeln("</pre>")
+                error = "405: TACTIC Database Error"
 
 
-            except Exception, e:
+            except Exception as e:
                 stack_trace = ExceptionLog.get_stack_trace(e)
-                print stack_trace
-                my.writeln("<pre>")
-                my.writeln(stack_trace)
-                my.writeln("</pre>")
+                #print(stack_trace)
+                self.writeln("<pre>")
+                self.writeln(stack_trace)
+                self.writeln("</pre>")
+                error = "405 %s" % str(e)
 
                 # it is possible that the security object was not set
                 security = Environment.get_security()
@@ -151,14 +157,14 @@ class BaseAppServer(Base):
                 # ensure that database connections are rolled back
                 try:
                     DbContainer.rollback_all()
-                except Exception, e2:
-                    print "Error: Could not rollback: ", e2.__str__()
-                    my.writeln("Error: Could not rollback: '%s'" % e2.__str__() )
+                except Exception as e2:
+                    print("Error: Could not rollback: ", e2.__str__())
+                    self.writeln("Error: Could not rollback: '%s'" % e2.__str__() )
                     stack_trace = ExceptionLog.get_stack_trace(e2)
-                    print stack_trace
-                    my.writeln("<pre>")
-                    my.writeln(stack_trace)
-                    my.writeln("</pre>")
+                    print(stack_trace)
+                    self.writeln("<pre>")
+                    self.writeln(stack_trace)
+                    self.writeln("</pre>")
                     raise e
                     #return
 
@@ -167,23 +173,23 @@ class BaseAppServer(Base):
                     # WARNING: if this call causes an exception, the error
                     # will be obscure
                     log = ExceptionLog.log(e)
-                except Exception, e2:
+                except Exception as e2:
 
-                    print "Error: Could not log exception: ", e2.__str__()
-                    my.writeln("Error '%s': Could not log exception" % e2.__str__() )
+                    print("Error: Could not log exception: ", e2.__str__())
+                    self.writeln("Error '%s': Could not log exception" % e2.__str__() )
                     stack_trace = ExceptionLog.get_stack_trace(e2)
-                    print stack_trace
-                    my.writeln("<pre>")
-                    my.writeln(stack_trace)
-                    my.writeln("</pre>")
+                    print(stack_trace)
+                    self.writeln("<pre>")
+                    self.writeln(stack_trace)
+                    self.writeln("</pre>")
                     return
 
-                my.writeln("<pre>")
-                my.writeln("An Error has occurred.  Please see your Tactic Administrator<br/>")
-                my.writeln( "Error Message: %s" % log.get_value("message") )
-                my.writeln("Error Id: %s" % log.get_id() )
-                my.writeln( log.get_value("stack_trace") )
-                my.writeln("</pre>")
+                self.writeln("<pre>")
+                self.writeln("An Error has occurred.  Please see your Tactic Administrator<br/>")
+                self.writeln( "Error Message: %s" % log.get_value("message") )
+                self.writeln("Error Id: %s" % log.get_id() )
+                #self.writeln( log.get_value("stack_trace") )
+                self.writeln("</pre>")
 
 
         finally:
@@ -191,12 +197,17 @@ class BaseAppServer(Base):
             DbContainer.close_all()
             # clear the container
             Container.delete()
-            WebContainer.get_buffer().write( my.buffer.getvalue() )
+            WebContainer.get_buffer().write( self.buffer.getvalue() )
+
+            if error:
+                import cherrypy
+                print("error: ", error)
+                cherrypy.response.status = error
+                #raise Exception(error)
 
 
 
-
-    def handle_not_logged_in(my, allow_change_admin=True):
+    def handle_not_logged_in(self, allow_change_admin=True):
 
 
         site_obj = Site.get()
@@ -219,7 +230,8 @@ class BaseAppServer(Base):
         top = TitleTopWdg()
         widget.add(top)
         body = top.get_body()
-        body.add_gradient("background", "background", 5, -20)
+        #body.add_gradient("background", "background", 5, -20)
+        body.add_color("background", "background")
         body.add_color("color", "color")
 
 
@@ -242,7 +254,7 @@ class BaseAppServer(Base):
                     if current_project != "default":
                         project = Project.get_by_code(current_project)
                         assert project
-                except Exception, e:
+                except Exception as e:
                     pass
                 else:
 
@@ -252,8 +264,8 @@ class BaseAppServer(Base):
                     if current_project and current_project != "default":
                         try:
                             Project.set_project(current_project)
-                        except SecurityException, e:
-                            print e
+                        except SecurityException as e:
+                            print(e)
                             if 'is not permitted to view project' not in e.__str__():
                                 raise
 
@@ -271,7 +283,7 @@ class BaseAppServer(Base):
                 # display default web login
                 if not web_wdg:
                     # get login screen from Site
-                    link = "/%s" % "/".join(my.hash)
+                    link = "/%s" % "/".join(self.hash)
                     web_wdg = site_obj.get_login_wdg(link)
                     if not web_wdg:
                         # else get the default one
@@ -296,7 +308,7 @@ class BaseAppServer(Base):
 
 
 
-    def _get_display(my):
+    def _get_display(self):
 
         # set up the security object
         from pyasm.security import Security, Sudo
@@ -323,11 +335,11 @@ class BaseAppServer(Base):
 
         security = Security()
         try:
-            security = my.handle_security(security)
+            security = self.handle_security(security)
             is_logged_in = security.is_logged_in()
-        except Exception, e:
-            print "AppServer Exception: ", e
-            return my.handle_not_logged_in()
+        except Exception as e:
+            print("AppServer Exception: ", e)
+            return self.handle_not_logged_in()
 
  
         guest_mode = Config.get_value("security", "guest_mode")
@@ -342,36 +354,57 @@ class BaseAppServer(Base):
         # if not logged in, then log in as guest
         if not is_logged_in:
             if not allow_guest:
-                return my.handle_not_logged_in()
+                return self.handle_not_logged_in()
             else:
                 # login as guest
                 security = Security()
-                my.handle_guest_security(security)
+                self.handle_guest_security(security)
 
 
         # for here on, the user is logged in
         login_name = Environment.get_user_name()
 
-
-
+        is_upload = '/UploadServer' in web.get_request_url().to_string()
+       
         # check if the user has permission to see this project
         project = web.get_context_name()
         if project == 'default':
             override_default = Project.get_default_project()
             if override_default:
                 project = override_default
-        if project != 'default':
-            security_version = get_security_version()
-            if security_version == 1:
-                default = "view"
-                access = security.check_access("project", project, "view", default="view")
+        if is_upload:
+            print("IS UPLOAD")
+            access = True
+
+        elif project != 'default':
+
+            # make sure the security check is done on the appropriate site
+            path_info = site_obj.get_request_path_info()
+            if path_info:
+                site = path_info.get("site")
+                Site.set_site(site)
+                s = Environment.get_security()
+                has_site = True
             else:
-                default = "deny"
-                key = { "code": project }
-                key2 = { "code": "*" }
-                #keys = [key]
-                keys = [key, key2]
-                access = security.check_access("project", keys, "allow", default=default)
+                s = security
+                has_site = False
+
+            try:
+                security_version = get_security_version()
+                if security_version == 1:
+                    default = "view"
+                    access = s.check_access("project", project, "view", default="view")
+                else:
+                    default = "deny"
+                    key = { "code": project }
+                    key2 = { "code": "*" }
+                    keys = [key, key2]
+                    access = s.check_access("project", keys, "allow", default=default)
+            finally:
+                if has_site:
+                    Site.pop_site()
+
+
         else:
             # you always have access to the default project
             access = True
@@ -385,37 +418,29 @@ class BaseAppServer(Base):
                 if not msg:
                     msg = "User [%s] is not allowed to see this project [%s]" % (login_name, project)
                     web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
-                return my.handle_not_logged_in(allow_change_admin=False)
+                return self.handle_not_logged_in(allow_change_admin=False)
 
             else:
                 from pyasm.widget import BottomWdg, Error403Wdg
                 widget = Widget()
-                top = my.get_top_wdg()
+                top = self.get_top_wdg()
                 widget.add( top )
                 widget.add( Error403Wdg() )
                 widget.add( BottomWdg() )
                 widget.get_display()
-     
+                if is_upload:
+                    print("WARNING: User [%s] is not allowed to upload to project [%s]."%(login_name, project))
                 return
 
 
-        if login_name == 'guest' and guest_mode == "full":
-            # some extra security for guest users
-            guest_url_allow = Config.get_value("security", "guest_url_allow")
-            if guest_url_allow:
-                items = guest_url_allow.split("|")
-                allowed = False
-                if my.hash:
-                    url = my.hash[0]
-                else:
-                    url = "index"
-                for item in items:
-                    item = item.strip("/")
-                    if item == url:
-                        allowed = True
-                        break
-                if not allowed:
-                    return my.handle_not_logged_in()
+
+        if login_name == 'guest':
+            # let the site handle the guest completely
+            guest_wdg = site_obj.get_guest_wdg(self.hash)
+            if guest_wdg:
+                web_app = WebApp()
+                web_app.get_display(guest_wdg)
+                return
 
 
 
@@ -429,21 +454,49 @@ class BaseAppServer(Base):
             from tactic.ui.panel import HashPanelWdg
             web = WebContainer.get_web()
 
+
+
             widget = Widget()
             top = TitleTopWdg()
             widget.add(top)
             body = top.get_body()
-            body.add_gradient("background", "background", 5, -20)
+            body.add_color("background", "background")
             body.add_color("color", "color")
 
-            # get the project from the url because we are still 
-            # in the admin project at this stage
-            current_project = web.get_context_name()
+
+            has_site = False
+
+            # use the path to set the project and/or site
+            path_info = site_obj.get_request_path_info()
+            if path_info:
+                path_site = path_info.get("site")
+
+                try:
+                    Site.set_site(path_site)
+                    has_site = True
+                except Exception as e:
+                    print("WARNING: ", e)
+                    current_project = web.get_context_name()
+                else:
+                    current_project = path_info.get("project_code")
+                    if not current_project:
+                        current_project = web.get_context_name()
+
+            else:
+                # get the project from the url because we are still 
+                # in the admin project at this stage
+                current_project = web.get_context_name()
+
+
+
+            sudo = Sudo()
             try:
                 if current_project != "default":
-                    project = Project.get_by_code(current_project)
-                    assert project
-            except Exception, e:
+                    project = Project.get_by_code(current_project, use_cache=False)
+                    if not project:
+                        raise Exception("Project [%s] does not exist" % current_project)
+            except Exception as e:
+                print("WARNING: ", e)
                 web_wdg = None
             else:
                 if not current_project or current_project == "default":
@@ -452,8 +505,8 @@ class BaseAppServer(Base):
                 if current_project and current_project != "default":
                     try:
                         Project.set_project(current_project)
-                    except SecurityException, e:
-                        print e
+                    except SecurityException as e:
+                        print(e)
                         if 'is not permitted to view project' in e.__str__():
                             pass
                         else:
@@ -461,17 +514,16 @@ class BaseAppServer(Base):
 
 
                     # find the guest views
-                    # FIXME: this doesn't work!!!  It resets the home page
-                    search = Search("config/url")
-                    urls = search.get_sobjects()
-                    open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
-                    print "open_hashes: ", open_hashes
-                    link = "/%s" % "/".join(my.hash)
+                    #search = Search("config/url")
+                    #urls = search.get_sobjects()
+                    #open_hashes = [x.get("url").lstrip("/").split("/")[0] for x in urls]
 
+                    link = "/%s" % "/".join(self.hash)
 
                     # guest views
-                    open_hashes = ['register', 'accept', 'thank_you', 'sign_in','pricing', 'change_password']
-                    if len(my.hash) >= 1 and my.hash[0] in open_hashes:
+                    open_hashes = site_obj.get_guest_hashes()
+
+                    if len(self.hash) >= 1 and self.hash[0] in open_hashes:
                         web_wdg = HashPanelWdg.get_widget_from_hash(link, return_none=True)
                     else:
                         web_wdg = None
@@ -484,11 +536,18 @@ class BaseAppServer(Base):
                         top.add(web_wdg)
                 else:
                     web_wdg = None
+            finally:
+                sudo.exit()
+
+                if has_site:
+                    Site.pop_site()
+
+
 
             if not web_wdg:
                 msg = "No default page defined for guest user. Please set up /guest in Custom URL."
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
-                return my.handle_not_logged_in(allow_change_admin=False)
+                return self.handle_not_logged_in(allow_change_admin=False)
 
 
             # create a web app and run it through the pipeline
@@ -498,12 +557,36 @@ class BaseAppServer(Base):
 
 
 
+        # Full access
+
+
+        # if a guest has full access, then handle it here
+        if login_name == 'guest' and guest_mode == "full":
+            # some extra security for guest users
+            guest_url_allow = Config.get_value("security", "guest_url_allow")
+            if guest_url_allow:
+                items = guest_url_allow.split("|")
+                allowed = False
+                if self.hash:
+                    url = self.hash[0]
+                else:
+                    url = "index"
+                for item in items:
+                    item = item.strip("/")
+                    if item == url:
+                        allowed = True
+                        break
+                if not allowed:
+                    return self.handle_not_logged_in()
+
+
+
 
         # Welcome message for first time run
         is_first_run = Environment.is_first_run()
         if is_first_run:
             from pyasm.widget import WebLoginWdg, BottomWdg
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
 
             from tactic.ui.app import PageHeaderWdg
             from tactic.ui.startup import DbConfigPanelWdg
@@ -550,17 +633,23 @@ class BaseAppServer(Base):
         else:
             page_type = "normal"
 
-
         # TODO: the following could be combined into a page_init function
         # provide the opportunity to set some templates
-        my.set_templates()
-        my.add_triggers()
+        self.set_templates()
+        self.add_triggers()
 
-        my.init_web_container()
+        self.init_web_container()
 
 
         # install the language
         Translation.install()
+
+
+
+        path_info = site_obj.get_request_path_info()
+        if path_info and path_info.get("site") != "default":
+            Site.set_site(path_info.get("site"))
+            project_code = path_info.get("project_code")
 
 
         # handle the case where the project does not exist
@@ -569,7 +658,7 @@ class BaseAppServer(Base):
             from pyasm.widget import BottomWdg, Error404Wdg
             Project.set_project("admin")
             widget = Widget()
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
             widget.add( top )
             widget.add( Error404Wdg() )
             widget.add( BottomWdg() )
@@ -577,13 +666,17 @@ class BaseAppServer(Base):
             return widget
 
 
+
+        # get the content of the page
         try:
-            widget = my.get_content(page_type)
-        except Exception, e:
-            print "ERROR: ", e
+
+            widget = self.get_content(page_type)
+
+        except Exception as e:
+            print("ERROR: ", e)
             from pyasm.widget import BottomWdg, Error403Wdg
             widget = Widget()
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
             widget.add( top )
             widget.add( Error403Wdg() )
             widget.add( BottomWdg() )
@@ -598,6 +691,8 @@ class BaseAppServer(Base):
             if not is_licensed:
                 widget.add("<script>alert('%s')</script>" % license.get_message())
 
+
+
         # create a web app and run it through the pipeline
         web_app = WebApp()
         web_app.get_display(widget)
@@ -605,16 +700,18 @@ class BaseAppServer(Base):
 
 
 
-    def handle_security(my, security, allow_guest=False):
+    def handle_security(self, security, allow_guest=False):
         # set the seucrity object
 
         WebContainer.set_security(security)
 
         # see if there is an override
         web = WebContainer.get_web()
+        is_from_login = web.get_form_value("is_from_login")
+        
         ticket_key = web.get_form_value("login_ticket")
         # attempt to login in with a ticket
-        if not ticket_key:
+        if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
 
@@ -658,14 +755,27 @@ class BaseAppServer(Base):
             else:
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
+
                 ticket_key = security.get_ticket_key()
+              
+                if not ticket_key:
+                    if site:
+                        site_obj.pop_site()
+                    return security
+
 
         elif ticket_key:
-
+          
             if site:
                 site_obj.set_site(site)
 
             login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
+           
+            # In the midst of logging out, login is None
+            if not login:
+                if site:
+                    site_obj.pop_site()
+                return security
 
 
         if not security.is_logged_in():
@@ -675,16 +785,14 @@ class BaseAppServer(Base):
                 reset_cmd = ResetPasswordCmd(reset=True)
                 try:
                     reset_cmd.execute()
-                except TacticException, e:
-                    print "Reset failed. %s" %e.__str__()
+                except TacticException as e:
+                    print("Reset failed. %s" %e.__str__())
 
-            # FIXME: not sure why this is here???
-            """
+            # let empty username or password thru to get feedback from WebLoginCmd
             else:
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-            """
 
         # clear the password
         web.set_form_value('password','')
@@ -702,31 +810,34 @@ class BaseAppServer(Base):
             ticket = security.get_ticket()
             if ticket:
                 site_obj.handle_ticket(ticket)
-        except Exception, e:
-            print "ERROR in handle_ticket: ", e
+        except Exception as e:
+            print("ERROR in handle_ticket: ", e)
         """
 
 
 
         # set up default securities
-        #my.set_default_security(security)
+        #self.set_default_security(security)
 
         # for now apply the access rules after
         security.add_access_rules()
-
+        
         return security
 
 
-    def handle_guest_security(my, security):
-
-        Site.set_site("default")
+    def handle_guest_security(self, security):
+       
+        # skip storing current security since it failed
+        Site.set_site("default", store_security=False)
         try:
 
             WebContainer.set_security(security)
+            
             security.login_as_guest()
-
+            
             ticket_key = security.get_ticket_key()
 
+            
             web = WebContainer.get_web()
             web.set_cookie("login_ticket", ticket_key)
 
@@ -739,57 +850,56 @@ class BaseAppServer(Base):
             ''')
             access_manager.add_xml_rules(xml)
         finally:
-            Site.pop_site()
+            Site.pop_site(pop_security=False)
+           
 
 
-
-
-    def init_web_container(my):
+    def init_web_container(self):
         # add the event container, initialization only
         event_container = EventContainer()
         WebContainer.set_event_container( event_container )
 
 
-    def get_content(my, request_type):
+    def get_content(self, request_type):
         web = WebContainer.get_web()
 
         # NOTE: is this needed anymore?
         if request_type in ["upload", "dynamic_file"]:
-            print "DEPRECATED: dynamic file in app_server.py"
+            print("DEPRECATED: dynamic file in app_server.py")
             widget = Widget()
-            page = my.get_page_widget()
+            page = self.get_page_widget()
             widget.add(page)
             return widget
 
 
         # find hash of url
-        my.custom_url = None
-        if my.hash:
-            hash = "/".join(my.hash)
+        self.custom_url = None
+        if self.hash:
+            hash = "/".join(self.hash)
             hash = "/%s" % hash
             from tactic.ui.panel import HashPanelWdg
-            my.custom_url = HashPanelWdg.get_url_from_hash(hash)
-            if my.custom_url:
-                content_type = my.custom_url.get_value("content_type", no_exception=True)
+            self.custom_url = HashPanelWdg.get_url_from_hash(hash)
+            if self.custom_url:
+                content_type = self.custom_url.get_value("content_type", no_exception=True)
             # TODO: we may want to handle this differently for content types
             # other that text/html
 
 
 
 
-        return my.get_application_wdg()
+        return self.get_application_wdg()
 
 
 
-    def log_exception(my, exception):
+    def log_exception(self, exception):
         import sys,traceback
         tb = sys.exc_info()[2]
         stacktrace = traceback.format_tb(tb)
         stacktrace_str = "".join(stacktrace)
-        print "-"*50
-        print stacktrace_str
-        print str(exception)
-        print "-"*50
+        print("-"*50)
+        print(stacktrace_str)
+        print(str(exception))
+        print("-"*50)
 
         user_name = Environment.get_user_name()
         exception_log = SObjectFactory.create("sthpw/exception_log")
@@ -808,18 +918,18 @@ class BaseAppServer(Base):
     #
     # virtual functions
     #
-    def set_default_security(my, security):
+    def set_default_security(self, security):
         '''set a number of default security rules to be always implemented'''
         rules = AppServerSecurityRules(security)
 
 
-    def get_application_wdg(my):
+    def get_application_wdg(self):
 
-        application = my.get_top_wdg()
+        application = self.get_top_wdg()
 
         # get the main page widget
         # NOTE: this needs to happen after the body is put in a Container
-        page = my.get_page_widget()
+        page = self.get_page_widget()
         page.set_as_top()
         if type(page) in types.StringTypes:
             page = StringWdg(page)
@@ -829,24 +939,24 @@ class BaseAppServer(Base):
 
 
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         '''get the content widget'''
         return "No Content"
 
-    def get_top_wdg(my):
+    def get_top_wdg(self):
         from tactic.ui.app import TopWdg
-        my.top = TopWdg()
-        return my.top
+        self.top = TopWdg()
+        return self.top
 
 
-    def get_single_widget(my, widget, minimal=True):
+    def get_single_widget(self, widget, minimal=True):
 
         from pyasm.widget import BottomWdg
         from tactic.ui.app import TitleTopWdg
         if minimal: 
             top = TitleTopWdg()
         else:
-            top = my.get_top_wdg()
+            top = self.get_top_wdg()
 
         container = Widget()
 
@@ -857,12 +967,12 @@ class BaseAppServer(Base):
         return container
 
 
-    def add_triggers(my):
+    def add_triggers(self):
         '''callback that enables a site to add custom triggers'''
         pass
 
 
-    def set_templates(my):
+    def set_templates(self):
         '''callback where sobject templates can be set'''
         pass
 
@@ -887,7 +997,8 @@ def get_app_server_class():
         from webware_adapter import get_app_server
     elif app_server == "cherrypy":
         import cherrypy
-        if cherrypy.__version__.startswith("3."):
+        cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
+        if cherrypy_major_version >= 3:
             from cherrypy30_adapter import get_app_server
         else:
             from cherrypy_adapter import get_app_server
@@ -896,7 +1007,7 @@ def get_app_server_class():
     else:
         #raise AppServerException("Environment variable TACTIC_APP_SERVER not set")
         # default to webware for now
-        #print "WARNING: Environment variable TACTIC_APP_SERVER not set"
+        #print("WARNING: Environment variable TACTIC_APP_SERVER not set")
         #from webware_adapter import get_app_server
         return object
 
@@ -909,7 +1020,8 @@ def get_xmlrpc_server_class():
         from webware_adapter import get_xmlrpc_server
     elif app_server == "cherrypy":
         import cherrypy
-        if cherrypy.__version__.startswith("3."):
+        cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
+        if cherrypy_major_version >= 3:
             from cherrypy30_adapter import get_xmlrpc_server
         else:
             from cherrypy_adapter import get_xmlrpc_server
@@ -918,7 +1030,7 @@ def get_xmlrpc_server_class():
     else:
         #raise AppServerException("Environment variable TACTIC_APP_SERVER not set")
         # default to webware for now
-        #print "WARNING: Environment variable TACTIC_APP_SERVER not set"
+        #print("WARNING: Environment variable TACTIC_APP_SERVER not set")
         #from webware_adapter import get_xmlrpc_server
         return object
 

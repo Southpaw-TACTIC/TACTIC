@@ -35,48 +35,48 @@ class MayaSetWdg(MayaCheckinWdg):
     SEARCH_TYPE = "prod/asset"
     PUBLISH_TYPE = "set"
 
-    def __init__(my,name=""):
-        my.asset_type = "section"
-        super(MayaSetWdg,my).__init__(name)
+    def __init__(self,name=""):
+        self.asset_type = "section"
+        super(MayaSetWdg,self).__init__(name)
 
 
-    def set_asset_type(my, asset_type):
-        my.asset_type = asset_type
+    def set_asset_type(self, asset_type):
+        self.asset_type = asset_type
 
-    def get_display(my):
+    def get_display(self):
 
-        my.add("Category: ")
+        self.add("Category: ")
 
         search = Search("prod/asset_library")
-        category_select = SelectWdg(my.CATEGORY)
+        category_select = SelectWdg(self.CATEGORY)
         category_select.add_empty_option(label='-- Select Category --')
         category_select.set_search_for_options(search, "code", "title" )
         category_select.add_style("font-size: 0.9em")
         category_select.add_style("margin: 0px 3px")
         category_select.add_event("onchange", "document.form.submit()")
         category_select.set_persistence()
-        my.add(category_select)
+        self.add(category_select)
 
         current_category = category_select.get_value()
         if current_category == "":
-            return super(MayaSetWdg,my).get_display()
+            return super(MayaSetWdg,self).get_display()
 
         section_span = SpanWdg("Section: ", css='small')
-        my.add(section_span)
+        self.add(section_span)
         search = Search("prod/asset")
         search.add_filter("asset_library", current_category)
-        search.add_filter("asset_type", my.asset_type)
-        section_select = SelectWdg(my.CURRENT_SECTION)
+        search.add_filter("asset_type", self.asset_type)
+        section_select = SelectWdg(self.CURRENT_SECTION)
         section_select.set_persistence()
         section_select.add_empty_option()
         section_select.add_event('onchange', "var item=document.form.elements['%s']; \
-            if (item) {item.value='';} document.form.submit()" % my.ITEMS_NAV_LABEL)
+            if (item) {item.value='';} document.form.submit()" % self.ITEMS_NAV_LABEL)
         section_select.set_search_for_options(search, "get_full_name()", "name" )
         section_select.add_style("font-size: 0.9em")
         section_select.add_style("margin: 0px 3px")
         section_span.add(section_select)
 
-        my.handle_create_set_asset()
+        self.handle_create_set_asset()
          
         # get the current set and display the contents
         current_section_name = section_select.get_value()
@@ -85,37 +85,37 @@ class MayaSetWdg(MayaCheckinWdg):
             section = Asset.get_by_code(section_code)
             table = TableWdg("prod/asset", "load")
             table.set_sobject(section)
-            my.add(table)
+            self.add(table)
             
             # handle set contents
             if section:
-                my.handle_contents(section)
-                my.handle_add_instance(section)
+                self.handle_contents(section)
+                self.handle_add_instance(section)
 
         else:
-            my.add(HtmlElement.h3("No section selected"))
+            self.add(HtmlElement.h3("No section selected"))
 
-        return super(MayaSetWdg,my).get_display()
+        return super(MayaSetWdg,self).get_display()
 
 
-    def handle_create_set_asset(my):
+    def handle_create_set_asset(self):
 
         div = DivWdg()
 
-        context = my.get_context_filter_wdg()
+        context = self.get_context_filter_wdg()
         div.add(context)
         div.add_style("line-height: 4em")
 
-        div.add("Create New %s: " % my.asset_type)
+        div.add("Create New %s: " % self.asset_type)
         
         div.add_style("border-bottom: 1px dashed #666")
-        input = TextWdg(my.NEW_SECTION)
+        input = TextWdg(self.NEW_SECTION)
         div.add(input)
 
-        button = ProdIconSubmitWdg(my.CREATE_BUTTON)
+        button = ProdIconSubmitWdg(self.CREATE_BUTTON)
         button.add_event("onclick", "create_set( document.form.elements['%s'].value, \
             document.form.elements['%s'].value, document.form.elements['%s_context'].value)" \
-            %(my.NEW_SECTION, my.CATEGORY, my.PUBLISH_TYPE))
+            %(self.NEW_SECTION, self.CATEGORY, self.PUBLISH_TYPE))
 
         div.add(button)
 
@@ -123,37 +123,37 @@ class MayaSetWdg(MayaCheckinWdg):
         hint = HintWdg("First select the items to be included in the set, then click [Create]")
                 
         div.add(hint)
-        my.add(div)
-        my.add(HtmlElement.br())
+        self.add(div)
+        self.add(HtmlElement.br())
 
-    def handle_contents(my, set):
+    def handle_contents(self, set):
 
-        my.add(HtmlElement.br())
+        self.add(HtmlElement.br())
         
         # get all of the reference nodes
         snapshot = Snapshot.get_latest_by_sobject(set, "publish")
         if snapshot == None:
-            my.add(HtmlElement.h3("No Contents"))
+            self.add(HtmlElement.h3("No Contents"))
             return
 
         snapshot_xml = snapshot.get_xml_value("snapshot")
         ref_nodes = snapshot_xml.get_nodes("snapshot/ref")
 
-        nav = ItemsNavigatorWdg(my.ITEMS_NAV_LABEL, \
-            len(ref_nodes), my.MAX_ITEMS_PER_PAGE)
+        nav = ItemsNavigatorWdg(self.ITEMS_NAV_LABEL, \
+            len(ref_nodes), self.MAX_ITEMS_PER_PAGE)
         items_range = nav.get_value()
-        my.add(nav)
+        self.add(nav)
         
         introspect = IntrospectWdg()
         introspect.add_style('padding-bottom: 3px')
-        my.add(introspect)
+        self.add(introspect)
        
         
         # get the contents in the introspection
         session = SessionContents.get()
      
         
-        start, end = 1 , my.MAX_ITEMS_PER_PAGE
+        start, end = 1 , self.MAX_ITEMS_PER_PAGE
         try:
             start, end = items_range.split("-")
         except Exception:
@@ -197,28 +197,28 @@ class MayaSetWdg(MayaCheckinWdg):
         table.set_sobjects(sobjects)
         table.set_aux_data(info)
    
-        my.add(table)
+        self.add(table)
 
 
 
 
 
-    def handle_add_instance(my, set):
+    def handle_add_instance(self, set):
 
         WebContainer.register_cmd("pyasm.prod.web.SetCheckinCbk")
 
-        my.add(DivWdg("Comments:"))
+        self.add(DivWdg("Comments:"))
         textarea = TextAreaWdg("description")
         textarea.set_attr("cols", "30")
         textarea.set_attr("rows", "2")
-        my.add(textarea)
+        self.add(textarea)
 
         set_name = set.get_value("name")
         
-        button = ProdIconSubmitWdg(my.PUBLISH_BUTTON, long=True)
+        button = ProdIconSubmitWdg(self.PUBLISH_BUTTON, long=True)
         button.add_event("onclick", "if (checkin_set('%s','%s')!=true) return" \
             % (set_name, set.get_code() ))
-        my.add(button)
+        self.add(button)
 
 
         

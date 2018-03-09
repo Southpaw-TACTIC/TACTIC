@@ -53,6 +53,7 @@ spt.hash.set_hash = function(state, title, url) {
 
     var env = spt.Environment.get();
     var project = env.get_project();
+    var site = env.get_site();
 
     var pathname = document.location.pathname;
     // if this is the root / or /tactic the set the whole path
@@ -81,7 +82,14 @@ spt.hash.set_hash = function(state, title, url) {
             break;
         }
     }
+
+    if (site) {
+        base_url.push(site);
+    }
+
     base_url = base_url.join("/");
+
+
 
     if (url.substr(0,1) == "/") {
         url = base_url + url;
@@ -217,15 +225,26 @@ spt.hash.onload_first = function() {
     spt.hash.first_load = false;
 
 
+
+
     var options = {
-        'hash': decodeURI(hash),
-        'first_load': true
+        hash: decodeURI(hash),
+        first_load: true,
+        pathname: window.location.pathname
     }
 
+    // pass all the ? name/values in
+    var search = location.search.substring(1);
+    var values = search.split("&").reduce(function(prev, curr, i, arr) {
+        var p = curr.split("=");
+            prev[decodeURIComponent(p[0])] = decodeURIComponent(p[1]);
+                    return prev;
+    }, {});
+        
 
     var server = TacticServerStub.get();
     var class_name = "tactic.ui.app.TopContainerWdg";
-    var kwargs = {'args': options, 'values': {}};
+    var kwargs = {'args': options, 'values': values};
     var widget_html = server.get_widget(class_name, kwargs);
 
     setTimeout( function() {

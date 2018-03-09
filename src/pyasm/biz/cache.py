@@ -25,68 +25,68 @@ CACHE = {}
 
 
 class BaseCache(object):
-    def __init__(my, key, register=True):
-        my.mtime = None
-        my.key = key
-        my.caches = {}
+    def __init__(self, key, register=True):
+        self.mtime = None
+        self.key = key
+        self.caches = {}
 
-        my.init_cache()
+        self.init_cache()
 
         if register:
-            CacheContainer.add(key, my)
+            CacheContainer.add(key, self)
 
 
 
-    def init_cache(my):
+    def init_cache(self):
         '''initialize the cache'''
-        my.mtime = datetime.datetime.now()
+        self.mtime = datetime.datetime.now()
 
 
-    def get_value_by_key(my, cache_name, key):
-        cache = my.caches.get(cache_name)
+    def get_value_by_key(self, cache_name, key):
+        cache = self.caches.get(cache_name)
         if cache == None:
             return None
         value = cache.get(key)
         return value
 
-    def get_cache(my, cache_name):
-        cache = my.caches.get(cache_name)
+    def get_cache(self, cache_name):
+        cache = self.caches.get(cache_name)
         return cache
 
 
-    def get_mtime(my):
-        return my.mtime
+    def get_mtime(self):
+        return self.mtime
 
 
-    def get_refresh_events(my):
+    def get_refresh_events(self):
         return []
 
 
 
-    def make_dirty(my):
+    def make_dirty(self):
         '''function to make the cache dirty.  All proceses will compare this
         change time with their internal time and update the cache if necessary
         '''
-        dirty = Search.eval("@SOBJECT(sthpw/cache['key','%s'])" % my.key, single=True)
+        dirty = Search.eval("@SOBJECT(sthpw/cache['key','%s'])" % self.key, single=True)
         if not dirty:
             dirty = SearchType.create("sthpw/cache")
 
-        dirty.set_value("key", my.key)
+        dirty.set_value("key", self.key)
         now = datetime.datetime.now()
         dirty.set_value("mtime", now)
         dirty.commit(triggers=False)
 
 
-    def is_dirty(my):
+    def is_dirty(self):
         '''function check to see if this cache is dirty'''
-        cache_sobj = Search.eval("@SOBJECT(sthpw/cache['key','%s'])" % my.key, single=True)
+        cache_sobj = Search.eval("@SOBJECT(sthpw/cache['key','%s'])" % self.key, single=True)
         if not cache_sobj:
             return False
 
         dirty_time = cache_sobj.get_value("mtime")
         dirty_time = parser.parse(dirty_time)
 
-        if my.mtime <= dirty_time:
+        if self.mtime <= dirty_time:
             return True
         else:
             return False
@@ -112,82 +112,82 @@ class SearchTypeCache(BaseCache):
     for data that does not change much and is much faster to have
     cached in memory
     '''
-    def __init__(my, search_type):
-        my.search_type = search_type
-        my.sobjects = []
+    def __init__(self, search_type):
+        self.search_type = search_type
+        self.sobjects = []
 
-        super(SearchTypeCache,my).__init__(search_type)
+        super(SearchTypeCache,self).__init__(search_type)
 
 
-    def init_cache(my):
+    def init_cache(self):
         '''initialize the cache'''
-        my.mtime = datetime.datetime.now()
+        self.mtime = datetime.datetime.now()
 
-        keys = my.caches.keys()
-        my.caches = {}
+        keys = self.caches.keys()
+        self.caches = {}
 
-        search = Search(my.search_type)
+        search = Search(self.search_type)
         search.set_show_retired(True)
-        my.sobjects = search.get_sobjects()
+        self.sobjects = search.get_sobjects()
 
 
         # build a search_key cache
         search_key_cache = {}
-        search_keys = SearchKey.get_by_sobjects(my.sobjects)
-        for search_key, sobject in zip(search_keys, my.sobjects):
+        search_keys = SearchKey.get_by_sobjects(self.sobjects)
+        for search_key, sobject in zip(search_keys, self.sobjects):
             search_key_cache[search_key] = sobject
-        my.caches['search_key'] = search_key_cache
+        self.caches['search_key'] = search_key_cache
 
         code_cache = {}
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
             code = sobject.get_code()
             code_cache[code] = sobject
-        my.caches['code'] = code_cache 
+        self.caches['code'] = code_cache 
 
         for key in keys:
             if key in ['search_key', 'code']:
                 continue
-            my.build_cache_by_column(key)
+            self.build_cache_by_column(key)
 
 
-    def get_refresh_events(my):
+    def get_refresh_events(self):
         events = [
-            "change|%s" % my.search_type,
+            "change|%s" % self.search_type,
         ]
         return events
 
 
 
-    def build_cache_by_column(my, column):
+    def build_cache_by_column(self, column):
         # do not build if it already exists
-        if my.caches.has_key(column):
+        if self.caches.has_key(column):
             return
 
         # build a search_key cache
-        column_cache = SObject.get_dict(my.sobjects, key_cols=[column])
-        my.caches[column] = column_cache
+        column_cache = SObject.get_dict(self.sobjects, key_cols=[column])
+        self.caches[column] = column_cache
         return column_cache
 
-    def get_sobjects(my):
-        return my.sobjects
+    def get_sobjects(self):
+        return self.sobjects
 
 
-    def add_cache(my, key, cache):
-        my.caches[key] = cache
+    def add_cache(self, key, cache):
+        self.caches[key] = cache
         
-    def get_cache_by_key(my, key):
-        cache = my.caches.get(key)
+    def get_cache_by_key(self, key):
+        cache = self.caches.get(key)
         return cache
 
-    def get_sobject_by_key(my, cache_name, key):
-        cache = my.caches.get(cache_name)
+    def get_sobject_by_key(self, cache_name, key):
+        cache = self.caches.get(cache_name)
         if not cache:
             return None
         sobject = cache.get(key)
         return sobject
 
 
-    def add_sobject_to_cache(my, sobject):
+    def add_sobject_to_cache(self, sobject):
         '''add an sobject to the cache.  This is useful if a new sobject
         has been inserted and it is too expensive to have to recache the entire
         table just for this one entry'''
@@ -195,11 +195,11 @@ class SearchTypeCache(BaseCache):
         # make sure this sobject's search type is the same as the search type 
         # for this cache
         search_type = sobject.get_base_search_type()
-        assert search_type == my.search_type
+        assert search_type == self.search_type
 
 
         # FIXME: add to all of the caches
-        for key, cache in my.caches.items():
+        for key, cache in self.caches.items():
             if key == 'search_key':
                 # add to the search_key cache
                 search_key = SearchKey.get_by_sobject(sobject)
@@ -215,7 +215,7 @@ class SearchTypeCache(BaseCache):
                 cache[value] = sobject
 
         # make sure this cache is set to dirty so other processes update
-        my.make_dirty()
+        self.make_dirty()
 
 
 
@@ -234,18 +234,18 @@ class SearchTypeCache(BaseCache):
 
 class CustomCache(BaseCache):
 
-    def __init__(my, key=None, action=None):
-        my.action = action
+    def __init__(self, key=None, action=None):
+        self.action = action
 
-        super(CustomCache,my).__init__(key)
+        super(CustomCache,self).__init__(key)
 
 
     # We have to somehow remember how to recache ... pass in a rehash function
-    def init_cache(my):
+    def init_cache(self):
         '''do the cache'''
-        my.mtime = datetime.datetime.now()
-        my.caches = my.action()
-        assert type(my.caches) == types.DictType
+        self.mtime = datetime.datetime.now()
+        self.caches = self.action()
+        assert type(self.caches) == types.DictType
 
 
 

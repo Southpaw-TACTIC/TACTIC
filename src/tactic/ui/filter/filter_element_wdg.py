@@ -25,6 +25,7 @@ __all__ = [
         'ButtonFilterElementWdg',
         'CheckboxFilterElementWdg'
 ]
+import re
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -42,25 +43,25 @@ from filter_data import FilterData
 
 class BaseFilterElementWdg(BaseRefreshWdg):
     '''represents the base filter'''
-    def __init__(my, **kwargs):
-        super(BaseFilterElementWdg, my).__init__(**kwargs)
-        my.values = {}
-        my.show_title = False
-        my.set_flag = False
-        my.title = None
+    def __init__(self, **kwargs):
+        super(BaseFilterElementWdg, self).__init__(**kwargs)
+        self.values = {}
+        self.show_title = False
+        self.set_flag = False
+        self.title = None
 
-    def is_visible(my):
+    def is_visible(self):
         return True
 
-    def set_show_title(my, flag):
-        my.show_title = flag
+    def set_show_title(self, flag):
+        self.show_title = flag
 
 
-    def get_title_wdg(my):
+    def get_title_wdg(self):
         title_div = DivWdg()
-        name = my.get_name()
+        name = self.get_name()
 
-        title = my.get_title()
+        title = self.get_title()
         if not title:
             title = name
         title = Common.get_display_title(title)
@@ -69,13 +70,26 @@ class BaseFilterElementWdg(BaseRefreshWdg):
 
         return title_div
 
-
-    def is_set(my):
+    """
+    def is_set(self):
         '''indicates whether this filter has values set that will
         oontribute to the search'''
-        return my.set_flag
+        return self.set_flag
+    """
 
-    def get_set_js_action(my):
+    def is_set(self):
+        value = self.values.get("value")
+        if value:
+            return True
+        else:
+            return False
+        
+
+
+
+
+
+    def get_set_js_action(self):
         return r'''
         var top = bvr.src_el.getParent(".spt_filter_top");
         var set_icons = top.getElements(".spt_filter_set");
@@ -95,23 +109,23 @@ class BaseFilterElementWdg(BaseRefreshWdg):
         }
         '''
 
-    def set_value(my, name, value):
-        my.values[name] = value
+    def set_value(self, name, value):
+        self.values[name] = value
 
-    def set_values(my, values):
-        my.values = values
+    def set_values(self, values):
+        self.values = values
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         pass
 
-    def get_display(my):
+    def get_display(self):
         pass
 
-    def set_title(my, title):
-        my.title = title
+    def set_title(self, title):
+        self.title = title
 
-    def get_title(my):
-        return my.title
+    def get_title(self):
+        return self.title
 
 
 
@@ -119,33 +133,33 @@ class BaseFilterElementWdg(BaseRefreshWdg):
 
 class SelectFilterElementWdg(BaseFilterElementWdg):
     
-    def init(my):
-        expression = my.kwargs.get("column")
-        my.multi_search_types = False
+    def init(self):
+        expression = self.kwargs.get("column")
+        self.multi_search_types = False
         if not expression:
             return
         parts = expression.split(".")
         search_types = parts[:-1]
 
-        my.multi_search_types = False
+        self.multi_search_types = False
         if len(search_types) > 1:
-            my.multi_search_types = True
+            self.multi_search_types = True
         
 
-    def is_set(my):
-        value = my.values.get("value")
+    def is_set(self):
+        value = self.values.get("value")
         if value:
             return True
         else:
-            if not my.values and my.kwargs.get('default'):
+            if not self.values and self.kwargs.get('default'):
                 return True
             else:
                 return False
         
          
 
-    def alter_search(my, search):
-        expression = my.kwargs.get("column")
+    def alter_search(self, search):
+        expression = self.kwargs.get("column")
         if not expression:
             return
 
@@ -156,7 +170,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
     
 
 
-        value = my.values.get("value")
+        value = self.values.get("value")
         if isinstance(value, unicode):
             value = value.encode('utf-8','ignore')
         elif isinstance(value, basestring):
@@ -164,14 +178,14 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
         #print "value: ", value, type(value)
         if not value:
-            default = my.kwargs.get('default')
-            if not my.values and default:
+            default = self.kwargs.get('default')
+            if not self.values and default:
                 value = default
             else:
                 return
 
-        # op should come from my.values
-        op = my.values.get("op")
+        # op should come from self.values
+        op = self.values.get("op")
         if not op:
             op = '='
 
@@ -201,7 +215,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             if search_type_str:
                 expr = '''@SEARCH(%s["%s","%s"].%s)'''%(top_search_type, column, value, search_type_str)
                 sub_search = Search.eval(expr)
-               
+
          
             '''
             for search_type in search_types:
@@ -274,7 +288,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                 use_multidb = False
                 search.add_relationship_search_filter(search2, op="in", use_multidb=use_multidb)
 
-            except SearchException, e:
+            except SearchException as e:
                 raise SearchException('[%s] in simple search definition may have syntax error. %s ' %(expression, e.__str__()))
 
 
@@ -298,7 +312,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
         #div.add_style("width: 350px")
@@ -306,43 +320,43 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         select = SelectWdg("value")
         select.add_style("width: 190")
 
-        default_value = my.kwargs.get("default")
+        default_value = self.kwargs.get("default")
 
         # TODO: this is needed for multiple selection, but it is ugly
         #select.set_attr("multiple", "1")
         #select.add_attr("spt_is_multiple", "true")
         # if there is a link search already, don't use default
-        if my.values and my.kwargs.get('default'):
-            my.kwargs.pop('default')
+        if self.values and self.kwargs.get('default'):
+            self.kwargs.pop('default')
 
-        select.set_options(my.kwargs)
+        select.set_options(self.kwargs)
         select.add_empty_option("-- Select --")
-        name = my.get_name()
+        name = self.get_name()
 
         select.add_behavior( {
             'type': 'change',
             'element_name': name,
-            'cbjs_action': my.get_set_js_action()
+            'cbjs_action': self.get_set_js_action()
         } )
 
         # this is needed so they don't cross contaminate
         # FIXME: this is probably a bug in SelectWdg
         select.set_value('')
-        value = my.values.get("value")
+        value = self.values.get("value")
         if not value:
             value = default_value
 
         if value:
             select.set_value(value)
 
-        if my.show_title:
+        if self.show_title:
             title_div = DivWdg()
             div.add(title_div)
             title_div.add_style("float: left")
 
-            name = my.get_name()
+            name = self.get_name()
 
-            title = my.get_title()
+            title = self.get_title()
             if not title:
                 title = name
                 title = Common.get_display_title(title)
@@ -352,15 +366,16 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             title_div.add_style("margin-left: 15px")
             title_div.add_style("padding-top: 2px")
 
-        op = my.kwargs.get("op")
+        op = self.kwargs.get("op")
         if op == 'exists':
             div.add("&nbsp;&nbsp;&nbsp;is&nbsp;&nbsp;&nbsp;")
             div.add(HiddenWdg("op", "exists"))
         elif op == 'is on':
             div.add("&nbsp;&nbsp;&nbsp;is on&nbsp;&nbsp;&nbsp;")
             div.add(HiddenWdg("op", "is on"))
-        elif op == '~':
+        elif op in ['~', 'contains']:
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
+            div.add(HiddenWdg("op", "~"))
         elif op == 'is':
             #TODO: have this style apply to everything else and get rid of &nbsps
             op_div = DivWdg('is')
@@ -372,14 +387,14 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             op_select = SelectWdg("op")
             op_select.add_style("width: 100px")
             # only support in or not in for multi stypes column
-            if my.multi_search_types:
+            if self.multi_search_types:
                 op_select.set_option("labels", "is|is not")
                 op_select.set_option("values", "=|!=")
             else:
                 op_select.set_option("labels", "is|is not|contains")
                 op_select.set_option("values", "=|!=|~")
 
-            value = my.values.get("op")
+            value = self.values.get("op")
             if value:
                 op_select.set_value(value)
 
@@ -400,7 +415,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         select.add_style("width: 150")
         select.add_color("background", "background")
 
-        value = my.values.get("value")
+        value = self.values.get("value")
         if value:
             select.set_option("values", [value])
             select.set_value(value)
@@ -409,7 +424,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
         select.add_behavior( {
             'type': 'mouseover',
-            'kwargs': my.kwargs,
+            'kwargs': self.kwargs,
             'cbjs_action': '''
             var top = bvr.src_el.getParent();
             var class_name = 'tactic.ui.filter.ReplaceSelectWdg';
@@ -422,11 +437,13 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
 class TextFilterElementWdg(SelectFilterElementWdg):
     ''' derives from SelectFilterElementWdg but with a text box'''
-    def get_display(my):
+ 
+
+    def get_display(self):
         div = DivWdg()
 
         text = TextWdg("value")
-        if not my.kwargs.get('column'):
+        if not self.kwargs.get('column'):
             text.set_attr('readonly','readonly')
             text.set_value('Warning: column option not defined')
             text.add_class('disabled')
@@ -435,16 +452,16 @@ class TextFilterElementWdg(SelectFilterElementWdg):
         text.add_style("width: 170px")
 
         # if there is a link search already, don't use default
-        if my.values and my.kwargs.get('default'):
-            my.kwargs.pop('default')
+        if self.values and self.kwargs.get('default'):
+            self.kwargs.pop('default')
 
-        text.set_options(my.kwargs)
-        name = my.get_name()
+        text.set_options(self.kwargs)
+        name = self.get_name()
 
         text.add_behavior( {
             'type': 'blur',
             'element_name': name,
-            'cbjs_action': my.get_set_js_action()
+            'cbjs_action': self.get_set_js_action()
         } )
 
         text.add_behavior( {
@@ -456,18 +473,19 @@ class TextFilterElementWdg(SelectFilterElementWdg):
         }
         ''' } )
 
-        value = my.values.get("value")
+        value = self.values.get("value")
         if value:
             text.set_value(value)
 
-        if my.show_title:
+
+        if self.show_title:
             title_div = DivWdg()
             div.add(title_div)
             title_div.add_style("float: left")
 
-            name = my.get_name()
+            name = self.get_name()
 
-            title = my.get_title()
+            title = self.get_title()
             if not title:
                 title = name
                 # only do this filtering to the name
@@ -478,18 +496,19 @@ class TextFilterElementWdg(SelectFilterElementWdg):
             title_div.add_style("margin-left: 15px")
             title_div.add_style("padding-top: 2px")
 
-        op = my.kwargs.get("op")
+        op = self.kwargs.get("op")
         if op == 'exists':
             div.add("&nbsp;&nbsp;&nbsp;is&nbsp;&nbsp;&nbsp;")
             div.add(HiddenWdg("op", "exists"))
-        elif op == '~':
+        elif op in ['~', 'contains']:
             div.add("&nbsp;&nbsp;&nbsp;contains&nbsp;&nbsp;&nbsp;")
+            div.add(HiddenWdg("op", "~"))
         else:
             op_select = SelectWdg("op")
             op_select.set_option("labels", "is|is not|contains")
             op_select.set_option("values", "=|!=|~")
 
-            value = my.values.get("op")
+            value = self.values.get("op")
             if value:
                 op_select.set_value(value)
 
@@ -504,7 +523,7 @@ class TextFilterElementWdg(SelectFilterElementWdg):
 
 __all__.append("ReplaceSelectWdg")
 class ReplaceSelectWdg(BaseRefreshWdg):
-    def get_display(my):
+    def get_display(self):
 
         select = SelectWdg("value")
         select.add_style("width: 150px")
@@ -513,10 +532,10 @@ class ReplaceSelectWdg(BaseRefreshWdg):
         #select.set_attr("multiple", "1")
         #select.add_attr("spt_is_multiple", "true")
         # if there is a link search already, don't use default
-        #if my.values and my.kwargs.get('default'):
-        #    my.kwargs.pop('default')
+        #if self.values and self.kwargs.get('default'):
+        #    self.kwargs.pop('default')
 
-        select.set_options(my.kwargs)
+        select.set_options(self.kwargs)
         select.add_empty_option("-- Select --")
 
         """
@@ -531,13 +550,13 @@ class ReplaceSelectWdg(BaseRefreshWdg):
 
         select.add_behavior( {
             'type': 'change',
-            'cbjs_action': my.get_set_js_action()
+            'cbjs_action': self.get_set_js_action()
         } )
 
         # this is needed so they don't cross contaminate
         # FIXME: this is probably a bug in SelectWdg
         select.set_value('')
-        #value = my.values.get("value")
+        #value = self.values.get("value")
         #if value:
         #    select.set_value(value)
 
@@ -549,40 +568,40 @@ class ReplaceSelectWdg(BaseRefreshWdg):
 class KeywordFilterElementWdg(BaseFilterElementWdg):
 
 
-    def init(my):
+    def init(self):
 
-        my.overall_search_type = ''
+        self.overall_search_type = ''
 
-        my.columns = []
-        my.look_ahead_columns = []
-        my.relevant = my.get_option("relevant")
-        my.mode = my.get_option("mode")
+        self.columns = []
+        self.look_ahead_columns = []
+        self.relevant = self.get_option("relevant")
+        self.mode = self.get_option("mode")
         
-        my.keyword_search_type = ''
-        my.keyword_map_search_type = ''
-        if my.mode == 'keyword_tree':
-            my.keyword_search_type = my.get_option("keyword_search_type") or 'workflow/base_keyword'
-            my.keyword_map_search_type = my.get_option("keyword_map_search_type") or 'workflow/keyword_map'
+        self.keyword_search_type = ''
+        self.keyword_map_search_type = ''
+        if self.mode == 'keyword_tree':
+            self.keyword_search_type = self.get_option("keyword_search_type") or 'workflow/base_keyword'
+            self.keyword_map_search_type = self.get_option("keyword_map_search_type") or 'workflow/keyword_map'
 
-        my.cross_db = my.get_option("cross_db") =='true'
-        column = my.get_option("column")
-        full_text_column = my.get_option("full_text_column")
+        self.cross_db = self.get_option("cross_db") =='true'
+        column = self.get_option("column")
+        full_text_column = self.get_option("full_text_column")
        
         if column:
-            if my.mode=='global':
+            if self.mode=='global':
                 raise SetupException('You are advised to use [keyword] mode since you have specified the column option.')
-            my.columns = column.split('|')
-            my.look_ahead_columns = my.columns[:]
+            self.columns = column.split('|')
+            self.look_ahead_columns = self.columns[:]
 
         if full_text_column:
-            my.columns = [full_text_column]
+            self.columns = [full_text_column]
 
-        my.case_sensitive  = my.kwargs.get("case_sensitive") in ['true',True]
+        self.case_sensitive  = self.kwargs.get("case_sensitive") in ['true',True]
 
-        my.do_search = my.kwargs.get("do_search")
-        my.script_path = my.kwargs.get("script_path")
-        if not my.mode:
-            my.mode = "keyword"
+        self.do_search = self.kwargs.get("do_search")
+        self.script_path = self.kwargs.get("script_path")
+        if not self.mode:
+            self.mode = "keyword"
 
         # TODO: this is dependent on the default database and not
         # on the database that may actually be searched on
@@ -606,26 +625,26 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 else:
                     has_index = False
 
-        my.has_index = has_index
+        self.has_index = has_index
       
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
         overall_search = search
-        my.overall_search_type = overall_search.get_search_type()
-        search_type = my.overall_search_type
-        search = Search(my.overall_search_type)
+        self.overall_search_type = overall_search.get_search_type()
+        search_type = self.overall_search_type
+        search = Search(self.overall_search_type)
         
-        value = my.values.get("value")
+        value = self.values.get("value")
         if not value:
             return
 
-        name = my.get_name()
-        if not my.columns:
-            my.columns = [name]
+        name = self.get_name()
+        if not self.columns:
+            self.columns = [name]
 
-        partial = my.values.get("partial") == 'on'
+        partial = self.values.get("partial") == 'on'
 
         try:
             value.encode('ascii')
@@ -647,7 +666,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             column = "keywords"
             project_code = Project.get_project_code()
             overall_search.add_filter("project_code", project_code)
-            if my.has_index and is_ascii:
+            if self.has_index and is_ascii:
                 if partial:
                     overall_search.add_op("begin")
                     overall_search.add_text_search_filter(column, keywords)
@@ -661,7 +680,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                
 
         # this is the default when the xml is just <element name='keywords'/>
-        elif my.mode == 'global':
+        elif self.mode == 'global':
             column = "keywords"
 
             search2 = Search("sthpw/sobject_list")
@@ -669,7 +688,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             project_code = Project.get_project_code()
             search2.add_filter("project_code", project_code)
             search2.add_filter("search_type", search_type)
-            if my.has_index and is_ascii:
+            if self.has_index and is_ascii:
                 if partial:
                     search2.add_op("begin")
                     search2.add_text_search_filter(column, keywords)
@@ -684,8 +703,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             refs = search2.get_sobjects()
             overall_search.add_filters("id", [x.get_value("search_id") for x in refs])
 
-        elif my.mode == 'keyword_tree':
-            if my.cross_db:
+        elif self.mode == 'keyword_tree':
+            if self.cross_db:
                 sub_search_list = []
 
             else:
@@ -701,14 +720,14 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             # keywords is kept as a string to maintain OR full-text search
             value = value.replace(",", " ")
             
-            # find my parent tree value
+            # find self parent tree value
             project = Project.get()
             sql = project.get_sql()
             stmts = []
             value_idx = []
             impl = project.get_database_impl()
             
-            op = my.values.get("cte_op")
+            op = self.values.get("cte_op")
             if not op:
                 op = "keyword"
 
@@ -740,7 +759,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 pass
 
 
-            original_search = Search(my.keyword_search_type)
+            original_search = Search(self.keyword_search_type)
             original_search.add_op('begin')
             original_search.add_filter('name', value)
             original_search.add_regex_filter('alias', value, op='EQI')
@@ -761,8 +780,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             keywords = keywords_list
 
-            for column in my.columns:
-                if my.cross_db:
+            for column in self.columns:
+                if self.cross_db:
                     search2 = None
                     sub_search = None
                
@@ -779,7 +798,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     local_table = False
 
                     """
-                    if my.cross_db:
+                    if self.cross_db:
                         search_types.reverse()
                         top_search_type = search_types[0]
                         search_type_str = '.'.join(search_types[1:])
@@ -804,7 +823,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     column_types = SearchType.get_column_types(next_stype)
                     column_type = column_types.get(column)
 
-                if my.cross_db:
+                if self.cross_db:
                     search2.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
                     # sub_search is not present if it only traverses thru 1 sType
                     if sub_search:
@@ -817,11 +836,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     else:
                         search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
                         overall_search.add_relationship_search_filter(search, op="in")
-            if my.cross_db:
+            if self.cross_db:
                 sub_search_list.append(sub_search)
 
 
-            if my.cross_db:
+            if self.cross_db:
                 rtn_history = False
                 overall_search.add_op('begin')
                 for sub_search in sub_search_list:
@@ -837,10 +856,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 overall_search.add_op('or')
 
                 
-
-
-        elif my.mode == 'keyword':
-            if my.cross_db:
+        elif self.mode == 'keyword':
+            if self.cross_db:
                 sub_search_list = []
 
             else:
@@ -852,24 +869,53 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             # Drawback is that multiple columns defined for the same sType may cause a return of 0 result
             # if words from multi columns are used in the search. This is in line with partial_op = 'and' for 
             # db not supporting full text search
-            single_col = len(my.columns) == 1
+            single_col = len(self.columns) == 1
             partial_op = 'and'
-            for column in my.columns:
-                if my.cross_db:
+
+            # in keyword mode where there could be multi column
+            # keywords is kept as a string to maintain OR full-text search
+            value = value.replace(",", " ")
+            value = re.sub(' +', ' ', value)
+            keywords = value.strip()
+            if not keywords:
+                return
+
+            
+            # keywords_list is used for add_keyword_filter()
+            keywords_list = keywords.split(" ")
+            single_keyword = len(keywords_list) == 1
+            
+            if single_col:
+                if single_keyword:
+                    multi_col_op = 'or' # this doesn't really matter
+                    op = '|'            # this doesn't really matter
+                else: # multi_keyword, single column
+                    multi_col_op = 'or' # this doesn't really matter
+                    op = '&'
+
+            else:
+                if single_keyword:
+                    multi_col_op = 'or'
+                    op = '|'            # this doesn't really matter
+                else:
+                    multi_col_op = 'or'
+                    op = '&'
+
+
+           
+            for column in self.columns:
+                if self.cross_db:
                     search2 = None
                     sub_search = None
                
-                # in keyword mode where there could be multi column
-                # keywords is kept as a string to maintain OR full-text search
-                value = value.replace(",", " ")
-                keywords = value
-                # keywords_list is used for add_keyword_filter()
-                keywords_list = keywords.split(" ")
-                #if single_col:
-                # AND logic in full text search will be adopted if keywords is a list as oopposed to string
-                keywords = keywords_list
                 
-                if my.has_index and is_ascii:
+            
+                # AND logic in full text search will be adopted if keywords
+                # is a list as opposed to string
+                if single_col:
+                    keywords = keywords_list
+                
+                if self.has_index and is_ascii:
                     
                     search_type_obj = SearchType.get(search_type)
                     table = search_type_obj.get_table()
@@ -881,7 +927,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         search_types = parts[:-1]
                         column = parts[-1]
                         local_table = False
-                        if my.cross_db:
+                        if self.cross_db:
                             search_types.reverse()
                             top_search_type = search_types[0]
                             search_type_str = '.'.join(search_types[1:])
@@ -902,9 +948,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             table = SearchType.get(next_stype).get_table()
                     
                     if partial:
-                        if my.cross_db:
+                        if self.cross_db:
                             search2.add_op("begin")
-                            search2.add_text_search_filter(column, keywords, table=table)
+                            search2.add_text_search_filter(column, keywords, table=table, op=op)
                             search2.add_keyword_filter(column, keywords_list, table=table, op=partial_op)
                             search2.add_op("or")
 
@@ -915,27 +961,28 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
                         else:
                             search.add_op("begin")
-                            search.add_text_search_filter(column, keywords, table=table)
+                            search.add_text_search_filter(column, keywords, table=table, op=op)
                             search.add_keyword_filter(column, keywords_list, table=table, op=partial_op)
                             search.add_op("or")
                             overall_search.add_relationship_search_filter(search, op="in")
                     else:
-                        if my.cross_db:
+                        if self.cross_db:
                             if not search2:
                                 raise TacticException('If cross_db is set to true, all the columns should be formatted in expression-like format with one or more sTypes: sthpw/task.description')
                             
-                            search2.add_text_search_filter(column, keywords, table=table)
+                            search2.add_text_search_filter(column, keywords, table=table, op=op)
                             if sub_search:
                                 sub_search.add_relationship_search_filter(search2, op="in")
                             else:
                                 sub_search = search2
                         else:
                             if local_table:
+                               
+                                overall_search.add_text_search_filter(column, keywords, table=table, op=op)
                                 
-                                overall_search.add_text_search_filter(column, keywords, table=table)
                             else:    
                                 
-                                search.add_text_search_filter(column, keywords, table=table)
+                                search.add_text_search_filter(column, keywords, table=table, op=op)
                                 overall_search.add_relationship_search_filter(search, op="in")
                 else:
                     #value = value.replace(",", " ")
@@ -950,7 +997,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         column = parts[-1]
                         local_table = False
 
-                        if my.cross_db:
+                        if self.cross_db:
                             search_types.reverse()
                             top_search_type = search_types[0]
                             search_type_str = '.'.join(search_types[1:])
@@ -974,7 +1021,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             table = SearchType.get(next_stype).get_table()
                             column_types = SearchType.get_column_types(next_stype)
                             column_type = column_types.get(column)
-                    if my.cross_db:
+                    if self.cross_db:
                         search2.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
                         # sub_search is not present if it only traverses thru 1 sType
                         if sub_search:
@@ -987,15 +1034,15 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         else:
                             search.add_keyword_filter(column, keywords_list, table=table, column_type=column_type, op=partial_op)
                             overall_search.add_relationship_search_filter(search, op="in")
-                if my.cross_db:
+                if self.cross_db:
                     sub_search_list.append(sub_search)
 
-            #if not my.cross_db:
+            #if not self.cross_db:
             #    search.add_op('or')
-            #my.search_type = search.get_search_type()
+            #self.search_type = search.get_search_type()
 
 
-            if my.cross_db:
+            if self.cross_db:
                 rtn_history = False
                 overall_search.add_op('begin')
                 for sub_search in sub_search_list:
@@ -1005,27 +1052,27 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 # if all the sub_search return false, set null filter
                 if not rtn_history:
                     overall_search.set_null_filter()
-                overall_search.add_op('or')
+                overall_search.add_op(multi_col_op)
 
             else:
-                overall_search.add_op('or')
+                overall_search.add_op(multi_col_op)
 
         else:
-            raise TacticException('Mode [%s] in keyword search not support' % my.mode)
+            raise TacticException('Mode [%s] in keyword search not support' % self.mode)
 
 
-    def get_display(my):
+    def get_display(self):
         # can predefine a filter_search_type for the look ahead search
-        my.filter_search_type = my.get_option("filter_search_type")
-        if not my.filter_search_type:
-            my.filter_search_type = my.overall_search_type
+        self.filter_search_type = self.get_option("filter_search_type")
+        if not self.filter_search_type:
+            self.filter_search_type = self.overall_search_type
         div = DivWdg()
         div.add_style("position: relative")
 
-        if my.show_title:
-            name = my.get_name()
+        if self.show_title:
+            name = self.get_name()
 
-            title = my.get_title()
+            title = self.get_title()
             if title == None:
                 title = name
             title = Common.get_display_title(title)
@@ -1035,23 +1082,15 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
 
 
-        custom_cbk = {
-            'enter': '''
-            spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-            '''
-        }
-
-
-
-        if my.show_title:
+        if self.show_title:
             title_div = DivWdg()
 
             div.add(title_div)
             title_div.add_style("float: left")
 
-            name = my.get_name()
+            name = self.get_name()
 
-            title = my.get_title()
+            title = self.get_title()
             if not title:
                 title = name
             title = Common.get_display_title(title)
@@ -1070,32 +1109,32 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
        
 
-        if not my.columns and my.mode in ['keyword','keyword_tree']:
-            name = my.get_name()
-            my.columns = [name]
+        if not self.columns and self.mode in ['keyword','keyword_tree']:
+            name = self.get_name()
+            self.columns = [name]
             # check if column exists
-            if my.filter_search_type:
-                exists = SearchType.column_exists(my.filter_search_type, name)
+            if self.filter_search_type:
+                exists = SearchType.column_exists(self.filter_search_type, name)
                 if not exists:
                     name = "name"
-                    exists = SearchType.column_exists(my.filter_search_type, name)
+                    exists = SearchType.column_exists(self.filter_search_type, name)
                     if not exists:
                         name = "description"
-                        exists = SearchType.column_exists(my.filter_search_type, name)
+                        exists = SearchType.column_exists(self.filter_search_type, name)
                         if not exists:
                             raise SetupException("Keyword Filter column [%s] does not exist"%name)
-            my.columns = [name]
+            self.columns = [name]
         
 
 
 
 
-        if my.mode in ['keyword','keyword_tree']:
-            search_type = my.filter_search_type
+        if self.mode in ['keyword','keyword_tree']:
+            search_type = self.filter_search_type
 
             # clean up the hint text and find the last search_type
             hints = []
-            for column in my.columns:
+            for column in self.columns:
                 if column.find(".") != -1:
                     parts = column.split(".")
                     hint = parts[-1]
@@ -1113,47 +1152,56 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                 hint_text = '%s...'%hint_text[0:29]
 
 
-        if my.kwargs.get("hint_text"):
-            hint_text = my.kwargs.get("hint_text")
+        if self.kwargs.get("hint_text"):
+            hint_text = self.kwargs.get("hint_text")
 
         
         # search_type is a list matching the column for potential join
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = "230"
 
 
-        show_toggle = my.get_option("show_toggle")
+        show_toggle = self.get_option("show_toggle")
         if show_toggle in ['true', True]:
-            icon = "BS_CHEVRON_DOWN"
-            icon_pos = "right"
+            icon = "BS_MENU_DOWN"
+            icon_pos = "left"
         else:
             icon = ""
             icon_pos = ""
+
+
+        # NOTE: This calls the refresh twice for some reason
+        """
+        custom_cbk = {
+            'enter': '''
+            spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
+            '''
+        }
+        """
 
 
 
 
         text = LookAheadTextInputWdg(
                 name="value",
-                do_search=my.do_search,
-                script_path=my.script_path,
-                custom_cbk=custom_cbk,
-                filter_search_type=my.filter_search_type,
+                do_search=self.do_search,
+                script_path=self.script_path,
+                #custom_cbk=custom_cbk,
+                filter_search_type=self.filter_search_type,
                 search_type=search_type,
-                column=my.look_ahead_columns,
-                relevant = my.relevant,
+                column=self.look_ahead_columns,
+                relevant = self.relevant,
                 width = width,
                 height = "30px",
                 hint_text=hint_text,
-                case_sensitive = my.case_sensitive,
+                case_sensitive = self.case_sensitive,
                 icon=icon,
                 icon_pos=icon_pos,
         )
-        value = my.values.get("value")
+        value = self.values.get("value")
         if value:
             text.set_value(value)
-
 
         text.add_behavior( {
         'type': 'keyup',
@@ -1165,9 +1213,19 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         ''' } )
 
 
+        name = self.get_name()
+        text.add_behavior( {
+            'type': 'change',
+            'element_name': name,
+            'cbjs_action': self.get_set_js_action()
+        } )
+
+
+
+
         div.add(text)
 
-        if my.mode == 'keyword_tree':
+        if self.mode == 'keyword_tree':
             text.add_style('float','left')
             op_select = SelectWdg("cte_op")
             op_select.add_style("width: 100px")
@@ -1175,7 +1233,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             op_select.set_option("labels", "keyword|parent|child|both")
             op_select.set_option("values", "keyword|parent|child|both")
 
-            value = my.values.get("cte_op")
+            value = self.values.get("cte_op")
             if value:
                 op_select.set_value(value)
 
@@ -1184,7 +1242,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             op_select.add_style("margin-left: 10px")
 
 
-        show_toggle = my.get_option("show_toggle")
+        show_toggle = self.get_option("show_toggle")
         if show_toggle in ['true', True]:
             icon_wdg = text.get_icon_wdg()
             if icon_wdg:
@@ -1203,8 +1261,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             """
         
         
-        show_partial = my.get_option("show_partial")
-        if show_partial not in ['false', False]:
+        show_partial = self.get_option("show_partial")
+        if show_partial in ['true', True]:
 
             from pyasm.widget import IconWdg
             icon_div = DivWdg()
@@ -1232,9 +1290,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             match_div.add(" Use partial word match")
 
 
-            if my.mode == 'keyword' and my.has_index:
+            if self.mode == 'keyword' and self.has_index:
                 div.add(icon_div)
-            elif my.mode =='global' and my.has_index:
+            elif self.mode =='global' and self.has_index:
                 div.add(icon_div)
             else:
                 # partial is implied otherwise
@@ -1251,11 +1309,11 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 class DateFilterElementWdg(BaseFilterElementWdg):
     '''This filter uses a subselect so that it can look for dates that
     are on another table than the main serach'''
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        expression = my.kwargs.get("column")
+        expression = self.kwargs.get("column")
         if not expression:
-            expression = my.get_name()
+            expression = self.get_name()
         
         search_types = []
 
@@ -1270,8 +1328,8 @@ class DateFilterElementWdg(BaseFilterElementWdg):
             search_type = search.get_search_type()
             date_col = expression
 
-        start_date = my.values.get("start_date")
-        end_date = my.values.get("end_date")
+        start_date = self.values.get("start_date")
+        end_date = self.values.get("end_date")
         if not start_date and not end_date:
             return
 
@@ -1298,7 +1356,7 @@ class DateFilterElementWdg(BaseFilterElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
 
@@ -1306,14 +1364,14 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         div.add(table)
         table.add_row()
 
-        if my.show_title:
+        if self.show_title:
             title_div = DivWdg()
 
             table.add_cell(title_div)
 
-            name = my.get_name()
+            name = self.get_name()
 
-            title = my.get_title()
+            title = self.get_title()
             if not title:
                 title = name
             title = Common.get_display_title(title)
@@ -1351,14 +1409,14 @@ class DateFilterElementWdg(BaseFilterElementWdg):
 
 class DateRangeFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        start_col = my.kwargs.get("start_date_col")
-        end_col = my.kwargs.get("end_date_col")
+        start_col = self.kwargs.get("start_date_col")
+        end_col = self.kwargs.get("end_date_col")
 
 
 
-        name = my.get_name()
+        name = self.get_name()
         if not start_col:
             start_col = "%s_start_date" % name
         if not end_col:
@@ -1386,8 +1444,8 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
             search_type = search.get_search_type()
 
 
-        start_date = my.values.get("start_date")
-        end_date = my.values.get("end_date")
+        start_date = self.values.get("start_date")
+        end_date = self.values.get("end_date")
 
         if not start_date and not end_date:
             return
@@ -1398,7 +1456,7 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
         end_date = SPTDate.add_local_timezone(end_date)
         end_date = SPTDate.convert(end_date)
 
-        operator = my.get_option("op")
+        operator = self.get_option("op")
         if operator != 'not in':
             operator = 'in'
 
@@ -1431,15 +1489,15 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
 
-        name = my.get_name()
+        name = self.get_name()
 
         title = Common.get_display_title(name)
 
-        operator = my.get_option("op")
+        operator = self.get_option("op")
         if operator != 'not in':
             operator = 'in'
 
@@ -1454,7 +1512,7 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
 
         #div.add_style("border: solid blue 1px")
         if operator == 'in':
-            op = DivWdg("overlap ")
+            op = DivWdg("overlap &nbsp;")
         else:
             op = DivWdg("does not overlap ")
         table.add_cell(op)
@@ -1463,16 +1521,16 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
         cal1 = CalendarInputWdg("start_date")
         table.add_cell(cal1)
 
-        start_date = my.values.get("start_date")
+        start_date = self.values.get("start_date")
         if start_date:
             cal1.set_value(start_date)
  
-        table.add_cell(" and ")
+        table.add_cell(" and &nbsp;")
 
         cal2 = CalendarInputWdg("end_date")
         table.add_cell(cal2)
 
-        end_date = my.values.get("end_date")
+        end_date = self.values.get("end_date")
         if end_date:
             cal2.set_value(end_date)
 
@@ -1482,14 +1540,14 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
 
 class ExpressionFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        #prefix = my.values.get("prefix")
-        #column = my.values.get("%s_column" % prefix)
-        if not my.values.get('option'):
+        #prefix = self.values.get("prefix")
+        #column = self.values.get("%s_column" % prefix)
+        if not self.values.get('option'):
             return
 
-        expr = my.get_option("expression")
+        expr = self.get_option("expression")
         # e.g. @SEARCH(vfx/asset['code','EQ','002'])
         from pyasm.biz import ExpressionParser
         parser = ExpressionParser()
@@ -1498,9 +1556,9 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
 
        
 
-    def get_display(my):
+    def get_display(self):
 
-        title = my.get_option("title")
+        title = self.get_option("title")
         if not title:
             title = ''
         div = SpanWdg()
@@ -1509,7 +1567,7 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
 
         checkbox.set_attr("value", "expr_items")
         checkbox.set_checked()
-        cbjs_action = my.get_option("cbjs_action")
+        cbjs_action = self.get_option("cbjs_action")
         
         if cbjs_action:
             checkbox.add_behavior( {
@@ -1542,12 +1600,12 @@ class ExpressionFilterElementWdg(BaseFilterElementWdg):
 #
 class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        expr = my.get_option("expression")
-        column = my.get_option("column")
+        expr = self.get_option("expression")
+        column = self.get_option("column")
 
-        field_value = my.values.get("field") or ""
+        field_value = self.values.get("field") or ""
 
         from pyasm.biz import ExpressionParser
         parser = ExpressionParser()
@@ -1563,16 +1621,16 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
                 search.set_null_filter()
 
 
-    def get_display(my):
+    def get_display(self):
         # mode "text" uses a textbox to search, while "select" uses a select dropdown.
-        mode = my.get_option("mode")
+        mode = self.get_option("mode")
         if not mode:
             mode = "text"
         if mode not in ["select", "text"]:
-            class_name = my.__class__.__name__
+            class_name = self.__class__.__name__
             raise TacticException("%s mode option can only be 'select' or 'text'." %class_name)
 
-        field_size = my.get_option("field_size")
+        field_size = self.get_option("field_size")
         #if not field_size:
         #    field_size = "32"
         #else:
@@ -1583,11 +1641,11 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
         if mode == "text":
             kwargs = {
                 "name": "field",
-                "search_type": my.get_option("search_type"),
-                "column": my.get_option("display_column"),
-                "value_column": my.get_option("value_column"),
+                "search_type": self.get_option("search_type"),
+                "column": self.get_option("display_column"),
+                "value_column": self.get_option("value_column"),
             }
-            if my.get_option("search_type"):
+            if self.get_option("search_type"):
                 text = LookAheadTextInputWdg(**kwargs)
                 text.set_name("field")
             else:
@@ -1607,8 +1665,8 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
             ''' } )
 
         elif mode == "select":
-            values = my.get_option("select_values")
-            labels = my.get_option("select_labels")
+            values = self.get_option("select_values")
+            labels = self.get_option("select_labels")
             select = SelectWdg("field")
 
             select.add_empty_option("-- Select --")
@@ -1616,7 +1674,7 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
             select.set_option("labels", labels)
             div.add(select)
     
-        mod_value = my.get_option('last_modified_days')
+        mod_value = self.get_option('last_modified_days')
         if mod_value:
             select = SelectWdg("last_modified", label='modified in: ')
             #select.add_style("width: 10px")
@@ -1637,29 +1695,29 @@ class ReplaceWithValueExpressionFilterElementWdg(BaseFilterElementWdg):
 
 __all__.append("TaskConnectFilterElementWdg")
 class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
-    def alter_search(my, search):
+    def alter_search(self, search):
         
-        field_value = my.values.get("field")
+        field_value = self.values.get("field")
         last_mod_value = None
 
-        last_mod_option = my.get_option("last_modified_days")
+        last_mod_option = self.get_option("last_modified_days")
         if last_mod_option:
-            last_mod_value = my.values.get('last_modified')
+            last_mod_value = self.values.get('last_modified')
 
-        search_type = my.get_option("search_type")
+        search_type = self.get_option("search_type")
         if search_type:
             search_type = Project.get_full_search_type(search_type)
 
         # This controls what to filter at the end other than id
-        filter_column = my.get_option("filter_column")
+        filter_column = self.get_option("filter_column")
 
-        do_search = my.get_option("do_search")
+        do_search = self.get_option("do_search")
         if not field_value:
             if do_search =='true':
                 pass
             else:
                 return
-        column = my.get_option("column")
+        column = self.get_option("column")
         assert column
 
         search2 = Search("sthpw/connection")
@@ -1686,7 +1744,7 @@ class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
         if field_value:
             search2.add_filter(column, field_value, table="task")
 
-        filters = my.get_option("filters")
+        filters = self.get_option("filters")
         if filters:
             search2.add_op_filters(filters)
         
@@ -1715,19 +1773,19 @@ class TaskConnectFilterElementWdg(ReplaceWithValueExpressionFilterElementWdg):
 
 class LoginFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        prefix = my.values.get("prefix")
-        column = my.values.get("%s_column" % prefix)
+        prefix = self.values.get("prefix")
+        column = self.values.get("%s_column" % prefix)
 
-        option = my.values.get("option")
+        option = self.values.get("option")
         if option == 'my_items':
             search.add_user_filter()
         elif option == 'all_items':
             pass
        
 
-    def get_display(my):
+    def get_display(self):
 
         # FIXME
         title = "Jobs"
@@ -1735,7 +1793,7 @@ class LoginFilterElementWdg(BaseFilterElementWdg):
         div = SpanWdg()
         div.add("My %s: " % title)
         checkbox = CheckboxWdg("option")
-        checkbox.set_attr("value", "my_items")
+        checkbox.set_attr("value", "self_items")
         checkbox.set_checked()
         div.add(checkbox)
         div.add("&nbsp;&nbsp;")
@@ -1752,11 +1810,11 @@ class LoginFilterElementWdg(BaseFilterElementWdg):
 #
 class MultiSelectFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
         filters = ['MMS/job.job_number_prefix', 'MMS/job.job_number_year', 'MMS/job.job_number']
         for filter in filters:
-            value = my.values.get(filter)
+            value = self.values.get(filter)
             if value:
                 #search.add_relationship_filter(filter)
                 search_type, column = filter.split('.')
@@ -1764,7 +1822,7 @@ class MultiSelectFilterElementWdg(BaseFilterElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = SpanWdg()
         top.add("&nbsp; matches &nbsp;")
@@ -1785,9 +1843,9 @@ class MultiSelectFilterElementWdg(BaseFilterElementWdg):
 #
 class MultiFieldFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        field_list_option = my.get_option("field_list")
+        field_list_option = self.get_option("field_list")
         if not field_list_option:
             return
 
@@ -1805,7 +1863,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
                 op = '='
 
             if field:
-                value = my.values.get(field)
+                value = self.values.get(field)
                 to = field_info.get('to')
                 if to:
                     if to.endswith('()'):
@@ -1823,19 +1881,19 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
                     search.add_filter(field, value, op)
 
 
-    def set_configuration_error(my, top_el, error_message):
+    def set_configuration_error(self, top_el, error_message):
 
         top_el.add("Error in Configuration -- %s" % error_message)
         top_el.add_styles("color: orange; font-style: italic; font-weight: bold;")
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = SpanWdg()
 
-        field_list_option = my.get_option("field_list")
+        field_list_option = self.get_option("field_list")
         if not field_list_option:
-            my.set_configuration_error( top, "No 'field_list' option provided" )
+            self.set_configuration_error( top, "No 'field_list' option provided" )
             return top
 
         top.add("&nbsp; matches &nbsp;")
@@ -1843,7 +1901,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
         try:
             exec stmt
         except:
-            my.set_configuration_error( top, "badly formed 'field_list' option" )
+            self.set_configuration_error( top, "badly formed 'field_list' option" )
             return top
 
         # field_list option should look like this:
@@ -1902,9 +1960,9 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
 #
 class CompoundValueFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        field_list_option = my.get_option("field_list")
+        field_list_option = self.get_option("field_list")
         if not field_list_option:
             return
 
@@ -1914,7 +1972,7 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
         except:
             return
 
-        column = my.get_option("column")
+        column = self.get_option("column")
         if not column:
             print
             print
@@ -1929,7 +1987,7 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
 
             field = field_info.get('field')
             if field:
-                value = my.values.get(field)
+                value = self.values.get(field)
                 to = field_info.get('to')
                 if to:
                     if to.endswith(')'):
@@ -1945,33 +2003,33 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
                 if value:
                     field_map[field] = value
 
-        compound_value = my.get_option("compound_value_expr")
+        compound_value = self.get_option("compound_value_expr")
         if not compound_value:
             return
 
         for f,v in field_map.iteritems():
             compound_value = compound_value.replace( "{%s}" % f, v )
 
-        op = my.get_option("op")
+        op = self.get_option("op")
         if not op:
             op = "="
 
         search.add_filter( column, compound_value, op)
 
 
-    def set_configuration_error(my, top_el, error_message):
+    def set_configuration_error(self, top_el, error_message):
 
         top_el.add("Error in Configuration -- %s" % error_message)
         top_el.add_styles("color: orange; font-style: italic; font-weight: bold;")
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = SpanWdg()
 
-        field_list_option = my.get_option("field_list")
+        field_list_option = self.get_option("field_list")
         if not field_list_option:
-            my.set_configuration_error( top, "No 'field_list' option provided" )
+            self.set_configuration_error( top, "No 'field_list' option provided" )
             return top
 
         top.add("&nbsp; matches")
@@ -1979,7 +2037,7 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
         try:
             exec stmt
         except:
-            my.set_configuration_error( top, "badly formed 'field_list' option" )
+            self.set_configuration_error( top, "badly formed 'field_list' option" )
             return top
 
         # field_list option should look like this:
@@ -2015,10 +2073,10 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
 
 class CheckboxFilterElementWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
         keys = []
-        for key, value in my.values.items():
+        for key, value in self.values.items():
             if not key.startswith("button"):
                 continue
             if value != "on":
@@ -2032,11 +2090,11 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
 
         search.add_op("begin")
         for key in keys:
-            button = my.values.get("button_%s" % key)
+            button = self.values.get("button_%s" % key)
 
             option = key.replace("button_", "")
 
-            expression = my.get_option(option)
+            expression = self.get_option(option)
             if expression:
                 sobjects = Search.eval(expression)
                 ids = [x.get_id() for x in sobjects]
@@ -2046,22 +2104,22 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
         search.add_op("or")
 
 
-    def get_display(my):
+    def get_display(self):
 
         from tactic.ui.widget import ActionButtonWdg
 
-        top = my.top
+        top = self.top
 
         mode = 'checkbox'
 
         
-        titles = my.get_option("options")
+        titles = self.get_option("options")
         actual_titles = []
 
         if titles:
             titles = titles.split("|")
             
-            actual_titles = my.get_option("titles")
+            actual_titles = self.get_option("titles")
             if actual_titles:
                 actual_titles = actual_titles.split("|")
                 if len(actual_titles) != len(titles):
@@ -2090,7 +2148,7 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
                 button.add_behavior( {
                 'type': 'click_up',
                 'title': title,
-                'cbjs_action': my.get_set_js_action()
+                'cbjs_action': self.get_set_js_action()
                 } )
 
         else:
@@ -2117,7 +2175,7 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
                 actual_title = actual_titles[i]
                 td.add(actual_title)
 
-                if my.values.get(button_title):
+                if self.values.get(button_title):
                     checkbox.set_checked()
             
 

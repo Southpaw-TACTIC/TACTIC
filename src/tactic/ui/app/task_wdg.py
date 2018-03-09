@@ -30,46 +30,47 @@ class AddTaskWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
-        my.mode = my.kwargs.get('mode')
+    def init(self):
+        self.mode = self.kwargs.get('mode')
 
-        my.search_type = my.kwargs.get('search_type')
-        my.view = my.kwargs.get('view')
-        my.search_class = my.kwargs.get('search_class')
-        my.search_view = my.kwargs.get('search_view')
-        my.simple_search_view = my.kwargs.get('simple_search_view')
-        my.table_id = my.kwargs.get('table_id')
+        self.search_type = self.kwargs.get('search_type')
+        self.view = self.kwargs.get('view')
+        self.search_class = self.kwargs.get('search_class')
+        self.search_view = self.kwargs.get('search_view')
+        self.simple_search_view = self.kwargs.get('simple_search_view')
+        self.table_id = self.kwargs.get('table_id')
         
-        my.is_refresh = my.kwargs.get('is_refresh')
+        self.is_refresh = self.kwargs.get('is_refresh')
 
     
-    def check(my):
-        if my.mode == 'matched':
+    def check(self):
+        if self.mode == 'matched':
             from tactic.ui.panel import FastTableLayoutWdg
-            table = FastTableLayoutWdg(search_type=my.search_type, view=my.view,\
-                show_search_limit='false', search_limit=-1, search_view=my.search_view, \
-                simple_search_view=my.simple_search_view, search_class=my.search_class)
+            table = FastTableLayoutWdg(search_type=self.search_type, view=self.view,\
+                show_search_limit='false', search_limit=-1, search_view=self.search_view, \
+                simple_search_view=self.simple_search_view, search_class=self.search_class)
             table.handle_search()
             search_objs = table.sobjects
-            my.search_key_list = SearchKey.get_by_sobjects(search_objs, use_id=True)
+            self.search_key_list = SearchKey.get_by_sobjects(search_objs, use_id=True)
             return True
         else:
-            my.search_key_list = my.kwargs.get('search_key_list')
-            if my.search_key_list and isinstance(my.search_key_list, basestring):
-                my.search_key_list = eval(my.search_key_list)
+            self.search_key_list = self.kwargs.get('search_key_list')
+            if self.search_key_list and isinstance(self.search_key_list, basestring):
+                self.search_key_list = eval(self.search_key_list)
 
-    def get_display(my):
-        my.check()
-        if my.is_refresh:
+    def get_display(self):
+        self.check()
+        if self.is_refresh:
             div = Widget()
         else:
             div = DivWdg()
-            my.set_as_panel(div)
+            self.set_as_panel(div)
             div.add_style('padding','6px')
-            min_width = '300px'
+            min_width = '400px'
             div.add_style('min-width', min_width)
             div.add_color('background','background')
             div.add_class('spt_add_task_panel')
+            div.add_style("padding: 20px")
 
 
         from tactic.ui.app import HelpButtonWdg
@@ -78,7 +79,7 @@ class AddTaskWdg(BaseRefreshWdg):
         help_button.add_style("float: right")
         help_button.add_style("margin-top: -5px")
 
-        if not my.search_key_list:
+        if not self.search_key_list:
             msg_div = DivWdg()
             msg_table = Table()
             msg_div.add(msg_table)
@@ -94,15 +95,16 @@ class AddTaskWdg(BaseRefreshWdg):
         msg_div = DivWdg()
         msg_div.add_style('margin-left: 4px')
         div.add(msg_div, 'info')
-        msg_div.add('Total: %s items to add tasks to' %len(my.search_key_list))
+        msg_div.add('Total: %s item/s to add tasks to' %len(self.search_key_list))
         div.add(HtmlElement.br())
         hint = HintWdg('Tasks are added according to the assigned pipeline.')
+        msg_div.add(" &nbsp; ")
         msg_div.add(hint)
         msg_div.add(HtmlElement.br())
         
         
         option_div = DivWdg(css='spt_ui_options')
-        option_div.add_style('margin-left: 12px')
+        #option_div.add_style('margin-left: 12px')
         
         sel = SelectWdg('pipeline_mode', label='Create tasks by: ')
         sel.set_option('values', ['simple process','context', 'standard'])
@@ -145,7 +147,7 @@ class AddTaskWdg(BaseRefreshWdg):
         content_div.add_border()
         
         filtered_search_key_list = []
-        for sk in my.search_key_list:
+        for sk in self.search_key_list:
             id = SearchKey.extract_id(sk)
             if id=='-1':
                 continue
@@ -205,14 +207,17 @@ class AddTaskWdg(BaseRefreshWdg):
             pipelines = [pipeline]
 
         for pipeline in pipelines:
-            span = SpanWdg("Pipeline: %s" % pipeline.get_code())
+            name = pipeline.get_value("name")
+            if not name:
+                name = pipeline.get_code()
+            span = SpanWdg("Pipeline: %s" % name)
             span.add_style('font-weight: bold')
             v_div = FloatDivWdg(span)
             v_div.add_style('margin: 20px')
             v_div.add_style('min-height', min_height)
             v_div.add(HtmlElement.br(2))
             content_div.add(v_div)    
-            processes = pipeline.get_processes(recurse=show_subpipeline)
+            processes = pipeline.get_processes(recurse=show_subpipeline, type=['manual','approval'])
 
             cb_name = '%s|task_process'  %pipeline.get_code()
             master_cb = CheckboxWdg('master_control')
@@ -280,28 +285,21 @@ class AddTaskWdg(BaseRefreshWdg):
         content_div.add("<br clear='all'/>")
 
         skipped = [] 
-        #if len(skipped) == len(sobjects):
-        #if skipped:
-        #    msg_div = DivWdg('WARNING: No valid item to add task for.')
-        #    msg_div.add_style('margin-left: 10px')
-        #    div.add(msg_div, 'info')
-        #else:
+
         if True:
-            #btn = TextBtnWdg(size='medium', label='Add Tasks', horiz_aligh='center')
+            div.add("<br/>")
             btn = ActionButtonWdg(title='Add Tasks')
             btn.add_behavior({'type' : 'click_up',
-            'post_event': 'search_table_%s'% my.table_id,
+            'post_event': 'search_table_%s'% self.table_id,
             'cbjs_action': '''
             spt.dg_table.add_task_selected(bvr);
             ''',
-            'search_key_list': my.search_key_list
+            'search_key_list': self.search_key_list
             })
-            cb = CheckboxWdg('skip_duplicated', label='skip duplicated')
+            cb = CheckboxWdg('skip_duplicated', label='Skip Duplicates')
             cb.set_checked()
             option_div =DivWdg(cb)
             option_div.add_style('width', '130px')
-            hint = HintWdg("If checked, it won't add the task if a task for the checked process has already been created.")
-            option_div.add(hint)
             option_div.add_style('align: left')
             div.add(option_div)
             div.add(HtmlElement.br())
@@ -330,16 +328,16 @@ class AddTaskWdg(BaseRefreshWdg):
 class AddTaskCbk(Command):
     '''Callback to add tasks to multiple sobjects according to their corresponding pipelines'''
 
-    def check(my):
+    def check(self):
         return True
     
-    def execute(my):
-        my.search_key_list = my.kwargs.get('search_key_list')
+    def execute(self):
+        self.search_key_list = self.kwargs.get('search_key_list')
         web = WebContainer.get_web()
         skip_duplicated = web.get_form_value('skip_duplicated') == 'on'
         pipeline_mode = web.get_form_value('pipeline_mode')
 
-        sobjects = SearchKey.get_by_search_keys(my.search_key_list)
+        sobjects = SearchKey.get_by_search_keys(self.search_key_list)
         count = 0
         offset = 0
         for sobject in sobjects:
@@ -367,7 +365,7 @@ class AddTaskCbk(Command):
 
             count += len(tasks)
             offset += 5
-        my.add_description("%s Tasks added in total." % count)
+        self.add_description("%s Tasks added in total." % count)
 
 
 

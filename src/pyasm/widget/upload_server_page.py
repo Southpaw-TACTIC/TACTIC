@@ -21,12 +21,12 @@ from pyasm.search import SearchType
 from pyasm.web import *
 from pyasm.command import FileUpload
 
-import shutil
+import shutil, re
 
 
 class UploadServerWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         num_files = web.get_form_value("num_files")
@@ -39,15 +39,14 @@ class UploadServerWdg(Widget):
             files = []
             for i in range(0, num_files):
                 field_storage = web.get_form_value("file%s" % i)
-                if not field_storage:
+                if not field_storage or isinstance(field_storage, basestring):
                     continue
 
                 file_name = web.get_form_value("file_name%s"% i)
                 if not file_name:
-                    file_name = my.get_file_name(field_storage)
-                items = my.dump(field_storage, file_name)
+                    file_name = self.get_file_name(field_storage)
+                items = self.dump(field_storage, file_name)
                 files.extend(items)
-
 
         else:
             field_storage = web.get_form_value("file")
@@ -57,9 +56,9 @@ class UploadServerWdg(Widget):
                     file_name = web.get_form_value("filename")
 
                 if not file_name:
-                    file_name = my.get_file_name(field_storage)
+                    file_name = self.get_file_name(field_storage)
 
-                files = my.dump(field_storage, file_name)
+                files = self.dump(field_storage, file_name)
 
         if files:
             print "files: ", files
@@ -69,7 +68,11 @@ class UploadServerWdg(Widget):
 
 
 
-    def get_file_name(my, field_storage):
+    def get_file_name(self, field_storage):
+
+        # handle some spoofed upload case
+        if isinstance(field_storage, basestring):
+            return field_storage
 
         file_name = field_storage.filename
 
@@ -92,7 +95,7 @@ class UploadServerWdg(Widget):
 
 
 
-    def dump(my, field_storage, file_name):
+    def dump(self, field_storage, file_name):
 
         web = WebContainer.get_web()
 
@@ -112,7 +115,7 @@ class UploadServerWdg(Widget):
         
         if custom_upload_dir:
             if subdir:
-                file_dir = "%s/%s"%(file_dir,subdir)
+                file_dir = "%s/%s" % (file_dir, subdir)
             else:
                 file_dir = custom_upload_dir
 
@@ -127,31 +130,34 @@ class UploadServerWdg(Widget):
             action = "create"
 
         '''
-        With some recent change done in cherrypy._cpreqbody line 294, 
+        With some recent change done in cherrypy._cpreqbody line 517, 
         we can use the field storage directly on Linux when the file
         is uploaded in html5 mode.
         TODO: This shortcut cannot be used with upload_multipart.py 
         '''
+        if isinstance(field_storage, basestring):
+            return
         path = field_storage.get_path()
         
         # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
-        if action ==  "create": 
+        if action == "create":
             if os.name == 'nt':
                 f = field_storage.file
             else:
                 f = open(path, 'rb')
-            header = f.read(22)
+            header = f.read(100)
             f.seek(0)
 
-            if header.startswith("data:image/png;base64,"):
+            #if header.startswith("data:image/png;base64") or header.startswith("data:image/jpeg;base64"):
+            if re.search("^data:([\w\-\_]+)\/([\w\-\_]+);base64", header):
                 base_decode = True
             else:
                 base_decode = False
         
             if os.name != 'nt':
                 f.close()
-            
+
           
         if html5_mode and file_name and path and not base_decode:
             

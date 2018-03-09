@@ -28,7 +28,7 @@ BATCH = 50
 
 class FixDuplicateFileCodeCmd(Command):
 
-    def execute(my):
+    def execute(self):
         database = "sthpw" 
 
         sql = DbContainer.get(database)

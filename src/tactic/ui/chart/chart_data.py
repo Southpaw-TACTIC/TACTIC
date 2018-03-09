@@ -21,60 +21,60 @@ from pyasm.web import Palette
 
 
 class ChartData(object):
-    def __init__(my):
-        my.data = {}
-        my.data['elements'] = []
+    def __init__(self):
+        self.data = {}
+        self.data['elements'] = []
 
         palette = Palette.get()
         background = palette.color("background")
         color = palette.color("background3")
 
-        my.data['bg_colour'] = background
+        self.data['bg_colour'] = background
 
-        my.data['y_axis'] = {
+        self.data['y_axis'] = {
             'grid-colour': color,
             'grid-visible': True,
             'colour': color,
         }
-        my.data['x_axis'] = {
+        self.data['x_axis'] = {
             'grid-colour': color,
             'grid-visible': False,
             'colour': color,
         }
 
 
-    def add_element(my, element):
-        my.data['elements'].append(element.get_data())
+    def add_element(self, element):
+        self.data['elements'].append(element.get_data())
 
 
-    def set_value(my, key, value, override=False):
+    def set_value(self, key, value, override=False):
         '''manual override for any value'''
 
         if override:
-            my.data[key] = value
+            self.data[key] = value
         else:
-            my.data[key].update(value)
+            self.data[key].update(value)
 
 
 
 
-    def get_data(my):
-        return my.data
+    def get_data(self):
+        return self.data
 
 
 class ChartElement(object):
-    def __init__(my, chart_type):
-        my.data = {}
+    def __init__(self, chart_type):
+        self.data = {}
         assert(chart_type)
         
-        my.data['type'] = chart_type
+        self.data['type'] = chart_type
 
-        default = my._get_defaults(chart_type)
+        default = self._get_defaults(chart_type)
         for key, value in default.items():
-            my.data[key] = value
+            self.data[key] = value
 
 
-    def _get_defaults(my, chart_type):
+    def _get_defaults(self, chart_type):
         if chart_type in ['pie','bar','bar_3d']:
             return {
                 'gradient-fill': 'true',
@@ -86,15 +86,15 @@ class ChartElement(object):
             return {}
 
 
-    def set_values(my, values):
-        my.data['values'] = values
+    def set_values(self, values):
+        self.data['values'] = values
 
 
-    def set_param(my, key, value):
-        my.data[key] = value
+    def set_param(self, key, value):
+        self.data[key] = value
         
 
-    def get_data(my):
-        return my.data
+    def get_data(self):
+        return self.data
 
 

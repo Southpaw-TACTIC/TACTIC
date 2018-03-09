@@ -28,34 +28,34 @@ from filter_data import FilterData
 class BaseFilterWdg(BaseRefreshWdg):
     '''Represents the base filter for use in SearchWdg'''
 
-    def __init__(my, **kwargs):
-        my.filter_mode = "and"
-        my.visible = True
+    def __init__(self, **kwargs):
+        self.filter_mode = "and"
+        self.visible = True
         # state passed from the SearchWdg
-        my.state = {}
+        self.state = {}
 
-        my.num_filters_enabled = 0
+        self.num_filters_enabled = 0
 
-        super(BaseFilterWdg, my).__init__(**kwargs)
+        super(BaseFilterWdg, self).__init__(**kwargs)
 
-    def is_visible(my):
-        return my.visible
+    def is_visible(self):
+        return self.visible
 
-    def get_num_filters_enabled(my):
-        return my.num_filters_enabled
+    def get_num_filters_enabled(self):
+        return self.num_filters_enabled
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         pass
 
 
-    def set_filter_mode(my, filter_mode):
+    def set_filter_mode(self, filter_mode):
         assert filter_mode
-        my.filter_mode = filter_mode
+        self.filter_mode = filter_mode
 
  
-    def set_state(my, state):
-        my.state = state
+    def set_state(self, state):
+        self.state = state
 
     def get_search_data_list(prefix, search_type=''):
         '''Get the search data for a particular prefix. For a more targeted list, a specific search type should be provided'''
@@ -88,11 +88,15 @@ class BaseFilterWdg(BaseRefreshWdg):
         return relevant_values_list
 
     get_search_data_list = staticmethod(get_search_data_list)
-    
+
+
+
+
+
 class GeneralFilterWdg(BaseFilterWdg):
     '''Represents a very generic filter matching a column to a value'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'prefix': 'the prefix name for all of the input elements',
         'search_type': 'the search_type that this filter will operate on',
@@ -102,81 +106,97 @@ class GeneralFilterWdg(BaseFilterWdg):
         'custom_filter_view': ' view for custom mode',
         }
 
-    def init(my):
-        my.prefix = my.kwargs.get('prefix')
-        if not my.prefix:
-            my.prefix = 'general'
+    def init(self):
+        self.prefix = self.kwargs.get('prefix')
+        if not self.prefix:
+            self.prefix = 'general'
 
-        my.columns = []
-        if my.kwargs.get('columns'):
-            my.columns = my.kwargs.get('columns').split('|')
-        if not my.columns:
-            column_option =  my.options.get('columns')
+        self.columns = []
+        if self.kwargs.get('columns'):
+            self.columns = self.kwargs.get('columns').split('|')
+        if not self.columns:
+            column_option =  self.options.get('columns')
             if column_option:
-                my.columns = column_option.split('|')
-        my.top_wdg = SpanWdg()
+                self.columns = column_option.split('|')
+        self.top_wdg = SpanWdg()
 
-        my.search_type = my.kwargs['search_type']
+        self.search_type = self.kwargs['search_type']
 
-        my.mode = my.kwargs.get('mode')
-        if not my.mode:
-            my.mode = 'sobject'
+        self.mode = self.kwargs.get('mode')
+        if not self.mode:
+            self.mode = 'sobject'
 
-        assert my.mode in ['sobject', 'parent', 'child','custom','related']
+        assert self.mode in ['sobject', 'parent', 'child','custom','related']
 
         schema = Schema.get()
-        if my.mode in ['child','related']:
-            my.related_types = []
+        if self.mode in ['child','related']:
+            self.related_types = []
 
-            child_types = schema.get_child_types(my.search_type)
-            related_types = schema.get_related_search_types(my.search_type)
-            parent_type = schema.get_parent_type(my.search_type)
+            child_types = schema.get_child_types(self.search_type)
+            related_types = schema.get_related_search_types(self.search_type)
+            parent_type = schema.get_parent_type(self.search_type)
+
+            remove_related = ['sthpw/clipboard','sthpw/sobject_list','sthpw/sobject_log','config/plugin_content','sthpw/connection']
 
             sthpw_types = []
 
             for related_type in related_types:
-                if related_type in my.related_types or \
+                if related_type in remove_related:
+                    continue
+
+                if related_type in self.related_types or \
                         related_type in sthpw_types:
                     continue
 
                 if related_type.startswith("sthpw/"):
                     sthpw_types.append(related_type)
                 else:
-                    my.related_types.append(related_type)
+                    self.related_types.append(related_type)
 
-            my.related_types.sort()
+            self.related_types.sort()
             sthpw_types.sort()
-            my.related_types.extend(sthpw_types)
+            self.related_types.extend(sthpw_types)
 
             for child_type in child_types:
-                if child_type in my.related_types:
-                    continue
-                my.related_types.append(child_type)
-            if parent_type in my.related_types:
-                my.related_types.remove(parent_type)
 
-            my.related_types.insert(0, my.search_type)
-        elif my.mode == 'parent':
+                if child_type in remove_related:
+                    continue
+
+                if child_type in self.related_types:
+                    continue
+                self.related_types.append(child_type)
+            if parent_type in self.related_types:
+                self.related_types.remove(parent_type)
+
+
+
+
+
+
+            self.related_types.insert(0, self.search_type)
+
+
+        elif self.mode == 'parent':
             schema = Schema.get()
-            parent_type = schema.get_parent_type(my.search_type)
-            parent_search_type = my.kwargs.get("parent_search_type")
+            parent_type = schema.get_parent_type(self.search_type)
+            parent_search_type = self.kwargs.get("parent_search_type")
             if parent_search_type:
                 parent_type = parent_search_type
             if parent_type == '*':
                 project = Project.get()
                 project_search_types = project.get_search_types()
-                my.related_types = [x.get_value("search_type") for x in project_search_types]
+                self.related_types = [x.get_value("search_type") for x in project_search_types]
             else:
-                my.related_types = [parent_type]
+                self.related_types = [parent_type]
         else:
-            my.related_types = []
+            self.related_types = []
 
-        my.related_types_column_dict = {}
+        self.related_types_column_dict = {}
         # verify the table represented by the search type exists and retrieve 
         # the column names for the column selector
         valid_related_types = []
 
-        for related_type in my.related_types:
+        for related_type in self.related_types:
             search_type_obj = SearchType.get(related_type, no_exception=True)
             if not search_type_obj:
                 continue
@@ -185,44 +205,45 @@ class GeneralFilterWdg(BaseFilterWdg):
                 # the table may have been deleted from the db
                 #columns = search_type_obj.get_columns(show_hidden=False)
                 columns = SearchType.get_columns(related_type)
-            except SqlException, e:
+                columns = self.remove_columns(columns)
+            except SqlException as e:
                 DbContainer.abort_thread_sql()
                 continue
-            my.related_types_column_dict[related_type] = columns
+            self.related_types_column_dict[related_type] = columns
             valid_related_types.append(related_type)
 
-        my.related_types = valid_related_types
+        self.related_types = valid_related_types
 
-        my.search_type_indexes = {}
-        for i, related_type in enumerate(my.related_types):
-            my.search_type_indexes[related_type] = i
+        self.search_type_indexes = {}
+        for i, related_type in enumerate(self.related_types):
+            self.search_type_indexes[related_type] = i
 
 
-        my.config = None
-        if my.mode == 'custom':
-            view = my.kwargs.get('custom_filter_view')
+        self.config = None
+        if self.mode == 'custom':
+            view = self.kwargs.get('custom_filter_view')
             if not view:
                 view = 'custom_filter'
 
             try:
                 search = Search("config/widget_config")
-                search.add_filter("search_type", my.search_type)
+                search.add_filter("search_type", self.search_type)
                 search.add_filter("view", view)
                 config_sobj = search.get_sobject()
-            except SearchException, e:
-                print "WARNING: ", e
+            except SearchException as e:
+                print("WARNING: ", e)
                 config_sobj = None
 
             if config_sobj:
                 config_xml = config_sobj.get_xml_value("config")
                 from pyasm.widget import WidgetConfig, WidgetConfigView
                 config = WidgetConfig.get(view=view, xml=config_xml)
-                my.config = WidgetConfigView(my.search_type,view,[config])
-                my.element_names = my.config.get_element_names()
-                my.element_names.sort()
+                self.config = WidgetConfigView(self.search_type,view,[config])
+                self.element_names = self.config.get_element_names()
+                self.element_names.sort()
             else:
-                my.element_names = []
-                my.visible = False
+                self.element_names = []
+                self.visible = False
 
 
 
@@ -238,33 +259,49 @@ class GeneralFilterWdg(BaseFilterWdg):
     get_default_display_wdg = classmethod(get_default_display_wdg)
 
  
-    def set_columns(my, columns):
-        my.columns = columns
+    def set_columns(self, columns):
+        self.columns = columns
 
-    def set_columns_from_search_type(my, search_type):
-        my.columns = SearchType.get_columns(search_type)
+    def set_columns_from_search_type(self, search_type):
+        self.columns = SearchType.get_columns(search_type)
+        self.columns = self.remove_columns(self.columns)
 
 
-    def get_display(my):
+    def remove_columns(self, columns):
+        columns2 = []
 
-        if not my.columns:
-            column_option =  my.options.get('columns')
+        remove = ['s_status']
+        for column in columns:
+            if column in remove:
+                continue
+
+            columns2.append(column)
+
+        return columns2
+
+
+
+
+    def get_display(self):
+
+        if not self.columns:
+            column_option =  self.options.get('columns')
             if column_option:
-                my.columns = column_option.split('|')
+                self.columns = column_option.split('|')
 
-            my.search_type = my.options.get("search_type")
-            if not my.search_type:
-                my.search_type = my.kwargs.get("search_type")
+            self.search_type = self.options.get("search_type")
+            if not self.search_type:
+                self.search_type = self.kwargs.get("search_type")
 
-            if my.search_type:
-                my.set_columns_from_search_type(my.search_type)
+            if self.search_type:
+                self.set_columns_from_search_type(self.search_type)
 
 
         # don't bother drawing if there is no parent
-        if my.mode == 'parent':
+        if self.mode == 'parent':
             schema = Schema.get()
-            parent_type = schema.get_parent_type(my.search_type)
-            parent_search_type = my.kwargs.get("parent_search_type")
+            parent_type = schema.get_parent_type(self.search_type)
+            parent_search_type = self.kwargs.get("parent_search_type")
             if parent_search_type:
                 parent_type = parent_search_type
             if not parent_type:
@@ -276,14 +313,14 @@ class GeneralFilterWdg(BaseFilterWdg):
                 return widget
 
 
-        if not my.columns:
-            my.columns = []
+        if not self.columns:
+            self.columns = []
 
         # contains everything
-        top_wdg = my.top_wdg
-        if my.kwargs.get("visible") == 'false': 
+        top_wdg = self.top_wdg
+        if self.kwargs.get("visible") == 'false': 
             top_wdg.add_style("visible: none") 
-        top_wdg.set_id("%s_filter_top" % my.prefix )
+        top_wdg.set_id("%s_filter_top" % self.prefix )
         top_wdg.add_class("spt_filter_top")
 
 
@@ -294,7 +331,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         op = 'and'
         level = 0
         i = -1
-        filter_template = my._get_filter_wdg_with_op(i, op, level)
+        filter_template = self._get_filter_wdg_with_op(i, op, level)
         dummy_div.add(filter_template)
         top_wdg.add(dummy_div)
 
@@ -302,7 +339,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         # add the container for all of the filters
         filter_container = DivWdg()
-        filter_container.set_id("%s_filter_container" % my.prefix)
+        filter_container.set_id("%s_filter_container" % self.prefix)
         filter_container.add_class("spt_filter_container")
 
         top_wdg.add(filter_container)
@@ -314,7 +351,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_data = FilterData.get()
             num_filters = 0
             for x in filter_data.get_data():
-                if x.get('prefix') == my.prefix:
+                if x.get('prefix') == self.prefix:
                     num_filters += 1
             if num_filters == 0:
                 num_filters = 1
@@ -326,9 +363,9 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_mode = filter_data.get_values_by_index("filter_mode", 0)
         filter_mode = filter_mode.get('filter_mode')
         if filter_mode:
-            my.filter_mode = filter_mode
+            self.filter_mode = filter_mode
         # set the default ops and levels
-        if my.filter_mode == 'custom':
+        if self.filter_mode == 'custom':
             search_ops = filter_data.get_values_by_index("search_ops", 0)
             ops = search_ops.get("ops")
             levels = search_ops.get("levels")
@@ -350,7 +387,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             else:
                 op = ops[i-1]
                 level = levels[i-1]
-            filter_wdg =  my._get_filter_wdg_with_op(i, op, level)
+            filter_wdg =  self._get_filter_wdg_with_op(i, op, level)
             filter_container.add(filter_wdg)
 
 
@@ -365,22 +402,22 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_types.add_style("display: none")
 
 
-        if my.mode != 'custom':
+        if self.mode != 'custom':
             for type in types:
-                filter_type = my.get_filter_type_wdg(type, -1)
+                filter_type = self.get_filter_type_wdg(type, -1)
                 filter_types.add(filter_type)
 
         else:
             # add widgets from the config
-            if my.config:
-                #element_names = my.config.get_element_names()
-                element_names = my.element_names
+            if self.config:
+                #element_names = self.config.get_element_names()
+                element_names = self.element_names
                 for element_name in element_names:
                     filter_type_wdg = DivWdg()
                     filter_type_wdg.add_style("float: left")
                     filter_type_wdg.add_class("spt_filter_type_wdg")
 
-                    filter = my.config.get_display_widget(element_name)
+                    filter = self.config.get_display_widget(element_name)
                     filter_type_wdg.add(filter)
 
                     filter_types.add(filter_type_wdg)
@@ -392,37 +429,37 @@ class GeneralFilterWdg(BaseFilterWdg):
         #
         # provide a bunch alternatives of alternative column filters based on
         # the search type
-        if my.mode in ["child","parent","related"]:
+        if self.mode in ["child","parent","related"]:
             column_types = SpanWdg()
-            column_types.add_class("%s_filter_columns" % my.prefix)
+            column_types.add_class("%s_filter_columns" % self.prefix)
             column_types.add_style("display: none")
 
             column_indexes = {}
-            for related_type in my.related_types:
-                columns = my.related_types_column_dict.get(related_type)
+            for related_type in self.related_types:
+                columns = self.related_types_column_dict.get(related_type)
 
-                filter_selector = my.get_column_selector(related_type, -1, columns=columns)
+                filter_selector = self.get_column_selector(related_type, -1, columns=columns)
                 column_types.add(filter_selector)
 
-                child_column_indexes = my.get_column_indexes(related_type)
+                child_column_indexes = self.get_column_indexes(related_type)
 
                 column_indexes = dict(column_indexes.items() + child_column_indexes.items() )
 
             top_wdg.add(column_types)
 
 
-        elif my.mode == "custom":
+        elif self.mode == "custom":
             # go through the custom elements and add these
             column_indexes = {}
-            element_names = my.element_names
+            element_names = self.element_names
             for i, element_name in enumerate(element_names):
                 column_indexes[str(element_name)] = i
 
         else:
 
-            column_indexes = my.get_column_indexes(my.search_type)
+            column_indexes = self.get_column_indexes(self.search_type)
 
-        hidden = HiddenWdg("%s_column_indexes" % my.prefix, column_indexes )
+        hidden = HiddenWdg("%s_column_indexes" % self.prefix, column_indexes )
         hidden.set_class("spt_filter_indexes")
         top_wdg.add(hidden)
 
@@ -430,7 +467,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         return top_wdg
 
 
-    def get_column_types(my, search_type):
+    def get_column_types(self, search_type):
         '''maps the relationship between the type of the column and the filter
         index that is used to search.'''
 
@@ -440,7 +477,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         return column_types
 
 
-    def get_column_indexes(my, search_type):
+    def get_column_indexes(self, search_type):
         '''maps the relationship between the type of the column and the filter
         index that is used to search.'''
 
@@ -474,7 +511,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-    def _get_filter_wdg_with_op(my, i, op, level):
+    def _get_filter_wdg_with_op(self, i, op, level):
 
         incr = 20
 
@@ -483,6 +520,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_container.add_class("spt_filter_template_with_op")
         else:
             filter_container.add_class("spt_filter_container_with_op")
+
 
         if i != 0:
             spacing = DivWdg()
@@ -504,7 +542,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             op_div.add_class("hand")
             
             # add the op and level displays
-            op_div.add_attr("spt_mode", my.mode)
+            op_div.add_attr("spt_mode", self.mode)
             op_div.add_attr("spt_level", level)
             op_div.add_attr("spt_op", op)
 
@@ -513,7 +551,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_div.add_class("spt_op_display")
             value_div.add_attr("title", "Click to switch between 'and'/'or'.  Shift-Click to switch between logical levels")
             op_div.add(value_div)
-            if my.filter_mode == 'custom':
+            if self.filter_mode == 'custom':
                 value_div.add(op)
             else:
                 value_div.add('&nbsp;')
@@ -523,11 +561,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 value_div.set_style("padding: 5px")
             else:
                 value_div.set_style("padding: 1px")
-            value_div.set_style("margin-top: -5px")
-            value_div.set_style("margin-bottom: -2px")
 
-            value_div.add_style("height: 3px")
-            #value_div.add_attr("spt_op_index", i)
 
             value_div.add_behavior( {
             'type': 'click_up',
@@ -649,7 +683,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_container.add(spacing)
 
         filter_name = "filter_%s" % i
-        filter = my.get_filter_wdg(filter_name, i)
+        filter = self.get_filter_wdg(filter_name, i)
         filter_container.add(filter)
 
 
@@ -657,35 +691,33 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-    def get_filter_wdg(my, filter_name, filter_index):
+    def get_filter_wdg(self, filter_name, filter_index):
         '''gets the filter widget.  There are 2 parts to a filter.  A selection
         of the filter name (which often corresponds to the attribute of an
         sobject and the actual filter'''
 
         div = DivWdg()
         div.add_style("float: left")
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         div.add(hidden)
 
-        filter_id = "%s_%s" % (my.prefix, filter_name)
+        filter_id = "%s_%s" % (self.prefix, filter_name)
         div.set_id(filter_id)
-        #div.add_style("margin-left: 10px")
         div.add_class("spt_filter_wdg")
-        #div.add_style("width: 600px")
 
         # add the enable/disable checkbox
-        checkbox = CheckboxWdg('%s_enabled' % my.prefix)
+        checkbox = CheckboxWdg('%s_enabled' % self.prefix)
    
         filter_data = FilterData.get()
-        filter_data_map = filter_data.get_values_by_index(my.prefix, filter_index)
+        filter_data_map = filter_data.get_values_by_index(self.prefix, filter_index)
         #if filter_index == 0:
         #    checkbox.set_checked()
         if filter_index == -1:
             checkbox.set_checked()
         elif not filter_data_map:
             checkbox.set_checked()
-        elif filter_data_map.get("prefix") == my.prefix:
-            if filter_data_map.get( "%s_enabled" % my.prefix ) != "":
+        elif filter_data_map.get("prefix") == self.prefix:
+            if filter_data_map.get( "%s_enabled" % self.prefix ) != "":
                 checkbox.set_checked()
 
     
@@ -721,13 +753,14 @@ class GeneralFilterWdg(BaseFilterWdg):
         # 1. add a search type filter
         columns = None
         related_search_type = None
-        if my.mode in ['parent', 'child']:
-            search_type_wdg = my.get_search_type_selector(filter_name, filter_index)
+        if self.mode in ['parent', 'child']:
+            search_type_wdg = self.get_search_type_selector(filter_name, filter_index)
             #search_type = search_type_wdg.get_widget("selector").get_value()
             search_type = search_type_wdg.get_widget("selector").value
             if search_type and search_type != "*":
-                #columns = my.get_columns_from_search_type(search_type)
+                #columns = self.get_columns_from_search_type(search_type)
                 columns = SearchType.get_columns(search_type)
+                columns = self.remove_columns(columns)
                 related_search_type = search_type
             div.add( search_type_wdg )
 
@@ -735,8 +768,8 @@ class GeneralFilterWdg(BaseFilterWdg):
             spacing.add_style("float: left")
             div.add(spacing)
 
-        elif my.mode in ['custom']:
-            columns = my.element_names
+        elif self.mode in ['custom']:
+            columns = self.element_names
         
         else:
             pass
@@ -746,7 +779,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         # 2. add the column selector
-        filter_selector = my.get_column_selector(filter_name, filter_index, columns)
+        filter_selector = self.get_column_selector(filter_name, filter_index, columns)
         div.add( filter_selector )
         selector = filter_selector.get_widget("selector")
         #columns = selector.get_values()
@@ -757,12 +790,12 @@ class GeneralFilterWdg(BaseFilterWdg):
             column = None
 
         # get filter
-        if my.mode == 'custom':
+        if self.mode == 'custom':
             filter_type_wdg = SpanWdg()
             filter_type_wdg.add_class("spt_filter_type_wdg")
 
-            if column and column in my.element_names:
-                filter = my.config.get_display_widget(column)
+            if column and column in self.element_names:
+                filter = self.config.get_display_widget(column)
 
                 # set the value s for this filter
                 values = filter_data.get_values_by_index("custom", filter_index)
@@ -775,7 +808,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         else:
-            search_type = my.search_type
+            search_type = self.search_type
             if related_search_type:
                 search_type = related_search_type
             search_type_obj = SearchType.get(search_type)
@@ -784,7 +817,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             else:
                 #column_type = search_type_obj.get_tactic_type(column)
                 column_type = SearchType.get_tactic_type(search_type, column)
-            filter_type_wdg = my.get_filter_type_wdg(column_type, filter_index, column=column)
+            filter_type_wdg = self.get_filter_type_wdg(column_type, filter_index, column=column)
 
 
         #spacing = DivWdg('&nbsp;&nbsp;')
@@ -845,46 +878,46 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-    def get_search_type_selector(my, filter_name, filter_index):
+    def get_search_type_selector(self, filter_name, filter_index):
         '''Get a select of the search_types for children or parent'''
         search_type_selector = DivWdg()
         search_type_selector.add_style("float: left")
         
-        filter_id = "%s_search_type" % (my.prefix)
+        filter_id = "%s_search_type" % (self.prefix)
         search_type_select = SelectWdg(filter_id)
-        search_type_select.add_style("width: 110px")
+        search_type_select.add_style("width: 130px")
         search_type_select.add_empty_option('-- Related Type --')
         behavior = {
             'type': 'change',
             'cbjs_action': 'spt.dg_table.set_filter2(evt, bvr)',
-            'prefix': my.prefix,
-            'search_type_indexes': my.search_type_indexes
+            'prefix': self.prefix,
+            'search_type_indexes': self.search_type_indexes
         }
         search_type_select.add_behavior(behavior)
 
 
         #schema = Schema.get()
-        if my.mode in ['child', 'parent','related']:
-            my.labels = [x.split("/")[1] for x in my.related_types]
-            search_type_select.set_option("values", my.related_types)
-            search_type_select.set_option("labels", my.labels)
-            my.set_filter_value(search_type_select, filter_index)
+        if self.mode in ['child', 'parent','related']:
+            self.labels = [x.split("/")[1].title() for x in self.related_types]
+            search_type_select.set_option("values", self.related_types)
+            search_type_select.set_option("labels", self.labels)
+            self.set_filter_value(search_type_select, filter_index)
 
         search_type_selector.add(search_type_select, "selector")
         return search_type_selector
 
 
-    def get_column_selector(my, filter_name, filter_index, columns=[]):
+    def get_column_selector(self, filter_name, filter_index, columns=[]):
         '''Get a select of the columns for a search type'''
         filter_selector = DivWdg(css='spt_filter_columns')
         filter_selector.add_style("float: left")
 
-        filter_id = "%s_column" % (my.prefix)
+        filter_id = "%s_column" % (self.prefix)
         column_select = SelectWdg(filter_id)
         column_select.add_empty_option()
 
         if not columns:
-            columns = my.columns
+            columns = self.columns
 
         columns.sort()
         # avoid putting straight column names
@@ -901,14 +934,14 @@ class GeneralFilterWdg(BaseFilterWdg):
         column_select.set_option("labels", labels)
         column_select.add_empty_option("-- Attribute --")
         column_select.set_persist_on_submit()
-        column_select.add_event("onchange", "spt.dg_table.set_filter(this, '%s')" % my.prefix)
-        my.set_filter_value(column_select, filter_index)
+        column_select.add_event("onchange", "spt.dg_table.set_filter(this, '%s')" % self.prefix)
+        self.set_filter_value(column_select, filter_index)
         filter_selector.add(column_select, "selector"  )
         
         return filter_selector
 
 
-    def set_filter_value(my, filter, filter_index, default=''):
+    def set_filter_value(self, filter, filter_index, default=''):
         # templates do not have values
         if filter_index == -1:
             filter.set_value(default, set_form_value=False)
@@ -917,14 +950,14 @@ class GeneralFilterWdg(BaseFilterWdg):
         # set the value
         filter_id = filter.get_name()
         filter_data = FilterData.get()
-        values = filter_data.get_values_by_index(my.prefix, filter_index)
+        values = filter_data.get_values_by_index(self.prefix, filter_index)
         value = values.get(filter_id)
         if value:
             filter.set_value(value, set_form_value=False)
 
 
 
-    def get_filter_type_wdg(my, type, filter_index, column=None):
+    def get_filter_type_wdg(self, type, filter_index, column=None):
         ''' getting the filter for comparision operators'''
         if type not in ['string', 'varchar', 'float', 'integer', 'timestamp','time','datetime2','login','expression', 'timecode','boolean']:
             print("WARNING: FilterWdg: type [%s] not supported, using 'string'" % type)
@@ -944,20 +977,20 @@ class GeneralFilterWdg(BaseFilterWdg):
             else:
                 relations = ["is", "is not", "contains", "does not contain", "is empty", "is not empty", "starts with", "ends with", "does not start with", "does not end with", "in", "not in", "is distinct"]
                 
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.add_style("width: 80px")
             relation_select.add_style("float: left")
             relation_select.remove_empty_option()
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
 
-            my.set_filter_value(relation_select, filter_index)
+            self.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
             
           
             #from tactic.ui.input import LookAheadTextInputWdg
-            #value_text = LookAheadTextInputWdg(name="%s_value"%my.prefix,search_type=my.search_type, column="id")
-            value_text = TextWdg("%s_value" % my.prefix)
+            #value_text = LookAheadTextInputWdg(name="%s_value"%self.prefix,search_type=self.search_type, column="id")
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.add_class("form-control")
             value_text.set_persist_on_submit()
             value_text.add_class('spt_filter_text')
@@ -965,7 +998,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_text.add_style("height", "30")
             value_text.add_style("width", "250")
             value_text.add_style("margin", "0px 5px")
-            my.set_filter_value(value_text, filter_index)
+            self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text);
             
             value_text.add_behavior( {
@@ -994,15 +1027,15 @@ class GeneralFilterWdg(BaseFilterWdg):
          
         elif type in ['integer', 'float', 'currency']:
             relations = ["is equal to", "is greater than", "is less than", "in", "not in", "is empty", "is not empty", "is distinct"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.add_style("float", "left")
             relation_select.add_style("width", "80px")
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select, filter_index)
+            self.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
 
-            value_text = TextWdg("%s_value" % my.prefix)
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.add_class("form-control")
             value_text.add_styles("float: left; width: 250; margin: 0px 5px")
             value_text.set_persist_on_submit()
@@ -1023,24 +1056,24 @@ class GeneralFilterWdg(BaseFilterWdg):
                     }
                 '''
             })
-            my.set_filter_value(value_text, filter_index)
+            self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
 
         elif type in  ['time','timestamp','datetime2']:
             relations = ["is newer than", "is older than", "is on", "is empty", "is not empty"]
             labels = ["is after", "is before", "is on", "is empty", "is not empty"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_option("labels", labels)
             relation_select.add_style("width: 100px")
             relation_select.add_style("float: left")
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select, filter_index)
+            self.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
 
             options = ["1 day", '2 days', '1 week', '1 month', "-1 day", "-2 days", "-1 week", "-1 month"]
             labels = ["1 day ago", '2 days ago', '1 week ago', '1 month ago', '1 day from now', '2 days from now', '1 week from now', '1 month from now']
-            another_select = SelectWdg("%s_select" % my.prefix)
+            another_select = SelectWdg("%s_select" % self.prefix)
             another_select.add_class('spt_time_filter')
             another_select.add_style("width: 100px")
             another_select.add_style("float: left")
@@ -1049,7 +1082,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             another_select.set_option("labels", labels)
             another_select.add_style("width: 80px")
             another_select.set_persist_on_submit()
-            my.set_filter_value(another_select, filter_index)
+            self.set_filter_value(another_select, filter_index)
             filter_span.add(another_select)
             
             or_div = DivWdg(" or &nbsp; ", css='small spt_time_filter')
@@ -1057,7 +1090,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             or_div.add_style('float','left')
             filter_span.add(or_div)
             from tactic.ui.widget import CalendarInputWdg
-            value_cal = CalendarInputWdg("%s_value" % my.prefix)
+            value_cal = CalendarInputWdg("%s_value" % self.prefix)
             value_cal.add_class('spt_time_filter')
             value_cal.add_style("float", "left")
 
@@ -1068,58 +1101,57 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_cal.get_top().add_styles('float: right;width: 230px') 
             value_cal.set_persist_on_submit()
             
-            my.set_filter_value(value_cal, filter_index)
+            self.set_filter_value(value_cal, filter_index)
             filter_span.add(value_cal)
 
         elif type in ['login']:
 
             relations = ["is", "is not", "contains", "does not contain", "is empty", "is not empty","starts with", "ends with"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select, filter_index)
+            self.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
 
-            value_text = CheckboxWdg("%s_user" % my.prefix)
+            value_text = CheckboxWdg("%s_user" % self.prefix)
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text, filter_index)
+            self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
             filter_span.add("{user}")
 
             filter_span.add(" or ")
 
-            value_text = TextWdg("%s_value" % my.prefix)
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.add_class("form-control")
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text, filter_index)
+            self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
 
 
         elif type in ['expression']:
-            filter_span.add("- Results ")
-           
-            relation_hidden = HiddenWdg("%s_relation" % my.prefix)
+            relation_hidden = HiddenWdg("%s_relation" % self.prefix)
             relation_hidden.set_value("expression")
             filter_span.add(relation_hidden)
 
             filter_span.add(" ")
 
-            op_filter = SelectWdg("%s_op" % my.prefix)
+            op_filter = SelectWdg("%s_op" % self.prefix)
             op_filter.set_option("labels", "have|do not have|match (slow)|do not match (slow)")
             op_filter.set_option("values", "in|not in|match|do not match")
             op_filter.add_style("float", "left")
             op_filter.add_style("width: 80px")
-            my.set_filter_value(op_filter, filter_index)
+            self.set_filter_value(op_filter, filter_index)
             filter_span.add(op_filter)
             filter_span.add(" ")
 
 
-            value_text = TextAreaWdg("%s_value" % my.prefix)
+            value_text = TextAreaWdg("%s_value" % self.prefix)
             value_text.add_style("vertical-align: top")
-            value_text.set_option("rows", "2")
-            value_text.set_option("cols", "70")
+            value_text.add_style("height", "30px")
+            value_text.add_style("width", "250px")
+            value_text.add_style("margin-left", "5px")
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text, filter_index, default='@SOBJECT()')
+            self.set_filter_value(value_text, filter_index, default='@SOBJECT()')
             filter_span.add(value_text)
 
         elif type in ['timecode']:
@@ -1127,19 +1159,19 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             relations = ["is timecode before", "is timecode after", "is timecode equal", "is empty"]
             labels = ["is before", "is after", "is equal", "is empty"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_option("labels", labels)
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select, filter_index)
+            self.set_filter_value(relation_select, filter_index)
             filter_span.add(relation_select)
 
 
-            value_text = TextWdg("%s_value" % my.prefix)
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.add_class("form-control")
             value_text.add_style("float", "left")
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text, filter_index)
+            self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
 
         # expression is passed in in the HiddenWdg and we want to ignore 
@@ -1183,7 +1215,7 @@ class GeneralFilterWdg(BaseFilterWdg):
   
 
   
-    def alter_search(my, search):
+    def alter_search(self, search):
 
         filter_data = FilterData.get()
         values_list = filter_data.get_data()
@@ -1193,11 +1225,11 @@ class GeneralFilterWdg(BaseFilterWdg):
         relevant_values_list = []
         for i, values in enumerate(values_list):
             # hacky
-            if not values.has_key("%s_column" % my.prefix):
+            if not values.has_key("%s_column" % self.prefix):
                 continue
 
             # check if this filter is enabled
-            enabled = values.get("%s_enabled" % my.prefix)
+            enabled = values.get("%s_enabled" % self.prefix)
             if enabled == None:
                 # by default, the filter is enabled
                 is_enabled = True
@@ -1212,24 +1244,24 @@ class GeneralFilterWdg(BaseFilterWdg):
             relevant_values_list.append(values)
         
         
-        if my.filter_mode != 'custom':
+        if self.filter_mode != 'custom':
             search.add_op("begin")
 
-        if my.mode in ["child", "parent"]:
-            my.alter_child_search(search, relevant_values_list)
-        elif my.mode == "custom":
-            my._alter_custom_search(search, relevant_values_list)
-        elif my.mode == "sobject":
-            my._alter_sobject_search(search, relevant_values_list, my.prefix)
+        if self.mode in ["child", "parent"]:
+            self.alter_child_search(search, relevant_values_list)
+        elif self.mode == "custom":
+            self._alter_custom_search(search, relevant_values_list)
+        elif self.mode == "sobject":
+            self._alter_sobject_search(search, relevant_values_list, self.prefix)
 
-        assert my.filter_mode
-        if my.filter_mode != 'custom':
+        assert self.filter_mode
+        if self.filter_mode != 'custom':
             # this closes the lstack
-            search.add_op(my.filter_mode)
+            search.add_op(self.filter_mode)
 
 
 
-    def alter_child_search(my, search, values_list):
+    def alter_child_search(self, search, values_list):
 
         if not values_list:
             return
@@ -1238,12 +1270,15 @@ class GeneralFilterWdg(BaseFilterWdg):
         # filter out non-enabled make sure not all enabled are empty
         value_dict = {}
         for values in values_list:
-            search_type = values.get("%s_search_type" % my.prefix)
-            if not search_type or search_type == '*':
+            search_type = values.get("%s_search_type" % self.prefix)
+            if not search_type:
+                search_type = search.get_base_search_type()
+
+            if search_type == '*':
                 continue
            
             # NOTE: this is done here instead of the relevant_values_list in alter_search to work with Compound Search better
-            enabled = values.get("%s_enabled" % my.prefix)
+            enabled = values.get("%s_enabled" % self.prefix)
             if enabled == None:
                 # by default, the filter is enabled
                 is_enabled = True
@@ -1254,12 +1289,12 @@ class GeneralFilterWdg(BaseFilterWdg):
            
 
             # text box takes precedence, select is applicable for timestamps 
-            value = values.get("%s_value" % my.prefix)
+            value = values.get("%s_value" % self.prefix)
             if not value:
-                value = values.get("%s_select" % my.prefix)
+                value = values.get("%s_select" % self.prefix)
             # at last check for special relation like is (not) empty, is distinct
             if not value:
-                value = values.get("%s_relation" % my.prefix)
+                value = values.get("%s_relation" % self.prefix)
                 if value in ['is empty','is not empty','is distinct']:
                     value = True
                 else:
@@ -1287,7 +1322,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         # analyze the operators and get all of the search ops that apply to
         # this mode
         search_ops = []
-        if my.filter_mode == 'custom':
+        if self.filter_mode == 'custom':
             filter_data = FilterData.get()
             all_search_ops = filter_data.get_values_by_index("search_ops", 0)
             if all_search_ops:
@@ -1301,7 +1336,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                         all_modes.append("None")
 
                 for op_mode, op_level, op_op in zip(all_modes, all_levels, all_ops):
-                    if op_mode not in my.mode:
+                    if op_mode not in self.mode:
                         continue
 
                     search_ops.append( [op_level, op_op] )
@@ -1315,7 +1350,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         last_search_type = None
         for i, values in enumerate(values_list):
 
-            enabled = values.get("%s_enabled" % my.prefix)
+            enabled = values.get("%s_enabled" % self.prefix)
             if enabled == None:
                 # by default, the filter is enabled
                 is_enabled = True
@@ -1325,18 +1360,30 @@ class GeneralFilterWdg(BaseFilterWdg):
             if not is_enabled:
                 continue
 
-            search_type = values.get("%s_search_type" % my.prefix)
-            if not search_type or not value_dict.get(search_type):
+            search_type = values.get("%s_search_type" % self.prefix)
+            if not search_type:
+                if self.filter_mode == "custom":
+                    search_type = search.get_base_search_type()
+                else:
+                    self._alter_sobject_search(search, [values], self.prefix)
+                    child_search = None
+                    last_search_type = None
+                    continue
+
+
+            if not value_dict.get(search_type):
                 # set a new child search if there is any break
                 child_search = None
                 last_search_type = None
                 continue
+
+
             if search_type != last_search_type:
                 child_search = None
             
             if not search_ops:
                 level = 0
-                op = my.filter_mode
+                op = self.filter_mode
                 if op == 'custom':
                     op = 'and'
             elif i > 0:
@@ -1380,7 +1427,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         
             # a child filter only send one value list at a time
-            my._alter_sobject_search(child_search, [values], my.prefix, use_ops=False)
+            self._alter_sobject_search(child_search, [values], self.prefix, use_ops=False)
             
             # this is added even if Compound Search is not selected as they are independent
             if not is_new_search:
@@ -1393,21 +1440,23 @@ class GeneralFilterWdg(BaseFilterWdg):
         begin_idx = len(search.get_select().get_wheres())
         
         for i, child_search in enumerate(child_searches):
+
             search.add_relationship_search_filter(child_search)
+
             # apply upper level op on custom mode
-            if my.filter_mode == 'custom' and i > 0:
+            if self.filter_mode == 'custom' and i > 0:
                 search.add_op( upper_ops[i-1] )
                 search.add_op('begin', begin_idx)
         
                     
 
 
-    def _alter_custom_search(my, search, values_list):
+    def _alter_custom_search(self, search, values_list):
 
         for i, values in enumerate(values_list):
 
-            enabled = values.get("%s_enabled" % my.prefix)
-            column = values.get("%s_column" % my.prefix)
+            enabled = values.get("%s_enabled" % self.prefix)
+            column = values.get("%s_column" % self.prefix)
 
             # check if this filter is enabled
             if enabled == None:
@@ -1418,16 +1467,16 @@ class GeneralFilterWdg(BaseFilterWdg):
             if not is_enabled:
                 continue
 
-            if column in my.element_names:
-                widget = my.config.get_display_widget(column)
+            if column in self.element_names:
+                widget = self.config.get_display_widget(column)
                 widget.set_values(values)
                 # FIXME: what to do about values_list
                 widget.alter_search(search)
 
 
-    def _alter_sobject_search(my, search, values_list, prefix, use_ops=True):
-        num_enabled = my.alter_sobject_search(search, values_list, prefix, use_ops=use_ops)
-        my.num_filters_enabled += num_enabled
+    def _alter_sobject_search(self, search, values_list, prefix, use_ops=True):
+        num_enabled = self.alter_sobject_search(search, values_list, prefix, use_ops=use_ops)
+        self.num_filters_enabled += num_enabled
 
 
 
@@ -1856,89 +1905,89 @@ class GeneralFilterWdg(BaseFilterWdg):
 class HierarchicalFilterWdg(BaseFilterWdg):
     '''A filter that takes the hierarchical schema into account'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'prefix': 'the prefix name for all of the input elements',
         'search_type': 'the search_type that this filter will operate on'
         }
 
 
-    def init(my):
-        my.schema = Schema.get()
-        if not my.schema:
-            my.parent_type = None
-            my.select = None
+    def init(self):
+        self.schema = Schema.get()
+        if not self.schema:
+            self.parent_type = None
+            self.select = None
             return
 
         web = WebContainer.get_web()
-        my.search_type = web.get_form_value("filter|search_type")
-        if not my.search_type:
-            my.search_type = my.options.get("search_type")
-        if not my.search_type:
-            my.search_type = my.kwargs.get("search_type")
+        self.search_type = web.get_form_value("filter|search_type")
+        if not self.search_type:
+            self.search_type = self.options.get("search_type")
+        if not self.search_type:
+            self.search_type = self.kwargs.get("search_type")
 
-        my.parent_type = my.schema.get_parent_type(my.search_type)
-        my.parent_type = "prod/asset_library"
-        if not my.parent_type:
-            my.select = None
+        self.parent_type = self.schema.get_parent_type(self.search_type)
+        self.parent_type = "prod/asset_library"
+        if not self.parent_type:
+            self.select = None
         else:
-            if my.kwargs.get('refresh') == 'false':
-                my.select = SelectWdg("filter|%s" % my.parent_type)
+            if self.kwargs.get('refresh') == 'false':
+                self.select = SelectWdg("filter|%s" % self.parent_type)
             else:
-                my.select = FilterSelectWdg("filter|%s" % my.parent_type)
+                self.select = FilterSelectWdg("filter|%s" % self.parent_type)
 
 
-    def get_parent_type(my):
-        return my.parent_type
+    def get_parent_type(self):
+        return self.parent_type
 
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
-        if not my.select:
+        if not self.select:
             return widget
 
-        if not my.schema:
+        if not self.schema:
             Environment.add_warning("No schema defined")
             widget.add("No schema defined")
             return widget
 
 
-        if not my.search_type:
+        if not self.search_type:
             Environment.add_warning("HierarchicalFilterWdg", "HierarchicalFilterWdg: Cannot find current search_type")
             widget.add("Cannot find current search_type")
             return widget
 
         span = SpanWdg(css="med")
-        parent_type = my.get_parent_type()
+        parent_type = self.get_parent_type()
         if parent_type:
             parent_type_obj = SearchType.get(parent_type)
             span.add("%s: " % parent_type_obj.get_value("title"))
 
         # assume that there is a code in the parent
-        my.select.add_empty_option("-- Select --")
-        my.select.set_option("query", "%s|code|code" % my.parent_type)
-        span.add(my.select)
+        self.select.add_empty_option("-- Select --")
+        self.select.set_option("query", "%s|code|code" % self.parent_type)
+        span.add(self.select)
 
         widget.add(span)
 
         return widget
 
 
-    def alter_search(my, search):
-        if not my.select:
+    def alter_search(self, search):
+        if not self.select:
             return
-        if not my.parent_type:
+        if not self.parent_type:
             return
-        if not my.schema:
+        if not self.schema:
             return
 
-        parent_code = my.select.get_value()
-        parent = Search.get_by_code(my.parent_type, parent_code)
+        parent_code = self.select.get_value()
+        parent = Search.get_by_code(self.parent_type, parent_code)
         if not parent:
             return
-        parent.children_alter_search(search, my.search_type)
+        parent.children_alter_search(search, self.search_type)
 
 
 
@@ -1946,7 +1995,7 @@ class HierarchicalFilterWdg(BaseFilterWdg):
 
 class SObjectSearchFilterWdg(BaseFilterWdg):
     '''Basic Combination Search usually at the top of the Search Box'''
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'prefix': 'the prefix name for all of the input elements',
         'search_type': 'the search_type that this filter will operate on',
@@ -1954,59 +2003,59 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         }
 
 
-    def init(my):
-        my.search_type = my.options.get("search_type")
-        if not my.search_type:
-            my.search_type = my.kwargs.get("search_type")
+    def init(self):
+        self.search_type = self.options.get("search_type")
+        if not self.search_type:
+            self.search_type = self.kwargs.get("search_type")
 
-        stype_columns = SearchType.get_columns(my.search_type)
+        stype_columns = SearchType.get_columns(self.search_type)
 
-        my.columns = my.kwargs.get('columns')
-        if my.columns:
-            my.columns = my.columns.split('|')
+        self.columns = self.kwargs.get('columns')
+        if self.columns:
+            self.columns = self.columns.split('|')
         else: 
-            my.columns = my.options.get("columns")
-            if my.columns:
-                my.columns = my.columns.split('|')
+            self.columns = self.options.get("columns")
+            if self.columns:
+                self.columns = self.columns.split('|')
 
-        if not my.columns:
+        if not self.columns:
 
-            my.columns = []
+            self.columns = []
 
             # need a way to specify the columns
-            sobject = SearchType.create(my.search_type)
+            sobject = SearchType.create(self.search_type)
             if hasattr(sobject, 'get_search_columns'):
-                my.columns = sobject.get_search_columns()
+                self.columns = sobject.get_search_columns()
 
-            my.columns.append('id')
+            self.columns.append('id')
             if 'code' in stype_columns:
-                my.columns.append('code')
+                self.columns.append('code')
 
         
-        my.prefix = my.kwargs.get("prefix")
-        #my.text.set_persist_on_submit(prefix=my.prefix)
-        #my.set_filter_value(my.text, filter_index)
-        my.stype_columns = []
-        my.text_value = ''
+        self.prefix = self.kwargs.get("prefix")
+        #self.text.set_persist_on_submit(prefix=self.prefix)
+        #self.set_filter_value(self.text, filter_index)
+        self.stype_columns = []
+        self.text_value = ''
 
-    def get_value(my):
+    def get_value(self):
 
         filter_data = FilterData.get()
-        values = filter_data.get_values_by_index(my.prefix, 0)
-        return values.get("%s_search_text"%my.prefix)
+        values = filter_data.get_values_by_index(self.prefix, 0)
+        return values.get("%s_search_text"%self.prefix)
         
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         ''' customize the search here '''
         #search.add_where("begin")
         
-        my.stype_columns = search.get_columns()
+        self.stype_columns = search.get_columns()
         
-        values = FilterData.get().get_values_by_index(my.prefix, 0)
+        values = FilterData.get().get_values_by_index(self.prefix, 0)
         # check if this filter is enabled
-        enabled = values.get("%s_enabled" % my.prefix)
-        value = my.get_value()
+        enabled = values.get("%s_enabled" % self.prefix)
+        value = self.get_value()
 
         if enabled == None:
             # by default, the filter is enabled
@@ -2018,17 +2067,17 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
             return
 
         if is_enabled and value:
-            my.num_filters_enabled += 1
+            self.num_filters_enabled += 1
 
 
 
         if not value:
             return
-        my.text_value = value
+        self.text_value = value
         search.add_op("begin")
 
-        for column in my.columns:
-            if not column in my.stype_columns:
+        for column in self.columns:
+            if not column in self.stype_columns:
                 continue
 
             # id and code should be exact matches
@@ -2041,24 +2090,24 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
                 search.add_filter(column, value)
 
 
-        #filter_string = Search.get_compound_filter(value, my.columns)
+        #filter_string = Search.get_compound_filter(value, self.columns)
         #if filter_string:
         #    search.add_where(filter_string)
 
 
         # add keywords
         column = 'keywords'
-        if value and column in my.stype_columns:
+        if value and column in self.stype_columns:
             search.add_text_search_filter(column, value)
 
         search.add_op("or")
 
        
 
-    def set_columns(my, columns):
-        my.columns = columns
+    def set_columns(self, columns):
+        self.columns = columns
 
-    def get_display(my):
+    def get_display(self):
         widget = Table()
         widget.add_row()
         widget.add_style("margin-left: 25px")
@@ -2067,28 +2116,28 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
         # this is required
         widget.add_class("spt_search_filter")
 
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         widget.add(hidden)
 
-        if not my.columns:
+        if not self.columns:
             raise SetupException('A list of column names expected for SearchFilterWdg')
         
-        checkbox = CheckboxWdg('%s_enabled' % my.prefix)
+        checkbox = CheckboxWdg('%s_enabled' % self.prefix)
 
         # this trick only works with when there is only one checkbox with this prefix
-        checkbox.set_persist_on_submit(prefix=my.prefix)
+        checkbox.set_persist_on_submit(prefix=self.prefix)
         td = widget.add_cell(checkbox)
         td.add_style("padding-right: 10px")
         
         
-        if 'keywords' in my.stype_columns:
-            my.columns.append('keywords')
+        if 'keywords' in self.stype_columns:
+            self.columns.append('keywords')
         
         # this name corresponds to alter_search()
-        name = '%s_search_text' % my.prefix
-        my.text = TextInputWdg(name=name, hint_text=', '.join(my.columns))
-        my.text.set_attr("size","50")
-        my.text.add_behavior( {
+        name = '%s_search_text' % self.prefix
+        self.text = TextInputWdg(name=name, hint_text=', '.join(self.columns))
+        self.text.set_attr("size","50")
+        self.text.add_behavior( {
             'type': 'keyup',
             'cbjs_action': '''
                 var key = evt.key;
@@ -2100,14 +2149,14 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
             } )
         
         
-        widget.add_cell(my.text)
+        widget.add_cell(self.text)
         
-        if my.text_value:
-            my.text.set_value(my.text_value)
+        if self.text_value:
+            self.text.set_value(self.text_value)
 
-        my.text.add_style("display", "inline")
+        self.text.add_style("display", "inline")
         
-        hint_msg = '[ %s ] columns are used in this search.' %', '.join(my.columns)
+        hint_msg = '[ %s ] columns are used in this search.' %', '.join(self.columns)
         hint = HintWdg(hint_msg)
         widget.add_cell(hint)
 
@@ -2116,32 +2165,32 @@ class SObjectSearchFilterWdg(BaseFilterWdg):
 class SubmissionFilterWdg(BaseFilterWdg):
 
 
-    def init(my):
-        my.prefix = my.kwargs.get("prefix")
-        my.type = my.kwargs.get('type')
-        my.item_filter = None
+    def init(self):
+        self.prefix = self.kwargs.get("prefix")
+        self.type = self.kwargs.get('type')
+        self.item_filter = None
 
-    def get_display(my):
+    def get_display(self):
         widget = DivWdg()
         widget.add_class("spt_search_filter")
         widget.add_style("padding: 5px")
 
         # Always enable this filter
-        #checkbox = CheckboxWdg('%s_enabled' % my.prefix)
-        #checkbox.set_persist_on_submit(prefix=my.prefix)
+        #checkbox = CheckboxWdg('%s_enabled' % self.prefix)
+        #checkbox.set_persist_on_submit(prefix=self.prefix)
         #widget.add(SpanWdg(checkbox, css='small'))
 
         from pyasm.prod.web import BinFilterSelectWdg
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         widget.add(hidden)
-        bin_filter = BinFilterSelectWdg(name='%s_bin_select'%my.type, type=my.type)
+        bin_filter = BinFilterSelectWdg(name='%s_bin_select'%self.type, type=self.type)
         bin_filter.add_empty_option('-- Select a bin --', value=SelectWdg.NONE_MODE)
         #bin_filter.add_behavior({'type': 'change', 
         #    "cbjs_action" : bin_filter.get_save_script()})
 
 
-        values = FilterData.get().get_values_by_index(my.prefix, 0)
-        bin_id = values.get("%s_bin_select" % my.prefix)
+        values = FilterData.get().get_values_by_index(self.prefix, 0)
+        bin_id = values.get("%s_bin_select" % self.prefix)
         if bin_id:
             bin_filter.set_value(bin_id)
         
@@ -2149,20 +2198,20 @@ class SubmissionFilterWdg(BaseFilterWdg):
         widget.add(bin_filter)
 
         
-        #widget.add(my.item_filter)
+        #widget.add(self.item_filter)
         return widget
 
-    def alter_search(my, search):
-        values = FilterData.get().get_values_by_index(my.prefix, 0)
-        #if values.get('%s_enabled'%my.prefix) != 'on':
+    def alter_search(self, search):
+        values = FilterData.get().get_values_by_index(self.prefix, 0)
+        #if values.get('%s_enabled'%self.prefix) != 'on':
         #    return
         # check if this filter is enabled
-        bin_id = values.get("%s_bin_select" % my.prefix)
+        bin_id = values.get("%s_bin_select" % self.prefix)
         if not bin_id or bin_id == SelectWdg.NONE_MODE:
            #search.add_filter('id','-1')
            search.add_where("id in (select submission_id from "\
             " submission_in_bin"\
-            " where bin_id in (select id from bin where type = '%s') )"%my.type )
+            " where bin_id in (select id from bin where type = '%s') )"%self.type )
         elif bin_id:
            search.add_where("id in (select submission_id from "\
             " submission_in_bin"\
@@ -2179,51 +2228,51 @@ class SubmissionFilterWdg(BaseFilterWdg):
 
         # this filter is created based on the existing search parameters
         from pyasm.prod.web import SubmissionItemFilterWdg
-        my.item_filter = SubmissionItemFilterWdg(all_sobjs)
+        self.item_filter = SubmissionItemFilterWdg(all_sobjs)
         
         item_value = values.get('item_filter')
-        my.item_filter.alter_search(search, item_value) 
+        self.item_filter.alter_search(search, item_value) 
         """
 
 
 class SnapshotFilterWdg(BaseFilterWdg):
 
     
-    def init(my):
+    def init(self):
         # will be passed in as a state in alter_search() for initial value 
-        my.publish_search_type = ''
-        my.prefix = my.kwargs.get("prefix")
+        self.publish_search_type = ''
+        self.prefix = self.kwargs.get("prefix")
         from pyasm.prod.web import DateSelectWdg, UserFilterWdg
-        my.date_sel = DateSelectWdg('publish_date', is_filter=False)
-        my.user_filter = UserFilterWdg(pref='single')
-        my.enabled = False
+        self.date_sel = DateSelectWdg('publish_date', is_filter=False)
+        self.user_filter = UserFilterWdg(pref='single')
+        self.enabled = False
 
-    def get_display(my):
+    def get_display(self):
         widget = DivWdg()
         widget.add_class("spt_search_filter")
         widget.add_style("padding: 5px")
 
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         widget.add(hidden)
 
-        checkbox = CheckboxWdg('%s_enabled' % my.prefix)
-        if my.enabled:
+        checkbox = CheckboxWdg('%s_enabled' % self.prefix)
+        if self.enabled:
             checkbox.set_checked()
         widget.add(SpanWdg(checkbox, css='small'))
 
         # add search_type select
         from tactic.ui.widget import SearchTypeSelectWdg
-        my.search_type_sel = SearchTypeSelectWdg('publish_search_type', mode=SearchTypeSelectWdg.CURRENT_PROJECT)
+        self.search_type_sel = SearchTypeSelectWdg('publish_search_type', mode=SearchTypeSelectWdg.CURRENT_PROJECT)
 
         # set the value based on what just gets published (default to prod/asset)
 
-        if my.publish_search_type:
-            my.search_type_sel.set_value(my.publish_search_type)
+        if self.publish_search_type:
+            self.search_type_sel.set_value(self.publish_search_type)
 
-        my.search_type_sel.set_option('default','prod/asset')
+        self.search_type_sel.set_option('default','prod/asset')
         
         span = SpanWdg("Type: ", css='small smaller')
-        span.add(my.search_type_sel)
+        span.add(self.search_type_sel)
         widget.add(span)
 
         # add date select
@@ -2231,42 +2280,42 @@ class SnapshotFilterWdg(BaseFilterWdg):
         label_list = ['Today','Last 2 days', 'Last 5 days', 'Last 30 days']
         value_list = ['today','1 Day', '4 Day','29 Day']
         
-        my.date_sel.set_label(label_list)
-        my.date_sel.set_value(value_list)
-        my.date_sel.set_persistence() 
-        my.date_sel.add_behavior({'type' : 'change',
+        self.date_sel.set_label(label_list)
+        self.date_sel.set_value(value_list)
+        self.date_sel.set_persistence() 
+        self.date_sel.add_behavior({'type' : 'change',
             'cbjs_action': "%s;" \
-            % (my.date_sel.get_save_script())})
+            % (self.date_sel.get_save_script())})
         span = SpanWdg(css='smaller')
-        span.add(my.date_sel)
+        span.add(self.date_sel)
         
-        span.add(my.user_filter)
+        span.add(self.user_filter)
         widget.add(span)
 
         return widget
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         
 
-        values = FilterData.get().get_values_by_index(my.prefix, 0)
+        values = FilterData.get().get_values_by_index(self.prefix, 0)
                
-        snapshot_filter_enabled = my.state.get('snapshot_filter_enabled')
+        snapshot_filter_enabled = self.state.get('snapshot_filter_enabled')
         if not snapshot_filter_enabled:
-            snapshot_filter_enabled = values.get('%s_enabled'%my.prefix) 
+            snapshot_filter_enabled = values.get('%s_enabled'%self.prefix) 
        
         # check if this filter is enabled
         if snapshot_filter_enabled != 'on':
             return
-        my.enabled = True
+        self.enabled = True
 
          # if set explicitly, then use the publish search type
         # since it is the one being displayed as well
-        my.publish_search_type = my.state.get('publish_search_type')
-        if my.publish_search_type:
-            value = my.publish_search_type
+        self.publish_search_type = self.state.get('publish_search_type')
+        if self.publish_search_type:
+            value = self.publish_search_type
         else:
             value = values.get("publish_search_type")
-            my.publish_search_type = value
+            self.publish_search_type = value
 
         
         from pyasm.biz import Project
@@ -2290,38 +2339,38 @@ class SnapshotFilterWdg(BaseFilterWdg):
         value = values.get("publish_date")
         if not value or value == SelectWdg.NONE_MODE:
             return
-        search.add_where(my.date_sel.get_where(value)) 
+        search.add_where(self.date_sel.get_where(value)) 
 
 
 
 class WorkHourFilterWdg(BaseFilterWdg):
 
-    def init(my):
+    def init(self):
         # will be passed in as a state in alter_search() for initial value 
-        my.prefix = my.kwargs.get("prefix")
+        self.prefix = self.kwargs.get("prefix")
         from pyasm.widget import WeekTableElement
-        my.week_filter_name = WeekTableElement.CAL_NAME
-        my.work_date_selector = CalendarInputWdg(WeekTableElement.CAL_NAME, show_week=True)
-        my.work_filter = None
+        self.week_filter_name = WeekTableElement.CAL_NAME
+        self.work_date_selector = CalendarInputWdg(WeekTableElement.CAL_NAME, show_week=True)
+        self.work_filter = None
 
-        my.enabled = False
+        self.enabled = False
    
-    def get_display(my):
+    def get_display(self):
         from pyasm.common import Date
         div = DivWdg(css="spt_search_filter")
         div.add_style("padding: 5px")
 
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         div.add(hidden)
 
-        checkbox = CheckboxWdg('%s_enabled' % my.prefix)
-        if my.enabled:
+        checkbox = CheckboxWdg('%s_enabled' % self.prefix)
+        if self.enabled:
             checkbox.set_checked()
         div.add(SpanWdg(checkbox, css='small'))
         login_filter = None
 
         """
-        if my._has_user_wdg_access():
+        if self._has_user_wdg_access():
             login_filter = UserFilterWdg()
             login_filter.navigator.set_submit_onchange()
         """
@@ -2329,7 +2378,7 @@ class WorkHourFilterWdg(BaseFilterWdg):
         div.add(login_filter)
 
         #work_date_selector.set_persist_on_submit()
-        selected_date = my.work_date_selector.get_value()
+        selected_date = self.work_date_selector.get_value()
         #work_date_selector.set_onchange_script('document.form.submit()')
         date = None
         if selected_date:
@@ -2339,27 +2388,27 @@ class WorkHourFilterWdg(BaseFilterWdg):
         selected_date = date.get_db_date()
        
         from pyasm.prod.web import WeekFilterWdg
-        my.week_filter = WeekFilterWdg(selected_date, my.week_filter_name)
+        self.week_filter = WeekFilterWdg(selected_date, self.week_filter_name)
 
         date_span = SpanWdg("Date: ", css='med')
-        date_span.add(my.work_date_selector)
+        date_span.add(self.work_date_selector)
         div.add(date_span)
-        div.add(my.week_filter)
+        div.add(self.week_filter)
         return div
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         # always filter just for current user for now
         search.add_filter('login', Environment.get_user_name())
 
         # check if this filter is enabled
-        values = FilterData.get().get_values_by_index(my.prefix, 0)
+        values = FilterData.get().get_values_by_index(self.prefix, 0)
         
-        if values.get('%s_enabled'%my.prefix) != 'on':
+        if values.get('%s_enabled'%self.prefix) != 'on':
             return
         selected_year = ''
         date = None
-        selected_date = values.get(my.week_filter_name)
+        selected_date = values.get(self.week_filter_name)
         if selected_date:
             date = Date(db_date = selected_date)
         else: # take today if not set
@@ -2382,21 +2431,21 @@ class WorkHourFilterWdg(BaseFilterWdg):
 
 class NotificationLogFilterWdg(BaseFilterWdg):
     '''used in My Notifications'''
-    def init(my):
-        my.prefix = my.kwargs.get("prefix")
+    def init(self):
+        self.prefix = self.kwargs.get("prefix")
 
-    def get_display(my):
+    def get_display(self):
         # nothing to draw really, it's for internal search
         div = DivWdg(css="spt_search_filter")
         div.add_style("padding: 5px")
 
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         div.add(hidden)
 
         return div
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         
         # Do some built in search
         project_code = Project.get_project_code()
@@ -2417,39 +2466,39 @@ class NotificationLogFilterWdg(BaseFilterWdg):
 
 class ShotFilterWdg(BaseFilterWdg):
     '''used in Shot Loader page'''
-    def init(my):
-        my.prefix = my.kwargs.get("prefix")
-        my.search_type = my.kwargs.get("search_type")
-        my.seq_search_type = my.kwargs.get("sequence_search_type")
+    def init(self):
+        self.prefix = self.kwargs.get("prefix")
+        self.search_type = self.kwargs.get("search_type")
+        self.seq_search_type = self.kwargs.get("sequence_search_type")
         from tactic.ui.input import ShotNavigatorWdg
-        my.shot_navigator = ShotNavigatorWdg(shot_search_type=my.search_type, sequence_search_type=my.seq_search_type)
+        self.shot_navigator = ShotNavigatorWdg(shot_search_type=self.search_type, sequence_search_type=self.seq_search_type)
     
-    def get_display(my):
+    def get_display(self):
         div = DivWdg(css='spt_search_filter')
-        hidden = HiddenWdg("prefix", my.prefix)
+        hidden = HiddenWdg("prefix", self.prefix)
         div.add(hidden)
-        div.add(my.shot_navigator)
+        div.add(self.shot_navigator)
         return div
 
-    def alter_search(my, search):
-        values = FilterData.get().get_values_by_index(my.prefix, 0)
+    def alter_search(self, search):
+        values = FilterData.get().get_values_by_index(self.prefix, 0)
         seq_code = ''
         if values:
             shot_code = values.get('shot_code')
             seq_code = values.get('seq_select')
         else:    
-            shot_code = my.shot_navigator.get_value()
+            shot_code = self.shot_navigator.get_value()
 
-        #search = Search(my.search_type)
+        #search = Search(self.search_type)
         if shot_code:
-            if search.get_base_search_type() == my.search_type:
+            if search.get_base_search_type() == self.search_type:
                 search.add_filter('code', shot_code)
             else:
-                shot_search = Search(my.search_type)
+                shot_search = Search(self.search_type)
                 shot_search.add_filter('code', code)
                 search.add_relationship_search_filter(shot_search)
         elif seq_code:
-            seq_search = Search(my.seq_search_type)
+            seq_search = Search(self.seq_search_type)
             seq_search.add_filter('code', seq_code)
             search.add_relationship_search_filter(seq_search)
 

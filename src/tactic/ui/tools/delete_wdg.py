@@ -29,9 +29,14 @@ import random
 
 class DeleteToolWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
-        my.set_as_panel(top)
+    def init(self):
+        
+        self.delete_group = "admin"
+        
+
+    def get_display(self):
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_delete_top")
         top.add_color("background", "background")
         top.add_color("color", "color")
@@ -40,8 +45,8 @@ class DeleteToolWdg(BaseRefreshWdg):
         top.add_border()
 
 
-        search_key = my.kwargs.get("search_key")
-        search_keys = my.kwargs.get("search_keys")
+        search_key = self.kwargs.get("search_key")
+        search_keys = self.kwargs.get("search_keys")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
             sobjects = [sobject]
@@ -60,7 +65,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             return msg
 
 
-        my.search_keys = search_keys
+        self.search_keys = search_keys
 
 
         title = DivWdg()
@@ -70,8 +75,8 @@ class DeleteToolWdg(BaseRefreshWdg):
         icon.add_style("float: left")
         title.add(icon)
 
-        if len(my.search_keys) > 1:
-            title.add("Delete %s Items" % len(my.search_keys))
+        if len(self.search_keys) > 1:
+            title.add("Delete %s Items" % len(self.search_keys))
         else:
             title.add("Delete Item [%s]" % (sobject.get_code()))
         title.add_style("font-size: 20px")
@@ -96,14 +101,14 @@ class DeleteToolWdg(BaseRefreshWdg):
         valid_related_ctr = 0
         for related_type in related_types:
             if related_type == "*":
-                print "WARNING: related_type is *"
+                print("WARNING: related_type is *")
                 continue
             if related_type == search_type:
                 continue
             if related_type in ['sthpw/search_object','sthpw/search_type']:
                 continue
 
-            item_div = my.get_item_div(sobjects, related_type)
+            item_div = self.get_item_div(sobjects, related_type)
             if item_div:
                 items_div.add(item_div)
                 valid_related_ctr += 1
@@ -115,14 +120,14 @@ class DeleteToolWdg(BaseRefreshWdg):
             #icon = IconWdg("Note", "BS_NOTE")
             #icon.add_style("float: left")
             #content.add( icon )
-            content.add("<div><b>By selecting the above, the cooresponding related items will be deleted as well.</b></div>")
+            content.add("<div><b>By selecting the above, the corresponding related items will be deleted as well.</b></div>")
             content.add("<br/>"*2)
         else:
             # changed the heading to say no dependencies
             content.add("The item to be deleted has no dependencies.<br/>", 'heading')
 
 
-        num_items = len(my.search_keys)
+        num_items = len(self.search_keys)
         if num_items == 1:
             verb = "is 1 item"
         else:
@@ -134,6 +139,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         content.add("<br/>"*3)
 
         button_div = DivWdg()
+        button_div.add_class("spt_buttons")
         content.add(button_div)
         button_div.add_style('text-align: center')
 
@@ -141,14 +147,28 @@ class DeleteToolWdg(BaseRefreshWdg):
         button_div.add(button)
         button.add_style("display: inline-block")
 
-        on_complete = my.kwargs.get("on_complete")
+        deleting_div = DivWdg()
+        content.add(deleting_div)
+        deleting_div.add("<img src='/context/icons/common/indicator_snake.gif'/>")
+        deleting_div.add_class("spt_delete_msg")
+        deleting_div.add(" Deleting ...")
+        deleting_div.add_style("text-align: center")
+        deleting_div.add_style("font-size: 16px")
+        deleting_div.add_style("margin: 20px")
+        deleting_div.add_style("display: none")
+
+        on_complete = self.kwargs.get("on_complete")
 
         button.add_behavior( {
         'type': 'click_up',
-        'search_keys': my.search_keys,
+        'search_keys': self.search_keys,
         'on_complete': on_complete,
         'cbjs_action': '''
         spt.app_busy.show("Deleting");
+        //spt.notify.show_message("Deleting ...");
+
+        //var button_el = bvr.src_el.getParent(".spt_buttons");
+        //button_el.setStyle("display", "none");
 
         var top = bvr.src_el.getParent(".spt_delete_top");
         var values = spt.api.Utility.get_input_values(top);
@@ -172,41 +192,38 @@ class DeleteToolWdg(BaseRefreshWdg):
         }
 
         var server = TacticServerStub.get();
-        try {
-            server.start({'title': 'Delete sObject', 'description': 'Delete sObject [' + bvr.search_keys + ']'});
-            server.execute_cmd(class_name, kwargs);
-            server.finish();
+
+        server.execute_cmd(class_name, kwargs, null, {
+            on_complete: function() {
+                //spt.notify.show_message("Finshed deleting ...");
+
+                // run the post delete and destroy the popup
+                var popup = bvr.src_el.getParent(".spt_popup");
+                if (popup.spt_on_post_delete) {
+                    popup.spt_on_post_delete();
+                }
+
+                del_trigger();
+
+                spt.popup.destroy(popup);
 
 
-            // run the post delete and destroy the popup
-            var popup = bvr.src_el.getParent(".spt_popup");
-            if (popup.spt_on_post_delete) {
-                popup.spt_on_post_delete();
+                if (bvr.on_complete) {
+                   on_complete = function() {
+                       eval(bvr.on_complete);
+                   }
+                   on_complete();
+                }
+
+                spt.app_busy.hide();
+            },
+            on_error: function(e) {
+                spt.notify.show_message("Error on delete");
+                spt.alert(spt.exception.handler(e));
+                spt.app_busy.hide();
             }
+        } );
 
-            del_trigger();
-
-            spt.popup.destroy(popup);
-
-
-            if (bvr.on_complete) {
-               on_complete = function() {
-                   eval(bvr.on_complete);
-               }
-               on_complete();
-            }
-
-
-
-
-
-        }
-        catch(e) {
-            spt.alert(spt.exception.handler(e));
-        }
-
-        spt.app_busy.hide();
-       
         '''
         } )
 
@@ -231,7 +248,7 @@ class DeleteToolWdg(BaseRefreshWdg):
 
 
 
-    def get_item_div(my, sobjects, related_type):
+    def get_item_div(self, sobjects, related_type):
         item_div = DivWdg()
         item_div.add_style("margin: 15px 10px")
 
@@ -239,8 +256,13 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         checkbox = CheckboxWdg('related_types')
         item_div.add(checkbox)
+        checkbox.add_style("vertical-align: bottom")
         checkbox.set_attr("value", related_type)
         if related_type in ["sthpw/snapshot", "sthpw/file"]:
+            checkbox.set_checked()
+
+        checked_types = self.kwargs.get("checked_types")
+        if checked_types == "__ALL__":
             checkbox.set_checked()
 
         item_div.add(" ")
@@ -256,8 +278,8 @@ class DeleteToolWdg(BaseRefreshWdg):
                     sobjs = sobject.get_related_sobjects(related_type)
                     related_sobjects.extend(sobjs)
 
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 related_sobjects = []
 
 
@@ -287,18 +309,18 @@ class DeleteCmd(Command):
         return True
     is_undoable = classmethod(is_undoable)
 
-    def execute(my):
+    def execute(self):
 
         # if a single sobject is passed in
-        sobject = my.kwargs.get("sobject")
+        sobject = self.kwargs.get("sobject")
         if not sobject:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             sobject = Search.get_by_search_key(search_key)
 
         if sobject:
             sobjects = [sobject]
         else:
-            search_keys = my.kwargs.get("search_keys")
+            search_keys = self.kwargs.get("search_keys")
             sobjects = Search.get_by_search_keys(search_keys)
 
         if not sobjects:
@@ -306,22 +328,22 @@ class DeleteCmd(Command):
 
 
         # find all the relationships
-        my.schema = Schema.get()
+        self.schema = Schema.get()
 
         for sobject in sobjects:
-            my.delete_sobject(sobject)
+            self.delete_sobject(sobject)
 
-            
+
     
 
-    def delete_sobject(my, sobject):
+    def delete_sobject(self, sobject):
 
         search_type = sobject.get_base_search_type()
 
         # this is used by API method delete_sobject
-        auto_discover = my.kwargs.get("auto_discover")
+        auto_discover = self.kwargs.get("auto_discover")
         
-        values = my.kwargs.get("values")
+        values = self.kwargs.get("values")
         if values:
             related_types = values.get("related_types")
         elif auto_discover:
@@ -329,10 +351,19 @@ class DeleteCmd(Command):
         else:
             related_types = None
 
+        return self.do_delete(sobject, related_types)
+
+
+
+    def do_delete(self, sobject, related_types=None):
+
+        search_type = sobject.get_base_search_type()
+
         # always delete notes and task and snapshot
-        #if not related_types:
-        #    related_types = ['sthpw/note', 'sthpw/task', 'sthpw/snapshot']
-        #related_types = my.schema.get_related_search_types(search_type)
+        if not related_types:
+            related_types = ['sthpw/note', 'sthpw/task', 'sthpw/snapshot']
+        #related_types = self.schema.get_related_search_types(search_type)
+
         if related_types:
             for related_type in related_types:
                 if not related_type or related_type == search_type:
@@ -346,9 +377,10 @@ class DeleteCmd(Command):
                 related_sobjects = sobject.get_related_sobjects(related_type)
                 for related_sobject in related_sobjects:
                     if related_type == 'sthpw/snapshot':
-                        my.delete_snapshot(related_sobject)
+                        self.delete_snapshot(related_sobject)
                     else:
                         related_sobject.delete()
+                        #self.do_delete(related_sobject)
 
 
         # implicitly remove "directory" files associated with the sobject
@@ -359,40 +391,55 @@ class DeleteCmd(Command):
         search.add_op("or")
         search.add_parent_filter(sobject)
         file_objects = search.get_sobjects()
+
+        #if file_objects:
+        #    print("Removing [%s] file objects" % len(file_objects))
+
         for file_object in file_objects:
             base_dir = Environment.get_asset_dir()
             relative_dir = file_object.get("relative_dir")
             lib_dir = "%s/%s" % (base_dir, relative_dir)
-            print "removing: ", lib_dir
             FileUndo.rmdir(lib_dir)
             file_object.delete()
 
 
         # finally delete the sobject
-        print "deleting: ", sobject.get_search_key()
+        print("Deleting: ", sobject.get_search_key())
         if search_type == 'sthpw/snapshot':
-            my.delete_snapshot(sobject)
+            self.delete_snapshot(sobject)
         else:
             sobject.delete()
 
 
     
-    def delete_snapshot(my, snapshot):
+    def delete_snapshot(self, snapshot):
 
         # get all of the file paths
         file_paths = snapshot.get_all_lib_paths()
 
+        paths = []
+        for file_path in file_paths:
+            if file_path.find("##") != -1:
+                sequence_paths = snapshot.get_expanded_lib_paths()
+                for path in sequence_paths:
+                    paths.append(path)
+            else:
+                paths.append(file_path)
+
+
+
+
         files = snapshot.get_related_sobjects("sthpw/file")
         for file in files:
-            print "deleting file: ", file.get_search_key()
+            print("Deleting file: ", file.get_search_key())
             file.delete()
 
         # remove the files from the repo
-        for file_path in file_paths:
-            "removing path: ", file_path
+        for file_path in paths:
+            print("Removing path: ", file_path)
             FileUndo.remove(file_path)
 
-        print "deleting snapshot: ", snapshot.get_search_key()
+        print("Deleting snapshot: ", snapshot.get_search_key())
         snapshot.delete()
 
 
@@ -403,13 +450,13 @@ class DeleteCmd(Command):
 
 class DeleteSearchTypeToolWdg(DeleteToolWdg):
 
-    def init(my):
+    def init(self):
         # this doesn't work
         SearchType.clear_cache()
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("width", "400px")
@@ -420,9 +467,9 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
         # Note search types should only really be deleted if they were just
         # created
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         if not search_type:
-            node_name = my.kwargs.get("node_name")
+            node_name = self.kwargs.get("node_name")
             if node_name:
                 #project_code = Project.get_project_code()
                 search_type = "%s/%s" % (project_code, node_name)
@@ -610,25 +657,25 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
 
 class DeleteSearchTypeCmd(Command):
 
-    def check(my):
-        my.search_type = my.kwargs.get("search_type")
-        my.values = my.kwargs.get("values")
+    def check(self):
+        self.search_type = self.kwargs.get("search_type")
+        self.values = self.kwargs.get("values")
 
-        my.db_resource = SearchType.get_db_resource_by_search_type(my.search_type)
-        my.database = my.db_resource.get_database()
-        my.search_type_obj = SearchType.get(my.search_type)
-        if my.database != Project.get_project_code() and my.database !='sthpw':
-            raise TacticException('You are not allowed to delete the sType [%s] from another project [%s].' %(my.search_type, my.database))
+        self.db_resource = SearchType.get_db_resource_by_search_type(self.search_type)
+        self.database = self.db_resource.get_database()
+        self.search_type_obj = SearchType.get(self.search_type)
+        if self.database != Project.get_project_code() and self.database !='sthpw':
+            raise TacticException('You are not allowed to delete the sType [%s] from another project [%s].' %(self.search_type, self.database))
             return False
         
         return True
 
-    def execute(my):
-        search_type = my.search_type
+    def execute(self):
+        search_type = self.search_type
 
-        search_type_obj = my.search_type_obj 
+        search_type_obj = self.search_type_obj 
 
-        database = my.database
+        database = self.database
 
         try:
             db_val = search_type_obj.get_value('database')
@@ -636,10 +683,10 @@ class DeleteSearchTypeCmd(Command):
             sobjects = search.get_sobjects()
 
             for sobject in sobjects:
-                cmd = DeleteCmd(sobject=sobject, values=my.values)
+                cmd = DeleteCmd(sobject=sobject, values=self.values)
                 cmd.execute()
         except (SqlException, SearchException), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
        
         try:
@@ -647,7 +694,7 @@ class DeleteSearchTypeCmd(Command):
             # must log first
             TableDropUndo.log(search_type, database, table_name)
         except (SqlException, SearchException), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
        
 
 
@@ -656,7 +703,7 @@ class DeleteSearchTypeCmd(Command):
             cmd = DropTable(search_type)
             cmd.commit()
         except (SqlException, SearchException), e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
         
        
@@ -671,7 +718,7 @@ class DeleteSearchTypeCmd(Command):
         """
         pipelines = search_type_obj.get_related_sobjects("sthpw/pipeline")
         for pipeline in pipelines:
-            print "deleting: ", pipeline.get_search_key()
+            print("deleting: ", pipeline.get_search_key())
             pipeline.delete()
         """
  
@@ -692,7 +739,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
     is_undoable = classmethod(is_undoable)
 
 
-    def get_related_types(my, search_type):
+    def get_related_types(self, search_type):
         # find all the relationships
         schema = Schema.get()
         related_types = schema.get_related_search_types(search_type)
@@ -727,32 +774,40 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         return related_types
 
 
-    def get_display(my):
-
-        top = my.top
+    def get_display(self):
+       
+        top = self.top
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("width", "400px")
         top.add_border()
         top.add_class("spt_delete_project_tool_top")
+        site = self.kwargs.get("site")
+        set_site = self.kwargs.get("set_site")
+
+        if set_site != False and site:
+            Site.set_site(site)
 
         login = Environment.get_user_name()
-        if login != 'admin':
+        
+        security = Environment.get_security()
+
+        if not security.is_admin() and not security.is_in_group(self.delete_group):
+
             top.add(IconWdg(icon=IconWdg.WARNING))
             top.add("Only Admin can delete projects")
             top.add_style("padding: 50px")
             top.add_style("text-align: center")
+            if set_site and site:
+                Site.pop_site()
             return top
 
 
 
-        site = my.kwargs.get("site")
-        if site:
-            Site.set_site(site)
 
 
 
-        project_code = my.kwargs.get("project_code")
+        project_code = self.kwargs.get("project_code")
 
         # check if delete permissions exist for this site and project
         security = Environment.get_security()
@@ -783,7 +838,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                 return top
             search_key = project.get_search_key()
         else:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             project = Search.get_by_search_key(search_key)
             if project:
                 project_code = project.get_code()
@@ -876,13 +931,13 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             search_type_wdg.add("&nbsp; - &nbsp; %s item(s)" % count)
 
             # TODO: this is similar to SearchType.get_related_types(). streamline at some point. 
-            related_types = my.get_related_types(search_type)
+            related_types = self.get_related_types(search_type)
             for related_type in related_types:
 
                 try:
                     search = Search(related_type)
-                except Exception, e:
-                    print "WARNING: ", e
+                except Exception as e:
+                    print("WARNING: ", e)
                     continue
                 full_search_type = "%s?project=%s" % (search_type, project_code)
                 if related_type.startswith("sthpw/"):
@@ -944,11 +999,11 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         button = ActionButtonWdg(title="Delete", color="danger")
         buttons.add_cell(button)
 
-        command_class = my.kwargs.get("command_class")
+        command_class = self.kwargs.get("command_class")
         if not command_class:
             command_class = 'tactic.ui.tools.DeleteProjectCmd'
 
-        on_complete = my.kwargs.get("on_complete")
+        on_complete = self.kwargs.get("on_complete")
 
         button.add_behavior( {
         'type': 'click_up',
@@ -998,10 +1053,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                     server.start({'title': 'Deleted Project ', 'description': 'Deleted Project [' + bvr.project_code + ']'});
                     server.execute_cmd(class_name, kwargs);
                     success = true;
-
-                    var top = bvr.src_el.getParent(".spt_popup");
-                    spt.popup.destroy(top);
-                    server.finish();
                 }
                 catch(e) {
                     error_message = spt.exception.handler(e);
@@ -1030,6 +1081,13 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                         error_message += '. You are advised to sign out and log in again.';
                     spt.error(error_message);
                 }
+                
+                
+                var top = bvr.src_el.getParent(".spt_popup");
+                spt.popup.destroy(top);
+                server.finish();
+                    
+                    
             }, 100);
        
         '''
@@ -1059,20 +1117,22 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 class DeleteProjectCmd(DeleteCmd):
 
 
-    def execute(my):
+    def execute(self):
         from pyasm.search import DbContainer
         from pyasm.security import Security
 
+        delete_group = "admin"
+        
         security = Environment.get_security()
-        if not security.is_in_group("admin"):
-            raise Exception("Only admin users can delete projects")
+        if not security.is_in_group(delete_group):
+            raise Exception("Only users in [%s] can delete projects"%delete_group)
 
 
-        project_code = my.kwargs.get("project_code")
+        project_code = self.kwargs.get("project_code")
         if project_code:
             project = Project.get_by_code(project_code)
         else:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             project = Search.get_by_search_key(search_key)
             project_code = project.get_code()
 
@@ -1085,7 +1145,7 @@ class DeleteProjectCmd(DeleteCmd):
 
 
         # remove all dependencies the sthpw database
-        related_types = my.kwargs.get("related_types")
+        related_types = self.kwargs.get("related_types")
         if related_types:
             for related_type in related_types:
                 search = Search(related_type)
@@ -1097,7 +1157,7 @@ class DeleteProjectCmd(DeleteCmd):
                 sobjects = search.get_sobjects()
                 for sobject in sobjects:
                     if related_type == 'sthpw/snapshot':
-                        my.delete_snapshot(sobject)
+                        self.delete_snapshot(sobject)
                     else:
                         sobject.delete()
 
@@ -1139,16 +1199,30 @@ class DeleteProjectCmd(DeleteCmd):
                 if sql.get_database_type() != 'Sqlite':
                     if sql.get_connection() and sql.connect():
                         raise TacticException("Database [%s] still exists. There could still be connections to it."%project_code)
-            except SqlException, e:
+            except SqlException as e:
                 pass
         # remove the project entry
         project.delete(triggers=False)
-
       
         schema = Schema.get_by_code(project_code)
         if schema:
             schema.delete()
 
+        # Delete project specific login group and login in group entries
+        expr = "@SOBJECT(sthpw/login_group['project_code','%s'])"%project_code
+        expr2 = "@SOBJECT(sthpw/login_group['project_code','%s'].sthpw/login_in_group)"%project_code
+
+        sobjs = Search.eval(expr2)
+        for sobj in sobjs:
+            sobj.delete()
+
+        sobjs = Search.eval(expr)
+        for sobj in sobjs:
+            sobj.delete()
+
+
+
+ 
         return
 
 

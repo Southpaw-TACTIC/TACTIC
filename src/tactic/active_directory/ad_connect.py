@@ -35,11 +35,11 @@ except ImportError, e:
 
 class ADConnect(object):
     
-    def __init__(my):
-        my.debug_flag= False
-        my.domain=""
-        my.username=""
-        my.password=""
+    def __init__(self):
+        self.debug_flag= False
+        self.domain=""
+        self.username=""
+        self.password=""
 
         if ERROR:
             raise ADException(ERROR)
@@ -47,42 +47,42 @@ class ADConnect(object):
 
 
 
-    def set_user(my, username):
-        my.username = username
-        my.debug("Setting username to %s" % my.username)
+    def set_user(self, username):
+        self.username = username
+        self.debug("Setting username to %s" % self.username)
         return True
     
-    def set_password(my, password):
-        my.password = password
-        my.debug("Setting password to %s" % my.password)
+    def set_password(self, password):
+        self.password = password
+        self.debug("Setting password to %s" % self.password)
         
-    def set_domain(my, domain):
-        my.domain = domain
-        my.debug("Setting domain to %s" % my.domain)
+    def set_domain(self, domain):
+        self.domain = domain
+        self.debug("Setting domain to %s" % self.domain)
 
-    def set_debug(my, bool):
-        my.debug_flag=True
+    def set_debug(self, bool):
+        self.debug_flag=True
 
-    def set_ldap_string(my, ldapstring):
-        my.ldap_string=ldapstring
+    def set_ldap_string(self, ldapstring):
+        self.ldap_string=ldapstring
         
-    def debug(my, message):
-        if my.debug_flag:
+    def debug(self, message):
+        if self.debug_flag:
             print message
 
-    def lookup(my):
-        my.debug("Looking up info on %s." % (my.username)) 
+    def lookup(self):
+        self.debug("Looking up info on %s." % (self.username)) 
         try: 
-            account=win32security.LookupAccountName(None, my.username)
+            account=win32security.LookupAccountName(None, self.username)
             return account
         except pywintypes.error, e:
             return False
     
-    def logon(my):
-        my.debug("Logging on %s to %s with %s." % (my.username, my.domain, my.password)) 
+    def logon(self):
+        self.debug("Logging on %s to %s with %s." % (self.username, self.domain, self.password)) 
         try: 
 
-             handle=win32security.LogonUser(my.username, my.domain, my.password,
+             handle=win32security.LogonUser(self.username, self.domain, self.password,
                            win32security.LOGON32_LOGON_NETWORK,
                            win32security.LOGON32_PROVIDER_DEFAULT)
 

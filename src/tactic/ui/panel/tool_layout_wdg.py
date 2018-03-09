@@ -71,73 +71,80 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         }
     } 
 
-    def can_inline_insert(my):
+    def can_inline_insert(self):
         return False
 
-    def can_save(my):
+    def can_save(self):
         return False
 
-    def can_expand(my):
+    def can_expand(self):
         return False
 
-    def can_add_columns(my):
+    def can_add_columns(self):
         return False
 
-    def can_select(my):
+    def can_select(self):
         return False
 
-    def can_use_gear(my):
+    def can_use_gear(self):
         return True
 
-    def can_use_search(my):
+    def can_use_search(self):
         return True
 
 
-    def init(my):
+    def init(self):
         # set up the context menus
-        my.show_context_menu = my.kwargs.get("show_context_menu")
-        if my.show_context_menu in ['false', False]:
-            my.show_context_menu = False
-        elif my.show_context_menu == 'none':
+        self.show_context_menu = self.kwargs.get("show_context_menu")
+        if self.show_context_menu in ['false', False]:
+            self.show_context_menu = False
+        elif self.show_context_menu == 'none':
             pass
         else:
-            my.show_context_menu = True
+            self.show_context_menu = True
 
-        my.expand_mode = my.kwargs.get("expand_mode")
-        my.process = my.kwargs.get("process")
+        self.expand_mode = self.kwargs.get("expand_mode")
+        self.process = self.kwargs.get("process")
        
+
+
+    def handle_no_results(self, table):
+        super(ToolLayoutWdg, self).handle_no_results(table)
+        table.add_style("width: 100%")
+        return
+
         
-    def get_display(my):
+    def get_display(self):
 
-        my.view_editable = True
-
-
-
-        #if my.kwargs.get("do_search") != "false":
-        #    my.handle_search()
-        my._process_search_args()
+        self.view_editable = True
 
 
-        #my.kwargs['show_gear'] = 'false'
+
+        #if self.kwargs.get("do_search") != "false":
+        #    self.handle_search()
+        self._process_search_args()
+
+
+        #self.kwargs['show_gear'] = 'false'
 
         from tile_layout_wdg import TileLayoutWdg
-        my.tile_layout = TileLayoutWdg(search_type=my.search_type, expand_mode=my.expand_mode, process=my.process)
+        self.tile_layout = TileLayoutWdg(search_type=self.search_type, expand_mode=self.expand_mode, process=self.process)
 
 
         # set the sobjects to all the widgets then preprocess
-        for widget in my.widgets:
-            widget.set_sobjects(my.sobjects)
-            widget.set_parent_wdg(my)
+        for widget in self.widgets:
+            widget.set_sobjects(self.sobjects)
+            widget.set_parent_wdg(self)
             # preprocess the elements
             widget.preprocess()
 
 
         """
         # TEST code to return only the content
-        temp = my.kwargs.get("temp")
+        temp = self.kwargs.get("temp")
         if temp:
             content = DivWdg()
-            content.add( my.get_content_wdg() )
+            content.add( self.get_content_wdg() )
             return content
         """
 
@@ -146,11 +153,12 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
         # extraneous variables inherited from TableLayoutWdg
-        my.edit_permission = True
+        self.edit_permission = True
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_sobject_top")
+        top.add_class("spt_layout_top")
 
         inner = DivWdg()
         top.add(inner)
@@ -160,8 +168,9 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         inner.add_attr("spt_version", "2")
         inner.add_class("spt_table")
         inner.add_class("spt_layout")
+        self.layout_wdg = inner
 
-        class_name = Common.get_full_class_name(my)
+        class_name = Common.get_full_class_name(self)
         inner.add_attr("spt_class_name", class_name)
 
 
@@ -169,9 +178,9 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             from tactic.ui.input import Html5UploadWdg
             upload_wdg = Html5UploadWdg()
             inner.add(upload_wdg)
-            my.upload_id = upload_wdg.get_upload_id()
+            self.upload_id = upload_wdg.get_upload_id()
 
-            inner.add_attr('upload_id',my.upload_id)
+            inner.add_attr('upload_id',self.upload_id)
         
         
         
@@ -179,20 +188,20 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         #thumb = ThumbWdg()
         #thumb.handle_layout_behaviors(inner)
 
-        is_refresh = my.kwargs.get("is_refresh")
-        if my.kwargs.get("show_shelf") not in ['false', False]:
-            action = my.get_action_wdg()
+        is_refresh = self.kwargs.get("is_refresh")
+        if self.kwargs.get("show_shelf") not in ['false', False]:
+            action = self.get_action_wdg()
             inner.add(action)
         
-        info = my.search_limit.get_info()
+        info = self.search_limit.get_info()
         if info.get("count") == None:
-            info["count"] = len(my.sobjects)
+            info["count"] = len(self.sobjects)
 
-        show_search_limit = my.kwargs.get("show_search_limit")
+        show_search_limit = self.kwargs.get("show_search_limit")
         if show_search_limit in ['false', False]:
             search_limit_mode = None
         else:
-            search_limit_mode = my.kwargs.get('search_limit_mode') 
+            search_limit_mode = self.kwargs.get('search_limit_mode') 
             if not search_limit_mode:
                 search_limit_mode = 'bottom'
 
@@ -209,13 +218,13 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         content = DivWdg()
         inner.add( content )
-        content.add( my.get_content_wdg() )
+        content.add( self.get_content_wdg() )
 
 
         # NOTE: a lot of scaffolding to convince that search_cbk that this
         # is a proper layout
         top.add_class("spt_table_top");
-        class_name = Common.get_full_class_name(my)
+        class_name = Common.get_full_class_name(self)
         top.add_attr("spt_class_name", class_name)
 
 
@@ -225,14 +234,14 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         header_row_div.add_class("spt_table_header_row")
         content.add(header_row_div)
         content.add_class("spt_table_table")
-        content.set_id(my.table_id)
+        content.set_id(self.table_id)
 
-        my.handle_load_behaviors(content)
+        self.handle_load_behaviors(content)
 
 
         inner.add_class("spt_table_content");
-        inner.add_attr("spt_search_type", my.kwargs.get('search_type'))
-        inner.add_attr("spt_view", my.kwargs.get('view'))
+        inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
+        inner.add_attr("spt_view", self.kwargs.get('view'))
 
 
         limit_span = DivWdg()
@@ -257,18 +266,18 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
 
-        my.add_layout_behaviors(inner)
+        self.add_layout_behaviors(inner)
 
-        if my.kwargs.get("is_refresh") == 'true':
+        if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
 
-    def add_layout_behaviors(my, layout_wdg):
+    def add_layout_behaviors(self, layout_wdg):
 
 
-        #my.tile_layout.add_layout_behaviors(layout_wdg)
+        #self.tile_layout.add_layout_behaviors(layout_wdg)
 
         """
         layout_wdg.add_relay_behavior( {
@@ -323,7 +332,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
 
         div = DivWdg()
         div.add_class("spt_tool_top")
@@ -332,16 +341,18 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         from tactic.ui.container import ResizableTableWdg
         from table_layout_wdg import FastTableLayoutWdg
 
-        table = ResizableTableWdg()
+        #table = ResizableTableWdg()
+        table = Table()
         table.add_style("table-layout", "fixed")
         table.add_style("width: 100%")
         div.add(table)
         table.add_row()
 
         td = table.add_cell()
+        #td.add_style("width: 30%")
 
 
-        kwargs = my.kwargs.copy()
+        kwargs = self.kwargs.copy()
 
 
         td.add_style("vertical-align: top")
@@ -349,17 +360,18 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         layout_div.add_style("min-height: 500px")
         layout_div.add_style("height: auto")
         td.add(layout_div)
-        td.add_style("overflow: hidden")
+        #td.add_style("overflow: hidden")
+        kwargs['height'] = 500
 
         kwargs['show_shelf'] = False
         kwargs['show_search_limit'] = False
-        kwargs['expand_on_load'] = False
+        kwargs['expand_on_load'] = True
 
         layout = FastTableLayoutWdg(**kwargs)
         layout_div.add(layout)
-        layout.set_sobjects(my.sobjects)
+        layout.set_sobjects(self.sobjects)
         #from tactic.ui.panel import TileLayoutWdg
-        #layout = TileLayoutWdg(**my.kwargs)
+        #layout = TileLayoutWdg(**self.kwargs)
         #layout_div.add(layout)
 
 
@@ -372,7 +384,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         content.add_class("spt_tool_content")
         content.add_border(color="#EEE")
         content.add_style("margin: -1px")
-        content.add_style("height: 100%")
+        content.add_style("height: auto")
         #content.add_style("padding: 0px 20px")
 
 
@@ -387,7 +399,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
                          <tools>
                           <msg>
         '''
-        tool_icons = my.kwargs.get('tool_icon')
+        tool_icons = self.kwargs.get('tool_icon')
         if isinstance(tool_icons, basestring):
             tool_icon_lst = tool_icons.split("|")
         else:
@@ -400,7 +412,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
                 no_content_wdg.add(icon)
             no_content_wdg.add("</br></br>")
        
-        tool_msg = my.kwargs.get('tool_msg')
+        tool_msg = self.kwargs.get('tool_msg')
         if tool_msg:
             no_content_wdg.add("<p>%s<p>" % tool_msg)
         else:
@@ -433,23 +445,23 @@ class CustomLayoutWithSearchWdg(ToolLayoutWdg):
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
 
-    def init(my):
-        my.do_search = False
-        super(CustomLayoutWithSearchWdg, my).init()
+    def init(self):
+        self.do_search = False
+        super(CustomLayoutWithSearchWdg, self).init()
 
-    def get_content_wdg(my):
-        kwargs = my.kwargs.copy()
-        kwargs["search"] = my.search
+    def get_content_wdg(self):
+        kwargs = self.kwargs.copy()
+        kwargs["search"] = self.search
         layout = CustomLayoutWdg(**kwargs)
-        layout.set_sobjects(my.sobjects)
+        layout.set_sobjects(self.sobjects)
         return layout
 
 
 class CustomAggregateWdg(CustomLayoutWithSearchWdg):
 
-    def init(my):
-        my.do_search = False
-        super(CustomLayoutWithSearchWdg, my).init()
+    def init(self):
+        self.do_search = False
+        super(CustomLayoutWithSearchWdg, self).init()
 
 
 
@@ -460,12 +472,12 @@ class CustomItemLayoutWithSearchWdg(ToolLayoutWdg):
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
         div = DivWdg()
-        for sobject in my.sobjects:
-            kwargs = my.kwargs.copy()
+        for sobject in self.sobjects:
+            kwargs = self.kwargs.copy()
             layout = CustomLayoutWdg(**kwargs)
-            layout.set_sobjects(my.sobjects)
+            layout.set_sobjects(self.sobjects)
             layout.set_sobject(sobject)
             div.add(layout)
         div.add("<br clear='all'/>")
@@ -480,21 +492,21 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
 
-    def can_use_gear(my):
+    def can_use_gear(self):
         return False
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
 
-        sobjects = my.sobjects
+        sobjects = self.sobjects
 
         from tactic.ui.tools import RepoBrowserWdg
-        kwargs = my.kwargs.copy()
+        kwargs = self.kwargs.copy()
 
-        kwargs['search'] = my.search
+        kwargs['search'] = self.search
 
         kwargs['open_depth'] = 1
         layout = RepoBrowserWdg(**kwargs)
-        #layout.set_sobjects(my.sobjects)
+        #layout.set_sobjects(self.sobjects)
         return layout
 
 
@@ -505,7 +517,14 @@ class CardLayoutWdg(ToolLayoutWdg):
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
     ARGS_KEYS['search_type'] = 'search type of the sobject to be displayed'
 
-    def get_content_wdg(my):
+
+    def add_layout_behaviors(self, layout_wdg):
+        self.tile_layout.add_layout_behaviors(layout_wdg)
+
+
+
+
+    def get_content_wdg(self):
         div = DivWdg()
 
         inner = DivWdg()
@@ -513,35 +532,63 @@ class CardLayoutWdg(ToolLayoutWdg):
 
         # set up the context menus
         menus_in = {
-            #'DG_HEADER_CTX': [ my.get_smart_header_context_menu_data() ],
-            'DG_DROW_SMENU_CTX': [ my.get_data_row_smart_context_menu_details() ]
+            #'DG_HEADER_CTX': [ self.get_smart_header_context_menu_data() ],
+            'DG_DROW_SMENU_CTX': [ self.get_data_row_smart_context_menu_details() ]
         }
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
-        if my.sobjects:
-            for sobject in my.sobjects:
-                inner.add(my.get_item_wdg(sobject))
+        if self.sobjects:
+            for i, sobject in enumerate(self.sobjects):
+                if i == 0:
+                    self.first = True
+                else:
+                    self.first = False
+                
+                inner.add(self.get_item_wdg(sobject))
+                inner.add("<hr/>")
         else:
             table = Table()
             inner.add(table)
-            my.handle_no_results(table);
+            self.handle_no_results(table);
 
         return div
 
 
 
-    def get_shelf_wdg(my):
-        return my.tile_layout.get_scale_wdg()
+    def get_shelf_wdg(self):
+        return self.tile_layout.get_scale_wdg()
 
 
 
-    def get_item_wdg(my, sobject):
+    def get_item_wdg(self, sobject):
+
+        self.element_names = self.kwargs.get("element_names")
+        if not self.element_names:
+            self.element_names = ["preview","code","name","description",]
+        else:
+            self.element_names = self.element_names.split(",")
+
+        if self.element_names[0] == "preview":
+            has_preview = True
+            self.element_names = self.element_names[1:]
+        else:
+            has_preview = False
+
+        view = self.kwargs.get("view")
+        if not view:
+            view = "table"
+        from pyasm.widget import WidgetConfigView
+        search_type = sobject.get_search_type()
+        self.config = WidgetConfigView.get_by_search_type(search_type, view)
+
+
 
         div = DivWdg()
         div.add_class("spt_item_top")
         div.add_style("padding: 10px")
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
-        div.add_class("spt_table_row")
+        #div.add_class("spt_table_row")
+        #div.add_class("spt_table_row_%s" % self.table_id)
         div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
         div.add_attr("spt_search_code", sobject.get_code())
         name = sobject.get_value("name", no_exception=True)
@@ -550,38 +597,32 @@ class CardLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_name", name)
 
         table = Table()
+
         div.add(table)
         table.set_max_width()
         tr = table.add_row()
 
-        width = my.kwargs.get("preview_width")
+        width = self.kwargs.get("preview_width")
         if not width:
             width = "240px"
 
-        td = table.add_cell()
-        td.add_style("width: %s" % width);
-        td.add_style("vertical-align: top")
+        if has_preview:
+            td = table.add_cell()
+            td.add_style("width: %s" % width);
+            td.add_style("vertical-align: top")
 
-        """
-        from tile_layout_wdg import ThumbWdg2
-        thumb_div = DivWdg()
-        #td.add(thumb_div)
-        thumb_div.add_border()
-        thumb_div.set_box_shadow("0px 0px 5px")
-        thumb_div.add_color("background", "background", -5)
-        thumb_div.add_class("spt_item_content")
-        #thumb_div.add_style("min-height: 120px")
+            options = self.config.get_display_options("preview")
+            redirect_expr = options.get("redirect_expr")
+            if redirect_expr:
+                parent = Search.eval(redirect_expr, sobject, single=True)
+                #parent = sobject.get_parent()
+                tile_wdg = self.tile_layout.get_tile_wdg(parent)
+            else:
+                tile_wdg = self.tile_layout.get_tile_wdg(sobject)
 
-        thumb = ThumbWdg2()
-        thumb_div.add(thumb)
-        thumb.set_sobject(sobject)
-        """
+            td.add(tile_wdg)
 
-
-        tile_wdg = my.tile_layout.get_tile_wdg(sobject)
-        td.add(tile_wdg)
-
-        info_div = my.get_info_wdg(sobject)
+        info_div = self.get_info_wdg(sobject)
         td = table.add_cell(info_div)
         td.add_style("vertical-align: top")
 
@@ -589,31 +630,21 @@ class CardLayoutWdg(ToolLayoutWdg):
         return div
 
 
-    def get_info_wdg(my, sobject):
+    def get_info_wdg(self, sobject):
 
         div = DivWdg()
         div.add_style("margin: 10px 20px 20px 20px")
-        div.add_style("padding: 20px")
-        div.add_color("background", "background", -3)
-        div.add_border()
-        div.add_color("color", "color3")
-        div.set_round_corners(5)
+        div.add_style("padding: 0px 20px")
+        #div.add_color("background", "background", -3)
+        #div.add_border()
+        #div.add_color("color", "color3")
+        #div.set_round_corners(5)
 
         div.add_style("height", "100%")
         div.add_style("position: relative")
 
-        element_names = my.kwargs.get("element_names")
-        if not element_names:
-            element_names = ["code","name","description",]
-        else:
-            element_names = element_names.split(",")
-
-
-        view = "table"
-
-        from pyasm.widget import WidgetConfigView
-        search_type = sobject.get_search_type()
-        config = WidgetConfigView.get_by_search_type(search_type, view)
+        element_names = self.element_names
+        config = self.config
 
 
         table = Table()
@@ -628,6 +659,15 @@ class CardLayoutWdg(ToolLayoutWdg):
 
 
             element = config.get_display_widget(element_name)
+
+            if self.first:
+                try:
+                    element.handle_layout_behaviors(self.layout_wdg)
+                except Exception as e:
+                    print "e :", e
+                    pass
+
+
             element.set_sobject(sobject)
             element.preprocess()
             td = table.add_cell(element)
@@ -635,12 +675,16 @@ class CardLayoutWdg(ToolLayoutWdg):
             #value = sobject.get_value(element_name, no_exception=True) or "N/A"
             #table.add_cell(value)
 
-        div.add("<br/>")
-        from tactic.ui.widget import DiscussionWdg
-        search_key = sobject.get_search_key()
-        notes_wdg = DiscussionWdg(search_key=search_key)
-        notes_wdg.set_sobject(sobject)
-        div.add(notes_wdg)
+
+        show_notes = self.kwargs.get("show_notes")
+       
+        if show_notes in [True, 'true']:
+            div.add("<br/>")
+            from tactic.ui.widget import DiscussionWdg
+            search_key = sobject.get_search_key()
+            notes_wdg = DiscussionWdg(search_key=search_key)
+            notes_wdg.set_sobject(sobject)
+            div.add(notes_wdg)
 
         return div
 

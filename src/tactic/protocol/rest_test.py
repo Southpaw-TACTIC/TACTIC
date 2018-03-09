@@ -25,28 +25,33 @@ import urllib2
 
 class RestTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
 
         test_env = UnittestEnvironment()
         test_env.create()
 
+
+        self.server = "http://localhost"
+        self.server = "http://192.168.205.180"
+
         try:
-            my._setup()
-            print
-            print
-            print
-            my._test_accept()
-            my._test_method()
-            my._test_custom_handler()
-            print
-            print
-            print
+            self._setup()
+            print("")
+            print("")
+            print("")
+            self._test_accept()
+            self._test_method()
+            self._test_custom_handler()
+            print("")
+            print("")
+            print("")
 
         finally:
-            test_env.delete()
+            #test_env.delete()
+            pass
 
 
-    def send_request(my, url, headers, data={} ):
+    def send_request(self, url, headers, data={} ):
 
         ticket = Environment.get_ticket()
 
@@ -58,6 +63,7 @@ class RestTest(unittest.TestCase):
             request = urllib2.Request(url, data)
         else:
             url = "%s?login_ticket=%s" % (url, ticket)
+            print("url: ", url)
             request = urllib2.Request(url)
 
         for key,value in headers.items():
@@ -65,12 +71,12 @@ class RestTest(unittest.TestCase):
 
         try:
             response = urllib2.urlopen(request)
-        except Exception, e:
+        except Exception as e:
             # try again
-            print "WARNING: ", e
+            print("WARNING: ", e)
             response = urllib2.urlopen(request)
 
-        #print response.info().headers
+        #print(response.info().headers)
 
         value = response.read()
 
@@ -82,12 +88,12 @@ class RestTest(unittest.TestCase):
 
 
 
-    def _setup(my):
+    def _setup(self):
 
         url = SearchType.create("config/url")
         url.set_value("url", "/rest/{code}")
         url.set_value('widget', '''
-        <element>
+        <element widget="true">
           <display class='tactic.protocol.PythonRestHandler'>
             <script_path>rest/test</script_path>
           </display>
@@ -99,7 +105,7 @@ class RestTest(unittest.TestCase):
         url = SearchType.create("config/url")
         url.set_value("url", "/rest2")
         url.set_value('widget', '''
-        <element>
+        <element widget="true">
           <display class='tactic.protocol.TestCustomRestHandler'>
           </display>
         </element>
@@ -111,7 +117,7 @@ class RestTest(unittest.TestCase):
         url = SearchType.create("config/url")
         url.set_value("url", "/rest3/{method}/{data}")
         url.set_value('widget', '''
-        <element>
+        <element widget="true">
           <display class='tactic.protocol.SObjectRestHandler'>
           </display>
         </element>
@@ -132,7 +138,7 @@ from pyasm.common import Xml
 accept = kwargs.get("Accept")
 method = kwargs.get("Method")
 
-print "kwargs: ", kwargs
+print("kwargs: ", kwargs)
 
 code = kwargs.get("code")
 if code == "CODE0123":
@@ -162,66 +168,67 @@ else:
 
 
 
-    def _test_accept(my):
+    def _test_accept(self):
+
 
         # try json
-        url = "http://localhost/tactic/unittest/rest"
+        url = "%s/tactic/default/unittest/rest" % self.server
         headers = {
             "Accept": "application/json"
         }
-        ret_val = my.send_request(url, headers)
-        my.assertEquals( [3,2,1], ret_val)
+        ret_val = self.send_request(url, headers)
+        self.assertEquals( [3,2,1], ret_val)
 
 
         # try xml
-        url = "http://localhost/tactic/unittest/rest"
+        url = "%s/tactic/default/unittest/rest" % self.server
         headers = {
             "Accept": "application/xml"
         }
-        ret_val = my.send_request(url, headers)
+        ret_val = self.send_request(url, headers)
         xml = Xml(ret_val)
         values = xml.get_values("arr/int")
-        my.assertEquals( ['1','2','3'], values)
+        self.assertEquals( ['1','2','3'], values)
 
 
         # try json
-        url = "http://localhost/tactic/unittest/rest/CODE0123"
+        url = "%s/tactic/default/unittest/rest/CODE0123" % self.server
         headers = {
             "Accept": "application/json"
         }
-        ret_val = my.send_request(url, headers)
-        my.assertEquals( "OK", ret_val)
+        ret_val = self.send_request(url, headers)
+        self.assertEquals( "OK", ret_val)
 
 
 
 
-    def _test_method(my):
+    def _test_method(self):
 
         # try json
-        url = "http://localhost/tactic/unittest/rest"
+        url = "%s/tactic/default/unittest/rest" % self.server
         headers = {
             "Accept": "application/json",
             "Method": "POST"
         }
-        ret_val = my.send_request(url, headers)
-        my.assertEquals( "Method is POST", ret_val)
+        ret_val = self.send_request(url, headers)
+        self.assertEquals( "Method is POST", ret_val)
 
 
 
-    def _test_custom_handler(my):
+    def _test_custom_handler(self):
 
         # try json
-        url = "http://localhost/tactic/unittest/rest2"
+        url = "%s/tactic/default/unittest/rest2" % self.server
         headers = {
             "Accept": "application/json",
             "Method": "POST"
         }
-        ret_val = my.send_request(url, headers)
-        my.assertEquals( "Test Custom POST", ret_val)
+        ret_val = self.send_request(url, headers)
+        self.assertEquals( "Test Custom POST", ret_val)
 
 
         # try json
-        url = "http://localhost/tactic/unittest/rest3/expression"
+        url = "%s/tactic/default/unittest/rest3/expression" % self.server
         headers = {
             "Accept": "application/json",
             "Method": "POST"
@@ -229,13 +236,13 @@ else:
         data = {
             'expression': '@SOBJECT(unittest/person)'
         }
-        ret_val = my.send_request(url, headers, data)
-        print ret_val
+        ret_val = self.send_request(url, headers, data)
+        print(ret_val)
 
 
-    def _test_update(my):
+    def _test_update(self):
         # try json
-        url = "http://localhost/tactic/unittest/rest3/person/CODE0123"
+        url = "%s/tactic/default/unittest/rest3/person/CODE0123" % self.server
         headers = {
             "Accept": "application/json",
             "Method": "PUT"
@@ -243,7 +250,7 @@ else:
         data = {
             'description': 'abcdefg'
         }
-        ret_val = my.send_request(url, headears, data)
+        ret_val = self.send_request(url, headears, data)
 
 
 

@@ -11,10 +11,10 @@ from tactic.ui.common import BaseRefreshWdg
 
 class TestCustomWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         
 
-        my.kwargs['search_key'] = 'prod/asset?project=sample3d&code=chr001'
+        self.kwargs['search_key'] = 'prod/asset?project=sample3d&code=chr001'
 
 
 
@@ -79,7 +79,7 @@ class TestCustomWdg(BaseRefreshWdg):
         xml.read_string(custom)
 
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_class("spt_panel")
 
         inner = DivWdg()
@@ -96,8 +96,8 @@ class TestCustomWdg(BaseRefreshWdg):
             value = eval(value)
 
             # add the kwargs to this so behaviors have access
-            value['kwargs'] = my.kwargs
-            value['class_name'] = Common.get_full_class_name(my)
+            value['kwargs'] = self.kwargs
+            value['class_name'] = Common.get_full_class_name(self)
 
             inner.add_behavior({
                 'type': 'load',
@@ -113,7 +113,7 @@ class TestCustomWdg(BaseRefreshWdg):
             })
 
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
             return top

@@ -9,15 +9,17 @@
 #
 #
 #
-__all__ = ['PipelineTaskStatusTrigger', 'PipelineTaskTrigger', 'PipelineTaskDateTrigger', 'PipelineTaskCreateTrigger', 'RelatedTaskUpdateTrigger', 'TaskCreatorTrigger', 'TaskCompleteTrigger']
+__all__ = ['PipelineTaskStatusTrigger', 'PipelineTaskTrigger', 'PipelineTaskDateTrigger', 'PipelineTaskCreateTrigger', 'RelatedTaskUpdateTrigger', 'TaskCreatorTrigger', 'TaskCompleteTrigger', 'PipelineParentStatusTrigger']
 
 import tacticenv
 
-from pyasm.common import Common, Xml, jsonloads, Container
+from pyasm.common import Common, Xml, jsonloads, Container, TacticException
 from pyasm.biz import Task
 from pyasm.web import Widget, WebContainer, WidgetException
 from pyasm.command import Command, CommandException, Trigger
 from pyasm.security import Sudo
+
+from tactic.command import PythonTrigger
 
 from pyasm.biz import Pipeline, Task
 from pyasm.search import Search, SObject, SearchKey
@@ -33,21 +35,21 @@ class PipelineTaskStatusTrigger(Trigger):
     }
 
 
-    def execute(my):
-        trigger_sobj = my.get_trigger_sobj()
+    def execute(self):
+        trigger_sobj = self.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
         data = jsonloads(data)
 
         data_list = data
         if isinstance(data, dict):
             data_list = [data]
-        src_task = my.get_caller()
+        src_task = self.get_caller()
         for data in data_list:
             # get the src task caller
             dst_task = None
             # it could be the FileCheckin Command
             if not isinstance(src_task, SObject):
-                input = my.get_input()
+                input = self.get_input()
                 snapshot = input.get('snapshot')
 
                 if not snapshot:
@@ -79,6 +81,27 @@ class PipelineTaskStatusTrigger(Trigger):
             src_status = data.get("src_status")
             if src_status and src_task.get_value("status") != src_status:
                 continue
+
+            # Execute script if necessary 
+            script_path = trigger_sobj.get_value("script_path")
+            if script_path:
+                cmd = PythonTrigger(script_path=script_path)
+                cmd.set_input(self.input)
+                cmd.set_output(self.input)
+                cmd.execute()
+                continue
+ 
+            # Execute trigger if necessary
+            class_path = data.get("class_path")
+            if class_path:
+                trigger = Common.create_from_class_path(class_path)
+                trigger.set_input(self.input)
+                trigger.set_output(self.input)
+                trigger.execute()
+                continue
+
+            # If no script was execute,then assume other task
+            # statuses should be updated.
 
             dst_process = data.get("dst_process")
             dst_status = data.get("dst_status")
@@ -165,9 +188,9 @@ class PipelineTaskTrigger(Trigger):
     }
 
 
-    def execute(my):
+    def execute(self):
 
-        trigger_sobj = my.get_trigger_sobj()
+        trigger_sobj = self.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
         #data = """[
         #{ "prefix": "rule", "name": "status", "value": "Approved" },
@@ -181,7 +204,7 @@ class PipelineTaskTrigger(Trigger):
         from tactic.ui.filter import FilterData
         filter_data = FilterData(data)
 
-        task = my.get_caller()
+        task = self.get_caller()
 
         # check that the process is correct
         trigger_info = filter_data.get_values_by_index("trigger")
@@ -227,7 +250,7 @@ class PipelineTaskTrigger(Trigger):
 
         # update the data
 
-        #input = my.get_input()
+        #input = self.get_input()
         #update_data = input.get('update_data')
         #status = update_data.get('status')
         #search_key = input.get('search_key')
@@ -279,7 +302,33 @@ class PipelineTaskTrigger(Trigger):
                         break
                 
 
+class PipelineParentStatusTrigger(Trigger):
+    '''This is the trigger that is executed on a change'''
 
+    ARGS_KEYS = {
+    }
+
+
+    def execute(self):
+
+        trigger_sobj = self.get_trigger_sobj()
+        data = trigger_sobj.get_value("data")
+        data = jsonloads(data)
+
+        dst_status = data.get('dst_status')
+
+        item = self.get_caller()
+
+        parent = item.get_parent()
+        if not parent:
+            return
+
+        parent.set_value("status", dst_status)
+        parent.commit()
+
+
+
+ 
 class PipelineTaskDateTrigger(Trigger):
     '''This is the trigger that is executed on a change'''
 
@@ -287,9 +336,9 @@ class PipelineTaskDateTrigger(Trigger):
     }
 
 
-    def execute(my):
+    def execute(self):
 
-        trigger_sobj = my.get_trigger_sobj()
+        trigger_sobj = self.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
         #data = """
         #{ "columns": [column1, column2]
@@ -299,29 +348,53 @@ class PipelineTaskDateTrigger(Trigger):
 
         column = data.get('column')
         src_status = data.get('src_status')
+
         
-        task = my.get_caller()
-        if task.get_value("status") != src_status:
-            return
 
-        task.set_now(column)
-        task.commit()
+        item = self.get_caller()
 
 
+        if isinstance(item, SObject):
+            if isinstance(item, Task):
+                if src_status != None:
+                    if item.get_value("status") != src_status:
+                        return
 
+                item.set_now(column)
+                item.commit()
 
+            #Item can be a note when trigger input is adding or modifying notes
+            else:
+                process = item.get_value('process')
+                expr = '@SOBJECT(parent.sthpw/task["process","%s"])'%process
+                tasks = Search.eval(expr, sobjects=[item])
 
+                if tasks:
+                    for task in tasks:
+                        task.set_now(column)
+                        task.commit()
 
-   
+        #item can be a command such as check-in                 
+        else:
+            if hasattr(item, 'process'):
+                process = item.process
+                expr = '@SOBJECT(sthpw/task["process","%s"])'%process
+                tasks = Search.eval(expr, sobjects=[item.sobject])
+
+                if tasks:
+                    for task in tasks:
+                        task.set_now(column)
+                        task.commit()
+            
 
 class RelatedTaskUpdateTrigger(Trigger):
     '''This is called on every task change.  It syncronizes tasks with
     the same context'''
-    def execute(my):
+    def execute(self):
 
         sudo = Sudo()
 
-        input = my.get_input()
+        input = self.get_input()
         search_key = input.get("search_key")
         update_data = input.get("update_data")
         mode = input.get("mode")
@@ -373,27 +446,50 @@ class RelatedTaskUpdateTrigger(Trigger):
 
 
 class PipelineTaskCreateTrigger(Trigger):
-    def execute(my):
-        input = my.get_input()
+    
+    def execute(self):
+        input = self.get_input()
 
         search_key = input.get("search_key")
         task = Search.get_by_search_key(search_key)
-
         parent = task.get_parent()
+        if not parent:
+            raise TacticException("Task parent not found.")
 
         # get the definition of the trigger
-        trigger_sobj = my.get_trigger_sobj()
+        trigger_sobj = self.get_trigger_sobj()
         data = trigger_sobj.get_value("data")
-        data = jsonloads(data)
+        try:
+            data = jsonloads(data)
+        except:
+            raise TacticException("Incorrect formatting of trigger [%s]." % trigger_sobj.get_value("code"))
 
-        process = data.get("output")
-        description = ""
+        # check against source status if present 
+        src_status = data.get("src_status")
+        if src_status:
+            task_status = task.get_value("status")
+            if task_status != src_status:
+                return
 
-        # FIXME:
-        # find out if there is already a task of that process
+        process_names = data.get("output")
+        if not process_names:
+            return
 
-        Task.create(parent, process, description, start_date=None, end_date=None)
-
+        # only create new task if another of the same
+        # process does not already exist
+        search = Search("sthpw/task")
+        search.add_filters("process", process_names)
+        search.add_parent_filter(parent)
+        search.add_project_filter()
+        tasks = search.get_sobjects()
+        existing_processes = [x.get_value("process") for x in tasks]
+       
+        for process in process_names:
+            if process in existing_processes:    
+                continue
+            else:
+                Task.create(parent, process, start_date=None, end_date=None)
+          
 
 
 
@@ -404,12 +500,12 @@ class TaskCreatorTrigger(Trigger):
     '''This is executed on every insert of an sobject'''
 
 
-    def has_been_called(my, prev_called_triggers):
+    def has_been_called(self, prev_called_triggers):
         return False
 
-    def execute(my):
+    def execute(self):
 
-        input = my.get_input()
+        input = self.get_input()
        
         search_key = input.get("search_key")
         update_data = input.get("update_data")
@@ -422,7 +518,7 @@ class TaskCreatorTrigger(Trigger):
             return
 
 
-        sobject = my.get_caller()
+        sobject = self.get_caller()
         pipeline_code = sobject.get_value("pipeline_code", no_exception=True)
 
         if not pipeline_code:
@@ -450,11 +546,11 @@ class TaskCreatorTrigger(Trigger):
 
 class TaskCompleteTrigger(Trigger):
     '''This trigger is executed to state "officially" that the task is complete'''
-    def execute(my):
+    def execute(self):
 
-        input = my.get_input()
+        input = self.get_input()
 
-        sobject = my.get_caller()
+        sobject = self.get_caller()
 
         if isinstance(sobject, Task):
             task = sobject
@@ -504,7 +600,7 @@ class TaskCompleteTrigger(Trigger):
             #task.set_value("is_complete", True)
             if not task.get_value("actual_end_date"):
                 task.set_now("actual_end_date")
-                my.add_description('Internal Task Complete Trigger')
+                self.add_description('Internal Task Complete Trigger')
                 task.commit(triggers=False)
 
 

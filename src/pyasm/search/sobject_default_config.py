@@ -20,39 +20,39 @@ from pyasm.search import DbContainer, SearchType, SqlException, Sql
 class SObjectDefaultConfig(Base):
     '''An artificial config file is made if none are found'''
 
-    def __init__(my, search_type, view, config_base=None, mode="columns"):
+    def __init__(self, search_type, view, config_base=None, mode="columns"):
 
-        my.search_type = search_type
+        self.search_type = search_type
 
         if view:
-            my.view = view
+            self.view = view
         else:
-            my.view = config_base
-        if not my.view:
-            my.view = "table"
+            self.view = config_base
+        if not self.view:
+            self.view = "table"
 
         # bit of protection ... : have been known to show up in view names
-        my.view = my.view.replace(":", '_')
+        self.view = self.view.replace(":", '_')
 
         #mode = "basic"
 
-        my.xml = Xml()
+        self.xml = Xml()
 
         if mode == 'columns':
-            my.handle_columns_mode()
+            self.handle_columns_mode()
         else:
-            my.handle_basic_mode()
+            self.handle_basic_mode()
 
 
-    def get_columns(my, required_only=False):
-        if my.search_type == 'sthpw/virtual':
+    def get_columns(self, required_only=False):
+        if self.search_type == 'sthpw/virtual':
             return []
 
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
         table = search_type_obj.get_table()
 
         from pyasm.biz import Project
-        db_resource = Project.get_db_resource_by_search_type(my.search_type)
+        db_resource = Project.get_db_resource_by_search_type(self.search_type)
         database_name = db_resource.get_database()
         db = DbContainer.get(db_resource)
 
@@ -82,12 +82,12 @@ class SObjectDefaultConfig(Base):
 
 
 
-    def handle_basic_mode(my):
+    def handle_basic_mode(self):
 
-        doc = my.xml.create_doc("config")
-        root = my.xml.get_root_node()
+        doc = self.xml.create_doc("config")
+        root = self.xml.get_root_node()
         
-        db_columns = my.get_columns()
+        db_columns = self.get_columns()
 
         if "code" in db_columns:
             columns = ["preview", "code"]
@@ -97,125 +97,125 @@ class SObjectDefaultConfig(Base):
             columns = ["preview", "id"]
 
 
-        table = my.xml.create_element("table")
+        table = self.xml.create_element("table")
         Xml.append_child(root, table)
         for column in ["preview", "code"]:
-            element = my.xml.create_element("element")
+            element = self.xml.create_element("element")
             Xml.set_attribute(element, "name", column)
             Xml.append_child(table, element)
 
         # create the edit
-        edit = my.xml.create_element("edit")
+        edit = self.xml.create_element("edit")
         Xml.append_child(root, edit)
 
         for column in ["preview", "code"]:
-            element = my.xml.create_element("element")
+            element = self.xml.create_element("element")
             Xml.set_attribute(element, "name", column)
             Xml.append_child(edit, element)
 
 
         # create the manual publish view
-        publish = my.xml.create_element("publish")
+        publish = self.xml.create_element("publish")
         Xml.append_child(root, publish)
-        element = my.xml.create_element("element")
+        element = self.xml.create_element("element")
         Xml.set_attribute(element, "name", "image")
         Xml.append_child(publish, element)
-        dis_element = my.xml.create_element("display")
+        dis_element = self.xml.create_element("display")
         Xml.set_attribute(dis_element, "class", "ThumbInputWdg")
-        act_element = my.xml.create_element("action")
+        act_element = self.xml.create_element("action")
         Xml.set_attribute(act_element, "class", "NullAction")
         Xml.append_child(element, dis_element)
         Xml.append_child(element, act_element)
 
-        element = my.xml.create_element("element")
+        element = self.xml.create_element("element")
         Xml.set_attribute(element, "name", "publish_files")
         Xml.append_child(publish, element)
-        dis_element = my.xml.create_element("display")
+        dis_element = self.xml.create_element("display")
         Xml.set_attribute(dis_element, "class", "UploadWdg")
         # add options
-        option = my.xml.create_text_element('names','publish_icon|publish_main')
+        option = self.xml.create_text_element('names','publish_icon|publish_main')
         Xml.append_child(dis_element, option)
-        option = my.xml.create_text_element('required','false|true')
+        option = self.xml.create_text_element('required','false|true')
         Xml.append_child(dis_element, option)
 
-        act_element = my.xml.create_element("action")
+        act_element = self.xml.create_element("action")
         Xml.set_attribute(act_element, "class", "MultiUploadAction")
         # add options
-        option = my.xml.create_text_element('names','publish_icon|publish_main')
+        option = self.xml.create_text_element('names','publish_icon|publish_main')
         Xml.append_child(act_element, option)
-        option = my.xml.create_text_element('types','icon_main|main')
+        option = self.xml.create_text_element('types','icon_main|main')
         Xml.append_child(act_element, option)
         Xml.append_child(element, dis_element)
         Xml.append_child(element, act_element)
 
-        value = my.xml.to_string()
-        my.xml = Xml()
-        my.xml.read_string(value)
+        value = self.xml.to_string()
+        self.xml = Xml()
+        self.xml.read_string(value)
 
 
 
 
-    def handle_columns_mode(my):
+    def handle_columns_mode(self):
 
-        doc = my.xml.create_doc("config")
-        root = my.xml.get_root_node()
+        doc = self.xml.create_doc("config")
+        root = self.xml.get_root_node()
         
-        columns = my.get_columns()
+        columns = self.get_columns()
         if len(columns) == 1 and columns[0] == "id":
-            columns = my.get_columns(required_only=False)
+            columns = self.get_columns(required_only=False)
 
         # create the table
         # search is a special view for SearchWdg and it should not be created
-        if my.view not in ['search','publish']:
-            if my.view.find('@') != -1:
-                table = my.xml.create_element('view', attrs={'name': my.view})
+        if self.view not in ['search','publish']:
+            if self.view.find('@') != -1:
+                table = self.xml.create_element('view', attrs={'name': self.view})
             else:
-                table = my.xml.create_element(my.view)
-            my.xml.append_child(root, table)
+                table = self.xml.create_element(self.view)
+            self.xml.append_child(root, table)
             for column in columns:
                 if column in ["_id", "id", "oid", "s_status"]:
                     continue
-                element = my.xml.create_element("element")
+                element = self.xml.create_element("element")
                 Xml.set_attribute(element, "name", column)
-                my.xml.append_child(table, element)
+                self.xml.append_child(table, element)
 
             # add history, input and output for the load view (designed for app loading)
-            if my.view == 'load':
-                element = my.xml.create_element("element")
+            if self.view == 'load':
+                element = self.xml.create_element("element")
                 Xml.set_attribute(element, "name", "checkin")
-                my.xml.append_child(table, element)
+                self.xml.append_child(table, element)
                 for column in ['input', 'output']:
-                    element = my.xml.create_element("element")
+                    element = self.xml.create_element("element")
                     Xml.set_attribute(element, "name", column)
                     Xml.set_attribute(element, "edit", "false")
-                    display_element = my.xml.create_element("display")
+                    display_element = self.xml.create_element("display")
                     
                     Xml.set_attribute(display_element, "class", "tactic.ui.cgapp.LoaderElementWdg")
-                    my.xml.append_child(element, display_element)
+                    self.xml.append_child(element, display_element)
 
-                    stype, key = SearchType.break_up_key(my.search_type)
-                    op1 = my.xml.create_text_element("search_type", stype)
-                    op2 = my.xml.create_text_element("mode", column)
+                    stype, key = SearchType.break_up_key(self.search_type)
+                    op1 = self.xml.create_text_element("search_type", stype)
+                    op2 = self.xml.create_text_element("mode", column)
 
                     
-                    my.xml.append_child(display_element, op1)
-                    my.xml.append_child(display_element, op2)
+                    self.xml.append_child(display_element, op1)
+                    self.xml.append_child(display_element, op2)
 
-                    my.xml.append_child(table, element)
+                    self.xml.append_child(table, element)
                 
-        value = my.xml.to_string()
+        value = self.xml.to_string()
         
-        my.xml = Xml()
-        my.xml.read_string(value)
+        self.xml = Xml()
+        self.xml.read_string(value)
 
 
-    def get_type(my, element_name):
-        xpath = "config/%s/element[@name='%s']/@type" % (my.view,element_name)
-        type = my.xml.get_value(xpath)
+    def get_type(self, element_name):
+        xpath = "config/%s/element[@name='%s']/@type" % (self.view,element_name)
+        type = self.xml.get_value(xpath)
 
         if not type:
             xpath = "config/%s/element[@name='%s']/@type" % ("definition",element_name)
-            type = my.xml.get_value(xpath)
+            type = self.xml.get_value(xpath)
 
         return type
 
@@ -223,8 +223,8 @@ class SObjectDefaultConfig(Base):
 
 
        
-    def get_xml(my):
-        return my.xml
+    def get_xml(self):
+        return self.xml
 
 
 

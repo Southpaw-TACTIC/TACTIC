@@ -15,7 +15,7 @@ __all__ = ['ProcessGroupSelectWdg', 'LoginTableElementWdg']
 
 from pyasm.search import Search, SearchKey, SearchException
 from pyasm.biz import Pipeline
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, SpanWdg
 from pyasm.widget import BaseInputWdg, SelectWdg
 from tactic.ui.common import SimpleTableElementWdg
 
@@ -33,17 +33,19 @@ class ProcessGroupSelectWdg(BaseInputWdg):
         
     }
 
-    def init(my):
+    def init(self):
         pass
 
-    def get_display(my):
-        my.labels_attr =  my.get_option('label_attr')
-        if my.labels_attr:
-            my.labels_attr = my.labels_attr.split('|')
+    def get_display(self):
+        self.labels_attr =  self.get_option('label_attr')
+        if self.labels_attr:
+            self.labels_attr = self.labels_attr.split('|')
+        else:
+            self.labels_attr = ["display_name"]
 
         from tactic.ui.panel import EditWdg
-        if hasattr(my, 'parent_wdg') and isinstance(my.get_parent_wdg(), EditWdg):
-            sobject = my.get_current_sobject()
+        if hasattr(self, 'parent_wdg') and isinstance(self.get_parent_wdg(), EditWdg):
+            sobject = self.get_current_sobject()
             parent = sobject.get_parent()
             group = None
             pipeline_code = None
@@ -56,19 +58,19 @@ class ProcessGroupSelectWdg(BaseInputWdg):
 
             if pipeline:
                 attrs = pipeline.get_process_attrs(sobject.get_value('process'))
-                group = attrs.get('%s_login_group'%my.get_name())
+                group = attrs.get('%s_login_group'%self.get_name())
             if group:
             
                 values_expr = "@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login.login)"%group
-                if my.labels_attr:
-                    labels_expr = ["@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login.%s)"%(group, x.strip()) for x in my.labels_attr]
+                if self.labels_attr:
+                    labels_expr = ["@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login.%s)"%(group, x.strip()) for x in self.labels_attr]
                     labels_expr =  ' + &nbsp + '.join(labels_expr)
             else:
                 values_expr = "@GET(sthpw/login.login)"
-                if my.labels_attr:
-                    labels_expr = ["@GET(sthpw/login.%s)"%(x.strip()) for x in my.labels_attr]
+                if self.labels_attr:
+                    labels_expr = ["@GET(sthpw/login.%s)"%(x.strip()) for x in self.labels_attr]
                     labels_expr =  ' + &nbsp + '.join(labels_expr)
-            select = SelectWdg(my.get_input_name())
+            select = SelectWdg(self.get_input_name())
             select.add_empty_option("-- Select a User --")
             """
             values = []
@@ -80,7 +82,7 @@ class ProcessGroupSelectWdg(BaseInputWdg):
             select.set_option('values_expr', values_expr)
             if labels_expr:
                 select.set_option('labels_expr', labels_expr)
-            current_value = sobject.get_value(my.get_name())
+            current_value = sobject.get_value(self.get_name())
             if current_value:
                 select.set_value(current_value)
             return select
@@ -92,8 +94,8 @@ class ProcessGroupSelectWdg(BaseInputWdg):
         
         # don't use expression here since it's not as db-efficient as retrieving the sobjects
         """
-        if my.labels_attr:
-            labels_expr = ["@GET(sthpw/login.login.%s)"%x.strip() for x in my.labels_attr]
+        if self.labels_attr:
+            labels_expr = ["@GET(sthpw/login.login.%s)"%x.strip() for x in self.labels_attr]
         """
         '''
         groups = Search.eval("@SOBJECT(sthpw/login_group)")
@@ -124,21 +126,19 @@ Search.eval("@GET(sthpw/login_group['login_group',
              group_list.append(item_login)
 
 
-            
-        
         top = DivWdg()
         
         top.add_class("spt_input_top")
 
         # HACK! This isn't very well constructed
-        ### Tore: Not my code! Copied from ProcessContextInputWdg. Seems to work though.
+        ### Tore: Not self code! Copied from ProcessContextInputWdg. Seems to work though.
         top.add_attr("spt_cbjs_get_input_key", "return cell_to_edit.getAttribute('spt_pipeline_code');")
         
         # Adding an "all users" select option in case it can't find a useful select widget.
         div = DivWdg()
         div.add_class("spt_input_option")
         #div.add_attr("spt_input_key", '__all__') #Not needed, since it defaults to the first one anyway.
-        select = SelectWdg(my.get_name())
+        select = SelectWdg(self.get_name())
         select.add_empty_option("-- Select a User --")
         values = []
         labels = []
@@ -146,15 +146,19 @@ Search.eval("@GET(sthpw/login_group['login_group',
         for user in all_users:
             user_name = user.get_value('login')
             values.append(user_name)
-            label = user_name
-            if my.labels_attr:
-                user_labels = [user.get_value(x) for x in my.labels_attr]
+
+            label = user.get_value("display_name")
+            if not label:
+                label = user_name
+
+            if self.labels_attr:
+                user_labels = [user.get_value(x) for x in self.labels_attr]
                 label = ' '.join(user_labels)
 
             labels_dict[user_name] = label
             
             labels.append('%s'%label)
-            #print "select ", user_name
+            #print("select ", user_name)
 
         # -- NOTE: leaving this commented out code here for reference. Not sure why this is the case but when
         # --       this click behavior is used instead of a 'change' behavior that forces a blur on select,
@@ -190,7 +194,7 @@ Search.eval("@GET(sthpw/login_group['login_group',
             div.add_class("spt_input_option")
             div.add_attr("spt_input_key", group)
             
-            select = SelectWdg(my.get_name())
+            select = SelectWdg(self.get_name())
             select.add_empty_option("-- Select a User --")
             values = ['']
             labels = ['<< %s >>'%group]
@@ -213,12 +217,14 @@ Search.eval("@GET(sthpw/login_group['login_group',
         
         return top
 
+
+
 class LoginTableElementWdg(SimpleTableElementWdg):
     '''This ElementWdg is used to add the group that the given task is looking
     for in ProcessGroupSelectWdg.'''
-    def handle_td(my, td):
-        super(LoginTableElementWdg, my).handle_td(td)
-        task = my.get_current_sobject()
+    def handle_td(self, td):
+        super(LoginTableElementWdg, self).handle_td(td)
+        task = self.get_current_sobject()
         if task:
             search_type = task.get_value('search_type')
             search_id = task.get_value('search_id')
@@ -236,10 +242,10 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                 if pipeline:
                     attrs = pipeline.get_process_attrs(task.get_value('process'))
                 
-                    td.add_attr('spt_pipeline_code', attrs.get('%s_login_group'%my.get_name()))
-            except SObjectSecurityException, e:
+                    td.add_attr('spt_pipeline_code', attrs.get('%s_login_group'%self.get_name()))
+            except SObjectSecurityException as e:
                 pass
-            except SearchException, e:
+            except SearchException as e:
                 if e.__str__().find('not registered') != -1:
                     pass
                 elif e.__str__().find('does not exist for database') != -1:
@@ -249,4 +255,69 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                 else:
                     raise
 
+    def get_value(self, name=None):
+        if not name:
+            name = self.get_name()
+
+        div = DivWdg()
+        div.add_style("display: inline-block")
+
+        value = super(LoginTableElementWdg, self).get_value(name)
+        if value:
+            user = Search.get_by_code("sthpw/login", value)
+            if user:
+                value = user.get_value("display_name") or value
+
+        #return value
+
+        self.sobject = self.get_current_sobject()
+
+        if self.is_editable() and not value:
+            empty = SpanWdg()
+            div.add(empty)
+            div.add_style("text-align: center")
+            div.add_style("width: 100%")
+            div.add_style("white-space: nowrap" )
+            empty.add("--Select--")
+            empty.add_style("opacity: 0.5")
+            return div
+
+        div.add(value)
+
+        # display a link if specified
+
+        from pyasm.biz import ProjectSetting
+        link_expr = ProjectSetting.get_value_by_key("task/assigned/link_expression")
+        if not link_expr:
+            link_expr = "@SOBJECT(sthpw/login)"
+
+        if self.sobject and link_expr:
+            # using direct behavior because new_tab isn't working consistently
+            #div.add_class("tactic_new_tab")
+            div.add_style("text-decoration", "underline")
+            #div.add_class("tactic_new_tab")
+            div.add_attr("search_key", self.sobject.get_search_key())
+            div.add_attr("expression", link_expr)
+            div.add_class("hand")
+
+            search_type_sobj = self.sobject.get_search_type_obj()
+            sobj_title = value
+
+            #name = self.sobject.get_value("name", no_exception=True)
+            name = None
+            if not name:
+                name = self.sobject.get_code()
+            div.add_attr("name", value)
+
+            # click up blocks any other behavior
+            div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.table.open_link(bvr);
+                '''
+            } )
+
+
+
+        return div
 

@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl']
+__all__ = ['DatabaseImpl', 'PostgresImpl', 'OracleImpl', 'SqliteImpl', 'MySQLImpl', 'SQLServerImpl', 'TacticImpl', 'DatabaseImplException']
 
 import os, sys, types, re
 import subprocess
@@ -33,7 +33,7 @@ class DatabaseImplInterface(object):
     def get_column_info(cls, db_resource, table, use_cache=True):
         pass
 
-    def is_column_sortable(my, db_resource, table, column):
+    def is_column_sortable(self, db_resource, table, column):
         pass
 
     def get_id_col(db_resource, search_type):
@@ -43,19 +43,19 @@ class DatabaseImplInterface(object):
         pass
 
 
-    def get_page(my, limit=None, offset=0):
+    def get_page(self, limit=None, offset=0):
         pass
 
-    def get_table_info(my, db_resource):
+    def get_table_info(self, db_resource):
         pass
 
-    def table_exists(my, db_resource, table):
+    def table_exists(self, db_resource, table):
         pass
 
-    def execute_query(my, sql, select):
+    def execute_query(self, sql, select):
         pass
 
-    def execute_update(my, sql, update):
+    def execute_update(self, sql, update):
         pass
 
 
@@ -64,11 +64,11 @@ class DatabaseImplInterface(object):
 class DatabaseImpl(DatabaseImplInterface):
     '''Provides an abstraction layer for the various databases'''
 
-    def get_database_type(my):
+    def get_database_type(self):
         return None
 
 
-    def get_version(my):
+    def get_version(self):
         return (0,0,0)
 
 
@@ -94,20 +94,36 @@ class DatabaseImpl(DatabaseImplInterface):
         elif vendor == "MongoDb":
             from mongodb import MongoDbImpl
             return MongoDbImpl()
+
         elif vendor == "TACTIC":
             return TacticImpl()
+
+        else:
+            class_name = Config.get_value(vendor, "class")
+
+            from pyasm.common import Common
+            from pyasm.search import Search
+            search = Search("sthpw/db_resource")
+            search.add_filter("vendor", vendor)
+            sobject = search.get_sobject()
+            if sobject:
+                impl_class = sobject.get_value("db_impl_class", no_exception=True)
+                impl_class = "spt.tools.salesforce.SalesforceImpl"
+                return Common.create_from_class_path(impl_class)
+
         raise DatabaseImplException("Vendor [%s] not supported" % vendor)
 
     get = staticmethod(get)
 
 
-    def preprocess_sql(my, data, unquoted_cols):
+
+    def preprocess_sql(self, data, unquoted_cols):
         pass
 
-    def postprocess_sql(my, statement):
+    def postprocess_sql(self, statement):
         return statement
 
-    def process_value(my, name, value, column_type="varchar"):
+    def process_value(self, name, value, column_type="varchar"):
         '''process a database value based on column type.
 
         @params:
@@ -121,21 +137,21 @@ class DatabaseImpl(DatabaseImplInterface):
         '''
         return None
     
-    def process_date(my, value):
+    def process_date(self, value):
         '''DatabaseImpl process date str to work with db before commit. SQLServer needs it'''
         return value
 
 
 
 
-    def get_id_col(my, db_resource, search_type):
+    def get_id_col(self, db_resource, search_type):
         from pyasm.search import SearchType
         search_type_obj = SearchType.get(search_type)
         id_col = search_type_obj.get_search_type_id_col()
         return id_col
 
 
-    def get_code_col(my, db_resource, search_type):
+    def get_code_col(self, db_resource, search_type):
         from pyasm.search import SearchType
         search_type = SearchType.get(search_type)
         code_col = search_type.get_search_type_code_col()
@@ -146,7 +162,7 @@ class DatabaseImpl(DatabaseImplInterface):
     #
     # Column type functions
     #
-    def get_text(my, not_null=False):
+    def get_text(self, not_null=False):
         parts = []
         parts.append("text")
         if not_null:
@@ -159,17 +175,17 @@ class DatabaseImpl(DatabaseImplInterface):
     #
     # Schema functions
     #
-    def get_schema_dir(my):
+    def get_schema_dir(self):
         # get the schema directory for the appropriate database type
         install_dir = Environment.get_install_dir()
-        schema_dir = "%s/src/pyasm/search/upgrade/%s" % (install_dir, my.get_database_type().lower() )
+        schema_dir = "%s/src/pyasm/search/upgrade/%s" % (install_dir, self.get_database_type().lower() )
         if not os.path.exists(schema_dir):
             raise DatabaseImplException("Schema '%s' does not exist" % schema_dir)
 
         return schema_dir
 
 
-    def import_sql_file(my, db_resource, path):
+    def import_sql_file(self, db_resource, path):
 
         from pyasm.search import DbResource, DbContainer
         if isinstance(db_resource, basestring):
@@ -183,20 +199,20 @@ class DatabaseImpl(DatabaseImplInterface):
         data = f.read()
         f.close()
 
-        print "Importing sql to database [%s]..." % (database)
-        print "   using path [%s]" % (path)
+        print("Importing sql to database [%s]..." % (database))
+        print("   using path [%s]" % (path))
 
         cmds = data.split(";")
         for cmd in cmds:
             cmd = cmd.strip()
             sql.do_update(cmd)
 
-        my.clear_table_cache()
+        self.clear_table_cache()
         sql = DbContainer.get(db_resource)
 
 
 
-    def import_schema(my, db_resource, type):
+    def import_schema(self, db_resource, type):
         '''import the schema of certain type to the given database'''
 
         # import the necessary schema
@@ -206,44 +222,44 @@ class DatabaseImpl(DatabaseImplInterface):
         if db_resource == 'sthpw':
             types.insert(0, 'bootstrap')
         for schema_type in types:
-            schema_dir = my.get_schema_dir()
+            schema_dir = self.get_schema_dir()
             schema_path = "%s/%s_schema.sql" % (schema_dir, schema_type)
             if not os.path.exists(schema_path):
                 # This warning occurs too often in harmless places
                 #Environment.add_warning("Schema does not exist", "Schema '%s' does not exist" % schema_path)
                 continue
 
-            my.import_sql_file(db_resource, schema_path)
+            self.import_sql_file(db_resource, schema_path)
 
 
 
 
-    def import_default_data(my, db_resource, type):
+    def import_default_data(self, db_resource, type):
         '''import the data of certain type to the given database'''
 
         # import the necessary schema
-        schema_dir = my.get_schema_dir()
+        schema_dir = self.get_schema_dir()
         data_path = "%s/%s_data.sql" % (schema_dir, type)
         data_path = os.path.normpath(data_path)
         if not os.path.exists(data_path):
             #Environment.add_warning("Default data does not exist", "Data '%s' does not exist" % data_path)
             return
 
-        my.import_sql_file(db_resource, data_path)
+        self.import_sql_file(db_resource, data_path)
 
 
 
     #
     # Database methods for base database implementation
     #
-    def has_sequences(my):
+    def has_sequences(self):
         raise DatabaseImplException("TACTIC database implementation for current database vendor does not have method has_sequences() defined.")
 
-    def get_table_info(my, database):
-        raise DatabaseImplException("Must override 'get_table_info' for [%s]" % my.vendor)
+    def get_table_info(self, database):
+        raise DatabaseImplException("Must override 'get_table_info' for [%s]" % self.vendor)
 
 
-    def database_exists(my, database, host=None, port=None):
+    def database_exists(self, database, host=None, port=None):
         '''@param: 
             database - if string, it's just a database name (old)
                        if DbResource, it could contain the host already
@@ -259,7 +275,7 @@ class DatabaseImpl(DatabaseImplInterface):
                     host = Config.get_value("database", "server")
                     port = Config.get_value("database", "port")
                 else:
-                    vendor = my.get_database_type()
+                    vendor = self.get_database_type()
                 db_resource = DbResource(database=database, host=host, vendor=vendor, port=port)
             
             cached = Container.get("Sql:database_exists:%s"%db_resource.get_key()) 
@@ -274,8 +290,8 @@ class DatabaseImpl(DatabaseImplInterface):
                 return False
             # cache it for repeated use
             Container.put("Sql:database_exists:%s"%db_resource.get_key(), True) 
-        except Exception, e:
-            #print "Error: ", str(e)
+        except Exception as e:
+            #print("Error: ", str(e))
             return False
         else:
             return True
@@ -292,7 +308,7 @@ class DatabaseImpl(DatabaseImplInterface):
     clear_table_cache = classmethod(clear_table_cache)
 
 
-    def table_exists(my, db_resource, table):
+    def table_exists(self, db_resource, table):
 
         key = "DatabaseImpl:table_exists"
 
@@ -307,7 +323,7 @@ class DatabaseImpl(DatabaseImplInterface):
         if cached != None:
             return cached
 
-        table_info = my.get_table_info(db_resource)
+        table_info = self.get_table_info(db_resource)
         if table_info.has_key(table):
             exists = True
         else:
@@ -318,7 +334,7 @@ class DatabaseImpl(DatabaseImplInterface):
         return exists
 
 
-    def get_column_types(my, db_resource, table):
+    def get_column_types(self, db_resource, table):
         return {}
 
 
@@ -326,23 +342,23 @@ class DatabaseImpl(DatabaseImplInterface):
     #
     # Save point methods
     #
-    def has_savepoint(my):
+    def has_savepoint(self):
         return True
 
-    def set_savepoint(my, name='save_pt'):
+    def set_savepoint(self, name='save_pt'):
         '''set a savepoint'''
-        if not my.has_savepoint():
+        if not self.has_savepoint():
             return None
         return "SAVEPOINT %s" %name
 
-    def rollback_savepoint(my, name='save_pt', release=False):
-        if not my.has_savepoint():
+    def rollback_savepoint(self, name='save_pt', release=False):
+        if not self.has_savepoint():
             return None
         stmt = "ROLLBACK TO SAVEPOINT %s"%name
         return stmt
 
-    def release_savepoint(my, name='save_pt'):
-        if not my.has_savepoint():
+    def release_savepoint(self, name='save_pt'):
+        if not self.has_savepoint():
             return None
         stmt = "RELEASE SAVEPOINT %s"%name
         return stmt
@@ -352,19 +368,19 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
 
-    def get_constraints(my, db_resource, table):
+    def get_constraints(self, db_resource, table):
         return []
       
 
 
 
-    def handle_pagination(my, statement, limit, offset):
+    def handle_pagination(self, statement, limit, offset):
         return statement
 
-    def get_id_override_statement(my, table, override=False):
+    def get_id_override_statement(self, table, override=False):
         return ''
 
-    def get_constraint(my, mode, name='', columns=[], table=None):
+    def get_constraint(self, mode, name='', columns=[], table=None):
         if not name and table:
             if mode == 'PRIMARY KEY':
                 name = '%s_pkey' %table
@@ -372,10 +388,10 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
 
-    def get_regex_filter(my, column, regex, op='EQI'):
+    def get_regex_filter(self, column, regex, op='EQI'):
         return None
 
-    def _get_cte_where(my, op_filters):
+    def _get_cte_where(self, op_filters):
         '''Get the where clause for cte used in parent and child search'''
         from search import Search
         search = Search('workflow/base_keyword')
@@ -387,9 +403,9 @@ class DatabaseImpl(DatabaseImplInterface):
         
         return where
 
-    def get_parent_cte(my, op_filters):
+    def get_parent_cte(self, op_filters):
         '''Postgres parent CTE'''
-        where = my._get_cte_where(op_filters)
+        where = self._get_cte_where(op_filters)
 
         stmt = '''WITH RECURSIVE res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
                    SELECT
@@ -419,9 +435,9 @@ class DatabaseImpl(DatabaseImplInterface):
 
         return stmt
 
-    def get_child_cte(my, op_filters):
+    def get_child_cte(self, op_filters):
         '''Postgres child CTE'''
-        where = my._get_cte_where(op_filters)
+        where = self._get_cte_where(op_filters)
 
         stmt = '''WITH RECURSIVE res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
                   SELECT
@@ -450,13 +466,50 @@ class DatabaseImpl(DatabaseImplInterface):
 
         return stmt
 
- 
+    def get_child_codes_cte(self, collection_type, search_type, parent_collection_code):
+        '''Postgres collection child codes CTE'''
+
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
+
+        stmt = '''
+            WITH RECURSIVE res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(ARRAY[r."parent_code"] AS TEXT),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p1."code" IN ('%(parent_collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   path || r."parent_code",
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."parent_code" = ng."search_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select search_code from res;
+            ''' % var_dict
+
+
+        return stmt
+        
     def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''default impl works with Postgres'''
 
         if isinstance(keywords, basestring):
             def split_keywords(keywords):
                 keywords = keywords.strip()
+                # The input should be stripped and single spaced. This line seems redundant, to be removed
                 keywords = keywords.replace("  ", "")
                 parts = keywords.split(" ")
                 op_str = " %s " % op
@@ -535,7 +588,7 @@ class DatabaseImpl(DatabaseImplInterface):
         columns = []
         for description in sql.description:
             # convert to unicode
-            value = unicode(description[0], 'utf-8')
+            value = description[0].decode('utf-8')
             columns.append(value)
 
         return columns
@@ -590,14 +643,20 @@ class DatabaseImpl(DatabaseImplInterface):
 
     # Defines temporary column name to be used.  Only SQLServerImpl implements
     # this
-    def get_temp_column_name(my):
+    def get_temp_column_name(self):
         return ""
 
 
 
 class BaseSQLDatabaseImpl(DatabaseImpl):
     
-    def is_column_sortable(my, db_resource, table, column):
+    def is_column_sortable(self, db_resource, table, column):
+
+        # support -> operator
+        if column.find("->"):
+            parts = column.split("->")
+            column = parts[0]
+
         from sql import DbContainer
         sql = DbContainer.get(db_resource)
         columns = sql.get_columns(table)
@@ -611,22 +670,22 @@ class BaseSQLDatabaseImpl(DatabaseImpl):
 class SQLServerImpl(BaseSQLDatabaseImpl):
     '''Implementation for Microsoft SQL Server's SQL'''
 
-    def get_database_type(my):
+    def get_database_type(self):
         return "SQLServer"
 
-    def __init__(my):
+    def __init__(self):
 
         # NOTE: This will not work in mixed db cases because it assumes a
         # global single database
-        my.server   = Config.get_value("database", "server")
-        my.port     = Config.get_value("database", "port")
-        my.user     = Config.get_value("database", "user")
-        my.password = Config.get_value("database", "password")
+        self.server   = Config.get_value("database", "server")
+        self.port     = Config.get_value("database", "port")
+        self.user     = Config.get_value("database", "user")
+        self.password = Config.get_value("database", "password")
 
 
 
 
-    def get_version(my):
+    def get_version(self):
         from sql import DbContainer
         sql = DbContainer.get("sthpw")
         result = sql.do_query("select @@version")
@@ -640,18 +699,18 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return version_parts
 
 
-    def get_create_sequence(my, sequence_name):
+    def get_create_sequence(self, sequence_name):
         #return 'CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1 NO MAXVALUE CACHE 1' % name
         # SQL Server specific implementation.
         #postfix_len = '_id_seq'.__len__()
         #table_name_len = sequence_name.__len__() - postfix_len
         #table_name = sequence_name[0:table_name_len] 
-        #print '  get_create_sequence: table_name = ', table_name
+        #print('  get_create_sequence: table_name = ', table_name)
         #return 'ALTER TABLE %s ADD %s INT IDENTITY(100, 5) ' % (table_name, sequence_name)
         #return 'ALTER COLUMN %s ADD %s INT IDENTITY(100, 5) ' % (table_name, sequence_name)
         return
 
-    def get_sequence_name(my, table, database=None):
+    def get_sequence_name(self, table, database=None):
         # SQL Server specific implementation: use the ID column as the sequence.
         # OLD return "%s_id_seq" % table
         from pyasm.search import SearchType
@@ -662,14 +721,14 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
 
-    def get_page(my, limit=None, offset=0, table_input=0, already_in_where_clause=0):
+    def get_page(self, limit=None, offset=0, table_input=0, already_in_where_clause=0):
         '''get the pagination sql based on limit and offset'''
         #
         # SQL Server implementation
         #
         return None
 
-    def handle_pagination(my, statement, limit, offset):
+    def handle_pagination(self, statement, limit, offset):
         '''specific method to handle MS SQL Server's pagination'''
 
         if limit == None:
@@ -691,7 +750,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         #order_by = ''
         #if order_bys:
         #    order_by = "ORDER BY %s" % ", ".join( order_bys )
-        tmp_col = my.get_temp_column_name()
+        tmp_col = self.get_temp_column_name()
         page = "tmp_spt_table.%s BETWEEN (%s) AND (%s)" % (tmp_col, start, end)
 
         statement = "SELECT * FROM ( \
@@ -699,7 +758,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                      WHERE %s" % (statement, page)
         return statement
 
-    def get_id_override_statement(my, table, override=True):
+    def get_id_override_statement(self, table, override=True):
         '''SQL Server needs to manually turn on an off the auto id generation feature'''
         if override:
             return "SET IDENTITY_INSERT %s ON" % table
@@ -712,14 +771,14 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     #
     # Column methods
     #
-    def get_boolean(my, not_null=False):
+    def get_boolean(self, not_null=False):
         parts = []
         parts.append("bit")
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_serial(my, not_null=False):
+    def get_serial(self, not_null=False):
         parts = []
         # For SQL Server, replaced "serial" type with "identity".
         # create table "hi" ("colA" int, "id" int identity(1,1) primary key("id") );
@@ -728,7 +787,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_int(my, length=4, not_null=False):
+    def get_int(self, length=4, not_null=False):
         """
         http://technet.microsoft.com/en-us/library/cc917573.aspx
 
@@ -745,7 +804,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_text(my, not_null=False):
+    def get_text(self, not_null=False):
         parts = []
         parts.append("varchar(max)")
         if not_null:
@@ -753,7 +812,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_varchar(my, length=256, not_null=False):
+    def get_varchar(self, length=256, not_null=False):
         if not length:
             length = 256
 
@@ -765,7 +824,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_nvarchar(my, length=256, not_null=False):
+    def get_nvarchar(self, length=256, not_null=False):
         assert length
         if length == -1:
             length = 'max'
@@ -775,7 +834,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_timestamp(my, default="now", not_null=False, timezone=False):
+    def get_timestamp(self, default="now", not_null=False, timezone=False):
         # SQL Server implementation.
         parts = []
         if timezone:
@@ -785,7 +844,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         if default:
             if default == "now":
-                parts.append("DEFAULT(%s)" % my.get_timestamp_now())
+                parts.append("DEFAULT(%s)" % self.get_timestamp_now())
             else:
                 parts.append("DEFAULT(%S)" % default)
 
@@ -794,7 +853,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_timestamp_now(my, offset=None, type=None, op='+'):
+    def get_timestamp_now(self, offset=None, type=None, op='+'):
         # SQL Server implementation.
 
         if not type:
@@ -811,27 +870,31 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return part
 
 
+
+    def get_json(self, not_null=False):
+        raise Exception("JSON Type not supported yet")
+
     
     #
     # Sequence methods for SQL Server
     #
-    def has_sequences(my):
+    def has_sequences(self):
         return True
 
-    def get_nextval(my, sequence):
+    def get_nextval(self, sequence):
         return '"%s".nextval' % sequence
 
-    def get_currval(my, sequence):
+    def get_currval(self, sequence):
         # IDENT_CURRENT returns the last identity value
         # generated for a specified table[
         return 'SELECT IDENT_CURRENT(\'' + sequence + '\')'
 
-    def get_currval_select(my, sequence):
+    def get_currval_select(self, sequence):
         # IDENT_CURRENT returns the last identity value
         # generated for a specified table[
         return 'SELECT IDENT_CURRENT(\'' + sequence + '\')'
 
-    def get_nextval_select(my, sequence):
+    def get_nextval_select(self, sequence):
         # In Postgres, when a table is created, currval is undefined and nextval is 1.
         # SQL Server doesn't have a concept of nextval.
         # When the table is created, the currval *is already 1*, 
@@ -847,7 +910,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         cmd += "  select @cur_id + 1;"
         return cmd
 
-    def get_setval_select(my, sequence, num):
+    def get_setval_select(self, sequence, num):
         # Set the current identity value for the specified table.
         cmd = "DBCC CHECKIDENT ('" + sequence + "', RESEED, " + str(num) + ");"
         return cmd
@@ -855,7 +918,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     # Method to build and return an SQL statement that can be run to reset the ID sequence for a table to a number
     # that is one greater than the highest index found in the given table.  NOTE: this ASSUMES that there are rows
     # in the table to provide a MAX id value from.  TODO: provide handling for a table with no data rows.
-    def get_reset_table_sequence_statement(my, table, database=None):
+    def get_reset_table_sequence_statement(self, table, database=None):
 
         from sql import DbContainer
         sql = DbContainer.get(database)
@@ -871,7 +934,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     #
     # Regular Expressions
     # 
-    def get_regex_filter(my, column, regex, op='EQI'):
+    def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             op = 'LIKE'
             column = 'lower(CAST("%s" AS varchar(max)))' %column
@@ -891,7 +954,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return "%s %s %s" %(column, op, regex)
 
 
-    def get_text_search_filter(cls, column, keywords, column_type, table=None):
+    def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''When Full Text Index is created in the db for the table, it works with SQLServer 2008 and above'''
         if isinstance(keywords, basestring):
             value = keywords
@@ -919,6 +982,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
        
         """
         wheres = []
+
+        # op & will translate to AND, | to OR if we use CONTAINS() in the future
         # use FREETEXT() or CONTAINS(), CONTAINS() takes OR AND operator
         wheres.append("FREETEXT(%s, '%s')" % (column, value) )
 
@@ -928,9 +993,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     get_text_search_filter = classmethod(get_text_search_filter)
 
 
-    def get_parent_cte(my,  op_filters):
+    def get_parent_cte(self,  op_filters):
         '''SQLServer parent CTE'''
-        where = my._get_cte_where(op_filters)
+        where = self._get_cte_where(op_filters)
 
         stmt = '''WITH res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
                   SELECT
@@ -959,9 +1024,9 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         return stmt
 
-    def get_child_cte(my, op_filters):
+    def get_child_cte(self, op_filters):
         '''SQLServer child CTE'''
-        where = my._get_cte_where(op_filters)
+        where = self._get_cte_where(op_filters)
 
         stmt = '''WITH res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
                   SELECT
@@ -991,7 +1056,43 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         return stmt
 
-    def process_date(my, value):
+    def get_child_codes_cte(self, collection_type, search_type, parent_collection_code):
+        '''SQLServer collection child codes CTE'''
+
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
+
+        stmt = '''
+            WITH res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."parent_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p1."code" IN ('%(parent_collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."parent_code" = ng."search_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select search_code from res;
+            ''' % var_dict
+
+        return stmt
+
+    def process_date(self, value):
         '''SQL Server process date str to work with db before commit'''
         lower_value = ''
         if isinstance(value, datetime.datetime):
@@ -1023,7 +1124,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     #
     # Type process methods
     #
-    def process_value(my, name, value, column_type="varchar"):
+    def process_value(self, name, value, column_type="varchar"):
         ''' the majority of the value mod is done in process_date()'''
         if column_type in ['timestamp','datetime','datetime2']:
             # for straight sql statement conversion skipping commit
@@ -1078,7 +1179,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     #
     # Database methods
     # 
-    def _get_db_info(my, db_resource):
+    def _get_db_info(self, db_resource):
         ''' get the database info from the config file'''
         if isinstance(db_resource, DbResource):
             host = db_resource.get_host()
@@ -1105,11 +1206,11 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def create_database(my, database):
+    def create_database(self, database):
         '''create a database.  This is done by a system command'''
         
         # if the database already exists, do nothing
-        if my.database_exists(database):
+        if self.database_exists(database):
             return
 
         if not isinstance(database, basestring):
@@ -1120,24 +1221,24 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         # note: The database we are connecting to must be 'sthpw'
         create_SQL_arg = '"CREATE DATABASE ' + database + '"'
         create = 'sqlcmd -S %s,%s -U %s -P %s -Q %s' % \
-                 (my.server, my.port, my.user, my.password, create_SQL_arg)
+                 (self.server, self.port, self.user, self.password, create_SQL_arg)
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:
-            print "No output from sql command to create db [%s], assumed success" % database
+            print("No output from sql command to create db [%s], assumed success" % database)
             cmd.close()
             return
             #raise Exception("Error creating database '%s'" % database)
         cmd.close()
 
         if result[0].find("already exists") != -1:
-            print "already exists"
-            print "  Try deleting C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLEXPRESS\MSSQL\DATA\<database_name>.mdf"
+            print("already exists")
+            print("  Try deleting C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLEXPRESS\MSSQL\DATA\<database_name>.mdf")
         else:
-            print "no returned result from database creation (sqlcmd)"
+            print("no returned result from database creation (sqlcmd)")
 
 
-    def drop_database(my, db_resource):
+    def drop_database(self, db_resource):
         '''remove a database in SQL Server. Note this is a very dangerous
         operation.  Use with care.'''
         # if the database does not exist, do nothing
@@ -1155,18 +1256,18 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         # note: The database we are connecting to must be 'sthpw'
         drop_SQL_arg = '"DROP DATABASE %s"' % (database)
         create = 'sqlcmd -S %s,%s -U %s -P %s -Q %s' % \
-                 (my.server, my.port, my.user, my.password, drop_SQL_arg)
+                 (self.server, self.port, self.user, self.password, drop_SQL_arg)
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:
-            print "No output from sql command to drop db [%s], assumed success" % database
+            print("No output from sql command to drop db [%s], assumed success" % database)
             cmd.close()
             return
         else:
-            print result
+            print("Drop database: ", result)
         cmd.close()
 
-    def get_modify_column(my, table, column, type, not_null=None):
+    def get_modify_column(self, table, column, type, not_null=None):
         ''' get the statement for setting the column type '''
         # this may not return the type exacty like before like varchar is in place of
         # varchar(256) due to the column type returned from the sql impl
@@ -1192,7 +1293,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
 
-    def import_schema(my, db_resource, type):
+    def import_schema(self, db_resource, type):
         '''import the schema of certain type to the given database'''
 
 
@@ -1213,7 +1314,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             types.insert(0, 'bootstrap')
 
         for schema_type in types:
-            schema_dir = my.get_schema_dir()
+            schema_dir = self.get_schema_dir()
             schema_path = "%s/%s_schema.sql" % (schema_dir, schema_type)
             schema_path = os.path.normpath(schema_path)
             if not os.path.exists(schema_path):
@@ -1221,21 +1322,21 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                 return
                 #raise Exception("Schema '%s' does not exist" % schema_path)
 
-            # cmd = 'psql -q %s %s < "%s"' % (my._get_db_info(database), database, schema_path)
+            # cmd = 'psql -q %s %s < "%s"' % (self._get_db_info(database), database, schema_path)
             # TODO: Retrieve server, username, password from TACTIC config file.
             # eg.  sqlcmd -S localhost -U tactic -P south123paw -d sthpw -i c:/schema.py
             cmd = 'sqlcmd -S %s,%s -U %s -P %s -d %s -i "%s"' % \
-                  (my.server, my.port, my.user, my.password, database, schema_path)
+                  (self.server, self.port, self.user, self.password, database, schema_path)
 
            
-            print "Importing schema ..."
-            print cmd
+            print("Importing schema ...")
+            print(cmd)
             os.system(cmd)
             #program = subprocess.call(cmd, shell=True)
-            #print "FINSIHED importing schema"
+            #print("FINSIHED importing schema")
 
 
-    def import_default_data(my, db_resource, type):
+    def import_default_data(self, db_resource, type):
         '''import the data of certain type to the given database'''
 
         from sql import DbResource, DbContainer
@@ -1245,25 +1346,25 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             database = db_resource
 
         # import the necessary schema
-        schema_dir = my.get_schema_dir()
+        schema_dir = self.get_schema_dir()
         data_path = "%s/%s_data.sql" % (schema_dir, type)
         data_path = os.path.normpath(data_path)
         if not os.path.exists(data_path):
             #Environment.add_warning("Default data does not exist", "Data '%s' does not exist" % data_path)
             return
 
-        #cmd = 'psql -q %s %s < "%s"' % (my._get_db_info(database), database, data_path)
+        #cmd = 'psql -q %s %s < "%s"' % (self._get_db_info(database), database, data_path)
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.  sqlcmd -S localhost -U tactic -P south123paw -d sthpw -i c:/schema.py
         cmd = 'sqlcmd -S %s,%s -U %s -P %s -d %s -i "%s"' % \
-              (my.server, my.port, my.user, my.password, database, data_path)
+              (self.server, self.port, self.user, self.password, database, data_path)
 
-        print "Importing data ..."
-        print cmd
+        print("Importing data ...")
+        print(cmd)
         os.system(cmd)
 
 
-    def get_table_info(my, db_resource):
+    def get_table_info(self, db_resource):
 
         key = "DatabaseImpl:table_info"
         cache_dict = Container.get(key)
@@ -1399,20 +1500,20 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
    
  
 
-    def get_column_types(my, database, table):
+    def get_column_types(self, database, table):
         ''' get column data types. Note: can potentially get 
             character_maximum_length, numeric_precision, and udt_name '''
     
-        info = my.get_column_info(database, table) 
+        info = self.get_column_info(database, table) 
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('data_type')
         return column_dict
 
-    def get_column_nullables(my, database, table):
+    def get_column_nullables(self, database, table):
         ''' get column data nullables '''
     
-        info = my.get_column_info(database, table) 
+        info = self.get_column_info(database, table) 
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('nullable')
@@ -1420,7 +1521,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
    
 
-    def set_savepoint(my, name='save_pt'):
+    def set_savepoint(self, name='save_pt'):
         '''set a savepoint'''
         stmt = 'if @@TRANCOUNT > 0 SAVE TRANSACTION %s'%name
         return stmt
@@ -1431,15 +1532,15 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         sql.execute(query)
         """
 
-    def rollback_savepoint(my, name='save_pt', release=False):
+    def rollback_savepoint(self, name='save_pt', release=False):
         stmt = "ROLLBACK TRANSACTION %s"%name
         return stmt
 
-    def release_savepoint(my, name='save_pt'):
+    def release_savepoint(self, name='save_pt'):
         # does not apply in MS SQL
         return None
 
-    def get_temp_column_name(my):
+    def get_temp_column_name(self):
         return "_tmp_spt_rownum"
 
     def get_columns(cls, db_resource, table):
@@ -1484,10 +1585,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 class PostgresImpl(BaseSQLDatabaseImpl):
     '''Implementation for PostgreSQL'''
 
-    def get_database_type(my):
+    def get_database_type(self):
         return "PostgreSQL"
 
-    def get_version(my):
+    def get_version(self):
         from sql import DbContainer
         sql = DbContainer.get("sthpw")
         result = sql.do_query("select version()")
@@ -1502,7 +1603,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
 
 
-    def get_page(my, limit=None, offset=0, table_input=0, already_in_where_clause=0):
+    def get_page(self, limit=None, offset=0, table_input=0, already_in_where_clause=0):
         '''get the pagination sql based on limit and offset'''
         if limit == None:
             return None
@@ -1517,20 +1618,20 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     #
     # Column methods
     #
-    def get_boolean(my, not_null=False):
+    def get_boolean(self, not_null=False):
         parts = []
         parts.append("boolean")
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_serial(my, length=4, not_null=False):
+    def get_serial(self, length=4, not_null=False):
         parts = []
         parts.append("serial")
         return " ".join(parts)
 
 
-    def get_int(my, length=4, not_null=False):
+    def get_int(self, length=4, not_null=False):
         parts = []
         parts.append("int%s" % length)
         if not_null:
@@ -1538,7 +1639,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_float(my, not_null=False):
+    def get_float(self, not_null=False):
         parts = []
         parts.append("float")
         if not_null:
@@ -1546,7 +1647,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_text(my, not_null=False):
+    def get_text(self, not_null=False):
         parts = []
         parts.append("text")
         if not_null:
@@ -1554,7 +1655,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_char(my, length=256, not_null=False):
+    def get_char(self, length=256, not_null=False):
         assert length
         parts = []
         parts.append("char(%s)" % length)
@@ -1563,12 +1664,12 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_varchar(my, length=256, not_null=False):
+    def get_varchar(self, length=256, not_null=False):
         if not length:
             length = 256
 
         if length in [-1, 'max']:
-            return my.get_text(not_null=not_null)
+            return self.get_text(not_null=not_null)
         parts = []
         parts.append("varchar(%s)" % length)
         if not_null:
@@ -1576,10 +1677,10 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_nvarchar(my, length=256, not_null=False):
-        return my.get_varchar(length=length, not_null=not_null)
+    def get_nvarchar(self, length=256, not_null=False):
+        return self.get_varchar(length=length, not_null=not_null)
 
-    def get_timestamp(my, default=None, not_null=False, timezone=False):
+    def get_timestamp(self, default=None, not_null=False, timezone=False):
         parts = []
         if timezone:
             parts.append("timestamp with time zone")
@@ -1587,7 +1688,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             parts.append("timestamp")
         if default:
             if default == "now":
-                parts.append("DEFAULT %s" % my.get_timestamp_now())
+                parts.append("DEFAULT %s" % self.get_timestamp_now())
             else:
                 parts.append("DEFAULT %s" % default)
 
@@ -1596,7 +1697,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_timestamp_now(my, offset=None, type=None, op='+'):
+    def get_timestamp_now(self, offset=None, type=None, op='+'):
         parts = []
         parts.append("now()")
         if offset:
@@ -1607,17 +1708,26 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return op.join(parts)
 
 
+
+    def get_json(self, not_null=False):
+       parts = []
+       parts.append("jsonb")
+       if not_null:
+           parts.append("NOT NULL")
+       return " ".join(parts)
+
+
     
     #
     # Sequence methods for Postgres
     #
-    def has_sequences(my):
+    def has_sequences(self):
         return True
 
-    def get_create_sequence(my, name):
+    def get_create_sequence(self, name):
         return 'CREATE SEQUENCE "%s" START WITH 1 INCREMENT BY 1 NO MAXVALUE CACHE 1' % name
 
-    def get_sequence_name(my, table, database=None):
+    def get_sequence_name(self, table, database=None):
         from pyasm.search import SearchType
         if isinstance(table, SearchType):
             search_type = table
@@ -1629,26 +1739,26 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return "%s_id_seq" % table
 
 
-    def get_nextval(my, sequence):
+    def get_nextval(self, sequence):
         return '"%s".nextval' % sequence
 
-    def get_currval(my, sequence):
+    def get_currval(self, sequence):
         return '"%s".currval' % sequence
 
-    def get_currval_select(my, sequence):
+    def get_currval_select(self, sequence):
         return "select currval('\"%s\"')" % sequence
 
-    def get_nextval_select(my, sequence):
+    def get_nextval_select(self, sequence):
         return "select nextval('\"%s\"')" % sequence
 
-    def get_setval_select(my, sequence, num):
+    def get_setval_select(self, sequence, num):
         return "select setval('\"%s\"', %s)" % (sequence, num)
 
 
     # Method to build and return an SQL statement that can be run to reset the ID sequence for a table to a number
     # that is one greater than the highest index found in the given table.  NOTE: this ASSUMES that there are rows
     # in the table to provide a MAX id value from.  TODO: provide handling for a table with no data rows.
-    def get_reset_table_sequence_statement(my, table, database=None):
+    def get_reset_table_sequence_statement(self, table, database=None):
 
         from sql import DbContainer
         sql = DbContainer.get(database)
@@ -1664,7 +1774,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     #
     # Regular Expressions
     # 
-    def get_regex_filter(my, column, regex, op='EQI'):
+    def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             op = '~*'
         elif op == 'EQ':
@@ -1684,7 +1794,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     #
     # Type process methods
     #
-    def process_value(my, name, value, column_type="varchar"):
+    def process_value(self, name, value, column_type="varchar"):
         '''Postgres process_value'''
         if column_type == 'timestamp':
             quoted = True
@@ -1711,7 +1821,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     #
     # Database methods
     # 
-    def _get_db_info(my, db_resource, host=None, port=None):
+    def _get_db_info(self, db_resource, host=None, port=None):
         ''' get the database info from the config file if db_resource object is not given. e.g. during install'''
         from sql import DbResource
         if isinstance(db_resource, DbResource):
@@ -1747,11 +1857,11 @@ class PostgresImpl(BaseSQLDatabaseImpl):
   
 
 
-    def create_database(my, database):
+    def create_database(self, database):
         '''create a database.  This is done by a system command'''
         
         # if the database already exists, do nothing
-        if my.database_exists(database):
+        if self.database_exists(database):
             return
 
         if not isinstance(database, basestring):
@@ -1760,12 +1870,12 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         from pyasm.search import DbResource
         db_resource = DbResource.get_default(database)
 
-        create = 'createdb %s -E UNICODE "%s"' % (my._get_db_info(db_resource), database)
+        create = 'createdb %s -E UNICODE "%s"' % (self._get_db_info(db_resource), database)
         cmd = os.popen(create)
         result = cmd.readlines()
         # Psql 8.3 doesn't have outputs on creation
         if not result:
-            print "no output, assumed success"
+            print("no output, assumed success")
             return
             #raise Exception("Error creating database '%s'" % database)
         cmd.close()
@@ -1773,20 +1883,20 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         
 
         if result[0] == "CREATE DATABASE":
-            print "success"
+            print("success")
         elif result[0].endswith("already exists"):
-            print "already exists"
+            print("already exists")
         else:
-            print "no returned result from database creation (psql 8.2+)"
+            print("no returned result from database creation (psql 8.2+)")
 
 
-    def drop_database(my, db_resource):
+    def drop_database(self, db_resource):
         '''remove a postgres database . Note this is a very dangerous
         operation.  Use with care.'''
 
 
         # if the database already exists, do nothing
-        if not my.database_exists(db_resource):
+        if not self.database_exists(db_resource):
             return
         from sql import DbResource, DbContainer, Sql
 
@@ -1794,7 +1904,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             database = db_resource.get_database()
         else:
             database = db_resource
-        info = my._get_db_info(db_resource)
+        info = self._get_db_info(db_resource)
 
         database_version = Sql.get_default_database_version()
         major = database_version[0]
@@ -1815,7 +1925,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             sql.do_query("""SELECT pg_terminate_backend(pg_stat_activity.%s)
             FROM pg_stat_activity WHERE pg_stat_activity.datname = '%s'"""%(col_name, database))
 
-        print "Dropping Database [%s] ..." % database
+        print("Dropping Database [%s] ..." % database)
         """
         isolation_level = sql.conn.isolation_level
         sql.conn.set_isolation_level(0)
@@ -1847,7 +1957,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return output
 
 
-    def get_modify_column(my, table, column, type, not_null=None):
+    def get_modify_column(self, table, column, type, not_null=None):
         ''' get the statement for setting the column type '''
         # this may not return the type exacty like before like varchar is in place of
         # varchar(256) due to the column type returned from the sql impl
@@ -1869,7 +1979,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
 
     """
-    def import_default_data(my, db_resource, type):
+    def import_default_data(self, db_resource, type):
         '''import the data of certain type to the given database'''
 
         from sql import DbResource, DbContainer
@@ -1879,20 +1989,20 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             database = db_resource
 
         # import the necessary schema
-        schema_dir = my.get_schema_dir()
+        schema_dir = self.get_schema_dir()
         schema_path = "%s/%s_data.sql" % (schema_dir, type)
         if not os.path.exists(schema_path):
             if type != 'simple':
                 #Environment.add_warning("Default data does not exist", "Data '%s' does not exist" % schema_path)
             return
 
-        schema = 'psql -q %s %s < "%s"' % (my._get_db_info(db_resource), database, schema_path)
-        print "Importing data ..."
-        print schema
+        schema = 'psql -q %s %s < "%s"' % (self._get_db_info(db_resource), database, schema_path)
+        print("Importing data ...")
+        print(schema)
         os.system(schema)
     """
 
-    def get_constraints(my, db_resource, table):
+    def get_constraints(self, db_resource, table):
         '''Get contraints primarily UNIQUE for PostgreSQL'''
         from sql import Select, DbContainer
         constraints = []
@@ -1923,13 +2033,13 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                     columns = group.lstrip('(').rstrip(')')
                     columns = columns.split(',')
                 constraint['columns'] = columns
-        except Exception, e:
-            print e
+        except Exception as e:
+            print("ERROR: ", e)
 
 
         return constraints
 
-    def get_table_info(my, db_resource):
+    def get_table_info(self, db_resource):
 
         key = "DatabaseImpl:table_info"
         cache_dict = Container.get(key)
@@ -1967,9 +2077,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         #WHERE schemaname NOT IN ['information_schema', 'pg_catalog']
         #'''
         # or (this will not work if we define schema for projects
-        statement = '''SELECT viewname FROM pg_views
-        WHERE schemaname = 'public'
-        '''
+        statement = '''SELECT viewname FROM pg_views WHERE schemaname = 'public';'''
         results = sql.do_query(statement)
         for result in results:
             table = result[0]
@@ -2050,6 +2158,8 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                     data_type = "text"
                 elif data_type == 'boolean':
                     data_type = "boolean"
+                elif data_type == 'jsonb':
+                    data_type = "json"
                 elif data_type.startswith("timestamp"):
                     data_type = "timestamp"
                 # for time with/wihtout time zone
@@ -2070,19 +2180,19 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
     
 
-    def get_column_types(my, database, table, use_cache=True):
+    def get_column_types(self, database, table, use_cache=True):
         ''' get column data types. Note: can potentially get 
             character_maximum_length, numeric_precision, and udt_name '''
-        info = my.get_column_info(database, table) 
+        info = self.get_column_info(database, table) 
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('data_type')
         return column_dict
 
-    def get_column_nullables(my, database, table):
+    def get_column_nullables(self, database, table):
         ''' get column data nullables '''
     
-        info = my.get_column_info(database, table) 
+        info = self.get_column_info(database, table) 
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('nullable')
@@ -2093,11 +2203,11 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 class OracleImpl(PostgresImpl):
 
 
-    def get_database_type(my):
+    def get_database_type(self):
         return "Oracle"
 
 
-    def create_database(my, database):
+    def create_database(self, database):
         '''create a database.  This is done by a system command'''
         # get the system user
         from pyasm.search import DbPasswordUtil, DbContainer
@@ -2108,7 +2218,7 @@ class OracleImpl(PostgresImpl):
         sql.do_update(statement)
 
  
-    def get_page(my, limit=None, offset=0):
+    def get_page(self, limit=None, offset=0):
         '''get the pagination sql based on limit and offset'''
         if limit == None:
             return ""
@@ -2116,7 +2226,7 @@ class OracleImpl(PostgresImpl):
         return "rownum between %s and %s" % (offset, offset+limit)
 
 
-    def handle_pagination(my, statement, limit, offset):
+    def handle_pagination(self, statement, limit, offset):
         '''specific method to handle Oracle's insane pagination'''
 
         if limit == None:
@@ -2140,15 +2250,15 @@ class OracleImpl(PostgresImpl):
     #
     # Sequence methods for Oracle
     #
-    def has_sequences(my):
+    def has_sequences(self):
         return True
 
-    def get_create_sequence(my, name):
+    def get_create_sequence(self, name):
         # FIXME: sequence names have quote in them.  This needs to be fixed!!!
         return 'CREATE SEQUENCE %s START WITH 1 NOMAXVALUE' % name
 
 
-    def get_sequence_name(my, table, database=None):
+    def get_sequence_name(self, table, database=None):
         from pyasm.search import SearchType
         if isinstance(table, SearchType):
             search_type = table
@@ -2163,7 +2273,7 @@ class OracleImpl(PostgresImpl):
     # Method to build and return a PL/SQL that can be run to reset the ID sequence for a table to a number that
     # is one greater than the highest index found in the given table.  NOTE: this ASSUMES that there are rows
     # in the table to provide a MAX id value from.  TODO: provide handling for a table with no data rows.
-    def get_reset_table_sequence_statement(my, table, database=None):
+    def get_reset_table_sequence_statement(self, table, database=None):
 
         template_stmt_arr = [
             '''declare''',
@@ -2209,7 +2319,7 @@ class OracleImpl(PostgresImpl):
     #
     # Column methods
     #
-    def get_boolean(my, not_null=False):
+    def get_boolean(self, not_null=False):
         parts = []
         # No boolean in Oracle??!??
         parts.append("CHAR(1)")
@@ -2217,7 +2327,7 @@ class OracleImpl(PostgresImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_serial(my, length=4, not_null=False):
+    def get_serial(self, length=4, not_null=False):
         '''oracle does not have auto serial'''
         parts = []
         parts.append("NUMBER")
@@ -2225,14 +2335,14 @@ class OracleImpl(PostgresImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_int(my, length=4, not_null=False):
+    def get_int(self, length=4, not_null=False):
         parts = []
         parts.append("NUMBER")
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_text(my, not_null=False):
+    def get_text(self, not_null=False):
         parts = []
         parts.append("CLOB")
         if not_null:
@@ -2240,12 +2350,12 @@ class OracleImpl(PostgresImpl):
         return " ".join(parts)
 
 
-    def get_varchar(my, length=256, not_null=False):
+    def get_varchar(self, length=256, not_null=False):
         if not length:
             length = 256
 
         if length in [-1, 'max']:
-            return my.get_text(not_null=not_null)
+            return self.get_text(not_null=not_null)
         parts = []
         parts.append("VARCHAR2(%s)" % length)
         if not_null:
@@ -2253,13 +2363,13 @@ class OracleImpl(PostgresImpl):
         return " ".join(parts)
 
 
-    def get_timestamp(my, default="now", not_null=False, timezone=False):
+    def get_timestamp(self, default="now", not_null=False, timezone=False):
         parts = []
         parts.append("TIMESTAMP")
 
         if default:
             if default == "now":
-                parts.append("DEFAULT %s" % my.get_timestamp_now())
+                parts.append("DEFAULT %s" % self.get_timestamp_now())
             else:
                 parts.append("DEFAULT %s" % default)
 
@@ -2267,7 +2377,7 @@ class OracleImpl(PostgresImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_timestamp_now(my, offset=None, type=None, op='+'):
+    def get_timestamp_now(self, offset=None, type=None, op='+'):
         parts = []
         parts.append("SYSTIMESTAMP")
         if offset:
@@ -2281,26 +2391,26 @@ class OracleImpl(PostgresImpl):
     #
     # Sequence methods -- FIXME: quotes around sequence identifier needed?
     #
-    def get_nextval(my, sequence):
+    def get_nextval(self, sequence):
         return '%s.nextval' % sequence
 
-    def get_currval(my, sequence):
+    def get_currval(self, sequence):
         return '%s.currval' % sequence
 
-    def get_currval_select(my, sequence):
+    def get_currval_select(self, sequence):
         return 'select %s.currval from dual' % sequence
 
-    def get_nextval_select(my, sequence):
+    def get_nextval_select(self, sequence):
         return 'select %s.nextval from dual' % sequence
     
-    def get_setval_select(my, sequence):
+    def get_setval_select(self, sequence):
         return None
         #return 'select %s.setval from dual' % sequence
 
     #
     # Regular expressions
     #
-    def get_regex_filter(my, column, regex, op='EQI'):
+    def get_regex_filter(self, column, regex, op='EQI'):
         not_like = False
         parts = []
         if op == 'EQI':
@@ -2327,7 +2437,7 @@ class OracleImpl(PostgresImpl):
     #
     info = {}
 
-    def get_table_info(my, database):
+    def get_table_info(self, database):
         # FIXME: this function needs to handle DbResource class
 
         #key = "Oracle:table_info:%s" % database
@@ -2339,17 +2449,24 @@ class OracleImpl(PostgresImpl):
         info = OracleImpl.info.get(database)
 
         if not info:
+
+            from pyasm.search import DbResource, DbContainer
+            if isinstance(database, basestring):
+                database_name = database
+            else:
+                database_name = database.get_database()
+
             from sql import Select, DbContainer
             sql = DbContainer.get(database)
             select = Select()
             select.set_database(sql)
             select.add_table("ALL_TABLES")
             select.add_column("TABLE_NAME")
-            select.add_where('''"OWNER" in ('%s','%s')''' % (database, database.upper()))
+            select.add_where('''"OWNER" in ('%s','%s')''' % (database_name, database_name.upper()))
 
             statement =  select.get_statement()
             results = sql.do_query(statement)
-            #print results
+            #print(results)
 
             info = {}
             for result in results:
@@ -2367,7 +2484,7 @@ class OracleImpl(PostgresImpl):
     #
     # Table definitions
     #
-    def get_column_description(my, database, table):
+    def get_column_description(self, database, table):
         '''NOTE: this is not very useful in postgres, use get_column_info()
            instead'''
         from sql import DbContainer, Sql, Select
@@ -2383,7 +2500,7 @@ class OracleImpl(PostgresImpl):
         description = sql.get_table_description()
         return description
 
-    def get_column_info(my, database, table):
+    def get_column_info(self, database, table):
         '''get column info like data types and nullable'''
         dict = {}
 
@@ -2391,7 +2508,7 @@ class OracleImpl(PostgresImpl):
         key = "OracleImpl:column_info:%s:%s" % (database, table)
         description = Container.get(key)
         if not description:
-            description = my.get_column_description(database, table)
+            description = self.get_column_description(database, table)
             Container.put(key, description)
 
         import cx_Oracle
@@ -2438,13 +2555,13 @@ class OracleImpl(PostgresImpl):
 
         return dict
 
-    def get_column_types(my, database, table):
+    def get_column_types(self, database, table):
         ''' get column data types in a dict '''
         
-        return super(OracleImpl, my).get_column_types(database, table)
+        return super(OracleImpl, self).get_column_types(database, table)
 
     # schema manipulation
-    def get_modify_column(my, table, column, type, not_null=False):
+    def get_modify_column(self, table, column, type, not_null=False):
         ''' get the list of statements for setting the column type '''
         # this may not return the type exacty like before like varchar is in place of
         # varchar(256) due to the column type returned from the sql impl
@@ -2457,8 +2574,8 @@ class OracleImpl(PostgresImpl):
     #
     # This deals with Oracles absurdly low 4000 byte limit on sql statements
     #
-    def preprocess_sql(my, data, unquoted_cols):
-        my.plsql_vars = []
+    def preprocess_sql(self, data, unquoted_cols):
+        self.plsql_vars = []
 
         values = data.values()
         cols = data.keys()
@@ -2469,7 +2586,7 @@ class OracleImpl(PostgresImpl):
             if value and type(value) in types.StringTypes and len(value) > 4000:
                 # remember this column
                 varname = "%s__var" %cols[i]
-                my.plsql_vars.append((varname, value))
+                self.plsql_vars.append((varname, value))
                 value = varname
 
                 data[cols[i]] = value
@@ -2478,9 +2595,9 @@ class OracleImpl(PostgresImpl):
                     unquoted_cols.append(cols[i])
 
 
-    def postprocess_sql(my, statement):
+    def postprocess_sql(self, statement):
         from sql import Sql
-        if not my.plsql_vars:
+        if not self.plsql_vars:
             return statement
 
         expr = []
@@ -2494,7 +2611,7 @@ class OracleImpl(PostgresImpl):
 
         # pl/sql code to get aroung oracles stupid 4000 byte limit
         expr.append("declare")
-        for varname, value in my.plsql_vars:
+        for varname, value in self.plsql_vars:
             length = len(value)
             if length >= 30*1024:
                 expr.append("tmp varchar2(%s) := '';" % chunk_length)
@@ -2541,7 +2658,7 @@ class OracleImpl(PostgresImpl):
         return statement
 
 
-    def process_value(my, column, value, column_type="varchar"):
+    def process_value(self, column, value, column_type="varchar"):
         '''Some values need to be preprocessed before going to an sql
         statement depending on type'''
         quoted = True 
@@ -2631,11 +2748,11 @@ class OracleImpl(PostgresImpl):
 
 class SqliteImpl(PostgresImpl):
     
-    def get_database_type(my):
+    def get_database_type(self):
         return "Sqlite"
 
     """
-    def get_version(my):
+    def get_version(self):
         from sql import DbContainer
         sql = DbContainer.get("sthpw")
         result = sql.do_query("select version()")
@@ -2653,7 +2770,7 @@ class SqliteImpl(PostgresImpl):
     # Column methods
     #
     """
-    def get_boolean(my, not_null=False):
+    def get_boolean(self, not_null=False):
         parts = []
         parts.append("boolean")
         if not_null:
@@ -2661,21 +2778,21 @@ class SqliteImpl(PostgresImpl):
         return " ".join(parts)
 
     """
-    def get_serial(my, length=4, not_null=False):
+    def get_serial(self, length=4, not_null=False):
         parts = []
         parts.append("integer")
         return " ".join(parts)
 
 
     """
-    def get_int(my, length=4, not_null=False):
+    def get_int(self, length=4, not_null=False):
         parts = []
         parts.append("int%s" % length)
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_text(my, not_null=False):
+    def get_text(self, not_null=False):
         parts = []
         parts.append("text")
         if not_null:
@@ -2683,12 +2800,12 @@ class SqliteImpl(PostgresImpl):
         return " ".join(parts)
 
 
-    def get_varchar(my, length=256, not_null=False):
+    def get_varchar(self, length=256, not_null=False):
         if not length:
             length = 256
 
         if length in [-1, 'max']:
-            return my.get_text(not_null=not_null)
+            return self.get_text(not_null=not_null)
         parts = []
         parts.append("varchar(%s)" % length)
         if not_null:
@@ -2696,16 +2813,16 @@ class SqliteImpl(PostgresImpl):
         return " ".join(parts)
     """
 
-    def has_savepoint(my):
+    def has_savepoint(self):
         return False
 
 
-    def get_timestamp(my, default='now', not_null=False):
+    def get_timestamp(self, default='now', not_null=False):
         parts = []
         parts.append("timestamp")
         if default:
             if default == "now":
-                parts.append("DEFAULT %s" % my.get_timestamp_now())
+                parts.append("DEFAULT %s" % self.get_timestamp_now())
             else:
                 parts.append("DEFAULT %s" % default)
 
@@ -2714,7 +2831,7 @@ class SqliteImpl(PostgresImpl):
         return " ".join(parts)
 
 
-    def get_timestamp_now(my, offset=None, type=None, op='+'):
+    def get_timestamp_now(self, offset=None, type=None, op='+'):
         parts = []
         parts.append("CURRENT_TIMESTAMP")
         if offset:
@@ -2742,10 +2859,10 @@ class SqliteImpl(PostgresImpl):
     # Sequence methods
     #
     # Sequences are not used in Sqlite
-    def has_sequences(my):
+    def has_sequences(self):
         return False
 
-    def get_reset_table_sequence_statement(my, table, database=None):
+    def get_reset_table_sequence_statement(self, table, database=None):
         # We do not use sequences in Sqlite
         return ""
 
@@ -2754,7 +2871,7 @@ class SqliteImpl(PostgresImpl):
     #
     # Regular Expressions
     # 
-    def get_regex_filter(my, column, regex, op='EQI'):
+    def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             #op = '~*'
             return "\"%s\" LIKE '%%%s%%'" %(column, regex)
@@ -2778,7 +2895,7 @@ class SqliteImpl(PostgresImpl):
     #
     # Type process methods
     #
-    def process_value(my, name, value, column_type="varchar"):
+    def process_value(self, name, value, column_type="varchar"):
         quoted = True
         if value == "NULL":
             quoted = False
@@ -2791,7 +2908,7 @@ class SqliteImpl(PostgresImpl):
         elif column_type == 'timestamp':
             if value  == "NOW":
                 quoted = False
-                value = my.get_timestamp_now()
+                value = self.get_timestamp_now()
             elif isinstance(value, datetime.datetime):
                 pass
             elif value.startswith(("CURRENT_TIMESTAMP","DATETIME(")):
@@ -2803,7 +2920,7 @@ class SqliteImpl(PostgresImpl):
     # Database methods
     # 
 
-    def _get_database_path(my, database):
+    def _get_database_path(self, database):
 
         if not isinstance(database,basestring):
             database = database.get_database()
@@ -2820,18 +2937,18 @@ class SqliteImpl(PostgresImpl):
 
 
 
-    def database_exists(my, database, host=None):
-        db_path = my._get_database_path(database)
+    def database_exists(self, database, host=None):
+        db_path = self._get_database_path(database)
         if os.path.exists(db_path):
             return True
         else:
             return False
 
 
-    def create_database(my, database):
+    def create_database(self, database):
         '''create a database'''
         # if the database already exists, do nothing
-        if my.database_exists(database):
+        if self.database_exists(database):
             return
 
         # nothing needs to be done ... databases are created automatically
@@ -2840,23 +2957,23 @@ class SqliteImpl(PostgresImpl):
 
 
 
-    def drop_database(my, database):
+    def drop_database(self, database):
         '''remove a database on disk. Note this is a very dangerous
         operation.  Use with care.'''
         # if the database already exists, do nothing
-        if not my.database_exists(database):
+        if not self.database_exists(database):
             return
 
         # dropping a database means deleting the database file
-        db_path = my._get_database_path(database)
+        db_path = self._get_database_path(database)
         if os.path.exists(db_path):
             os.unlink(db_path)
 
 
 
-    def get_modify_column(my, table, column, type, not_null=None):
+    def get_modify_column(self, table, column, type, not_null=None):
         '''This is the same as postgres'''
-        return super(Sqlite, my).get_modify_column(table, column, type, not_null)
+        return super(Sqlite, self).get_modify_column(table, column, type, not_null)
 
 
 
@@ -2899,7 +3016,7 @@ class SqliteImpl(PostgresImpl):
         else:
             sql = DbContainer.get(db_resource)
 
-        query = "PRAGMA table_info(%s)" % table
+        query = 'PRAGMA table_info("%s")' % table
         results = sql.do_query(query)
 
         # data return is a list of the following
@@ -2980,7 +3097,7 @@ class SqliteImpl(PostgresImpl):
 
 
 
-    def get_constraints(my, db_resource, table):
+    def get_constraints(self, db_resource, table):
 
         # FIXME: this only works with Sqlite!!!
         # FIXME: this only works with Sqlite!!!
@@ -3021,21 +3138,21 @@ class SqliteImpl(PostgresImpl):
 
 class MySQLImpl(PostgresImpl):
 
-    def __init__(my):
+    def __init__(self):
 
         # FIXME: this will not work in mixed db cases because it assumes a global
         # single database
-        my.server   = Config.get_value("database", "server")
-        my.port     = Config.get_value("database", "port")
-        my.user     = Config.get_value("database", "user")
-        my.password = Config.get_value("database", "password")
+        self.server   = Config.get_value("database", "server")
+        self.port     = Config.get_value("database", "port")
+        self.user     = Config.get_value("database", "user")
+        self.password = Config.get_value("database", "password")
 
 
-    def get_database_type(my):
+    def get_database_type(self):
         return "MySQL"
 
 
-    def get_version(my):
+    def get_version(self):
         from sql import DbContainer
         sql = DbContainer.get("sthpw")
 
@@ -3049,7 +3166,7 @@ class MySQLImpl(PostgresImpl):
         return version_parts
 
 
-    def process_value(my, name, value, column_type="varchar"):
+    def process_value(self, name, value, column_type="varchar"):
         if column_type == 'boolean':
             quoted = False
             if value in ['true', 1, True]:
@@ -3059,7 +3176,7 @@ class MySQLImpl(PostgresImpl):
             return {"value": value, "quoted": quoted}
 
 
-    def get_table_info(my, db_resource):
+    def get_table_info(self, db_resource):
 
         key = "DatabaseImpl:table_info"
         cache_dict = Container.get(key)
@@ -3128,7 +3245,7 @@ class MySQLImpl(PostgresImpl):
         #(0, u'id', u'integer', 1, None, 0)
         for result in results:
             #if table == "search_object":
-            #    print "result: ", result
+            #    print("result: ", result)
 
             name = result[0]
             data_type = result[1]
@@ -3171,6 +3288,10 @@ class MySQLImpl(PostgresImpl):
                 data_type = 'text'
                 size = 256
 
+            elif data_type.startswith("JSON"):
+                data_type = 'json'
+                size = 0
+
             elif data_type.startswith("int"):
                 parts = data_type.split(" ")
                 size = parts[0]
@@ -3200,13 +3321,13 @@ class MySQLImpl(PostgresImpl):
     #
     # Column methods
     #
-    def get_serial(my, length=4, not_null=False):
+    def get_serial(self, length=4, not_null=False):
         parts = []
         parts.append("serial")
         return " ".join(parts)
 
 
-    def get_boolean(my, not_null=False):
+    def get_boolean(self, not_null=False):
        parts = []
        parts.append("tinyint")
        if not_null:
@@ -3215,12 +3336,12 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_varchar(my, length=191, not_null=False):
+    def get_varchar(self, length=191, not_null=False):
         if not length:
             length = 191
 
         if length in [-1, 'max']:
-            return my.get_text(not_null=not_null)
+            return self.get_text(not_null=not_null)
         parts = []
         parts.append("varchar(%s)" % length)
         if not_null:
@@ -3230,7 +3351,7 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_timestamp(my, default=None, not_null=False, timezone=False):
+    def get_timestamp(self, default=None, not_null=False, timezone=False):
         parts = []
         if timezone:
             parts.append("timestamp with time zone")
@@ -3247,7 +3368,7 @@ class MySQLImpl(PostgresImpl):
                 # This appears to be an old code implementation error in
                 # MySQL, so we are ignoring the now() default until this is
                 # fixed
-                #parts.append("DEFAULT %s" % my.get_timestamp_now())
+                #parts.append("DEFAULT %s" % self.get_timestamp_now())
                 pass
 
             else:
@@ -3259,7 +3380,22 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_timestamp_now(my, offset=None, type=None, op='+'):
+    def get_json(self, not_null=False):
+        parts = []
+
+        # JSON not support untile MySQL 5.7 (need to check version) 
+        #parts.append("JSON")
+        parts.append("text")
+
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+
+
+ 
+
+    def get_timestamp_now(self, offset=None, type=None, op='+'):
         '''MySQL get current / offset timestamp from now'''
         parts = []
         parts.append("NOW()")
@@ -3274,10 +3410,10 @@ class MySQLImpl(PostgresImpl):
     # Sequence methods
     #
     # Sequences are not used in MySQL
-    def has_sequences(my):
+    def has_sequences(self):
         return False
 
-    def get_reset_table_sequence_statement(my, table, database=None):
+    def get_reset_table_sequence_statement(self, table, database=None):
         # We do not use sequences in Sqlite
         return ""
 
@@ -3287,7 +3423,7 @@ class MySQLImpl(PostgresImpl):
     #
     # Regular Expressions
     # 
-    def get_regex_filter(my, column, regex, op='EQI'):
+    def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             #op = '~*'
             return "\"%s\" LIKE '%%%s%%'" %(column, regex)
@@ -3309,7 +3445,7 @@ class MySQLImpl(PostgresImpl):
     #
     # Regex expressions
     #
-    def get_regex_filter(my, column, regex, op='EQI'):
+    def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             op = 'REGEXP'
             case_sensitive = False
@@ -3335,16 +3471,20 @@ class MySQLImpl(PostgresImpl):
     #
     # Database methods
     # 
-    def create_database(my, database):
+    def create_database(self, database):
         '''create a database'''
         from sql import DbContainer, DbResource
         db_resource = DbResource.get_default("")
+
+        if not isinstance(database, basestring):
+            database = database.get_database()
+
         sql = DbContainer.get(db_resource)
         statement = '''CREATE DATABASE IF NOT EXISTS "%s";''' % database
         results = sql.do_update(statement)
 
 
-    def drop_database(my, database):
+    def drop_database(self, database):
         # TODO: if the database does not exist, do nothing
         # if not database_exists(database):
         #    return
@@ -3354,15 +3494,15 @@ class MySQLImpl(PostgresImpl):
         # eg.   mysql --host=localhost --port=5432 --user=root --password=south123paw --execute="create database unittest"
         drop_SQL_arg = 'DROP DATABASE %s' % database.get_database()
         create = 'mysql --host=%s --port=%s --user=%s --password=%s --execute="%s"' % \
-                 (my.server, my.port, my.user, my.password, drop_SQL_arg)
+                 (self.server, self.port, self.user, self.password, drop_SQL_arg)
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:
-            print "No output from sql command to drop db [%s], assumed success" % database
+            print("No output from sql command to drop db [%s], assumed success" % database)
             cmd.close()
             return
         else:
-            print result
+            print(result)
         cmd.close()
 
 
@@ -3374,7 +3514,7 @@ class TacticImpl(PostgresImpl):
 
     class TacticCursor(object):
         def execute():
-            print "execute"
+            print("execute")
 
     # Mimic DB2 API
     OperationalError = Exception
@@ -3382,21 +3522,20 @@ class TacticImpl(PostgresImpl):
         return TacticCursor()
     cursor = staticmethod(cursor)
 
-    def __init__(my):
+    def __init__(self):
         from tactic_client_lib import TacticServerStub
-        my.server = TacticServerStub.get(protocol='xmlrpc')
+        self.server = TacticServerStub.get(protocol='xmlrpc')
 
 
 
-    def get_database_type(my):
+    def get_database_type(self):
         return "TACTIC"
 
 
 
-    def get_table_info(my, db_resource):
+    def get_table_info(self, db_resource):
         search_type = "table/whatever?project=fifi"
-        table_info = my.server.get_table_info(search_type)
-        print "xxx: ", table_info
+        table_info = self.server.get_table_info(search_type)
         return table_info
 
 

@@ -30,35 +30,35 @@ from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 
 class SearchTypeToolWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'database': 'the database',
         'schema': 'the schema'
         }
 
-    def init(my):
+    def init(self):
 
-        database = my.kwargs.get("database")
-        schema = my.kwargs.get("schema")
+        database = self.kwargs.get("database")
+        schema = self.kwargs.get("schema")
 
         if not database:
-            my.database = Project.get_project_code()
+            self.database = Project.get_project_code()
         else:
-            my.database = database
+            self.database = database
 
         if not schema:
-            my.schema = "public"
+            self.schema = "public"
         else:
-            my.schema = schema
+            self.schema = schema
 
         # FIXME: hack this in for now to handle "public"
-        if my.schema == "public":
-            my.namespace = my.database
+        if self.schema == "public":
+            self.namespace = self.database
         else:
-            my.namespace = "%s/%s" % (my.database,my.schema)
+            self.namespace = "%s/%s" % (self.database,self.schema)
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = HtmlElement.div()
 
@@ -81,22 +81,22 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         div.add(error_div)
 
 
-        #div.add( my.create_div() )
-        div.add(my.get_search_type_manager())
-        #div.add( my.get_existing_wdg() )
+        #div.add( self.create_div() )
+        div.add(self.get_search_type_manager())
+        #div.add( self.get_existing_wdg() )
 
 
         return div
 
 
-    def get_search_type_manager(my):
+    def get_search_type_manager(self):
         widget = Widget()
         div = DivWdg(id='SearchTypeManagerContainer')
         #select = SearchTypeSelectWdg(mode=SearchTypeSelectWdg.ALL_BUT_STHPW)
         #widget.add(select)
 
 
-        wizard = SearchTypeCreatorWdg(namespace=my.namespace, database=my.database, schema=my.schema)
+        wizard = SearchTypeCreatorWdg(namespace=self.namespace, database=self.database, schema=self.schema)
         popup = PopupWdg(id='create_search_type_wizard')
         popup.add_title('Register New sType')
         popup.add(wizard)
@@ -111,7 +111,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         search_type_span = SpanWdg()
         search_type_span.add("sType: " )
         select = SelectWdg("search_type")
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         if search_type:
             select.set_value(search_type)
         select.set_option("query", "sthpw/search_object|search_type|search_type")
@@ -150,7 +150,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         widget.add(manager)
         return widget
 
-    def get_existing_wdg(my):
+    def get_existing_wdg(self):
 
         div = DivWdg()
         title = DivWdg("Existing Custom sTypes")
@@ -161,7 +161,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         search_type = SearchType.SEARCH_TYPE
 
         search = Search( search_type )
-        search.add_filter("namespace", my.namespace)
+        search.add_filter("namespace", self.namespace)
         sobjects = search.get_sobjects()
 
         table_wdg = TableLayoutWdg( search_type=search_type, view="table" )
@@ -174,7 +174,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
 
 class SearchTypeCreatorWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         # DEPRECATED
         'database': 'the database???',
@@ -188,19 +188,19 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.database = my.kwargs.get("database")
-        my.namespace = my.kwargs.get("namespace")
-        my.schema = my.kwargs.get("schema")
+        self.database = self.kwargs.get("database")
+        self.namespace = self.kwargs.get("namespace")
+        self.schema = self.kwargs.get("schema")
 
         project_code = Project.get_project_code()
-        if not my.database:
-            my.database = project_code
-        if not my.namespace:
-            my.namespace = project_code
-        if not my.schema:
-            my.schema = "public"
+        if not self.database:
+            self.database = project_code
+        if not self.namespace:
+            self.namespace = project_code
+        if not self.schema:
+            self.schema = "public"
 
         project = Project.get()
         project_type = project.get_value("type")
@@ -209,9 +209,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         else:
             namespace = project_code
 
-        my.search_type = my.kwargs.get("search_type")
-        if my.search_type and my.search_type.find("/") == -1:
-            my.search_type = "%s/%s" % (namespace, my.search_type)
+        self.search_type = self.kwargs.get("search_type")
+        if self.search_type and self.search_type.find("/") == -1:
+            self.search_type = "%s/%s" % (namespace, self.search_type)
 
 
         top = DivWdg()
@@ -236,7 +236,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         create_div = HtmlElement.div()
         wizard.add(create_div, "Info")
-        my.set_as_panel(create_div)
+        self.set_as_panel(create_div)
 
         #name_input = TextWdg("search_type_name")
         name_input = TextInputWdg(name="search_type_name")
@@ -244,14 +244,14 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         # as long as we allow this to be displayed in Manage Search Types, it should be editable
         name_input.add_class("spt_input")
         name_input.add_class("SPT_DTS")
-        if my.search_type:
-            name_input.set_value(my.search_type)
+        if self.search_type:
+            name_input.set_value(self.search_type)
             name_input.set_attr("readonly", "readonly")
             name_input.add_color("background", "background", -10)
 
 
         search = Search( SearchType.SEARCH_TYPE )
-        search.add_filter("namespace", my.namespace)
+        search.add_filter("namespace", self.namespace)
 
         template_select = SelectWdg("copy_from_template")
         template_select.add_empty_option()
@@ -261,9 +261,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         title_text = TextInputWdg(name="asset_title")
         title_text.add_class("spt_input")
-        title_value = my.kwargs.get("title")
-        if not title_value and my.search_type:
-            parts = my.search_type.split("/")
+        title_value = self.kwargs.get("title")
+        if not title_value and self.search_type:
+            parts = self.search_type.split("/")
             if len(parts) > 1:
                 title_value = parts[1]
                 title_value = Common.get_display_title(title_value)
@@ -394,12 +394,12 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         table.add_header("Description: ").set_attr('align','left')
         table.add_cell(description)
 
-        create_div.add( my.get_preview_wdg() )
+        create_div.add( self.get_preview_wdg() )
 
 
 
         # Layout page 
-        layout_wdg = my.get_layout_wdg()
+        layout_wdg = self.get_layout_wdg()
         wizard.add(layout_wdg, "Layout")
 
 
@@ -508,11 +508,11 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         column_div.add("<br/>"*2)
 
 
-        column_div.add( my.get_columns_wdg() )
+        column_div.add( self.get_columns_wdg() )
 
 
         # Page 3
-        naming_wdg = my.get_naming_wdg()
+        naming_wdg = self.get_naming_wdg()
         wizard.add(naming_wdg, "Naming")
 
 
@@ -526,13 +526,13 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         # submit button
-        submit_input = my.get_submit_input()
+        submit_input = self.get_submit_input()
         wizard.add_submit_button(submit_input)
 
         return top
 
 
-    def get_layout_wdg(my):
+    def get_layout_wdg(self):
         div = DivWdg()
         div.add_class("spt_choose_layout_top")
 
@@ -595,7 +595,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
 
-    def get_naming_wdg(my):
+    def get_naming_wdg(self):
 
         div = DivWdg()
 
@@ -633,15 +633,15 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.name}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Name", is_checked=True) )
+        dirname_div.add( self.get_naming_item_wdg(expr, "Name", is_checked=True) )
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Project/Job") )
+        dirname_div.add( self.get_naming_item_wdg(expr, "Project/Job") )
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.category}/{sobject.code}"
 
         expr = "/{project.code}/{search_type.table_name}/{sobject.code}/{snapshot.process}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Asset with Workflow") )
+        dirname_div.add( self.get_naming_item_wdg(expr, "Asset with Workflow") )
 
 
         div.add("<br/>")
@@ -677,14 +677,14 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
         expr = "{sobject.name}_{basefile}_v{version}.{ext}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Name", mode="file", is_checked=True) )
+        dirname_div.add( self.get_naming_item_wdg(expr, "Name", mode="file", is_checked=True) )
 
 
         expr = "{sobject.code}_{basefile}_v{version}.{ext}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Code", mode="file") )
+        dirname_div.add( self.get_naming_item_wdg(expr, "Code", mode="file") )
 
         expr = "{sobject.code}_{basefile}_{process}_v{version}.{ext}"
-        dirname_div.add( my.get_naming_item_wdg(expr, "Code with Process", mode="file") )
+        dirname_div.add( self.get_naming_item_wdg(expr, "Code with Process", mode="file") )
 
 
 
@@ -717,7 +717,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         return div
 
 
-    def _example(my, expr):
+    def _example(self, expr):
         project_code = Project.get_project_code()
 
         sample_data = {
@@ -740,9 +740,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         return sample_expr
 
-    def get_naming_item_wdg(my, expr, title, mode="directory", is_checked=False):
+    def get_naming_item_wdg(self, expr, title, mode="directory", is_checked=False):
 
-        new_expr = my._example(expr)
+        new_expr = self._example(expr)
 
         div = DivWdg()
         div.add_style("margin-top: 10px")
@@ -804,7 +804,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
 
-    def get_preview_wdg(my):
+    def get_preview_wdg(self):
 
         # add an icon for this project
         image_div = DivWdg()
@@ -906,16 +906,16 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
 
-    def get_submit_input(my):
+    def get_submit_input(self):
         submit_input = ActionButtonWdg(title='Register >>', tip="Register New sType")
 
         behavior = {
             'type':         'click_up',
             'mouse_btn':    'LMB',
             'options':      {
-                'database':     my.database,
-                'namespace':    my.namespace,
-                'schema':       my.schema,
+                'database':     self.database,
+                'namespace':    self.namespace,
+                'schema':       self.schema,
             },
 
             'cbjs_action':  '''
@@ -984,7 +984,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
 
-    def get_columns_wdg(my):
+    def get_columns_wdg(self):
         '''widget to create columns'''
 
         div = DivWdg()
@@ -1059,9 +1059,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 __all__.append("PredefinedSearchTypesWdg")
 class PredefinedSearchTypesWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         top.add_border()
         top.add_color("background", "background")
@@ -1073,7 +1073,7 @@ class PredefinedSearchTypesWdg(BaseRefreshWdg):
         table.add_row()
 
         left = table.add_cell()
-        left.add(my.get_stypes_list())
+        left.add(self.get_stypes_list())
         left.add_style("vertical-align: top")
         left.add_style("min-width: 150px")
         left.add_color("background", "background3")
@@ -1089,12 +1089,12 @@ class PredefinedSearchTypesWdg(BaseRefreshWdg):
         right_div.add_style("width: 500px")
         right_div.add_style("height: 400px")
         right_div.add_style("padding: 10px")
-        right_div.add(my.get_plugin_info_wdg())
+        right_div.add(self.get_plugin_info_wdg())
 
         return top
 
 
-    def get_plugin_info_wdg(my):
+    def get_plugin_info_wdg(self):
         div = DivWdg()
 
         div.add('''<b style='font-size: 14px'>vfx/shot</b>
@@ -1142,7 +1142,7 @@ class PredefinedSearchTypesWdg(BaseRefreshWdg):
 
 
 
-    def get_stypes_list(my):
+    def get_stypes_list(self):
 
         div = DivWdg()
 
@@ -1249,75 +1249,75 @@ class PredefinedSearchTypesWdg(BaseRefreshWdg):
 
 class SearchTypeCreatorCmd(Command):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.database = kwargs.get('database')
-        my.namespace = kwargs.get('namespace')
-        my.schema = kwargs.get('schema')
+        self.database = kwargs.get('database')
+        self.namespace = kwargs.get('namespace')
+        self.schema = kwargs.get('schema')
 
-        if not my.database:
-            my.project = Project.get()
-            my.database = my.project.get_code()
+        if not self.database:
+            self.project = Project.get()
+            self.database = self.project.get_code()
         else:
             # need to have a project with this database name
             # essentially: project == database
-            my.project = Project.get_by_code(my.database)
+            self.project = Project.get_by_code(self.database)
 
-        my.search_type_name = my.get_value("search_type_name") 
-        my.db_resource = my.project.get_project_db_resource()
+        self.search_type_name = self.get_value("search_type_name") 
+        self.db_resource = self.project.get_project_db_resource()
         # Advanced mode: special condition for sthpw/.. sType
-        if my.search_type_name.startswith('sthpw/'):
+        if self.search_type_name.startswith('sthpw/'):
             sql = DbContainer.get('sthpw')
-            my.db_resource = sql.get_db_resource()
-            my.database = 'sthpw'
-            my.namespace = 'sthpw'
+            self.db_resource = sql.get_db_resource()
+            self.database = 'sthpw'
+            self.namespace = 'sthpw'
 
-        if not my.namespace:
-            my.namespace = project_code
+        if not self.namespace:
+            self.namespace = project_code
 
-        if not my.schema:
-            my.schema = 'public'
+        if not self.schema:
+            self.schema = 'public'
 
-        super(SearchTypeCreatorCmd,my).__init__(**kwargs)
+        super(SearchTypeCreatorCmd,self).__init__(**kwargs)
 
-        my.column_names = my.get_values("column_name")
-        if not my.column_names:
-            my.column_names = []
-        #my.column_types = my.get_values("column_type")
-        my.column_types = my.get_values("data_type")
-        if not my.column_types:
-            my.column_types = []
-        my.formats = my.get_values("format")
-        if not my.formats:
-            my.formats = []
+        self.column_names = self.get_values("column_name")
+        if not self.column_names:
+            self.column_names = []
+        #self.column_types = self.get_values("column_type")
+        self.column_types = self.get_values("data_type")
+        if not self.column_types:
+            self.column_types = []
+        self.formats = self.get_values("format")
+        if not self.formats:
+            self.formats = []
 
-        my.search_type_obj = None
+        self.search_type_obj = None
 
-    def get_title(my):
+    def get_title(self):
         return "sType Creator"
 
 
-    def set_database(my, database):
-        my.database = database
+    def set_database(self, database):
+        self.database = database
 
-    def set_schema(my, schema):
-        my.schema = schema
+    def set_schema(self, schema):
+        self.schema = schema
 
 
-    def get_value(my, name):
+    def get_value(self, name):
         web = WebContainer.get_web()
 
-        value = my.kwargs.get(name)
+        value = self.kwargs.get(name)
         if not value:
             value = web.get_form_value(name)
 
         return value
 
-    def get_values(my, name):
+    def get_values(self, name):
         web = WebContainer.get_web()
 
-        value = my.kwargs.get(name)
+        value = self.kwargs.get(name)
         if not value:
             value = web.get_form_values(name)
 
@@ -1326,61 +1326,61 @@ class SearchTypeCreatorCmd(Command):
 
 
 
-    def get_sobject(my):
-        return my.sobject
+    def get_sobject(self):
+        return self.sobject
         
 
 
-    def execute(my):
-        if not my.database or not my.schema:
+    def execute(self):
+        if not self.database or not self.schema:
             raise CommandException("Either database nor schema is not defined")
 
 
 
         # FIXME: hack this in for now to handle "public"
-        if not my.namespace:
-            if my.schema == "public":
-                my.namespace = my.database
+        if not self.namespace:
+            if self.schema == "public":
+                self.namespace = self.database
             else:
-                my.namespace = "%s/%s" % (my.database,my.schema)
+                self.namespace = "%s/%s" % (self.database,self.schema)
 
         web = WebContainer.get_web()
 
         
-        if my.search_type_name == "":
+        if self.search_type_name == "":
             raise CommandExitException("No search type supplied")
 
-        if my.search_type_name.find("/") != -1:
-            my.namespace, my.search_type_name = my.search_type_name.split("/", 1)
+        if self.search_type_name.find("/") != -1:
+            self.namespace, self.search_type_name = self.search_type_name.split("/", 1)
             # check if it is a valid namespace
-            #proj = Project.get_by_code(my.namespace)
+            #proj = Project.get_by_code(self.namespace)
             #if not proj:
-            #    raise TacticException('[%s] is not a valid namespace'%my.namespace)
+            #    raise TacticException('[%s] is not a valid namespace'%self.namespace)
 
-        if re.search(r'\W', my.namespace):
+        if re.search(r'\W', self.namespace):
             raise TacticException("No special characters or spaces allowed in the namespace of sType.")
-        if re.search(r'\W', my.search_type_name):
+        if re.search(r'\W', self.search_type_name):
             raise TacticException("No special characters or spaces allowed in the sType name.")
 
-        #if re.search(r'[A-Z]', my.namespace):
+        #if re.search(r'[A-Z]', self.namespace):
         #    raise TacticException("No upper case letters allowed in the namespace of sType.")
-        #if re.search(r'[A-Z]', my.search_type_name):
+        #if re.search(r'[A-Z]', self.search_type_name):
         #    raise TacticException("No uppercase letters allowed in the sType name.")
 
 
-        #my.asset_description = web.get_form_value("asset_description")
-        my.asset_description = my.get_value("asset_description")
-        if my.asset_description == "":
-            my.asset_description == "No description"
+        #self.asset_description = web.get_form_value("asset_description")
+        self.asset_description = self.get_value("asset_description")
+        if self.asset_description == "":
+            self.asset_description == "No description"
 
-        #my.asset_title = web.get_form_value("asset_title")
-        my.asset_title = my.get_value("asset_title")
-        if my.asset_title == "":
-            my.asset_title == "No title"
+        #self.asset_title = web.get_form_value("asset_title")
+        self.asset_title = self.get_value("asset_title")
+        if self.asset_title == "":
+            self.asset_title == "No title"
 
         #copy_from_template = web.get_form_value("copy_from_template")
-        copy_from_template = my.get_value("copy_from_template")
-        search_type = "%s/%s" % (my.namespace, my.search_type_name)
+        copy_from_template = self.get_value("copy_from_template")
+        search_type = "%s/%s" % (self.namespace, self.search_type_name)
         
 
         # don't auto lower it cuz the same sType name may get added to the schema
@@ -1388,50 +1388,50 @@ class SearchTypeCreatorCmd(Command):
 
         # Save the newly created search_type to info so we can get it and
         # display it when we are ready to refresh the SearchTypeToolWdg.
-        my.info['search_type'] = search_type
+        self.info['search_type'] = search_type
 
         
-        my.register_search_type(search_type)
-        if not my.search_type_obj:
-            my.search_type_obj = SearchType.get(search_type)
+        self.register_search_type(search_type)
+        if not self.search_type_obj:
+            self.search_type_obj = SearchType.get(search_type)
         #if web.get_form_value("sobject_pipeline"):
-        if my.get_value("sobject_pipeline"):
-            my.has_pipeline = True
+        if self.get_value("sobject_pipeline"):
+            self.has_pipeline = True
         else:
-            my.has_pipeline = False
+            self.has_pipeline = False
 
 
-        if my.get_value("sobject_collection"):
-            my.has_collection = True
+        if self.get_value("sobject_collection"):
+            self.has_collection = True
         else:
-            my.has_collection = False
+            self.has_collection = False
 
 
 
-        if my.get_value("sobject_preview"):
-            my.has_preview = True
+        if self.get_value("sobject_preview"):
+            self.has_preview = True
         else:
-            my.has_preview = False
+            self.has_preview = False
 
 
         # add naming first because create table needs it
-        my.add_naming()
+        self.add_naming()
 
 
-        #my.parent_type = web.get_form_value("sobject_parent")
-        my.parent_type = my.get_value("sobject_parent")
+        #self.parent_type = web.get_form_value("sobject_parent")
+        self.parent_type = self.get_value("sobject_parent")
 
         if not copy_from_template:
-            my.create_table()
+            self.create_table()
             # for sthpw sType, create the table only
-            if not my.namespace == 'sthpw':
-                my.create_config()
-                my.create_pipeline()
+            if not self.namespace == 'sthpw':
+                self.create_config()
+                self.create_pipeline()
         else:
             # FIXME: don't copy config yet ... should really copy all
             # ... or have an option
-            #my.copy_template_config(copy_from_template)
-            my.copy_template_table(copy_from_template)
+            #self.copy_template_config(copy_from_template)
+            self.copy_template_table(copy_from_template)
 
         
         # add this search_type to the schema for this project
@@ -1444,28 +1444,28 @@ class SearchTypeCreatorCmd(Command):
             schema = Schema.create(project_code, "%s project schema" % project_code )
 
         if schema:
-            schema.add_search_type(search_type, my.parent_type)
+            schema.add_search_type(search_type, self.parent_type)
             schema.commit()
         else:
-            raise CommandException("No schema defined for [%s]" % my.database)
+            raise CommandException("No schema defined for [%s]" % self.database)
 
 
-        my.add_sidebar_views()
+        self.add_sidebar_views()
 
-        my.checkin_preview()
+        self.checkin_preview()
 
         
 
 
-    def register_search_type(my, search_type):
+    def register_search_type(self, search_type):
         # first check if it already exists
         search = Search( SearchType.SEARCH_TYPE )
         search.add_filter("search_type", search_type)
         test_sobject = search.get_sobject()
         if test_sobject:
-            my.search_type_obj = SearchType.get(search_type)
-            is_project_specific = my.get_value("project_specific") == "on"
-            if my.table_exists() and not is_project_specific:
+            self.search_type_obj = SearchType.get(search_type)
+            is_project_specific = self.get_value("project_specific") == "on"
+            if self.table_exists() and not is_project_specific:
                 msg = "Search type [%s] already exists." % search_type
                 if search_type.startswith('sthpw/'):
                     msg = '%s If you are trying to add this to the Project Schema, use the Save button instead of the Register button.'%msg
@@ -1480,47 +1480,47 @@ class SearchTypeCreatorCmd(Command):
 
         sobject.set_value("search_type", search_type)
 
-        sobject.set_value("namespace", my.namespace)
+        sobject.set_value("namespace", self.namespace)
 
-        if my.get_value("project_specific") == "on":
-            sobject.set_value("database", my.database)
+        if self.get_value("project_specific") == "on":
+            sobject.set_value("database", self.database)
         else:
-            if my.namespace == 'sthpw':
+            if self.namespace == 'sthpw':
                 sobject.set_value("database", "sthpw")
             else:
                 sobject.set_value("database", "{project}")
 
-        layout = my.get_value("layout")
+        layout = self.get_value("layout")
         if layout:
             sobject.set_value("default_layout", layout)
 
-        sobject.set_value("schema", my.schema)
+        sobject.set_value("schema", self.schema)
 
-        if my.schema == "public":
-            table = my.search_type_name
+        if self.schema == "public":
+            table = self.search_type_name
         else:
-            table = "%s.%s" % (my.schema, my.search_type_name)
+            table = "%s.%s" % (self.schema, self.search_type_name)
         sobject.set_value("table_name", table)
         sobject.set_value("class_name", "pyasm.search.SObject")
-        sobject.set_value("title", my.asset_title)
-        sobject.set_value("description", my.asset_description)
+        sobject.set_value("title", self.asset_title)
+        sobject.set_value("description", self.asset_description)
 
         sobject.commit()
 
-        my.sobject = sobject
+        self.sobject = sobject
 
 
     
 
-    def create_config(my):
-        search_type = my.search_type_obj.get_base_key()
+    def create_config(self):
+        search_type = self.search_type_obj.get_base_key()
         columns = SearchType.get_columns(search_type)
-        #if my.has_pipeline:
+        #if self.has_pipeline:
         #    columns.remove("pipeline_code")
         #    columns.append("pipeline")
 
         # preview is always first
-        if my.has_preview:
+        if self.has_preview:
             columns.insert(0, "preview")
 
         # remove some of the defaults columns
@@ -1534,12 +1534,12 @@ class SearchTypeCreatorCmd(Command):
         if 'keywords' in columns:
             columns.remove("keywords")
 
-        my.show_code = False
-        if not my.show_code:
+        self.show_code = False
+        if not self.show_code:
             columns.remove("code")
 
 
-        if my.has_preview:
+        if self.has_preview:
             default_columns = ['preview', 'name', 'description']
         else:
             default_columns = ['name', 'description']
@@ -1573,7 +1573,7 @@ class SearchTypeCreatorCmd(Command):
                 if column in ['pipeline_code'] or column in default_columns:
                     continue
 
-                if column in my.column_names:
+                if column in self.column_names:
                     continue
 
                 element = xml.create_element("element")
@@ -1582,7 +1582,7 @@ class SearchTypeCreatorCmd(Command):
 
 
             # handle the custom columns
-            for column_name, column_type, format in zip(my.column_names, my.column_types, my.formats):
+            for column_name, column_type, format in zip(self.column_names, self.column_types, self.formats):
                 if not column_name:
                     continue
 
@@ -1600,9 +1600,9 @@ class SearchTypeCreatorCmd(Command):
                     xml.create_text_element("type", column_type, node=display)
 
             # add view if there is a pipeline
-            if my.has_pipeline and view == 'table':
+            if self.has_pipeline and view == 'table':
                 element = xml.create_element("element")
-                Xml.set_attribute(element, "name", "task_edit")
+                Xml.set_attribute(element, "name", "pipeline")
                 xml.append_child(view_node, element)
 
                 element = xml.create_element("element")
@@ -1657,7 +1657,7 @@ class SearchTypeCreatorCmd(Command):
 
 
 
-    def _create_element(my, xml, view_node, name):
+    def _create_element(self, xml, view_node, name):
         element = xml.create_element("element")
         element.setAttribute("name", name)
         #view_node.appendChild(element)
@@ -1665,12 +1665,12 @@ class SearchTypeCreatorCmd(Command):
 
 
 
-    def copy_template_table(my, template):
+    def copy_template_table(self, template):
         template_type_obj = SearchType.get(template)
         template_table = template_type_obj.get_table()
-        table = my.search_type_obj.get_table()
+        table = self.search_type_obj.get_table()
 
-        database = my.search_type_obj.get_database()
+        database = self.search_type_obj.get_database()
 
         sql = DbContainer.get(database)
         sql.copy_table_schema(template_table, table)
@@ -1679,30 +1679,30 @@ class SearchTypeCreatorCmd(Command):
         TableUndo.log(database, table)
 
 
-    def table_exists(my):
+    def table_exists(self):
         '''check if table exists'''
-        if my.schema == "public":
-            table = my.search_type_name
+        if self.schema == "public":
+            table = self.search_type_name
         else:
-            table = "%s.%s" % (my.schema, my.search_type_name)
+            table = "%s.%s" % (self.schema, self.search_type_name)
         
-        sql = DbContainer.get(my.db_resource)
+        sql = DbContainer.get(self.db_resource)
         impl = sql.get_database_impl()
-        exists = impl.table_exists(my.db_resource, table)
+        exists = impl.table_exists(self.db_resource, table)
         return exists
     
 
-    def create_table(my):
+    def create_table(self):
 
-        if my.schema == "public":
-            table = my.search_type_name
+        if self.schema == "public":
+            table = self.search_type_name
         else:
-            table = "%s.%s" % (my.schema, my.search_type_name)
+            table = "%s.%s" % (self.schema, self.search_type_name)
 
-        if my.namespace == 'sthpw': 
-            search_type = "%s/%s" % (my.namespace, my.search_type_name)
+        if self.namespace == 'sthpw': 
+            search_type = "%s/%s" % (self.namespace, self.search_type_name)
         else:    
-            search_type = "%s/%s?project=%s" % (my.namespace, my.search_type_name, my.database)
+            search_type = "%s/%s?project=%s" % (self.namespace, self.search_type_name, self.database)
         create = CreateTable(search_type=search_type)
 
         create.set_table( table )
@@ -1711,9 +1711,9 @@ class SearchTypeCreatorCmd(Command):
         create.add("id", "serial", primary_key=True)
 
         create.add("code", "varchar")
-        if my.has_pipeline:
+        if self.has_pipeline:
             create.add("pipeline_code", "varchar")
-        if my.has_collection:
+        if self.has_collection:
             create.add("_is_collection", "boolean")
 
 
@@ -1727,7 +1727,7 @@ class SearchTypeCreatorCmd(Command):
         create.add_constraint(["code"], mode="UNIQUE")
 
 
-        for column_name, column_type in zip(my.column_names, my.column_types):
+        for column_name, column_type in zip(self.column_names, self.column_types):
             if not column_name:
                 continue
 
@@ -1735,9 +1735,9 @@ class SearchTypeCreatorCmd(Command):
             create.add(column_name, data_type)
  
 
-        if my.folder_naming.find("{sobject.relative_dir}") != -1:
+        if self.folder_naming.find("{sobject.relative_dir}") != -1:
             create.add("relative_dir", "text")
-        elif my.folder_naming.find("{sobject.category}") != -1:
+        elif self.folder_naming.find("{sobject.category}") != -1:
             create.add("category", "text")
 
 
@@ -1747,16 +1747,16 @@ class SearchTypeCreatorCmd(Command):
 
         statement = create.get_statement()
 
-        sql = DbContainer.get(my.db_resource)
+        sql = DbContainer.get(self.db_resource)
         database = sql.get_database_name()
         impl = sql.get_database_impl()
-        exists = impl.table_exists(my.db_resource, table)
+        exists = impl.table_exists(self.db_resource, table)
         if exists:
             #raise TacticException('This table [%s] already exists.'%table)
             pass
         else:
             create.commit(sql)
-            TableUndo.log(my.search_type_obj.get_base_key(), database, table)
+            TableUndo.log(self.search_type_obj.get_base_key(), database, table)
         '''
             # add columns 
             db_resource = Project.get_db_resource_by_search_type(search_type)
@@ -1772,11 +1772,11 @@ class SearchTypeCreatorCmd(Command):
         '''
 
 
-    def add_sidebar_views(my):
+    def add_sidebar_views(self):
 
-        search_type = my.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_base_key()
         namespace, table = search_type.split("/")
-        title = my.search_type_obj.get_title()
+        title = self.search_type_obj.get_title()
 
         # _list view
         class_name = "tactic.ui.panel.ViewPanelWdg"
@@ -1788,7 +1788,7 @@ class SearchTypeCreatorCmd(Command):
         
         # this is now handled by the "default" setting
         """
-        layout = my.get_value("layout")
+        layout = self.get_value("layout")
 
         if layout == "tile":
             class_name = "tactic.ui.panel.ViewPanelWdg"
@@ -1844,19 +1844,22 @@ class SearchTypeCreatorCmd(Command):
 
 
 
-    def create_pipeline(my):
+    def create_pipeline(self):
 
-        if not my.has_pipeline:
+        if not self.has_pipeline:
             return
 
-        search_type = my.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_base_key()
         namespace, table = search_type.split("/")
         project_code = Project.get_project_code()
 
         pipeline_code = "%s/%s" % (project_code, table)
 
+        title = table.replace("_", " ").title()
+
         # create a pipeline
         search = Search("sthpw/pipeline")
+        search.add_filter("code", title)
         search.add_filter("code", pipeline_code)
         pipeline = search.get_sobject()
 
@@ -1865,7 +1868,7 @@ class SearchTypeCreatorCmd(Command):
             return
 
 
-        processes = my.get_values("process")
+        processes = self.get_values("process")
         filtered = []
         for process in processes:
             if process:
@@ -1919,9 +1922,9 @@ class SearchTypeCreatorCmd(Command):
 
 
  
-    def checkin_preview(my):
+    def checkin_preview(self):
         # if there is an image, check it in
-        image_path = my.get_values("image_path")
+        image_path = self.get_values("image_path")
         if image_path:
             image_path = image_path[0]
             if not image_path:
@@ -1958,19 +1961,19 @@ class SearchTypeCreatorCmd(Command):
                     file_types = [file_type, 'web', 'icon']
 
             from pyasm.checkin import FileCheckin
-            checkin = FileCheckin(my.search_type_obj, context='icon', file_paths=file_paths, file_types=file_types)
+            checkin = FileCheckin(self.search_type_obj, context='icon', file_paths=file_paths, file_types=file_types)
             checkin.execute()
 
 
 
-    def add_naming(my):
+    def add_naming(self):
 
-        naming_expr = my.get_value("directory_naming")
-        file_naming_expr = my.get_value("file_naming")
+        naming_expr = self.get_value("directory_naming")
+        file_naming_expr = self.get_value("file_naming")
 
 
         if naming_expr == "_CUSTOM":
-            naming_expr = my.get_value("custom_naming")
+            naming_expr = self.get_value("custom_naming")
 
         if not naming_expr or naming_expr == "_DEFAULT":
             naming_expr = "{project.code}/{search_type.table_name}/{sobject.code}"
@@ -1982,8 +1985,8 @@ class SearchTypeCreatorCmd(Command):
 
 
 
-        has_folder_naming = my.get_value("has_folder_naming") == "on"
-        has_file_naming = my.get_value("has_file_naming") == "on"
+        has_folder_naming = self.get_value("has_folder_naming") == "on"
+        has_file_naming = self.get_value("has_file_naming") == "on"
 
         naming = SearchType.create("config/naming")
         if not has_folder_naming:
@@ -1998,15 +2001,15 @@ class SearchTypeCreatorCmd(Command):
 
         naming.set_value("checkin_type", "auto")
 
-        search_type = my.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_base_key()
         naming.set_value("search_type", search_type)
 
 
         naming.commit()
 
 
-        my.folder_naming = naming_expr
-        my.file_naming = file_naming_expr
+        self.folder_naming = naming_expr
+        self.file_naming = file_naming_expr
 
 
 

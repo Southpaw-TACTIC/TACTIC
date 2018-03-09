@@ -31,52 +31,52 @@ class VideoWdg(BaseRefreshWdg):
         'poster': 'Link to an image for the poster representing the video',
     }
 
-    def init(my):
-        my.video = Video()
+    def init(self):
+        self.video = Video()
 
 
 
-    def get_video(my):
-        return my.video
+    def get_video(self):
+        return self.video
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        sources = my.kwargs.get("sources")
+        sources = self.kwargs.get("sources")
         if sources and isinstance(sources, basestring):
             sources = sources.split("|")
 
-        source_types = my.kwargs.get("source_types")
+        source_types = self.kwargs.get("source_types")
         if not source_types:
             source_types = []
 
 
-        poster = my.kwargs.get("poster")
-        width = my.kwargs.get("width")
-        height = my.kwargs.get("height")
-        preload = my.kwargs.get("preload")
-        controls = my.kwargs.get("controls")
-        autoplay = my.kwargs.get("autoplay")
+        poster = self.kwargs.get("poster")
+        width = self.kwargs.get("width")
+        height = self.kwargs.get("height")
+        preload = self.kwargs.get("preload")
+        controls = self.kwargs.get("controls")
+        autoplay = self.kwargs.get("autoplay")
 
-        video = my.video
+        video = self.video
         top.add(video)
 
-        my.video_id = my.kwargs.get("video_id")
-        if not my.video_id:
-            my.video_id = video.set_unique_id()
+        self.video_id = self.kwargs.get("video_id")
+        if not self.video_id:
+            self.video_id = video.set_unique_id()
         else:
-            video.set_attr("id", my.video_id)
+            video.set_attr("id", self.video_id)
 
 
         top.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
         top.add_behavior( {
             'type': 'load',
-            'video_id': my.video_id,
+            'video_id': self.video_id,
             'cbjs_action': '''
             spt.video.init_video(bvr.video_id);
             '''
@@ -87,6 +87,8 @@ class VideoWdg(BaseRefreshWdg):
             video.add_attr("width", width)
         if height:
             video.add_attr("height", height)
+        else:
+            video.add_attr("height", "auto")
 
         if poster:
             video.add_attr("poster", poster)
@@ -122,7 +124,7 @@ class VideoWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return '''
 
 spt.video = {}
@@ -171,35 +173,35 @@ class VideoJsWdg(BaseRefreshWdg):
         'poster': 'Link to an image for the poster representing the video',
     }
 
-    def init(my):
-        my.video = Video()
+    def init(self):
+        self.video = Video()
 
-        my.index = my.kwargs.get('index')
+        self.index = self.kwargs.get('index')
 
-    def get_video(my):
-        return my.video
+    def get_video(self):
+        return self.video
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        sources = my.kwargs.get("sources")
+        sources = self.kwargs.get("sources")
         if sources and isinstance(sources, basestring):
             sources = sources.split("|")
 
-        source_types = my.kwargs.get("source_types")
+        source_types = self.kwargs.get("source_types")
         if not source_types:
             source_types = []
 
 
-        poster = my.kwargs.get("poster")
-        width = my.kwargs.get("width")
-        height = my.kwargs.get("height")
-        preload = my.kwargs.get("preload")
-        controls = my.kwargs.get("controls")
-        autoplay = my.kwargs.get("autoplay")
+        poster = self.kwargs.get("poster")
+        width = self.kwargs.get("width")
+        height = self.kwargs.get("height")
+        preload = self.kwargs.get("preload")
+        controls = self.kwargs.get("controls")
+        autoplay = self.kwargs.get("autoplay")
 
-        is_test = my.kwargs.get("is_test")
+        is_test = self.kwargs.get("is_test")
         is_test = False
         if is_test in [True, 'true']:
             poster = "http://video-js.zencoder.com/oceans-clip.png"
@@ -208,19 +210,19 @@ class VideoJsWdg(BaseRefreshWdg):
             sources = ["http://techslides.com/demos/sample-videos/small.ogv"]
 
 
-        video = my.video
+        video = self.video
         video.add_class("video-js")
         video.add_class("vjs-default-skin")
         top.add(video)
 
-        my.video_id = my.kwargs.get("video_id")
-        if not my.video_id:
-            my.video_id = video.set_unique_id()
+        self.video_id = self.kwargs.get("video_id")
+        if not self.video_id:
+            self.video_id = video.set_unique_id()
         else:
-            video.set_attr("id", my.video_id)
+            video.set_attr("id", self.video_id)
 
         # FIXME: this has refereneces to the Gallery ....!
-        if my.index == 0: 
+        if self.index == 0: 
             overlay = DivWdg()
             overlay.add_class('video_overlay')
             overlay.add_styles('background: transparent; z-index: 300; position: fixed; top: 38%; left: 12%;\
@@ -253,13 +255,13 @@ class VideoJsWdg(BaseRefreshWdg):
 
         top.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
         top.add_behavior( {
             'type': 'load',
-            'index' : my.index,
-            'video_id': my.video_id,
+            'index' : self.index,
+            'video_id': self.video_id,
             'cbjs_action': '''
             if (!bvr.index) bvr.index = 0;
 
@@ -333,7 +335,7 @@ class VideoJsWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return '''
 
 spt.video = {}

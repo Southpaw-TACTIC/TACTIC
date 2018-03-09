@@ -23,26 +23,27 @@ from pyasm.biz import Project
 class DgTableGearMenuWdg(BaseRefreshWdg):
     '''Gear Menu for DG Table Action widget'''
 
-    def init(my):
-        my.embedded_table = my.kwargs.get('embedded_table')
-        my.ingest_data_view = my.kwargs.get("ingest_data_view")
-        if not my.ingest_data_view:
-            my.ingest_data_view = 'edit'
+    def init(self):
+        self.embedded_table = self.kwargs.get('embedded_table')
+        self.ingest_data_view = self.kwargs.get("ingest_data_view")
+        if not self.ingest_data_view:
+            self.ingest_data_view = 'edit'
+        self.ingest_custom_view = self.kwargs.get("ingest_custom_view") or ""
 
-        my.view_save_dialog = my.get_save_wdg()
-        my.view_save_dialog_id = my.view_save_dialog.get_id()
+        self.view_save_dialog = self.get_save_wdg()
+        self.view_save_dialog_id = self.view_save_dialog.get_id()
 
-        my.layout = my.kwargs.get("layout")
+        self.layout = self.kwargs.get("layout")
         search = Search("config/widget_config")
         search.add_filter("widget_type", "layout_tool")
-        my.custom_tools = search.get_sobjects()
-        my.is_admin = False
+        self.custom_tools = search.get_sobjects()
+        self.is_admin = False
 
-    def get_save_dialog(my):
-        return my.view_save_dialog
+    def get_save_dialog(self):
+        return self.view_save_dialog
 
 
-    def get_save_wdg(my):
+    def get_save_wdg(self):
 
         from tactic.ui.container import DialogWdg
         dialog = DialogWdg(display=False, width=200, offset={'x':0,'y':50}, show_pointer=False)
@@ -57,14 +58,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         div.add_style("padding: 5 5 5 20")
         div.add_color("background", "background")
 
-        my.table_id = my.kwargs.get("table_id")
+        self.table_id = self.kwargs.get("table_id")
 
 
         from tactic.ui.panel import ViewPanelSaveWdg
         save_wdg = ViewPanelSaveWdg(
-            search_type=my.kwargs.get("search_type"),
+            search_type=self.kwargs.get("search_type"),
             dialog_id=dialog_id,
-            table_id=my.table_id
+            table_id=self.table_id
         )
         div.add(save_wdg)
 
@@ -73,37 +74,121 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             "custom_menus" : "Custom menus (an array of dictionaries)",
+            "menus" : "Structure of menus to show",
             "embedded_table": "boolean to show if it is part of an embedded table"
         }
 
-    def get_access_keys_dict(my):
 
-        from tactic.ui.startup import GearMenuSecurityWdg
-        menu_names = GearMenuSecurityWdg.get_all_menu_names()
+    def get_builtin_access(self, label):
+        project_code = Project.get_project_code()
+        security = Environment.get_security()
+
+        builtin = False
+        builtin_key = False
+
+
+        if self.matches(label, "Export All ..."):
+            builtin_key = "export_all_csv"
+        elif self.matches(label, "Import CSV"):
+            builtin_key = "import_csv"
+        elif self.matches(label, "Ingest Files"):
+            builtin_key = "ingest"
+        elif self.matches(label, "Check-out Files"):
+            # this appeared to be redundant
+            builtin_key = "ingest"
+        elif self.matches(label, "Column Manager"):
+            builtin_key = "view_column_manager"
+
+        if builtin_key:
+
+            access_keys = self._get_access_keys(builtin_key,  project_code)
+            builtin = security.check_access("builtin", access_keys, "allow")
+
+        return builtin
+
+
+
+
+    def get_access_keys_dict(self):
 
         project_code = Project.get_project_code()
         security = Environment.get_security()
 
         access_keys_dict = {}
 
-        for key,value in menu_names:
-            submenu = key
-            for label in value.get('label'):
-                
-                access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
-                
-                if security.check_access("gear_menu", access_keys, "allow"):
-                    if not submenu in access_keys_dict:
-                        access_keys_dict[submenu] = [label]
-                    else:
-                        access_keys_dict[submenu].append(label)
+        menus = self.kwargs.get("menus") or {}
+
+        # if menus is explicitly true, then show all menus
+        if menus == True:
+            menus = None
+
+        """
+        menus = {
+                'Tasks': ['Show Tasks'],
+                'Edit': ['Retire Selected Items', 'Delete Selected Items'],
+                'View': ['Save a New View'],
+        }
+        """
+
+
+        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+            see_all = True
+        else:
+            see_all = False
+
+
+        # Admin ignores the menus definition
+        if security.check_access("builtin", "view_site_admin", "allow"):
+            menus = None
+
+
+        if menus:
+            for submenu, labels in menus.items():
+
+                if labels == True:
+                    continue
+                for label in labels:
+
+                    builtin_access = self.get_builtin_access(label)
+
+                    access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
+                    local_access = see_all or security.check_access("gear_menu", access_keys, "allow")
+
+
+                    if builtin_access or local_access:
+
+                        if not submenu in access_keys_dict:
+                            access_keys_dict[submenu] = [label]
+                        else:
+                            access_keys_dict[submenu].append(label)
+
+
+
+        else:
+            # This has a special from GearMenuSecurityWdg
+            from tactic.ui.startup import GearMenuSecurityWdg
+            menu_names = GearMenuSecurityWdg.get_all_menu_names()
+
+            for key,value in menu_names:
+                submenu = key
+                for label in value.get('label'):
+                    builtin_access = self.get_builtin_access(label)
+                    
+                    access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
+                    
+                    if builtin_access or security.check_access("gear_menu", access_keys, "allow"):
+                        if not submenu in access_keys_dict:
+                            access_keys_dict[submenu] = [label]
+                        else:
+                            access_keys_dict[submenu].append(label)
+
 
         return access_keys_dict
 
-    def add_custom_menus(my, menus, menu_idx_map, custom_menus ):
+    def add_custom_menus(self, menus, menu_idx_map, custom_menus ):
 
         new_submenu_counter = 1
         for cmenu in custom_menus:
@@ -144,86 +229,89 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_menu_data(my):
+    def get_menu_data(self):
         
-        main_menu = my.get_main_menu()
+        main_menu = self.get_main_menu()
         menus = [
             main_menu,
-            my.get_edit_menu(),
-            my.get_file_menu(),
-            my.get_clipboard_menu(),
-            my.get_view_menu(),
-            my.get_print_menu(),
-            my.get_chart_menu(),
-            my.get_pipeline_menu(),
-            my.get_task_menu(),
-            my.get_note_menu(),
-            my.get_checkin_menu()
+            self.get_file_menu(),
+            self.get_edit_menu(),
+            self.get_clipboard_menu(),
+            self.get_view_menu(),
+            self.get_print_menu(),
+            self.get_chart_menu(),
+            self.get_pipeline_menu(),
+            self.get_task_menu(),
+            self.get_note_menu(),
+            self.get_checkin_menu()
         ]
 
-        if my.custom_tools:
-            menus.append(my.get_custom_menu())
+        if self.custom_tools:
+            menus.append(self.get_custom_menu())
 
         # Something to do with custom menus
-        menu_idx_map = { 'Edit': 1, 'File': 2, 'Clipboard': 3, 'Task': 4, 'View': 5, 'Print': 6, 'Chart': 7, 'Pipeline': 8, 'Custom': 9 }
+        menu_idx_map = { 'File': 1, 'Edit': 2, 'Clipboard': 3, 'Task': 4, 'View': 5, 'Print': 6, 'Chart': 7, 'Pipeline': 8, 'Custom': 9 }
 
 
         # add custom gear menu items if specified in configuration ...
-        config_custom_menus = my.kwargs.get("custom_menus")
+        config_custom_menus = self.kwargs.get("custom_menus")
         if config_custom_menus:
             custom_menu_error = False
             if config_custom_menus != "CONFIG-ERROR":
                 try:
-                    my.add_custom_menus( menus, menu_idx_map, config_custom_menus )
+                    self.add_custom_menus( menus, menu_idx_map, config_custom_menus )
                 except:
                     custom_menu_error = True
             else:
                 custom_menu_error = True
             if custom_menu_error:
                 menus = [ main_menu, 
-                           my.get_edit_menu(),
-                           my.get_file_menu(), 
-                           my.get_clipboard_menu(),
-                            my.get_view_menu(),
-                            my.get_print_menu(),
-                            my.get_chart_menu(),
-                            my.get_pipeline_menu(),
-                            my.get_task_menu(),
-                            my.get_note_menu(),
-                            my.get_checkin_menu()]
+                           self.get_file_menu(), 
+                           self.get_edit_menu(),
+                           self.get_clipboard_menu(),
+                            self.get_view_menu(),
+                            self.get_print_menu(),
+                            self.get_chart_menu(),
+                            self.get_pipeline_menu(),
+                            self.get_task_menu(),
+                            self.get_note_menu(),
+                            self.get_checkin_menu()]
 
                 menus[0].get("opt_spec_list").append( { "type": "title", "label": "*** <i>CUSTOM MENU CONFIG ERROR</i> ***" } )
 
         return menus
 
-    def get_display(my):
+    def get_display(self):
         widget = Widget()
         # this is drawn in BaseTableLayoutWdg now
-        #widget.add(my.view_save_dialog)
+        #widget.add(self.view_save_dialog)
 
         return widget
 
 
 
-    def get_main_menu(my):
+    def get_main_menu(self):
 
         project_code = Project.get_project_code()
         security = Environment.get_security()
         
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         if security.check_access("builtin", "view_site_admin", "allow"):
-            my.is_admin = True
+            self.is_admin = True
         else:
-            my.is_admin = False
-        
-        if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
-            my.is_admin = True
+            self.is_admin = False
+       
+       
+        # see all menu items
+        #if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
+        #    self.is_admin = True
 
-        if my.is_admin:
+
+        if self.is_admin:
         
             opt_spec_list = [
-            { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
             { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" },
+            { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
             { "type": "submenu", "label": "Clipboard", "submenu_tag_suffix": "CLIPBOARD" },
             { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" },
             { "type": "submenu", "label": "Print", "submenu_tag_suffix": "PRINT" },
@@ -233,7 +321,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             
 
 
-            if not my.layout or my.layout.can_add_columns():
+            if not self.layout or self.layout.can_add_columns():
                 opt_spec_list.extend( [
                 { "type": "separator"},
                 { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" },
@@ -241,23 +329,26 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
                 ] )
 
-                opt_spec_list.append( { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" } )
+                opt_spec_list.append( { "type": "submenu", "label": "Workflows", "submenu_tag_suffix": "PIPELINE" } )
 
 
-            if my.custom_tools:
+            if self.custom_tools:
                 opt_spec_list.append( { "type": "submenu", "label": "Custom Tools", "submenu_tag_suffix": "CUSTOM" } )
 
         else:
             opt_spec_list = []
-            if access_keys_dict.get('Edit'):
-                opt_spec_list.append(
-                    { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" }
-                )
 
             if access_keys_dict.get('File'):
                 opt_spec_list.append(
                     { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" }
                 )
+
+
+            if access_keys_dict.get('Edit'):
+                opt_spec_list.append(
+                    { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" }
+                )
+
 
             if access_keys_dict.get('Clipboard'):
                 opt_spec_list.append(
@@ -280,7 +371,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 )
 
             
-            if not my.layout or my.layout.can_add_columns():
+            if not self.layout or self.layout.can_add_columns():
                 if access_keys_dict.get('Tasks'):
                     opt_spec_list.append(
                         { "type": "submenu", "label": "Tasks", "submenu_tag_suffix": "TASK" }
@@ -296,31 +387,58 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
                 if access_keys_dict.get('Pipelines'):
                     opt_spec_list.append(
-                        { "type": "submenu", "label": "Pipelines", "submenu_tag_suffix": "PIPELINE" }
+                        { "type": "submenu", "label": "Workflows", "submenu_tag_suffix": "PIPELINE" }
                     )
 
         menu = { 'menu_tag_suffix': 'MAIN', 'width': 130, 'opt_spec_list': opt_spec_list }
         return menu
 
+
+    def matches(self, a, b):
+        if self.is_admin:
+            return True
+
+        if set(a) & set(b):
+            return True
+
+        for aa in a:
+            for bb in b:
+                if aa.startswith("*") and aa.endswith("*") and bb.find(aa.strip("*")) != -1:
+                    return True
+
+                if aa.endswith("*") and bb.startswith(aa[:-1]):
+                    return True
+
+                if aa.startswith("*") and bb.endswith(aa[1:]):
+                    return True
+
+                if aa == "__ALL__":
+                    return True
+
+        return False
+
+
+
     
 
-    def get_edit_menu(my):
+    def get_edit_menu(self):
         
         opt_spec_list = []
         security = Environment.get_security()
         project_code = Project.get_project_code()
         
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Edit'):
             label_list = access_keys_dict['Edit']
 
+        label_set = set(label_list)
         
 
-        if my.is_admin:
-            access_keys = my._get_access_keys("retire_delete",  project_code)
+        if self.is_admin:
+            access_keys = self._get_access_keys("retire_delete",  project_code)
             if security.check_access("builtin", access_keys, "allow"):
-                if not my.layout or my.layout.can_select():
+                if not self.layout or self.layout.can_select():
                     opt_spec_list.extend([
                 
                         { "type": "action", "label": "Retire Selected Items",
@@ -364,14 +482,16 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
 
         else:
-            if 'Retire Selected Items' in label_list:
+            accept = {"Retire Selcted Items"}
+            if self.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Retire Selected Items",
                         "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_retire_selected_cbk(evt,bvr);"}
                     }
                 )
 
-            if 'Delete Selected Items' in label_list:
+            accept = {"Delete Selcted Items"}
+            if self.matches(label_set, accept):
                 opt_spec_list.extend([
                     { "type": "action", "label": "Delete Selected Items",
                         "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);"}
@@ -383,7 +503,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 ])
             
 
-            if 'Show Server Transaction Log' in label_list:
+            accept = {"Show Server Transaction Log"}
+            if self.matches(label_set, accept):
                 opt_spec_list.extend([
 
                     { "type": "action", "label": "Show Server Transaction Log",
@@ -399,14 +520,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
                     { "type": "separator" },
                 ])
-            if 'Undo Last Server Transaction' in label_list:
+
+
+            accept = {"Undo Last Server Transaction"}
+            if self.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Undo Last Server Transaction",
                         "bvr_cb": {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
                     }
                 )
 
-            if 'Redo Last Server Transaction' in label_list:
+            accept = {"Redo Last Server Transaction"}
+            if self.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Redo Last Server Transaction",
                     "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
@@ -419,22 +544,24 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
         
 
-    def get_file_menu(my):
+    def get_file_menu(self):
 
         menu_items = []
 
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('File'):
             label_list = access_keys_dict['File']
 
-        access_keys = my._get_access_keys("export_all_csv",  project_code)
+        label_set = set(label_list)
 
+        #access_keys = self._get_access_keys("export_all_csv",  project_code)
         
-        if security.check_access("builtin", access_keys, "allow") or 'Export All ...' in label_list:
+        accept = {"Export All", "Export All ..."}
+        if self.matches(label_set, accept):
             menu_items.append(
                 { "type": "action", "label": "Export All ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);',
@@ -442,64 +569,88 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if not my.layout or my.layout.can_add_columns():
-            if my.is_admin or 'Export Selected ...' in label_list:
+        show_export_separator = False
+        if self.layout.can_add_columns():
+            accept = {"Export Selected", "Export Selected ..."}
+            if self.is_admin or self.matches(label_set, accept):
                 menu_items.append(
                     { "type": "action", "label": "Export Selected ...",
                         "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
                                     'mode': 'export_selected'}
                     }
                 )
+                show_export_separator = True
 
-        if my.is_admin or 'Export Matched ...' in label_list:
+        
+        accept = {"Export Matched", "Export Matched ..."}
+        if self.matches(label_set, accept):
             menu_items.append( 
                  { "type": "action", "label": "Export Matched ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
                                 'mode': 'export_matched'}
                 }
             )
-        if my.is_admin or 'Export Displayed ...' in label_list:
+            show_export_separator = True
+
+
+        accept = {"Export Displayed", "Export Displayed ..."}
+        if self.matches(label_set, accept):
             menu_items.append( 
                  { "type": "action", "label": "Export Displayed ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
                                 'mode': 'export_displayed'}
                 }
             )
+            show_export_separator = True
 
-        access_keys = my._get_access_keys("import_csv",  project_code)
-        if security.check_access("builtin", access_keys, "allow") or 'Import CSV' in label_list:
+
+        if show_export_separator:
             menu_items.append( {"type": "separator"} )
+
+
+        accept = {"Import CSV"}
+        if self.matches(label_set, accept):
             menu_items.append(
                 { "type": "action", "label": "Import CSV",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_import_cbk(evt,bvr);' }
                 } )
 
 
-        access_keys = my._get_access_keys("ingest",  project_code)
-        if security.check_access("builtin", access_keys, "allow") or 'Ingest Files' in label_list:
+        accept = {"Ingest Files"}
+        if self.matches(label_set, accept):
             menu_items.append( {"type": "separator"} )
             menu_items.append(
                 { "type": "action", "label": "Ingest Files",
-                    "bvr_cb": { 'cbjs_action': '''
-                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    "bvr_cb": {'type': 'click_up',
+                               'ingest_custom_view': self.ingest_custom_view,
+                               'ingest_data_view': self.ingest_data_view,
+                               'cbjs_action': '''
                     var activator = spt.smenu.get_activator(bvr);
                     var top = activator.getParent(".spt_table_top");
                     var table = top.getElement(".spt_table");
                     var search_type = table.getAttribute("spt_search_type");
 
-
                     var kwargs = {
                         search_type: search_type,
-                        ingest_data_view: '%s'
+                        ingest_data_view: bvr.ingest_data_view
                     };
-                    //spt.tab.set_main_body_tab();
-                    //spt.tab.add_new("Ingest", "Ingest", class_name, kwargs);
-                    var title = "Ingest: " + search_type;
-                    spt.panel.load_popup(title, class_name, kwargs);
-                    '''%my.ingest_data_view
-                 }
+                    
+                    if (bvr.ingest_custom_view) {
+                        kwargs['view'] = bvr.ingest_custom_view;
+                        var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                    } else {
+                        var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    }
+                    
+                    var title = "Ingest Files";
+                    spt.tab.set_main_body_tab();
+                    spt.tab.add_new("ingest_" + search_type, title, class_name, kwargs);  
+                                   '''}
                 } )
-        if security.check_access("builtin", access_keys, "allow") or 'Check-out Files' in label_list:
+
+
+        accept = {"Check-out Files"}
+        if self.matches(label_set, accept):
             menu_items.append(
                 { "type": "action", "label": "Check-out Files",
                     "bvr_cb": { 'cbjs_action': '''
@@ -525,18 +676,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         return {'menu_tag_suffix': 'FILE', 'width': 180, 'opt_spec_list': menu_items}
 
 
-    def get_clipboard_menu(my):
+    def get_clipboard_menu(self):
         
         menu_items = []
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Clipboard'):
             label_list = access_keys_dict['Clipboard']
 
         security = Environment.get_security()
         
-        if my.is_admin or 'Copy Selected' in label_list:
+        if self.is_admin or 'Copy Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Copy Selected",
                     "bvr_cb": {
@@ -576,7 +727,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if my.is_admin or 'Paste' in label_list:
+        if self.is_admin or 'Paste' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Paste",
                     "bvr_cb": {
@@ -630,7 +781,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if my.is_admin or 'Connect' in label_list:
+        if self.is_admin or 'Connect' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Connect",
                     "bvr_cb": {
@@ -674,7 +825,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                { "type": "separator" }
             )
         
-        if my.is_admin or 'Append Selected' in label_list:
+        if self.is_admin or 'Append Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Append Selected",
                     "bvr_cb": {
@@ -718,7 +869,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 { "type": "separator" }
             )
 
-        if my.is_admin or 'Show Clipboard Contents' in label_list:
+        if self.is_admin or 'Show Clipboard Contents' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Show Clipboard Contents",
                     "bvr_cb": {
@@ -748,21 +899,21 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         return {'menu_tag_suffix': 'CLIPBOARD', 'width': 180, 'opt_spec_list': menu_items}
 
 
-    def get_pipeline_menu(my):
+    def get_pipeline_menu(self):
         menu_items = []
 
         security = Environment.get_security()
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Pipelines'):
             label_list = access_keys_dict['Pipelines']
 
 
-        if my.is_admin or 'Show Pipeline Code' in label_list:
+        if self.is_admin or 'Show Pipeline Code' in label_list:
             menu_items.append(
                 {
-                    "type": "action", "label": "Show Pipeline Code",
+                    "type": "action", "label": "Show Workflow Code",
                     "bvr_cb": {
                         'cbjs_action': '''
                         spt.app_busy.show("Adding Pipeline column to table");
@@ -783,14 +934,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if my.is_admin or 'Edit Pipelines' in label_list:
+        if self.is_admin or 'Edit Pipelines' in label_list:
             menu_items.append(
                 {
-                    "type": "action", "label": "Edit Pipelines",
+                    "type": "action", "label": "Edit Workflows",
                     "bvr_cb": {
                         'cbjs_action': '''
                         spt.tab.set_main_body_tab();
-                        spt.tab.add_new("Pipelines", "Pipelines", "tactic.ui.tools.PipelineToolWdg");
+                        var kwargs = {
+                            'show_gear': 'false'
+                        }
+                        spt.tab.add_new("Workflows", "Workflows", "tactic.ui.tools.PipelineToolWdg", kwargs);
                         '''
                     }
                 }
@@ -800,17 +954,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         return {'menu_tag_suffix': 'PIPELINE', 'width': 210, 'opt_spec_list': menu_items}
 
 
-    def get_task_menu(my):
+    def get_task_menu(self):
         menu_items = []
 
         security = Environment.get_security()
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Tasks'):
             label_list = access_keys_dict['Tasks']
         
-        if my.is_admin or 'Show Tasks' in label_list:
+        if self.is_admin or 'Show Tasks' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show Tasks",
@@ -837,7 +991,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 { "type": "separator" }
             )
 
-        if my.is_admin or 'Add Tasks to Selected' in label_list:
+        if self.is_admin or 'Add Tasks to Selected' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Add Tasks to Selected",
@@ -847,7 +1001,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if my.is_admin or 'Add Tasks to Matched' in label_list:
+        if self.is_admin or 'Add Tasks to Matched' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Add Tasks to Matched",
@@ -864,17 +1018,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_note_menu(my):
+    def get_note_menu(self):
 
         menu_items = []
         security = Environment.get_security()
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Notes'):
             label_list = access_keys_dict['Notes']
 
-        if my.is_admin or 'Show Notes' in label_list:
+        if self.is_admin or 'Show Notes' in label_list:
             menu_items = [
                 {
                     "type": "action", "label": "Show Notes",
@@ -904,18 +1058,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_checkin_menu(my):
+    def get_checkin_menu(self):
 
         menu_items = []
 
         security = Environment.get_security()
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Check-ins'):
             label_list = access_keys_dict['Check-ins']
         
-        if my.is_admin or 'Show Check-in History' in label_list:
+        if self.is_admin or 'Show Check-in History' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show Check-in History",
@@ -940,7 +1094,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
         
-        if my.is_admin or 'Show General Check-in Tool' in label_list:
+        if self.is_admin or 'Show General Check-in Tool' in label_list:
             menu_items.append(
                 {
                     "type": "action", "label": "Show General Check-in Tool",
@@ -969,11 +1123,11 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_custom_menu(my):
+    def get_custom_menu(self):
 
         menu_items = []
 
-        for tool in my.custom_tools:
+        for tool in self.custom_tools:
             view = tool.get_value("view")
             title = tool.get_value("title")
             if not title:
@@ -1014,25 +1168,24 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_view_menu(my):
+    def get_view_menu(self):
 
         menu_items = []
 
         security = Environment.get_security()
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('View'):
             label_list = access_keys_dict['View']
 
         project_code = Project.get_project_code()
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         search_type_obj = SearchType.get(search_type)
 
         # Column Manager menu item ...
-        access_keys = my._get_access_keys("view_column_manager",  project_code)
-        if security.check_access("builtin", access_keys, "allow") or 'Column Manager' in label_list:
+        if 'Column Manager' in label_list:
             menu_items.append( {
                 "type": "action",
                 "label": "Column Manager",
@@ -1067,7 +1220,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             } )
 
 
-        if my.is_admin or 'Create New Column' in label_list:
+        if self.is_admin or 'Create New Column' in label_list:
             menu_items.append( {
                 "type": "action",
                 "label": "Create New Column",
@@ -1094,13 +1247,13 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menu_items.append( { "type": "separator" })
 
        
-        view = my.kwargs.get("view")
-        if my.is_admin or 'Save Current View' in label_list:
+        view = self.kwargs.get("view")
+        if self.is_admin or 'Save Current View' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Save Current View <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
                     "bvr_cb": {
                         'cbjs_action': "spt.dg_table.view_action_cbk('save','',bvr);",
-                        'is_admin': my.is_admin,
+                        'is_admin': self.is_admin,
                         'is_table_embedded_smenu_activator': True
                   }
                 }
@@ -1122,21 +1275,21 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-        access_keys = my._get_access_keys("view_save_my_view",  project_code)
+        access_keys = self._get_access_keys("view_save_my_view",  project_code)
 
-        if not my.embedded_table and (security.check_access("builtin",  access_keys, "allow", default='allow') or 'Save a New View' in label_list):
+        if not self.embedded_table and (security.check_access("builtin",  access_keys, "allow", default='allow') or 'Save a New View' in label_list):
             menu_items.insert( 4,
                 { "type": "action", "label": 'Save a New View',
                   "bvr_cb": {
                       # FIXME: Does this even do anything anymore???
                       'is_table_embedded_smenu_activator': True,
 
-                      'dialog_id': my.view_save_dialog_id,
+                      'dialog_id': self.view_save_dialog_id,
                       'cbjs_action': "spt.show($(bvr.dialog_id));",
                     }
                 }
             ) 
-        if my.is_admin or 'Edit Current View' in label_list:
+        if self.is_admin or 'Edit Current View' in label_list:
             
             if menu_items and menu_items[-1] != { "type": "separator" }:
                 menu_items.append( { "type": "separator" } )
@@ -1149,7 +1302,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
 
-        if my.is_admin or 'Edit Config XML' in label_list:
+        if self.is_admin or 'Edit Config XML' in label_list:
             menu_items.append( 
               { "type": "action", "label": "Edit Config XML <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
               "bvr_cb": {'cbjs_action': '''
@@ -1182,7 +1335,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         return {'menu_tag_suffix': 'VIEW', 'width': 210, 'opt_spec_list': menu_items}
 
 
-    def get_print_menu(my):
+    def get_print_menu(self):
 
         from tactic.ui.panel import TablePrintLayoutWdg
         menu_items = []
@@ -1190,24 +1343,24 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Print'):
             label_list = access_keys_dict['Print']
 
-        if my.is_admin or 'Print Selected' in label_list:
+        if self.is_admin or 'Print Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Print Selected",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("selected_items") }
                 }
             )
-        if my.is_admin or 'Print Displayed' in label_list:
+        if self.is_admin or 'Print Displayed' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Print Displayed",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("page_matched_items") }
                 }
             )
-        if my.is_admin or 'Print Matched' in label_list:
+        if self.is_admin or 'Print Matched' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Print Matched",
                         "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("all_matched_items") }
@@ -1218,7 +1371,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_chart_menu(my):
+    def get_chart_menu(self):
 
         from tactic.ui.panel import TablePrintLayoutWdg
         menu_items = []
@@ -1226,12 +1379,12 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         security = Environment.get_security()
         project_code = Project.get_project_code()
         
-        access_keys_dict = my.get_access_keys_dict()
+        access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Chart'):
             label_list = access_keys_dict['Chart']
 
-        if my.is_admin or 'Chart Items' in label_list:
+        if self.is_admin or 'Chart Items' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Chart Items",
                 "bvr_cb": { 'cbjs_action': '''
@@ -1261,7 +1414,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 }
             )
         
-        if my.is_admin or 'Chart Selected' in label_list:
+        if self.is_admin or 'Chart Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Chart Selected",
                 "bvr_cb": { 'cbjs_action': '''
@@ -1310,7 +1463,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         return {'menu_tag_suffix': 'CHART', 'width': 210, 'opt_spec_list': menu_items}
 
 
-    def _get_access_keys(my, key, project_code):
+    def _get_access_keys(self, key, project_code):
         '''get access keys for a builtin rule'''
         access_key1 = {
             'key': key,
@@ -1328,21 +1481,21 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 class PageHeaderGearMenuWdg(BaseRefreshWdg):
     '''Gear Menu for Page Header'''
 
-    def init(my):
+    def init(self):
         pass
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_display(my):
+    def get_display(self):
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
-            menus = [ my.get_main_menu(), my.get_add_menu(), my.get_edit_menu(), my.get_tools_menu(), my.get_help_menu() ]
+            menus = [ self.get_main_menu(), self.get_add_menu(), self.get_edit_menu(), self.get_tools_menu(), self.get_help_menu() ]
         else:
-            menus = [ my.get_main_menu(), my.get_edit_menu(), my.get_help_menu() ]
+            menus = [ self.get_main_menu(), self.get_edit_menu(), self.get_help_menu() ]
 
 
         """
@@ -1373,7 +1526,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
         return btn_dd
 
 
-    def get_main_menu(my):
+    def get_main_menu(self):
 
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
@@ -1393,7 +1546,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_add_menu(my):
+    def get_add_menu(self):
         menu = {
             'menu_tag_suffix': 'ADD', 'width': 200
         }
@@ -1438,7 +1591,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_edit_menu(my):
+    def get_edit_menu(self):
         return {
             'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': [
 
@@ -1468,7 +1621,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
         ] }
 
 
-    def get_tools_menu(my):
+    def get_tools_menu(self):
         menu_items = [
                 # { "type": "title", "label": "Tools" },
                 { "type": "action", "label": "Web Client Output Log",
@@ -1482,7 +1635,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
         return { 'menu_tag_suffix': 'TOOLS', 'width': 160, 'opt_spec_list': menu_items }
 
 
-    def get_help_menu(my):
+    def get_help_menu(self):
         return {
             'menu_tag_suffix': 'HELP', 'width': 180, 'opt_spec_list': [
 

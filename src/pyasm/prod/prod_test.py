@@ -18,17 +18,17 @@ import unittest
 
 class ProdTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         db = DbContainer.get("prod")
         db.start()
 
-    def tearDown(my):
+    def tearDown(self):
         db = DbContainer.get("prod")
         db.rollback()
         #db.commit()
 
 
-    def create_production(my):
+    def create_production(self):
         '''function to create a test production'''
 
         # create the sequence
@@ -60,7 +60,7 @@ class ProdTest(unittest.TestCase):
         shot.add_asset(pig,"piggy")
 
         instances = shot.get_all_instances()
-        my.assertEquals(3, len(instances))
+        self.assertEquals(3, len(instances))
 
 
 
@@ -68,9 +68,9 @@ class ProdTest(unittest.TestCase):
         
 
 
-    def test_prod(my):
+    def test_prod(self):
 
-        my.create_production()
+        self.create_production()
 
 
 if __name__ == "__main__":

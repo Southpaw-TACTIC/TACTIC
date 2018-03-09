@@ -81,7 +81,7 @@ incoming events, and the "win" condition means the smallest scheduled
 time.  When an event schedule other events for execution, they are
 scheduled into the future, so they can easily go into the heap.  So, a
 heap is a good structure for implementing schedulers (this is what I
-used for my MIDI sequencer :-).
+used for self MIDI sequencer :-).
 
 Various structures for implementing schedulers have been extensively
 studied, and heaps are good for this, as they are reasonably speedy,

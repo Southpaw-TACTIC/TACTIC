@@ -26,37 +26,37 @@ class AccessException(Exception):
 
 class Sudo(object):
 
-    def __init__(my):
-        my.security = Environment.get_security()
+    def __init__(self):
+        self.security = Environment.get_security()
 
         # if not already logged in, login as a safe user (guest)
-        if not my.security.is_logged_in():
-            #my.security.login_as_guest()
+        if not self.security.is_logged_in():
+            #self.security.login_as_guest()
             pass
 
-        my.access_manager = my.security.get_access_manager()
+        self.access_manager = self.security.get_access_manager()
         login = Environment.get_user_name()
-        my.was_admin = my.access_manager.was_admin
-        if my.was_admin == None:
-            my.access_manager.set_up()
-            my.was_admin = my.access_manager.was_admin
+        self.was_admin = self.access_manager.was_admin
+        if self.was_admin == None:
+            self.access_manager.set_up()
+            self.was_admin = self.access_manager.was_admin
      
-        my.access_manager.set_admin(True)
+        self.access_manager.set_admin(True)
     
             
 
-    def __del__(my):
+    def __del__(self):
         
         # remove if I m not in admin group
-        if my.was_admin == False:
-            my.access_manager.set_admin(False)
+        if self.was_admin == False:
+            self.access_manager.set_admin(False)
 
 
-    def exit(my):
+    def exit(self):
         
         # remove if I m not in admin group
-        if my.was_admin == False:
-            my.access_manager.set_admin(False)
+        if self.was_admin == False:
+            self.access_manager.set_admin(False)
 
 
 
@@ -64,49 +64,75 @@ class Sudo(object):
 
 class AccessManager(Base):
 
-    def __init__(my):
-        my.is_admin_flag = False
-        my.groups = {}
-        my.summary = {}
-        my.project_codes = None
+    def __init__(self):
+        self.is_admin_flag = False
+        self.groups = {}
+        self.summary = {}
+        self.project_codes = None
         
-        my.was_admin = None 
+        self.was_admin = None 
 
 
 
-    def get_access_summary(my):
-        return my.summary
+    def get_access_summary(self):
+        return self.summary
 
 
-    def set_up(my):
-        if my.was_admin == None:
+    def set_up(self):
+        if self.was_admin == None:
             security = Environment.get_security()
-            my.was_admin = security.is_in_group('admin')
 
-    def set_admin(my, flag, sudo=False):
-        my.set_up()
-        my.is_admin_flag = flag
+            if security._login and not security._is_logged_in:
+                security._groups = []
+                security._group_names = []
+                security._find_all_login_groups()
+            self.was_admin = security.is_in_group('admin')
 
+
+    def set_admin(self, flag, sudo=False):
+        self.set_up()
         security = Environment.get_security()
-        if not my.was_admin and flag:
+
+        if security.get_user_name() == "admin":
+            self.is_admin_flag = True
+            return
+
+
+        self.is_admin_flag = flag
+
+        """
+        if flag == False:
+            import traceback, sys
+            # print the stacktrace
+            tb = sys.exc_info()[2]
+            stacktrace = traceback.format_tb(tb)
+            stacktrace_str = "".join(stacktrace)
+            print "-"*50
+            print "TRACE: ", self.was_admin
+            print stacktrace_str
+            print "-"*50
+        """
+
+
+        if not self.was_admin and flag:
             if 'admin' not in security.get_group_names():
                 security._group_names.append('admin')
         elif 'admin' in security.get_group_names():
-            if not my.was_admin:
+            if not self.was_admin:
                 security._group_names.remove('admin')
                 
 
 
 
 
-    def is_admin(my):
-        return my.is_admin_flag
+    def is_admin(self):
+        return self.is_admin_flag
 
 
     # access level definitions
     (DENY, VIEW, EDIT, INSERT, RETIRE, DELETE) = range(6)
 
-    def _get_access_enum(my, access_level_attr):
+    def _get_access_enum(self, access_level_attr):
         '''converts text access levels to their corresponding enum'''
         if access_level_attr == "false":
             access_level = AccessManager.DENY
@@ -141,7 +167,7 @@ class AccessManager(Base):
 
 
 
-    def add_xml_rules(my, xml, project_code=None):
+    def add_xml_rules(self, xml, project_code=None):
         '''xml should be an XML object with the data in the form of
         <rules>
           <group type='sobject' default='<default>'>
@@ -149,7 +175,7 @@ class AccessManager(Base):
           </group>
         </rules>
         '''
-        
+
         from pyasm.search import SObject
         if isinstance(xml, SObject):
             sobject = xml
@@ -163,7 +189,6 @@ class AccessManager(Base):
             xmlx.read_string(xml)
             xml = xmlx
 
-        my.xml = xml
 
         # parse shorthand rules
         rule_nodes = xml.get_nodes("rules/rule")
@@ -171,11 +196,11 @@ class AccessManager(Base):
             return
 
         # store all of the project codes (this will only run once)
-        if my.project_codes == None:
+        if self.project_codes == None:
             search = Search('sthpw/project')
             projects = search.get_sobjects()
-            my.project_codes = [x.get_code() for x in projects]
-            my.project_codes.append('*')
+            self.project_codes = [x.get_code() for x in projects]
+            self.project_codes.append('*')
 
         for rule_node in rule_nodes:
             # initiate the project_code here for each loop
@@ -187,11 +212,11 @@ class AccessManager(Base):
                 group_type = Xml.get_attribute( rule_node, "category" )
 
             # get an existing rule set or create a new one
-            if my.groups.has_key(group_type):
-                rules = my.groups[group_type]
+            if self.groups.has_key(group_type):
+                rules = self.groups[group_type]
             else:
                 rules = {}
-                my.groups[group_type] = rules
+                self.groups[group_type] = rules
 
             # set the default, if specified
             group_default = xml.get_attribute( rule_node, "default" )
@@ -245,7 +270,7 @@ class AccessManager(Base):
                 key = str(rule_key)
                 rule_keys.append(key)
             elif project_code == '*' and group_type != 'search_filter':
-                for code in my.project_codes:
+                for code in self.project_codes:
                     key = "%s?project=%s" % (rule_key, code)
                     rule_keys.append(key)
             else:
@@ -274,8 +299,8 @@ class AccessManager(Base):
                     curr_access, cur_attrs = rules[rule_key]
 
                     try:
-                        access_enum = my._get_access_enum(rule_access)
-                        if my._get_access_enum(curr_access) > access_enum:
+                        access_enum = self._get_access_enum(rule_access)
+                        if self._get_access_enum(curr_access) > access_enum:
                             continue
                     except:
                         if group_type == "builtin":
@@ -295,11 +320,11 @@ class AccessManager(Base):
             group_type = Xml.get_attribute( group_node, "type" )
 
             # get an existing rule set or create a new one
-            if my.groups.has_key(group_type):
-                rules = my.groups[group_type]
+            if self.groups.has_key(group_type):
+                rules = self.groups[group_type]
             else:
                 rules = {}
-                my.groups[group_type] = rules
+                self.groups[group_type] = rules
 
             # set the default, if specified
             group_default = xml.get_attribute( group_node, "default" )
@@ -334,7 +359,7 @@ class AccessManager(Base):
 
                 # add a project code qualifier
                 if project_code == '*' and group_type != 'search_filter':
-                    for code in my.project_codes:
+                    for code in self.project_codes:
                         key = "%s?project=%s" % (rule_key, code)
                         rule_keys.append(key)
                 else:
@@ -345,12 +370,12 @@ class AccessManager(Base):
                     rules[rule_key] = rule_access, attrs2
 
 
-    def get_access(my, group, key, default=None):
+    def get_access(self, group, key, default=None):
 
         # if a list of keys is provided, then go through each key
         if isinstance(key, list):
             for item in key:
-                user_access = my.get_access(group, item)
+                user_access = self.get_access(group, item)
                 if user_access != None:
                     return user_access
 
@@ -393,7 +418,7 @@ class AccessManager(Base):
       
         # if there are no rules, just return the default
 
-        rules = my.groups.get(group)
+        rules = self.groups.get(group)
        
 
         if not rules:
@@ -416,9 +441,9 @@ class AccessManager(Base):
         return result
 
 
-    def compare_access(my, user_access, required_access):
-        required_access = my._get_access_enum(required_access)
-        user_access = my._get_access_enum(user_access)
+    def compare_access(self, user_access, required_access):
+        required_access = self._get_access_enum(required_access)
+        user_access = self._get_access_enum(user_access)
 
         if user_access >= required_access:
             return True
@@ -428,13 +453,13 @@ class AccessManager(Base):
 
 
 
-    def check_access(my, group, key, required_access, value=None, is_match=False, default="edit"):
+    def check_access(self, group, key, required_access, value=None, is_match=False, default="edit"):
         '''Check the access level of the user for a given group of rule and category key
             group - rule category like built-in or element
             key - string or list of dictiorary like view_side_bar or ['search_type':'sthpw/task', 'project','main']
             required_access - speific access level like allow, deny, edit, view, delete'''
 
-        if my.is_admin():
+        if self.is_admin():
             return True
 
         if isinstance(key, basestring):
@@ -455,7 +480,7 @@ class AccessManager(Base):
                     rule_default = default
                 else:
                     rule_default = None
-                user_access = my.get_access(group, item, default=rule_default)
+                user_access = self.get_access(group, item, default=rule_default)
                
                 if user_access != None:
                     break
@@ -463,7 +488,7 @@ class AccessManager(Base):
             if value:
                 key = "%s||%s" % (key, value)
                 
-            user_access = my.get_access(group, key)
+            user_access = self.get_access(group, key)
 
 
         # this means that there are now rules defined for this
@@ -474,11 +499,11 @@ class AccessManager(Base):
         if not value:
             if not isinstance(key, basestring):
                 key = str(key)
-            my.summary[key] = "%s | %s" % (required_access, user_access)
+            self.summary[key] = "%s | %s" % (required_access, user_access)
 
         # convert access to integers
-        required_access = my._get_access_enum(required_access)
-        user_access = my._get_access_enum(user_access)
+        required_access = self._get_access_enum(required_access)
+        user_access = self._get_access_enum(user_access)
 
 
         
@@ -495,15 +520,15 @@ class AccessManager(Base):
 
 
 
-    def alter_search(my, search):
-        if my.is_admin_flag:
+    def alter_search(self, search):
+        if self.is_admin_flag:
             return True
 
         group = "search_filter"
         search_type = search.get_base_search_type()
 
-        my.alter_search_type_search(search)
-        rules = my.groups.get(group)
+        self.alter_search_type_search(search)
+        rules = self.groups.get(group)
         if not rules:
             return
 
@@ -512,15 +537,12 @@ class AccessManager(Base):
         parser = ExpressionParser()
         current_project = None
 
-        for rule in rules.values():
-            access, dct = rule
-            """
-            # FIXME: hacky: break the encoding done earlier
-            parts = rule.split("||")
-            data = parts[0]
-            data = data.replace("?project=*", "")
-            rule = eval(data)
-            """
+
+        # preprocess to get a list of rule that will apply
+        rules_dict = {}
+        for rule_item in rules.values():
+            access, dct = rule_item
+
             rule = dct
             rule_search_type = rule.get('search_type')
             if not rule_search_type:
@@ -531,8 +553,6 @@ class AccessManager(Base):
             if rule_search_type != search_type:
                 continue
 
-            column = rule.get('column')
-            value = rule.get('value')
             project = rule.get('project')
            
             # to avoid infinite recursion, get the project here
@@ -542,65 +562,94 @@ class AccessManager(Base):
             
             if project and project not in ['*', current_project]:
                 continue
-            # If a relationship is set, then use that
-            # FIXME: this is not very clear how to procede.
-            related = rule.get('related')
 
-            sudo = Sudo()
-            if related:
 
-                sobjects = parser.eval(related)
-                search.add_relationship_filters(sobjects)
+            column = rule.get('column')
+            rules_list = rules_dict.get(column)
+            if rules_list == None:
+                rules_list = []
+                rules_dict[column] = rules_list
+
+            rules_list.append(rule)
+
+
+
+        for column, rules_list in rules_dict.items():
+
+            if len(rules_list) > 1:
+                search.add_op("begin")
+
+
+            for rule in rules_list:
+
+                column = rule.get('column')
+                value = rule.get('value')
+               
+
+                # If a relationship is set, then use that
+                related = rule.get('related')
+
+                sudo = Sudo()
+                if related:
+
+                    sobjects = parser.eval(related)
+                    search.add_relationship_filters(sobjects)
+                    del sudo
+                    return
+
+
+                # interpret the value
+                # since the expression runs float(), we want to avoid that a number 5 being converted to 5.0
+                # if we can't find @ or $
+                if value.find('@') != -1 or value.find('$') != -1:
+                    values = parser.eval(value, list=True)
+                elif value.find("|") == -1:
+                    values = value.split("|")
+                else:
+                    values = [value]
+
+                op = rule.get('op')
+                
+
+                # TODO: made this work with search.add_op_filters() with the expression parser instead of this
+                # simpler implementation
+                if len(values) == 1:
+                    if not op:
+                        op = '='
+                    quoted = True
+                    # special case for NULL
+                    if values[0] == 'NULL':
+                        quoted = False
+                    if op in ['not in', '!=']:
+                        search.add_op('begin')
+                        search.add_filter(column, values[0], op=op, quoted=quoted)
+                        search.add_filter(column, None)
+                        search.add_op('or')
+                    else:
+                        search.add_filter(column, values[0], op=op, quoted=quoted)
+                elif len(values) > 1:
+                    if not op:
+                        op = 'in'
+                    if op in ['not in', '!=']:
+                        search.add_op('begin')
+                        search.add_filter(column, values, op=op)
+                        search.add_filter(column, None)
+                        search.add_op('or')
+                    else:
+                        search.add_filters(column, values, op=op)
+
                 del sudo
-                return
+
+
+            if len(rules_list) > 1:
+                search.add_op("or")
 
 
 
-            # interpret the value
-            # since the expression runs float(), we want to avoid that a number 5 being converted to 5.0
-            # if we can't find @ or $
-            if value.find('@') != -1 or value.find('$') != -1:
-                values = parser.eval(value, list=True)
-            else:
-                values = [value]
-
-            op = rule.get('op')
-            
-
-            # TODO: made this work with search.add_op_filters() with the expression parser instead of this
-            # simpler implementation
-            if len(values) == 1:
-                if not op:
-                    op = '='
-                quoted = True
-                # special case for NULL
-                if values[0] == 'NULL':
-                    quoted = False
-                if op in ['not in', '!=']:
-                    search.add_op('begin')
-                    search.add_filter(column, values[0], op=op, quoted=quoted)
-                    search.add_filter(column, None)
-                    search.add_op('or')
-                else:
-                    search.add_filter(column, values[0], op=op, quoted=quoted)
-            elif len(values) > 1:
-                if not op:
-                    op = 'in'
-                if op in ['not in', '!=']:
-                    search.add_op('begin')
-                    search.add_filter(column, values, op=op)
-                    search.add_filter(column, None)
-                    search.add_op('or')
-                else:
-                    search.add_filters(column, values, op=op)
-
-            del sudo
-
-
-    def alter_search_type_search(my, search):
+    def alter_search_type_search(self, search):
         # special provision for various search types, particularly in
         # the sthpw database
-        if my.is_admin():
+        if self.is_admin():
             return
 
         return
@@ -620,10 +669,10 @@ class AccessManager(Base):
         """
 
 
-    def to_string(my):
+    def to_string(self):
         rule = ''
         rule += "<rules>\n"
-        for group, data in my.groups.items():
+        for group, data in self.groups.items():
             for key, access in data.items():
                 rule += "  <rule group='%s' key='%s' access='%s'/>\n" % (group, key,access)
 
@@ -650,9 +699,9 @@ class AccessManager(Base):
         return access_manager
     get_by_group = staticmethod(get_by_group)
 
-    def print_rules(my, group):
+    def print_rules(self, group):
         '''For debugging, printing out the rules for a particular group'''
-        rules = my.groups.get(group)
+        rules = self.groups.get(group)
         if not rules:
             print "no rules for %s" %group
             return

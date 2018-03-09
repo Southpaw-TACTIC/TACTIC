@@ -18,25 +18,58 @@ from pyasm.search.upgrade.project import *
 
 class ConfigUpgrade(BaseUpgrade):
 
+
+    #
+    #
+    #
+    def upgrade_v4_6_0_a02_001(self):
+        self.run_sql('''
+        ALTER TABLE spt_pipeline ADD COLUMN type varchar(256);
+        ''')
+
+
+
+    def upgrade_v4_6_0_a01_003(self):
+        self.run_sql('''
+        ALTER TABLE spt_pipeline ADD COLUMN name varchar(256);
+        ''')
+
+
+    def upgrade_v4_6_0_a01_002(self):
+        self.run_sql('''
+        ALTER TABLE widget_config ADD COLUMN priority integer;
+        ''')
+
+
+
+
+
+    def upgrade_v4_6_0_a01_001(self):
+        self.run_sql('''
+        ALTER TABLE prod_setting DROP CONSTRAINT "prod_setting_key_idx";
+        ''')
+
+
+
     #
     # 4.4.0.a01
     #
 
-    def upgrade_v4_4_0_a01_003(my):
-        my.run_sql('''
+    def upgrade_v4_4_0_a01_003(self):
+        self.run_sql('''
         ALTER TABLE "spt_process" ADD "subpipeline_code" varchar(256);
         ''')
 
 
 
-    def upgrade_v4_4_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v4_4_0_a01_002(self):
+        self.run_sql('''
         ALTER TABLE "spt_process" ADD "workflow" text;
         ''')
 
 
-    def upgrade_v4_4_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v4_4_0_a01_001(self):
+        self.run_sql('''
         ALTER TABLE "custom_script" ADD "path" text;
         ''')
 
@@ -46,8 +79,8 @@ class ConfigUpgrade(BaseUpgrade):
     # 4.2.0.a01
     #
 
-    def upgrade_v4_2_0_a01_003(my):
-        my.run_sql('''
+    def upgrade_v4_2_0_a01_003(self):
+        self.run_sql('''
         CREATE TABLE spt_translation (
             id serial PRIMARY KEY,
             code character varying(256),
@@ -66,15 +99,15 @@ class ConfigUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_v4_2_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v4_2_0_a01_002(self):
+        self.run_sql('''
         ALTER TABLE "naming" ADD "sandbox_dir_alias" varchar(256);
         ''')
 
 
 
-    def upgrade_v4_2_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v4_2_0_a01_001(self):
+        self.run_sql('''
         ALTER TABLE "naming" ADD "base_dir_alias" varchar(256);
         ''')
 
@@ -85,8 +118,8 @@ class ConfigUpgrade(BaseUpgrade):
     # 4.1.0.b02
     #
 
-    def upgrade_v4_1_0_b02_002(my):
-        my.run_sql('''
+    def upgrade_v4_1_0_b02_002(self):
+        self.run_sql('''
         CREATE TABLE spt_pipeline (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -106,8 +139,8 @@ class ConfigUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_v4_1_0_b02_001(my):
-        my.run_sql('''
+    def upgrade_v4_1_0_b02_001(self):
+        self.run_sql('''
         ALTER TABLE "widget_config" ADD "title" varchar(1024);
         ''')
 
@@ -116,15 +149,15 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.1.0.a01
     #
-    def upgrade_v4_1_0_a01_003(my):
-        my.run_sql('''
+    def upgrade_v4_1_0_a01_003(self):
+        self.run_sql('''
         ALTER TABLE spt_url add CONSTRAINT url_unique UNIQUE (url);
         ''')
 
 
 
-    def upgrade_v4_1_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v4_1_0_a01_002(self):
+        self.run_sql('''
         CREATE TABLE spt_plugin_content (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -135,26 +168,26 @@ class ConfigUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_v4_1_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v4_1_0_a01_001(self):
+        self.run_sql('''
         ALTER TABLE "widget_config" ADD "description" text;
         ''')
 
     #
     # 4.0.0.b08
     #
-    def upgrade_v4_0_0_b08_003(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_b08_003(self):
+        self.run_sql('''
         ALTER TABLE "naming" DROP COLUMN "checkin_mode";
         ''')
 
-    def upgrade_v4_0_0_b08_002(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_b08_002(self):
+        self.run_sql('''
         UPDATE "naming" SET "checkin_type" = "checkin_mode";
         ''')
     
-    def upgrade_v4_0_0_b08_001(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_b08_001(self):
+        self.run_sql('''
         ALTER TABLE "naming" ADD "checkin_type" varchar(256);
         ''')
 
@@ -162,8 +195,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.0.0.b03
     #
-    def upgrade_v4_0_0_b03_003(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_b03_003(self):
+        self.run_sql('''
         ALTER TABLE "naming" ADD "checkin_mode" varchar(256);
         ''')
 
@@ -171,16 +204,16 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.0.0.b01
     #
-    def upgrade_v4_0_0_b01_002(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_b01_002(self):
+        self.run_sql('''
         ALTER TABLE "widget_config" ADD "widget_type" varchar(256);
         ''')
 
 
 
 
-    def upgrade_v4_0_0_b01_001(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_b01_001(self):
+        self.run_sql('''
         CREATE UNIQUE INDEX "spt_url_code_idx" on spt_url (code);
         ''')
 
@@ -188,27 +221,27 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.0.0.a02
     #
-    def upgrade_v4_0_0_a09_001(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_a09_001(self):
+        self.run_sql('''
         ALTER TABLE spt_plugin add column rel_dir text;
         ''')
 
 
 
-    def upgrade_v4_0_0_a02_002(my):
-        my.run_sql('''
+    def upgrade_v4_0_0_a02_002(self):
+        self.run_sql('''
         ALTER TABLE prod_setting add CONSTRAINT prod_setting_code_unique UNIQUE (code);
         ''')
 
-    def upgrade_v4_0_0_a02_001(my):
-        my.run_sql('''ALTER TABLE prod_setting ADD COLUMN code varchar(256);''')
+    def upgrade_v4_0_0_a02_001(self):
+        self.run_sql('''ALTER TABLE prod_setting ADD COLUMN code varchar(256);''')
 
 
     #
     # 3.9.0.b04
     #
-    def upgrade_v3_8_0_b06_001(my):
-        my.run_sql('''
+    def upgrade_v3_8_0_b06_001(self):
+        self.run_sql('''
         ALTER TABLE widget_config ADD COLUMN folder text;
         ''')
  
@@ -217,8 +250,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.8.0.b06
     #
-    def upgrade_v3_8_0_b06_001(my):
-        my.run_sql('''
+    def upgrade_v3_8_0_b06_001(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN transfer_mode varchar(256);
         ''')
  
@@ -227,8 +260,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.8.0.b05
     #
-    def upgrade_v3_8_0_b05_001(my):
-        my.run_sql('''
+    def upgrade_v3_8_0_b05_001(self):
+        self.run_sql('''
         ALTER TABLE custom_script ADD COLUMN language varchar(256);
         ''')
  
@@ -240,36 +273,36 @@ class ConfigUpgrade(BaseUpgrade):
     # 3.8.0.b02
     #
     # repeated from 3.7 to ensure it's run for early 3.8 adopters
-    def upgrade_v3_8_0_b02_002(my):
-        my.run_sql('''
+    def upgrade_v3_8_0_b02_002(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN context_options text;
         ''')
         
     
-    def upgrade_v3_8_0_b02_001(my):
-        my.run_sql('''ALTER TABLE spt_process ADD COLUMN repo_type varchar(256)''')
+    def upgrade_v3_8_0_b02_001(self):
+        self.run_sql('''ALTER TABLE spt_process ADD COLUMN repo_type varchar(256)''')
     
     
     #
     # 3.8.0.b01
     #
-    def upgrade_v3_8_0_b01_001(my):
-        my.run_sql('''ALTER TABLE spt_process ADD COLUMN description text''')
+    def upgrade_v3_8_0_b01_001(self):
+        self.run_sql('''ALTER TABLE spt_process ADD COLUMN description text''')
 
 
 
     #
     # 3.8.0.a01
     #
-    def upgrade_v3_8_0_a01_001(my):
-        my.run_sql('''ALTER TABLE spt_trigger ADD COLUMN search_type varchar(256)''')
+    def upgrade_v3_8_0_a01_001(self):
+        self.run_sql('''ALTER TABLE spt_trigger ADD COLUMN search_type varchar(256)''')
 
     #
     # 3.7.0.v03
     #
 
-    def upgrade_v3_7_0_v03_001(my):
-        my.run_sql('''
+    def upgrade_v3_7_0_v03_001(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN context_options text;
         ''')
 
@@ -277,29 +310,29 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.7.0.v01
     #
-    def upgrade_v3_7_0_v01_001(my):
-        my.run_sql('''UPDATE spt_process SET subcontext_options='(main)' where subcontext_options='(none)';''')
+    def upgrade_v3_7_0_v01_001(self):
+        self.run_sql('''UPDATE spt_process SET subcontext_options='(main)' where subcontext_options='(none)';''')
 
 
        
 
-    def upgrade_v3_7_0_v01_001(my):
-        my.run_sql('''UPDATE spt_process SET subcontext_options='(main)' where subcontext_options='(none)';''')
+    def upgrade_v3_7_0_v01_001(self):
+        self.run_sql('''UPDATE spt_process SET subcontext_options='(main)' where subcontext_options='(none)';''')
 
 
 
     #
     # 3.7.0.rc04
     #
-    def upgrade_v3_7_0_rc04_001(my):
-        my.run_sql('''ALTER TABLE spt_process ADD COLUMN sandbox_create_script_path text''');
+    def upgrade_v3_7_0_rc04_001(self):
+        self.run_sql('''ALTER TABLE spt_process ADD COLUMN sandbox_create_script_path text''');
  
   
     #
     # 3.7.0.rc02
     #
-    def upgrade_v3_7_0_rc02_004(my):
-        my.run_sql('''
+    def upgrade_v3_7_0_rc02_004(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN script_path text;
         ''')
 
@@ -307,27 +340,27 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.7.0.a01
     #
-    def upgrade_v3_7_0_a01_004(my):
-        my.run_sql('''
+    def upgrade_v3_7_0_a01_004(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN checkin_options_view text;
         ''')
 
 
-    def upgrade_v3_7_0_a01_003(my):
-        my.run_sql('''
+    def upgrade_v3_7_0_a01_003(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN checkin_validate_script_path text;
         ''')
 
 
-    def upgrade_v3_7_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v3_7_0_a01_002(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN subcontext_options text;
         ''')
 
 
 
-    def upgrade_v3_7_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v3_7_0_a01_001(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN checkin_mode text;
         ''')
 
@@ -337,18 +370,18 @@ class ConfigUpgrade(BaseUpgrade):
     # 3.6.0.b02
     #
 
-    def upgrade_v3_6_0_rc01_001(my):
-        my.run_sql('''
+    def upgrade_v3_6_0_rc01_001(self):
+        self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN color varchar(256);
         ''')
 
-    def upgrade_v3_6_0_b02_002(my):
-        my.run_sql('''
+    def upgrade_v3_6_0_b02_002(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN ingest_rule_code varchar(256);
         ''')
 
-    def upgrade_v3_6_0_b02_001(my):
-        my.run_sql('''
+    def upgrade_v3_6_0_b02_001(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN class_name text;
         ''')
 
@@ -358,8 +391,8 @@ class ConfigUpgrade(BaseUpgrade):
     # 3.6.0.b01
     #
 
-    def upgrade_v3_6_0_b01_001(my):
-        my.run_sql('''
+    def upgrade_v3_6_0_b01_001(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN "condition" text;
         ''')
 
@@ -368,8 +401,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.6.0.a01
     #
-    def upgrade_v3_6_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v3_6_0_a01_002(self):
+        self.run_sql('''
         CREATE TABLE spt_ingest_session (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -381,8 +414,8 @@ class ConfigUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_v3_6_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v3_6_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE spt_ingest_rule (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -398,8 +431,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.5.0.rc01
     #
-    def upgrade_v3_5_0_rc01_001(my):
-        my.run_sql('''
+    def upgrade_v3_5_0_rc01_001(self):
+        self.run_sql('''
         UPDATE widget_config SET category = 'SideBarWdg' WHERE search_type = 'SideBarWdg';
         ''')
 
@@ -407,13 +440,13 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.1.0.b09
     #
-    def upgrade_v3_1_0_b09_002(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_b09_002(self):
+        self.run_sql('''
         ALTER TABLE spt_trigger ADD COLUMN trigger_type VARCHAR(256);
         ''')
 
-    def upgrade_v3_1_0_b09_001(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_b09_001(self):
+        self.run_sql('''
         ALTER TABLE spt_trigger ADD COLUMN process VARCHAR(256);
         ''')
 
@@ -423,8 +456,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
 
    
-    def upgrade_v3_1_0_b04_001(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_b04_001(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN snapshot_type varchar(256);
         ''')
 
@@ -432,8 +465,8 @@ class ConfigUpgrade(BaseUpgrade):
     # 3.1.0.b03
     #
 
-    def upgrade_v3_1_0_b03_001(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_b03_001(self):
+        self.run_sql('''
         ALTER TABLE spt_trigger ADD COLUMN data text;
         ''')
 
@@ -441,22 +474,22 @@ class ConfigUpgrade(BaseUpgrade):
     # 3.1.0.a02
     #
     """
-    def upgrade_v3_1_0_a02_006(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_a02_006(self):
+        self.run_sql('''
         INSERT INTO "spt_search_type" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/pipeline', '{project}', 'Pipeline', '{project}', 'spt_pipeline', 'pyasm.biz.Pipeline', 'Pipeline', 'public');
         ''')
 
 
 
-    def upgrade_v3_1_0_a02_005(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_a02_005(self):
+        self.run_sql('''
         INSERT INTO "spt_search_type" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/search_type', '{project}', 'Search Type', '{project}', 'spt_search_type', 'pyasm.search.SObject', 'Search Type', 'public');
         ''')
 
 
 
-    def upgrade_v3_1_0_a02_004(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_a02_004(self):
+        self.run_sql('''
         CREATE TABLE spt_search_type (
             id serial PRIMARY KEY,
             search_type character varying(100) NOT NULL,
@@ -473,8 +506,8 @@ class ConfigUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_v3_1_0_a02_003(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_a02_003(self):
+        self.run_sql('''
         CREATE TABLE spt_pipeline (
             id serial PRIMARY KEY,
             code character varying(128) NOT NULL,
@@ -489,14 +522,14 @@ class ConfigUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_v3_1_0_a02_002(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_a02_002(self):
+        self.run_sql('''
         ALTER TABLE spt_trigger ADD COLUMN title varchar(256);
         ''')
 
 
-    def upgrade_v3_1_0_a02_001(my):
-        my.run_sql('''
+    def upgrade_v3_1_0_a02_001(self):
+        self.run_sql('''
         ALTER TABLE spt_trigger ADD COLUMN process varchar(256);
         ''')
 
@@ -504,8 +537,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 3.0.0.rc03
     #
-    def upgrade_v3_0_0_rc03_001(my):
-        my.run_sql('''
+    def upgrade_v3_0_0_rc03_001(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN manual_version boolean;
         ''')
 
@@ -513,8 +546,8 @@ class ConfigUpgrade(BaseUpgrade):
     # 3.0.0.b01
     #
     """
-    def upgrade_v3_0_0_b01_005(my):
-        my.run_sql('''
+    def upgrade_v3_0_0_b01_005(self):
+        self.run_sql('''
         CREATE TABLE spt_bid (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -530,15 +563,15 @@ class ConfigUpgrade(BaseUpgrade):
     """
 
 
-    def upgrade_v3_0_0_b01_003(my):
-        my.run_sql('''
+    def upgrade_v3_0_0_b01_003(self):
+        self.run_sql('''
         ALTER TABLE spt_plugin ADD COLUMN version varchar(256);
         ''')
 
 
 
-    def upgrade_v3_0_0_b01_002(my):
-        my.run_sql('''
+    def upgrade_v3_0_0_b01_002(self):
+        self.run_sql('''
         CREATE TABLE spt_process (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -552,8 +585,8 @@ class ConfigUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_v3_0_0_b01_001(my):
-        my.run_sql('''
+    def upgrade_v3_0_0_b01_001(self):
+        self.run_sql('''
         CREATE TABLE spt_trigger (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -572,14 +605,14 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 2.7.0.a01
     #
-    def upgrade_v2_7_0_a01_003(my):
-        my.run_sql('''
+    def upgrade_v2_7_0_a01_003(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN latest_versionless boolean;
         ''')
 
 
-    def upgrade_v2_7_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v2_7_0_a01_002(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN current_versionless boolean;
         ''')
 
@@ -587,8 +620,8 @@ class ConfigUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_v2_7_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_7_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE spt_plugin (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -603,8 +636,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 2.6.0.b02
     # 
-    def upgrade_v2_6_0_b02_001(my):
-        my.run_sql('''
+    def upgrade_v2_6_0_b02_001(self):
+        self.run_sql('''
         CREATE TABLE spt_client_trigger (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -620,8 +653,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 2.6.0.a01
     # 
-    def upgrade_v2_6_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_6_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE spt_url (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -636,15 +669,15 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 2.5.0.rc10
     # 
-    def upgrade_v2_5_0_rc10_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_rc10_001(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN context varchar(256);
         ''')
     #
     # 2.5.0.rc06
     # 
-    def upgrade_v2_5_0_rc08_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_rc08_001(self):
+        self.run_sql('''
         alter table naming add column sandbox_dir_naming text;
         ''')
 
@@ -652,8 +685,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 2.5.0.a01
     # 
-    def upgrade_v2_5_0_a01_006(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_006(self):
+        self.run_sql('''
         CREATE TABLE custom_script (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -669,20 +702,20 @@ class ConfigUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_v2_5_0_a01_005(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_005(self):
+        self.run_sql('''
         alter table naming add column code varchar(256);
         ''')
 
 
-    def upgrade_v2_5_0_a01_004(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_004(self):
+        self.run_sql('''
         create unique index pipeline_code_idx on pipeline (code);
         ''')
 
 
-    def upgrade_v2_5_0_a01_003(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_003(self):
+        self.run_sql('''
         CREATE TABLE pipeline (
             id serial,
             code varchar(256),
@@ -696,14 +729,14 @@ class ConfigUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_v2_5_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_002(self):
+        self.run_sql('''
         create unique index widget_config_code_idx on widget_config (code);
         ''')
 
 
-    def upgrade_v2_5_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE widget_config (
             id serial,
             code character varying(256),

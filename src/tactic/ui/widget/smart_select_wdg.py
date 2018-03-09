@@ -21,49 +21,49 @@ from tactic.ui.common import BaseRefreshWdg
 
 class DynByFoundValueSmartSelectWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def init(my):
+    def init(self):
 
         list_item_table = ''
-        my.full_item_list = []
-        if my.kwargs.has_key( 'list_item_table' ):
-            list_item_table = my.kwargs.get( 'list_item_table' )
+        self.full_item_list = []
+        if self.kwargs.has_key( 'list_item_table' ):
+            list_item_table = self.kwargs.get( 'list_item_table' )
             expr = '@SOBJECT(MMS/%s)' % list_item_table
             parser = ExpressionParser()
-            my.full_item_list = parser.eval(expr)
+            self.full_item_list = parser.eval(expr)
 
-        my.el_name = ''
-        if my.kwargs.has_key( 'element_name' ):
-            my.el_name = my.kwargs.get( 'element_name' )
+        self.el_name = ''
+        if self.kwargs.has_key( 'element_name' ):
+            self.el_name = self.kwargs.get( 'element_name' )
 
-        my.input_el_name = ''
-        if my.kwargs.has_key( 'input_element_to_find' ):
-            my.input_el_name = my.kwargs.get( 'input_element_to_find' )
+        self.input_el_name = ''
+        if self.kwargs.has_key( 'input_element_to_find' ):
+            self.input_el_name = self.kwargs.get( 'input_element_to_find' )
 
-        my.col_to_match = ''
-        if my.kwargs.has_key( 'column_to_match_value' ):
-            my.col_to_match = my.kwargs.get( 'column_to_match_value' )
+        self.col_to_match = ''
+        if self.kwargs.has_key( 'column_to_match_value' ):
+            self.col_to_match = self.kwargs.get( 'column_to_match_value' )
 
-        my.col_for_label = ''
-        if my.kwargs.has_key( 'column_for_label' ):
-            my.col_for_label = my.kwargs.get( 'column_for_label' )
+        self.col_for_label = ''
+        if self.kwargs.has_key( 'column_for_label' ):
+            self.col_for_label = self.kwargs.get( 'column_for_label' )
 
-        my.select_element = HtmlElement('select')
+        self.select_element = HtmlElement('select')
 
 
-    def force_default_context_menu(my):
+    def force_default_context_menu(self):
         pass
 
 
-    def add_behavior(my, bvr):
-        my.select_element.add_behavior( bvr )
+    def add_behavior(self, bvr):
+        self.select_element.add_behavior( bvr )
 
 
-    def add_no_option(my, sel_el):
+    def add_no_option(self, sel_el):
         option = HtmlElement('option')
         option.set_attr( "value", "" )
         option.add( "-- No Options Found --" )
@@ -72,25 +72,25 @@ class DynByFoundValueSmartSelectWdg(BaseRefreshWdg):
         option = HtmlElement('option')
         option.set_attr( "value", "" )
         no_value_label = "-- No Filter Value Found --"
-        if my.kwargs.get('no_value_found_label'):
-            no_value_label = my.kwargs.get('no_value_found_label')
+        if self.kwargs.get('no_value_found_label'):
+            no_value_label = self.kwargs.get('no_value_found_label')
         option.add( no_value_label )
         sel_el.add( option )
 
 
-    def get_display(my):
+    def get_display(self):
         
-        sel_el = my.select_element
+        sel_el = self.select_element
 
         sel_el.add_class("inputfield")
         sel_el.add_class("spt_input")
-        sel_el.set_attr("name", my.el_name)
+        sel_el.set_attr("name", self.el_name)
 
         # NOTE: make this javascript dynamic (much less effecient), but need
         # to isolate for now and will optimize if necessary
         sel_el.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
 
@@ -98,38 +98,38 @@ class DynByFoundValueSmartSelectWdg(BaseRefreshWdg):
         options_arr = []
 
         '''
-        my.add_no_option( sel_el )
+        self.add_no_option( sel_el )
         '''
         options_arr.append( "||%s" % ("-- No Options Found --") )
         no_value_label = "-- No Filter Value Found --"
-        if my.kwargs.get('no_value_found_label'):
-            no_value_label = my.kwargs.get('no_value_found_label')
+        if self.kwargs.get('no_value_found_label'):
+            no_value_label = self.kwargs.get('no_value_found_label')
         options_arr.append( "||%s" % (no_value_label) )
 
-        if my.full_item_list and my.el_name and my.input_el_name and my.col_to_match and my.col_for_label:
-            for item in my.full_item_list:
+        if self.full_item_list and self.el_name and self.input_el_name and self.col_to_match and self.col_for_label:
+            for item in self.full_item_list:
                 '''
                 option = HtmlElement('option')
-                label = item.get_value(my.col_for_label)
+                label = item.get_value(self.col_for_label)
                 option.set_attr( "value", label )
                 option.add( label )
 
-                option.add_class( "match_%s" % item.get_value( my.col_to_match ) )
+                option.add_class( "match_%s" % item.get_value( self.col_to_match ) )
 
                 sel_el.add( option )
                 '''
-                match_tag = item.get_value( my.col_to_match )
-                label = item.get_value(my.col_for_label)
+                match_tag = item.get_value( self.col_to_match )
+                label = item.get_value(self.col_for_label)
                 options_arr.append( "%s|%s|%s" % (match_tag, label, label) )
                 pass
 
         sel_el.set_attr("spt_smart_select_options", '###'.join(options_arr))
-        sel_el.add_event("onfocus","spt.smart_select.find_match_value_in_tbody(this,'%s');" % my.input_el_name)
+        sel_el.add_event("onfocus","spt.smart_select.find_match_value_in_tbody(this,'%s');" % self.input_el_name)
         return sel_el
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
 
         return r'''
 

@@ -206,31 +206,6 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
 
     return
 
-
-
-    // DEPRECATED: leaving until it is determined that the above implementation
-    // is correct (and much much faster)
-    /*
-    // now filter out subtables ### FIXME: need a mechanism to do this.
-    // get the children ...
-    var children = el.getChildren();
-
-    // check the children and recurse ...
-    for( var c=0; c < children.length; c++ ) {
-        var child = children[c];
-        // check the child ...
-        if( child.get('tag') == 'table' && child.hasClass("spt_table") ) {
-            // STOP here ... skip this element ... don't recurse to it's children!
-            continue;
-        }
-        if( child.get('tag') == 'td' && child.hasClass( "SPT_ROW_SELECT_TD" ) ) {
-            row_select_tds.push(child);
-        }
-
-        // now recurse to children ...
-        spt.dg_table.gather_row_select_tds( child, row_select_tds );
-    }
-    */
 }
 
 
@@ -862,7 +837,7 @@ spt.dg_table.gear_smenu_add_task_matched_cbk = function( evt, bvr )
     
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
-    var search_class = table.get("spt_search_class");
+    var search_class = table.get("spt_search_class") || "";
 
 
     var search_view;
@@ -1023,7 +998,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
     var table_top = el.getParent(".spt_table_top");
 
     if( ! table_top ) {
-        log.warning('Table top not found! Cannot toggle display of commit button');
+        spt.js_log.warning('Table top not found! Cannot toggle display of commit button');
         return;
     }
 
@@ -1040,6 +1015,9 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 //
 // resize column callbacks
 //
+
+/* DEPRECATED
+
 spt.dg_table.width = 0;
 spt.dg_table.table_width = 0;
 spt.dg_table.xpos_start = 0;
@@ -1733,6 +1711,8 @@ spt.dg_table._move_column = function(table, drag_idx, drop_idx, insert_after)
     }
 }
 
+*/
+
 
 //
 // Extract the size and order of the table columns
@@ -2079,7 +2059,9 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
 }
 
 
+
 // Callback that gets executed when "Save My/Project View As" is selected
+// DEPRECATED: this has been moved inline
 spt.dg_table.save_view_cbk = function(table_id, login) {
 
     var table = $(table_id);
@@ -2205,8 +2187,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         }
         
         var table_search_type = table.getAttribute("spt_search_type");
-        
-        // TODO: extract the appropriate display class name
+
 
         var dis_options = {};
 
@@ -2234,7 +2215,6 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
             element_name = kwargs.element_name;
         }
         var new_title = kwargs.new_title;
-        //var save_a_link = kwargs.save_a_link;
 
 
         var last_element_name = kwargs.last_element_name;
@@ -2289,6 +2269,9 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         kwargs['display_options'] = dis_options;
         
         kwargs['unique'] = unique;
+
+
+        // these are the server oprations
 
 
         // Copy the value of the "icon" attribute from the previous XML widget
@@ -2393,7 +2376,11 @@ spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index,
                 spt.app_busy.show( 'Column Manager', 'Adding Column');
                 setTimeout(function() { 
                     spt.table.add_column(element_name);
-                    spt.dg_table.search_cbk( {}, {'src_el': layout} ), 50}); 
+                    //spt.dg_table.search_cbk( {}, {'src_el': layout} )
+                    // need to do this twice
+                    spt.table.expand_table();
+                    spt.table.expand_table();
+                }, 50);
             }
             spt.app_busy.hide();
         } catch(e) {
@@ -2481,9 +2468,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
         
 
-        //for (var i = 0; i < table.rows.length; i++) {
         for (var i = 0; i < 1; i++) {
-        //for (var i = 0; i < widgets_html.length; i++) {
             var row = table.rows[i];
             // skip empty rows
             var search_key = row.getAttribute("spt_search_key");
@@ -2693,7 +2678,6 @@ spt.dg_table.RemoveColumnCmd = new Class({
 // @param: 
 // bvr.search_el - child element of the search_top. If unspecified, it equals bvr.src_el
 // bvr.src_el - child element of the table_top
-
 spt.dg_table.search_cbk = function(evt, bvr){
    
     var panel = null;
@@ -2938,7 +2922,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var search_limit = target.getAttribute("spt_search_limit");
     var parent_key = target.getAttribute("spt_parent_key");
     var search_key = target.getAttribute("spt_search_key");
-    var search_class = target.getAttribute("spt_search_class");
+    var search_class = target.getAttribute("spt_search_class") || "";
     var search_view = target.getAttribute('spt_search_view');
     var show_search = target.getAttribute("spt_show_search");
     var show_keyword_search = target.getAttribute("spt_show_keyword_search");
@@ -2950,17 +2934,21 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_column_manager = target.getAttribute("spt_show_column_manager");
     var show_layout_switcher = target.getAttribute("spt_show_layout_switcher");
     var show_context_menu = target.getAttribute("spt_show_context_menu");
+    var show_help = target.getAttribute("spt_show_help");
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
     var ingest_data_view = target.getAttribute("spt_ingest_data_view");
+    var ingest_custom_view = target.getAttribute("spt_ingest_custom_view");
     var checkin_context = target.getAttribute("spt_checkin_context");
     var checkin_type = target.getAttribute("spt_checkin_type");
     var group_elements = target.getAttribute("spt_group_elements");
+    var group_label_expr = target.getAttribute("spt_group_label_expr");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";
     }
     var simple_search_view = target.getAttribute("spt_simple_search_view");
+    var simple_search_config = target.getAttribute("spt_simple_search_config");
     var simple_search_mode = target.getAttribute("spt_simple_search_mode");
     var search_limit_mode = target.getAttribute("spt_search_limit_mode");
     var search_dialog_id = target.getAttribute("spt_search_dialog_id");
@@ -2970,8 +2958,20 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var no_results_msg = target.getAttribute("spt_no_results_msg");
     var show_border = target.getAttribute("spt_show_border");
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
-     
-    var height = target.getAttribute("spt_height");
+    var order_by = target.getAttribute("spt_order_by");
+    
+    var file_system_edit = target.getAttribute("spt_file_system_edit") || "";
+    var base_dir = target.getAttribute("spt_base_dir") || "";
+    var parent_mode = target.getAttribute("spt_parent_mode") || "";
+
+    var settings = target.getAttribute("spt_settings") || "";
+    var gear_settings = target.getAttribute("spt_gear_settings") || "";
+
+    var shelf_view = target.getAttribute("spt_shelf_view") || "";
+
+    var extra_data = target.getAttribute("spt_extra_data") || "";
+
+    var height = target.getAttribute("spt_height") || "";
     var element_names;
     var column_widths = [];
     var search_keys = [];
@@ -3031,9 +3031,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_column_manager': show_column_manager,
         'show_context_menu': show_context_menu,
         'show_layout_switcher': show_layout_switcher,
+        'show_help': show_help,
         'insert_view': insert_view,
         'edit_view': edit_view,
         'simple_search_view': simple_search_view,
+        'simple_search_config': simple_search_config,
         'simple_search_mode': simple_search_mode,
         'search_limit_mode': search_limit_mode,
         'search_dialog_id': search_dialog_id,
@@ -3041,6 +3043,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'checkin_type': checkin_type,
         'checkin_context': checkin_context,
         'ingest_data_view': ingest_data_view,
+        'ingest_custom_view': ingest_custom_view,
         'init_load_num': init_load_num,
         'mode': mode,
         'no_results_msg': no_results_msg,
@@ -3048,7 +3051,15 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'height': height,
         'is_refresh': 'true',
         'search_keys': search_keys,
-        'show_collection_tool': show_collection_tool
+        'show_collection_tool': show_collection_tool,
+        'order_by': order_by,
+        'file_system_edit': file_system_edit,
+        'base_dir': base_dir,
+        'parent_mode': parent_mode,
+        'settings': settings,
+        'gear_settings': gear_settings,
+        'shelf_view': shelf_view,
+        'extra_data': extra_data,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -3057,14 +3068,26 @@ spt.dg_table._search_cbk = function(evt, bvr)
     for (var k=0; k < attr_list.length; k++) {
         var attr_val = target.getAttribute('spt_'+ attr_list[k]);
         if (attr_val)
-            args[attr_list[k]] = attr_val;
+            args[attr_list[k]] = attr_val; 
     }
 
     if (bvr.extra_args) {
         for (k in bvr.extra_args)
             args[k] = bvr.extra_args[k];
     }
-    
+
+    var extra_keys = target.getAttribute("spt_extra_keys") || "";
+    if (extra_keys) {
+        args['extra_keys'] = extra_keys;
+        extra_keys = extra_keys.split(",");
+        console.log(extra_keys);
+        for (var k = 0; k < extra_keys.length; k++) {
+            var key = extra_keys[k];
+            args[key] = target.getAttribute("spt_"+key) || "";
+        }
+    }
+
+
     var fade = true;
 
 
@@ -3252,33 +3275,25 @@ spt.dg_table.get_search_values = function(search_top) {
 
 
 spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
-    //var panel_id = 'main_body';
-    //var search_id = panel_id + "_search";
 
     var json_values = spt.dg_table.get_search_values(search_wdg);
-
-  
-    // convert to json
-    //spt.js_log.info("json_values");
-    //spt.js_log.info(json_values);
-
-
 
     // build the search view
     var search_type = search_wdg.getAttribute("spt_search_type");
 
+    /*
     var view_text = $('save_search_text');
     if (search_view == undefined) {
         search_view = view_text.value;
     }
+    */
     if (search_view == "") {
         search_view = search_wdg.getAttribute("spt_search_view");
     }
+
     if (search_view == "") {
-        // Not sure about leaving this empty
         spt.alert("No name specified for saved search");
         return;
-        //view = "saved_search:admin"
     }
 
 
@@ -3296,14 +3311,18 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
     var class_name = "tactic.ui.app.SaveSearchCbk";
     server.execute_cmd(class_name, options, json_values);
 
+    /*
     if ($('save_search_wdg'))
         $('save_search_wdg').style.display = 'none';
+    */
 
  
 }
 
 
 // retrieve the parameters of the search
+// DEPRECATD: use spt.table.load_search
+/*
 spt.dg_table.retrieve_search_cbk = function() {
 
     var panel_id = 'main_body';
@@ -3343,6 +3362,7 @@ spt.dg_table.retrieve_search_cbk = function() {
     $('retrieve_search_wdg').style.display = 'none';
 
 }
+*/
 
 
 spt.dg_table.add_filter = function(element) {
@@ -3889,9 +3909,12 @@ spt.dg_table.get_status_key = function(cell_to_edit, edit_cell) {
 }
 
 
-
+// DEPRPECATED
 spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
 {
+
+    alert("spt.dg_table.adopt_edit_wdg is DEPRECATED")
+
     var element_name = cell_to_edit.getAttribute( 'spt_element_name' );
     // get the second row
     var table = $(table_id);
@@ -4669,6 +4692,8 @@ spt.dg_table.get_show_retired_flag = function( table_child_el )
     var el = spt.get_cousin( table_child_el, ".spt_view_panel", ".spt_search_show_retired" );
     if (!el) 
         el = spt.get_cousin( table_child_el, ".spt_layout", ".spt_search_show_retired" );
+    if (!el) return false;
+
     return spt.is_TRUE(el.value);
 }
 
@@ -4751,7 +4776,7 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
         spt.alert('You are viewing an old table layout. If you want to benefit from better features of the Fast Table Layout, please switch it in Manage Side Bar.');
     }
     var element_names = version == 2 ? spt.table.get_element_names() : [];
-    var search_class = table.get("spt_search_class");
+    var search_class = table.get("spt_search_class") || "";
 
     var tmp_bvr = {};
    
@@ -4905,7 +4930,7 @@ spt.dg_table.drow_smenu_setup_cbk = function( menu_el, activator_el )
     if (tbody) {
         display_label = tbody.get("spt_display_value");
         if( ! display_label ) {
-            log.warning( "WARNING: [spt.dg_table.drow_smenu_setup_cbk] could not find 'spt_display_value' for item to " +
+            spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_setup_cbk] could not find 'spt_display_value' for item to " +
                             "delete ... using 'search_key' as display_label." );
             display_label = tbody.get("spt_search_key");
         }
@@ -4936,6 +4961,9 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
     if (layout.getAttribute("spt_version") == "2") {
         var row = activator;
         var search_key = row.get("spt_search_key");
+
+        console.log(search_key);
+
 
         var server = TacticServerStub.get();
         var show_retired = spt.dg_table.get_show_retired_flag( row );
@@ -5085,7 +5113,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
  
     var display_label = tbody.get("spt_display_value");
     if( ! display_label ) {
-        log.warning( "WARNING: [spt.dg_table.drow_smenu_delete_cbk] could not find 'spt_display_value' for item to " +
+        spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_delete_cbk] could not find 'spt_display_value' for item to " +
                         "delete ... using 'search_key' as display_label." );
         display_label = search_key;
     }
@@ -5142,7 +5170,7 @@ spt.dg_table.drow_smenu_item_audit_log_cbk = function(evt, bvr)
 
     var display_label = row.get("spt_display_value");
     if( ! display_label ) {
-        log.warning( "WARNING: [spt.dg_table.drow_smenu_item_audit_log_cbk] could not find 'spt_display_value' for " +
+        spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_item_audit_log_cbk] could not find 'spt_display_value' for " +
                         "item to delete ... using 'search_key' as display_label." );
         display_label = search_key;
     }
@@ -5226,7 +5254,7 @@ spt.dg_table._toggle_commit_btn = function(el, hide)
         if (panel) break;
     }
     if (!panel) {
-        log.warning('panel not found! Cannot display commit button');
+        spt.js_log.warning('panel not found! Cannot display commit button');
         return;
     } 
     var table = panel.getElement('.spt_table_content');
@@ -5799,34 +5827,4 @@ spt.dg_table.add_tasks_cbk = function(evt, bvr) {
 }
 
 */
-
-// ----------------------------------------------------------------------------------------------------------------
-//  Smart Context menu dynamic menu-entry info setup call-backs
-// ----------------------------------------------------------------------------------------------------------------
-//
-spt.dg_table.smenu_ctx = {};
-
-
-spt.dg_table.smenu_ctx.setup_cbk = function( menu_el, activator_el )
-{
-    var el_name = activator_el.getProperty("spt_element_name");
-    if (el_name == null) {
-        el_name = 'no_name';
-    }
-
-    var setup_info = {
-        'is_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_groupable") ),
-        'is_time_groupable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_time_groupable") ),
-        'is_sortable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_sortable") ),
-        'is_searchable' : spt.is_TRUE( activator_el.getProperty("spt_widget_is_searchable") ),
-        'element_name' : el_name.substr(0,1).toUpperCase() + el_name.substr(1),
-        'sort_prefix': activator_el.getProperty("spt_widget_sort_prefix"),
-        'has_related' : spt.is_TRUE( activator_el.getProperty("spt_widget_has_related") ),
-    };
-
-
-    return setup_info;
-}
-
-
 

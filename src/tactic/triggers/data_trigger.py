@@ -18,29 +18,29 @@ from tactic.command import PythonCmd
 
 class DataValidationTrigger(Trigger):
 
-    def execute(my):
-        sobject = my.get_current_sobject()
+    def execute(self):
+        sobject = self.get_current_sobject()
 
 
 
 class DataUpdateTrigger(Trigger):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
-    def execute(my):
-        input = my.get_input()
+    def execute(self):
+        input = self.get_input()
 
         if input.get("mode") == 'delete':
             return
 
 
-        print "input: ", input
+        #print "input: ", input
         sobject = input.get("sobject")
 
-        trigger_sobj = my.get_trigger_sobj()
-        data = my.get_trigger_data()
+        trigger_sobj = self.get_trigger_sobj()
+        data = self.get_trigger_data()
 
         print "data: ", data
 
