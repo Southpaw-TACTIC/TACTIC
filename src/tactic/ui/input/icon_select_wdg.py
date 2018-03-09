@@ -37,6 +37,16 @@ class IconSelectWdg(BaseInputWdg):
         #icon_entry_text.set_attr("disabled", "disabled")
         icon_entry_text.add_class( "SPT_ICON_ENTRY_TEXT" )
 
+        value = self.get_value()
+        if value:
+            #icon_entry_text.set_option("default", value)
+            icon_entry_text.set_value(value)
+
+
+        return icon_entry_text
+
+
+
 
         button = ActionButtonWdg(title='Choose', tip='Click to select an icon')
 
@@ -85,10 +95,6 @@ class IconSelectWdg(BaseInputWdg):
         #top.add( self.icon_label )
         spacing = "<img src='%s' style='width: %spx;' />" % (IconWdg.get_icon_path("TRANSPARENT"), 3)
 
-        #button.add_behavior( {'type': 'click_up', 'cbjs_action': 'spt.popup.open( "IconChooserPopup", false);' } )
-        #top.add( button )
-        #button.add_style("float: right")
-        #button.add_style("margin-top: -3px")
 
         top.add( icon_img )
         top.add( spacing )

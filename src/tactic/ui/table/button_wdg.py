@@ -47,16 +47,24 @@ class ButtonElementWdg(BaseTableElementWdg):
         'category': "Options",
         'order': 2
     },
+   'size': {
+        'description': 'The pixel size of the icon',
+        'type': 'TextWdg',
+        'category': "Options",
+        'order': 3
+    },
+
+
 
     'hint': {
         'description': 'Text to display as a tool-tip when mouse is hovering over button',
         'category': "Options",
-        'order': 3
+        'order': 4
     },
     'expression': {
         'description': 'Text do display beside the icon',
         'category': "Options",
-        'order': 4
+        'order': 5
     },
 
 
@@ -334,11 +342,11 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
 
-
-        if self.get_option('align') =='left':
+        if self.get_option('align') == 'left':
             display.add_style("text-align: left")
         else:
             display.add_style("text-align: center")
+
 
         icon = self.get_option("icon")
         if not icon:
@@ -357,24 +365,24 @@ class ButtonElementWdg(BaseTableElementWdg):
             if not result:
                 return "&nbsp;"
 
+        size = self.get_option("size")
 
         if not self.script_obj and not self.script:
-            icon_wdg = IconButtonWdg("No Script Found", IconWdg.ERROR)
+            icon_wdg = IconButtonWdg("No Script Found", IconWdg.ERROR, size=size)
         else:
             icon_link = icon.upper()
 
-            icon_wdg = IconButtonWdg(icon_tip, icon=icon_link)
+            icon_wdg = IconButtonWdg(icon_tip, icon=icon_link, size=size)
             if not sobject.is_insert():
                 icon_wdg.add_class("hand")
                 #icon_wdg.add_behavior(self.behavior)
                 icon_wdg.add_class("spt_button_%s" % self.name)
 
-
         icon_div = DivWdg()
         icon_div.add(icon_wdg)
-        icon_div.add_style("position: absolute")
-        icon_div.add_style("top: 2px")
-        icon_div.add_style("left: 5px")
+        #icon_div.add_style("position: absolute")
+        #icon_div.add_style("top: 2px")
+        #icon_div.add_style("left: 5px")
         display.add(icon_div)
 
         hit_wdg = icon_div

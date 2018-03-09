@@ -843,7 +843,6 @@ spt.popup.destroy = function( popup_el_or_id, fade )
     }
     else {
         spt.popup.close( popup);
-        console.log(spt.behavior.destroy_element);
         spt.behavior.destroy_element( popup );
         //destroy_fn();
     }

@@ -430,7 +430,7 @@ class IconWdg(DivWdg):
             if not self.opacity:
                 self.opacity = 0.6
 
-        elif icon_path.startswith("FA"):
+        elif icon_path.startswith("FA_"):
             icon = HtmlElement.i()
             icon.add_class("fa")
             part = icon_path.replace("FA_", "")
@@ -500,7 +500,7 @@ class IconWdg(DivWdg):
 
 class IconButtonWdg(HtmlElement):
     
-    def __init__(self, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None):
+    def __init__(self, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None, size=None):
         self.text = name
         self.icon_path = icon
         self.long = long
@@ -508,6 +508,7 @@ class IconButtonWdg(HtmlElement):
         super(IconButtonWdg,self).__init__("span")
         self.name = name
         self.icon_styles = icon_styles
+        self.size = size
     
 
     def set_icon(self, icon):
@@ -533,9 +534,14 @@ class IconButtonWdg(HtmlElement):
         # icon is optional
         if not self.icon_path:
             return
-        
+
+       
+        size = self.size
+
         if self.icon_path.startswith("BS_"):
-            icon = IconWdg(self.name, self.icon_path)
+            icon = IconWdg(self.name, self.icon_path, size=size)
+        elif self.icon_path.startswith("FA_"):
+            icon = IconWdg(self.name, self.icon_path, size=size)
         else:
             icon_path = IconWdg.get_icon_path(self.icon_path)
             if not icon_path:

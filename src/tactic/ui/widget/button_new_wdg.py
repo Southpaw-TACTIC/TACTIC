@@ -1292,6 +1292,7 @@ class IconButtonWdg(DivWdg):
         self.width = 28
 
 
+
     def init(self):
         if not Container.get_dict("JSLibraries", "spt_icon_button"):
             doc_top = Container.get("TopWdg::top")
@@ -1445,6 +1446,7 @@ class IconButtonWdg(DivWdg):
             width = 16
         else:
             width = None
+
 
         icon = IconWdg(title, icon_str, width=width)
         icon_div.add(icon)

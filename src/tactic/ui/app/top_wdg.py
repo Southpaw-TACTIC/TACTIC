@@ -166,7 +166,7 @@ class TopWdg(Widget):
                     break;
                 else {
                     if ( el.isVisible() && el.on_complete ) {
-                        el.on_complete();
+                        el.on_complete(el);
                     }
                     else {
                         spt.hide(el);
@@ -932,6 +932,9 @@ class TopWdg(Widget):
             Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
 
 
+        Container.append_seq("Page:css", "%s/spt_js/font-awesome-4.7.0/css/font-awesome.css?ver=%s" % (context_url, version))
+
+
 
         # add the color wheel css
         Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
@@ -943,7 +946,7 @@ class TopWdg(Widget):
 
 
 
-        # TEST
+        # video js
         Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)
 
 
@@ -1292,7 +1295,7 @@ class SitePage(AppServer):
             handler = 'tactic.protocol.APIRestHandler' 
             hash = "/".join(self.hash)
             hash = "/%s" % hash
-            self.top = CustomTopWdg(url=self.custom_url, hash=hash, handler=handler)
+            self.top = CustomTopWdg(url=None, hash=hash, handler=handler)
             return self.top
 
 
@@ -1365,10 +1368,13 @@ class CustomTopWdg(BaseRefreshWdg):
         method = web.get_request_method()
         headers = web.get_request_headers()
         accept = headers.get("Accept")
-        expression = url.get_value("url")
+        if url:
+            expression = url.get_value("url")
+            # extract values from custom url
+            kwargs = Common.extract_dict(hash, expression)
+        else:
+            kwargs = {}
        
-        # extract values from custom url
-        kwargs = Common.extract_dict(hash, expression)
         
         # Does the URL listen to specific Accept values?
         # or does it enforce a return content type ... and how does one
