@@ -250,8 +250,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         element_name = "__default__";
     }
 
-    var unique = false;
-    if (unique) {
+    var unique = kwargs.unique;
+    if (unique == true || unique == "true") {
         var header = spt.tab.get_header(element_name);
         if (header) {
             var num = Math.floor((Math.random()*10000)+1); 
@@ -315,6 +315,10 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var header = spt.behavior.clone(header_template);
         var header_id = Math.floor(Math.random()*10000000+1);
         header.setAttribute("id", header_id);
+
+        if (kwargs.hidden == "true") {
+            header.setStyle("display", "none");
+        }
 
 
         // add a subheader template for each header
@@ -1583,6 +1587,8 @@ spt.tab.close = function(src_el) {
 
 
 
+
+
         # Add in a template
         template_div = DivWdg()
         template_div.add_class("spt_tab_template_top")
@@ -2171,7 +2177,9 @@ spt.tab.close = function(src_el) {
         #header.add_style("padding: 7px 5px")
         #header.add_color("color", "color")
 
-        header.add_style("float: left")
+        #header.add_style("float: left")
+        header.add_style("display: inline-block")
+        header.add_style("vertical-align: top")
         header.add_style("margin-right: 1px")
 
 
@@ -2332,12 +2340,12 @@ spt.tab.close = function(src_el) {
         remove_wdg.add_styles("float: right; position: relative; padding-right: 14px")
         from pyasm.widget import IconButtonWdg
         #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
-        icon = IconWdg("Remove Tab", "BS_REMOVE", opacity=0.3)
+        icon = IconWdg("Remove Tab", "FA_REMOVE", opacity=0.3)
         icon.add_class("spt_icon_inactive")
         icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
         remove_wdg.add(icon)
         #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
-        icon = IconWdg("Remove Tab", "BS_REMOVE")
+        icon = IconWdg("Remove Tab", "FA_REMOVE")
         icon.add_class("spt_icon_active")
         icon.add_style("display: none")
         icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")

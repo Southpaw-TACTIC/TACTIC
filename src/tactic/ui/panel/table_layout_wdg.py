@@ -655,8 +655,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             client_triggers = Search.eval(exp)
 
             
-            # set unique to True to prevent duplicated event registration when opening multiple tables
-            # listens to event like accept|sthpw/task
+            # set unique to True to prevent duplicated event registration when opening
+            # multiple tables listens to event like accept|sthpw/task
             for client_trigger in client_triggers:
                  inner.add_behavior( {
                 'type': 'listen',
@@ -2612,7 +2612,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        swap = SwapDisplayWdg(title=title_div, icon='BS_FOLDER_OPEN',is_on=self.is_on)
+        #swap = SwapDisplayWdg(title=title_div, icon='BS_FOLDER_OPEN',is_on=self.is_on)
+        swap = SwapDisplayWdg(title=title_div, icon='FA_FOLDER_OPEN_O',is_on=self.is_on)
         swap.set_behavior_top(self.table)
         td.add(swap)
         swap.add_style("font-weight: bold")
@@ -6401,11 +6402,9 @@ spt.table.row_ctx_menu_edit_cbk = function(evt, bvr)
     
     var tmp_bvr = {};
     tmp_bvr.args = {
-        //'search_type': search_key_info.search_type,
-        //'search_id': search_key_info.id,
         'search_key': search_key,
         'input_prefix': 'edit',
-        'view': edit_view
+        'view': edit_view,
     };
 
     tmp_bvr.options = {

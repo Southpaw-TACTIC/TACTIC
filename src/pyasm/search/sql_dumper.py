@@ -18,7 +18,7 @@ import sys
 import types
 import datetime
 import codecs
-from pyasm.common import TacticException
+from pyasm.common import TacticException, jsondumps, jsonloads
 
 from sql import SqlException
 
@@ -419,7 +419,12 @@ class TableDataDumper(object):
                             type(value) == types.LongType:
 
                         f.write("insert.set_value('%s', %s)\n" % (name, value))
-                    else:    
+                    else:
+
+                        # if this is dictionary, then convert to string
+                        if isinstance(value, list) or isinstance(value, dict):
+                            value = jsondumps(value)
+
                         # if the value contains triple double quotes, convert to
                         # triple quotes
                         if isinstance(value, datetime.datetime):
