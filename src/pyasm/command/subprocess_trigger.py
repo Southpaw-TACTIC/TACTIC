@@ -152,7 +152,7 @@ class QueueTrigger(Command):
 
         info = trigger.get_info()
         result = info.get("result")
-        if result in "error":
+        if result and result == "error":
             message = info.get("message")
             raise Exception(message)
 
