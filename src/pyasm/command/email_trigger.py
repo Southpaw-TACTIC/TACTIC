@@ -50,6 +50,8 @@ class EmailTrigger(Trigger):
 
     def execute(self):
 
+        print("WARNING: EmailTrigger deprecated, use EmailTrigger2")
+
         # get command sobject and the notification code associated with it
         class_name = self.get_command().__class__.__name__
         cmd_sobj = CommandSObj.get_by_class_name(class_name)

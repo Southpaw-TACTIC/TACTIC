@@ -661,7 +661,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
                     icon = IconWdg(folder, "BS_FOLDER_OPEN", inline=False, size=12)
                     icon.add_style("margin-top: 0px")
-                    icon.add_style("margin-left: 0px")
+                    icon.add_style("margin-left: -3px")
                     icon.add_style("margin-right: 3px")
 
 

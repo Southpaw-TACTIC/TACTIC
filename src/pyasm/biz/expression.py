@@ -108,6 +108,11 @@ class ExpressionParser(object):
         self.state = state
 
         self.vars = {}
+
+        if vars:
+            self.vars.update(vars)
+
+
         self.vars.update( self.get_date_vars() )
 
         # add the environment
@@ -144,9 +149,6 @@ class ExpressionParser(object):
                 self.vars['PROJECT_URL'] = "%s/tactic/%s" % (base_url, project)
 
 
-        if vars:
-            self.vars.update(vars)
- 
         # replace all of the variables: Note that this replaces even in the
         # string area ... not sure if this is what we want
         keys = self.vars.keys()

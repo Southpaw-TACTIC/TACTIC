@@ -153,6 +153,7 @@ class EditCmd(Command):
         # discover any default handlers
         default_elements = []
 
+
         from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
         tmp_config = WidgetConfigView.get_by_search_type(self.search_type, self.view, layout="EditWdg")
 

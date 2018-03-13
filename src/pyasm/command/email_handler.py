@@ -22,12 +22,14 @@ from pyasm.biz import ExpressionParser
 class EmailHandler(object):
     '''Base class for email notifications'''
 
-    def __init__(self, notification, sobject, parent, command, input):
+    def __init__(self, notification, sobject, parent, command, input, login_ticket=None):
         self.notification = notification
         self.sobject = sobject
         self.command = command
         self.parent = parent
         self.input = input
+
+        self.login_ticket = login_ticket
 
         # Introduce an environment that can be reflected
         self.env_sobjects = {
@@ -180,7 +182,42 @@ class EmailHandler(object):
             env_sobjects['prev_data'] = prev_data
             env_sobjects['update_data'] = update_data
 
-            notification_message  = parser.eval(notification_message, self.sobject, env_sobjects=self.env_sobjects, mode='string')
+            variables = {}
+            data = self.notification.get_json_value("data") or {}
+            if data.get("login_ticket_create") in ['true', True]:
+                expiry = data.get("login_ticket_expiry") or 1
+                unit = data.get("login_ticket_unit") or "day"
+
+                from datetime import datetime
+                from datetutils import relativedelta
+
+                today = datetime.now()
+
+
+                if expiry == "next_monday":
+                    expiry_date = today + relativedelta(weekday=monday)
+                if expiry == "next_friday":
+                    expiry_date = today + relativedelta(weekday=FR)
+
+                elif units == "hour":
+                    expiry_date = today + relativedelta(hours=expiry)
+                elif units == "weeks":
+                    expiry_date = today + relativedelta(weeks=expiry)
+                else:
+                    expiry_date = today + relativedelta(days=expiry)
+
+
+
+                security = Environment.get_security()
+
+                login_name = "admin"
+                ticket = security.generate_ticket(login_name, expiry=expiry, category="temp")
+
+                env_sobjects['login_ticket'] = ticket
+                variables["TICKET"] = ticket.get("ticket")
+
+
+            notification_message  = parser.eval(notification_message, self.sobject, env_sobjects=self.env_sobjects, mode='string', vars=variables)
             del sudo
             return notification_message
 
@@ -680,7 +717,7 @@ class TestEmailHandler(EmailHandler):
         self.pipeline = Pipeline.get_by_code(pipeline_code)
         if not self.pipeline:
             # No pipeline, so don't email
-            print "Warning: No Pipeline"
+            print("Warning: No Pipeline")
             return False
 
 

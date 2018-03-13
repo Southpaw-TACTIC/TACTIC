@@ -201,12 +201,13 @@ class SwapDisplayWdg(BaseRefreshWdg):
                 on_div.add_border()
                 off_div.add_border()
 
-            on_div.add_style("width: 16")
-            on_div.add_style("height: 16")
-            on_div.add_style("overflow: hidden")
-            off_div.add_style("width: 16")
-            off_div.add_style("height: 16")
-            off_div.add_style("overflow: hidden")
+
+            #on_div.add_style("width: 16")
+            #on_div.add_style("height: 16")
+            #on_div.add_style("overflow: hidden")
+            #off_div.add_style("width: 16")
+            #off_div.add_style("height: 16")
+            #off_div.add_style("overflow: hidden")
 
 
         if self.title_wdg:

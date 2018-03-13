@@ -2542,50 +2542,53 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             extra_data[group_column] = group_value
 
 
-            add_div = DivWdg()
-            td.add(add_div)
-            add_div.add_style("display: inline-block")
-            add_div.add_style("float: right")
-            #add_div.add_style("margin: 3px 8px 3px 5px")
-            add_div.add_style("width: 30px")
-            add_div.add_style("padding: 5px")
-            add_div.add_class("tactic_hover")
-            add_div.add_style("text-align: center")
-            add_div.add_style("box-sizing: border-box")
-            add_div.add_class("hand")
-            add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
-            add_div.add_behavior( {
-                "type": "click",
-                "search_type": self.search_type,
-                "extra_data": extra_data,
-                "cbjs_action": '''
-                var class_name = 'tactic.ui.panel.EditWdg';
+            show_group_add = True
+            if show_group_add:
 
-                var kwargs = {
-                    view: 'edit',
-                    search_type: bvr.search_type, 
-                    default: bvr.extra_data,
-                    extra_data: bvr.extra_data,
-                }
-                spt.panel.load_popup("Insert", class_name, kwargs);
+                add_div = DivWdg()
+                td.add(add_div)
+                add_div.add_style("display: inline-block")
+                add_div.add_style("float: right")
+                #add_div.add_style("margin: 3px 8px 3px 5px")
+                add_div.add_style("width: 30px")
+                add_div.add_style("padding: 5px")
+                add_div.add_class("tactic_hover")
+                add_div.add_style("text-align: center")
+                add_div.add_style("box-sizing: border-box")
+                add_div.add_class("hand")
+                add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
+                add_div.add_behavior( {
+                    "type": "click",
+                    "search_type": self.search_type,
+                    "extra_data": extra_data,
+                    "cbjs_action": '''
+                    var class_name = 'tactic.ui.panel.EditWdg';
 
-                '''
-            } )
+                    var kwargs = {
+                        view: 'edit',
+                        search_type: bvr.search_type, 
+                        default: bvr.extra_data,
+                        extra_data: bvr.extra_data,
+                    }
+                    spt.panel.load_popup("Insert", class_name, kwargs);
 
-            add_div.add_behavior( {
-                "type": "clickX",
-                "search_type": self.search_type,
-                "extra_data": extra_data,
-                "cbjs_action": '''
+                    '''
+                } )
 
-                var layout = bvr.src_el.getParent(".spt_layout");
-                spt.table.set_layout(layout);
-                var group_el = bvr.src_el.getParent(".spt_group_row");
-                var new_row = spt.table.add_new_item({row: group_el});
-                new_row.extra_data = bvr.extra_data;
+                add_div.add_behavior( {
+                    "type": "clickX",
+                    "search_type": self.search_type,
+                    "extra_data": extra_data,
+                    "cbjs_action": '''
 
-                '''
-            } )
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    var group_el = bvr.src_el.getParent(".spt_group_row");
+                    var new_row = spt.table.add_new_item({row: group_el});
+                    new_row.extra_data = bvr.extra_data;
+
+                    '''
+                } )
 
 
 
@@ -2612,12 +2615,17 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        #swap = SwapDisplayWdg(title=title_div, icon='BS_FOLDER_OPEN',is_on=self.is_on)
-        swap = SwapDisplayWdg(title=title_div, icon='FA_FOLDER_OPEN_O',is_on=self.is_on)
+        #swap = SwapDisplayWdg(title=title_div, icon='FA_FOLDER_OPEN_O',is_on=self.is_on)
+        swap = SwapDisplayWdg(title=title_div, is_on=self.is_on)
+        open_div = IconWdg("OPEN", "FA_FOLDER_OPEN_O") 
+        closed_div = IconWdg("CLOSED", "FA_FOLDER_O") 
+        swap.set_display_wdgs(open_div, closed_div)
+
         swap.set_behavior_top(self.table)
         td.add(swap)
         swap.add_style("font-weight: bold")
-
+        swap.add_style("margin-left: 5px")
+        swap.add_style("height: 20px")
 
         td.add_style("height: 30px")
         td.add_style("padding-left: %spx" % (i*15))
@@ -5855,6 +5863,7 @@ spt.table.collapse_group = function(group_row) {
         group_row.setAttribute("spt_table_state", "closed");
     }
 
+/*
     var swap_top = group_row.getElement(".spt_swap_top");
     if (swap_top) {
         var on = swap_top.getElement(".SPT_SWAP_ON");
@@ -5864,7 +5873,7 @@ spt.table.collapse_group = function(group_row) {
         spt.hide(on);
         swap_top.setAttribute("spt_state", "off");
     }
-
+*/
 
     // get the rows after the group
     var last_row = group_row;
