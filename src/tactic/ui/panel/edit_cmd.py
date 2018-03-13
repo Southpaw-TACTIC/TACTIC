@@ -155,7 +155,7 @@ class EditCmd(Command):
 
 
         from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
-        tmp_config = WidgetConfigView.get_by_search_type(self.search_type, self.view, layout="EditWdg")
+        tmp_config = WidgetConfigView.get_by_search_type(self.search_type, self.view)
 
         tmp_element_names = tmp_config.get_element_names()
 
