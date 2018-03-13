@@ -1151,8 +1151,6 @@ class IndexWdg(Widget):
         top = DivWdg()
         top.set_id('top_of_application')
 
-        top.add_style("overflow: hidden")
-
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
         if not splash_div:
