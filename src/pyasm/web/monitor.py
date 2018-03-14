@@ -516,7 +516,7 @@ class TacticSchedulerThread(threading.Thread):
                 if isinstance(delay, basestring):
                     try:
                         delay = int(delay)
-                    else:
+                    except:
                         delay = None
 
                 if not delay:
