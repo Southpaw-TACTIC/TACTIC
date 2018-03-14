@@ -512,6 +512,13 @@ class TacticSchedulerThread(threading.Thread):
                 if not interval:
                     continue
 
+
+                if isinstance(delay, basestring):
+                    try:
+                        delay = int(delay)
+                    else:
+                        delay = None
+
                 if not delay:
                     delay = 3
 
