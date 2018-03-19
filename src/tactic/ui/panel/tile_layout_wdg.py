@@ -1510,18 +1510,18 @@ class TileLayoutWdg(ToolLayoutWdg):
         tool_div.add_style("margin-top: -26px")
         tool_div.add_border(size="0px 1px 1px 1px")
 
-
-        href = HtmlElement.href()
-        href.add_attr("href", thumb.get_path())
-        tool_div.add(href)
-
         path = thumb.get_path()
+
         try:
             path = thumb.snapshot.get_web_path_by_type("main")
         except:
             path = path
-
         if path:
+            href = HtmlElement.href()
+            href.add_attr("href", path)
+            tool_div.add(href)
+
+
             basename = os.path.basename(path)
             href.add_attr("download", basename)
 
@@ -1532,7 +1532,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             """
             icon.add_behavior( {
                 'type': 'clickX',
-                'path': thumb.get_path(),
+                'path': path,
                 'cbjs_action': '''
                 alert(bvr.path); 
                 '''
