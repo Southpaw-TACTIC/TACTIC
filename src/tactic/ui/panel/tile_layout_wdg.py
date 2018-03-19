@@ -1509,12 +1509,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         tool_div.add_style("padding: 2px 5px")
         tool_div.add_style("margin-top: -26px")
         tool_div.add_border(size="0px 1px 1px 1px")
-        #moved inside of if path below to get asset path from snapshots 
-        '''
-        href = HtmlElement.href()
-        href.add_attr("href", thumb.get_path())
-        tool_div.add(href)
-        '''
 
         path = thumb.get_path()
 
