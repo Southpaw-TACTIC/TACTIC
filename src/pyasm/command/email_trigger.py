@@ -354,7 +354,7 @@ class EmailTrigger(Trigger):
        
         email_to_sender = ProdSetting.get_value_by_key('email_to_sender')
         if not email_to_sender:
-            email_to_sender = 'true'
+            email_to_sender = 'false'
 
         if email_to_sender in ['False','false']:
             recipients = total_bcc_emails|total_cc_emails|to_emails

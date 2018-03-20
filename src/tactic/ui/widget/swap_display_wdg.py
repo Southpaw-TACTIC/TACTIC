@@ -127,10 +127,12 @@ class SwapDisplayWdg(BaseRefreshWdg):
 
         table = Table()
         inner.add(table)
+        table.add_style("width: 100%")
         table.add_color("color", "color")
         table.add_class("SPT_DTS")
         table.add_row()
         td = table.add_cell()
+        td.add_style("width: 1px")
 
         title = self.kwargs.get("title")
 
