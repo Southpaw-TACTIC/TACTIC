@@ -2245,6 +2245,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         elif group_label_view:
                             from tactic.ui.panel import CustomLayoutWdg
                             label = CustomLayoutWdg(
+                                    search_type=self.search_type,
                                     view=group_label_view,
                                     group_value=group_value,
                                     sobjects=sobjects,
@@ -2589,23 +2590,28 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             show_group_add = self.kwargs.get("show_group_add") or True
             if show_group_add:
 
+                td.add_style("position: relative")
+
                 add_div = DivWdg()
                 td.add(add_div)
                 add_div.add_style("display: inline-block")
                 add_div.add_style("position: absolute")
-                add_div.add_style("right: 17px")
+                add_div.add_style("right: 0px")
                 #add_div.add_style("margin: 3px 8px 3px 5px")
                 add_div.add_style("width: 30px")
                 add_div.add_style("padding: 5px")
                 add_div.add_class("tactic_hover")
                 add_div.add_style("text-align: center")
                 add_div.add_style("box-sizing: border-box")
+                add_div.add_style("z-index: 10")
                 add_div.add_class("hand")
                 add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
+                save_event = add_div.get_unique_event("edit")
                 add_div.add_behavior( {
                     "type": "click",
                     "search_type": self.search_type,
                     "extra_data": extra_data,
+                    "save_event": save_event,
                     "cbjs_action": '''
                     var class_name = 'tactic.ui.panel.EditWdg';
 
@@ -2614,10 +2620,23 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         search_type: bvr.search_type, 
                         default: bvr.extra_data,
                         extra_data: bvr.extra_data,
+                        save_event: bvr.save_event,
                     }
                     spt.panel.load_popup("Insert", class_name, kwargs);
 
                     '''
+                } )
+
+
+                add_div.add_behavior( {
+                    'type': 'listen',
+                    'event_name': save_event,
+                    'cbjs_action': '''
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    spt.table.do_search();
+                    '''
+
                 } )
 
                 add_div.add_behavior( {
@@ -5909,17 +5928,6 @@ spt.table.collapse_group = function(group_row) {
         group_row.setAttribute("spt_table_state", "closed");
     }
 
-/*
-    var swap_top = group_row.getElement(".spt_swap_top");
-    if (swap_top) {
-        var on = swap_top.getElement(".SPT_SWAP_ON");
-        var off = swap_top.getElement(".SPT_SWAP_OFF");
-
-        spt.show(off);
-        spt.hide(on);
-        swap_top.setAttribute("spt_state", "off");
-    }
-*/
 
     // get the rows after the group
     var last_row = group_row;
@@ -5940,10 +5948,12 @@ spt.table.collapse_group = function(group_row) {
 
         reg_row = true;
 
-        if (show)
-            spt.show(row)
-        else 
-            spt.hide(row)
+        if (show) {
+            spt.show(row);
+        }
+        else  {
+            spt.hide(row);
+        }
         
 
         last_row = row;
