@@ -512,6 +512,13 @@ class TacticSchedulerThread(threading.Thread):
                 interval = data.get("interval")
                 delay = data.get("delay")
 
+                # make sure interval and delays are not strings
+                if isinstance(interval, basestring):
+                    try:
+                        interval = int(interval)
+                    except:
+                        interval = None
+
                 if not interval:
                     continue
 
