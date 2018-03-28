@@ -50,6 +50,8 @@ class EmailTrigger(Trigger):
 
     def execute(self):
 
+        print("WARNING: EmailTrigger deprecated, use EmailTrigger2")
+
         # get command sobject and the notification code associated with it
         class_name = self.get_command().__class__.__name__
         cmd_sobj = CommandSObj.get_by_class_name(class_name)
@@ -352,7 +354,7 @@ class EmailTrigger(Trigger):
        
         email_to_sender = ProdSetting.get_value_by_key('email_to_sender')
         if not email_to_sender:
-            email_to_sender = 'true'
+            email_to_sender = 'false'
 
         if email_to_sender in ['False','false']:
             recipients = total_bcc_emails|total_cc_emails|to_emails

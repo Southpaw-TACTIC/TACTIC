@@ -179,6 +179,8 @@ class ResizableTableWdg(BaseRefreshWdg):
         td.add_style("width: 4px")
         td.add_style("min-width: 4px")
         td.add_style("cursor: e-resize")
+        td.add_class("spt_resizable_cell")
+        td.add_style("overflow: hidden")
 
         icon_div = DivWdg()
         icon_div.add_style("width: 4px")

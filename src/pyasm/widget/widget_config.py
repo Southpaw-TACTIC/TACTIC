@@ -1116,6 +1116,7 @@ class WidgetConfigView(Base):
         # we have a list of configs ... go through each to find the element
         action_handler = ""
         for config in self.configs:
+
             # get the action handler
             action_handler = config.get_action_handler(element_name)
             if action_handler:
@@ -1444,7 +1445,7 @@ class WidgetConfigView(Base):
             % (base_dir, sub_dir, filename)
 
 
-        if layout in ['EditWdg', 'tactic.ui.panel.EditWdg']:
+        if layout in ['EditWdg', 'tactic.ui.panel.EditWdg', 'EditCmd']:
             default_definition = "edit_definition"
         else:
             default_definition = "definition"
@@ -1478,11 +1479,11 @@ class WidgetConfigView(Base):
                     if not layout:
                         attributes = config.get_view_attributes()
                         layout = attributes.get("layout")
-                    if layout in ["EditWdg",'tactic.ui.panel.EditWdg'] or view in ['edit','insert','edit_item']:
+                    if layout in ["EditWdg",'tactic.ui.panel.EditWdg','EditCmd'] or view in ['edit','insert','edit_item']:
                         default_definition = 'edit_definition'
 
             
-                    # only add a definition if the db config actualy exists
+                    # only add a definition if the db config actually exists
                     def_db_config = WidgetDbConfig.get_by_search_type(search_type, default_definition)
                     if def_db_config:
                         xml = def_db_config.get_xml_value("config")
@@ -1526,7 +1527,7 @@ class WidgetConfigView(Base):
             if not layout:
                 attributes = config.get_view_attributes()
                 layout = attributes.get("layout")
-            if layout in ["EditWdg",'tactic.ui.panel.EditWdg'] or view in ['edit','insert', 'edit_item']:
+            if layout in ["EditWdg",'tactic.ui.panel.EditWdg','EditCmd'] or view in ['edit','insert', 'edit_item']:
                 default_definition = 'edit_definition'
 
             # add db definiition if it hasn't been searched yet
@@ -1647,10 +1648,19 @@ class WidgetConfigView(Base):
 
             if layout == "EditWdg":
                 config = WidgetConfig.get("default_edit_definition", default_prod_conf_path)
+                if config.has_view():
+                    configs.append(config)
+            elif layout == "EditCmd":
+                config = WidgetConfig.get("default_edit_definition", default_prod_conf_path)
+                if config.has_view():
+                    configs.append(config)
+                config = WidgetConfig.get("default_definition", default_prod_conf_path)
+                if config.has_view():
+                    configs.append(config)
             else:
                 config = WidgetConfig.get("default_definition", default_prod_conf_path)
-            if config.has_view():
-                configs.append(config)
+                if config.has_view():
+                    configs.append(config)
 
 
         widget_config_view = WidgetConfigView(search_type,view,configs,layout=layout)

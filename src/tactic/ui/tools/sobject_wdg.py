@@ -44,7 +44,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
         'type': 'SelectWdg',
         'values': 'true|false',
         'order': 2
-    }
+    },
+
+    'title_view': {
+        'description': 'Determine the "title" view (top part of the detail view)',
+        'category': 'Options',
+        'type': 'TextWdg',
+        'order': 3
+    },
+
 
     }
 
@@ -53,6 +61,19 @@ class SObjectDetailWdg(BaseRefreshWdg):
         self.show_task_process = self.kwargs.get('show_task_process')
 
     def get_title_wdg(self):
+
+
+
+        title_view = self.kwargs.get("title_view")
+        if title_view:
+            from tactic.ui.panel import CustomLayoutWdg
+            widget = CustomLayoutWdg(view=title_view)
+            widget.kwargs['parent'] = self.parent
+            widget.kwargs['sobject'] = self.sobject
+            widget.kwargs['search_key'] = self.sobject.get_search_key()
+            return widget
+
+
 
         search = Search("config/widget_config")
         search.add_filter("view", "detail_title")
@@ -67,8 +88,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     widget.kwargs['sobject'] = self.sobject
                     widget.kwargs['search_key'] = self.sobject.get_search_key()
                     return widget
- 
-
 
         if self.parent:
             code = self.parent.get_value("code", no_exception=True)
@@ -84,7 +103,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             search_type_obj = self.sobject.get_search_type_obj()
 
 
-
+        # show a default title
         div = DivWdg()
         div.add_style("padding: 10px 15px")
 

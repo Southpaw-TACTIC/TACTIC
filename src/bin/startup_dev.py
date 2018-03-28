@@ -68,7 +68,11 @@ def startup(port, server=""):
         sys.exit(0)
 
     import cherrypy
-    cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
+    try:
+        cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
+    except:
+        cherypy_major_version = 3
+
     if cherrypy_major_version >= 3:
         from pyasm.web.cherrypy30_startup import CherryPyStartup
         startup = CherryPyStartup(port)

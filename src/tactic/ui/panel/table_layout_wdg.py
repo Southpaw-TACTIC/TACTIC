@@ -1036,7 +1036,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table.set_attr("spt_search_type", self.search_type)
 
 
+        # provide an opportunity to table
         self.handle_table_behaviors(table)
+
 
      
         # draw 4 (even) rows initially by default
@@ -1064,9 +1066,52 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         chunk_size = 20
 
+
+
+        gstack = []
+
+
         for row, sobject in enumerate(self.sobjects):
 
-            # put in a group row
+            # TEST: check if this sobject is a group
+            document_mode = False
+            if document_mode:
+
+                if sobject.get_value("is_group", no_exception=True):
+
+                    self.is_grouped = False
+                    group_level = sobject.get_value("group_level")
+                    group_value = sobject.get_value("title")
+
+
+                    # FIXME: need to eliminate these
+                    self.group_columns = ['L1','L2']
+                    group_column = "L1"
+                    last_value = group_value
+
+                    #self.group_columns = []
+                    #group_column = None
+                    #last_value = None
+
+                    tr = self.handle_group(table, group_level, sobject, group_column, group_value, last_value)
+
+                    tr.group_level = group_level
+
+
+                    # keep track of the group stack
+                    if group_level < len(gstack):
+                        gstack = gstack[:group_level-1]
+                    gstack.append(tr)
+
+                    continue
+
+                else:
+                    for item in gstack:
+                        item.sobjects.append(sobject)
+
+
+
+            # generate group rows dynamically
             if self.is_grouped:
                 self.handle_groups(table, row, sobject)
             start_point = row - init_load_num
@@ -1087,10 +1132,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 continue
 
 
+            # draw the sobject row
             level = len(self.group_columns) + self.sobject_levels[row]
             self.handle_row(table, sobject, row, level)
 
 
+
+        # dynamically load rows
         if has_loading:
             table.add_behavior( {
             'type': 'load',
@@ -2179,38 +2227,36 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             group_row.add_attr("spt_table_state", "open")
 
             for td in group_row.get_widgets():
-                #td.add_style("overflow: hidden")
-                #td.add_attr("colspan", "2")
+
+                group_label_view = self.kwargs.get("group_label_view")
 
                 # this is set in handle_group
                 group_value = td.group_value
                 group_div = td.group_div
                 if group_div:
-                    if group_value == '__NONE__':
+                    if not group_label_view and group_value == '__NONE__':
                         label = '---'
                     else:
                         group_label_expr = self.kwargs.get("group_label_expr")
                         group_label_link = self.kwargs.get("group_label_link")
-                        group_label_view = self.kwargs.get("group_label_view")
 
                         if group_label_expr:
                             label = Search.eval(group_label_expr, sobjects, single=True)
                         elif group_label_view:
                             from tactic.ui.panel import CustomLayoutWdg
                             label = CustomLayoutWdg(
+                                    search_type=self.search_type,
                                     view=group_label_view,
                                     group_value=group_value,
                                     sobjects=sobjects,
+                                    group_level=group_level,
 
                             )
                         else:
                             label = Common.process_unicode_string(group_value)
 
 
-                    title = DivWdg()
-                    title.add_style("display: inline-block")
-                    title.add(label)
-                    group_div.add(title)
+                    group_div.add(label)
 
 
 
@@ -2218,13 +2264,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # since a group is a row-cell.
             # This adds widgets to a group item.  It would useful to tread a "group"
             # as an sobject and display just like the other sobjects
-            """
             group_widgets = []
             has_widgets = False
        
             if not widget_summary_dict:
                 # assignmenet
                 widget_summary_dict = {}
+
+            """
             group_rows_summary_dict[group_level] = widget_summary_dict
 
             for widget in self.widgets:
@@ -2374,7 +2421,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
     def handle_groups(self, table, row, sobject):
         '''called per sobject, decide to draw a grouping folder if conditions are met''' 
 
-
         if self.kwargs.get('temp') == True:
             return
 
@@ -2464,7 +2510,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     next_dict = {}
                     self.group_values[i+1] = next_dict
 
+
+            # add the sobject to the current group summary.  This is how the group knows
+            # what sobjects belong to it
             self.group_summary.append(sobject)
+
 
 
         # put the sobjects in each sub group for group summary calculation
@@ -2483,11 +2533,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 last_group_level = group_level
 
 
-
-            #self.group_rows[-1].get_sobjects().append(sobject)
-
-            #for j in range(1, group_level+1):
-            #    self.group_rows[-1-j].get_sobjects().append(sobject)
 
 
         
@@ -2542,50 +2587,72 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             extra_data[group_column] = group_value
 
 
-            add_div = DivWdg()
-            td.add(add_div)
-            add_div.add_style("display: inline-block")
-            add_div.add_style("float: right")
-            #add_div.add_style("margin: 3px 8px 3px 5px")
-            add_div.add_style("width: 30px")
-            add_div.add_style("padding: 5px")
-            add_div.add_class("tactic_hover")
-            add_div.add_style("text-align: center")
-            add_div.add_style("box-sizing: border-box")
-            add_div.add_class("hand")
-            add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
-            add_div.add_behavior( {
-                "type": "click",
-                "search_type": self.search_type,
-                "extra_data": extra_data,
-                "cbjs_action": '''
-                var class_name = 'tactic.ui.panel.EditWdg';
+            show_group_add = self.kwargs.get("show_group_add") or True
+            if show_group_add:
 
-                var kwargs = {
-                    view: 'edit',
-                    search_type: bvr.search_type, 
-                    default: bvr.extra_data,
-                    extra_data: bvr.extra_data,
-                }
-                spt.panel.load_popup("Insert", class_name, kwargs);
+                td.add_style("position: relative")
 
-                '''
-            } )
+                add_div = DivWdg()
+                td.add(add_div)
+                add_div.add_style("display: inline-block")
+                add_div.add_style("position: absolute")
+                add_div.add_style("right: 0px")
+                #add_div.add_style("margin: 3px 8px 3px 5px")
+                add_div.add_style("width: 30px")
+                add_div.add_style("padding: 5px")
+                add_div.add_class("tactic_hover")
+                add_div.add_style("text-align: center")
+                add_div.add_style("box-sizing: border-box")
+                add_div.add_style("z-index: 10")
+                add_div.add_class("hand")
+                add_div.add("<i class='fa fa-plus' style='opacity: 0.5'> </i>")
+                save_event = add_div.get_unique_event("edit")
+                add_div.add_behavior( {
+                    "type": "click",
+                    "search_type": self.search_type,
+                    "extra_data": extra_data,
+                    "save_event": save_event,
+                    "cbjs_action": '''
+                    var class_name = 'tactic.ui.panel.EditWdg';
 
-            add_div.add_behavior( {
-                "type": "clickX",
-                "search_type": self.search_type,
-                "extra_data": extra_data,
-                "cbjs_action": '''
+                    var kwargs = {
+                        view: 'edit',
+                        search_type: bvr.search_type, 
+                        default: bvr.extra_data,
+                        extra_data: bvr.extra_data,
+                        save_event: bvr.save_event,
+                    }
+                    spt.panel.load_popup("Insert", class_name, kwargs);
 
-                var layout = bvr.src_el.getParent(".spt_layout");
-                spt.table.set_layout(layout);
-                var group_el = bvr.src_el.getParent(".spt_group_row");
-                var new_row = spt.table.add_new_item({row: group_el});
-                new_row.extra_data = bvr.extra_data;
+                    '''
+                } )
 
-                '''
-            } )
+
+                add_div.add_behavior( {
+                    'type': 'listen',
+                    'event_name': save_event,
+                    'cbjs_action': '''
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    spt.table.do_search();
+                    '''
+
+                } )
+
+                add_div.add_behavior( {
+                    "type": "clickX",
+                    "search_type": self.search_type,
+                    "extra_data": extra_data,
+                    "cbjs_action": '''
+
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    var group_el = bvr.src_el.getParent(".spt_group_row");
+                    var new_row = spt.table.add_new_item({row: group_el});
+                    new_row.extra_data = bvr.extra_data;
+
+                    '''
+                } )
 
 
 
@@ -2593,7 +2660,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         title_div = DivWdg()
         title_div.add(title)
-        title_div.add_style("display: inline-block")
 
 
         # add the group value to this td ... only store widget if it wasn't
@@ -2612,12 +2678,17 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        #swap = SwapDisplayWdg(title=title_div, icon='BS_FOLDER_OPEN',is_on=self.is_on)
-        swap = SwapDisplayWdg(title=title_div, icon='FA_FOLDER_OPEN_O',is_on=self.is_on)
+        #swap = SwapDisplayWdg(title=title_div, icon='FA_FOLDER_OPEN_O',is_on=self.is_on)
+        swap = SwapDisplayWdg(title=title_div, is_on=self.is_on)
+        open_div = IconWdg("OPEN", "FA_FOLDER_OPEN_O") 
+        closed_div = IconWdg("CLOSED", "FA_FOLDER_O") 
+        swap.set_display_wdgs(open_div, closed_div)
+
         swap.set_behavior_top(self.table)
         td.add(swap)
         swap.add_style("font-weight: bold")
-
+        swap.add_style("margin-left: 5px")
+        swap.add_style("height: 20px")
 
         td.add_style("height: 30px")
         td.add_style("padding-left: %spx" % (i*15))
@@ -2635,7 +2706,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         tr.add_attr("spt_group_name", group_value)
 
 
-        if i != 0:
+        if i != 0 and self.group_columns:
             last_group_column = self.group_columns[-1]
             tr.add_class("spt_group_%s" % self.group_ids.get(last_group_column))
 
@@ -2643,6 +2714,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         tr.add_color("background", "background", -3 )
         tr.add_color("color", "color")
+
+        return tr
 
 
 
@@ -5855,16 +5928,6 @@ spt.table.collapse_group = function(group_row) {
         group_row.setAttribute("spt_table_state", "closed");
     }
 
-    var swap_top = group_row.getElement(".spt_swap_top");
-    if (swap_top) {
-        var on = swap_top.getElement(".SPT_SWAP_ON");
-        var off = swap_top.getElement(".SPT_SWAP_OFF");
-
-        spt.show(off);
-        spt.hide(on);
-        swap_top.setAttribute("spt_state", "off");
-    }
-
 
     // get the rows after the group
     var last_row = group_row;
@@ -5885,10 +5948,12 @@ spt.table.collapse_group = function(group_row) {
 
         reg_row = true;
 
-        if (show)
-            spt.show(row)
-        else 
-            spt.hide(row)
+        if (show) {
+            spt.show(row);
+        }
+        else  {
+            spt.hide(row);
+        }
         
 
         last_row = row;

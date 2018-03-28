@@ -1824,12 +1824,16 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
             message = trigger.get_value("message")
             mail_to = trigger.get_value("mail_to")
             mail_cc = trigger.get_value("mail_cc")
+
+            data = trigger.get_json_value("data") or {}
         else:
             event = ''
             subject = ''
             message = ''
             mail_to = ''
             mail_cc = ''
+
+            data = {}
 
         # search of the notification object
         search_key = self.kwargs.get("search_key")
@@ -1997,6 +2001,17 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
         cc_text.add_style("width: 100%")
         notification_div.add(cc_text)
 
+
+        notification_div.add("<br/>")
+
+        notification_div.add("Generate Temporary Login Ticket: &nbsp;")
+        checkbox = CheckboxWdg("login_ticket_create")
+        notification_div.add(checkbox)
+
+        if data.get("login_ticket_create"):
+            checkbox.set_option("checked", "true")
+
+
         return notification_div
 
 
@@ -2058,6 +2073,8 @@ class NotificationTriggerEditCbk(Command):
         search_type = self.kwargs.get("search_type")
         use_default = self.kwargs.get("default") == 'on'
 
+        login_ticket_create = self.kwargs.get("login_ticket_create") == "on"
+
         title = self.kwargs.get("title")
         description = self.kwargs.get('description')
 
@@ -2110,6 +2127,9 @@ class NotificationTriggerEditCbk(Command):
         notification.set_value("mail_cc", mail_cc)
         notification.set_value("project_code", project_code)
 
+
+        data = notification.get_json_value("data") or {}
+
         # unfortunately, notifications have a different filter method than
         # normal triggers ... this needs to made all consistent at some point
         src_status = self.kwargs.get("src_status")
@@ -2121,12 +2141,13 @@ class NotificationTriggerEditCbk(Command):
 
             # Build a data structure for this.  Use a very simple one-to-one
             # rule/action setup
-            data = {
-                "src_process": process,
-                "src_status": src_status,
-            }
-            data = jsondumps(data)
-            notification.set_value("data", data)
+            data["src_process"] = process
+            data["src_status"] = src_status
+
+
+
+        data["login_ticket_create"] = login_ticket_create;
+        notification.set_json_value("data", data)
 
 
         notification.commit()
