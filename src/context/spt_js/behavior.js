@@ -1136,17 +1136,6 @@ spt.behavior._construct_bvr = function( el, bvr_spec )
 
     el.spt_bvrs[ type ].push( bvr );
 
-    /*
-    var count = spt.count[type];
-    if (!count) count = 1
-    else (count += 1);
-    spt.count[type] = count;
-
-    if ( type == 'click_up' ) {
-        console.log(bvr);
-    }
-    */
-    
 
 }
 

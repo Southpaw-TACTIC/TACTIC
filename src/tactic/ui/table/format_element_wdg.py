@@ -629,23 +629,20 @@ class FormatElementWdg(SimpleTableElementWdg):
 
             div.add_class('spt_format_checkbox_%s' % self.get_name())
 
-            version = self.parent_wdg.get_layout_version()
-            if version == "2":
-                pass
-            else:
-                checkbox.add_behavior( {
-                'type': 'click_up',
-                'propagate_evt': True,
-                'cbjs_action': '''
+            checkbox.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
 
-                var cached_data = {};
-                var value_wdg = bvr.src_el;
-                var top_el = bvr.src_el.getParent(".spt_boolean_top");
-                spt.dg_table.edit.widget = top_el;
-                var key_code = spt.kbd.special_keys_map.ENTER;
-                spt.dg_table.inline_edit_cell_cbk( value_wdg, cached_data );
-                '''
-                } )
+            var cached_data = {};
+            var value_wdg = bvr.src_el;
+            var top_el = bvr.src_el.getParent(".spt_boolean_top");
+            spt.dg_table.edit.widget = top_el;
+            var key_code = spt.kbd.special_keys_map.ENTER;
+            spt.dg_table.inline_edit_cell_cbk( value_wdg, cached_data );
+
+            bvr.src_el.checked = !bvr.src_el.checked
+            '''
+            } )
 
             value = div
 
