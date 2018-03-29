@@ -664,33 +664,28 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 #    value_wdg.add_style("padding-right: 3px")
 
 
+        min_height = self.get_option("min_height") or 25
+        single_line = self.get_option("single_line") or False
+
+        value_wdg = DivWdg()
+        if single_line in ["true", True]:
+            value_wdg.add_style("line-height: %spx" % min_height)
+            value_wdg.add_style("white-space: nowrap")
+
+        value_wdg.add_style("overflow-x: hidden")
+        value_wdg.add_style("text-overflow: ellipsis")
+
+
+        # some properties
+        value_wdg.add_style("min-height: %spx" % min_height)
 
         if sobject and SearchType.column_exists(sobject.get_search_type(), name):
-            value_wdg = DivWdg()
 
             self.add_value_update(value_wdg, sobject, name)
 
             # don't call str() to prevent utf-8 encode error
             value_wdg.add(value)
 
-
-            value_wdg.add_style("overflow-x: hidden")
-            value_wdg.add_style("text-overflow: ellipsis")
-
-
-
-            # sompe properties
-            min_height = 25
-            value_wdg.add_style("min-height: %spx" % min_height)
-
-            single_line = self.get_option("single_line") or False
-            if single_line in ["true", True]:
-                value_wdg.add_style("line-height: %spx" % min_height)
-                value_wdg.add_style("white-space: nowrap")
-
-            #value_wdg.add_style("overflow-y: hidden")
-            #value_wdg.add_class("spt_scrollable")
-            #value_wdg.add_attr("title", value)
 
 
             link_expression = self.get_option("link_expression")
@@ -702,13 +697,11 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 #value_wdg.add_attr("spt_class_name", "tactic.ui.tools.SObjectDetailWdg")
                 value_wdg.add_class("hand")
 
+        else:
+            value_wdg.add(value)
 
 
-            return value_wdg
-
-
-
-        return value
+        return value_wdg
 
 
     def is_sortable(self):

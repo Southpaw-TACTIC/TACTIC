@@ -1063,19 +1063,17 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # minus 1 since row starts at 0
         init_load_num -= 1
 
-
         chunk_size = 20
-
 
 
         gstack = []
 
+        document_mode = self.kwargs.get("document_mode") or False
 
         for row, sobject in enumerate(self.sobjects):
 
             # TEST: check if this sobject is a group
-            document_mode = False
-            if document_mode:
+            if document_mode in [True, 'true']:
 
                 if sobject.get_value("is_group", no_exception=True):
 
@@ -1096,6 +1094,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     tr = self.handle_group(table, group_level, sobject, group_column, group_value, last_value)
 
                     tr.group_level = group_level
+                    tr.set_attr("spt_group_level", group_level)
 
 
                     # keep track of the group stack
@@ -1110,26 +1109,29 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         item.sobjects.append(sobject)
 
 
+            else:
 
-            # generate group rows dynamically
-            if self.is_grouped:
-                self.handle_groups(table, row, sobject)
-            start_point = row - init_load_num
-            mod = start_point % chunk_size
+                # generate group rows dynamically
+                if self.is_grouped:
+                    self.handle_groups(table, row, sobject)
+                start_point = row - init_load_num
+                mod = start_point % chunk_size
 
-            if not temp and init_load_num >= 0  and row > init_load_num: 
-                tr, td = table.add_row_cell()
-                td.add_style("height: 30px")
-                td.add_style("padding: 20px")
-                td.add_style("text-align: center")
-                if mod == 1:
-                    td.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
-                    td.add("Loading ...")
-                
-                tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
-                tr.add_class("spt_loading")
-                has_loading = True
-                continue
+                if not temp and init_load_num >= 0  and row > init_load_num: 
+                    tr, td = table.add_row_cell()
+                    td.add_style("height: 30px")
+                    td.add_style("padding: 20px")
+                    td.add_style("text-align: center")
+                    if mod == 1:
+                        td.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+                        td.add("Loading ...")
+                    
+                    tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
+                    tr.add_class("spt_loading")
+                    has_loading = True
+                    continue
+
+
 
 
             # draw the sobject row
@@ -1243,6 +1245,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             # add a hidden insert table
             inner.add( self.get_insert_wdg() )
         
+            # add a hidden group insert table
+            inner.add( self.get_group_insert_wdg() )
             
             # this simple limit provides pagination and should always be drawn. Visible where applicable
             if self.kwargs.get("show_search_limit") not in ['false', False] and search_limit_mode in ['bottom','both']:
@@ -1871,13 +1875,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         SwapDisplayWdg.handle_top(table)
 
         table.add_relay_behavior( {
-            'type': 'mouseup',
-            'bvr_match_class': 'spt_group_row',
+            'type': 'click',
+            'bvr_match_class': 'spt_group_row_collapse',
             'cbjs_action': '''
             spt.table.set_table(bvr.src_el);
-            spt.table.collapse_group(bvr.src_el);
-
-
+            var row = bvr.src_el.getParent(".spt_group_row");
+            spt.table.collapse_group(row);
             '''
         } )
 
@@ -1950,6 +1953,45 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         row.remove_class("spt_table_row")
 
         return table
+
+
+    def get_group_insert_wdg(self):
+        '''Fake a table for inserting'''
+        self.edit_wdgs = {}
+        table = Table()
+        table.add_style("margin-top: 20px")
+        table.add_style("display: none")
+        table.add_class("spt_table_group_insert_table")
+
+        insert_sobject = SearchType.create(self.search_type)
+
+        # set the sobjects to all the widgets then preprocess
+        """
+        for widget in self.widgets:
+            widget.set_sobjects([insert_sobject])
+            #widget.set_layout_wdg(table)
+            widget.set_parent_wdg(self)
+            # preprocess the elements if not in widget mode
+            # it has been done otherwise
+            if self.mode != 'widget':
+                widget.preprocess()
+        """
+
+
+        i = 0
+        group_column = "test"
+        group_value = "N/A"
+        last_value = "N/A"
+        row = self.handle_group(table, i, insert_sobject, group_column, group_value, last_value, is_template=True)
+
+        row.add_class("spt_table_group_insert_row spt_clone")
+        # to make focusable
+        row.add_attr('tabIndex','-1')
+
+        row.remove_class("spt_table_group_row")
+
+        return table
+
 
 
 
@@ -2537,7 +2579,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         
 
-    def handle_group(self, table, i, sobject, group_column, group_value, last_value):
+    def handle_group(self, table, i, sobject, group_column, group_value, last_value, is_template=False):
         '''Draw a toggle and folder for this group'''
         # we have a new group
         tr, td = table.add_row_cell()
@@ -2545,11 +2587,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if i != 0 and not self.is_on:
             tr.add_style("display: none")
 
+        tr.add_class("spt_table_row_item")
         tr.add_class("spt_table_group_row")
 
         unique_id = tr.set_unique_id()
 
-        if self.group_mode in ["top"]:
+        if not is_template and self.group_mode in ["top"]:
             self.group_rows.append(tr)
 
 
@@ -2558,6 +2601,16 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         title = ""
+
+
+        # TEST TEST TEST
+        document_mode = self.kwargs.get("document_mode") or False
+        if document_mode in [True, 'true']:
+            tr.add_behavior( {
+                'type': 'drag',
+                "drag_el": '@',
+                "cb_set_prefix": 'spt.document.drag_row'
+            } )
 
 
 
@@ -2588,6 +2641,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             show_group_add = self.kwargs.get("show_group_add") or True
+            show_group_add = False
             if show_group_add:
 
                 td.add_style("position: relative")
@@ -2660,6 +2714,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         title_div = DivWdg()
         title_div.add(title)
+        title_div.add_class("spt_table_group_title")
 
 
         # add the group value to this td ... only store widget if it wasn't
@@ -2678,20 +2733,34 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        #swap = SwapDisplayWdg(title=title_div, icon='FA_FOLDER_OPEN_O',is_on=self.is_on)
-        swap = SwapDisplayWdg(title=title_div, is_on=self.is_on)
+        #swap = SwapDisplayWdg(title=title_div, is_on=self.is_on)
+        swap = SwapDisplayWdg(is_on=self.is_on)
+        swap.add_class("spt_group_row_collapse")
         open_div = IconWdg("OPEN", "FA_FOLDER_OPEN_O") 
         closed_div = IconWdg("CLOSED", "FA_FOLDER_O") 
         swap.set_display_wdgs(open_div, closed_div)
-
-        swap.set_behavior_top(self.table)
-        td.add(swap)
         swap.add_style("font-weight: bold")
         swap.add_style("margin-left: 5px")
         swap.add_style("height: 20px")
+        swap.set_behavior_top(self.table)
+
+        title_div.add_style("width: 100%")
+
+
+        # build the inner flex layout
+        td_inner = DivWdg()
+        td_inner.add_style("width: 100%")
+        td_inner.add_style("box-sizing: border-box")
+        td.add(td_inner)
+        td_inner.add_style("display: flex")
+
+        td_inner.add(swap)
+        td_inner.add(title_div)
+
+
 
         td.add_style("height: 30px")
-        td.add_style("padding-left: %spx" % (i*15))
+        td.add_style("padding-left: %spx" % (i*15+3))
 
         border_color = tr.get_color("table_border")
         tr.add_border(size="1px 0px 1px 0px", color=border_color)
@@ -2699,6 +2768,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         
         tr.add_attr("spt_unique_id", unique_id)
         tr.add_class("spt_group_row")
+
+
+
+
 
         # for group collapse js function
         tr.add_attr('idx', i)
@@ -2735,16 +2808,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        # FIXME: this should be done before preprocess (and made efficient)
-        #if sobject.get_base_search_type() == 'sthpw/sobject_list':
-        #    search_type = sobject.get_value("search_type")
-        #    search_id = sobject.get_value("search_id")
-        #    parent = Search.get_by_id(search_type, search_id)
-        #    if parent:
-        #        sobject = parent
-        #        self.sobjects[row] = sobject
 
-
+        tr.add_class("spt_table_row_item")
         tr.add_class("spt_table_row")
         # to tag it with the current table to avoid selecting nested table contents when they are present
         tr.add_class("spt_table_row_%s" %self.table_id)
@@ -2753,6 +2818,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if self.connect_key:
             tr.add_attr("spt_connect_key", self.connect_key )
+
+
+        # TEST TEST TEST
+        document_mode = self.kwargs.get("document_mode") or False
+        if document_mode in [True, 'true']:
+            tr.add_behavior( {
+                'type': 'drag',
+                "drag_el": '@',
+                "cb_set_prefix": 'spt.document.drag_row'
+            } )
+
+
 
 
         # add extra data if it exists
@@ -4130,6 +4207,8 @@ spt.table.add_new_item = function(kwargs) {
     var insert_row = table.getElement(".spt_table_insert_row");
     //var insert_row = spt.table.get_insert_row();
 
+    var search_type = layout.getAttribute("spt_search_type");
+
     var row;
     var position;
     var table = spt.table.get_table();
@@ -4198,6 +4277,10 @@ spt.table.add_new_item = function(kwargs) {
     }
     spt.remove_class(clone, 'spt_clone');
 
+    // fire a client event
+    var event = "insertX|"+search_type;
+    spt.named_events.fire_event(event, {src_el: clone});
+
     // find the no items row
     no_items = table.getElement(".spt_table_no_items");
     if (no_items != null) {
@@ -4205,7 +4288,115 @@ spt.table.add_new_item = function(kwargs) {
     }
     
     return clone;
+
 }
+
+
+
+spt.table.add_new_group = function(kwargs) {
+
+    if (typeof(kwargs) == 'undefined') {
+        kwargs = {};
+    }
+
+    var layout = spt.table.get_layout();
+    var table = layout.getElement(".spt_table_group_insert_table")
+    var insert_row = table.getElement(".spt_table_group_insert_row");
+
+    var search_type = layout.getAttribute("spt_search_type");
+
+    var row;
+    var position;
+    var table = spt.table.get_table();
+    if (kwargs.row) {
+        row = kwargs.row;
+        position = "after";
+    }
+    else if (kwargs.insert_location == 'bottom') {
+        var rows = spt.table.get_all_rows();
+        if (rows.length == 0) {
+            row = table.getElement(".spt_table_header_row");
+        }
+        else {
+            row = rows[rows.length-1];
+        }
+        position = "after";
+
+    }
+    else {
+        row = table.getElement(".spt_table_row");
+        position = "before";
+    }
+
+
+
+    var clone = spt.behavior.clone(insert_row);
+
+    if (!row) {
+        var first = table.getElement("tr");
+        if (first) {
+            clone.inject(first, position);
+        }
+        else {
+            table.appendChild(clone);
+        }
+
+    }
+    else {
+        // should specify a class under td to avoid selecting td within td
+        /*
+        var clone_cells = clone.getElements("td.spt_cell_edit");
+        var cells = row.getElements("td.spt_cell_edit");
+        for (var i = 0; i < cells.length; i++) {
+            var cell = cells[i];
+            var clone_cell = clone_cells[i];
+            var size = cell.getSize();
+            if (clone_cell)
+                clone_cell.setStyle("width", size.x);
+        }
+        */
+
+        clone.inject(row, position);
+
+    }
+
+
+    var headers = spt.table.get_headers();
+
+    var group_level = 3;
+
+    var td = clone.getElement("td");
+    td.setAttribute("colspan", headers.length);
+    td.setStyle("padding-left",6*group_level);
+
+    spt.remove_class(clone, 'spt_clone');
+
+    // fire a client event
+    var event = "insertX|"+search_type;
+    spt.named_events.fire_event(event, {src_el: clone});
+
+    // find the no items row
+    no_items = table.getElement(".spt_table_no_items");
+    if (no_items != null) {
+        no_items.destroy();
+    }
+
+    // fire a client event
+    var event = "insertY|"+search_type;
+    spt.named_events.fire_event(event, {src_el: clone});
+
+    // find the no items row
+    no_items = table.getElement(".spt_table_no_items");
+    if (no_items != null) {
+        no_items.destroy();
+    }
+ 
+    return clone;
+
+}
+
+
+
 
 
 spt.table.get_edit_wdg = function(element_name) {
