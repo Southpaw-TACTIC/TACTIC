@@ -127,10 +127,12 @@ class SwapDisplayWdg(BaseRefreshWdg):
 
         table = Table()
         inner.add(table)
+        table.add_style("width: 100%")
         table.add_color("color", "color")
         table.add_class("SPT_DTS")
         table.add_row()
         td = table.add_cell()
+        td.add_style("width: 1px")
 
         title = self.kwargs.get("title")
 
@@ -201,12 +203,13 @@ class SwapDisplayWdg(BaseRefreshWdg):
                 on_div.add_border()
                 off_div.add_border()
 
-            on_div.add_style("width: 16")
-            on_div.add_style("height: 16")
-            on_div.add_style("overflow: hidden")
-            off_div.add_style("width: 16")
-            off_div.add_style("height: 16")
-            off_div.add_style("overflow: hidden")
+
+            #on_div.add_style("width: 16")
+            #on_div.add_style("height: 16")
+            #on_div.add_style("overflow: hidden")
+            #off_div.add_style("width: 16")
+            #off_div.add_style("height: 16")
+            #off_div.add_style("overflow: hidden")
 
 
         if self.title_wdg:

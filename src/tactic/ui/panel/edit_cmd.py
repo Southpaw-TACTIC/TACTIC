@@ -153,13 +153,14 @@ class EditCmd(Command):
         # discover any default handlers
         default_elements = []
 
-        from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
-        tmp_config = WidgetConfigView.get_by_search_type(self.search_type, self.view)
 
+        from pyasm.widget.widget_config import WidgetConfigView, WidgetConfig
+        tmp_config = WidgetConfigView.get_by_search_type(self.search_type, self.view, layout="EditCmd")
         tmp_element_names = tmp_config.get_element_names()
 
         for element_name in tmp_element_names:
             action_handler = tmp_config.get_action_handler(element_name)
+
             if action_handler == 'DefaultValueDatabaseAction':
                 default_elements.append(element_name)
 
@@ -385,7 +386,7 @@ class EditCmd(Command):
             try:
                 action_handler.post_execute()
             except Exception as e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
 
 
 
@@ -603,7 +604,7 @@ class RelatedDatabaseAction(DatabaseAction):
 
         value = self.get_value()
         related.set_value(column, value)
-        #print "setting: ", related.get_search_key(), column, value
+        #print("setting: ", related.get_search_key(), column, value)
         related.commit()
 
 

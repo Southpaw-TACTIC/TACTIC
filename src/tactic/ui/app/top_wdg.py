@@ -442,6 +442,17 @@ class TopWdg(Widget):
             '''
             } )
 
+
+        self.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_not_implemented',
+            'cbjs_action': '''
+            spt.alert("Feature is not yet implemented");
+            '''
+            } )
+
+
+
         self.body.set_unique_id()
         self.body.add_smart_style( "tactic_load", "cursor", "pointer" )
 

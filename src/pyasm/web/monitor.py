@@ -371,6 +371,9 @@ class TacticSchedulerThread(threading.Thread):
         self.dev_mode = False
         super(TacticSchedulerThread,self).__init__()
 
+    def get_title(self):
+        return "Scheduler"
+
     def _check(self):
         pass
 
@@ -509,8 +512,22 @@ class TacticSchedulerThread(threading.Thread):
                 interval = data.get("interval")
                 delay = data.get("delay")
 
+                # make sure interval and delays are not strings
+                if isinstance(interval, basestring):
+                    try:
+                        interval = int(interval)
+                    except:
+                        interval = None
+
                 if not interval:
                     continue
+
+
+                if isinstance(delay, basestring):
+                    try:
+                        delay = int(delay)
+                    except:
+                        delay = None
 
                 if not delay:
                     delay = 3
@@ -646,6 +663,7 @@ class TacticMonitor(object):
         start_job_queue = False
         start_watch_folder = False
         start_async = False
+        start_scheduler = False
 
         services = Config.get_value("services", "enable")
         custom_services = []
@@ -659,6 +677,8 @@ class TacticMonitor(object):
                     start_job_queue = True
                 elif service == 'watch_folder':
                     start_watch_folder = True
+                elif service == 'scheduler':
+                    start_scheduler = True
                 elif service == 'async':
                     start_async = True
                 else:
@@ -760,13 +780,6 @@ class TacticMonitor(object):
 
 
 
-        if len(tactic_threads) == 0:
-            print("\n")
-            print("No services started ...")
-            print("\n")
-            return
-
-
 
         # create a separate thread for timed processes
         # DEPRECATED
@@ -775,14 +788,22 @@ class TacticMonitor(object):
         tactic_threads.append(tactic_timed_thread)
 
         # create a separate thread for scheduler processes
-
-        start_scheduler = Config.get_value("services", "scheduler")
-        if start_scheduler == 'true' or True:
+        if not start_scheduler:
+            start_scheduler = Config.get_value("services", "scheduler")
+        if start_scheduler in ['true', True]:
+            print("Starting Scheduler")
             tactic_scheduler_thread = TacticSchedulerThread()
             tactic_scheduler_thread.set_dev(self.dev_mode)
             tactic_scheduler_thread.start()
             tactic_threads.append(tactic_scheduler_thread)
 
+
+
+        if len(tactic_threads) == 0:
+            print("\n")
+            print("No services started ...")
+            print("\n")
+            return
 
 
 
