@@ -984,18 +984,23 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         try:
             search = Search(search_type)
             if search.column_exists(element_name):
-                search.add_column(element_name, distinct=True)
-                #search.add_group_aggregate_filter([element_name])
-                if search.column_exists("project_code"):
-                    search.add_project_filter()
-                search.set_limit(100)
-                sobjects = search.get_sobjects()
 
-                for x in sobjects:
-                    value = x.get_value(element_name)
-                    if isinstance(value, basestring):
-                        value = value[:50]
-                    existing_values.append(value)
+                column_info = search.get_column_info().get(element_name)
+                data_type = column_info.get("data_type")
+
+                if data_type in ["text", "varchar"]:
+                    search.add_column(element_name, distinct=True)
+                    #search.add_group_aggregate_filter([element_name])
+                    if search.column_exists("project_code"):
+                        search.add_project_filter()
+                    search.set_limit(100)
+                    sobjects = search.get_sobjects()
+
+                    for x in sobjects:
+                        value = x.get_value(element_name)
+                        if isinstance(value, basestring):
+                            value = value[:50]
+                        existing_values.append(value)
 
                 existing_values.sort()
         except (SObjectValueException, SqlException), e:
@@ -1061,7 +1066,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         template.add_style("padding: 3px")
 
         # FIXME:
-        # add a first row.  Unfortunately we can't just add the tempate
+        # add a first row.  Unfortunately we can't just add the template
         # row.  This is because select row breaks if it is drawn twice.
         if not values:
             first_row = DivWdg()

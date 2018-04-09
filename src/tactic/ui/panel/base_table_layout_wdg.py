@@ -739,6 +739,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         for name, value in self.kwargs.items():
             if value == None:
                 continue
+            if isinstance(value, bool):
+                if value == True:
+                    value = 'true'
+                else:
+                    value = 'false'
             if not isinstance(value, basestring):
                 value = str(value)
             # replace " with ' in case the kwargs is a dict
