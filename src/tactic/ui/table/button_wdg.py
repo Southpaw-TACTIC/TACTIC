@@ -224,7 +224,7 @@ class ButtonElementWdg(BaseTableElementWdg):
 
         #behavior = {}
         behavior = self.behavior
-        behavior['type'] = 'mouseup'
+        behavior['type'] = 'click'
         #self.behavior['search_key'] = search_key
         behavior['bvr_match_class'] = "spt_button_%s" % self.name
 

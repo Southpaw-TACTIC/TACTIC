@@ -281,7 +281,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             search_type = sobject.get_value("search_type")
             if not search_type:
-                print "WARNING: sobject_list entry [%s] has no search_type" % sobject.get_id()
+                print("WARNING: sobject_list entry [%s] has no search_type" % sobject.get_id())
                 continue
 
 
@@ -299,7 +299,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             except SearchException as e:
                 # it may have been deleted
                 # show it as is, without remapping
-                print str(e)
+                print(str(e))
                 continue
             ids = [x.get_value("search_id") for row, x in sobjects]
             search.add_filters("id", ids)
@@ -955,7 +955,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             table.add_color("color", "color")
 
             self.header_table.add_style("table-layout", "fixed")
-            self.table.add_style("table-layout", "fixed")
+            if self.kwargs.get("fixed_table") not in [False, 'false']:
+                self.table.add_style("table-layout", "fixed")
+
             self.table.add_style("margin-top: -1px")
 
         else:
@@ -1222,7 +1224,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # refresh columns have init_load_num = -1 and temp = True
         if init_load_num < 0 or temp != True: 
             self.add_table_bottom(table)
-            self.postprocess_groups()
+            self.postprocess_groups(self.group_rows)
 
 
             # extra stuff to make it work with ViewPanelWdg
@@ -1246,7 +1248,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner.add( self.get_insert_wdg() )
         
             # add a hidden group insert table
-            inner.add( self.get_group_insert_wdg() )
+            group_insert_wdg = self.get_group_insert_wdg()
+            inner.add( group_insert_wdg )
+
             
             # this simple limit provides pagination and should always be drawn. Visible where applicable
             if self.kwargs.get("show_search_limit") not in ['false', False] and search_limit_mode in ['bottom','both']:
@@ -1978,17 +1982,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         """
 
 
-        i = 0
+        insert_sobject.set_value("name", "New Group")
+
+
+        group_level = 0
         group_column = "test"
-        group_value = "N/A"
-        last_value = "N/A"
-        row = self.handle_group(table, i, insert_sobject, group_column, group_value, last_value, is_template=True)
+        group_value = "New Group"
+        last_value = "New Group"
+        row = self.handle_group(table, group_level, insert_sobject, group_column, group_value, last_value, is_template=True)
 
         row.add_class("spt_table_group_insert_row spt_clone")
         # to make focusable
         row.add_attr('tabIndex','-1')
 
         row.remove_class("spt_table_group_row")
+
+        self.postprocess_groups( [row] )
 
         return table
 
@@ -2239,7 +2248,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         return False
 
-    def postprocess_groups(self):
+    def postprocess_groups(self, group_rows):
 
         # The problem is that often a group bottom cannot be calculated
         # until all the widgets have been drawn.
@@ -2249,10 +2258,10 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         widget_summary_dict = {}
         last_group_level = -1
         # reversed for ease of tallying 
-        self.group_rows.reverse()
-       
+        group_rows.reverse()
+
         group_level = 0
-        for idx, group_row in enumerate(self.group_rows):
+        for idx, group_row in enumerate(group_rows):
             sobjects = group_row.get_sobjects()
             
             if hasattr(group_row, 'group_level'):
@@ -2760,7 +2769,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
         td.add_style("height: 30px")
-        td.add_style("padding-left: %spx" % (i*15+3))
+        td.add_style("padding-left: %spx" % (i*10+3))
 
         border_color = tr.get_color("table_border")
         tr.add_border(size="1px 0px 1px 0px", color=border_color)
@@ -3000,8 +3009,13 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     value = value.replace('"', '&quot;')
 
 
-                if isinstance(value, bool):
+                elif isinstance(value, bool):
                     value = str(value).lower()
+
+                elif isinstance(value, dict) or isinstance(value, list):
+                    import json
+                    value = json.dumps(value, indent=2, sort_keys=True)
+                    value = value.replace('"', "&quot;")
 
 
                 if value == None:
@@ -3117,7 +3131,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 if text_color:
                     td.add_style("color", text_color)
         except Exception as e:
-            print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8')
+            print('WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8'))
 
 
     def handle_select_header(self, table, border_color=None):
@@ -4363,11 +4377,16 @@ spt.table.add_new_group = function(kwargs) {
 
     var headers = spt.table.get_headers();
 
-    var group_level = 3;
+    var group_level = kwargs.group_level;
+    if (!group_level) {
+        group_level = 0;
+    }
 
     var td = clone.getElement("td");
     td.setAttribute("colspan", headers.length);
-    td.setStyle("padding-left",6*group_level);
+    td.setStyle("padding-left",10*group_level+3);
+
+    clone.setAttribute("spt_group_level", group_level);
 
     spt.remove_class(clone, 'spt_clone');
 
@@ -4515,7 +4534,7 @@ spt.table.show_edit = function(cell) {
     cell.setStyle("overflow", "");
 
 
-    // add the edit to do the dom
+    // add the edit to the DOM
     var table = spt.table.get_table();
     table.appendChild(edit_wdg);
     spt.body.add_focus_element(edit_wdg);
@@ -5224,7 +5243,13 @@ spt.table.set_display = function( el, value, input_type ) {
     }
 
     else {
-        el.innerHTML = value;
+        // find an inner element
+        var update_el = el.getElement(".spt_label");
+        if (update_el) {
+            update_el.innerHTML = value;
+        } else {
+            el.innerHTML = value;
+        }
     }
 }
 
@@ -5268,6 +5293,8 @@ spt.table._accept_single_edit = function(cell, new_value) {
         if (!orig_value) {
             cell.setAttribute("spt_orig_input_value", old_value);
         }
+
+        //new_value = new_value.replace(/"/g, String.fromCharCode(38) +"quot;");
 
         // set the new_value
         cell.setAttribute("spt_input_value", new_value);
@@ -5450,7 +5477,7 @@ spt.table.save_changes = function(kwargs) {
 
     var config_xml = layout.getAttribute("spt_config_xml");
 
-    var kwargs = {
+    var kwargs2 = {
         parent_key: parent_key,
         search_keys: search_keys,
         view: 'edit_item',
@@ -5487,10 +5514,17 @@ spt.table.save_changes = function(kwargs) {
     }
     
     try {
-        var result = server.execute_cmd(class_name, kwargs, {'web_data': web_data});
+        var result = server.execute_cmd(class_name, kwargs2, {'web_data': web_data});
         var info = result.info;
         if (info) {
             search_keys = info.search_keys;
+
+            // temp set the search keys in the row
+            for (var index = 0; index < rows.length; index++) {
+                rows[index].setAttribute("spt_search_key_v2", search_keys[index])
+            }
+
+
             var rtn_search_keys = info.search_keys;
             if (do_refresh ) {
                 var kw = {refresh_bottom : true, json: search_dict, expand_on_load: expand_on_load};
@@ -5513,7 +5547,7 @@ spt.table.save_changes = function(kwargs) {
         var event = "update|" + search_type;
         
         var input = {
-            kwargs: kwargs,
+            kwargs: kwargs2,
             web_data: web_data
         }
         bvr.options = input;
@@ -5529,8 +5563,15 @@ spt.table.save_changes = function(kwargs) {
     spt.table.last_cell = null;
     spt.table.last_data_wdg = null;
     spt.table.last_edit_wdg = null;
-    
 
+
+    var on_complete = kwargs.on_complete;
+    if (on_complete) {
+        on_complete(search_keys);
+    }
+
+    
+    return search_keys;
 }
 
 spt.table.get_search_values = function(search_top) {
@@ -5677,7 +5718,15 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
-    var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
+
+    if (table_top) {
+        var show_select = table_top.getAttribute("spt_show_select");
+    }
+    else {
+        var show_select = null;
+    }
+
+    //var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
     var server = TacticServerStub.get();
 
@@ -7033,7 +7082,7 @@ spt.table.open_ingest_tool = function(search_type) {
 
         related = sobject.get_related_sobjects("ut/asset")
         for sobject in related:
-            print "related: ", sobject.get_value("name")
+            print("related: ", sobject.get_value("name"))
 
 
         return
@@ -7045,7 +7094,7 @@ spt.table.open_ingest_tool = function(search_type) {
         sobjects = search.get_sobjects()
         related = Search.get_related_by_sobjects(sobjects, "ut/asset")
         for key, sobjects in related.items():
-            print "relatedx: ", key, sobjects
+            print("relatedx: ", key, sobjects)
 
 
 
@@ -7422,7 +7471,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
             if config.get_view() != 'definition':
                 continue
             file_path = config.get_file_path()
-            #print "file_path: ", file_path
+            #print("file_path: ", file_path)
             if file_path and file_path.endswith("DEFAULT-conf.xml") or file_path == 'generated':
                 continue
 
