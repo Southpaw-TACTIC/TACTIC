@@ -2337,15 +2337,15 @@ spt.tab.close = function(src_el) {
 
 
 
-        remove_wdg.add_styles("float: right; position: relative; padding-right: 14px")
+        remove_wdg.add_styles("float: right; position: relative; padding-right: 10px")
         from pyasm.widget import IconButtonWdg
         #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
-        icon = IconWdg("Remove Tab", "FA_REMOVE", opacity=0.3)
+        icon = IconWdg("Remove Tab", "FA_REMOVE", opacity=0.3, size=12)
         icon.add_class("spt_icon_inactive")
         icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
         remove_wdg.add(icon)
         #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
-        icon = IconWdg("Remove Tab", "FA_REMOVE")
+        icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
         icon.add_class("spt_icon_active")
         icon.add_style("display: none")
         icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
