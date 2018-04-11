@@ -151,14 +151,12 @@ class WatchFolderFileActionThread(threading.Thread):
                 test = False
                 if test:
                     cmd = None
-                    """
-                    print "Path [%s]" % path
+                    print("Path [%s]" % path)
                     import random
                     t = random.randint(0, 10)
-                    print "random: ", t
-                    if t >= 5:
+                    print("random: ", t)
+                    if t >= 9:
                         foo()
-                    """
 
                 elif handler:
                     cmd = Common.create_from_class_path(handler, [], kwargs)
@@ -187,7 +185,7 @@ class WatchFolderFileActionThread(threading.Thread):
                 try:
 
                     # move to the error queue
-                    if os.path.exsits(path):
+                    if os.path.exists(path):
                         shutil.move(path, error_path)
                     else:
                         # This means that file has already been removed or moved
@@ -265,7 +263,7 @@ class WatchFolderCheckFileThread(threading.Thread):
 
 
         except Exception as e:
-            print "Error: ", e
+            print("Error: ", e)
             shutil.move(path, self.error_path)
             raise
 
