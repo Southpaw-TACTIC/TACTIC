@@ -234,7 +234,7 @@ class SObjectChartWdg(BaseChartWdg):
             if value > self.max_value:
                 self.max_value = value
 
-            values.append(value)        
+            values.append(value)
 
 
         return values, labels
@@ -438,10 +438,29 @@ class CalendarChartWdg(BaseChartWdg):
         'category': 'Display'
     }
 
-
-
-
     }
+
+
+
+
+
+    def postprocess_sobjects(self, sobjects):
+        return sobjects
+
+
+    """
+    def postprocess_sobjects(self, sobjects):
+        # custom
+        for sobject in sobjects:
+            data = sobject.get_json_value("data")
+            for key, value in data.items():
+                new_sobject = SearchType.create("sthpw/virtual")
+                new_sobject.set_value("date", key)
+                new_sobject.set_value("value", value)
+                new_sobjects.append(sobject)
+        return new_sobjects
+    """
+
 
 
     def get_display(self):
@@ -551,7 +570,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
         # defined the buckets based on interval
-        dates = [] 
+        dates = []
         if self.interval == 'weekly':
             min_date = datetime(min_date.year, min_date.month, min_date.day)
             max_date = datetime(max_date.year, max_date.month, max_date.day)
@@ -578,7 +597,7 @@ class CalendarChartWdg(BaseChartWdg):
             else:
                 year = max_date.year
                 month = max_date.month + 1
-            
+
             max_date = datetime(year, month, 1)
             dates = list(rrule.rrule(rrule.MONTHLY, bymonthday=1, dtstart=min_date, until=max_date))
 
@@ -588,8 +607,13 @@ class CalendarChartWdg(BaseChartWdg):
             self.dates_dict[str(date)] = []
 
 
+        sobjects = self.postprocess_sobjects(sobjects)
+
+
+
         # put the appropriate sobjects in each date_dict item
         for sobject in sobjects:
+
             timestamp = sobject.get_value(self.column)
             timestamp = parser.parse(timestamp)
 
@@ -605,8 +629,8 @@ class CalendarChartWdg(BaseChartWdg):
                 timestamp = datetime(timestamp.year,timestamp.month,1)
 
             if self.dates_dict:
-            	interval_sobjects = self.dates_dict[str(timestamp)]
-            	interval_sobjects.append(sobject)
+                interval_sobjects = self.dates_dict[str(timestamp)]
+                interval_sobjects.append(sobject)
 
 
 
@@ -797,7 +821,7 @@ class CalendarChartWdg(BaseChartWdg):
 
             if not options.get("chart_type"):
                 options['chart_type'] = chart_type
-                
+
             str_options = {}
             for x, y in options.items():
                 str_options[str(x)] = y
