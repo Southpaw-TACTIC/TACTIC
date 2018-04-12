@@ -81,14 +81,12 @@ class BaseRefreshWdg(Widget):
     def add_class(self, class_name):
         self.top.add_class(class_name)
 
-
     def add_attr(self, name, value):
         self.top.add_attr(name, value)
 
+
     def set_attr(self, name, value):
         self.top.set_attr(name, value)
-
-
 
 
     def add_style(self, name, value=None):
@@ -233,7 +231,12 @@ class BaseRefreshWdg(Widget):
                 continue
             if value == None:
                 continue
-            if type(value) not in types.StringTypes:
+            elif isinstance(value, bool):
+                if value == True:
+                    value = 'true'
+                else:
+                    value = 'false'
+            elif not isinstance(value, basestring):
                 value = str(value)
             # replace " with ' in case the kwargs is a dict
             value = value.replace('"', "'")

@@ -257,6 +257,7 @@ class WatchFolderThread(BaseProcessThread):
 
     def __init__(self, **kwargs):
         super(WatchFolderThread,self).__init__()
+        self.site = kwargs.get("site")
         self.project_code = kwargs.get("project_code")
         self.base_dir = kwargs.get("base_dir")
         self.search_type = kwargs.get("search_type")
@@ -269,10 +270,12 @@ class WatchFolderThread(BaseProcessThread):
 
     def execute(self):
 
-        # Run the job queue service
+        # Run the watch folder service
         parts = []
         parts.append(python)
         parts.append('"%s/src/tactic/command/watch_drop_folder.py"'% tactic_install_dir)
+        if self.site:
+            parts.append("--site=%s" % self.site)
         parts.append('--project="%s"' % self.project_code)
         parts.append('--drop_path="%s"' % self.base_dir)
         parts.append('--search_type="%s"' % self.search_type)
@@ -283,6 +286,8 @@ class WatchFolderThread(BaseProcessThread):
             parts.append('--process="%s"' % self.process)
 
         executable = " ".join(parts)
+
+        #print("exectuable: ", executable)
 
         os.system('%s' % (executable) )
 
@@ -398,11 +403,12 @@ class TacticSchedulerThread(threading.Thread):
         search.add_filter('code', 'sthpw', op='!=')
         projects = search.get_sobjects()
 
+
         # get the all of the timed triggers
-        #search = Search("sthpw/timed_trigger")
-        #search.add_filter("type", "timed")
-        timed_trigger_sobjs = []
         for project in projects:
+            # do each project separately
+            timed_trigger_sobjs = []
+            project_triggers_count = 0
 
             project_code = project.get_code()
             try:
@@ -429,7 +435,6 @@ class TacticSchedulerThread(threading.Thread):
                     "mode": "threaded",
                     "script_path": "trigger/scheduled"
                 } ''')
-                timed_trigger_sobjs.append(tt)
             """
 
 
@@ -439,9 +444,21 @@ class TacticSchedulerThread(threading.Thread):
                 if not trigger_class and trigger_sobj.get_value("script_path"):
                     trigger_class = 'tactic.command.PythonTrigger'
 
+
                 data = trigger_sobj.get_json_value("data")
+                process_code = data.get("process")
+
+                if not trigger_class and not process_code:
+                    print("Skipping trigger [%s] ... no execution defined" % trigger_sobj.get_code() )
+                    continue
+
 
                 data['project_code'] = trigger_sobj.get_project_code()
+
+
+                if process_code:
+                    print("Skipping process trigger [%s] ... not implemented" % trigger_sobj.get_code() )
+                    continue
 
                 try:
                     timed_trigger = Common.create_from_class_path(trigger_class, [], data)
@@ -452,9 +469,10 @@ class TacticSchedulerThread(threading.Thread):
                     raise Exception("WARNING: [%s] does not exist" % trigger_class)
                     
                 timed_triggers.append(timed_trigger)
+                project_triggers_count += 1
 
             if has_triggers and self.dev_mode:
-                print("Found [%s] scheduled triggers in project [%s]..." % (len(timed_triggers), project_code))
+                print("Found [%s] scheduled triggers in project [%s]..." % (project_triggers_count, project_code))
 
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
@@ -733,6 +751,13 @@ class TacticMonitor(object):
 
         # Watch Folder services
         if start_watch_folder:
+
+            from pyasm.security import Site
+            #site = "workflow"
+            site = None
+            if site:
+                Site.set_site(site)
+
             search = Search("sthpw/watch_folder")
             watch_folders = search.get_sobjects()
 
@@ -763,12 +788,15 @@ class TacticMonitor(object):
                         base_dir=base_dir,
                         search_type=search_type,
                         process=process,
-                        script_path = script_path,
-                        watch_folder_code=watch_folder_code
+                        script_path=script_path,
+                        watch_folder_code=watch_folder_code,
+                        site=site,
                 )
                 watch_thread.start()
                 tactic_threads.append(watch_thread)
 
+            if site:
+                Site.pop_site()
 
 
         # set up custom services 

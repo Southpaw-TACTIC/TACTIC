@@ -775,6 +775,7 @@ class TextAreaWdg(BaseTextWdg):
         value = self.kwargs.get("value")
         if not value:
             value = self.get_value(for_display=True)
+
         self.add(value)
 
         #self.handle_mode()

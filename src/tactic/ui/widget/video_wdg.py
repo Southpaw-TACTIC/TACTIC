@@ -104,8 +104,8 @@ class VideoWdg(BaseRefreshWdg):
         video.add_attr("preload", preload)
 
         #video.add_attr("autoplay", autoplay)
-        if controls:
-            video.add_attr("controls", controls)
+        if controls not in [False, 'false']:
+            video.add_attr("controls", "controls")
 
 
         for i, src in enumerate(sources):

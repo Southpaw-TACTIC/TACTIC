@@ -147,17 +147,16 @@ class WatchFolderFileActionThread(threading.Thread):
                 }
 
                 handler = task.get("handler")
+                #handler = "tactic.command.xyz.XYZCmd"
                 test = False
                 if test:
                     cmd = None
-                    """
-                    print "Path [%s]" % path
+                    print("Path [%s]" % path)
                     import random
                     t = random.randint(0, 10)
-                    print "random: ", t
-                    if t >= 5:
+                    print("random: ", t)
+                    if t >= 9:
                         foo()
-                    """
 
                 elif handler:
                     cmd = Common.create_from_class_path(handler, [], kwargs)
@@ -179,18 +178,34 @@ class WatchFolderFileActionThread(threading.Thread):
 
 
             except Exception as e:
-                print "Error: ", e
+                print("Error: %s" % e)
 
-                # move to the error queue
-                shutil.move(path, error_path)
+                # These operation cannot fail as is should not further
+                # processing
+                try:
 
-                if os.path.exists(verify_path):
-                    os.unlink(verify_path)
+                    # move to the error queue
+                    if os.path.exists(path):
+                        shutil.move(path, error_path)
+                    else:
+                        # This means that file has already been removed or moved
+                        # and nothing can be done.  In this case, for completeness,
+                        # we place a dummy file in the error path
+                        f = open(error_path, "w")
+                        f.write("ERROR: %s" % e)
+                        f.close()
+
+
+                    if os.path.exists(verify_path):
+                        os.unlink(verify_path)
+
+                except Exception as e:
+                    print("WARNING: %s" % e)
 
             finally:
 
                 count += 1
-                print "Done job: ", count
+                print("Done job: %s" % count)
                 if count == task.max_jobs:
                     restart = True
                     break
@@ -248,7 +263,7 @@ class WatchFolderCheckFileThread(threading.Thread):
 
 
         except Exception as e:
-            print "Error: ", e
+            print("Error: ", e)
             shutil.move(path, self.error_path)
             raise
 
@@ -491,7 +506,6 @@ class CheckinCmd(object):
         else:
             transaction.commit()
         
-        #server.finish()
 
         if server_return_value:
             # Create the TACTIC_log file to record every check-in. 
@@ -534,7 +548,7 @@ class WatchDropFolderTask(SchedulerTask):
 
     def __init__(self, **kwargs):
 
-        self.max_jobs = 200
+        self.max_jobs = 20
 
         self.input_kwargs = kwargs
         self.base_dir = kwargs.get("base_dir")

@@ -522,6 +522,13 @@ class CalendarChartWdg(BaseChartWdg):
         search_type = self.kwargs.get("search_type")
         if expression:
             sobjects = Search.eval(expression)
+            if isinstance(sobjects, Search):
+                search = sobjects 
+                if start_date:
+                    search.add_filter(my.column, start_date, op=">")
+                if end_date:
+                    search.add_filter(my.column, end_date, op="<")
+                sobjects = search.get_sobjects()
         elif search_type:
             search = Search(search_type)
             if start_date:
