@@ -403,11 +403,12 @@ class TacticSchedulerThread(threading.Thread):
         search.add_filter('code', 'sthpw', op='!=')
         projects = search.get_sobjects()
 
+
         # get the all of the timed triggers
-        #search = Search("sthpw/timed_trigger")
-        #search.add_filter("type", "timed")
-        timed_trigger_sobjs = []
         for project in projects:
+            # do each project separately
+            timed_trigger_sobjs = []
+            project_triggers_count = 0
 
             project_code = project.get_code()
             try:
@@ -434,7 +435,6 @@ class TacticSchedulerThread(threading.Thread):
                     "mode": "threaded",
                     "script_path": "trigger/scheduled"
                 } ''')
-                timed_trigger_sobjs.append(tt)
             """
 
 
@@ -444,9 +444,21 @@ class TacticSchedulerThread(threading.Thread):
                 if not trigger_class and trigger_sobj.get_value("script_path"):
                     trigger_class = 'tactic.command.PythonTrigger'
 
+
                 data = trigger_sobj.get_json_value("data")
+                process_code = data.get("process")
+
+                if not trigger_class and not process_code:
+                    print("Skipping trigger [%s] ... no execution defined" % trigger_sobj.get_code() )
+                    continue
+
 
                 data['project_code'] = trigger_sobj.get_project_code()
+
+
+                if process_code:
+                    print("Skipping process trigger [%s] ... not implemented" % trigger_sobj.get_code() )
+                    continue
 
                 try:
                     timed_trigger = Common.create_from_class_path(trigger_class, [], data)
@@ -457,9 +469,10 @@ class TacticSchedulerThread(threading.Thread):
                     raise Exception("WARNING: [%s] does not exist" % trigger_class)
                     
                 timed_triggers.append(timed_trigger)
+                project_triggers_count += 1
 
             if has_triggers and self.dev_mode:
-                print("Found [%s] scheduled triggers in project [%s]..." % (len(timed_triggers), project_code))
+                print("Found [%s] scheduled triggers in project [%s]..." % (project_triggers_count, project_code))
 
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
