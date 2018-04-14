@@ -764,6 +764,26 @@ spt.behavior._CB_focus = function( evt )
 
 
 
+spt.behavior._CB_scroll = function( evt )
+{
+    if( ! evt ) { evt = window.event; }
+
+    var scroll_el = spt.behavior.find_bvr_target( "scroll", spt.get_event_target(evt) );
+    if( 'scroll' in scroll_el.spt_bvrs ) {
+        var oc_bvrs = scroll_el.spt_bvrs['scroll'];
+        for( var c=0; c < oc_bvrs.length; c++ ) {
+            var bvr = oc_bvrs[c];
+            if( bvr ) {
+                spt.behavior.run_preaction_action_postaction( bvr, evt, null );
+            }
+        }
+    }
+}
+
+
+
+
+
 spt.behavior._mark_bvr_event_registered = function( el, bvr_type )
 {
     // NOTE: cannot use 'hasOwnProperty' on an HTML element object as it is not supported in IE, that same
@@ -886,6 +906,13 @@ spt.behavior._register_bvr_event = function( el, bvr )
                 spt.behavior._mark_bvr_event_registered( el, bvr.type );
             }
         }
+        else if( bvr.type == 'scroll' ) {
+            if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
+                el.addEvent( "scroll", spt.behavior._CB_scroll );
+                spt.behavior._mark_bvr_event_registered( el, bvr.type );
+            }
+        }
+ 
         else if( ['mouseleave','mouseenter','mouseover','mouseout'].contains(bvr.type) ) {
             if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
                 el.addEvent( bvr.type, function(e, name) {
