@@ -898,6 +898,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if height:
                 scroll.add_style("height: %s" % height)
 
+
+            window_resize_offset = self.kwargs.get("window_resize_offset")
+            window_resize_offset = 0
+            if window_resize_offset:
+                scroll.add_class("spt_window_resize")
+                scroll.add_attr("spt_window_resize_offset", window_resize_offset)
+
+
             scroll.add_class("spt_table_scroll")
             scroll.add_attr( "onScroll", '''$(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
             # Scroll event not implemented in behaviors yet

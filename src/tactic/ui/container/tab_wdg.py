@@ -776,6 +776,9 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
                 }
 
                 if (force || ! content_box.hasClass("spt_content_loaded")) {
+
+                    var resize_offset = content_box.getAttribute("spt_window_resize_offset");
+
                     spt.panel.load(content_box, class_name, kwargs, values);
 
                     // update info on header
@@ -791,6 +794,11 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
                     content_box.setAttribute("spt_element_name", tab_element_name);
                     content_box.setAttribute("spt_tab_id", top_id);
                     content_box.setAttribute("spt_title", title);
+
+                    if (resize_offset) {
+                        content_box.setAttribute("spt_window_resize_offset", resize_offset);
+                    }
+
                 }
                 break;
             }
@@ -954,12 +962,18 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
     var drag_pos = header.getPosition();
     if (spt.tab.dragging == false)
         return;
+
     
     var headers = spt.tab.get_headers();
     for ( var i = headers.length-1; i >= 0; i-- ) {
         if (headers[i] == header) {
             continue;
         }
+
+        if (headers[i].getSttyle("display") == "none") {
+            continue;
+        }
+
         var pos = headers[i].getPosition();
 
         var size = headers[i].getSize();
@@ -977,7 +991,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
     }
 
-    bvr.drag_el.setStyle("position", "static");
+    bvr.drag_el.setStyle("position", "relative");
     bvr.drag_el.setStyle("z-index", "");
     bvr.drag_el.setStyle("top", "");
     bvr.drag_el.setStyle("left", "");
@@ -1152,6 +1166,8 @@ spt.tab.close = function(src_el) {
                 padding: 7px 5px;
                 color: %(color)s;
                 background: %(background)s;
+                height: 30px;
+                box-sizing: border-box;
             }
 
             #%(header_id)s .spt_tab_selected {
@@ -1294,17 +1310,15 @@ spt.tab.close = function(src_el) {
 
 
         header_div = DivWdg()
+        inner.add(header_div)
+
         header_div.add_class("spt_tab_header_top")
         self.header_id = header_div.set_unique_id()
-        inner.add(header_div)
         header_div.add_style("height: auto")
-        #header_div.add_style("overflow-y: hidden")
-        #header_div.add_style("overflow-x: hidden")
         header_div.add_style("float: left")
         header_div.add_style("position: relative")
         header_div.add_style("z-index: 2")
 
-        #header_div.add_style("width: 100%")
         header_div.add_style("margin-bottom: -1px")
 
 
@@ -1349,6 +1363,100 @@ spt.tab.close = function(src_el) {
         title_dict = {}
 
         self.add_context_menu( header_div )
+
+
+        header_div.add_style("width: 100%")
+        header_div.add_style("text-align: left")
+        header_div.add_style("box-sizing: border-box")
+        header_div.add_behavior( { 
+            'type': 'load',
+            'cbjs_action': '''
+
+            var top = bvr.src_el;
+
+            setInterval( function() {
+
+                if (!top.isVisible() ) {
+                    return;
+                }
+
+
+                var els = bvr.src_el.getElements(".spt_tab_header");
+                var count = els.length;
+
+                var offset = 150;
+                var size = bvr.src_el.getSize();
+
+                console.log("total: " + size.x);
+
+                var width = parseInt((size.x-offset) / (count));
+                if (width > 120) {
+                    width = 120;
+                }
+                console.log("w/offset: " + size.x-offset);
+                console.log("width: " + width);
+                console.log("---");
+
+                for (var i = 0; i < els.length; i++) {
+                    els[i].setStyle("width", width);
+                    var title_el = els[i].getElement(".spt_tab_header_label");
+                    title_el.setStyle("width", width);
+                }
+
+            }, 1000);
+            '''
+        } )
+
+
+
+
+
+        show_remove = self.kwargs.get("show_remove")
+
+        if show_remove == "hover":
+
+            header_div.add_relay_behavior( {
+                'type': 'mouseenter',
+                'bvr_match_class': 'spt_tab_header',
+                'cbjs_action': '''
+                var el = bvr.src_el.getElement(".spt_tab_remove");
+                el.setStyle("display", "");
+                '''
+
+            } )
+
+            header_div.add_relay_behavior( {
+                'type': 'mouseleave',
+                'bvr_match_class': 'spt_tab_header',
+                'cbjs_action': '''
+                var el = bvr.src_el.getElement(".spt_tab_remove");
+                el.setStyle("display", "none");
+                '''
+
+            } )
+
+
+
+        header_div.add_relay_behavior( {
+        'type': 'mouseenter',
+        'bvr_match_class': 'spt_tab_remove',
+        'cbjs_action': '''
+        var active = bvr.src_el.getElement(".spt_icon_active");
+        active.setStyle("opacity", 1.0);
+        '''
+        } )
+
+
+        header_div.add_relay_behavior( {
+        'type': 'mouseleave',
+        'bvr_match_class': 'spt_tab_remove',
+        'cbjs_action': '''
+        console.log("exit");
+        var active = bvr.src_el.getElement(".spt_icon_active");
+        active.setStyle("opacity", 0.3);
+        '''
+        } )
+
 
 
         loaded_dict = {}
@@ -1439,7 +1547,7 @@ spt.tab.close = function(src_el) {
 
         show_add = self.kwargs.get("show_add") not in [False, "false"]
         if show_add:
-            inner.add( self.get_add_wdg() )
+            header_div.add( self.get_add_wdg() )
 
         # should only be seen by admin
         #security = Environment.get_security()
@@ -1453,11 +1561,12 @@ spt.tab.close = function(src_el) {
         content_top = DivWdg()
         content_top.add_class("spt_tab_content_top")
         content_top.add_style("z-index: 1")
-        #content_top.add_style("margin-top: -1px")
+        content_top.add_style("margin-top: -1px")
+        #content_top.add_style("box-sizing: border-box")
 
         # add a div so that it breaks correctly
         if self.mode == 'default':
-            content_top.add("<div style='height:5px'></div>")
+            #content_top.add("<div style='height:5px'></div>")
             content_top.set_round_corners(5, corners=['TR','BR','BL'])
             border = self.kwargs.get("border_color")
             if not border:
@@ -1467,15 +1576,26 @@ spt.tab.close = function(src_el) {
 
         inner.add(content_top)
 
-        height = self.kwargs.get("height")
-        if height:
-            content_top.add_style("height: %s" % height)
-            content_top.add_style("overflow-y: auto")
 
-            content_top.add_style("min-height: %s" % height)
+
+        resize_offset = self.kwargs.get("resize_offset")
+        if resize_offset != None:
+            content_top.add_class("spt_window_resize")
+            content_top.add_attr("spt_window_resize_offset", resize_offset)
+
         else:
-            # TODO: make this configurable
-            content_top.add_style("min-height: 500px")
+
+            height = self.kwargs.get("height")
+            if height:
+                content_top.add_style("height: %s" % height)
+                content_top.add_style("overflow-y: auto")
+
+                content_top.add_style("min-height: %s" % height)
+
+
+            else:
+                # TODO: make this configurable
+                content_top.add_style("min-height: 500px")
 
 
 
@@ -1509,19 +1629,25 @@ spt.tab.close = function(src_el) {
 
 
 
-
         # put in a content box for each element
         for element_name in element_names:
             content_div = DivWdg()
+            content_top.add(content_div)
+
             content_div.add_class("spt_tab_content")
             content_div.add_attr("spt_tab_id", self.unique_id)
             content_div.add_attr("spt_element_name", element_name)
 
+            resize_offset = self.kwargs.get("resize_offset")
+            if resize_offset != None:
+                content_div.add_class("spt_window_resize")
+                content_div.add_attr("spt_window_resize_offset", resize_offset)
+                content_div.add_style("overflow: auto")
+
             
             content_div.add_style("width: 100%")
-            #content_div.add_style("height: 100%")
+            #content_div.add_style("box-sizing: border_box")
             content_div.add_style("text-align: left")
-            content_top.add(content_div)
             
             is_loaded = loaded_dict.get(element_name)
             if element_name == selected or is_loaded:
@@ -1574,6 +1700,15 @@ spt.tab.close = function(src_el) {
             content_div.add_attr("spt_tab_id", self.unique_id)
             content_div.add_class("spt_content_loaded")
             content_div.add_attr("spt_element_name", name)
+
+
+            resize_offset = self.kwargs.get("resize_offset")
+            if resize_offset != None:
+                content_div.add_class("spt_window_resize")
+                content_div.add_attr("spt_window_resize_offset", resize_offset)
+                content_div.add_style("overflow: auto")
+
+
 
             title = title_dict.get(name)
             content_div.add_attr("spt_title", title)
@@ -1660,6 +1795,7 @@ spt.tab.close = function(src_el) {
 
         div = DivWdg()
         div.add_style("margin-left: -2px")
+        div.add_style("display: inline-block")
 
         icon_div = DivWdg()
         icon_div.add_style("padding: 0 2px 0 2px")
@@ -2182,6 +2318,9 @@ spt.tab.close = function(src_el) {
         header.add_style("vertical-align: top")
         header.add_style("margin-right: 1px")
 
+        # TODO: this should be the default
+        #header.add_style("box-sizing: border-box")
+
 
         if is_selected:
             header.add_class("spt_tab_selected")
@@ -2283,19 +2422,17 @@ spt.tab.close = function(src_el) {
 
         #if self.use_default_style:
         if True:
-            title_div.add_style("min-width: 100px")
             title_div.add_style("text-align: left")
             title_div.add_style("overflow: hidden")
-            title_div.add_attr("nowrap", "nowrap")
-            title_div.add_style("float: left")
+            title_div.add_style("text-overflow: ellipsis")
+            title_div.add_style("white-space", "nowrap");
+            #title_div.add_style("float: left")
+            title_div.add_style("z-index: 1")
+            title_div.add_style("width: 100%")
 
 
         title_div.add_class("spt_tab_header_label");
-        #title_div.add_style("text-overflow: ellipsis")
-        if len(title) > 20:
-            display_title = "%s..." % title[:18]
-        else:
-            display_title = title
+        display_title = title
         title_div.add(display_title)
         header.add(title_div)
 
@@ -2306,77 +2443,52 @@ spt.tab.close = function(src_el) {
         remove_wdg = DivWdg()
         remove_wdg.add_class("spt_tab_remove")
 
-        show_remove = self.kwargs.get("show_remove")
-        if is_template or show_remove not in [False, 'false']:
-            header.add(remove_wdg)
-        #header.add(remove_wdg)
-
-        if show_remove == "hover":
-            remove_wdg.add_style("opacity: 0.0")
-
-            header.add_behavior( {
-                'type': 'mouseenter',
-                'cbjs_action': '''
-                var el = bvr.src_el.getElement(".spt_tab_remove");
-                el.setStyle("opacity", 1);
-                '''
-
-            } )
-
-            header.add_behavior( {
-                'type': 'mouseleave',
-                'cbjs_action': '''
-                var el = bvr.src_el.getElement(".spt_tab_remove");
-                el.setStyle("opacity", 0);
-                '''
-
-            } )
-
-
-
-
-
-
-        remove_wdg.add_styles("float: right; position: relative; padding-right: 10px")
-        from pyasm.widget import IconButtonWdg
-        #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_INACTIVE)
-        icon = IconWdg("Remove Tab", "FA_REMOVE", opacity=0.3, size=12)
-        icon.add_class("spt_icon_inactive")
-        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
-        remove_wdg.add(icon)
-        #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
-        icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
-        icon.add_class("spt_icon_active")
-        icon.add_style("display: none")
-        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%")
-        remove_wdg.add(icon)
-        
-
-        remove_wdg.add_behavior( {
-        'type': 'hover',
-        'cbjs_action_over': '''
-        var inactive = bvr.src_el.getElement(".spt_icon_inactive");
-        var active = bvr.src_el.getElement(".spt_icon_active");
-        spt.show(active);
-        spt.hide(inactive);
-        ''',
-        'cbjs_action_out': '''
-        var inactive = bvr.src_el.getElement(".spt_icon_inactive");
-        var active = bvr.src_el.getElement(".spt_icon_active");
-        spt.show(inactive);
-        spt.hide(active);
-        '''
-        })
 
         remove_wdg.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
-            spt.tab.close(bvr.src_el); 
+        spt.tab.close(bvr.src_el); 
         '''
         } )
 
 
+
+        show_remove = self.kwargs.get("show_remove")
+        if is_template or show_remove not in [False, 'false']:
+            header.add(remove_wdg)
+
+
+        if show_remove == "hover":
+            remove_wdg.add_style("display: none")
+
+        #remove_wdg.add_style("float: right")
+        #remove_wdg.add_style("position: relative")
+        #remove_wdg.add_style("padding-right: 10px")
+
+
+        remove_wdg.add_style("position: absolute")
+        remove_wdg.add_style("right: 0px")
+        remove_wdg.add_style("top: 8px")
+        remove_wdg.add_style("z-index: 2")
+        remove_wdg.add_style("width: 15px")
+        remove_wdg.add_style("height: 15px")
+        remove_wdg.add_style("padding-left: 2px")
+
+        remove_wdg.add_style("border-radius: 10px")
+        remove_wdg.add_style("box-sizing: border-box")
+        remove_wdg.add_style("color: #000")
+        remove_wdg.add_style("background: #FFF")
+        remove_wdg.add_style("border: solid 1px #DDD")
+
+
+
+        icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
+        icon.add_class("spt_icon_active")
+        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%; opacity: 0.3;")
+        remove_wdg.add(icon)
         
+
+       
 
         # add a drag behavior
         allow_drag = self.kwargs.get("allow_drag")
