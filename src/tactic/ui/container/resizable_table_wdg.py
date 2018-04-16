@@ -24,6 +24,9 @@ class ResizableTableWdg(BaseRefreshWdg):
         self.table.add_style("padding: 0px")
         self.table.set_attr("cellpadding", "0px")
         self.table.set_attr("cellspacing", "0px")
+        self.table.set_attr("box-sizing", "border-box")
+
+
         self.is_first_row = True
         self.hilight = self.table.get_color("background", -40)
         super(ResizableTableWdg, self).__init__(**kwargs)
@@ -55,15 +58,15 @@ class ResizableTableWdg(BaseRefreshWdg):
         'cbjs_action': '''
         var resizable_cells = bvr.src_el.getElements(".spt_resizable_cell");
         for (var i = 0; i < resizable_cells.length; i++) {
-            var resizable_el = resizable_cells[i].getElement(".spt_resizable");
-            if (!resizable_el) {
-                continue;
-            }
-
+            var resizable_els = resizable_cells[i].getElements(".spt_resizable");
             var size = resizable_cells[i].getSize();
 
-            resizable_el.setStyle("width", size.x);
-            resizable_el.setAttribute("width", size.x);
+            for (var j = 0; j < resizable_els.length; j++) {
+                var resizable_el = resizable_els[j];
+
+                resizable_el.setStyle("width", size.x-100);
+                resizable_el.setAttribute("width", size.x-100);
+            }
         }
         '''
         } )

@@ -9,6 +9,9 @@
 #
 #
 
+from __future__ import print_function
+
+
 __all__ = [ 'TopWdg', 'TitleTopWdg']
 
 import types
@@ -1155,11 +1158,12 @@ class IndexWdg(Widget):
 
     def __init__(self, hash=""):
         self.hash = hash
+        self.top = DivWdg()
         super(IndexWdg, self).__init__()
 
     def get_display(self):
 
-        top = DivWdg()
+        top = self.top
         top.set_id('top_of_application')
 
         from tactic.ui.panel import HashPanelWdg 
@@ -1485,8 +1489,6 @@ class XSendFileTopWdg(BaseRefreshWdg):
         base_dir = "%s/%s" % (asset_dir, project_code)
         path = "%s/%s" % (base_dir, rel_path)
         filename = os.path.basename(rel_path)
-
-        print "path: ", path
 
 
 

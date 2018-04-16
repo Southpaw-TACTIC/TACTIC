@@ -525,7 +525,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_color("color", "color")
         title_wdg.add_style("padding: 15px 10px 10px 10px")
         title_wdg.add_style("height: 16px")
-        title_wdg.add_style("margin: -2px -1px 10px -2px")
+        #title_wdg.add_style("margin: -2px -1px 10px -2px")
         title_wdg.add_border()
         left_div.add_style("width: 100%")
 
@@ -1304,7 +1304,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         shelf_wdg.add_style("height: 35px")
         shelf_wdg.add_color("background", "background", -10)
         shelf_wdg.add_style("padding: 3px")
-        shelf_wdg.add_style("margin: -2px -2px 8px -2px")
+        #shelf_wdg.add_style("margin: -2px -2px 8px -2px")
         shelf_wdg.add_border(size="1px 1px 1px 0px")
 
 
