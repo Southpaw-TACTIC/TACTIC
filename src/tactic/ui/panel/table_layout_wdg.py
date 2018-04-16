@@ -6412,7 +6412,6 @@ spt.table.expand_table = function(mode) {
             spt.behavior.destroy_element(div);
         }
 
-
         var parent = table.getParent();
         if (parent.scrollHeight > parent.clientHeight) {
             header_parent = header_table.getParent();

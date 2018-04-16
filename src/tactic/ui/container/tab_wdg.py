@@ -1368,44 +1368,56 @@ spt.tab.close = function(src_el) {
         header_div.add_style("width: 100%")
         header_div.add_style("text-align: left")
         header_div.add_style("box-sizing: border-box")
-        header_div.add_behavior( { 
-            'type': 'load',
-            'cbjs_action': '''
 
-            var top = bvr.src_el;
+        resize_headers = True
+        if resize_headers:
+            header_div.add_style("white-space", "nowrap");
 
-            setInterval( function() {
+            offset = 150;
+            header_div.add_behavior( { 
+                'type': 'load',
+                'offset': offset,
+                'cbjs_action': '''
 
-                if (!top.isVisible() ) {
-                    return;
-                }
+                var top = bvr.src_el;
+                top.spt_last_width = 0;
+
+                var offset = bvr.offset;
+
+                setInterval( function() {
+
+                    if (!top.isVisible() ) {
+                        return;
+                    }
+
+                    var size = top.getSize();
+                    if (size.x == top.spt_last_width) {
+                        return;
+                    }
+
+                    top.spt_last_width = size.x;
+
+                    console.log("resizing")
 
 
-                var els = bvr.src_el.getElements(".spt_tab_header");
-                var count = els.length;
+                    var els = bvr.src_el.getElements(".spt_tab_header");
+                    var count = els.length;
 
-                var offset = 150;
-                var size = bvr.src_el.getSize();
 
-                console.log("total: " + size.x);
+                    var width = parseInt((size.x-offset) / (count));
+                    if (width > 120) {
+                        width = 120;
+                    }
 
-                var width = parseInt((size.x-offset) / (count));
-                if (width > 120) {
-                    width = 120;
-                }
-                console.log("w/offset: " + size.x-offset);
-                console.log("width: " + width);
-                console.log("---");
+                    for (var i = 0; i < els.length; i++) {
+                        els[i].setStyle("width", width);
+                        var title_el = els[i].getElement(".spt_tab_header_label");
+                        title_el.setStyle("width", width);
+                    }
 
-                for (var i = 0; i < els.length; i++) {
-                    els[i].setStyle("width", width);
-                    var title_el = els[i].getElement(".spt_tab_header_label");
-                    title_el.setStyle("width", width);
-                }
-
-            }, 1000);
-            '''
-        } )
+                }, 500);
+                '''
+            } )
 
 
 
