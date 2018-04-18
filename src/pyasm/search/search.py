@@ -3085,7 +3085,7 @@ class SObject(object):
 
 
     def set_json_value(self, name, value):
-        if not value:
+        if value is None:
             self.set_value(name, value)
             return
 

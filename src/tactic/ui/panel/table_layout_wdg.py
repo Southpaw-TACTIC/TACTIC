@@ -3536,7 +3536,6 @@ spt.table.get_element_names = function() {
 }
 
 
-
 spt.table.get_column_index = function(element_name) {
     var index = -1;
 
@@ -5499,7 +5498,6 @@ spt.table.save_changes = function(kwargs) {
         connect_key: connect_key,
         trigger_mode: kwargs.trigger_mode,
         config_xml: config_xml,
-
     }
    
 
@@ -5731,9 +5729,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     if (table_top) {
         var show_select = table_top.getAttribute("spt_show_select");
+        var document_mode = table_top.getAttribute("spt_document_mode");
     }
     else {
         var show_select = null;
+        var document_mode = false;
     }
 
     //var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
@@ -5759,6 +5759,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         search_keys: search_keys,
         show_shelf: false,
         show_select: show_select,
+        document_mode: document_mode,
         element_names: element_names,
         group_elements: group_elements,
         config_xml: config_xml,
