@@ -900,7 +900,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             window_resize_offset = self.kwargs.get("window_resize_offset")
-            window_resize_offset = 0
+            #window_resize_offset = 250
             if window_resize_offset:
                 scroll.add_class("spt_window_resize")
                 scroll.add_attr("spt_window_resize_offset", window_resize_offset)
@@ -1788,12 +1788,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
                 function(event, src_el) {
                     // remember the original color
+                    src_el.addClass("spt_row_hover");
                     src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
                     spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
                 } )
 
             bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
                 function(event, src_el) {
+                    src_el.removeClass("spt_row_hover");
                     src_el.setAttribute("spt_hover_background", "");
                     spt.mouse.table_layout_hover_out({}, {src_el: src_el});
                 } )

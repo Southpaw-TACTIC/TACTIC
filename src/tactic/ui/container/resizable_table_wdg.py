@@ -64,8 +64,8 @@ class ResizableTableWdg(BaseRefreshWdg):
             for (var j = 0; j < resizable_els.length; j++) {
                 var resizable_el = resizable_els[j];
 
-                resizable_el.setStyle("width", size.x-100);
-                resizable_el.setAttribute("width", size.x-100);
+                resizable_el.setStyle("width", size.x);
+                resizable_el.setAttribute("width", size.x);
             }
         }
         '''
