@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ["SObjectChartWdg", "CalendarChartWdg"]
+__all__ = ["BaseChartWdg", "SObjectChartWdg", "CalendarChartWdg"]
 
 from pyasm.common import Environment, Common, jsonloads
 from pyasm.biz import Project
