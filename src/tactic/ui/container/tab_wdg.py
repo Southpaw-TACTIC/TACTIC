@@ -970,7 +970,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             continue;
         }
 
-        if (headers[i].getSttyle("display") == "none") {
+        if (headers[i].getStyle("display") == "none") {
             continue;
         }
 
@@ -2420,6 +2420,7 @@ spt.tab.close = function(src_el) {
                 title_div.add(count_wdg)
                 count_wdg.add_style("float: right")
                 count_wdg.add_style("font-size: 0.7em")
+                count_wdg.add_style("margin-right: 10px")
                 if count_color:
                     count_wdg.add_style("background", count_color)
 
@@ -2479,7 +2480,7 @@ spt.tab.close = function(src_el) {
 
 
         remove_wdg.add_style("position: absolute")
-        remove_wdg.add_style("right: 0px")
+        remove_wdg.add_style("right: 2px")
         remove_wdg.add_style("top: 8px")
         remove_wdg.add_style("z-index: 2")
         remove_wdg.add_style("width: 15px")
@@ -2490,7 +2491,7 @@ spt.tab.close = function(src_el) {
         remove_wdg.add_style("box-sizing: border-box")
         remove_wdg.add_style("color: #000")
         remove_wdg.add_style("background: #FFF")
-        remove_wdg.add_style("border: solid 1px #DDD")
+        remove_wdg.add_style("border: solid 1px transparent")
 
 
 

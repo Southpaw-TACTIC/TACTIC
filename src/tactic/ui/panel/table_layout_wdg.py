@@ -379,6 +379,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                     eval(self.group_columns)
 
+
         #self.group_columns = ['timestamp']
         #self.group_interval = TableLayoutWdg.GROUP_WEEKLY
         if not self.group_columns:
@@ -900,7 +901,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             window_resize_offset = self.kwargs.get("window_resize_offset")
-            #window_resize_offset = 250
             if window_resize_offset:
                 scroll.add_class("spt_window_resize")
                 scroll.add_attr("spt_window_resize_offset", window_resize_offset)
