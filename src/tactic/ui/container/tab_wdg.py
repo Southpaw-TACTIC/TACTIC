@@ -127,6 +127,38 @@ spt.tab.get_header = function(name) {
 
 
 
+
+spt.tab.resize_headers = function() {
+
+    var top = spt.tab.top;
+    var header_top = top.getElement(".spt_tab_header_top");
+
+    var offset = 120;
+
+    var size = top.getSize();
+    top.spt_last_width = size.x;
+
+    var els = bvr.src_el.getElements(".spt_tab_header");
+    var count = els.length;
+    console.log("resize: " + count);
+
+
+    var width = parseInt((size.x-offset) / (count));
+    if (width > 120) {
+        width = 120;
+    }
+
+    for (var i = 0; i < els.length; i++) {
+        els[i].setStyle("width", width);
+        var title_el = els[i].getElement(".spt_tab_header_label");
+        title_el.setStyle("width", width);
+    }
+}
+
+
+
+
+
 spt.tab.get_content = function(name) {
     var top = spt.tab.top;
     var tab_id = top.getAttribute("spt_tab_id");
@@ -361,6 +393,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         header.removeClass("spt_content_loaded");
         header.inject(last_header, "after");
 
+        spt.tab.resize_headers();
+
 
         var selected_header = spt.tab.get_selected_header();
         if (selected_header) {
@@ -452,23 +486,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     }
 
 
-    // This does nothing?
-    //else {
-    /*
-    if (true) {
-        var content_top = top.getElement(".spt_tab_content_top");
-        var content_boxes = content_top.getElements(".spt_tab_content");
-        for (var i=0; i < content_boxes.length; i++) {
-            var content_box = content_boxes[i];
-            var box_name = content_box.getAttribute("spt_element_name")
-            if (box_name == element_name) {
-                content_box.setAttribute("spt_element_name", element_name)
-                break;
-            }
-        }
-    }
-    */
-
 
     if (! class_name) {
         spt.tab.select(element_name);
@@ -503,6 +520,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     if (top.hasClass("spt_tab_save_state") ) {
         spt.tab.save_state();
     }
+
 
     return header;
 }
@@ -970,7 +988,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
             continue;
         }
 
-        if (headers[i].getSttyle("display") == "none") {
+        if (headers[i].getStyle("display") == "none") {
             continue;
         }
 
@@ -1079,6 +1097,7 @@ spt.tab.close = function(src_el) {
         spt.behavior.destroy_element(header);
         spt.behavior.destroy_element(content);
 
+        spt.tab.resize_headers();
 
 
         var last_element_name = spt.tab.get_last_selected_element_name();
@@ -1373,7 +1392,7 @@ spt.tab.close = function(src_el) {
         if resize_headers:
             header_div.add_style("white-space", "nowrap");
 
-            offset = 150;
+            offset = 120;
             header_div.add_behavior( { 
                 'type': 'load',
                 'offset': offset,
@@ -1397,9 +1416,6 @@ spt.tab.close = function(src_el) {
 
                     top.spt_last_width = size.x;
 
-                    console.log("resizing")
-
-
                     var els = bvr.src_el.getElements(".spt_tab_header");
                     var count = els.length;
 
@@ -1415,7 +1431,7 @@ spt.tab.close = function(src_el) {
                         title_el.setStyle("width", width);
                     }
 
-                }, 500);
+                }, 250);
                 '''
             } )
 
@@ -2420,6 +2436,7 @@ spt.tab.close = function(src_el) {
                 title_div.add(count_wdg)
                 count_wdg.add_style("float: right")
                 count_wdg.add_style("font-size: 0.7em")
+                count_wdg.add_style("margin-right: 10px")
                 if count_color:
                     count_wdg.add_style("background", count_color)
 
@@ -2450,7 +2467,7 @@ spt.tab.close = function(src_el) {
 
 
 
-        title_div.add_attr("title", "%s (%s)" % (title, element_name))
+        title_div.add_attr("title", "%s" % (title))
 
         remove_wdg = DivWdg()
         remove_wdg.add_class("spt_tab_remove")
@@ -2479,7 +2496,7 @@ spt.tab.close = function(src_el) {
 
 
         remove_wdg.add_style("position: absolute")
-        remove_wdg.add_style("right: 0px")
+        remove_wdg.add_style("right: 2px")
         remove_wdg.add_style("top: 8px")
         remove_wdg.add_style("z-index: 2")
         remove_wdg.add_style("width: 15px")
@@ -2490,7 +2507,7 @@ spt.tab.close = function(src_el) {
         remove_wdg.add_style("box-sizing: border-box")
         remove_wdg.add_style("color: #000")
         remove_wdg.add_style("background: #FFF")
-        remove_wdg.add_style("border: solid 1px #DDD")
+        remove_wdg.add_style("border: solid 1px transparent")
 
 
 
