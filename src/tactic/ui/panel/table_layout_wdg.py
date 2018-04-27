@@ -4333,7 +4333,11 @@ spt.table.add_new_group = function(kwargs) {
     var table = spt.table.get_table();
     if (kwargs.row) {
         row = kwargs.row;
-        position = "after";
+        if (kwargs.position) {
+            position = kwargs.position;
+        } else {
+            position = "after";
+        }
     }
     else if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
@@ -4351,10 +4355,8 @@ spt.table.add_new_group = function(kwargs) {
         position = "before";
     }
 
-
-
     var clone = spt.behavior.clone(insert_row);
-
+   
     if (!row) {
         var first = table.getElement("tr");
         if (first) {
@@ -4413,12 +4415,6 @@ spt.table.add_new_group = function(kwargs) {
     var event = "insertY|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
 
-    // find the no items row
-    no_items = table.getElement(".spt_table_no_items");
-    if (no_items != null) {
-        no_items.destroy();
-    }
- 
     return clone;
 
 }
