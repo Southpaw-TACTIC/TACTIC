@@ -4330,14 +4330,20 @@ spt.table.add_new_group = function(kwargs) {
 
     var row;
     var position;
+    var insert_location = kwargs.insert_location;
+    if (!insert_location) insert_location = "bottom";
+
     var table = spt.table.get_table();
     if (kwargs.row) {
         row = kwargs.row;
-        position = "after";
+        if (insert_location == "top") {
+            position = "before"
+        } else {
+            position = "after";
+        }
     }
-    else if (kwargs.insert_location == 'bottom') {
-        var rows = table.getElements(".spt_table_row_item");
-        //var rows = spt.table.get_all_rows();
+    else if (insert_location == 'bottom') {
+        var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
             row = table.getElement(".spt_table_header_row");
         }
@@ -4352,10 +4358,8 @@ spt.table.add_new_group = function(kwargs) {
         position = "before";
     }
 
-
-
     var clone = spt.behavior.clone(insert_row);
-
+   
     if (!row) {
         var first = table.getElement("tr");
         if (first) {
@@ -4401,25 +4405,20 @@ spt.table.add_new_group = function(kwargs) {
     spt.remove_class(clone, 'spt_clone');
 
     // fire a client event
+    var options = {insert_location: insert_location}; 
     var event = "insertX|"+search_type;
-    spt.named_events.fire_event(event, {src_el: clone});
-
-    // find the no items row
-    no_items = table.getElement(".spt_table_no_items");
-    if (no_items != null) {
-        no_items.destroy();
-    }
-
+    spt.named_events.fire_event(event, {src_el: clone, options: options});
+    
     // fire a client event
     var event = "insertY|"+search_type;
-    spt.named_events.fire_event(event, {src_el: clone});
+    spt.named_events.fire_event(event, {src_el: clone, options: options});
 
     // find the no items row
     no_items = table.getElement(".spt_table_no_items");
     if (no_items != null) {
         no_items.destroy();
     }
- 
+
     return clone;
 
 }
