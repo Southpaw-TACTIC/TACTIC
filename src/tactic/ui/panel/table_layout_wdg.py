@@ -4336,7 +4336,8 @@ spt.table.add_new_group = function(kwargs) {
         position = "after";
     }
     else if (kwargs.insert_location == 'bottom') {
-        var rows = spt.table.get_all_rows();
+        var rows = table.getElements(".spt_table_row_item");
+        //var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
             row = table.getElement(".spt_table_header_row");
         }
@@ -4347,7 +4348,7 @@ spt.table.add_new_group = function(kwargs) {
 
     }
     else {
-        row = table.getElement(".spt_table_row");
+        row = table.getElement(".spt_table_row_item");
         position = "before";
     }
 
