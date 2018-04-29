@@ -147,6 +147,9 @@ spt.tab.resize_headers = function() {
     if (width > 120) {
         width = 120;
     }
+    if (width < 40) {
+        width = 40;
+    }
 
     for (var i = 0; i < els.length; i++) {
         els[i].setStyle("width", width);
@@ -327,6 +330,12 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
    
     //var headers = header_top.getElements(".spt_tab_header");
     var headers = spt.tab.get_headers();
+
+    if (headers.length > 50) {
+        spt.alert("You have too many tabs open. Please close before opening others");
+        return;
+    }
+
     var header;
     var found = false;
     for (var k=0; k < headers.length; k++){
@@ -1610,6 +1619,7 @@ spt.tab.close = function(src_el) {
         if resize_offset != None:
             content_top.add_class("spt_window_resize")
             content_top.add_attr("spt_window_resize_offset", resize_offset)
+            content_top.add_style("overflow: auto")
 
         else:
 
