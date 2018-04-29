@@ -1536,10 +1536,19 @@ class SelectWdg(BaseInputWdg):
             self.add_behavior(behavior)
 
 
+        sobjects = self.sobjects
+        if sobjects:
+            sobject = sobjects[0]
+            search_key = sobject.get_search_key()
+        else:
+            search_key = None
+
+
         onchange = self.get_option("onchange")
         if onchange:
             self.add_behavior( {
                 'type': 'change',
+                'search_key': search_key,
                 'cbjs_action': onchange
             } )
  

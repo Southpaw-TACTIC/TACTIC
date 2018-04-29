@@ -2304,6 +2304,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         if group_label_expr:
                             label = Search.eval(group_label_expr, sobjects, single=True)
                         elif group_label_view:
+
+                            extra_data = self.kwargs.get("extra_data") or {}
+                            if isinstance(extra_data, basestring):
+                                try:
+                                    extra_data = jsonloads(extra_data)
+                                except:
+                                    extra_data = {}
+
+
                             from tactic.ui.panel import CustomLayoutWdg
                             label = CustomLayoutWdg(
                                     search_type=self.search_type,
@@ -2311,6 +2320,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                                     group_value=group_value,
                                     sobjects=sobjects,
                                     group_level=group_level,
+                                    **extra_data
 
                             )
                         else:
@@ -2659,9 +2669,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             extra_data[group_column] = group_value
 
 
-            show_group_add = self.kwargs.get("show_group_add") or True
-            show_group_add = False
-            if show_group_add:
+            show_group_insert = self.kwargs.get("show_group_insert") or True
+            show_group_insert = False
+            if show_group_insert:
 
                 td.add_style("position: relative")
 

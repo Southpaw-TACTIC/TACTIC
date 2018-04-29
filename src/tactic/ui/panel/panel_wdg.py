@@ -3186,6 +3186,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_column_manager = self.kwargs.get("show_column_manager")
         show_context_menu = self.kwargs.get("show_context_menu")
         show_insert = self.kwargs.get("show_insert")
+        show_group_insert = self.kwargs.get("show_group_insert")
         insert_view = self.kwargs.get("insert_view")
         edit_view = self.kwargs.get("edit_view")
         show_border = self.kwargs.get("show_border")
@@ -3261,6 +3262,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,
+            "show_group_insert": show_group_insert,
             "shelf_view": shelf_view,
             "insert_view": insert_view,
             "edit_view": edit_view,
