@@ -5086,13 +5086,18 @@ spt.table.get_changed_cells = function() {
 
 
 spt.table.has_changes = function() {
+
     var changed_rows = spt.table.get_changed_rows();
     if (changed_rows.length > 0) {
         return true;
     }
-    else {
-        return false;
+
+    var insert_rows = spt.table.get_insert_rows();
+    if (insert_rows.length > 0) {
+        return true;
     }
+
+    return false;
 }
 
 
@@ -5398,6 +5403,10 @@ spt.table.save_changes = function(kwargs) {
 
     spt.app_busy.show("Saving Changes ...");
     var rows = spt.table.get_changed_rows();
+    var insert_rows = spt.table.get_insert_rows();
+    for (var i = 0; i < insert_rows.length; i++) {
+        rows.push(insert_rows[i]);
+    }
 
     var insert_data = [];
     var update_data = [];
