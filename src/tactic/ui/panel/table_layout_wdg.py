@@ -6259,9 +6259,6 @@ spt.table.collapse_group = function(group_row) {
               spt.show(row);
               previous_state = 'closed';
 
-              console.log("table state is closed =========== " + row.getAttribute('spt_table_state') == 'closed');
-
-              console.log("changed previous state ================ " + previous_state);
            }
 
            else if (row.getAttribute('spt_table_state') == 'open') {
@@ -6274,7 +6271,6 @@ spt.table.collapse_group = function(group_row) {
 
            else {
            
-                console.log("else statement =========== " +  previous_state);
                 if (previous_state == 'closed') {
                    spt.hide(row);
 

@@ -226,10 +226,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
             if not config:
-                div = DivWdg()
-                div.add("No config defined for view [%s] for custom layout" % self.view)
-                return div
-                #raise TacticException("No config defined for view [%s] for custom layout" % self.view)
+                #div = DivWdg()
+                #div.add("No config defined for view [%s] for custom layout" % self.view)
+                #return div
+                raise TacticException("No config defined for view [%s] for custom layout" % self.view)
 
             if isinstance(config, WidgetDbConfig):
                 config_str = config.get_value("config")
