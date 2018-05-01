@@ -379,6 +379,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                     eval(self.group_columns)
 
+
         #self.group_columns = ['timestamp']
         #self.group_interval = TableLayoutWdg.GROUP_WEEKLY
         if not self.group_columns:
@@ -900,7 +901,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             window_resize_offset = self.kwargs.get("window_resize_offset")
-            window_resize_offset = 0
             if window_resize_offset:
                 scroll.add_class("spt_window_resize")
                 scroll.add_attr("spt_window_resize_offset", window_resize_offset)
@@ -1788,12 +1788,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             bvr.src_el.addEvent('mouseover:relay(.spt_table_row)',
                 function(event, src_el) {
                     // remember the original color
+                    src_el.addClass("spt_row_hover");
                     src_el.setAttribute("spt_hover_background", src_el.getStyle("background-color"));
                     spt.mouse.table_layout_hover_over({}, {src_el: src_el, add_color_modifier: -5});
                 } )
 
             bvr.src_el.addEvent('mouseout:relay(.spt_table_row)',
                 function(event, src_el) {
+                    src_el.removeClass("spt_row_hover");
                     src_el.setAttribute("spt_hover_background", "");
                     spt.mouse.table_layout_hover_out({}, {src_el: src_el});
                 } )
@@ -2302,6 +2304,15 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         if group_label_expr:
                             label = Search.eval(group_label_expr, sobjects, single=True)
                         elif group_label_view:
+
+                            extra_data = self.kwargs.get("extra_data") or {}
+                            if isinstance(extra_data, basestring):
+                                try:
+                                    extra_data = jsonloads(extra_data)
+                                except:
+                                    extra_data = {}
+
+
                             from tactic.ui.panel import CustomLayoutWdg
                             label = CustomLayoutWdg(
                                     search_type=self.search_type,
@@ -2309,6 +2320,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                                     group_value=group_value,
                                     sobjects=sobjects,
                                     group_level=group_level,
+                                    **extra_data
 
                             )
                         else:
@@ -2657,9 +2669,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             extra_data[group_column] = group_value
 
 
-            show_group_add = self.kwargs.get("show_group_add") or True
-            show_group_add = False
-            if show_group_add:
+            show_group_insert = self.kwargs.get("show_group_insert") or True
+            show_group_insert = False
+            if show_group_insert:
 
                 td.add_style("position: relative")
 
@@ -4328,12 +4340,19 @@ spt.table.add_new_group = function(kwargs) {
 
     var row;
     var position;
+    var insert_location = kwargs.insert_location;
+    if (!insert_location) insert_location = "bottom";
+
     var table = spt.table.get_table();
     if (kwargs.row) {
         row = kwargs.row;
-        position = "after";
+        if (insert_location == "top") {
+            position = "before"
+        } else {
+            position = "after";
+        }
     }
-    else if (kwargs.insert_location == 'bottom') {
+    else if (insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
             row = table.getElement(".spt_table_header_row");
@@ -4345,14 +4364,12 @@ spt.table.add_new_group = function(kwargs) {
 
     }
     else {
-        row = table.getElement(".spt_table_row");
+        row = table.getElement(".spt_table_row_item");
         position = "before";
     }
 
-
-
     var clone = spt.behavior.clone(insert_row);
-
+   
     if (!row) {
         var first = table.getElement("tr");
         if (first) {
@@ -4398,25 +4415,20 @@ spt.table.add_new_group = function(kwargs) {
     spt.remove_class(clone, 'spt_clone');
 
     // fire a client event
+    var options = {insert_location: insert_location}; 
     var event = "insertX|"+search_type;
-    spt.named_events.fire_event(event, {src_el: clone});
-
-    // find the no items row
-    no_items = table.getElement(".spt_table_no_items");
-    if (no_items != null) {
-        no_items.destroy();
-    }
-
+    spt.named_events.fire_event(event, {src_el: clone, options: options});
+    
     // fire a client event
     var event = "insertY|"+search_type;
-    spt.named_events.fire_event(event, {src_el: clone});
+    spt.named_events.fire_event(event, {src_el: clone, options: options});
 
     // find the no items row
     no_items = table.getElement(".spt_table_no_items");
     if (no_items != null) {
         no_items.destroy();
     }
- 
+
     return clone;
 
 }
@@ -5074,13 +5086,18 @@ spt.table.get_changed_cells = function() {
 
 
 spt.table.has_changes = function() {
+
     var changed_rows = spt.table.get_changed_rows();
     if (changed_rows.length > 0) {
         return true;
     }
-    else {
-        return false;
+
+    var insert_rows = spt.table.get_insert_rows();
+    if (insert_rows.length > 0) {
+        return true;
     }
+
+    return false;
 }
 
 
@@ -5386,6 +5403,10 @@ spt.table.save_changes = function(kwargs) {
 
     spt.app_busy.show("Saving Changes ...");
     var rows = spt.table.get_changed_rows();
+    var insert_rows = spt.table.get_insert_rows();
+    for (var i = 0; i < insert_rows.length; i++) {
+        rows.push(insert_rows[i]);
+    }
 
     var insert_data = [];
     var update_data = [];

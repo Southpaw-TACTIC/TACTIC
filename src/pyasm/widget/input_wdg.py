@@ -1536,7 +1536,7 @@ class SelectWdg(BaseInputWdg):
             self.add_behavior(behavior)
 
 
-        sobjects = self.get_sobjects()
+        sobjects = self.sobjects
         if sobjects:
             sobject = sobjects[0]
             search_key = sobject.get_search_key()

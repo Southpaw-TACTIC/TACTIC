@@ -471,7 +471,7 @@ class PipelineListWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_list")
         self.set_as_panel(top)
         top.add_style("position: relative")
-        top.add_style("padding: 0px 10px")
+        top.add_style("padding: 0px 0px")
 
         title_div = DivWdg()
 
@@ -517,6 +517,7 @@ class PipelineListWdg(BaseRefreshWdg):
         pipelines_div = DivWdg()
         top.add(pipelines_div)
         pipelines_div.add_class("spt_resizable")
+
         pipelines_div.add_style("overflow-x: hidden")
         pipelines_div.add_style("min-height: 290px")
         pipelines_div.add_style("min-width: 100px")
@@ -524,11 +525,15 @@ class PipelineListWdg(BaseRefreshWdg):
         pipelines_div.add_style("height: auto")
 
         inner = DivWdg()
+        pipelines_div.add(inner)
         inner.add_class("spt_pipeline_list_top")
-        inner.add_style("width: 300px")
+
+        inner.add_style("display: flex")
+        inner.add_style("flex-direction: column")
+
+        inner.add_style("width: 100%")
         inner.add_style("height: auto")
         inner.add_style("max-height: 500px")
-        pipelines_div.add(inner)
 
 
         # add in a context menu
@@ -829,7 +834,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 inner.add(swap)
                 swap.add_style("float: left")
 
-                title = DivWdg("<b>Template Workflows</b> <i>(%s)</i>" % len(pipelines))
+                title = DivWdg("<b>Templates</b> <i>(%s)</i>" % len(pipelines))
                 title.add_style("padding-bottom: 2px")
                 title.add_style("padding-top: 3px")
                 inner.add(title)

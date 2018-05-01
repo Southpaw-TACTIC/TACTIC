@@ -36,6 +36,7 @@ class PluginWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_class("spt_plugin_top")
         self.set_as_panel(div)
+        div.add_style("margin-top: 3px")
 
         div.add_color("background", "background")
 
@@ -48,7 +49,7 @@ class PluginWdg(BaseRefreshWdg):
         table = Table()
         table.add_color("color", "color")
         inner.add(table)
-        table.add_style("margin: -1")
+        table.add_style("margin: 0px -1px")
 
         table.add_row()
         left = table.add_cell()
