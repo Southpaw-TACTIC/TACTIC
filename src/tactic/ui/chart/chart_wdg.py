@@ -590,7 +590,21 @@ class ChartData(BaseRefreshWdg):
 
 
             var y = bvr.data[i]*interval.y;
+
+            console.log("the value of bvr is:" + bvr.data[i]);
+
+            //console.log("the value of interval y is:" + interval.y);
+            
+            console.log("the value of y is:" + y); 
+
+
             var cur = spt.chart.get_pos(x, y);
+
+            console.log("the value of interval x is:" + interval.x);
+
+            console.log("cur.x:" + cur.x);
+
+            console.log("cur.y:" + cur.y);
 
             // skip first
             if (type != 'bar') {

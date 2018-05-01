@@ -1875,10 +1875,12 @@ class TacticServerStub(object):
     # file group functions
     def _get_file_range(self, file_range):
         '''get the file_range'''
-        frame_by = 1
-        if file_range.find("/") != -1:
-            file_range, frame_by = file_range.split("/")
-            frame_by = int(frame_by)
+        print "file_range: ", file_range
+        if file_range.find("/") == -1 or file_range.find("-") == -1:
+            raise Exception("Improper file range [%s]" % file_range)
+
+        file_range, frame_by = file_range.split("/")
+        frame_by = int(frame_by)
 
         frame_start, frame_end = file_range.split("-")
         frame_start = int(frame_start)

@@ -6169,36 +6169,104 @@ spt.table.collapse_group = function(group_row) {
 
     var show = false;
 
+
+    // get the rows after the group
+    var last_row = group_row;
+    var idx = last_row.getAttribute('idx')
+    var reg_row = false;
+    var previous_state = 'open';
+
     if (group_row.getAttribute("spt_table_state") == 'closed') {
         group_row.setAttribute("spt_table_state", "open");
         show = true;
     }
     else {
         group_row.setAttribute("spt_table_state", "closed");
+        show = false;
+    }
+   
+   var sub_row = last_row.getNext();
+
+   var group_level = last_row.getAttribute("spt_group_level")
+
+   if (group_level) {
+        group_level = parseInt(group_level);
+
+    }
+    else {
+       group_level = 0;
     }
 
-
-    // get the rows after the group
-    var last_row = group_row;
-    var idx = last_row.getAttribute('idx')
-    var reg_row = false; 
     while(1) {
         var row = last_row.getNext();
+
+
+
         if (row == null) {
             break;
         }
+
+       var row_level = row.getAttribute("spt_group_level")
+
+       if (row_level) {
+          row_level = parseInt(row_level);
+
+       }
+       else {
+
+           row_level = 0;
+       }
+
         var break_cond =  idx == '0' ?  row.getAttribute('idx') == idx : row.getAttribute('idx') < idx ;
         var break_cond2 = row.getAttribute('idx') == idx
-        if ((row.hasClass("spt_group_row") && break_cond)  || row.hasClass("spt_table_bottom_row")) {
-            break;
+        
+        
+        if (row_level == group_level) {
+           
+           break;
+
         }
-        if (reg_row && break_cond2)
-            break;
 
         reg_row = true;
 
         if (show) {
-            spt.show(row);
+
+           console.log(row.getAttribute('spt_table_state'));
+        
+           if (row.getAttribute('spt_table_state') == 'closed') {
+           
+              spt.show(row);
+              previous_state = 'closed';
+
+              console.log("table state is closed =========== " + row.getAttribute('spt_table_state') == 'closed');
+
+              console.log("changed previous state ================ " + previous_state);
+           }
+
+           else if (row.getAttribute('spt_table_state') == 'open') {
+
+                 previous_state = 'open';
+
+                 spt.show(row);
+
+           }
+
+           else {
+           
+                console.log("else statement =========== " +  previous_state);
+                if (previous_state == 'closed') {
+                   spt.hide(row);
+
+                }
+
+                else {
+                   spt.show(row);
+                }
+           
+           
+           }
+
+
         }
         else  {
             spt.hide(row);
