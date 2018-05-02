@@ -1543,7 +1543,6 @@ class SelectWdg(BaseInputWdg):
         else:
             search_key = None
 
-
         onchange = self.get_option("onchange")
         if onchange:
             self.add_behavior( {
