@@ -38,6 +38,10 @@ class BaseNodeWdg(BaseRefreshWdg):
     def get_title_background(self):
         return "rgba(0,0,0,0.5)"
 
+
+    def show_default_name(self):
+        return True
+
     def get_width(self):
         return 120
 
@@ -84,6 +88,7 @@ class BaseNodeWdg(BaseRefreshWdg):
 
 
     def get_display(self):
+
 
         top = self.top
         top.add_style("overflow: hidden")
@@ -1353,7 +1358,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         custom_wdg = CustomProcessConfig.get_node_handler(node_type)
         node.add(custom_wdg)
 
-
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
@@ -1396,7 +1400,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
-
         label = Table()
         label.add_row()
         node.add(label)
@@ -1422,12 +1425,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         text.add_style("width: 65px")
         text.set_value(name)
 
+        self.add_default_node_behaviors(node, text)
+
+        if custom_wdg.show_default_name() in ['false', False]:
+            label.add_style("display: none")
+
 
         active = DivWdg()
         node.add(active)
         active.add_class("spt_active")
 
-        self.add_default_node_behaviors(node, text)
 
         return node
 
@@ -2677,8 +2684,12 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
     var label = new_node.getElement(".spt_label");
     var input = new_node.getElement(".spt_input");
-    label.innerHTML = label_str;
-    input.value = label_str;
+    if (label) {
+        label.innerHTML = label_str;
+    }
+    if (input) {
+        input.value = label_str;
+    }
     new_node.setAttribute("spt_element_name", name);
     new_node.spt_name = name;
     new_node.setAttribute("title", name);
