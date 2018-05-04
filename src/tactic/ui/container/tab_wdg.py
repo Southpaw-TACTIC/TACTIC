@@ -147,8 +147,8 @@ spt.tab.resize_headers = function() {
     if (width > 120) {
         width = 120;
     }
-    if (width < 40) {
-        width = 40;
+    if (width < 30) {
+        width = 30;
     }
 
     for (var i = 0; i < els.length; i++) {
@@ -331,8 +331,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     //var headers = header_top.getElements(".spt_tab_header");
     var headers = spt.tab.get_headers();
 
-    if (headers.length > 50) {
-        spt.alert("You have too many tabs open. Please close before opening others");
+    if (headers.length > 20) {
+        spt.alert("You have too many tabs open. Please close before opening any others.");
         return;
     }
 
@@ -1394,6 +1394,12 @@ spt.tab.close = function(src_el) {
 
 
         header_div.add_style("width: 100%")
+
+        min_width = self.kwargs.get("min_width")
+        if min_width:
+            header_div.add_style("min-width", min_width)
+
+
         header_div.add_style("text-align: left")
         header_div.add_style("box-sizing: border-box")
 
@@ -1433,6 +1439,11 @@ spt.tab.close = function(src_el) {
                     if (width > 120) {
                         width = 120;
                     }
+
+                    if (width < 30) {
+                        width = 30;
+                    }
+
 
                     for (var i = 0; i < els.length; i++) {
                         els[i].setStyle("width", width);
@@ -1601,6 +1612,7 @@ spt.tab.close = function(src_el) {
         content_top.add_style("margin-top: -1px")
         #content_top.add_style("box-sizing: border-box")
 
+
         # add a div so that it breaks correctly
         if self.mode == 'default':
             #content_top.add("<div style='height:5px'></div>")
@@ -1642,6 +1654,14 @@ spt.tab.close = function(src_el) {
             content_top.add_style("min-width: 500px")
         else:
             content_top.add_style("min-width: %s" % width)
+
+        min_width = self.kwargs.get("min_width")
+        if min_width:
+            content_top.add_style("min-width", min_width)
+
+
+
+
 
         content_top.add_class("tab_content_top")
 
