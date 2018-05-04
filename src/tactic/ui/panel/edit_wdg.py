@@ -197,7 +197,8 @@ class EditWdg(BaseRefreshWdg):
         self.ticket_key = self.kwargs.get("ticket")
         self.parent_key = self.kwargs.get("parent_key")
         self.expression = self.kwargs.get("expression")
-
+        
+        self.disables = self.kwargs.get("disables")
 
         self.code = self.kwargs.get("code")
         sobject = None
@@ -892,6 +893,8 @@ class EditWdg(BaseRefreshWdg):
                 td.add_class("spt_edit_cell")
                 td.add_attr("spt_element_name", element_name)
 
+                if (title in self.disables):
+                    widget.add_attr("disabled", "disabled")
                 td.add(widget)
 
 
