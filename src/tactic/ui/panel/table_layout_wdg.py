@@ -1765,7 +1765,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                         src_el.setStyle("background-image", "url(/context/icons/custom/no_edit.png)" );
                     }
                     else if (!src_el.hasClass("spt_cell_no_edit")) {
-                        src_el.setStyle("background-image", "url(/context/icons/silk/page_white_edit.png)" );
                         src_el.setStyle("background-repeat", "no-repeat" );
                         src_el.setStyle("background-position", "bottom right");
                     }
