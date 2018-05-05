@@ -199,6 +199,8 @@ class EditWdg(BaseRefreshWdg):
         self.expression = self.kwargs.get("expression")
         
         self.disables = self.kwargs.get("disables")
+        if not self.disables:
+            self.disables = {}
 
         self.code = self.kwargs.get("code")
         sobject = None
