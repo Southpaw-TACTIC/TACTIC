@@ -1631,7 +1631,8 @@ spt.tab.close = function(src_el) {
         if resize_offset != None:
             content_top.add_class("spt_window_resize")
             content_top.add_attr("spt_window_resize_offset", resize_offset)
-            content_top.add_style("overflow: auto")
+            #content_top.add_style("overflow: auto")
+            content_top.add_style("overflow: none")
 
         else:
 
@@ -1691,6 +1692,7 @@ spt.tab.close = function(src_el) {
         for element_name in element_names:
             content_div = DivWdg()
             content_top.add(content_div)
+
 
             content_div.add_class("spt_tab_content")
             content_div.add_attr("spt_tab_id", self.unique_id)
