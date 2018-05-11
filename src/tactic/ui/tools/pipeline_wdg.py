@@ -1991,7 +1991,7 @@ class BaseInfoWdg(BaseRefreshWdg):
     def get_title_wdg(self, process, node_type, show_node_type_select=True):
 
         div = DivWdg()
-        div.add_style("margin-top: -25px")
+        div.add_style("margin-top: -15px")
 
         table = Table()
         table.add_style("width: 100%")
@@ -3613,7 +3613,10 @@ class ApprovalInfoWdg(BaseInfoWdg):
             div.add("<b>Task setup</b><br/>")
             div.add("Task options allow you to control various default properties of tasks.")
 
-            process_key = process_sobj.get_search_key()
+            if process_sobj:
+                process_key = process_sobj.get_search_key()
+            else:
+                process_key = None
 
             div.add("<br/>"*2)
 
@@ -3624,7 +3627,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
                 'type': 'click_up',
                 'pipeline_code': pipeline_code,
                 'process': process,
-                'search_key': process_sobj.get_search_key(),
+                'search_key': process_key,
                 'cbjs_action': '''
                 var class_name = "tactic.ui.tools.PipelinePropertyWdg";
                 var kwargs = {

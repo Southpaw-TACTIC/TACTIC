@@ -132,9 +132,14 @@ class BaseNodeWdg(BaseRefreshWdg):
         content.add_style("width", "100%")
         content.add_style("height", "100%")
 
-
+        # NOTE: is this necessary
         for widget in self.widgets:
             top.add(widget)
+
+
+        is_refresh = self.kwargs.get("is_refresh")
+        if is_refresh:
+            return content
 
         return top
 
@@ -202,6 +207,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
     def get_unique_id(self):
         return self.unique_id
+
+
+    def get_show_nobs(self):
+        show_nobs =  self.kwargs.get("show_nobs")
+        if show_nobs in ["false", False]:
+            return False
+        else:
+            return True
 
 
     def get_canvas_title(self):
@@ -802,7 +815,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         offset = 0
-        self.add_nobs(node, width, height, offset)
+
+        show_nobs = self.get_show_nobs()
+        if show_nobs:
+            self.add_nobs(node, width, height, offset)
 
 
         content = DivWdg()
@@ -2291,6 +2307,8 @@ spt.pipeline.select_node = function(node) {
     else {
         var outer = node.getElement(".spt_content");
     }
+
+
     outer.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
     outer.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
     outer.setStyle("opacity", "0.8");
@@ -3681,6 +3699,7 @@ spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
     spt.pipeline.last_mouse_position = pos;
     spt.pipeline.orig_mouse_position = pos;
 
+    spt.body.hide_focus_elements(evt);
 }
 
 spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
@@ -4337,6 +4356,17 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         log.warning('Pipeline [' + pipeline_code + ']  does not exist');
         return;
     }
+
+
+    // get all of the processes associated with this pipeline
+    process_sobjs = server.eval("@SOBJECT(config/process['pipeline_code','"+pipeline_code+"'])");
+    processes = {};
+    for (var i = 0; i < process_sobjs.length; i++) {
+        var name = process_sobjs[i].process;
+        var process_code = process_sobjs[i].code;
+        processes[name] = process_code;
+    }
+
     
     var pipeline_xml = pipeline.pipeline;
     var pipeline_stype = pipeline.search_type;
@@ -4379,7 +4409,18 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
     for (var i = 0; i < process_nodes.length; i++) {
         xml_nodes.push(process_nodes[i]);
+
+        // add a process code
+        var name = process_nodes[i].getAttribute("name");
+        console.log(name);
+        var process_code = processes[name];
+        console.log(process_code);
+        if (process_code) {
+            process_nodes[i].setAttribute("process_code", process_code)
+        }
     }
+
+
 
     if (xml_nodes.length == 0) {
         spt.pipeline.add_folder(pipeline_code, color, pipeline_name);
@@ -4537,6 +4578,16 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
             node.properties[name] = value;
         }
 
+
+
+        // hacky refressh
+        var process_code = xml_nodes[i].getAttribute("process_code")
+        if (process_code) {
+            var el = node.getElement(".spt_panel")
+            if (el) {
+                spt.panel.refresh_element(el, {process_code: process_code});
+            }
+        }
     }
 }
 

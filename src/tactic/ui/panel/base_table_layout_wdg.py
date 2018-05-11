@@ -134,12 +134,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # handle config explicitly set
         config = self.kwargs.get("config")
         config_xml = self.kwargs.get("config_xml")
+        config_code = self.kwargs.get("config_code")
         self.config_xml = config_xml
         if config_xml:
             # get the base configs
             config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
             extra_config = WidgetConfig.get(view=self.view, xml=config_xml)
             config.get_configs().insert(0, extra_config)
+
+        elif config_code:
+            config_sobj = Search.get_by_code("config/widget_config", config_code)
+            view = config_sobj.get_value("view")
+            config = WidgetConfigView(search_type=None, view=view, configs=[config_sobj])
+
+
 
         elif not config:
             custom_column_configs = WidgetConfigView.get_by_type("column") 
