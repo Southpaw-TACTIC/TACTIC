@@ -2618,6 +2618,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         tr.add_class("spt_table_row_item")
         tr.add_class("spt_table_group_row")
 
+
+        if sobject.get_search_key():
+            tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
+            tr.add_attr("spt_search_key_v2", sobject.get_search_key())
+
         unique_id = tr.set_unique_id()
 
         if not is_template and self.group_mode in ["top"]:
@@ -4030,27 +4035,38 @@ spt.table.remove_hidden_row_from_inside = function(el) {
 
 
 // add rows from search_keys
-spt.table.add_rows = function(row, search_type, level) {
+spt.table.add_rows = function(row, search_type, level, expression) {
+
+    if (!row.hasClass("spt_table_row_item") ) {
+        row = row.getParent(".spt_table_row_item");
+    }
 
     var server = TacticServerStub.get();
 
-    search_key = row.getAttribute("spt_search_key");
+    var search_key = row.getAttribute("spt_search_key");
 
     var kwargs = spt.table.get_refresh_kwargs(row);
 
+    // find the number of tds in the row
+    td_count = row.getChildren().length;
+
     var load_tr = document.createElement("tr");
     var load_td = document.createElement("td");
+    load_td.setAttribute("colspan", td_count);
     load_tr.appendChild(load_td);
-    load_td.setAttribute("colspan", "10");
     load_td.innerHTML = "Loading ("+search_type+") ...";
     load_tr.inject(row, "after");
     load_td.setStyle("padding", "5px");
+
+
+    kwargs['expression'] = expression;
 
 
     // make some adjustments
     kwargs['search_type'] = search_type;
     kwargs['search_key'] = search_key;
     kwargs['level'] = level;
+    kwargs['group_level'] = level;
     delete kwargs['search_keys'];
 
 
@@ -4070,10 +4086,12 @@ spt.table.add_rows = function(row, search_type, level) {
                 new_rows[i].inject(row, "after");
                 // remap the parent
                 new_rows[i].setAttribute("spt_parent_key", search_key);
+
                 var parts = search_key.split("?");
                 new_rows[i].setAttribute("spt_parent_type", parts[0]);
 
                 new_rows[i].setAttribute("spt_level", level);
+                new_rows[i].setAttribute("spt_group_level", level);
                 var el = new_rows[i].getElement(".spt_level_listen");
                 if (el) {
                     el.setStyle("margin-left", level*15);
@@ -6189,36 +6207,100 @@ spt.table.collapse_group = function(group_row) {
 
     var show = false;
 
+
+    // get the rows after the group
+    var last_row = group_row;
+    var idx = last_row.getAttribute('idx')
+    var reg_row = false;
+    var previous_state = 'open';
+
     if (group_row.getAttribute("spt_table_state") == 'closed') {
         group_row.setAttribute("spt_table_state", "open");
         show = true;
     }
     else {
         group_row.setAttribute("spt_table_state", "closed");
+        show = false;
+    }
+   
+   var sub_row = last_row.getNext();
+
+   var group_level = last_row.getAttribute("spt_group_level")
+
+   if (group_level) {
+        group_level = parseInt(group_level);
+
+    }
+    else {
+       group_level = 0;
     }
 
-
-    // get the rows after the group
-    var last_row = group_row;
-    var idx = last_row.getAttribute('idx')
-    var reg_row = false; 
     while(1) {
         var row = last_row.getNext();
+
+
+
         if (row == null) {
             break;
         }
+
+       var row_level = row.getAttribute("spt_group_level")
+
+       if (row_level) {
+          row_level = parseInt(row_level);
+
+       }
+       else {
+
+           row_level = 0;
+       }
+
         var break_cond =  idx == '0' ?  row.getAttribute('idx') == idx : row.getAttribute('idx') < idx ;
         var break_cond2 = row.getAttribute('idx') == idx
-        if ((row.hasClass("spt_group_row") && break_cond)  || row.hasClass("spt_table_bottom_row")) {
-            break;
+        
+        
+        if (row_level == group_level) {
+           
+           break;
+
         }
-        if (reg_row && break_cond2)
-            break;
 
         reg_row = true;
 
         if (show) {
-            spt.show(row);
+
+           console.log(row.getAttribute('spt_table_state'));
+        
+           if (row.getAttribute('spt_table_state') == 'closed') {
+           
+              spt.show(row);
+              previous_state = 'closed';
+
+           }
+
+           else if (row.getAttribute('spt_table_state') == 'open') {
+
+                 previous_state = 'open';
+
+                 spt.show(row);
+
+           }
+
+           else {
+           
+                if (previous_state == 'closed') {
+                   spt.hide(row);
+
+                }
+
+                else {
+                   spt.show(row);
+                }
+           
+           
+           }
+
+
         }
         else  {
             spt.hide(row);

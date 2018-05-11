@@ -249,10 +249,10 @@ class PopupWdg(BaseRefreshWdg):
 
         # create the 'close' button ...
         if self.allow_close:
-            close_wdg = SpanWdg(css='spt_popup_close')
-            #close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
-            close_wdg.add( IconWdg("Close", "BS_REMOVE") )
-            close_wdg.add_style("margin: 5px 1px 3px 1px")
+            close_wdg = DivWdg(css='spt_popup_close')
+            close_wdg.add_style("display: inline-block")
+            close_wdg.add( IconWdg("Close", "FA_REMOVE", size=14) )
+            close_wdg.add_style("margin: 8px 1px 3px 2px")
             close_wdg.add_style("float: right")
             close_wdg.add_class("hand")
 
@@ -265,10 +265,19 @@ class PopupWdg(BaseRefreshWdg):
 
 
             # create the 'minimize' button ...
-            minimize_wdg = SpanWdg(css='spt_popup_min')
-            minimize_wdg.add_style("margin: 5px 1px 3px 1px")
-            #minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
-            minimize_wdg.add( IconWdg("Minimize", "BS_MINUS") )
+            minimize_wdg = DivWdg(css='spt_popup_min')
+            minimize_wdg.add_style("margin: 9px 1px 3px 1px")
+
+            minimize = IconWdg("Minimize", "FA_WINDOW_MINIMIZE", size=12)
+            minimize.add_class("spt_minimize")
+            minimize.add_style("vertical-align: middle")
+            maximize = IconWdg("Maximize", "FA_WINDOW_MAXIMIZE", size=12)
+            maximize.add_class("spt_maximize")
+            maximize.add_style("display: none")
+            maximize.add_style("vertical-align: middle")
+
+            minimize_wdg.add( minimize )
+            minimize_wdg.add( maximize )
             minimize_wdg.add_style("float: right")
             minimize_wdg.add_class("hand")
             behavior = {
@@ -277,6 +286,10 @@ class PopupWdg(BaseRefreshWdg):
             }
             minimize_wdg.add_behavior( behavior );
             drag_div.add(minimize_wdg)
+
+
+
+
 
         #-- TO ADD SOON -- create the 'refresh' button ...
         #   refresh_wdg = SpanWdg()
@@ -1188,6 +1201,11 @@ spt.popup.toggle_minimize = function( src_el )
     var popup = spt.popup.get_popup(src_el);
     var resize = popup.getElement(".spt_popup_resize");
 
+    var header = popup.getElement(".spt_popup_min");
+
+    min_icon = header.getElement(".spt_minimize")
+    max_icon = header.getElement(".spt_maximize")
+
     if (spt.popup.is_minimized(popup)) {
 
         popup.setStyle("bottom", "");
@@ -1200,6 +1218,10 @@ spt.popup.toggle_minimize = function( src_el )
         spt.popup.show_background();
 
         resize.setStyle("display", "");
+
+        min_icon.setStyle("display", "inline-block")
+        max_icon.setStyle("display", "none")
+
 
     }
     else {
@@ -1220,6 +1242,10 @@ spt.popup.toggle_minimize = function( src_el )
 
         popup.addClass("spt_popup_minimized");
         spt.popup.hide_background();
+
+
+        min_icon.setStyle("display", "none")
+        max_icon.setStyle("display", "inline-block")
     }
 
 }

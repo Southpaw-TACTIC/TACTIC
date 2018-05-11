@@ -3223,6 +3223,8 @@ class ViewPanelWdg(BaseRefreshWdg):
                 extra_data = jsondumps(extra_data)
 
         is_inner = self.kwargs.get("is_inner")
+
+        document_mode = self.kwargs.get("document_mode")
        
 
         save_inputs = self.kwargs.get("save_inputs")
@@ -3311,6 +3313,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "gear_settings": gear_settings,
             "extra_data": extra_data,
             #"search_wdg": search_wdg
+            "document_mode": document_mode,
             
         }
         if run_search_bvr:

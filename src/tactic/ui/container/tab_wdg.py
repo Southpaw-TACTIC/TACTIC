@@ -147,8 +147,8 @@ spt.tab.resize_headers = function() {
     if (width > 120) {
         width = 120;
     }
-    if (width < 40) {
-        width = 40;
+    if (width < 30) {
+        width = 30;
     }
 
     for (var i = 0; i < els.length; i++) {
@@ -331,8 +331,8 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     //var headers = header_top.getElements(".spt_tab_header");
     var headers = spt.tab.get_headers();
 
-    if (headers.length > 50) {
-        spt.alert("You have too many tabs open. Please close before opening others");
+    if (headers.length > 20) {
+        spt.alert("You have too many tabs open. Please close before opening any others.");
         return;
     }
 
@@ -1394,6 +1394,12 @@ spt.tab.close = function(src_el) {
 
 
         header_div.add_style("width: 100%")
+
+        min_width = self.kwargs.get("min_width")
+        if min_width:
+            header_div.add_style("min-width", min_width)
+
+
         header_div.add_style("text-align: left")
         header_div.add_style("box-sizing: border-box")
 
@@ -1434,10 +1440,15 @@ spt.tab.close = function(src_el) {
                         width = 120;
                     }
 
+                    if (width < 30) {
+                        width = 30;
+                    }
+
+
                     for (var i = 0; i < els.length; i++) {
                         els[i].setStyle("width", width);
-                        var title_el = els[i].getElement(".spt_tab_header_label");
-                        title_el.setStyle("width", width);
+                        //var title_el = els[i].getElement(".spt_tab_header_label");
+                        //title_el.setStyle("width", width);
                     }
 
                 }, 250);
@@ -1601,6 +1612,7 @@ spt.tab.close = function(src_el) {
         content_top.add_style("margin-top: -1px")
         #content_top.add_style("box-sizing: border-box")
 
+
         # add a div so that it breaks correctly
         if self.mode == 'default':
             #content_top.add("<div style='height:5px'></div>")
@@ -1619,7 +1631,8 @@ spt.tab.close = function(src_el) {
         if resize_offset != None:
             content_top.add_class("spt_window_resize")
             content_top.add_attr("spt_window_resize_offset", resize_offset)
-            content_top.add_style("overflow: auto")
+            #content_top.add_style("overflow: auto")
+            content_top.add_style("overflow: none")
 
         else:
 
@@ -1642,6 +1655,14 @@ spt.tab.close = function(src_el) {
             content_top.add_style("min-width: 500px")
         else:
             content_top.add_style("min-width: %s" % width)
+
+        min_width = self.kwargs.get("min_width")
+        if min_width:
+            content_top.add_style("min-width", min_width)
+
+
+
+
 
         content_top.add_class("tab_content_top")
 
@@ -1671,6 +1692,7 @@ spt.tab.close = function(src_el) {
         for element_name in element_names:
             content_div = DivWdg()
             content_top.add(content_div)
+
 
             content_div.add_class("spt_tab_content")
             content_div.add_attr("spt_tab_id", self.unique_id)
@@ -2467,7 +2489,7 @@ spt.tab.close = function(src_el) {
             title_div.add_style("white-space", "nowrap");
             #title_div.add_style("float: left")
             title_div.add_style("z-index: 1")
-            title_div.add_style("width: 100%")
+            title_div.add_style("width: auto")
 
 
         title_div.add_class("spt_tab_header_label");

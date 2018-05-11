@@ -182,7 +182,7 @@ class TopWdg(Widget):
 
         }
         //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
-        document.body.addEvent("mousedown", spt.body.hide_focus_elements);
+        $(document.body).addEvent("mousedown", spt.body.hide_focus_elements);
 
         '''
         } )
