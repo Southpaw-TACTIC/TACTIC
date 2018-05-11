@@ -47,6 +47,12 @@ class BaseNodeWdg(BaseRefreshWdg):
     def get_border_radius(self):
         return 0
 
+    def get_border_width(self):
+        return 1
+
+    def get_border_color(self):
+        return "black"
+
     def get_nob_offset(self):
         return 0
 
@@ -58,6 +64,12 @@ class BaseNodeWdg(BaseRefreshWdg):
 
     def get_shape(self):
         return ""
+
+    def show_title(self):
+        return True
+
+    def show_box_shadow(self):
+        return False
 
 
     def get_content(self):
@@ -94,6 +106,9 @@ class BaseNodeWdg(BaseRefreshWdg):
 
 
         border_radius = self.get_border_radius()
+        border_width = self.get_border_width()
+        border_color = self.get_border_color()
+
         top.add_style("width", width)
         top.add_style("height", height)
 
@@ -114,7 +129,10 @@ class BaseNodeWdg(BaseRefreshWdg):
         else:
             top.add_style("border-radius: %spx" % border_radius)
 
-        top.add_style("border: solid 1px black")
+        top.add_style("border: solid %spx %s" % (border_width, border_color))
+
+        if self.show_box_shadow():
+            top.add_style("box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1)")
 
 
         content_div = DivWdg()
