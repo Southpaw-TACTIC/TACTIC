@@ -2618,6 +2618,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         tr.add_class("spt_table_row_item")
         tr.add_class("spt_table_group_row")
 
+
+        if sobject.get_search_key():
+            tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
+            tr.add_attr("spt_search_key_v2", sobject.get_search_key())
+
         unique_id = tr.set_unique_id()
 
         if not is_template and self.group_mode in ["top"]:
@@ -4030,11 +4035,17 @@ spt.table.remove_hidden_row_from_inside = function(el) {
 
 
 // add rows from search_keys
-spt.table.add_rows = function(row, search_type, level) {
+spt.table.add_rows = function(row, search_type, level, expression) {
+
+    if (!row.hasClass("spt_table_row_item") ) {
+        row = row.getParent(".spt_table_row_item");
+    }
+
+    console.log(row);
 
     var server = TacticServerStub.get();
 
-    search_key = row.getAttribute("spt_search_key");
+    var search_key = row.getAttribute("spt_search_key");
 
     var kwargs = spt.table.get_refresh_kwargs(row);
 
@@ -4045,6 +4056,9 @@ spt.table.add_rows = function(row, search_type, level) {
     load_td.innerHTML = "Loading ("+search_type+") ...";
     load_tr.inject(row, "after");
     load_td.setStyle("padding", "5px");
+
+
+    kwargs['expression'] = expression;
 
 
     // make some adjustments
@@ -4070,6 +4084,7 @@ spt.table.add_rows = function(row, search_type, level) {
                 new_rows[i].inject(row, "after");
                 // remap the parent
                 new_rows[i].setAttribute("spt_parent_key", search_key);
+
                 var parts = search_key.split("?");
                 new_rows[i].setAttribute("spt_parent_type", parts[0]);
 
