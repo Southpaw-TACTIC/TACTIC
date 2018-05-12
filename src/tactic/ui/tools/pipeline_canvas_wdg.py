@@ -116,6 +116,8 @@ class BaseNodeWdg(BaseRefreshWdg):
 
         top.add_style("width", width)
         top.add_style("height", height)
+        top.add_style("box-sizing", "border-box")
+
         top.add_attr("spt_border_color", border_color)
         top.add_attr("spt_box_shadow", box_shadow)
 
@@ -2336,9 +2338,13 @@ spt.pipeline.select_node = function(node) {
     
     var group = spt.pipeline.get_group(node.spt_group);
     var group_type = group.get_group_type();
-    if (group_type=='schema') {
+    if (group_type == 'schema') {
         var event_name = 'stype|select';
         spt.named_events.fire_event(event_name, { src_el: node } );
+    }
+    else if (group_type == 'pipeline') {
+        var event_name = 'process|select';
+        spt.named_events.fire_event(event_name, { src_el: outer } );
     }
 }
 
@@ -2360,6 +2366,19 @@ spt.pipeline.unselect_node = function(node) {
     outer.setStyle("box-shadow", box_shadow);
     outer.setStyle("border", "solid 1px " + border_color);
     outer.setStyle("opacity", "1.0");
+
+
+    var group = spt.pipeline.get_group(node.spt_group);
+    var group_type = group.get_group_type();
+    if (group_type == 'schema') {
+        var event_name = 'stype|unselect';
+        spt.named_events.fire_event(event_name, { src_el: node } );
+    }
+    else if (group_type == 'pipeline') {
+        var event_name = 'process|unselect';
+        spt.named_events.fire_event(event_name, { src_el: outer } );
+    }
+
 }
 
 
