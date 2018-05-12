@@ -4556,9 +4556,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
 
         // add a process code
         var name = process_nodes[i].getAttribute("name");
-        console.log(name);
         var process_code = processes[name];
-        console.log(process_code);
         if (process_code) {
             process_nodes[i].setAttribute("process_code", process_code)
         }
