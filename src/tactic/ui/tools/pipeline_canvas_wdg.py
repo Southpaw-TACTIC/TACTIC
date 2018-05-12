@@ -323,6 +323,26 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.filter_node_name = True
         else:
             self.filter_node_name = False
+
+        self.show_add_button = self.kwargs.get('show_add_button')
+        if self.show_add_button in [True, 'true']:
+            self.show_add_button = True
+        else:
+            self.show_add_button = False
+
+        self.show_del_button = self.kwargs.get('show_add_button')
+        if self.show_del_button in [True, 'true']:
+            self.show_del_button = True
+        else:
+            self.show_del_button = False
+
+        self.node_type = self.kwargs.get('node_type')
+        if not self.node_type:
+            self.node_type = 'node'
+
+        self.button_color = self.kwargs.get('button_color')
+        if not self.button_color:
+            self.button_color = 'rgb(130, 150, 134)'
             
 
         top.add_style("position: relative")
@@ -404,6 +424,44 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("width: %s" % self.width)
         canvas.add_style("height: %s" % self.height)
         canvas.add_style("z-index: 200")
+
+
+        button_group = DivWdg()
+        canvas.add(button_group)
+        button_group.add_style("margin-left", "8px")
+        button_group.add_style("display", "flex")
+        button_group.add_style("flex-direction", "column")
+
+        if self.show_add_button:
+            add_button = self.get_side_button('fa-plus', self.button_color, '#2f2f2f')
+            button_group.add(add_button)
+
+            add_button.add_behavior( {
+                'type': 'click',
+                'node_type': self.node_type,
+                'cbjs_action': '''
+
+                var kwargs = {
+                    node_type: bvr.node_type
+                }
+
+                spt.pipeline.add_node("Test", 100, 50, kwargs);
+
+                '''
+            } )
+
+        if self.show_del_button:
+            del_button = self.get_side_button('fa-trash', self.button_color, '#2f2f2f')
+            button_group.add(del_button)
+
+            del_button.add_behavior( {
+                'type': 'click',
+                'cbjs_action': '''
+
+                var nodes = spt.pipeline.get_selected_nodes();
+                spt.pipeline.remove_nodes(nodes);
+                '''
+            } )
  
      
 
@@ -675,6 +733,41 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return canvas
 
 
+    def get_side_button(self, fa_icon, primary_color, hover_color):
+        button = DivWdg()
+        button.add("<i style='line-height: 18px; color: white; font-size: 10px' class='fa %s'> </i>" % fa_icon)
+        button.add_style("background", primary_color)
+        button.add_style("border-radius", "10px")
+
+        button.add_style("height", "18px")
+        button.add_style("width", "18px")
+        button.add_style("margin-top", "6px")
+        button.add_style("text-align", "center")
+        button.add_style("display", "inline-block")
+        button.add_style("box-shadow", "0 0 6px 0 rgba(0, 0, 0, 0.12)")
+
+        button.add_behavior( {
+        'type': 'mouseenter',
+        'hover_color': hover_color,
+        'cbjs_action': '''
+
+        bvr.src_el.setStyle("background", bvr.hover_color)
+
+        '''
+        } )
+
+
+        button.add_behavior( {
+        'type': 'mouseleave',
+        'primary_color': primary_color,
+        'cbjs_action': '''
+
+        bvr.src_el.setStyle("background", bvr.primary_color)
+
+        '''
+        } )
+
+        return button
 
 
     def get_canvas_behaviors(self):
@@ -2664,7 +2757,6 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         group = kwargs.group;
         if (kwargs.select_node != 'undefined') 
             select_node = kwargs.select_node;
-
         node_type = kwargs.node_type;
     }
     else {
@@ -2673,6 +2765,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
     if (!node_type) {
         node_type = "node";
+        console.log("NODE TYPE:", node_type)
     }
 
     if (typeof(group) == 'undefined' || group == null) {
