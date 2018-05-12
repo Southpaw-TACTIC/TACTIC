@@ -2765,7 +2765,6 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 
     if (!node_type) {
         node_type = "node";
-        console.log("NODE TYPE:", node_type)
     }
 
     if (typeof(group) == 'undefined' || group == null) {
