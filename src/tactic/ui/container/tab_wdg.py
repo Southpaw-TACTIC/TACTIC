@@ -1447,8 +1447,8 @@ spt.tab.close = function(src_el) {
 
                     for (var i = 0; i < els.length; i++) {
                         els[i].setStyle("width", width);
-                        var title_el = els[i].getElement(".spt_tab_header_label");
-                        title_el.setStyle("width", width);
+                        //var title_el = els[i].getElement(".spt_tab_header_label");
+                        //title_el.setStyle("width", width);
                     }
 
                 }, 250);
@@ -2489,7 +2489,7 @@ spt.tab.close = function(src_el) {
             title_div.add_style("white-space", "nowrap");
             #title_div.add_style("float: left")
             title_div.add_style("z-index: 1")
-            title_div.add_style("width: 100%")
+            title_div.add_style("width: auto")
 
 
         title_div.add_class("spt_tab_header_label");
