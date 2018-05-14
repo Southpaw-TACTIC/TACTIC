@@ -4041,18 +4041,19 @@ spt.table.add_rows = function(row, search_type, level, expression) {
         row = row.getParent(".spt_table_row_item");
     }
 
-    console.log(row);
-
     var server = TacticServerStub.get();
 
     var search_key = row.getAttribute("spt_search_key");
 
     var kwargs = spt.table.get_refresh_kwargs(row);
 
+    // find the number of tds in the row
+    td_count = row.getChildren().length;
+
     var load_tr = document.createElement("tr");
     var load_td = document.createElement("td");
+    load_td.setAttribute("colspan", td_count);
     load_tr.appendChild(load_td);
-    load_td.setAttribute("colspan", "10");
     load_td.innerHTML = "Loading ("+search_type+") ...";
     load_tr.inject(row, "after");
     load_td.setStyle("padding", "5px");
@@ -4065,6 +4066,7 @@ spt.table.add_rows = function(row, search_type, level, expression) {
     kwargs['search_type'] = search_type;
     kwargs['search_key'] = search_key;
     kwargs['level'] = level;
+    kwargs['group_level'] = level;
     delete kwargs['search_keys'];
 
 
@@ -4089,6 +4091,7 @@ spt.table.add_rows = function(row, search_type, level, expression) {
                 new_rows[i].setAttribute("spt_parent_type", parts[0]);
 
                 new_rows[i].setAttribute("spt_level", level);
+                new_rows[i].setAttribute("spt_group_level", level);
                 var el = new_rows[i].getElement(".spt_level_listen");
                 if (el) {
                     el.setStyle("margin-left", level*15);

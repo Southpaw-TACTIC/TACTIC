@@ -181,7 +181,8 @@ class TopWdg(Widget):
                 spt.body.focus_elements = [];
 
         }
-        bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
+        //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
+        $(document.body).addEvent("mousedown", spt.body.hide_focus_elements);
 
         '''
         } )
