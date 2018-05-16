@@ -4868,11 +4868,15 @@ class PipelineEditorWdg(BaseRefreshWdg):
         var old_name = data.old_name;
         var name = data.name;
 
+        var server = TacticServerStub.get();
+
         // rename the process on the server
         var group_name = spt.pipeline.get_current_group();
         var process = server.eval("@SOBJECT(config/process['process','"+old_name+"']['pipeline_code','"+group_name+"'])", {single: true});
 
-        server.update(process, {process: name});
+        if (process) {
+            server.update(process, {process: name});
+        }
 
         // select the node
         node.click();
