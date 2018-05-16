@@ -20,6 +20,7 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.6.0.a02
     #
+
     def upgrade_v4_6_0_a02_002(self):
         self.run_sql('''
         ALTER TABLE "pipeline" ADD COLUMN category varchar(256);
