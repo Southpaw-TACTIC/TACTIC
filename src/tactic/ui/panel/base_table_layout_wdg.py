@@ -222,7 +222,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = None
 
                 self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
-
                 parser = ExpressionParser() 
                 related = parser.get_plain_related_types(expression)
 
@@ -238,7 +237,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 if not related_type and self.search_key:
                     # this is needed for single search type expression
                     related_type = SearchKey.extract_search_type(self.search_key)
-                   
+                  
                 if self.expr_sobjects and related_type and not isinstance(self.expr_sobjects[0], Search):
                     # Even if these expression driven sobjects have more than 1 parent.. we can only take 1 parent key
                     # for insert popup purpose.. This doesn't affect the search though since with expression, the search logic
@@ -587,6 +586,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         
+        """
+        ###FIX ME 
         table_search = self.search_wdg.get_search()
         if expr_search:
             #table_search.add_relationship_search_filter(expr_search)
@@ -594,7 +595,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search = expr_search
         else:
             search = table_search
-
+       
+        self.search = search
+        """
+        search = self.search_wdg.get_search()
         self.search = search
 
 
@@ -631,6 +635,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if self.no_results:
             search.set_null_filter()
+
+
+        if expr_search:
+            search.add_relationship_search_filter(expr_search)
 
 
         if self.connect_key == "__NONE__":
@@ -719,7 +727,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         except SqlException as e:
             self.search_wdg.clear_search_data(search.get_base_search_type())
-
 
     	self.element_process_sobjects(search)
 
