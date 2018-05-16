@@ -4069,6 +4069,8 @@ spt.table.add_rows = function(row, search_type, level, expression) {
     kwargs['group_level'] = level;
     delete kwargs['search_keys'];
 
+    //kwargs['order_by'] = order_by;
+
 
     var kw = {
         'args': kwargs,
