@@ -4069,9 +4069,6 @@ spt.table.add_rows = function(row, search_type, level, expression) {
     kwargs['group_level'] = level;
     delete kwargs['search_keys'];
 
-    //kwargs['order_by'] = order_by;
-
-
     var kw = {
         'args': kwargs,
         'cbjs_action': function(widget_html) {
@@ -5693,6 +5690,7 @@ spt.table.get_refresh_kwargs = function(row) {
     var table_top = layout.getParent('.spt_table_top');
     
     var show_select = table_top.getAttribute("spt_show_select");
+    var order_by = table_top.getAttribute("spt_order_by");
 
     var group_elements = spt.table.get_group_elements();
 
@@ -5708,7 +5706,8 @@ spt.table.get_refresh_kwargs = function(row) {
         show_select: show_select,
         element_names: element_names,
         group_elements: group_elements,
-        config_xml: config_xml
+        config_xml: config_xml,
+        order_by: order_by
     }
 
     return kwargs
