@@ -2111,7 +2111,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
-            inner_div.add_style("min-height: 35px")
+
+            header_height = "30px"
+            inner_div.add_style("min-height: %s" % header_height)
 
 
 
@@ -2632,6 +2634,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if group_value != last_value:
             tr.group_level = i
 
+        tr.set_attr("spt_group_level", i)
 
         title = ""
 
@@ -4035,10 +4038,14 @@ spt.table.remove_hidden_row_from_inside = function(el) {
 
 
 // add rows from search_keys
-spt.table.add_rows = function(row, search_type, level, expression) {
+spt.table.add_rows = function(row, search_type, level, expression, kwargs) {
 
     if (!row.hasClass("spt_table_row_item") ) {
         row = row.getParent(".spt_table_row_item");
+    }
+
+    if (!kwargs) {
+        kwargs = {}
     }
 
     var server = TacticServerStub.get();
@@ -4054,7 +4061,16 @@ spt.table.add_rows = function(row, search_type, level, expression) {
     var load_td = document.createElement("td");
     load_td.setAttribute("colspan", td_count);
     load_tr.appendChild(load_td);
-    load_td.innerHTML = "Loading ("+search_type+") ...";
+
+
+    var message = kwargs.message;
+    if (!message) {
+        message = "Loading ("+search_type+") ...";
+    }
+
+    load_td.innerHTML = message;
+
+
     load_tr.inject(row, "after");
     load_td.setStyle("padding", "5px");
 
@@ -4080,7 +4096,6 @@ spt.table.add_rows = function(row, search_type, level, expression) {
 
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
-            //new_rows.reverse();
             for (var i = 0; i < new_rows.length; i++) {
                 new_rows[i].inject(row, "after");
                 // remap the parent
@@ -6313,6 +6328,9 @@ spt.table.collapse_group = function(group_row) {
 
     // FIXME: is this even needed
     group_row.setAttribute("is_collapse", "true");
+
+
+
 
 }
 
