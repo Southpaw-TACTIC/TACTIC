@@ -187,7 +187,8 @@ class EditWdg(BaseRefreshWdg):
 
         "default": "default data in a JSON or dictionary form to be used for new entry",
         "single": "when in insert mode, determine if only one entry can be inserted",
-        "ignore": "A list of element names to ignore"
+        "ignore": "A list of element names to ignore",
+        "source": "Source element"
         }
 
 
@@ -1239,6 +1240,8 @@ class EditWdg(BaseRefreshWdg):
 
 
         bvr['named_event'] = 'edit_pressed'
+
+        bvr['source'] = self.kwargs.get("source")
 
         bvr['cbjs_action'] = cbjs_insert
         bvr['extra_data'] = self.kwargs.get("extra_data")
