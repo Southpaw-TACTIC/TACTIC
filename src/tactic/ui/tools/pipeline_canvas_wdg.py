@@ -2820,6 +2820,7 @@ spt.pipeline.remove_nodes = function(nodes) {
     // remove the connectors that have this node
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
+    var to_del = [];
 
     // this indexes may not be needed any more.
     var indexes = {};
@@ -2834,11 +2835,15 @@ spt.pipeline.remove_nodes = function(nodes) {
                     || to_node.getAttribute("spt_element_name") == name
                     || from_node.getAttribute("spt_element_name") == name) {
                 indexes[i] = true;
-                spt.pipeline.delete_connector(connector);
+                to_del.push(connector);
             }
 
 
         }
+    }
+
+    for (var i = 0; i < to_del.length; i++) {
+        spt.pipeline.delete_connector(to_del[i]);
     }
 
     /*
