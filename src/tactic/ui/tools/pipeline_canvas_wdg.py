@@ -408,6 +408,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("height: %s" % self.height)
         canvas.add_style("z-index: 200")
 
+
         #canvas.add_style("width: 100%")
         #canvas.add_style("height: 100%")
 
@@ -3384,7 +3385,7 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
     if (data.line_mode == 'bezier') {
         spt.pipeline.draw_connector( node_pos, rel_pos );
     } else if (data.line_mode == 'curved_edge') {
-        spt.pipeline.draw_curved_edged_line( node_pos, rel_pos );
+        spt.pipeline.draw_curved_edge_line( node_pos, rel_pos );
     } else {
         spt.pipeline.draw_line( node_pos, rel_pos );
     }
@@ -3409,8 +3410,10 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
 
     if (to_node == null) {
         var pos = spt.pipeline.get_mouse_position(mouse_411);
-        to_node = spt.pipeline.add_node();
+        var default_node_type = null;
+        to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
         // FIXME: hard coded
+
         var height = 40;
         spt.pipeline.move_to(to_node, pos.x-height/2, pos.y);
     }
@@ -3523,7 +3526,11 @@ spt.pipeline.draw_arc = function(start, end, offset) {
 spt.pipeline.draw_curved_edge = function(start, end) {
     var ctx = spt.pipeline.get_ctx();
     var center_y = (start.y + end.y)/2;
-    var center_x = start.x+(end.x - start.x)/2;
+    var dx = (end.x - start.x) / 2
+    if (dx > 50) {
+        dx = 50;
+    }
+    var center_x = start.x+dx;
     ctx.bezierCurveTo(center_x, start.y, center_x, start.y, center_x, center_y);
     ctx.bezierCurveTo(center_x, end.y, center_x, end.y, end.x, end.y);
 }
