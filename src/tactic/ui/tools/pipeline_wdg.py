@@ -1178,6 +1178,8 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
     def get_canvas_behaviors(self):
+
+
         behavior = {
         'type': 'click_up',
         'cbjs_action': '''
@@ -1623,6 +1625,22 @@ class ConnectorInfoWdg(BaseRefreshWdg):
     def get_display(self):
         
         top = self.top
+        
+        pipeline_code = self.kwargs.get("pipeline_code")
+        pipeline = Pipeline.get_by_code(pipeline_code)
+       
+        # Custom connector info wdg
+        pipeline_type = pipeline.get_value("type")
+        if pipeline_type:
+            search = Search("config/widget_config")
+            search.add_filter("category", "workflow_connector")
+            search.add_filter("view", pipeline_type)
+            config = search.get_sobject()
+            if config:
+                handler = config.get_display_widget("info", self.kwargs)
+                top.add(handler)
+                return top
+                
         top.add_class("spt_pipeline_connector_info")
 
         top.add_style("padding: 20px 0px")
@@ -1640,8 +1658,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
         top.add("<br/>")
         
-        pipeline_code = self.kwargs.get("pipeline_code")
-        pipeline = Pipeline.get_by_code(pipeline_code)
 
         from_node = self.kwargs.get("from_node")
         to_node = self.kwargs.get("to_node")

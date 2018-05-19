@@ -14,7 +14,7 @@ __all__ = ['BaseNodeWdg', 'PipelineCanvasWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Container, Common
+from pyasm.common import Container, Common, jsondumps
 from pyasm.web import DivWdg, WebContainer, Table, Widget
 from pyasm.search import Search, SearchType
 
@@ -645,6 +645,30 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         } )
 
+       
+	"""
+	Define custom connector panel and custom connector info
+        per pipeline type in widget config using category "workflow_connector"
+        <config>
+	<my_pipeline_type>
+	    <element name="panel">
+	      <display class="path.to.my.ConnectorPanelWdg"/>
+	    </element>
+	    <element name="info">
+	      <display class="path.to.my.ConnectorInfoWdg"/>
+	    </element>
+	</my_pipeline_type>
+	</config>
+	"""
+        connector_panel_data = {} 
+        search = Search("config/widget_config")
+        search.add_filter("category", "workflow_connector")
+        configs = search.get_sobjects()
+        for config in configs:
+            pipeline_type = config.get_value("view")
+            class_name = config.get_display_handler("panel")
+            connector_panel_data[pipeline_type] = class_name
+        top.set_attr("spt_connector_panel_data", jsondumps(connector_panel_data).replace('"', "&quot;"))
         return top
 
 
@@ -1775,7 +1799,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         connector.add_style("z-index: 0")
         #connector.add("<img width='100%' height='100%' src='/context/line.png'/>")
 
-
+ 
         connector.add_behavior( {
         'type': 'load',
         'start': start,
@@ -1972,6 +1996,14 @@ spt.pipeline._init = function() {
     data.canvas = canvas;
     data.paint = paint;
     data.ctx = ctx;
+
+    var connector_panel_data = top.getAttribute("spt_connector_panel_data");
+    if (connector_panel_data) {
+        connector_panel_data = JSON.decode(connector_panel_data);
+    } else {
+        connector_panel_data = {};
+    }
+    data.connector_panel_data = connector_panel_data;
 
     // FIXME: need this delay because the table seems to resize itself somewhere
     setTimeout( function() {
@@ -2188,6 +2220,15 @@ spt.pipeline.clear_canvas = function() {
         }
     }
     */
+
+
+    // remove connector panels
+    var top = spt.pipeline.top;
+    var panels = top.getElements(".spt_connector_data");
+    for ( var i = 0; i < panels.length; i++ ) {
+        var panel = panels[i];
+        spt.behavior.destroy_element(panels);
+    }
    
     spt.pipeline.redraw_canvas();
 }
@@ -3314,8 +3355,7 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
     else {
         spt.pipeline.move_by(node, dx, dy);
     }
-
-
+  
     spt.pipeline.redraw_canvas();
 }
 
@@ -4171,6 +4211,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
     this.color = '#111';
     this.attrs = {};
     this.type = "connector";
+    this.panel;
 
     this.draw = function() {
         var data = spt.pipeline.get_data();
@@ -4257,6 +4298,27 @@ spt.pipeline.Connector = function(from_node, to_node) {
                 spt.pipeline.draw_text(from_attr, from_pos.x + from_dx, from_pos.y + from_dy);
                 spt.pipeline.draw_text(to_attr, to_pos.x + to_dx, to_pos.y + to_dy);
             }
+        }
+
+	var data = spt.pipeline.get_data();
+	var pipeline_type = data.type;
+	var connector_panel_data = data.connector_panel_data;
+	if (connector_panel_data[pipeline_type]) {
+            if (!this.panel) {
+                var canvas = spt.pipeline.get_canvas();
+                var new_el = Element("div");
+                new_el.addClass("spt_connector_data");
+                new_el.setStyle("position", "absolute");
+                var from_node = this.from_node.getAttribute("spt_element_name");
+                var to_node = this.to_node.getAttribute("spt_element_name");
+                new_el.setAttribute("spt_from_node", from_node);
+                new_el.setAttribute("spt_to_node", to_node);
+                canvas.appendChild(new_el);
+                this.panel = new_el;
+            }
+            var x = (from_pos.x + to_pos.x)/2;
+            var y = (from_pos.y + to_pos.y)/2;
+            spt.pipeline.move_to(this.panel, x, y);
         }
 
 
@@ -4545,6 +4607,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var pipeline_stype = pipeline.search_type;
     var xml_doc = spt.parse_xml(pipeline_xml);
     var pipeline_name = pipeline.name;
+    var pipeline_type = pipeline.type;
 
     // first check if the group already there
     var group = spt.pipeline.get_group(pipeline_code);
@@ -4571,6 +4634,9 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
 
     spt.pipeline.set_current_group(pipeline_code);
     spt.pipeline.set_search_type(pipeline_code, pipeline_stype);
+
+    var data = spt.pipeline.get_data();
+    data.type = pipeline.type;
 
 
     // add the nodes
@@ -4756,7 +4822,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         if (process_code) {
             var el = node.getElement(".spt_panel")
             if (el) {
-                spt.panel.refresh_element(el, {process_code: process_code});
+		spt.panel.refresh_element(el, {process_code: process_code});
             }
         }
     }
@@ -4819,6 +4885,19 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
             group.add_dangling_connector(connector);
         else
             group.add_connector(connector);
+
+        // Load connector panel
+        var el = connector.panel;
+        if (el) {
+	    var data = spt.pipeline.get_data();
+	    var pipeline_type = data.type;
+	    var connector_panel_data = data.connector_panel_data;
+	    if (connector_panel_data[pipeline_type]) {
+		var class_name = connector_panel_data[pipeline_type];
+		var kwargs = {'from_node': from, 'to_node': to};
+		spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
+	    }
+        }
 
     }
 
