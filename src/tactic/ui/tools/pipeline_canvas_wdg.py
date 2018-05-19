@@ -4894,7 +4894,7 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
 	    var connector_panel_data = data.connector_panel_data;
 	    if (connector_panel_data[pipeline_type]) {
 		var class_name = connector_panel_data[pipeline_type];
-		var kwargs = {'from_node': from, 'to_node': to};
+                var kwargs = {'from_node': from, 'to_node': to, 'pipeline_code': group_name};
 		spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
 	    }
         }
