@@ -2535,7 +2535,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 #group_value = sobject.get_value(group_column, no_exception=True)
                 group_value = self._get_simplified_time(group_value)
             if not group_value:
-                group_value = "__NONE__"
+                group_value = "..."
             
             last_value = group_values.get(group_column)
 
