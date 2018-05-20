@@ -3531,6 +3531,12 @@ spt.pipeline.delete_connector = function(connector) {
         groups[group_name].remove_connector(connector);
     }
 
+    // remove custom panels
+    panel = connector.panel;
+    if (panel) {
+        spt.behavior.destroy_element(panel);    
+    }
+
     spt.pipeline.clear_selected(); 
     return connector;
 }
