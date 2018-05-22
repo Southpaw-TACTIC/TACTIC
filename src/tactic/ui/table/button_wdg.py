@@ -137,8 +137,9 @@ class ButtonElementWdg(BaseTableElementWdg):
     def handle_layout_behaviors(self, layout):
 
         # Basic button behaviors
+        """
         layout.add_relay_behavior( {
-        'type': 'mouseover',
+        'type': 'mouseenter',
         'bvr_match_class': 'spt_button_hit_wdg',
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_button_top")
@@ -149,7 +150,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         } )
 
         layout.add_relay_behavior( {
-        'type': 'mouseout',
+        'type': 'mouseleave',
         'bvr_match_class': 'spt_button_hit_wdg',
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_button_top")
@@ -179,6 +180,7 @@ class ButtonElementWdg(BaseTableElementWdg):
             click.setStyle("display", "none");
         '''
         } )
+        """
 
 
         # handle custom behavior for button
@@ -274,6 +276,7 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
     def preprocess(self):
+        """
 
         # need to be able to set these globally
         layout = self.get_layout_wdg()
@@ -298,6 +301,8 @@ class ButtonElementWdg(BaseTableElementWdg):
         BASE = '/context/themes2/default/'
         layout.add_smart_style( "spt_button_over", "background-image", "url(%s/MainButton_over.png)" % BASE)
         layout.add_smart_style( "spt_button_click", "background-image", "url(%s/MainButton_click.png)" % BASE)
+        """
+        pass
 
 
     def add_to_button_behavior(self, name, value):
@@ -318,6 +323,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         display.add_style("margin-right: auto")
 
 
+        """
         BASE = '/context/themes2/default/'
         over_div = DivWdg()
         display.add(over_div)
@@ -338,6 +344,8 @@ class ButtonElementWdg(BaseTableElementWdg):
         click_div.add_style("top: -9px")
         click_div.add_style("left: 0px")
         click_div.add_style("display: none")
+
+        """
 
 
 
@@ -391,7 +399,8 @@ class ButtonElementWdg(BaseTableElementWdg):
         if sobject.is_insert():
             hit_wdg.add_style("opacity: 0.4")
         else:
-            hit_wdg.add_class("spt_button_hit_wdg")
+            hit_wdg.add_class("spt_button_hit_wdgX")
+
 
 
         display.add_style("height: 18px")
@@ -399,6 +408,11 @@ class ButtonElementWdg(BaseTableElementWdg):
         #display.add_style("overflow: hidden")
         display.add_style("margin-top: 0px")
 
+        display.add_class("btn")
+        #display.add_style("box-sizing: border-box")
+        display.add_style("padding: 0px 6px")
+        display.add_style("margin-top: -3px")
+        display.add_style("text-align: center")
 
         expression = self.kwargs.get('expression')
         if expression:
