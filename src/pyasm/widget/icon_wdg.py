@@ -405,7 +405,7 @@ class IconWdg(DivWdg):
         self.size = kwargs.get("size")
 
 
-        
+
         super(IconWdg,self).__init__()
 
 
@@ -503,7 +503,7 @@ class IconWdg(DivWdg):
 
 class IconButtonWdg(HtmlElement):
     
-    def __init__(self, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None, size=None, display="block"):
+    def __init__(self, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None, size=None, display="inline"):
         self.text = name
         self.icon_path = icon
         self.long = long
