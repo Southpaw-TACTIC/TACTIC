@@ -403,6 +403,9 @@ class IconWdg(DivWdg):
         self.kwargs = kwargs
         self.opacity = opacity
         self.size = kwargs.get("size")
+
+
+
         super(IconWdg,self).__init__()
 
 
@@ -500,7 +503,7 @@ class IconWdg(DivWdg):
 
 class IconButtonWdg(HtmlElement):
     
-    def __init__(self, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None, size=None):
+    def __init__(self, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None, size=None, display="inline"):
         self.text = name
         self.icon_path = icon
         self.long = long
@@ -509,6 +512,7 @@ class IconButtonWdg(HtmlElement):
         self.name = name
         self.icon_styles = icon_styles
         self.size = size
+        self.display = display
     
 
     def set_icon(self, icon):
@@ -567,6 +571,9 @@ class IconButtonWdg(HtmlElement):
             icon.add_style("vertical-align: top")
         else:
             icon.add_style("vertical-align: middle")
+
+        icon.add_style("display", self.display)
+
        
         self.add(icon)
 
