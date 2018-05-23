@@ -303,6 +303,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.height = self.kwargs.get("height")
         if not self.height:
             self.height = 600
+        self.background_color = self.kwargs.get("background_color")
+        if not self.background_color:
+            self.background_color = "white"
 
 
         # create an inner and outer divs
@@ -407,6 +410,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("width: %s" % self.width)
         canvas.add_style("height: %s" % self.height)
         canvas.add_style("z-index: 200")
+        canvas.set_attr("spt_background_color", self.background_color)
 
 
         #canvas.add_style("width: 100%")
@@ -684,6 +688,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("margin-top: -%s" % self.height)
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
+        canvas.set_attr("spt_background_color", self.background_color)
 
         canvas.add_style("z-index: 1")
 
@@ -1951,6 +1956,8 @@ spt.pipeline = {};
 
 spt.pipeline.top = null;
 
+spt.pipeline.background_color = "#fff";
+
 // External method to initialize callback
 spt.pipeline.init_cbk = function(common_top) {
     spt.pipeline.top = common_top.getElement(".spt_pipeline_top");
@@ -1981,6 +1988,11 @@ spt.pipeline.set_top = function(top) {
 spt.pipeline._init = function() {
     var top = spt.pipeline.top;
     var canvas = top.getElement(".spt_pipeline_canvas");
+
+    if (canvas) {
+        spt.pipeline.background_color = canvas.getAttribute("spt_background_color");
+    }
+
     if (typeof(canvas.connectors) == 'undefined') {
         canvas.connectors = [];
     }
@@ -3541,7 +3553,12 @@ spt.pipeline.delete_connector = function(connector) {
     return connector;
 }
 
-
+spt.pipeline.draw_background = function() {
+    var ctx = spt.pipeline.get_ctx();
+    ctx.fillStyle = spt.pipeline.background_color;
+    var canvas_size = spt.pipeline.get_canvas_size();
+    ctx.fillRect(0, 0, canvas_size.x, canvas_size.y);
+}
 
 
 spt.pipeline.draw_curve = function(start, end) {
@@ -4200,6 +4217,8 @@ spt.pipeline.redraw_canvas = function() {
     height = parseInt( height.replace("px"), "" );
 
     ctx.clearRect(0,0,width,height);
+
+    spt.pipeline.draw_background();
 
     var connectors = canvas.connectors;
 
