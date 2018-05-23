@@ -671,6 +671,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         if single_line in ["true", True]:
             value_wdg.add_style("line-height: %spx" % min_height)
             value_wdg.add_style("white-space: nowrap")
+            value_wdg.add_style("overflow-y: hidden")
 
         value_wdg.add_style("overflow-x: hidden")
         value_wdg.add_style("text-overflow: ellipsis")
