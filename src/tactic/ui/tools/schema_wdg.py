@@ -201,7 +201,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         spt.pipeline.init_cbk(wrapper);
 
         var class_name = "tactic.ui.tools.SchemaConnectorWdg";
-        var dialog = $(bvr.dialog_id);
+        var dialog = document.id(bvr.dialog_id);
         spt.show(dialog);
 
         var selected = spt.pipeline.get_selected();
@@ -761,7 +761,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         var connector = spt.pipeline.get_selected_connector();
 
         var class_name = "tactic.ui.tools.SchemaConnectorWdg";
-        var dialog = $(bvr.dialog_id);
+        var dialog = document.id(bvr.dialog_id);
         
         /*
         var pos = bvr.src_el.getPosition();

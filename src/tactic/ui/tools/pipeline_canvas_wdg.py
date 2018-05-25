@@ -1041,8 +1041,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add(left_nob)
         left_nob.add_class("spt_left_nob")
         left_nob.set_round_corners(3, corners=['TL','BL'])
-        left_nob.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
-        left_nob.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
+        left_nob.add_event("onmouseover", "document.id(this).setStyle('background','rgba(255,255,0,0.7')")
+        left_nob.add_event("onmouseout", "document.id(this).setStyle('background','rgba(255,255,0,0.2')")
         left_nob.add_style("cursor: pointer")
         left_nob.add_style("position: absolute")
         left_nob.add_style("border: solid 1px black")
@@ -1083,8 +1083,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         right_nob_vis.add_style("width: 10px")
         right_nob_vis.add_style("height: 10px")
         right_nob_vis.add_style("margin-top: %spx" % (height/2-5))
-        right_nob_vis.add_event("onmouseover", "$(this).setStyle('background','rgba(255,255,0,0.7')")
-        right_nob_vis.add_event("onmouseout", "$(this).setStyle('background','rgba(255,255,0,0.2')")
+        right_nob_vis.add_event("onmouseover", "document.id(this).setStyle('background','rgba(255,255,0,0.7')")
+        right_nob_vis.add_event("onmouseout", "document.id(this).setStyle('background','rgba(255,255,0,0.2')")
 
         if self.nob_mode == 'dynamic':
             left_nob.add_style("display: none")

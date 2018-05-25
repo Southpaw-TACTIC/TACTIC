@@ -1285,7 +1285,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                       'is_table_embedded_smenu_activator': True,
 
                       'dialog_id': self.view_save_dialog_id,
-                      'cbjs_action': "spt.show($(bvr.dialog_id));",
+                      'cbjs_action': "spt.show(document.id(bvr.dialog_id));",
                     }
                 }
             ) 

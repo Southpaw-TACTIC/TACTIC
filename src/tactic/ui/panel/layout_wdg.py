@@ -860,7 +860,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             }
 
             if (!panel) {
-                panel = $('%s');
+                panel = document.id('%s');
             }
 
             if (!panel) {

@@ -94,7 +94,7 @@ class TopWdg(Widget):
         spt.body = {};
 
         spt.body.is_active = function() {
-            return $(document.body).spt_window_active;
+            return document.id(document.body).spt_window_active;
         }
 
         spt.body.focus_elements = [];
@@ -182,7 +182,7 @@ class TopWdg(Widget):
 
         }
         //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
-        $(document.body).addEvent("mousedown", spt.body.hide_focus_elements);
+        document.id(document.body).addEvent("mousedown", spt.body.hide_focus_elements);
 
         '''
         } )
@@ -264,7 +264,7 @@ class TopWdg(Widget):
                 var target = top.getElement("."+parts[1]);  
             }
             else {
-                var target = $(document.body).getElement("."+target_class);
+                var target = document.id(document.body).getElement("."+target_class);
             }
 
 
@@ -329,7 +329,7 @@ class TopWdg(Widget):
                 var target = top.getElement("."+parts[1]);  
             }
             else {
-                var target = $(document.body).getElement("."+target_class);
+                var target = document.id(document.body).getElement("."+target_class);
             }
 
             spt.panel.refresh(target);
@@ -762,7 +762,7 @@ class TopWdg(Widget):
         'event_name': 'show_script_editor',
         'cbjs_action': '''
         var js_popup_id = "TACTIC Script Editor";
-        var js_popup = $(js_popup_id);
+        var js_popup = document.id(js_popup_id);
         if( js_popup ) {
             spt.popup.toggle_display( js_popup_id, false );
         }
@@ -996,6 +996,9 @@ class JavascriptImportWdg(BaseRefreshWdg):
         third_party = js_includes.third_party
         security = Environment.get_security()
 
+        Container.append_seq("Page:js", "/plugins/xbsltd-mpc-project/lib/jquery.js")
+        Container.append_seq("Page:js", "/plugins/xbsltd-mpc-project/lib/require.js")
+        #"context/spt_js/require.js",
 
         for include in js_includes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
@@ -1005,31 +1008,32 @@ class JavascriptImportWdg(BaseRefreshWdg):
         if os.path.exists( all_js_path ):
             Container.append_seq("Page:js", "%s/%s" % (context_url, js_includes.get_compact_js_context_path_suffix()))
         else:
-            for include in js_includes.legacy_core:
-                Container.append_seq("Page:js", "%s/%s" % (js_url,include))
+            #for include in js_includes.legacy_core:
+            #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
             for include in js_includes.spt_js:
                 Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
 
-            for include in js_includes.legacy_app:
-                Container.append_seq("Page:js", "%s/%s" % (js_url,include))
+            #for include in js_includes.legacy_app:
+            #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
         from pyasm.biz import ProjectSetting
         includes = ProjectSetting.get_value_by_key("js_libraries")
-        if includes:
+        if includes == "__NONE__":
+            pass
+        elif includes:
             includes = includes.split(",")
             for include in includes:
                 include = include.strip()
                 if include:
                     Container.append_seq("Page:js", include)
         else:
-
-
             # custom js files to include
             includes = Config.get_value("install", "include_js")
             includes = includes.split(",")
             for include in includes:
+
                 include = include.strip()
                 if include:
                     print("include: ", include)

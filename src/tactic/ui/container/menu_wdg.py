@@ -103,7 +103,7 @@ class FingerMenuWdg(BaseRefreshWdg):
 
             var pos = bvr.src_el.getPosition();
 
-            var body = $(document.body);
+            var body = document.id(document.body);
             var scroll_top = body.scrollTop;
             var scroll_left = body.scrollLeft;
             pos.x = pos.x - scroll_left;

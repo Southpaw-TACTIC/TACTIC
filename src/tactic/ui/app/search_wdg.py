@@ -760,7 +760,7 @@ class SearchWdg(BaseRefreshWdg):
 
 
         cancel_button = ButtonWdg("Cancel")
-        cancel_button.add_event("onclick", "$('save_search_wdg').style.display = 'none'")
+        cancel_button.add_event("onclick", "document.id('save_search_wdg').style.display = 'none'")
 
         div.add(HtmlElement.hr())
         button_div = DivWdg()

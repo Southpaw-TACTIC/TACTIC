@@ -1463,7 +1463,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 var search_key = tile_top.getAttribute("spt_search_key");
             }
 
-            var target = $(evt.target);
+            var target = document.id(evt.target);
             if (!target.hasClass("spt_base_dir") && !target.hasClass("spt_dir_item")) {
                 var new_target = target.getParent(".spt_dir_item") 
                 target = new_target ? new_target : target.getParent(".spt_base_dir");
@@ -1993,7 +1993,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 //}
 
                 var div = document.createElement("div");
-                div = $(div);
+                div = document.id(div);
                 div.setStyle("margin-top: 3px")
 
                 var arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
@@ -2039,7 +2039,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         return; 
                     }     
                     
-                    var span = $(document.createElement("span"));
+                    var span = document.id(document.createElement("span"));
                     span.innerHTML = " " +value;
                     span.replaces(input);
                     span.addClass("spt_dir_value");
@@ -2108,7 +2108,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 
                 // Create dummy entry
                 var div = document.createElement("div");
-                div = $(div);
+                div = document.id(div);
                 div.setStyles(activator.style);
                 var arrow = "/context/icons/silk/_spt_bullet_arrow_down_dark.png";
                 var icon = "/context/icons/silk/folder.png";
@@ -2150,7 +2150,7 @@ class RepoBrowserDirListWdg(DirListWdg):
  
                     var new_relative_dir = base_relative_dir + "/" + value;
                     
-                    var span = $(document.createElement("span"));
+                    var span = document.id(document.createElement("span"));
                     span.innerHTML = " " +value;
                     span.replaces(input);
 
@@ -2399,7 +2399,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                 
                 // Create dummy entry
                 var div = document.createElement("div");
-                div = $(div);
+                div = document.id(div);
                 div.setStyles(activator.style);
                 var icon = "/context/icons/silk/page_white_text.png"
                 var html = '<img src="'+icon+'"/>';
@@ -2434,7 +2434,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                         return;
                     }
                     
-                    var span = $(document.createElement("span"));
+                    var span = document.id(document.createElement("span"));
                     span.innerHTML = " " + new_value;
                     span.replaces(input);
 

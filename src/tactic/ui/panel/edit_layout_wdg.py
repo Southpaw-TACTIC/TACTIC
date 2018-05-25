@@ -170,9 +170,9 @@ class EditLayoutWdg(TableLayoutWdg):
 
 
                 # indicator that a cell is editable
-                #td.add_event( "onmouseover", "$(this).setStyle('background-image', " \
+                #td.add_event( "onmouseover", "document.id(this).setStyle('background-image', " \
                 #                  "'url(/context/icons/silk/page_white_edit.png)')" )
-                #td.add_event( "onmouseout",  "$(this).setStyle('background-image', '')")
+                #td.add_event( "onmouseout",  "document.id(this).setStyle('background-image', '')")
 
 
 

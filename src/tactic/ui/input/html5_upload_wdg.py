@@ -73,7 +73,7 @@ if (spt.html5upload)
 spt.Environment.get().add_library("spt_html5upload")
 
 spt.html5upload = {};
-spt.html5upload.form = $(bvr.form_id);
+spt.html5upload.form = document.id(bvr.form_id);
 spt.html5upload.files = [];
 spt.html5upload.events = {};
 spt.html5upload.ticket;
@@ -404,7 +404,7 @@ class BaseUploadWdg(BaseRefreshWdg):
 
             // set the form
             if (!spt.html5upload.form) {
-                spt.html5upload.set_form( $(bvr.upload_id) );
+                spt.html5upload.set_form( document.id(bvr.upload_id) );
             }
             spt.html5upload.clear();
             spt.html5upload.kwargs = bvr.kwargs;
@@ -578,7 +578,7 @@ class TestHtml5UploadWdg(BaseRefreshWdg):
             'cbjs_action': '''
 
             // set the form
-            spt.html5upload.form = $(bvr.upload_id);
+            spt.html5upload.form = document.id(bvr.upload_id);
 
             // set an action for completion
             var upload_complete = function(evt) {

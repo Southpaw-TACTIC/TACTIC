@@ -623,7 +623,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             'type': 'click_up',
             'unique_id': unique_id,
             'cbjs_action': '''
-            spt.toggle_show_hide( $(bvr.unique_id) )
+            spt.toggle_show_hide( document.id(bvr.unique_id) )
             '''
         } )
 
@@ -668,7 +668,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             'type': 'click_up',
             'unique_id': unique_id,
             'cbjs_action': '''
-            spt.toggle_show_hide( $(bvr.unique_id) )
+            spt.toggle_show_hide( document.id(bvr.unique_id) )
             '''
         } )
 

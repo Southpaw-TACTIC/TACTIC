@@ -137,7 +137,7 @@ class ChartWdgOld(BaseRefreshWdg):
             swfobject.embedSWF(ofc_url, bvr.chart_id, width, height, "9.0.0", "expressInstall.swf", flashvars, params, attrs);
 
             window.addEvent('domready', function(){
-                    $(bvr.chart_id).makeResizable();
+                    document.id(bvr.chart_id).makeResizable();
             });
 
             '''

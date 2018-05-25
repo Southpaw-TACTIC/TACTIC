@@ -46,7 +46,7 @@ class TestDialogWdg(BaseRefreshWdg):
         'dialog_id': dialog_id,
         'cbjs_action': '''
         var pos = bvr.src_el.getPosition();
-        var el = $(bvr.dialog_id);
+        var el = document.id(bvr.dialog_id);
         el.setStyle("left", pos.x+1);
         el.setStyle("top", pos.y+32);
         el.setStyle("display", "");
@@ -185,12 +185,12 @@ class DialogWdg(BaseRefreshWdg):
                 y: pos.y + size.y + bvr.offset.y + 10
             };
             
-            var dialog = $(bvr.dialog_id);
+            var dialog = document.id(bvr.dialog_id);
             if (dialog) {
                 var target = evt.target;
                 var in_dialog = target.getParent('.spt_dialog_top');
                 
-                var body = $(document.body); 
+                var body = document.id(document.body); 
                 var scroll_top = body.scrollTop; 
                 var scroll_left = body.scrollLeft; 
                 offset.y = offset.y - scroll_top; 
@@ -204,7 +204,7 @@ class DialogWdg(BaseRefreshWdg):
                 // reposition if offscreen for offset x only
                 var size = dialog.getSize();
                 var pos = dialog.getPosition();
-                var win_size = $(document.body).getSize();
+                var win_size = document.id(document.body).getSize();
 
 
               

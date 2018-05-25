@@ -55,19 +55,19 @@ spt.api.get_element = function(el, tag) {
 }
 
 spt.api.add_class = function(el, class_name) {
-    return $(el).addClass(class_name);
+    return document.id(el).addClass(class_name);
 }
 
 spt.api.remove_class = function(el, class_name) {
-    return $(el).removeClass(class_name);
+    return document.id(el).removeClass(class_name);
 }
 
 spt.api.set_style = function(el, name, value) {
-    return $(el).setStyle(name, value);
+    return document.id(el).setStyle(name, value);
 }
 
 spt.api.set_attribute = function(el, name, value) {
-    return $(el).setAttribute(name, value);
+    return document.id(el).setAttribute(name, value);
 }
 
 
@@ -158,7 +158,7 @@ spt.api.close_popup = function(el) {
 //      var cls_kwargs = {
 //          view: 'example01'
 //      };
-//      var panel = $('my_panel');
+//      var panel = document.id('my_panel');
 //      var kwargs = {async : true};
 //      var values = {};
 //      spt.api.load_panel(panel, class_name, cls_kwargs, values, kwargs);

@@ -216,7 +216,7 @@ class PopupWdg(BaseRefreshWdg):
         bvr.src_el.setStyle("width", bvr.width)
 
         var popup = bvr.src_el.getParent(".spt_popup");
-        var window_size = $(window).getSize();
+        var window_size = document.id(window).getSize();
         var size = bvr.src_el.getSize();
         var left = window_size.x/2 - size.x/2;
         var top = window_size.y/2 - size.y/2;
@@ -510,7 +510,7 @@ class PopupWdg(BaseRefreshWdg):
             spt.app_busy.show("Copying to new browser window");
             var win = window.open(url);
             setTimeout( function() {
-                var empty_el = $(win.document).getElement(".spt_empty_top");
+                var empty_el = document.id(win.document).getElement(".spt_empty_top");
                 spt.behavior.replace_inner_html(empty_el, html);
                 spt.app_busy.hide();
             }, 2000 );
@@ -643,7 +643,7 @@ spt.z_index.sort_z_grouping = function( z_start_str )
 spt.z_index.bring_forward_cbk = function( evt, bvr, mouse_411 )
 {
     if( !evt ) { evt = window.event; }  // IE compat.
-    spt.z_index.bring_forward( $(spt.get_event_target(evt)) );
+    spt.z_index.bring_forward( document.id(spt.get_event_target(evt)) );
 }
 
 
@@ -679,7 +679,7 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
     var popup = null;
 
     if( spt.get_typeof( popup_el_or_id ) == 'string' ) {
-        popup = $(popup_el_or_id);
+        popup = document.id(popup_el_or_id);
         if( ! popup ) {
             if( ! suppress_errors ) {
                 log.error( "ERROR in '" + fn_name + "' ... NO popup found with ID '" + popup_el_or_id + "'" );
@@ -688,7 +688,7 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
         }
     }
     else {
-        popup = $(popup_el_or_id);
+        popup = document.id(popup_el_or_id);
         if( ! popup ) {
             if( ! suppress_errors ) {
                 log.error( "ERROR in '" + fn_name + "' ... could not obtain popup element from popup_el_or_id argument." );
@@ -768,7 +768,7 @@ spt.popup.toggle_display = function( popup_el_or_id, use_safe_position )
 
 spt.popup.hide_all_aux_divs = function( popup_el_or_id, fade )
 {
-    var popup = $(popup_el_or_id);
+    var popup = document.id(popup_el_or_id);
     var aux_divs = popup.getElements('.SPT_AUX');
     for( var c=0; c < aux_divs.length; c++ )
     {
@@ -844,7 +844,7 @@ spt.popup._position = function( popup, use_safe_position )
 
 spt.popup.destroy = function( popup_el_or_id, fade )
 {
-    var popup = $(popup_el_or_id);
+    var popup = document.id(popup_el_or_id);
 
     var is_minimized = popup.hasClass("spt_popup_minimized");
 
@@ -861,7 +861,7 @@ spt.popup.destroy = function( popup_el_or_id, fade )
     }
 
     if (is_minimized) { 
-        var els = $(document.body).getElements(".spt_popup_minimized");
+        var els = document.id(document.body).getElements(".spt_popup_minimized");
         for (var i = 0; i < els.length; i++) {
             els[i].setStyle("left", i*205);
         }
@@ -909,7 +909,7 @@ spt.popup.get_widget = function( evt, bvr )
     var popup_id = null;
     if( bvr.options.hasOwnProperty("popup_id") ) {
         popup_id = bvr.options.popup_id;
-        popup = $(popup_id);
+        popup = document.id(popup_id);
     }
 
     // if load_once is true, just show the existing one
@@ -921,7 +921,7 @@ spt.popup.get_widget = function( evt, bvr )
     var popup_template = null;
     if( ! popup ) {
         // get the common popup, clone it and fill it in
-        popup_template = $("popup_template");
+        popup_template = document.id("popup_template");
         // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
         var popup = spt.behavior.duplicate_element(popup_template);
 
@@ -937,13 +937,13 @@ spt.popup.get_widget = function( evt, bvr )
         // existing default popup container available to the page
         var popup_parent = null;
         if( bvr.options.hasOwnProperty("popup_parent_id") ) {
-            popup_parent = $(bvr.options.popup_parent_id);
+            popup_parent = document.id(bvr.options.popup_parent_id);
         }
 
         if( popup_parent ) {
             popup.inject( popup_parent, 'bottom' );
         } else {
-            popup.inject(  $("popup_container"), 'bottom' );
+            popup.inject(  document.id("popup_container"), 'bottom' );
         }
         spt.puw.process_new( popup.parentNode );
     }
@@ -1025,8 +1025,8 @@ spt.popup.get_widget = function( evt, bvr )
         // place in the middle of the screen
         var size = popup.getSize();
         var body = document.body;
-        var win_size = $(window).getSize();
-        var offset = $(window);
+        var win_size = document.id(window).getSize();
+        var offset = document.id(window);
         var xpos = win_size.x / 2 - size.x / 2 + 0*body.scrollLeft;
         var ypos = win_size.y / 2 - size.y / 2 + 0*body.scrollTop;
         if (xpos < 0) {
@@ -1073,17 +1073,17 @@ spt.popup.get_widget = function( evt, bvr )
     var popup_header_height = 0;
     var popup_footer_height = 0;
 
-    var window_size = $(window).getSize();
+    var window_size = document.id(window).getSize();
 
     if (popup_body && (popup_header || popup_footer)) {
         if (popup_header) {
-            popup_header_height = $(popup_header).getSize().y;
+            popup_header_height = document.id(popup_header).getSize().y;
         }
         if (popup_footer) {
-            popup_footer_height = $(popup_footer).getSize().y;
+            popup_footer_height = document.id(popup_footer).getSize().y;
         }
 
-        var window_size = $(window).getSize();
+        var window_size = document.id(window).getSize();
         content_wdg.setStyle("overflow-y","hidden");
         content_wdg.setStyle("max-height", "auto");
         popup_body.setStyle("overflow-y","auto");
@@ -1102,13 +1102,13 @@ spt.popup.is_background_visible = false;
 
 spt.popup.show_background = function() {
     spt.popup.is_background_visible = true;
-    var bkg = $(document.body).getElements(".spt_popup_background");
+    var bkg = document.id(document.body).getElements(".spt_popup_background");
     spt.show( bkg[bkg.length-1] );
 }
 
 spt.popup.hide_background = function() {
     spt.popup.is_background_visible = false;
-    var bkg = $(document.body).getElements(".spt_popup_background");
+    var bkg = document.id(document.body).getElements(".spt_popup_background");
     spt.hide( bkg[bkg.length-1] );
 }
 
@@ -1233,7 +1233,7 @@ spt.popup.toggle_minimize = function( src_el )
         popup.setStyle("right", "");
         popup.setStyle("bottom", "2px");
 
-        var minimized = $(document.body).getElements(".spt_popup_minimized");
+        var minimized = document.id(document.body).getElements(".spt_popup_minimized");
         var num = minimized.length * 205;
 
         popup.setStyle("left", num+"px");
@@ -1256,7 +1256,7 @@ spt.popup._check_focus_by_target = function( target )
     if( ! target ) {
         return;
     }
-    var target = $(target);
+    var target = document.id(target);
 
     var popup = null;
 
@@ -1266,7 +1266,7 @@ spt.popup._check_focus_by_target = function( target )
     }
 
     if( ! popup ) {
-        // FIXME: This is the same error as above.  IE does not return a mootools object with $(target).
+        // FIXME: This is the same error as above.  IE does not return a mootools object with document.id(target).
         if (typeof(target.getParent) == 'undefined') {
             popup = null
         }
@@ -1318,7 +1318,7 @@ spt.popup.remove_el_by_class = function( popup, class_tag )
 //
 spt.popup.tear_off_el = function( el, title, popup_predisplay_fn, class_search_str )
 {
-    el = $(el);
+    el = document.id(el);
 
     // First see if el is already a popup ...
     if( el.hasClass("SPT_IN_A_POPUP") ) {
@@ -1329,7 +1329,7 @@ spt.popup.tear_off_el = function( el, title, popup_predisplay_fn, class_search_s
     var popup = null;
 
     // get the common popup, clone it and fill it in
-    var popup_template = $("popup_template");
+    var popup_template = document.id("popup_template");
     // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
     var popup = spt.behavior.duplicate_element( popup_template );
 

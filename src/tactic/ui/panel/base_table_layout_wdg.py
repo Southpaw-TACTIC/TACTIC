@@ -1871,7 +1871,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'type': 'click_up',
                 'dialog_id': search_dialog_id,
                 'cbjs_action': '''
-                var dialog = $(bvr.dialog_id);
+                var dialog = document.id(bvr.dialog_id);
                 if (!dialog) {
                     return;
                 }
@@ -1880,7 +1880,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var size = bvr.src_el.getSize();
                 offset = {x:offset.x-265, y:offset.y+size.y+10};
 
-                var body = $(document.body);
+                var body = document.id(document.body);
                 var scroll_top = body.scrollTop;
                 var scroll_left = body.scrollLeft;
                 offset.y = offset.y - scroll_top;
@@ -2855,7 +2855,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     // set the form
                     
                     if (!spt.html5upload.form) {
-                        spt.html5upload.set_form( $(bvr.upload_id) );
+                        spt.html5upload.set_form( document.id(bvr.upload_id) );
                     }
                     spt.html5upload.clear();
 

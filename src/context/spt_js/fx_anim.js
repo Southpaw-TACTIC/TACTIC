@@ -174,7 +174,7 @@ spt.fx.slide_anim_cbk = function( evt, bvr )
 
 spt.fx._slide_anim_interval_fn = function( slide_el_id )
 {
-    var slide_el = $(slide_el_id);
+    var slide_el = document.id(slide_el_id);
     var slide_wrap = slide_el.parentNode;
 
     var fx = slide_el.spt_fx;
@@ -207,7 +207,7 @@ spt.fx._slide_anim_interval_fn = function( slide_el_id )
 spt.fx._slide_anim_finish_fn = function( slide_el_id )
 {
     // make sure we are at the final state, and clear the interval ...
-    var slide_el = $(slide_el_id);
+    var slide_el = document.id(slide_el_id);
     var slide_wrap = slide_el.parentNode;
 
     var fx = slide_el.spt_fx;

@@ -816,7 +816,7 @@ spt.manage_search_type.change_column_cbk = function(bvr) {
 
     try {
         var server = TacticServerStub.get();
-        var panel = $('search_type_detail');
+        var panel = document.id('search_type_detail');
         if (! panel.getAttribute("spt_class_name") ) {
             panel = panel.getParent(".spt_panel");
         }

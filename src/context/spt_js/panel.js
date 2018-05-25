@@ -18,7 +18,7 @@ spt.panel = {}
 //
 spt.panel.refresh_element = function(element, data, kwargs) {
 
-    var panel = spt.has_class(element, "spt_panel") ? element : $(element).getParent(".spt_panel");
+    var panel = spt.has_class(element, "spt_panel") ? element : document.id(element).getParent(".spt_panel");
     var fade = kwargs ? kwargs.fade : false;
 
     if (data) {
@@ -36,7 +36,7 @@ spt.panel.refresh_element = function(element, data, kwargs) {
 // Callback to refresh a panel widget
 //
 spt.panel.refresh = function(panel_id, values, kwargs) {
-    var panel = $(panel_id);
+    var panel = document.id(panel_id);
     if (panel == null) {
         spt.js_log.warning("panel[" + panel_id + "] cannot be found ");
         return;
@@ -85,7 +85,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     if (callback) {
         async = true;
     }
-    var panel = $(panel_id);
+    var panel = document.id(panel_id);
     if (!panel)
     {
         spt.js_log.critical('WARNING: Panel with id [' + panel_id + '] does not exist yet');
@@ -104,7 +104,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
 
         if (async) {
 
-            var size = $(panel).getSize();
+            var size = document.id(panel).getSize();
 
             var env = spt.Environment.get();
             var colors = env.get_colors();
@@ -121,14 +121,14 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 shadow = colors.shadow;
             }
 
-            var element = $(document.createElement("div"));
+            var element = document.id(document.createElement("div"));
             element.innerHTML = '<div class="spt_spin" style="border: solid 1px '+border+';background: '+bgcolor+'; background: #EEE; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
             element.setStyle("z-index", "100");
             element.setStyle("margin-top", -size.y);
             element.setStyle("position", "relative");
 
 
-            var xelement = $(document.createElement("div"));
+            var xelement = document.id(document.createElement("div"));
             xelement.setStyle("opacity", "0.4");
             xelement.innerHTML = '<div style="background: '+fade_color+'; width: '+size.x+'; height: '+size.y+'"></div>';
             xelement.setStyle("margin-top", -size.y);
@@ -295,7 +295,7 @@ spt.panel.show_progress = function(element_id) {
         return;
     }
 
-    var element = $(element_id);
+    var element = document.id(element_id);
    
     element.innerHTML = '<div style="height: 100%; font-size: 1.5em" class="spt_spin"><img src="/context/icons/common/indicator_snake.gif" border="0"> Loading ...</div>';
     //element.fade('in');
@@ -347,7 +347,7 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
         async = true;
     }
 
-    var element = $(element_id);
+    var element = document.id(element_id);
     if (! element) {
         spt.js_log.warning("_refresh_widget " + element_id +  " not found ");
         return;
@@ -420,7 +420,7 @@ spt.panel.set_hash = function(panel_id, class_name, options, kwargs) {
     alert("spt.panel.set_hash is DEPRECATED");
 
     // for now, ignore all panels that are not the main_body
-    if ( $(panel_id).getAttribute('id') != 'main_body' ) {
+    if ( document.id(panel_id).getAttribute('id') != 'main_body' ) {
         return;
     }
 
