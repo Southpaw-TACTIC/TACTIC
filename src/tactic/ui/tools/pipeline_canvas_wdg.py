@@ -303,6 +303,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.height = self.kwargs.get("height")
         if not self.height:
             self.height = 600
+        self.background_color = self.kwargs.get("background_color")
+        if not self.background_color:
+            self.background_color = "white"
 
 
         # create an inner and outer divs
@@ -407,6 +410,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("width: %s" % self.width)
         canvas.add_style("height: %s" % self.height)
         canvas.add_style("z-index: 200")
+        canvas.set_attr("spt_background_color", self.background_color)
 
 
         #canvas.add_style("width: 100%")
@@ -684,6 +688,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("margin-top: -%s" % self.height)
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
+        canvas.set_attr("spt_background_color", self.background_color)
 
         canvas.add_style("z-index: 1")
 
@@ -1951,6 +1956,8 @@ spt.pipeline = {};
 
 spt.pipeline.top = null;
 
+spt.pipeline.background_color = "#fff";
+
 // External method to initialize callback
 spt.pipeline.init_cbk = function(common_top) {
     spt.pipeline.top = common_top.getElement(".spt_pipeline_top");
@@ -1981,6 +1988,11 @@ spt.pipeline.set_top = function(top) {
 spt.pipeline._init = function() {
     var top = spt.pipeline.top;
     var canvas = top.getElement(".spt_pipeline_canvas");
+
+    if (canvas) {
+        spt.pipeline.background_color = canvas.getAttribute("spt_background_color");
+    }
+
     if (typeof(canvas.connectors) == 'undefined') {
         canvas.connectors = [];
     }
@@ -3541,7 +3553,12 @@ spt.pipeline.delete_connector = function(connector) {
     return connector;
 }
 
-
+spt.pipeline.draw_background = function() {
+    var ctx = spt.pipeline.get_ctx();
+    ctx.fillStyle = spt.pipeline.background_color;
+    var canvas_size = spt.pipeline.get_canvas_size();
+    ctx.fillRect(0, 0, canvas_size.x, canvas_size.y);
+}
 
 
 spt.pipeline.draw_curve = function(start, end) {
@@ -3572,9 +3589,10 @@ spt.pipeline.draw_arc = function(start, end, offset) {
 spt.pipeline.draw_curved_edge = function(start, end) {
     var ctx = spt.pipeline.get_ctx();
     var center_y = (start.y + end.y)/2;
-    var dx = (end.x - start.x) / 2
-    if (dx > 50) {
-        dx = 50;
+    var dx = (end.x - start.x) / 2;
+    var scale = spt.pipeline.get_scale();
+    if (dx > 50*scale) {
+        dx = 50*scale;
     }
     var center_x = start.x+dx;
     ctx.bezierCurveTo(center_x, start.y, center_x, start.y, center_x, center_y);
@@ -3827,6 +3845,7 @@ spt.pipeline.draw_curved_edge_line = function(start, end, color) {
                 tmp_end.x, tmp_end.y
             );
         }
+
     }
     // front 
     else {
@@ -3842,6 +3861,7 @@ spt.pipeline.draw_text = function(text, x, y) {
     ctx.fillText(text, x, y);
 
 }
+
 spt.pipeline.draw_line = function(start, end, color) {
     if (typeof(color) == 'undefined') {
         color = '#111';
@@ -4198,6 +4218,8 @@ spt.pipeline.redraw_canvas = function() {
 
     ctx.clearRect(0,0,width,height);
 
+    spt.pipeline.draw_background();
+
     var connectors = canvas.connectors;
 
     for (var i=0; i<connectors.length; i++) {
@@ -4244,7 +4266,6 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_width = to_size.x;
         var to_height = to_size.y;
 
-
         // HACKY offset for condition nodes.  This is because rotate square does
         // not give the widget of the corners
         if (spt.pipeline.get_node_type(this.from_node) == "condition") {
@@ -4256,8 +4277,8 @@ spt.pipeline.Connector = function(from_node, to_node) {
 
 
         // offset by the size
-        from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
-        to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
+        unscaled_from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
+        unscaled_to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -4267,15 +4288,15 @@ spt.pipeline.Connector = function(from_node, to_node) {
         height = size.y;
 
         from_pos = {
-            x: (from_pos.x - width/2) * scale + width/2,
-            y: (from_pos.y - height/2) * scale + height/2,
+            x: (unscaled_from_pos.x - width/2) * scale + width/2,
+            y: (unscaled_from_pos.y - height/2) * scale + height/2,
         }
 
 
 
         to_pos = {
-            x: (to_pos.x - width/2) * scale + width/2,
-            y: (to_pos.y - height/2) * scale + height/2,
+            x: (unscaled_to_pos.x - width/2) * scale + width/2,
+            y: (unscaled_to_pos.y - height/2) * scale + height/2,
         }
 
         var data = spt.pipeline.get_data();
@@ -4283,6 +4304,34 @@ spt.pipeline.Connector = function(from_node, to_node) {
             spt.pipeline.draw_curved_edge_line(from_pos, to_pos, this.color);
         } else {
             spt.pipeline.draw_connector(from_pos, to_pos, this.color);
+        }
+
+
+        var data = spt.pipeline.get_data();
+        var pipeline_type = data.type;
+        var connector_panel_data = data.connector_panel_data;
+        
+        if (connector_panel_data[pipeline_type]) {
+            if (!this.panel) {
+                var canvas = spt.pipeline.get_canvas();
+                var new_el = Element("div");
+                new_el.addClass("spt_connector_data");
+                new_el.setStyle("position", "absolute");
+                var from_node = this.from_node.getAttribute("spt_element_name");
+                var to_node = this.to_node.getAttribute("spt_element_name");
+                new_el.setAttribute("spt_from_node", from_node);
+                new_el.setAttribute("spt_to_node", to_node);
+                canvas.appendChild(new_el);
+                this.panel = new_el;
+            }
+            var y = (unscaled_from_pos.y + unscaled_to_pos.y)/2;
+            var dx = (unscaled_to_pos.x - unscaled_from_pos.x)/2;
+            if (dx > 50) {
+                dx = 50;
+            }
+            dx = dx - 12
+            dy = -8
+            spt.pipeline.move_to(this.panel, unscaled_from_pos.x+dx, y+dy);
         }
             
 
@@ -4304,27 +4353,6 @@ spt.pipeline.Connector = function(from_node, to_node) {
                 spt.pipeline.draw_text(from_attr, from_pos.x + from_dx, from_pos.y + from_dy);
                 spt.pipeline.draw_text(to_attr, to_pos.x + to_dx, to_pos.y + to_dy);
             }
-        }
-
-	var data = spt.pipeline.get_data();
-	var pipeline_type = data.type;
-	var connector_panel_data = data.connector_panel_data;
-	if (connector_panel_data[pipeline_type]) {
-            if (!this.panel) {
-                var canvas = spt.pipeline.get_canvas();
-                var new_el = Element("div");
-                new_el.addClass("spt_connector_data");
-                new_el.setStyle("position", "absolute");
-                var from_node = this.from_node.getAttribute("spt_element_name");
-                var to_node = this.to_node.getAttribute("spt_element_name");
-                new_el.setAttribute("spt_from_node", from_node);
-                new_el.setAttribute("spt_to_node", to_node);
-                canvas.appendChild(new_el);
-                this.panel = new_el;
-            }
-            var x = (from_pos.x + to_pos.x)/2;
-            var y = (from_pos.y + to_pos.y)/2;
-            spt.pipeline.move_to(this.panel, x, y);
         }
 
 
