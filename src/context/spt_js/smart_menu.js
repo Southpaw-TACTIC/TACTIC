@@ -115,7 +115,7 @@ spt.smenu.get_activator = function( bvr )
     if (!bvr)
         return null;
 
-    var smenu_subset = $(bvr.src_el).getParent('.SPT_SMENU_SUBSET');
+    var smenu_subset = document.id(bvr.src_el).getParent('.SPT_SMENU_SUBSET');
     if (smenu_subset)
         return smenu_subset.activator_el;
     else
@@ -126,7 +126,7 @@ spt.smenu.get_activator = function( bvr )
 
 spt.smenu.get_activator_by_el = function( el )
 {
-    var smenu_subset = $(el).getParent('.SPT_SMENU_SUBSET');
+    var smenu_subset = document.id(el).getParent('.SPT_SMENU_SUBSET');
     return smenu_subset.activator_el;
 }
 
@@ -134,7 +134,7 @@ spt.smenu.get_activator_by_el = function( el )
 spt.smenu.submenu_entry_over = function( evt, bvr, mouse_411 )
 {
    
-    var target = $(spt.get_event_target(evt));
+    var target = document.id(spt.get_event_target(evt));
     var cur_menu = target.getParent(".SPT_SMENU");
 
     if( spt.smenu.stack.length > cur_menu.spt_smenu_stack_number ) {
@@ -168,7 +168,7 @@ spt.smenu.submenu_entry_out = function( evt, bvr, mouse_411 )
 
 spt.smenu.entry_over = function( evt, bvr, mouse_411 )
 {
-    var target = $(spt.get_event_target(evt));
+    var target = document.id(spt.get_event_target(evt));
     var menu = target.getParent(".SPT_SMENU");
     if (!menu) return;
 
@@ -325,7 +325,7 @@ spt.smenu._search_children_for_smenu_set = function( el )
 
 spt.smenu.get_main_menu = function( evt )
 {
-    var activator = $(spt.get_event_target(evt));
+    var activator = document.id(spt.get_event_target(evt));
     if( ! activator.hasClass("SPT_SMENU_ACTIVATOR") ) {
         activator = activator.getParent(".SPT_SMENU_ACTIVATOR");
     }
@@ -611,9 +611,9 @@ spt.smenu._show_action = function( evt, menu, activation_type, activator_bvr )
     // reposition if offscreen
     var size = menu.getSize();
     var pos = menu.getPosition();
-    var win_size = $(document.body).getSize();
+    var win_size = document.id(document.body).getSize();
 
-    var body = $(document.body);
+    var body = document.id(document.body);
     var scroll_top = body.scrollTop;
     var scroll_left = body.scrollLeft;
 

@@ -13,7 +13,7 @@ spt.ui_play = {};
 
 spt.ui_play.show_example = function( example_class_path )
 {
-    var ex_div = $("UiExampleDisplayDiv");
+    var ex_div = document.id("UiExampleDisplayDiv");
 
     // alert( example_class_path );
 
@@ -27,8 +27,8 @@ spt.ui_play.show_example = function( example_class_path )
 
 spt.ui_play.test_handoff = function( evt, bvr, mouse_411 )
 {
-    var dst_el = $(bvr.dst_el);
-    var src_el = $(bvr.src_el);
+    var dst_el = document.id(bvr.dst_el);
+    var src_el = document.id(bvr.src_el);
 
     alert( "Handed off behavior executed! Element '" + src_el.get('id') + "' got handed off bvr. Element '" +
            dst_el.get('id') + "' is dst_el for bvr!" );
@@ -77,7 +77,7 @@ spt.ui_play.named_event_listen_cbk = function( event_name, firing_element, firin
 
 spt.ui_play.dom_event_self_fire_action = function( evt, bvr, mouse_411 )  // call back on mouse click
 {
-    var el = $(bvr.src_el);
+    var el = document.id(bvr.src_el);
     var options = bvr.options;
     var event_name = bvr.options.event_name;
 
@@ -104,7 +104,7 @@ spt.ui_play.dom_listen_cbk = function( firing_el, event_name, text )
 
 spt.ui_play.set_bg_to_next_basic_color = function( el_to_color )
 {
-    var el = $(el_to_color);
+    var el = document.id(el_to_color);
     var bg_color = el.getStyle("background-color");
 
     var next_clr_map = { 'red': 'blue', 'blue': 'green', 'green': 'yellow', 'yellow': 'orange', 'orange': 'red' }
