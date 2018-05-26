@@ -996,9 +996,9 @@ class JavascriptImportWdg(BaseRefreshWdg):
         third_party = js_includes.third_party
         security = Environment.get_security()
 
-        Container.append_seq("Page:js", "/plugins/xbsltd-mpc-project/lib/jquery.js")
-        Container.append_seq("Page:js", "/plugins/xbsltd-mpc-project/lib/require.js")
-        #"context/spt_js/require.js",
+        if not web.is_admin_page():
+            Container.append_seq("Page:js", "/plugins/xbsltd-mpc-project/lib/require.js")
+            Container.append_seq("Page:js", "/plugins/xbsltd-mpc-project/lib/jquery.js")
 
         for include in js_includes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
