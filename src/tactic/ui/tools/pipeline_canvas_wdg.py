@@ -1953,7 +1953,6 @@ spt.Environment.get().add_library("spt_pipeline");
 
 spt.pipeline = {};
 
-
 spt.pipeline.top = null;
 
 spt.pipeline.background_color = "#fff";
@@ -3512,10 +3511,24 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
         var top = bvr.src_el.getParent(".spt_pipeline_top");
         var event_name = top.getAttribute("id") + "|connector_create";
         spt.named_events.fire_event(event_name, { src_el: connector } );
-
     }
 
-    spt.pipeline.redraw_canvas()
+    spt.pipeline.redraw_canvas();
+
+    var el = connector.panel;
+    connector.set_attr("from_node", from_node.spt_name);
+    connector.set_attr("to_node", to_node.spt_name);
+    if (el) {
+        var data = spt.pipeline.get_data();
+        var pipeline_type = data.type;
+        var connector_panel_data = data.connector_panel_data;
+        console.log(data, pipeline_type, connector_panel_data);
+        if (connector_panel_data[pipeline_type]) {
+            var class_name = connector_panel_data[pipeline_type];
+            var kwargs = {'from_node': from_node.spt_name, 'to_node': to_node.spt_name, 'pipeline_code': group_name, 'overlap': connector.get_attr("overlap")};
+            spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
+        }
+    }
 }
 
 
@@ -4450,6 +4463,10 @@ spt.pipeline.Connector = function(from_node, to_node) {
         return this.attrs;
     }
 
+    /*if (!this.get_attr("overlap")) {
+        this.set_attr("overlap", 100);
+    }*/
+
 
 }
 
@@ -4923,14 +4940,14 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
         // Load connector panel
         var el = connector.panel;
         if (el) {
-	    var data = spt.pipeline.get_data();
-	    var pipeline_type = data.type;
-	    var connector_panel_data = data.connector_panel_data;
-	    if (connector_panel_data[pipeline_type]) {
-		var class_name = connector_panel_data[pipeline_type];
-                var kwargs = {'from_node': from, 'to_node': to, 'pipeline_code': group_name};
-		spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
-	    }
+	        var data = spt.pipeline.get_data();
+	        var pipeline_type = data.type;
+	        var connector_panel_data = data.connector_panel_data;
+	        if (connector_panel_data[pipeline_type]) {
+		        var class_name = connector_panel_data[pipeline_type];
+                var kwargs = {'from_node': from, 'to_node': to, 'pipeline_code': group_name, 'overlap': connector.get_attr("overlap")};
+		        spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
+	        }
         }
 
     }
@@ -5256,6 +5273,28 @@ spt.pipeline.export_group = function(group_name) {
 
     return xml;
 
+}
+
+
+spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
+    var pipeline_code = spt.pipeline.get_current_group();
+    var group = spt.pipeline.get_group(pipeline_code);
+    var connectors = group.get_connectors();
+    var connector = null;
+
+    for (var i = 0; i < connectors.length; i++) {
+        from_node = connectors[i].get_from_node();
+        to_node = connectors[i].get_to_node();
+
+        if (   (from_node.spt_name == from_name) &&
+               (to_node.spt_name == to_name)     ) {
+
+            connector = connectors[i];
+            break;
+       }
+    }
+
+    return connector;
 }
 
     '''
