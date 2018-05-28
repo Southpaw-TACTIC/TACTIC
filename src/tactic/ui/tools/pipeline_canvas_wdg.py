@@ -5342,8 +5342,6 @@ spt.pipeline.export_group = function(group_name) {
 
 }
 
-
-<<<<<<< HEAD
 spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
     var pipeline_code = spt.pipeline.get_current_group();
     var group = spt.pipeline.get_group(pipeline_code);
@@ -5364,10 +5362,6 @@ spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
 
     return connector;
 }
-=======
-
-
->>>>>>> 795c14f336aa96ea39593db39e5832f77b86bb46
 
     '''
 
