@@ -3382,7 +3382,9 @@ spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
     spt.named_events.fire_event('pipeline|change', {});
 
     var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-    editor_top.addClass("spt_has_changes");
+    if (editor_top) {
+        editor_top.addClass("spt_has_changes");
+    }
 
 }
 
@@ -4648,9 +4650,10 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     process_sobjs = server.eval("@SOBJECT(config/process['pipeline_code','"+pipeline_code+"'])");
     processes = {};
     for (var i = 0; i < process_sobjs.length; i++) {
-        var name = process_sobjs[i].process;
-        var process_code = process_sobjs[i].code;
-        processes[name] = process_code;
+        var process_sobj = process_sobjs[i];
+        var name = process_sobj.process;
+        var process_code = process_sobj.code;
+        processes[name] = process_sobj;
     }
 
     
@@ -4697,15 +4700,29 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     for (var i = 0; i < approval_nodes.length; i++) {
         xml_nodes.push(approval_nodes[i]);
     }
+
     for (var i = 0; i < process_nodes.length; i++) {
+
         xml_nodes.push(process_nodes[i]);
 
         // add a process code
         var name = process_nodes[i].getAttribute("name");
-        var process_code = processes[name];
-        if (process_code) {
-            process_nodes[i].setAttribute("process_code", process_code)
+        var process = processes[name];
+        if (process) {
+            process_nodes[i].setAttribute("process_code", process.code)
+            var settings = process.workflow;
+            if (!settings) {
+                settings = {};
+            }
+            else {
+                settings = JSON.parse(settings);
+            }
+
+            // add the process name
+            settings['process'] = process.process;
+            process_nodes[i].setAttribute("settings", JSON.stringify(settings));
         }
+
     }
 
 
@@ -4781,6 +4798,42 @@ spt.pipeline.import_schema = function(schema_code, color) {
     spt.pipeline.load_connects(schema_code, xml_connects);
 
     spt.pipeline.redraw_canvas();
+
+}
+
+
+spt.pipeline.set_node_value = function(node, name, value, kwargs) {
+
+    // set the workflow value
+    var workflow = node.workflow;
+    if (!node.workflow) {
+        workflow = node.workflow = {};
+    }
+
+    workflow.name = value;
+
+    
+    var class_name = kwargs.class_name;
+    if (class_name) {
+        var update_el = node.getElement("."+class_name);
+        if (update_el) {
+            if (update_el.update) {
+                update_el.update(value);
+            }
+            else {
+                update_el.innerHTML = value;
+            }
+        }
+    }
+
+}
+
+
+spt.pipeline.update_node_settings = function(node, settings) {
+
+    spt.pipeline.set_node_value(node, "buffer_days", settings.buffer_days, {class_name: "spt_buffer_days"} );
+    spt.pipeline.set_node_value(node, "handover_days", settings.handover_days, {'class_name': "spt_handover_days"} );
+    spt.pipeline.set_node_value(node, "process", settings.process, {'class_name': "spt_label"} );
 
 }
 
@@ -4868,12 +4921,26 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
 
 
 
-        // hacky refressh
-        var process_code = xml_nodes[i].getAttribute("process_code")
-        if (process_code) {
-            var el = node.getElement(".spt_panel")
-            if (el) {
-		spt.panel.refresh_element(el, {process_code: process_code});
+        var settings = xml_nodes[i].getAttribute("settings");
+        if (settings) {
+            settings = JSON.parse(settings);
+            if (node.update_node_settings) {
+                node.update_node_settings(settings);
+            }
+            else {
+                spt.pipeline.update_node_settings(node, settings);
+            }
+        }
+
+        else {
+
+            // hacky refressh
+            var process_code = xml_nodes[i].getAttribute("process_code")
+            if (process_code) {
+                var el = node.getElement(".spt_panel")
+                if (el) {
+                    spt.panel.refresh_element(el, {process_code: process_code});
+                }
             }
         }
     }
@@ -5276,6 +5343,7 @@ spt.pipeline.export_group = function(group_name) {
 }
 
 
+<<<<<<< HEAD
 spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
     var pipeline_code = spt.pipeline.get_current_group();
     var group = spt.pipeline.get_group(pipeline_code);
@@ -5296,6 +5364,10 @@ spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
 
     return connector;
 }
+=======
+
+
+>>>>>>> 795c14f336aa96ea39593db39e5832f77b86bb46
 
     '''
 
