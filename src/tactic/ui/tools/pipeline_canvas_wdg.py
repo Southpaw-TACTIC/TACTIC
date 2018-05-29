@@ -226,6 +226,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.is_editable = True
         #self.is_editable = False
 
+
+        default_node_type = self.kwargs.get("default_node_type") or ""
+        self.top.add_attr("spt_default_node_type", default_node_type)
+
+
     def get_unique_id(self):
         return self.unique_id
 
@@ -2743,7 +2748,13 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     }
 
     if (!node_type) {
-        node_type = "node";
+        var default_node_type = top.getAttribute("spt_default_node_type");
+        if (default_node_type) {
+            node_type = default_node_type;
+        }
+        else {
+            node_type = "node";
+        }
     }
 
     if (typeof(group) == 'undefined' || group == null) {
@@ -3528,6 +3539,17 @@ spt.pipeline.add_connector = function() {
     connectors.push(connector);
     return connector;
 }
+
+
+
+spt.pipeline.connect_nodes = function(from_node, to_node) {
+    var connector = spt.pipeline.add_connector();
+    connector.set_from_node(from_node);
+    connector.set_to_node(to_node);
+
+    connector.draw();
+} 
+
 
 
 spt.pipeline.delete_connector = function(connector) {
@@ -4813,11 +4835,7 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
 
 
 spt.pipeline.update_node_settings = function(node, settings) {
-
-    spt.pipeline.set_node_value(node, "buffer_days", settings.buffer_days, {class_name: "spt_buffer_days"} );
-    spt.pipeline.set_node_value(node, "handover_days", settings.handover_days, {'class_name': "spt_handover_days"} );
-    spt.pipeline.set_node_value(node, "process", settings.process, {'class_name': "spt_label"} );
-
+    // do nothing
 }
 
 
@@ -5259,11 +5277,19 @@ spt.pipeline.export_group = function(group_name) {
             if (['name','xpos','ypos','type','names','namedItem','item'].contains(key)) {
                 continue;
             }
+
             var value = properties[key];
-            if (value == '') {
-                continue;
+            if (key == "settings" && value) {
+                settings_str = JSON.stringify(value);
+                xml += ' '+key+'="'+settings_str+'"';
+
             }
-            xml += ' '+key+'="'+value+'"';
+            else {
+                if (value == '') {
+                    continue;
+                }
+                xml += ' '+key+'="'+value+'"';
+            }
         }
         xml += '/>\n';
     }

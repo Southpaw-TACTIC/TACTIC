@@ -702,6 +702,32 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             value_wdg.add(value)
 
 
+        # TEST: loading values dynamically using javascript
+        """
+        value_wdg.add_attr("spt_value", value)
+        value_wdg.add_attr("spt_name", name)
+        value_wdg.add_class("spt_update_cellX")
+        value_wdg.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            bvr.src_el.update = function(data) {
+                var el = document.id(this);
+                var name = el.getAttribute("spt_name");
+                var value = data[name];
+                el.innerHTML = value + "!!!";
+
+            }
+
+            var name = bvr.src_el.getAttribute("spt_name");
+            var value = bvr.src_el.getAttribute("spt_value");
+            var data = {};
+            data[name] = value;
+            bvr.src_el.update( data );
+            '''
+        } )
+        """
+
+
         return value_wdg
 
 

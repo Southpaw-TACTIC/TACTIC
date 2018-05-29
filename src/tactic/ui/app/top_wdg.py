@@ -1165,6 +1165,10 @@ class IndexWdg(Widget):
 
         top = self.top
         top.set_id('top_of_application')
+        top.add_style("height: 100%")
+        top.add_style("width: 100%")
+        top.add_style("overflow-x: auto")
+        top.add_style("overflow-y: auto")
 
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
