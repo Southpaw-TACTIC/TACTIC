@@ -397,6 +397,7 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <search_type name='config/authenticate'/>
 
 
+   <connect from="config/process" to="sthpw/pipeline" type="code" from_col="pipeline_code" to_col="code"/>
 
    <connect from="config/ingest_rule" to="config/ingest_session" type="code" from_col="spt_ingest_session_code" to_col="code"/>
 

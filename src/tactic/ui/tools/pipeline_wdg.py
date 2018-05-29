@@ -6347,20 +6347,24 @@ class PipelineSaveCbk(Command):
         project_code = self.kwargs.get('project_code')
 
         from pyasm.common import Xml
+        import json
         xml = Xml()
         xml.read_string(pipeline_xml)
-        process_nodes = Xml.get_nodes("/process")
+        process_nodes = xml.get_nodes("pipeline/process")
+
         for node in process_nodes:
-            process_code = Xml.get_attribute("process_code")
-            settings_str = Xml.get_attribute("settings")
+            process_code = xml.get_attribute(node, "process_code")
+            settings_str = xml.get_attribute(node, "settings")
 
-            Xml.remove_atribute(settings)
+            xml.del_attribute(node, "settings")
 
-            settings = jsonloads(settings_str)
-            subpipeline_code = settings.activity_workflow
+            settings = json.loads(settings_str)
 
             process = Search.get_by_code("config/process", process_code)
             process.set_json_value("workflow", settings)
+            subpipeline_code = settings.get("subpipeline_code")
+            if subpipeline_code:
+                process.set_value("subpipeline_code", subpipeline_code)
             process.commit()
 
         server = TacticServerStub.get(protocol='local')
