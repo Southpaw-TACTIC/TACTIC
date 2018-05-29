@@ -3524,7 +3524,6 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
         var data = spt.pipeline.get_data();
         var pipeline_type = data.type;
         var connector_panel_data = data.connector_panel_data;
-        console.log(data, pipeline_type, connector_panel_data);
         if (connector_panel_data[pipeline_type]) {
             var class_name = connector_panel_data[pipeline_type];
             var kwargs = {'from_node': from_node.spt_name, 'to_node': to_node.spt_name, 'pipeline_code': group_name, 'overlap': connector.get_attr("overlap")};
@@ -4719,6 +4718,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             }
 
             // add the process name
+            settings['subpipeline_code'] = process.subpipeline_code;
             settings['process'] = process.process;
             process_nodes[i].setAttribute("settings", JSON.stringify(settings));
         }
@@ -4810,7 +4810,7 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
         workflow = node.workflow = {};
     }
 
-    workflow.name = value;
+    workflow[name] = value;
 
     
     var class_name = kwargs.class_name;
@@ -4826,6 +4826,15 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
         }
     }
 
+}
+
+spt.pipeline.get_node_value = function(node, name) {
+    var workflow = node.workflow;
+    if (!node.workflow) {
+        return null;
+    }
+
+    return workflow[name];
 }
 
 
@@ -5277,10 +5286,17 @@ spt.pipeline.export_group = function(group_name) {
                 continue;
             }
             var value = properties[key];
-            if (value == '') {
-                continue;
+            if (key == "settings" && value) {
+               settings_str = JSON.stringify(value);
+               xml += ' '+key+'='+settings_str+;
+
             }
-            xml += ' '+key+'="'+value+'"';
+            else {
+               if (value == '') {
+                   continue;
+               }
+               xml += ' '+key+'="'+value+'"';
+            }
         }
         xml += '/>\n';
     }

@@ -6346,6 +6346,23 @@ class PipelineSaveCbk(Command):
         pipeline_color = self.kwargs.get('color')
         project_code = self.kwargs.get('project_code')
 
+        from pyasm.common import Xml
+        xml = Xml()
+        xml.read_string(pipeline_xml)
+        process_nodes = Xml.get_nodes("/process")
+        for node in process_nodes:
+            process_code = Xml.get_attribute("process_code")
+            settings_str = Xml.get_attribute("settings")
+
+            Xml.remove_atribute(settings)
+
+            settings = jsonloads(settings_str)
+            subpipeline_code = settings.activity_workflow
+
+            process = Search.get_by_code("config/process", process_code)
+            process.set_json_value("workflow", settings)
+            process.commit()
+
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
         if project_code:
