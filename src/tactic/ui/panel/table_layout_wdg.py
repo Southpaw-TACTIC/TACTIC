@@ -1090,6 +1090,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     self.is_grouped = False
                     group_level = sobject.get_value("group_level")
                     group_value = sobject.get_value("title")
+                    children = sobject.get_value("children", no_exception=True)
 
 
                     # FIXME: need to eliminate these
@@ -1105,6 +1106,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
                     tr.group_level = group_level
                     tr.set_attr("spt_group_level", group_level)
+
+                    if children:
+                        tr.set_attr("spt_children", children)
 
 
                     # keep track of the group stack
@@ -3064,6 +3068,29 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
         tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
         tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
+
+
+        # TEST: loading values dynamically using javascript
+        """
+        tr.add_behavior( {
+            'type': 'load',
+            'sobject': sobject.get_sobject_dict(),
+            'cbjs_action': '''
+
+            setTimeout( function() {
+
+            var cells = bvr.src_el.getElements(".spt_update_cellX");
+            for (var i = 0; i < cells.length; i++) {
+                if (cells[i].update) {
+                    cells[i].update(bvr.sobject);
+                }
+            }
+
+            }, 500);
+            '''
+
+        } )
+        """
 
 
         return tr

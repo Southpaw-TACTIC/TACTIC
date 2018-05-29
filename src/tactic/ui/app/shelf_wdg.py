@@ -894,6 +894,8 @@ class AceEditorWdg(BaseRefreshWdg):
         editor_div = DivWdg()
         top.add(editor_div)
 
+        top.add("<style>.spt_ace_editor_top div { font-family: courier new; }</style>")
+
 
 
 
