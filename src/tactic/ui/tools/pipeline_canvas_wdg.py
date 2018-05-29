@@ -5249,11 +5249,19 @@ spt.pipeline.export_group = function(group_name) {
             if (['name','xpos','ypos','type','names','namedItem','item'].contains(key)) {
                 continue;
             }
+
             var value = properties[key];
-            if (value == '') {
-                continue;
+            if (key == "settings" && value) {
+                settings_str = JSON.stringify(value);
+                xml += ' '+key+'="'+settings_str+'"';
+
             }
-            xml += ' '+key+'="'+value+'"';
+            else {
+                if (value == '') {
+                    continue;
+                }
+                xml += ' '+key+'="'+value+'"';
+            }
         }
         xml += '/>\n';
     }

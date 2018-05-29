@@ -6346,6 +6346,7 @@ class PipelineSaveCbk(Command):
         pipeline_color = self.kwargs.get('color')
         project_code = self.kwargs.get('project_code')
 
+
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
         if project_code:
