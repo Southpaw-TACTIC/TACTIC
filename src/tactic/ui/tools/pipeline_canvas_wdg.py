@@ -2085,6 +2085,10 @@ spt.pipeline.get_data = function() {
     return spt.pipeline.top.spt_data;
 }
 
+spt.pipeline.set_data = function(attr, value) {
+    spt.pipeline.top.spt_data[attr] = value;
+}
+
 spt.pipeline.get_canvas = function() {
     return spt.pipeline.get_data().canvas;
 }
@@ -4860,6 +4864,10 @@ spt.pipeline.get_node_value = function(node, name) {
     }
 
     return workflow[name];
+}
+
+spt.pipeline.get_node_values = function(node) {
+    return node.workflow;
 }
 
 

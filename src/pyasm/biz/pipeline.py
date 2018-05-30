@@ -387,6 +387,7 @@ class Pipeline(SObject):
         On update, the caller needs to call this explicitly. It checks the search type
         this pipeline is associated with and if there is no pipeline code
         column, then update it.  It updates the process table also.'''
+        
         search_type = self.get_value('search_type')
         self.update_process_table(search_type=search_type)
 
