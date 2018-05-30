@@ -3195,6 +3195,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_gear = self.kwargs.get("show_gear")
         show_expand = self.kwargs.get("show_expand")
         show_shelf = self.kwargs.get("show_shelf")
+        show_header = self.kwargs.get("show_header")
         show_help = self.kwargs.get("show_help")
         width = self.kwargs.get("width")
         height = self.kwargs.get("height")
@@ -3271,6 +3272,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_gear": show_gear,
             "show_expand": show_expand,
             "show_shelf": show_shelf,
+            "show_header": show_header,
             "show_help" : show_help,
             "search_key": search_key,
             "parent_key": parent_key,

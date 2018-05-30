@@ -2768,9 +2768,21 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         self.group_widgets.append(title_div)
 
+        # FIXME: need to move this somewhere else
+        height = 30
+        font_size = 12
+        padding = 10
+        extra_data = self.kwargs.get("extra_data") or {}
+        if extra_data:
+            extra_data = jsonloads(extra_data)
+            min_height = extra_data.get("min_height")
+            if min_height:
+                height = min_height + 10
 
+            font_size = extra_data.get("font_size") or font_size
+            padding = extra_data.get("group_level_padding") or padding
 
-
+        table.add_style("font-size: %spx" % font_size)
 
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
         #swap = SwapDisplayWdg(title=title_div, is_on=self.is_on)
@@ -2781,10 +2793,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         swap.set_display_wdgs(open_div, closed_div)
         swap.add_style("font-weight: bold")
         swap.add_style("margin-left: 5px")
-        swap.add_style("height: 20px")
+        swap.add_style("line-height: %spx" % height)
         swap.set_behavior_top(self.table)
 
         title_div.add_style("width: 100%")
+
 
 
         # build the inner flex layout
@@ -2799,8 +2812,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        td.add_style("height: 30px")
-        td.add_style("padding-left: %spx" % (i*10+3))
+        td.add_style("height: %spx" % height)
+        td.add_style("padding-left: %spx" % (i*padding+3))
 
         border_color = tr.get_color("table_border")
         tr.add_border(size="1px 0px 1px 0px", color=border_color)
