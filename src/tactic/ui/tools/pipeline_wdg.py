@@ -6345,6 +6345,7 @@ class PipelineSaveCbk(Command):
         pipeline_xml = self.kwargs.get('pipeline')
         pipeline_color = self.kwargs.get('color')
         project_code = self.kwargs.get('project_code')
+        timestamp = self.kwargs.get('timestamp')
 
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
@@ -6353,6 +6354,8 @@ class PipelineSaveCbk(Command):
             if project_code == '__SITE_WIDE__':
                 project_code = ''
             data['project_code'] = project_code
+        if timestamp:
+            data['timestamp'] = timestamp
 
         server.insert_update(pipeline_sk, data = data)
 
