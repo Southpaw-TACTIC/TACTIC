@@ -6360,7 +6360,6 @@ class PipelineSaveCbk(Command):
 
             settings = json.loads(settings_str)
             settings_list.append(settings)
-            print "settings", settings
 
 
         server = TacticServerStub.get(protocol='local')
@@ -6397,11 +6396,9 @@ class PipelineSaveCbk(Command):
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
             if process_code:
-                print 1
                 process = Search.get_by_code("config/process", process_code)
             
             if not process:
-                print 2
                 process = SearchType.create("config/process")
                 process.set_value("process", process_name)
                 process.set_value("pipeline_code", pipeline_code)
@@ -6412,7 +6409,6 @@ class PipelineSaveCbk(Command):
                 process.set_value("subpipeline_code", subpipeline_code)
             process.set_value("subpipeline_code", "whatever")
             process.commit()
-            print "process: ", process.get_data()
 
             xml.set_attribute(node, "process_code", process.get_code())
 
