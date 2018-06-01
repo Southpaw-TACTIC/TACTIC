@@ -6407,7 +6407,6 @@ class PipelineSaveCbk(Command):
             subpipeline_code = settings.get("subpipeline_code")
             if subpipeline_code:
                 process.set_value("subpipeline_code", subpipeline_code)
-            process.set_value("subpipeline_code", "whatever")
             process.commit()
 
             xml.set_attribute(node, "process_code", process.get_code())
