@@ -13,7 +13,7 @@
 __all__ = ['TabWdg', 'TabSaveStateCmd']
 
 from pyasm.common import TacticException, Xml, Common, Environment, Container
-from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer, WidgetSettings
+from pyasm.web import DivWdg, SpanWdg, WebState, WebContainer, WidgetSettings, HtmlElement
 from pyasm.search import Search
 from pyasm.widget import WidgetConfigView, WidgetConfig, IconWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -2531,8 +2531,8 @@ spt.tab.close = function(src_el) {
         remove_wdg.add_style("right: 2px")
         remove_wdg.add_style("top: 8px")
         remove_wdg.add_style("z-index: 2")
-        remove_wdg.add_style("width: 15px")
-        remove_wdg.add_style("height: 15px")
+        remove_wdg.add_style("width: 16px")
+        remove_wdg.add_style("height: 16px")
         remove_wdg.add_style("padding-left: 2px")
 
         remove_wdg.add_style("border-radius: 10px")
@@ -2542,8 +2542,13 @@ spt.tab.close = function(src_el) {
         remove_wdg.add_style("border: solid 1px transparent")
 
 
-
-        icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
+        remove_icon_path = self.kwargs.get("remove_icon_path")
+        if (remove_icon_path):
+            icon = HtmlElement.img(remove_icon_path)
+            icon.add_styles("padding: 2px; width: 11px")
+            remove_wdg.add_style("right: 6px;")
+        else:
+            icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
         icon.add_class("spt_icon_active")
         icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%; opacity: 0.3;")
         remove_wdg.add(icon)

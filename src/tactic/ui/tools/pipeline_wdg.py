@@ -6346,6 +6346,21 @@ class PipelineSaveCbk(Command):
         pipeline_color = self.kwargs.get('color')
         project_code = self.kwargs.get('project_code')
 
+        from pyasm.common import Xml
+        import json
+        xml = Xml()
+        xml.read_string(pipeline_xml)
+        process_nodes = xml.get_nodes("pipeline/process")
+        settings_list = []
+
+        for node in process_nodes:
+            settings_str = xml.get_attribute(node, "settings")
+
+            xml.del_attribute(node, "settings")
+
+            settings = json.loads(settings_str)
+            settings_list.append(settings)
+
 
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
@@ -6373,6 +6388,29 @@ class PipelineSaveCbk(Command):
         pipeline.update_dependencies()
         
         self.description = "Updated workflow [%s]" % pipeline_code
+
+        for i in range(len(process_nodes)):
+            node = process_nodes[i]
+            settings = settings_list[i]
+            process = None
+            process_code = xml.get_attribute(node, "process_code")
+            process_name = xml.get_attribute(node, "name")
+            if process_code:
+                process = Search.get_by_code("config/process", process_code)
+            
+            if not process:
+                process = SearchType.create("config/process")
+                process.set_value("process", process_name)
+                process.set_value("pipeline_code", pipeline_code)
+            
+            process.set_value("workflow", settings)
+            subpipeline_code = settings.get("subpipeline_code")
+            if subpipeline_code:
+                process.set_value("subpipeline_code", subpipeline_code)
+            process.commit()
+
+            xml.set_attribute(node, "process_code", process.get_code())
+
         
 
 
