@@ -5317,8 +5317,9 @@ spt.pipeline.export_group = function(group_name) {
 
             var value = properties[key];
             if (key == "settings" && value) {
-                settings_str = value;
-                xml += " "+key+"='"+JSON.stringify(settings_str)+"'";
+                settings_str = JSON.stringify(value);
+                xml += " "+key+"='"+settings_str+"'";
+
 
             }
             else {
