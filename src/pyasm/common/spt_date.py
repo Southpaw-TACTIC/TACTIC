@@ -97,14 +97,27 @@ class SPTDate(object):
     def add_business_days(cls, from_date, add_days, holidays=[]):
         business_days_to_add = add_days
         current_date = from_date
-        while business_days_to_add > 0:
-            current_date += timedelta(days=1)
-            weekday = current_date.weekday()
-            if weekday >= 5: # sunday = 6
-                continue
-            if current_date in holidays:
-                continue
-            business_days_to_add -= 1
+        
+        while business_days_to_add >= 0:
+            if business_days_to_add > 1:
+                current_date += timedelta(days=1)
+                weekday = current_date.weekday()
+                if weekday >= 5: # sunday = 6
+                    continue
+                if current_date in holidays:
+                    continue
+                business_days_to_add -= 1
+                if business_days_to_add == 0:
+                    break
+            else:
+                current_date +=timedelta(days=business_days_to_add)
+                weekday = current_date.weekday()
+                if weekday >= 5 or current_date in holidays:
+                    current_date += timedelta(days=1)
+                else:
+                    break
+                business_days_to_add = 0
+
         return current_date
     add_business_days = classmethod(add_business_days)
 
