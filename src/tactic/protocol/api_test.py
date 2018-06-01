@@ -4,7 +4,7 @@ import requests
 import json
 
 #url = "http://192.168.205.180/workflow/workflow/rest?login_ticket=south123paw&cow=123"
-url = "http://192.168.205.180/workflow/workflow/rest"
+url = "http://192.168.75.171/workflow/workflow/REST"
 data = {
         'login_ticket': 'south123paw',
         'method': 'eval',
