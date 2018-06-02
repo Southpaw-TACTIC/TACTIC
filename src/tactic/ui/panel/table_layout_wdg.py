@@ -4485,10 +4485,11 @@ spt.table.add_new_group = function(kwargs) {
     if (!group_level) {
         group_level = 0;
     }
+    var padding_multiplier = kwargs.padding_multiplier ? kwargs.padding_multiplier : 10
 
     var td = clone.getElement("td");
     td.setAttribute("colspan", headers.length);
-    td.setStyle("padding-left",10*group_level+3);
+    td.setStyle("padding-left", padding_multiplier*group_level+3);
 
     clone.setAttribute("spt_group_level", group_level);
 
@@ -6554,7 +6555,6 @@ spt.table.expand_table = function(mode) {
    
     // don't set the width of each column, this is simpler
     if ( mode != "full" && width == '100%') {
-        console.log("here");
         table.setStyle("width", "");
         if (header_table) {
             header_table.setStyle("width", "");
@@ -7092,6 +7092,25 @@ spt.table.operate_selected = function(action)
         //spt.app_busy.hide();
     }
     spt.confirm(msg, ok, cancel);
+}
+
+
+spt.table.find_group_name_by_element = function(src_el, level) {
+
+    var table = src_el.getParent("tbody");
+    var rows = table.getElements(".spt_table_row_item");
+    var curr_row = src_el.getParent(".spt_table_row_item");
+
+    for (var i=0; i<rows.length; i++) {
+        if (rows[i].attributes.spt_group_level && rows[i].attributes.spt_group_level.value == level) {
+            var name = rows[i].attributes.spt_group_name.value;
+        }
+        if (rows[i] == curr_row) {
+            break;
+        }
+    }
+
+    return name;
 }
 
 
