@@ -46,7 +46,7 @@ class DynamicUpdateWdg(BaseRefreshWdg):
         top.add_behavior( {
             'type': 'unload',
             'cbjs_action': '''
-            var top = $(document.body);
+            var top = document.id(document.body);
             clearInterval( top.spt_update_interval_id );
             top.spt_update_interval_id = 0;
             top.spt_update_src_el = null;
@@ -94,8 +94,8 @@ spt.update.add = function(el, update) {
 
 
 spt.update.display = function(el, column, value) {
-    var div = $(document.createElement("div"));
-    $(document.body).appendChild(div);
+    var div = document.id(document.createElement("div"));
+    document.id(document.body).appendChild(div);
     div.addClass("glyphicon glyphicon-refresh");
     //div.innerHTML = "Update...";
 
@@ -124,7 +124,7 @@ spt.update.display = function(el, column, value) {
 }
 
 
-var top = $(document.body);
+var top = document.id(document.body);
 
 if (top.spt_update_interval_id) {
     clearInterval( top.spt_update_interval_id );
@@ -135,13 +135,13 @@ top.spt_update_src_el = bvr.src_el;
 //setTimeout( function() {
 top.spt_update_interval_id = setInterval( function() {
 
-    var top = $(document.body);
+    var top = document.id(document.body);
     if (spt.body.is_active() == false) {
         return;
     }
 
 
-    if ( $(top.spt_update_src_el).isVisible() == false) {
+    if ( document.id(top.spt_update_src_el).isVisible() == false) {
         clearInterval( top.spt_update_interval_id );
         top.spt_update_interval_id = 0;
         top.spt_update_src_el = null;
@@ -234,7 +234,7 @@ top.spt_update_interval_id = setInterval( function() {
 
             for (var el_id in server_data) {
 
-                var el = $(el_id);
+                var el = document.id(el_id);
                 if (!el) {
                     continue;
                 }

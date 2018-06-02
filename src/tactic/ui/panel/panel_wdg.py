@@ -121,7 +121,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
                  "<img class='spt_order_icon' src='/context/icons/common/order_array_up_1.png'></div>")
 
         down.add_event("onclick", "new Fx.Tween('side_bar_scroll').start('margin-top', 0);" \
-                       "$(this).setStyle('display', 'none');")
+                       "document.id(this).setStyle('display', 'none');")
         div.add(down)
 
 
@@ -263,9 +263,9 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
         spt.panel.load_popup(title, widget_class, options);
     }
     else {
-        var target_element = $(target_id);
+        var target_element = document.id(target_id);
 
-        var main_body = $('main_body');
+        var main_body = document.id('main_body');
         var tab_top = main_body.getElement(".spt_tab_top");
         spt.tab.top = tab_top;
 
@@ -326,7 +326,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
     this.execute = function() { 
 
         // get the target element
-        var target_element = $(this.target_id);
+        var target_element = document.id(this.target_id);
 
         this.redo();
     }
@@ -350,9 +350,9 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
             spt.panel.load_popup(path, widget_class, this.options);
         }
         else {
-            var target_element = $(this.target_id);
+            var target_element = document.id(this.target_id);
 
-            //$("breadcrumb").innerHTML = '<div><img src="/context/icons/common/indicator_snake.gif" border="0"> ' +
+            //document.id("breadcrumb").innerHTML = '<div><img src="/context/icons/common/indicator_snake.gif" border="0"> ' +
             //                            'Loading "' + this.title + '" ...</div>';
 
             spt.panel.load(target_element, widget_class, this.options, this.values)
@@ -368,8 +368,8 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
             server.set_application_state(key, panel_id, widget_class, this.options, this.values);
 
             // also set the breadcrumb
-            //$("breadcrumb").innerHTML = path
-            //$("breadcrumb").innerHTML = this.title
+            //document.id("breadcrumb").innerHTML = path
+            //document.id("breadcrumb").innerHTML = this.title
 
             // set the url hash
             if (typeof(this.options.element_name) != "undefined") {
@@ -387,7 +387,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
 
     this.undo = function() {
 
-        var target_element = $(this.target_id);
+        var target_element = document.id(this.target_id);
 
         Effects.fade_out(this.prev_target_id, 150);
 
@@ -429,7 +429,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
 //
 spt.side_bar.scroll = function(evt, bvr) {
     var property = "margin-top";
-    var margin = $("side_bar_scroll").getStyle(property);
+    var margin = document.id("side_bar_scroll").getStyle(property);
     margin = parseInt(margin.replace("px", ""));
     if (evt.wheel < 0) {
         margin -= 30;
@@ -440,14 +440,14 @@ spt.side_bar.scroll = function(evt, bvr) {
 
     if (margin > 0) {
         margin = 0;
-        $("side_bar_scroll_down").setStyle('display', 'none');
-        var pos = $(window).getScroll();
-        $(window).scrollTo(pos.x, pos.y - 30);
+        document.id("side_bar_scroll_down").setStyle('display', 'none');
+        var pos = document.id(window).getScroll();
+        document.id(window).scrollTo(pos.x, pos.y - 30);
     }
     else {
-        $("side_bar_scroll_down").setStyle('display', 'block');
+        document.id("side_bar_scroll_down").setStyle('display', 'block');
     }
-    $("side_bar_scroll").setStyle(property, margin);
+    document.id("side_bar_scroll").setStyle(property, margin);
 }
 
 
@@ -460,7 +460,7 @@ spt.side_bar.scroll = function(evt, bvr) {
 
 spt.side_bar.toggle_section_display_cbk = function(evt, bvr)
 {
-    var click_el = $(bvr.src_el);
+    var click_el = document.id(bvr.src_el);
     //hide el could be the section or div inside the section
     if (spt.has_class(click_el, 'spt_side_bar_element'))
         var hide_el = click_el.getElement(".spt_side_bar_section_content");
@@ -514,7 +514,7 @@ spt.side_bar.get_state = function()
 
 spt.side_bar.store_state = function()
 {
-    var elements = $("side_bar").getElements(".spt_side_bar_section_content");
+    var elements = document.id("side_bar").getElements(".spt_side_bar_section_content");
 
     var open_folders = {};
 
@@ -534,7 +534,7 @@ spt.side_bar.store_state = function()
 
 spt.side_bar.restore_state = function()
 {
-    var side_bar_el = $("side_bar");
+    var side_bar_el = document.id("side_bar");
     if( ! side_bar_el ) {
         spt.js_log.warning( "WARNING: in spt.side_bar.restore_state(), element with ID 'side_bar' not found." );
         return;
@@ -556,7 +556,7 @@ spt.side_bar.restore_state = function()
         var path = element.getAttribute("spt_path");
 
         // Find the element with the arrow indicator for open or closed state of section ...
-        var prev = $(element).getPrevious();
+        var prev = document.id(element).getPrevious();
         if (!prev) continue;
         var arrow_img_el = prev.getElement("img");
         var img_src = arrow_img_el.get('src');
@@ -860,7 +860,7 @@ spt.side_bar.get_elements = function(view, list_id) {
         list_id = "menu_item_list";
     }
 
-    var elements = $(list_id).getElements(".spt_side_bar_element");
+    var elements = document.id(list_id).getElements(".spt_side_bar_element");
     if (typeof(view) == 'undefined') {
         return elements;
     }
@@ -925,7 +925,7 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
     //    bvr.src_el = bvr.src_el.parentNode;
     //}
 
-    var ghost_el = $(bvr.drag_el);
+    var ghost_el = document.id(bvr.drag_el);
     if (!ghost_el) {
         var ghost_el = spt.mouse._create_drag_copy( bvr.src_el );
         bvr.drag_el = ghost_el;
@@ -948,7 +948,7 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
 
         // Then plug the clone div into the Utility ghost_el div to be the contents of the drop ...
         ghost_el.innerHTML = "";
-        ghost_el.appendChild( $(src_copy) );
+        ghost_el.appendChild( document.id(src_copy) );
 
         ghost_el.setStyle( "display", "block" );
         ghost_el.setStyle( "text-align", "left" );
@@ -963,7 +963,7 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
 
 spt.side_bar.pp_motion = function(evt, bvr, mouse_411)
 {
-    var ghost_el = $(bvr.drag_el);
+    var ghost_el = document.id(bvr.drag_el);
     if( ghost_el )
     {
         ghost_el.setStyle( "left", (mouse_411.curr_x + 10) );
@@ -1242,7 +1242,7 @@ spt.side_bar.add_new_item = function(view, element_name, template_top) {
     // index is prone to error, use element_name instead
 
     if ( typeof(template_top) == 'undefined' ) {
-        template_top = $("menu_item_template");
+        template_top = document.id("menu_item_template");
     }
     var menu_item = template_top.getElement("div[spt_element_name=" + element_name +"]");
   
@@ -1252,7 +1252,7 @@ spt.side_bar.add_new_item = function(view, element_name, template_top) {
     var clone = spt.behavior.clone(menu_item);
 
     // get the element and inject after
-    var div = $(popup_id).getElement('.spt_new_item');
+    var div = document.id(popup_id).getElement('.spt_new_item');
     div.appendChild(clone);
 
     // now add some properties to the new element
@@ -1481,7 +1481,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             content_div.add_behavior( {
                 'type': 'load',
                 'cbjs_action': '''
-                var size = $(window).getSize();
+                var size = document.id(window).getSize();
                 //bvr.src_el.setStyle("min-height", size.y - 60);
                 bvr.src_el.setStyle("min-height", size.y);
                 //bvr.src_el.setStyle("overflow-y", "auto");
@@ -1718,7 +1718,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'cbjs_action': '''
             var link = spt.smenu.get_activator(bvr);
-            var main_body = $('main_body');
+            var main_body = document.id('main_body');
             var tab_top = main_body.getElement(".spt_tab_top");
             spt.tab.top = tab_top;
             var class_name = link.getAttribute("spt_class_name");
@@ -1740,7 +1740,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'cbjs_action': '''
             var link = spt.smenu.get_activator(bvr);
-            var main_body = $('main_body');
+            var main_body = document.id('main_body');
             var class_name = link.getAttribute("spt_class_name");
 
             var kwargs_str = link.getAttribute("spt_kwargs");
@@ -3629,7 +3629,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         js_actionX = '''
 
     var table_id = bvr.table_id;
-    var table = $(table_id);
+    var table = document.id(table_id);
     var top = table.getParent(".spt_view_panel");
     // it may not always be a View Panel top
     if (!top) top = table.getParent(".spt_table_top");
@@ -3704,7 +3704,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         return;
 
 
-    spt.hide($(bvr.dialog_id));
+    spt.hide(document.id(bvr.dialog_id));
     var top = bvr.src_el.getParent(".spt_new_view_top");
     spt.api.Utility.clear_inputs(top);
     
@@ -3725,7 +3725,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         'cbjs_action':  '''
             var ret_val = %s;
             if (ret_val) {
-                spt.hide($(bvr.dialog_id));
+                spt.hide(document.id(bvr.dialog_id));
                 var top = bvr.src_el.getParent(".spt_new_view_top");
                 spt.api.Utility.clear_inputs(top);
             }
@@ -3741,7 +3741,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         'type': 'click_up',
         'dialog_id': self.kwargs.get("dialog_id"),
         #'cbjs_action': "var el=bvr.src_el.getParent('.spt_table_aux');spt.hide(el)"
-        'cbjs_action': 'spt.hide($(bvr.dialog_id))'
+        'cbjs_action': 'spt.hide(document.id(bvr.dialog_id))'
         }
         cancel_button.add_behavior(behavior)
 

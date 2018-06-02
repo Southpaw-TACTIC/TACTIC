@@ -187,7 +187,7 @@ spt.hash.onpopstate = function(evt) {
             document.location.reload();
             return;
         }
-        var panel = $(panel);
+        var panel = document.id(panel);
         spt.panel.load(panel, class_name, kwargs);
     }
     else {
@@ -248,7 +248,7 @@ spt.hash.onload_first = function() {
     var widget_html = server.get_widget(class_name, kwargs);
 
     setTimeout( function() {
-        spt.behavior.replace_inner_html($("top_of_application"), widget_html);
+        spt.behavior.replace_inner_html(document.id("top_of_application"), widget_html);
 
         if (spt.side_bar) {
             spt.side_bar.restore_state();

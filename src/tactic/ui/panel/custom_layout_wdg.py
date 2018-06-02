@@ -1153,7 +1153,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     async: true,
                     callback: func
                 }
-                spt.panel.load($(unique_id), class_name, kwargs, {}, options);
+                spt.panel.load(document.id(unique_id), class_name, kwargs, {}, options);
 
             }
 
@@ -1595,8 +1595,8 @@ class ContainerWdg(BaseRefreshWdg):
         divider_div.add_class("content")
         divider_div.add_style("display", "none")
 
-        activator.add_event("onmouseover", "$(this).getElement('.content').setStyle('display', '');")
-        activator.add_event("onmouseout", "$(this).getElement('.content').setStyle('display', 'none');")
+        activator.add_event("onmouseover", "document.id(this).getElement('.content').setStyle('display', '');")
+        activator.add_event("onmouseout", "document.id(this).getElement('.content').setStyle('display', 'none');")
 
         return divider_div
 

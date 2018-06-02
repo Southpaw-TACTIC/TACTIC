@@ -148,7 +148,7 @@ spt.video.get_player = function(el) {
 spt.video.init_video = function(video_id) {
 
     spt.video.loaded = true;
-    spt.video.player = $(video_id);
+    spt.video.player = document.id(video_id);
     spt.video.players[video_id] = spt.video.player;
 }
         '''
@@ -369,7 +369,7 @@ spt.video.init_video = function(video_id, events) {
         spt.video.loaded = true;
         spt.video._add_events(this, events);
 
-        spt.video.player = $(video_id);
+        spt.video.player = document.id(video_id);
         spt.video.players[video_id] = spt.video.player;
     }
 

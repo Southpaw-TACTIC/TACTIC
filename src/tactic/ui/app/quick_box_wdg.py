@@ -89,7 +89,7 @@ class QuickBoxWdg(BaseRefreshWdg):
             'type': 'listen',
             'event_name': 'hotbox|toggle',
             'cbjs_action': '''
-            var size = $(window).getSize();
+            var size = document.id(window).getSize();
             bvr.src_el.setStyle("left", size.x/2-300);
             bvr.src_el.setStyle("top", size.y/2-200);
             if (bvr.src_el.getStyle("display") == "none") {

@@ -180,7 +180,7 @@ spt.get_parent_panel = function( src_el ) {
 
 spt.get_parent = function( el, mt_search_str )
 {
-    el = $(el);  // be sure we have a mootools extended element
+    el = document.id(el);  // be sure we have a mootools extended element
     var found_parent = el.getParent( mt_search_str );  // mt_search_str is something like ".SPT_BLAH_BLAH"
     if( ! found_parent ) {
         // if not immediately found, attempt to find through stub, in case it is within a popup PUW ...
@@ -193,7 +193,7 @@ spt.get_parent = function( el, mt_search_str )
 
 spt.get_cousin = function( start_el, up_mt_search_str, down_mt_search_str, puw_ids )
 {
-    start_el = $(start_el);
+    start_el = document.id(start_el);
 
     // first get top element to search down from ...
     var top_el = spt.get_parent( start_el, up_mt_search_str );
@@ -217,7 +217,7 @@ spt.get_cousin = function( start_el, up_mt_search_str, down_mt_search_str, puw_i
 
 spt.get_cousins = function( start_el, up_mt_search_str, down_mt_search_str, puw_ids )
 {
-    start_el = $(start_el);
+    start_el = document.id(start_el);
 
     // first get top element to search down from ...
     var top_el = spt.get_parent( start_el, up_mt_search_str );
@@ -239,7 +239,7 @@ spt.get_cousins = function( start_el, up_mt_search_str, down_mt_search_str, puw_
 
 spt.get_element = function( top_el, mt_search_str, puw_ids )
 {
-    var found_el = $(top_el).getElement( mt_search_str );
+    var found_el = document.id(top_el).getElement( mt_search_str );
     if( ! found_el ) {
         // if not immediately found in normal DOM heirarchy then look through PUW_STUBS ...
         var elements = spt.puw.get_elements_thru_stubs( top_el, mt_search_str, puw_ids );
@@ -253,7 +253,7 @@ spt.get_element = function( top_el, mt_search_str, puw_ids )
 
 spt.get_elements = function( top_el, mt_search_str, puw_ids )
 {
-    var found_el_list = $(top_el).getElements( mt_search_str );
+    var found_el_list = document.id(top_el).getElements( mt_search_str );
     var elements = spt.puw.get_elements_thru_stubs( top_el, mt_search_str, puw_ids );
 
     found_el_list.concat( elements );
@@ -267,7 +267,7 @@ spt.ctags = {};
 
 spt.ctags._match_tag = function( el_to_match, ctags_list )
 {
-    var el = $(el_to_match);
+    var el = document.id(el_to_match);
 
     for( var c=0; c < ctags_list.length; c++ ) {
         if( el.hasClass( ctags_list[c] ) ) {
@@ -282,11 +282,11 @@ spt.ctags._match_tag = function( el_to_match, ctags_list )
 spt.ctags._gather_elements = function( el, gather_match_list, ctags_list, boundary_tags_list, return_only_one )
 {
     // get the children ...
-    var children = $(el).getChildren();
+    var children = document.id(el).getChildren();
 
     // check the children and recurse ...
     for( var c=0; c < children.length; c++ ) {
-        var child = $(children[c]);
+        var child = document.id(children[c]);
 
         if( spt.ctags._match_tag( child, boundary_tags_list ) ) {
             // STOP here ... skip this element ... don't recurse to it's children!
@@ -351,7 +351,7 @@ spt.ctags.find_parent = function( start_el, ctags_str, boundary_tags_str, allow_
     var matched_parent = null;
     var boundary_match_count = 0;
 
-    var pnode = $(start_el.parentNode);
+    var pnode = document.id(start_el.parentNode);
     while( pnode ) {
 
         if( pnode.get('tag') == 'body' ) {
@@ -373,7 +373,7 @@ spt.ctags.find_parent = function( start_el, ctags_str, boundary_tags_str, allow_
             }
         }
 
-        pnode = $(pnode.parentNode);
+        pnode = document.id(pnode.parentNode);
     }
 
     return matched_parent;
@@ -385,14 +385,14 @@ spt.get_prev_same_siblings = function( curr_el, class_name )
     // matches by tag
     var node_name = curr_el.nodeName;
     var prev_siblings = [];
-    var prev_node = $(curr_el.previousSibling);
+    var prev_node = document.id(curr_el.previousSibling);
     while( prev_node ) {
         if( prev_node.nodeName == node_name ) {
             if( ! class_name || (class_name && prev_node.hasClass(class_name)) ) {
                 prev_siblings.push( prev_node );
             }
         }
-        prev_node = $(prev_node.previousSibling);
+        prev_node = document.id(prev_node.previousSibling);
     }
 
     return prev_siblings;
@@ -404,7 +404,7 @@ spt.get_next_same_siblings = function( curr_el, class_name )
     // matches by tag
     var node_name = curr_el.nodeName;
     var next_siblings = [];
-    var next_node = $(curr_el.nextSibling);
+    var next_node = document.id(curr_el.nextSibling);
     while( next_node ) {
         if( next_node.nodeName == node_name ) {
             if( ! class_name || (class_name && next_node.hasClass(class_name)) ) {
@@ -422,14 +422,14 @@ spt.get_prev_same_sibling = function( curr_el, class_name )
 {
     // matches by tag
     var node_name = curr_el.nodeName;
-    var prev_node = $(curr_el.previousSibling);
+    var prev_node = document.id(curr_el.previousSibling);
     while( prev_node ) {
         if( prev_node.nodeName == node_name ) {
             if( ! class_name || (class_name && prev_node.hasClass(class_name)) ) {
                 return prev_node;
             }
         }
-        prev_node = $(prev_node.previousSibling);
+        prev_node = document.id(prev_node.previousSibling);
     }
     return null;
 }
@@ -439,7 +439,7 @@ spt.get_next_same_sibling = function( curr_el, class_name )
 {
     // matches by tag
     var node_name = curr_el.nodeName;
-    var next_node = $(curr_el.nextSibling);
+    var next_node = document.id(curr_el.nextSibling);
     while( next_node ) {
         if( next_node.nodeName == node_name ) {
             if( ! class_name || (class_name && next_node.hasClass(class_name)) ) {
@@ -714,16 +714,16 @@ spt.get_event_target = function( evt )
 
     if( spt.browser.is_IE() ) {
         if( 'srcElement' in evt ) {
-            return $(evt.srcElement);
+            return document.id(evt.srcElement);
         }
         else if( evt && 'event' in evt && 'srcElement' in evt.event ) {
             // this is what IE is returning!
-            return $(evt.event.srcElement);
+            return document.id(evt.event.srcElement);
         }
     }
 
     if( 'target' in evt ) {
-        return $(evt.target);
+        return document.id(evt.target);
     }
 
     // should never reach here!
@@ -794,7 +794,7 @@ spt.get_element_height = function( el )
 // TODO: deprecate this function -- use spt.get_render_display_width() below instead ...
 spt.get_el_real_cwidth = function( el, ignore_padding, ignore_border )
 {
-    el = $(el);
+    el = document.id(el);
     var cwidth = el.clientWidth;
 
     var border_left = parseInt( el.getStyle("border-left-width") );
@@ -821,7 +821,7 @@ spt.get_el_real_cwidth = function( el, ignore_padding, ignore_border )
 // TODO: deprecate this function -- use spt.get_render_display_height() below instead ...
 spt.get_el_real_cheight = function( el, ignore_padding, ignore_border )
 {
-    el = $(el);
+    el = document.id(el);
     var cheight = el.clientHeight;
 
     var border_top = parseInt( el.getStyle("border-top-width") );
@@ -847,7 +847,7 @@ spt.get_el_real_cheight = function( el, ignore_padding, ignore_border )
 
 spt.get_render_display_width = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     var w = el.clientWidth;  // will include padding in non-IE browsers
 
     var border_left = parseInt( el.getStyle("border-left-width") );
@@ -861,7 +861,7 @@ spt.get_render_display_width = function( el )
 
 spt.get_render_display_height = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     var h = el.clientHeight;  // will include padding in non-IE browsers
 
     var border_top = parseInt( el.getStyle("border-top-width") );
@@ -953,7 +953,7 @@ spt.disable_text_selection_by_class = function( class_name, start_el )
 {
     var el_list = [];
     if( start_el ) {
-        el_list = $(start_el).getElements( ('.'+class_name) );
+        el_list = document.id(start_el).getElements( ('.'+class_name) );
     } else {
         el_list = document.getElements( ('.'+class_name) );
     }
@@ -984,7 +984,7 @@ spt.disable_text_selection_by_id = function( el_id )
 spt.show = function( element )
 {
     // element can be element ID or element itself ...
-    var el = $(element);
+    var el = document.id(element);
     if( el ) {
         el.setStyle("display","");
         if (el.getStyle("opacity") == "0")
@@ -1011,7 +1011,7 @@ spt.show = function( element )
 spt.show_block = function( element )
 {
     // element can be element ID or element itself ...
-    var el = $(element);
+    var el = document.id(element);
     if (el) {
         el.setStyle("display","block");
         if( el.hasClass("SPT_BVR") ) {
@@ -1031,7 +1031,7 @@ spt.show_block = function( element )
 spt.hide = function( element )
 {
     // element can be element ID or element itself ...
-    var el = $(element);
+    var el = document.id(element);
     if (el) {
         el.setStyle("display","none");
         if( el.hasClass("SPT_BVR") ) {
@@ -1072,7 +1072,7 @@ spt.is_hidden= function( element )
 
 spt.toggle_show_hide = function( element )
 {
-    var el = $(element);
+    var el = document.id(element);
     if( spt.is_shown( el ) ) {
         spt.hide( el );
     } else {
@@ -1131,7 +1131,7 @@ spt.simple_display_toggle = function( element, kwargs )
             top_el = document;
         }
         else {
-            top_el = $(kwargs.top_el);
+            top_el = document.id(kwargs.top_el);
         }
         elements = top_el.getElements(element);
 
@@ -1139,7 +1139,7 @@ spt.simple_display_toggle = function( element, kwargs )
         if (elements.length == 0) {
             var element = document.getElementById(element);
             if (element != null) {
-                elements = [$(element)];
+                elements = [document.id(element)];
             }
         }
     }
@@ -1178,7 +1178,7 @@ spt.simple_display_hide = function( element, kwargs )
             top_el = document;
         }
         else {
-            top_el = $(kwargs.top_el);
+            top_el = document.id(kwargs.top_el);
         }
         elements = top_el.getElements(element);
     }
@@ -1208,7 +1208,7 @@ spt.simple_display_show = function( element, kwargs )
             top_el = document;
         }
         else {
-            top_el = $(kwargs.top_el);
+            top_el = document.id(kwargs.top_el);
         }
         elements = top_el.getElements(element);
     }
@@ -1642,7 +1642,7 @@ spt.redraw = function( el )
     }
 
 
-    el = $(el);
+    el = document.id(el);
     var saved_scroll = el.getScroll();
     el.scrollTo( saved_scroll.x+1, saved_scroll.y+1 );
     el.scrollTo( saved_scroll.x, saved_scroll.y );
@@ -1657,7 +1657,7 @@ spt.app_busy.msg_block_size = { 'width': 350, 'height': 70 };
 
 spt.app_busy.get_app_busy_container = function()
 {
-    var app_busy_container = $("app_busy_container");
+    var app_busy_container = document.id("app_busy_container");
     if( ! app_busy_container ) {
 
         var body = document.getElement("body");
@@ -1688,7 +1688,7 @@ spt.app_busy.get_app_busy_container = function()
         var top0 = parseInt((ch - spt.app_busy.msg_block_size.height) / 2) + b_dim.scroll.y;
         var left0 = parseInt((cw - spt.app_busy.msg_block_size.width) / 2) + b_dim.scroll.x;
 
-        var app_busy_msg_block = $("app_busy_msg_block");
+        var app_busy_msg_block = document.id("app_busy_msg_block");
         if (app_busy_msg_block) {
             app_busy_msg_block.setStyle("top", top0+'px');
             app_busy_msg_block.setStyle("left", left0+'px');
@@ -1710,7 +1710,7 @@ spt.app_busy.show = function( title, msg)
     }
 
     var app_busy_container = spt.app_busy.get_app_busy_container();
-    var app_busy_msg_block = $("app_busy_msg_block");
+    var app_busy_msg_block = document.id("app_busy_msg_block");
 
     spt.app_busy.set_msg_title_and_text( title, msg );
 
@@ -1737,7 +1737,7 @@ spt.app_busy.show = function( title, msg)
 
 spt.app_busy.set_msg_title_and_text = function( title, msg )
 {
-    var app_busy_msg_block = $("app_busy_msg_block");
+    var app_busy_msg_block = document.id("app_busy_msg_block");
 
     var title_span = app_busy_msg_block.getElement(".spt_app_busy_title");
     title_span.innerHTML = title;
@@ -1751,7 +1751,7 @@ spt.app_busy.hide = function(func)
 {
     var hide = function() {
         var app_busy_container = spt.app_busy.get_app_busy_container();
-        var app_busy_msg_block = $("app_busy_msg_block");
+        var app_busy_msg_block = document.id("app_busy_msg_block");
 
         if (app_busy_msg_block) 
             app_busy_msg_block.setStyle("display","none");
@@ -1780,7 +1780,7 @@ spt.app_busy.set_cancelled = function()
 
 spt.app_busy.adjust_to_window_resize = function()
 {
-    var app_busy_container = $("app_busy_container");
+    var app_busy_container = document.id("app_busy_container");
     if( spt.is_hidden( app_busy_container ) ) {
         return;
     }
@@ -1802,7 +1802,7 @@ spt.app_busy.adjust_to_window_resize = function()
     app_busy_container.setStyle( 'width', (w + 'px') );
     app_busy_container.setStyle( 'height', (h + 'px') );
 
-    var app_busy_msg_block = $("app_busy_msg_block");
+    var app_busy_msg_block = document.id("app_busy_msg_block");
     var offset = {x: 0, y: -60}
     spt.center_el_in_viewport( app_busy_msg_block , offset );
 }
@@ -1812,7 +1812,7 @@ spt.app_busy.adjust_to_window_resize = function()
 
 spt.print_moo_dimensions = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     var tag = el.tagName;
     var cls = el.className;
     var id = el.get('id');
@@ -1915,7 +1915,7 @@ spt.center_el_in_viewport = function( el, offset)
 
 spt.get_el_attribute_map = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     var attr_map = {};
     var attrs = el.attributes;
     for( var c=0; c < attrs.length; c++ ) {

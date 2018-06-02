@@ -136,7 +136,7 @@ spt.hotkeys.handle_key_input_no_mods = function( key_info )
     if( key_code == spt.key_const.key_9() && ! key_info.ctrl ) {
         // 9 ... toggle display of the TACTIC Script Editor popup ...
         var js_popup_id = "TACTIC Script Editor";
-        var js_popup = $(js_popup_id);
+        var js_popup = document.id(js_popup_id);
         if( js_popup ) {
             spt.popup.toggle_display( js_popup_id, false );
         }
@@ -271,7 +271,7 @@ spt.kbd._handler = function( evt )
     {
         var handler = spt.kbd.get_top_handler_obj();
 
-        var el = $(handler.text_edit_el);  // mootifying here to fix issue in IE
+        var el = document.id(handler.text_edit_el);  // mootifying here to fix issue in IE
         var target = spt.get_event_target( evt );
 
         if( ! (el === target) )

@@ -1097,7 +1097,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         icon_entry_text.add_behavior( {'type': 'listen', 'event_name': named_event_name,
            'cbjs_action': '''
             // like it or not, the chooser is global
-            var top = $("IconChooserPopup");
+            var top = document.id("IconChooserPopup");
             var chooser = spt.get_element(top, ".SPT_ICON_CHOOSER_WRAPPER_DIV");
 
             var icon_name = chooser.getProperty("spt_icon_selected");

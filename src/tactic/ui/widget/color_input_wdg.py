@@ -57,7 +57,7 @@ class ColorInputWdgOLD(BaseInputWdg):
             var r = new MooRainbow('%s', {
                 startColor: [58, 142, 246],
                 imgPath:    '/context/spt_js/mooRainbow/images/',
-                onComplete: function(color) { $(myInput).value=color.hex; }
+                onComplete: function(color) { document.id(myInput).value=color.hex; }
             });
             ''' % rainbow_id
         } )

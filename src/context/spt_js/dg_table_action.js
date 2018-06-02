@@ -13,7 +13,7 @@ spt.dg_table_action = {};
 
 spt.dg_table_action.get_popup_wdg = function( evt, bvr )
 {
-    var popup = $("popup");
+    var popup = document.id("popup");
 
     var args = bvr.args;
     if (typeof(args) == "undefined") {
@@ -39,12 +39,12 @@ spt.dg_table_action.get_popup_wdg = function( evt, bvr )
 
 spt.dg_table_action.set_actionbar_aux_content = function( evt, bvr )
 {
-    //var aux_div = $("ActionBar_Aux");
-    //var aux_content = $("ActionBar_Aux_Content");
-    //var aux_title = $("ActionBar_Aux_Title");
+    //var aux_div = document.id("ActionBar_Aux");
+    //var aux_content = document.id("ActionBar_Aux_Content");
+    //var aux_title = document.id("ActionBar_Aux_Title");
     //
     var table_id = bvr.args['table_id'];
-    var table = $(table_id);
+    var table = document.id(table_id);
     var table_top = table.getParent(".spt_table_top")
 
     var aux_div = table_top.getElement(".spt_table_aux")
@@ -58,7 +58,7 @@ spt.dg_table_action.set_actionbar_aux_content = function( evt, bvr )
         if (i=='table_id')
         {
             var table_id = bvr.args['table_id'];
-            var table = $(table_id);
+            var table = document.id(table_id);
             if (table)
             {
                 var view = table.getProperty("spt_view");
@@ -85,8 +85,8 @@ spt.dg_table_action.set_actionbar_aux_content = function( evt, bvr )
 spt.dg_table_action.get_popup_wdg2 = function( evt, bvr )
 {
     // get the common popup, clone it and fill it in
-    var container = $("popup_container");
-    var popup = $("popup_template");
+    var container = document.id("popup_container");
+    var popup = document.id("popup_template");
     var clone = spt.behavior.clone(popup);
 
     clone.setAttribute("id", "whatever");
@@ -226,7 +226,7 @@ spt.dg_table_action.set_commitable = function(top_el, value_wdg) {
 // Called when edit button on editing definition of a column in a table
 //
 spt.dg_table_action.edit_definition_cbk = function(evt, bvr) {
-    //var popup = $('EditColumnDefinitionWdg_panel');
+    //var popup = document.id('EditColumnDefinitionWdg_panel');
     var panel= bvr.src_el.getParent('.spt_panel');
     var popup =  bvr.src_el.getParent('.spt_popup');
     panel.setAttribute("spt_refresh", "true");
@@ -272,7 +272,7 @@ spt.dg_table_action.edit_definition_cbk = function(evt, bvr) {
 // NOTE: this is still used in vesion 2 (fast table)
 spt.dg_table_action.sobject_drop_setup = function( evt, bvr )
 {
-    var ghost_el = $("drag_ghost_copy");
+    var ghost_el = document.id("drag_ghost_copy");
     ghost_el.setStyle("width","auto");
     ghost_el.setStyle("height","auto");
     ghost_el.setStyle("text-align","left");

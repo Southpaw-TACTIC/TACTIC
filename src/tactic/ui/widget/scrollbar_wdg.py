@@ -149,7 +149,7 @@ spt.scrollbar.drag_setup = function(evt, bvr, mouse_411) {
     var pos_y = parseInt(src_el.getStyle("top").replace("px", ""));
     spt.scrollbar.el_start_y = pos_y;
 
-    spt.scrollbar.content = $("spt_SCROLL");
+    spt.scrollbar.content = document.id("spt_SCROLL");
     spt.scrollbar.top = src_el.getParent(".spt_scrollbar_top")
 
 
@@ -179,7 +179,7 @@ spt.scrollbar.drag_motion = function(evt, bvr, mouse_411) {
 
 
 spt.scrollbar.scroll = function(dy) {
-    spt.scrollbar.content = $("spt_SCROLL");
+    spt.scrollbar.content = document.id("spt_SCROLL");
     var content = spt.scrollbar.content;
     var pos_y = parseInt(content.getStyle("margin-top").replace("px", ""));
     content.setStyle("margin-top", pos_y + dy);

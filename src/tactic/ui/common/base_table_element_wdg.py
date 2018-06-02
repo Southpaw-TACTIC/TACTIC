@@ -226,8 +226,8 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
 
             var top = spt.simple_search.get_top();
             var size = top.getSize();
-            var cur_pos = top.getPosition( $(document.body) );
-            var window_size = $(document.body).getSize();
+            var cur_pos = top.getPosition( document.id(document.body) );
+            var window_size = document.id(document.body).getSize();
             if (cur_pos.x + size.x > window_size.x) {
                 var panel_size = panel.getSize();
                 pos.x = panel_size.x - size.x;

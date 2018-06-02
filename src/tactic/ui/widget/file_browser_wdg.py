@@ -605,8 +605,8 @@ class DirListWdg(BaseRefreshWdg):
             background = "background"
         hover = div.get_color(background, -5)
         div.add_color("background", background)
-        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+        div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: document.id(this), add_color_modifier: -5})" )
+        div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: document.id(this)})")
      
  
 
@@ -823,8 +823,8 @@ class DirListWdg(BaseRefreshWdg):
         item_div.add_color("background", background)
 
 
-        item_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: $(this), add_color_modifier: -5})" )
-        item_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: $(this)})")
+        item_div.add_event("onmouseover", "spt.mouse.table_layout_hover_over({}, {src_el: document.id(this), add_color_modifier: -5})" )
+        item_div.add_event("onmouseout", "spt.mouse.table_layout_hover_out({}, {src_el: document.id(this)})")
      
  
 

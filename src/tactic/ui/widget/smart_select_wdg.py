@@ -137,7 +137,7 @@ spt.smart_select = {};
 
 spt.smart_select.find_match_value_in_tbody = function( select_el, element_to_find ) 
 {
-    select_el = $(select_el);
+    select_el = document.id(select_el);
 
     // first clear all the options ...
     var option_el_list = select_el.getElements("option");

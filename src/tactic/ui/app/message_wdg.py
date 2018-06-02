@@ -1491,7 +1491,7 @@ spt.message.poll = function(key) {
 spt.message.async_poll = function(key, callback) {
     // before polling, check that the element still exists
     var el_id = spt.message.elements[key];
-    var el = $(el_id);
+    var el = document.id(el_id);
     if (!el || el.hasClass("spt_destroyed")) {
         spt.message.stop_interval(key);
         return;

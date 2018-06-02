@@ -71,7 +71,7 @@ class IconSelectWdg(BaseInputWdg):
         named_event_name = "ICON_CHOOSER_SELECTION_MADE"
         icon_entry_text.add_behavior( {'type': 'listen', 'event_name': named_event_name,
            'cbjs_action': '''
-                var top = $("IconChooserPopup");
+                var top = document.id("IconChooserPopup");
                 var chooser = spt.get_element(top, ".SPT_ICON_CHOOSER_WRAPPER_DIV");
                 //var chooser = spt.get_cousin( bvr.src_el,
                 //    ".spt_icon_chooser_top", ".SPT_ICON_CHOOSER_WRAPPER_DIV" );

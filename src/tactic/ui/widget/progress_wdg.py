@@ -240,7 +240,7 @@ spt.progress.set_progress = function(complete) {
         return;
     }
 
-    var progress_el = $(progress_id);
+    var progress_el = document.id(progress_id);
 
     if (complete == 'error') {
         progress_el.setStyle("width", "100%");

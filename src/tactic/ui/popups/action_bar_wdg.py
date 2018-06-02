@@ -75,7 +75,7 @@ class ActionBarWdg(BaseRefreshWdg):
         # tear_off.add_class( "SPT_TEAR_OFF_ACTIVATOR" )
         # tear_off.add_styles( "cursor: pointer;" )
         # tear_off.add_behavior( { 'type': 'click_up',
-        #     'cbjs_action': 'spt.popup.tear_off_el( $("%s"), "%s", %s, "%s" );' %
+        #     'cbjs_action': 'spt.popup.tear_off_el( document.id("%s"), "%s", %s, "%s" );' %
         #                     (action_bar_id, popup_title, 'spt.popup.remove_el_by_class', 'SPT_TEAR_OFF_ACTIVATOR')
         # } )
         # td = table.add_cell()
@@ -240,7 +240,7 @@ class ActionBarWdg(BaseRefreshWdg):
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
             menu_items.insert(0,  {"type": "action", "label": "Create New Project",
-                        "bvr_cb": { 'cbjs_action': "spt.popup.open('create_project_wizard'); Effects.fade_in($('create_project_wizard'), 200);"}})
+                        "bvr_cb": { 'cbjs_action': "spt.popup.open('create_project_wizard'); Effects.fade_in(document.id('create_project_wizard'), 200);"}})
             menu_items.insert(1, { "type": "separator" })
 
         return {

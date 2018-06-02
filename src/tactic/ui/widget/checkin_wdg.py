@@ -1157,7 +1157,7 @@ i   }
 
 
 spt.checkin.drop_files = function(evt, el) {
-    el = $(el);
+    el = document.id(el);
     var search_key = el.getAttribute("spt_search_key");
     var process = el.getAttribute("spt_process");
     var subcontext_options = el.getAttribute("spt_subcontext_options");

@@ -214,7 +214,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             for (var i = 0; i < els.length; i++) {
                 var el = els[i];
                 var replace_id = el.getAttribute("spt_replace_id");
-                var el_old = $(replace_id);
+                var el_old = document.id(replace_id);
                 if (el_old) {
                     el.replaces(el_old);
 
@@ -712,7 +712,7 @@ class HelpWdg(BaseRefreshWdg):
             spt.help.load_alias(help_view);
         }
 
-        var size = $(window).getSize();
+        var size = document.id(window).getSize();
 
         var dialog = bvr.src_el.getParent(".spt_dialog_content");
 
@@ -819,7 +819,7 @@ spt.help.is_visible = function() {
 
 spt.help.set_top = function(el) {
     if (typeof(el) == 'undefined') {
-        el = $("spt_help_top");
+        el = document.id("spt_help_top");
         spt.help.top = el;
     }
 
@@ -929,7 +929,7 @@ spt.help.load_alias = function(alias, history) {
 
 
     // resize
-    var size = $(window).getSize();
+    var size = document.id(window).getSize();
     var dialog = bvr.src_el.getParent(".spt_dialog_content");
     if (dialog) {
         dialog.setStyle("height", size.y - 100);
@@ -988,7 +988,7 @@ spt.help.load_rel_path = function(rel_path, history) {
     spt.behavior.replace_inner_html( spt.help.content, html );
 
     // resize
-    var size = $(window).getSize();
+    var size = document.id(window).getSize();
     var dialog = bvr.src_el.getParent(".spt_dialog_content");
     dialog.setStyle("height", size.y - 100);
     dialog.setStyle("width", 650);

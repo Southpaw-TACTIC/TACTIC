@@ -426,7 +426,7 @@ spt.drop.src_el = null;
 // Drop functionality
 spt.drop.sobject_drop_setup = function( evt, bvr )
 {
-    var ghost_el = $("drag_ghost_copy");
+    var ghost_el = document.id("drag_ghost_copy");
     if (!ghost_el) {
         ghost_el =  new Element('div', {
 			styles: {

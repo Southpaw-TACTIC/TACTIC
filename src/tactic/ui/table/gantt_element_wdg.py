@@ -883,8 +883,8 @@ class GanttElementWdg(BaseTableElementWdg):
             #title_div.add_style("padding-left: %spx")
             div.add(title_div)
 
-            #div.add_event("onmouseover", "$(this).setStyle('border','dashed 1px blue')")
-            #div.add_event("onmouseout", "$(this).setStyle('border-size','0px')")
+            #div.add_event("onmouseover", "document.id(this).setStyle('border','dashed 1px blue')")
+            #div.add_event("onmouseout", "document.id(this).setStyle('border-size','0px')")
             div.add_behavior( {
                 'type': 'click_up',
                 "cbjs_action": 'spt.gantt.date_clicked_cbk(evt, bvr)'
@@ -1576,7 +1576,7 @@ class GanttElementWdg(BaseTableElementWdg):
                 spt.gantt.unselect_all();
                 spt.gantt.select(top);
 
-                var color_el = $(bvr.legend_dialog_id);
+                var color_el = document.id(bvr.legend_dialog_id);
                 spt.gantt.open_legend(color_el, bvr.pipeline_code, pos);
             }
             else {
@@ -1586,7 +1586,7 @@ class GanttElementWdg(BaseTableElementWdg):
                 if (state == "on") {
                     bvr.src_el.setAttribute("spt_state", "off");
 
-                    var color_el = $(bvr.legend_dialog_id);
+                    var color_el = document.id(bvr.legend_dialog_id);
                     spt.gantt.open_legend(color_el, bvr.pipeline_code, pos);
 
                     var color = color_el.getElement(".spt_color").value;
@@ -2289,7 +2289,7 @@ spt.gantt.fill_header_days = function(top, start_date, end_date, percent_per_day
 
     var count = 0;
     while (true) {
-        var el = $(document.createElement("div"));
+        var el = document.id(document.createElement("div"));
         top.appendChild(el);
         el.setStyle("width", percent_per_day + "%");
         el.setStyle("height", "12px");
@@ -2314,7 +2314,7 @@ spt.gantt.fill_header_days = function(top, start_date, end_date, percent_per_day
        
 
         var day = date.format('DD');
-        var text = $(document.createTextNode(day));
+        var text = document.id(document.createTextNode(day));
         el.appendChild(text);
 
         date.add('days', 1);
@@ -2361,7 +2361,7 @@ spt.gantt.fill_header_months = function(top, start_date, end_date, percent_per_d
         var day = date.format('DD');
         if (month != last_month || last_one) {
 
-            var el = $(document.createElement("div"));
+            var el = document.id(document.createElement("div"));
             top.appendChild(el);
             var percent = percent_per_day*day_count;
             el.setStyle("width", percent + "%");
@@ -2376,7 +2376,7 @@ spt.gantt.fill_header_months = function(top, start_date, end_date, percent_per_d
                 el.setStyle("background", color2);
             }
 
-            var text = $(document.createTextNode(last_month));
+            var text = document.id(document.createTextNode(last_month));
             el.appendChild(text);
 
             last_month = month;
@@ -2412,7 +2412,7 @@ spt.gantt.fill_days = function(top, days, colors, labels) {
     var percent = 100.0 / days;
 
     for (var i = 0; i <= days; i++) {
-        var el = $(document.createElement("div"));
+        var el = document.id(document.createElement("div"));
         top.appendChild(el);
         el.setStyle("width", percent + "%");
         el.setStyle("overflow", "hidden");
@@ -2708,7 +2708,7 @@ spt.gantt.drag2_setup = function(evt, bvr, mouse_411)
 
     // if none are selected, get the one that is dragged
     if (spt.gantt.ranges.length == 0) {
-        var ghost_el = $(bvr.drag_el);
+        var ghost_el = document.id(bvr.drag_el);
         var range = ghost_el.getParent(".spt_gantt_range");
         var search_key = ghost_el.getParent(container_css).getAttribute("spt_search_key");
         spt.gantt.ranges.push(range);
@@ -3337,7 +3337,7 @@ spt.gantt.accept_day = function(evt, bvr) {
     //var cbk_vals = bvr.cbk_values;
    
     // rely on id for now
-    var top_el = $(bvr.top_id);
+    var top_el = document.id(bvr.top_id);
     var json_dict = {};
     var json_el = top_el.getElement(".spt_json_data");
     if (json_el.value)

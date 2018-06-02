@@ -896,7 +896,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             //var loadingImage = loadImage(
             setTimeout( function() {
                 var draw_empty_icon = function() {
-                        var img = $(document.createElement("div"));
+                        var img = document.id(document.createElement("div"));
                         img.setStyle("width", "58");
                         img.setStyle("height", "34");
                         //img.innerHTML = "MP4";
@@ -962,7 +962,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         }
 
         spt.drag.noop = function(evt, el) {
-            var top = $(el).getParent(".spt_ingest_top");
+            var top = document.id(el).getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
             evt.stopPropagation();
             evt.preventDefault();

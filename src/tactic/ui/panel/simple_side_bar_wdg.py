@@ -277,7 +277,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 var target_class = bvr.target;
 
                 if (target_class.indexOf("#") != -1) {
-                    var target = $(document.body).getElement(target_class);
+                    var target = document.id(document.body).getElement(target_class);
                 }
                 else if (target_class.indexOf(".") != -1) {
                     var parts = target_class.split(".");
@@ -285,10 +285,10 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                     var target = top.getElement("."+parts[1]);  
                 }
                 else {
-                    var target = $(document.body).getElement("."+target_class);
+                    var target = document.id(document.body).getElement("."+target_class);
                 }
 
-                //var content = $(document).getElement(bvr.target);
+                //var content = document.id(document).getElement(bvr.target);
                 var content = target;
                 spt.app_busy.show("Loading link "+bvr.title);
                 spt.panel.load_link(content, bvr.link);
@@ -312,7 +312,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 var target_class = bvr.target;
 
                 if (target_class.indexOf("#") != -1) {
-                    var target = $(document.body).getElement(target_class);
+                    var target = document.id(document.body).getElement(target_class);
                 }
                 else if (target_class.indexOf(".") != -1) {
                     var parts = target_class.split(".");
@@ -320,11 +320,11 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                     var target = top.getElement("."+parts[1]);  
                 }
                 else {
-                    var target = $(document.body).getElement("."+target_class);
+                    var target = document.id(document.body).getElement("."+target_class);
                 }
 
 
-                //var content = $(document).getElement(bvr.target);
+                //var content = document.id(document).getElement(bvr.target);
                 var content = target;
 
                 var tab_top = null;;

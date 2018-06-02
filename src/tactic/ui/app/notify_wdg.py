@@ -125,7 +125,7 @@ spt.notify.show_message = function(message, duration, kwargs) {
 
     var size = el.getSize();
 
-    var window_size = $(window).getSize();
+    var window_size = document.id(window).getSize();
     el.setStyle("left", (window_size.x-size.x)/2);
 
     return el;

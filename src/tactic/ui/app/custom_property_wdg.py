@@ -144,7 +144,7 @@ spt.custom_property_adder.add_property_cbk = function(evt, bvr) {
         var response = server.execute_cmd(class_name, options, values);
         if (exit == "true") {
 
-            $('add_property_wdg').setStyle("display", "none");
+            document.id('add_property_wdg').setStyle("display", "none");
             // this may or may not exist
             if (popup)
                 spt.popup.close(popup);

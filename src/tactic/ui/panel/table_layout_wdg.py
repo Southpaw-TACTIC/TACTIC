@@ -907,7 +907,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             scroll.add_class("spt_table_scroll")
-            scroll.add_attr( "onScroll", '''$(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
+            scroll.add_attr( "onScroll", '''document.id(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
             # Scroll event not implemented in behaviors yet
             """
             scroll.add_behavior( {
@@ -3495,7 +3495,7 @@ spt.table.do_search = function(kwargs) {
 
 
 spt.table.dragover_row = function(evt, el) {
-    var top = $(el);
+    var top = document.id(el);
     top.setStyle("border", "dashed 1px blue");
     top.setStyle("background", "rgba(0,0,255,0.05)");
     top.setStyle("opacity", "0.3")
@@ -3503,7 +3503,7 @@ spt.table.dragover_row = function(evt, el) {
 
 
 spt.table.dragleave_row = function(evt, el) {
-    var top = $(el);
+    var top = document.id(el);
     top.setStyle("border", "solid 1px #BBB");
     top.setStyle("background", "");
     top.setStyle("opacity", "1.0")
@@ -3519,7 +3519,7 @@ spt.table.drop_row = function(evt, el) {
     evt.dataTransfer.dropEffect = 'copy';
     var files = evt.dataTransfer.files;
 
-    var top = $(el);
+    var top = document.id(el);
     var thumb_el = top.getElement(".spt_thumb_top");
     if (thumb_el) {
         var size = thumb_el.getSize();
@@ -3565,7 +3565,7 @@ spt.table.drop_row = function(evt, el) {
                 var loadingImage = loadImage(
                     file,
                     function (img) {
-                        img = $(img);
+                        img = document.id(img);
                         img.setStyle("width", "100%");
                         img.setStyle("height", "");
                         thumb_el.innerHTML = "";
@@ -4596,18 +4596,18 @@ spt.table.show_edit = function(cell) {
     // Remove the first child
     // NOTE: this relies on a widget that has all components under the first
     // child.
-    var first_child = $(cell.firstChild);
+    var first_child = document.id(cell.firstChild);
 
     // get the size before the edit widget is added
     var size = cell.getSize();
 
     if (first_child == null) {
-        var tmp = $(document.createElement("span"));
+        var tmp = document.id(document.createElement("span"));
         tmp.innerHTML = "";
         spt.table.last_data_wdg = tmp;
     }
     else if ( first_child.nodeName == '#text') {
-        var tmp = $(document.createElement("span"));
+        var tmp = document.id(document.createElement("span"));
         tmp.innerHTML = first_child.nodeValue;
         spt.table.last_data_wdg = tmp;
     }
@@ -4671,7 +4671,7 @@ spt.table.show_edit = function(cell) {
 
 
     // put a dummy element in there to fill the space
-    var dummy = $(document.createElement("div"));
+    var dummy = document.id(document.createElement("div"));
     if (typeof(size) != 'undefined') {
         // the offset takes into account the padding (3px) and border (1px) x2
         dummy.setStyle("height", size.y-8);
@@ -4737,7 +4737,7 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
         var get_edit_wdg_code = edit_script;
         var get_edit_wdg_script = spt.CustomProject.get_script_by_path(get_edit_wdg_code);
 
-        edit_wdg = $(document.createElement("div"));
+        edit_wdg = document.id(document.createElement("div"));
         edit_wdg.setStyle("position", "absolute");
         edit_wdg.setStyle("margin-top", "-3px");
         edit_wdg.setStyle("margin-left", "-3px");
@@ -6957,7 +6957,7 @@ spt.table.delete_rows = function(rows) {
 
     var on_post_delete = function() {
         var on_complete = function(id) {
-            spt.behavior.destroy_element($(id));
+            spt.behavior.destroy_element(document.id(id));
         }
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
@@ -6978,7 +6978,7 @@ spt.table.delete_rows = function(rows) {
 spt.table.remove_rows = function(rows) {
     var layout = spt.table.get_layout();
     var on_complete = function(id) {
-        spt.behavior.destroy_element($(id));
+        spt.behavior.destroy_element(document.id(id));
     }
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
@@ -7078,7 +7078,7 @@ spt.table.operate_selected = function(action)
                 for (var i=0; i < selected_rows.length; i++)
                 {
                     var row = selected_rows[i];
-                    on_complete = "spt.behavior.destroy_element($(id))"
+                    on_complete = "spt.behavior.destroy_element(document.id(id))"
                     spt.dom.load_js(["effects.js"], function() {
                         Effects.fade_out(row, 300, on_complete);
                     } );

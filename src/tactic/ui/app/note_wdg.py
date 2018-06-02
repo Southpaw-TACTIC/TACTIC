@@ -454,7 +454,7 @@ class NoteTableElementWdg(BaseTableElementWdg):
         text.add_behavior( {
         'type': 'blur',
         'cbjs_action': '''
-        //spt.dg_table._toggle_commit_btn($(this), false);
+        //spt.dg_table._toggle_commit_btn(document.id(this), false);
         var el = bvr.src_el;
         var td = el.getParent(".spt_table_td");
         var tbody = el.getParent(".spt_table_tbody");
@@ -465,7 +465,7 @@ class NoteTableElementWdg(BaseTableElementWdg):
         '''
         } )
 
-        #text.add_event("onblur", "spt.dg_table._toggle_commit_btn($(this), false);$(this).getParent('.spt_table_td').setStyle('background-color','#030');$(this).getParent('.spt_table_td').addClass('spt_value_changed');$(this).getParent('.spt_table_tbody').addClass('spt_value_changed');$(this).getParent('.spt_table_td').setAttribute('spt_input_value',this.value)")
+        #text.add_event("onblur", "spt.dg_table._toggle_commit_btn(document.id(this), false);document.id(this).getParent('.spt_table_td').setStyle('background-color','#030');document.id(this).getParent('.spt_table_td').addClass('spt_value_changed');document.id(this).getParent('.spt_table_tbody').addClass('spt_value_changed');document.id(this).getParent('.spt_table_td').setAttribute('spt_input_value',this.value)")
         #text.add_event("onclick", "spt.dg_table.edit_cell_cbk( this, spt.kbd.special_keys_map.ENTER)" );
         #behavior = {
         #    'type': 'keyboard',
