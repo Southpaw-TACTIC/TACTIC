@@ -2774,9 +2774,18 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         padding = 10
         extra_data = self.kwargs.get("extra_data") or {}
         if extra_data:
-            extra_data = jsonloads(extra_data)
+            try:
+                extra_data = jsonloads(extra_data)
+            except:
+                print("WARNING: bad extra_data!!!")
+                print(extra_data)
+                extra_data = {}
+
             min_height = extra_data.get("min_height")
             if min_height:
+                if isinstance(min_height, basestring):
+                    min_height = min_height.replace("px", "")
+                    min_height = int(min_height)
                 height = min_height + 10
 
             font_size = extra_data.get("font_size") or font_size

@@ -387,7 +387,9 @@ spt.behavior.construct_behaviors_on_startup = function()
 
 // Clone an element with full copying of behaviors
 spt.behavior.clone = function( element ) {
-    var clone = $(element).clone();
+    var element = document.id(element)
+    var clone = element.clone();
+
     var clone_el_list = clone.getElements( ".SPT_BVR" );
     spt.behavior._construct_behaviors( [clone] );
     spt.behavior._construct_behaviors( clone_el_list );
@@ -1183,9 +1185,22 @@ spt.behavior._construct_behaviors = function( el_list )
     {
         var el = $(el_list[i]);
 
-        var stmt = 'var bvr_spec_list = ' + el.getAttribute("SPT_BVR_LIST") + ';';
-        stmt = stmt.replace(/\&quot\;/g, '"');
-        eval(stmt);
+        if (el.bvr_spec_list) {
+            var bvr_spec_list = el.bvr_spec_list;
+        }
+        else {
+            var stmt = 'var bvr_spec_list = ' + el.getAttribute("SPT_BVR_LIST") + ';';
+            stmt = stmt.replace(/\&quot\;/g, '"');
+            eval(stmt);
+
+            // FIXME: this doesn't work with clones
+            /*
+            el.bvr_spec_list = bvr_spec_list;
+            el.removeAttribute("SPT_BVR_LIST");
+            el.removeAttribute("SPT_BVR_TYPE_LIST");
+            */
+        }
+
         if (bvr_spec_list == null) {
             continue;
         }
@@ -1195,6 +1210,7 @@ spt.behavior._construct_behaviors = function( el_list )
             var bvr_spec = bvr_spec_list[j];
             spt.behavior._construct_bvr( el, bvr_spec )
         }
+
     }
 
     //console.log(spt.count);
