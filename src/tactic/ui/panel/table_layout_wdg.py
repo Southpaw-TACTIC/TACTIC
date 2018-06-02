@@ -7094,24 +7094,44 @@ spt.table.operate_selected = function(action)
     spt.confirm(msg, ok, cancel);
 }
 
+spt.table.get_parent_groups = function(src_el, level) {
 
-spt.table.find_group_name_by_element = function(src_el, level) {
-
-    var table = src_el.getParent("tbody");
-    var rows = table.getElements(".spt_table_row_item");
-    var curr_row = src_el.getParent(".spt_table_row_item");
-
-    for (var i=0; i<rows.length; i++) {
-        if (rows[i].attributes.spt_group_level && rows[i].attributes.spt_group_level.value == level) {
-            var name = rows[i].attributes.spt_group_name.value;
-        }
-        if (rows[i] == curr_row) {
-            break;
-        }
+    if (!src_el.hasClass("spt_table_row_item")) {
+        var row = src_el.getParent(".spt_table_row_item");
+    } else {
+        var row = src_el;
     }
 
-    return name;
+    if (row == null) {
+        return [];
+    }
+
+    var group_level = row.getAttribute("spt_group_level");
+    var group_parents = [];
+    var lowest_group_level = group_level;
+
+    while (true) {
+
+        var group = row.getPrevious(".spt_table_row_item");
+        if (!group) {
+            break;
+        }
+        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
+            row = group;
+            continue
+        }
+        lowest_group_level = group.getAttribute("spt_group_level");
+        if (level && level == group.getAttribute("spt_group_level")) {
+            return group;
+        } else {
+            group_parents.push(group);
+        }
+        row = group;
+    }
+
+    return group_parents;
 }
+
 
 
 // Search methods
