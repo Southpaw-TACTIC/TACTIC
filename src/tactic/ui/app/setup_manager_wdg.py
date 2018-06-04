@@ -147,7 +147,7 @@ class SetupManagerWdg(BaseRefreshWdg):
 
         from pyasm.widget import ProdIconSubmitWdg, ProdIconButtonWdg
         test = ProdIconButtonWdg("Test")
-        test.add_event("onclick", "var top=$(this).getParent('.spt_database_manager_top');var values=spt.api.Utility.get_input_values();var server=TacticServerStub.get();var user=values.database_user[0];var result=server.test_database_connection('localhost', {user:user})")
+        test.add_event("onclick", "var top=document.id(this).getParent('.spt_database_manager_top');var values=spt.api.Utility.get_input_values();var server=TacticServerStub.get();var user=values.database_user[0];var result=server.test_database_connection('localhost', {user:user})")
         #test.add_behavior( {
         #    'type': 'click_up',
         #    'cbjs_action': "alert('cow')"

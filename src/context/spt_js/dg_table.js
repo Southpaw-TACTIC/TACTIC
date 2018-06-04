@@ -147,7 +147,7 @@ spt.dg_table.FIRST_ROW = 3;
 
 spt.dg_table.get_all_column_element_tds = function( table, spt_element_name )
 {
-    var table = $(table);
+    var table = document.id(table);
     var tbodies = spt.ctags.find_elements( table, "spt_table_tbody", "spt_table" );
 
     var col_el_td_list = [];
@@ -157,7 +157,7 @@ spt.dg_table.get_all_column_element_tds = function( table, spt_element_name )
         var td_list = spt.ctags.find_elements( tbodies[0], "spt_table_td", "spt_table" );
         var td_idx = -1;
         for( var c=0; c < td_list.length; c ++ ) {
-            var td = $(td_list[c]);
+            var td = document.id(td_list[c]);
             if( td.getProperty("spt_element_name") == spt_element_name ) {
                 td_idx = c;
                 break;
@@ -186,7 +186,7 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
 
     // check for option to get all selected row-select-tds, even embedded ones ...
     if( kwargs && spt.is_TRUE( kwargs.include_embedded_tables ) ) {
-        var tmp_list = $(el).getElements(".SPT_ROW_SELECT_TD");
+        var tmp_list = document.id(el).getElements(".SPT_ROW_SELECT_TD");
         for( var c=0; c < tmp_list.length; c++ ) {
             if (tmp_list[c].hasClass("SPT_ROW_NO_SELECT"))
                 continue
@@ -196,7 +196,7 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
     }
 
     var unique_id = ".SPT_ROW_SELECT_TD_" + el.getAttribute("unique_id");
-    var tmp_list = $(el).getElements(unique_id);
+    var tmp_list = document.id(el).getElements(unique_id);
     for( var c=0; c < tmp_list.length; c++ ) {
         if (tmp_list[c].hasClass("SPT_ROW_NO_SELECT"))
             continue
@@ -214,7 +214,7 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
 //
 spt.dg_table.get_selected = function( table_id, kwargs )
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
     if (! table)
         return [];
 
@@ -240,7 +240,7 @@ spt.dg_table.get_selected = function( table_id, kwargs )
 
 spt.dg_table.get_selected_tbodies = function( table_id, kwargs )
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
     if (! table)
         return [];
 
@@ -263,7 +263,7 @@ spt.dg_table.get_selected_tbodies = function( table_id, kwargs )
 
 spt.dg_table.get_all_tbodies = function( table_id, kwargs )
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
     if (! table)
         return [];
 
@@ -305,7 +305,7 @@ spt.dg_table.get_selected_search_keys = function( table_id, kwargs )
 
 // Get all of the element_names as a list
 spt.dg_table.get_element_names = function(table_id) {
-    var table = $(table_id);
+    var table = document.id(table_id);
 
 
     // Return nothing is table.rows can't be found.  This is for tile
@@ -315,7 +315,7 @@ spt.dg_table.get_element_names = function(table_id) {
     }
 
     var header_row = table.rows[spt.dg_table.HEADER_ROW];
-    var elements = $(header_row).getChildren();
+    var elements = document.id(header_row).getChildren();
     var element_names = [];
 
     for (var i=0; i<elements.length; i++) {
@@ -410,7 +410,7 @@ spt.dg_table.get_bottom_cell = function(src_element, element_name) {
 //
 spt.dg_table.get_element_cells = function(table_id, element_name) {
     
-    var table = $(table_id);
+    var table = document.id(table_id);
 
     var found = false;
     var element_names = spt.dg_table.get_element_names(table);
@@ -479,7 +479,7 @@ spt.dg_table.add_item_cbk = function(evt, bvr) {
     var search_key = new_tbody.getAttribute('spt_search_key');
     new_tbody.setAttribute("id", table_id+"|"+search_key);
 
-    var new_row = $(new_tbody).getElement('.spt_insert_row' );
+    var new_row = document.id(new_tbody).getElement('.spt_insert_row' );
 
     new_tbody.style.display = '';
     new_row.style.display = '';
@@ -579,10 +579,10 @@ spt.dg_table.retire_selected = function(table)
                 } else {
                     if (refresh == 'table') {
                         // do nothing
-                        //spt.panel.refresh($(table_id), {}, fade);
+                        //spt.panel.refresh(document.id(table_id), {}, fade);
                     }
                     else {
-                        on_complete = "$(id).setStyle('display', 'none')";
+                        on_complete = "document.id(id).setStyle('display', 'none')";
                         Effects.fade_out(tbody, 500, on_complete);
                         spt.behavior.destroy_element(tbody);
                     }
@@ -723,7 +723,7 @@ spt.dg_table._delete_selected = function( table, kwargs, num, selected_rows, sea
             /*
             var tr = selected_rows[i];
             var tbody = tr.getParent(".spt_table_tbody");
-            on_complete = "$(id).setStyle('display', 'none')";
+            on_complete = "document.id(id).setStyle('display', 'none')";
             Effects.fade_out(tbody, 500, on_complete);
             */
         }
@@ -745,10 +745,10 @@ spt.dg_table._delete_selected = function( table, kwargs, num, selected_rows, sea
             var refresh = tbody.getAttribute("refresh");
 
             if (refresh == 'table') {
-                spt.panel.refresh($(table_id), {}, fade);
+                spt.panel.refresh(document.id(table_id), {}, fade);
             }
             else {
-                on_complete = "$(id).setStyle('display', 'none')";
+                on_complete = "document.id(id).setStyle('display', 'none')";
                 Effects.fade_out(tbody, 300, on_complete);
                 spt.behavior.destroy_element(tbody);
             }
@@ -1030,7 +1030,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 //
 spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
 
     if (view == undefined) {
         view = table.getAttribute("spt_view");
@@ -1210,7 +1210,7 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
     }
     else {
         // get information from the table
-        table = $(table_id);
+        table = document.id(table_id);
     }
 
 
@@ -1362,7 +1362,7 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
 // DEPRECATED: this has been moved inline
 spt.dg_table.save_view_cbk = function(table_id, login) {
 
-    var table = $(table_id);
+    var table = document.id(table_id);
     var top = table.getParent(".spt_view_panel");
     // it may not always be a View Panel top
     if (!top) top = table.getParent(".spt_table_top");
@@ -1471,7 +1471,7 @@ spt.dg_table.is_embedded = function(table){
 spt.dg_table.save_view = function(table_id, new_view, kwargs)
 {
     try {
-        var table = $(table_id);
+        var table = document.id(table_id);
         var top = table.getParent(".spt_view_panel");
         var search_wdg = top ? top.getElement(".spt_search"): null;
 
@@ -1642,7 +1642,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
 
 spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index, popup_id)
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
    
     var layout = table.getParent(".spt_layout");
     if (table.hasClass("spt_layout")) {
@@ -1738,7 +1738,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
     }
 
     this.redo = function() {
-        var table = $(this.table_id);
+        var table = document.id(this.table_id);
         //WHAT IS THIS?
         var column_index = element_index*2;
         var args = {};
@@ -1837,7 +1837,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
     this.undo = function() {
 
-        var table = $(this.table_id);
+        var table = document.id(this.table_id);
         var column_index = this.element_index*2;
 
         for (var i = 0; i < table.rows.length; i++) {
@@ -1876,7 +1876,7 @@ spt.dg_table.remove_column_cbk = function(evt, bvr)
 
     var table = null;
     if (bvr.options && bvr.options.table_id) {
-        table = $(bvr.options.table_id);
+        table = document.id(bvr.options.table_id);
     }
     else {
         var activator = spt.smenu.get_activator(bvr);
@@ -1921,7 +1921,7 @@ spt.dg_table.RemoveColumnCmd = new Class({
     
     redo: function() {
         var column_index = this.element_index*2;
-        var table = $(this.table_id);
+        var table = document.id(this.table_id);
 
         // find the index
         var header_row = table.rows[0];
@@ -2016,13 +2016,13 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var panel = bvr.panel;
     // If there is an "spt_view_panel", VERIFY if it is for the given table or if we are in an embedded table
     if( panel ) {
-        var pnode = $(element.parentNode);
+        var pnode = document.id(element.parentNode);
         var table_top_count = 0;
         while( pnode && pnode.hasClass && !pnode.hasClass("spt_view_panel") ) {
             if( pnode.hasClass("spt_table_top") ) {
                 table_top_count ++;
             }
-            pnode = $(pnode.parentNode);
+            pnode = document.id(pnode.parentNode);
         }
         if( table_top_count > 1 ) {
             panel = null;
@@ -2469,7 +2469,7 @@ spt.dg_table.local_search_cbk = function(evt, bvr)
     }
    
     // have to hard-code main_body_search for now
-    var src_el = $('main_body_search');
+    var src_el = document.id('main_body_search');
     var bvr2 = {}
     bvr2.src_el = src_el;
     bvr2.search_values = new_values;
@@ -2580,7 +2580,7 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
     var search_type = search_wdg.getAttribute("spt_search_type");
 
     /*
-    var view_text = $('save_search_text');
+    var view_text = document.id('save_search_text');
     if (search_view == undefined) {
         search_view = view_text.value;
     }
@@ -2610,8 +2610,8 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
     server.execute_cmd(class_name, options, json_values);
 
     /*
-    if ($('save_search_wdg'))
-        $('save_search_wdg').style.display = 'none';
+    if (document.id('save_search_wdg'))
+        document.id('save_search_wdg').style.display = 'none';
     */
 
  
@@ -2657,7 +2657,7 @@ spt.dg_table.retrieve_search_cbk = function() {
     element.setAttribute("spt_search_view", view);
 
 
-    $('retrieve_search_wdg').style.display = 'none';
+    document.id('retrieve_search_wdg').style.display = 'none';
 
 }
 */
@@ -2665,7 +2665,7 @@ spt.dg_table.retrieve_search_cbk = function() {
 
 spt.dg_table.add_filter = function(element) {
 
-    var element = $(element);
+    var element = document.id(element);
     var container = element.getParent(".spt_filter_container");
     var filter = element.getParent(".spt_filter_container_with_op");
     var op = filter.getElement(".spt_op");
@@ -2725,7 +2725,7 @@ spt.dg_table.add_filter = function(element) {
 
 spt.dg_table.remove_filter = function(element) {
 
-    var element = $(element);
+    var element = document.id(element);
     var container = element.getParent(".spt_filter_container");
     //var search_filter = element.getParent(".spt_search_filter")
     var search_filter = element.getParent(".spt_filter_container_with_op")
@@ -2776,8 +2776,8 @@ spt.dg_table.set_filter = function(selector, prefix) {
     var value = selector.value;
 
     // get the target and the column index
-    //var filter = $(selector.parentNode.parentNode);
-    var filter = $(selector).getParent(".spt_filter_wdg")
+    //var filter = document.id(selector.parentNode.parentNode);
+    var filter = document.id(selector).getParent(".spt_filter_wdg")
     var column_index = column_indexes[value];
     if (typeof(column_index) == "undefined") {
         column_index = 0;
@@ -2800,12 +2800,12 @@ spt.dg_table.set_filter2 = function(evt, bvr) {
     var selector = bvr.src_el;
 
     // get the column type mapping
-    //var value = $(prefix+"_search_type_indexes").value;
+    //var value = document.id(prefix+"_search_type_indexes").value;
     //value = value.replace(/'/g, '"')
     //var column_indexes = JSON.parse(value);
     var column_indexes = bvr.search_type_indexes;
     
-    //var filter_types = $(prefix + '_filter_columns');
+    //var filter_types = document.id(prefix + '_filter_columns');
     var filter_types = spt.get_cousin(selector, '.spt_filter_top', '.' + prefix + '_filter_columns');
 
     // get a handle on all of the alternative filters
@@ -2841,9 +2841,9 @@ spt.dg_table.disable_filter_cbk = function(element, filter_id) {
     var panel_id = 'main_body';
     var is_checked = element.checked;
 
-    $(filter_id).style.color = '#333';
-    $(filter_id).setAttribute('disabled', true)
-    var input_list = $(panel_id+'_filter_container').getElements('.spt_input' );
+    document.id(filter_id).style.color = '#333';
+    document.id(filter_id).setAttribute('disabled', true)
+    var input_list = document.id(panel_id+'_filter_container').getElements('.spt_input' );
 
     for (var i=1; i<input_list.length; i++) {
         var input = input_list[i];
@@ -2990,7 +2990,7 @@ spt.dg_table.return_last_edit_wdg = function()
 
     spt.dg_table.edit.widget.parentNode.removeChild( spt.dg_table.edit.widget );
 
-    var children = $(spt.dg_table.edit.wdg_home_cell).getChildren();
+    var children = document.id(spt.dg_table.edit.wdg_home_cell).getChildren();
     var child = children[spt.dg_table.edit.wdg_home_index];
     if (child != null) {
         spt.dg_table.edit.wdg_home_cell.insertBefore( spt.dg_table.edit.widget, child );
@@ -3021,7 +3021,7 @@ spt.dg_table.preview_last_clone = null;
 spt.dg_table.adopt_preview_edit_wdg = function( table_id, cell_to_edit )
 {
     var element_name = cell_to_edit.getAttribute( 'spt_element_name' );
-    var table = $(table_id);
+    var table = document.id(table_id);
     var tbody = cell_to_edit.getParent( '.spt_table_tbody' );
     var search_key = tbody.getAttribute("spt_search_key");
 
@@ -3104,7 +3104,7 @@ spt.dg_table.adopt_preview_edit_wdg = function( table_id, cell_to_edit )
 
     }
 
-    var size = $(cell_to_edit).getSize();
+    var size = document.id(cell_to_edit).getSize();
     clone.setStyle( "height", size.y+'px');
     clone.setStyle( "width", size.x+'px');
  
@@ -3215,7 +3215,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
 
     var element_name = cell_to_edit.getAttribute( 'spt_element_name' );
     // get the second row
-    var table = $(table_id);
+    var table = document.id(table_id);
     var EDIT_ROW = 2;       // NOTE, the index is 2 because of the header
     var edit_row = table.getChildren()[EDIT_ROW];
     var edit_cells = edit_row.firstChild.getChildren();
@@ -3320,7 +3320,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
     edit_wdg.setStyle( 'z-index', '100' );
 
     // get the size of the cell elemnt and make the edit_wdg the same size
-    var size = $(cell_to_edit).getSize();
+    var size = document.id(cell_to_edit).getSize();
 
     var set_focus = false;
     //var type = cell_to_edit.getAttribute("spt_input_type");
@@ -3349,7 +3349,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
         if( select_opt_value == "[]" ) {
             select_opt_value = "";
         }
-        var option_list = $(input).getElements("option");
+        var option_list = document.id(input).getElements("option");
         for( var opt_c=0; opt_c < option_list.length; opt_c++ ) {
             var opt_el = option_list[opt_c];
             var opt_value = opt_el.getProperty("value");
@@ -3364,7 +3364,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
 
         // However, if the configuration specified a certain size for the SELECT in configuration
         // then use the size specified ...
-        var spt_size = $(input).getProperty("spt_select_size");
+        var spt_size = document.id(input).getProperty("spt_select_size");
         if( spt_size ) {
             select_size_to_set = parseInt( spt_size );
         }
@@ -3490,7 +3490,7 @@ spt.dg_table.select_wdg_clicked = function( evt, select_el )
 //
 spt.dg_table.edit_cell_cbk = function( element, key_code )
 {
-    element = $(element);
+    element = document.id(element);
     // ESC key
     if (key_code == spt.kbd.special_keys_map.ESC) {
         if( spt.browser.is_Safari() || spt.browser.is_Chrome() ) { spt.dg_table.safari_skip_on_blur_as_enter = true; }
@@ -4303,7 +4303,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
                 var fade = false;
                 spt.panel.refresh(tbody, {}, fade);
             } else {
-                on_complete = "$(id).setStyle('display', 'none')";
+                on_complete = "document.id(id).setStyle('display', 'none')";
                 Effects.fade_out(tbody, 500, on_complete);
                 server.retire_sobject(search_key);
             }
@@ -4395,7 +4395,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
     var on_post_delete = function() {
-        var on_complete = "$(id).setStyle('display', 'none')";
+        var on_complete = "document.id(id).setStyle('display', 'none')";
         if (layout.getAttribute("spt_version") == "2") {
             spt.table.remove_hidden_row(activator);
         }
@@ -4443,7 +4443,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
             spt.panel.refresh(table, {}, false);
         }
         else {
-            on_complete = "$(id).setStyle('display', 'none')";
+            on_complete = "document.id(id).setStyle('display', 'none')";
             Effects.fade_out(tbody, 500, on_complete);
         }
         spt.app_busy.hide();
@@ -4997,7 +4997,7 @@ spt.dg_table.find_adjacent_cell = function( start_cell_el, direction )
     if( direction == 'left' || direction == 'right' )
     {
         var match_fn = function( node ) {
-            if( $(node).hasClass("cell_left") && $(node).hasAttribute("spt_element_name") ) {
+            if( document.id(node).hasClass("cell_left") && document.id(node).hasAttribute("spt_element_name") ) {
                 return true;
             }
             return false;
@@ -5020,13 +5020,13 @@ spt.dg_table.find_adjacent_cell = function( start_cell_el, direction )
 
 spt.dg_table.order_table = function(element_name, order) {
     var panel_id = "main_body";
-    var table = $(panel_id+"_table");
+    var table = document.id(panel_id+"_table");
 
     var children = table.getChildren();
 
     // figure out which column represents this element
     var cell_index = 4;
-    var first_row = $(table.rows[0]);
+    var first_row = document.id(table.rows[0]);
     for (var i = 0; i < first_row.cells.length; i++ ) {
         var spt_element_name = first_row.cells[i].getAttribute('spt_element_name');
         if (spt_element_name == element_name) {

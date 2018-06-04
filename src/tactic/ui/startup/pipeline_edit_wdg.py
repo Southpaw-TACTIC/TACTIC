@@ -603,7 +603,7 @@ class NewTextWdg(TextWdg):
         color = self.get_color("border", -20)
 
         self.add_event("onfocus", "this.focused=true")
-        self.add_event("onblur", "this.focused=false;$(this).setStyle('border-color','%s')" % color2)
+        self.add_event("onblur", "this.focused=false;document.id(this).setStyle('border-color','%s')" % color2)
 
         self.add_behavior( {
         'type': 'mouseover',

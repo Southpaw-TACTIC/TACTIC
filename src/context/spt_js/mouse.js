@@ -877,7 +877,7 @@ spt.mouse._CB_hover_out = function( evt )
 // -------------------------------------------------------------------------------------------------------------------
 spt.mouse.default_add_class_on_hover_over = function( evt, bvr, _ignore_ )
 {
-    var el = $(spt.get_event_target(evt));
+    var el = document.id(spt.get_event_target(evt));
     var hover_class = bvr.hover_class;  // hover class-name should always have "_hover" suffix
     if( hover_class ) {
         var class_to_find = hover_class.replace( /_hover/, '' );
@@ -1041,7 +1041,7 @@ spt.mouse.smart_hover_action = function( evt, bvr, mouse_411 ) {
 spt.mouse._get_body = function() 
 { 
     if (typeof(spt.mouse.body) == 'undefined') { 
-        spt.mouse.body = $(document.body); 
+        spt.mouse.body = document.id(document.body); 
     } 
     return spt.mouse.body; 
  
@@ -1079,7 +1079,7 @@ spt.mouse._create_drag_copy = function( el_to_copy, extra_styling )
     copy.setStyle( "background", "#DDD" );
     spt.show_block( copy );
 
-    var global_container = $("global_container");
+    var global_container = document.id("global_container");
     copy.inject( global_container, "bottom" );
     return copy;
 }
@@ -1274,7 +1274,7 @@ spt.mouse.smart_drag_action = function( evt, bvr, mouse_411 )
         if( accept_drop && drop_code ) {
             if( spt.behavior.drop_accepted( bvr, target_el ) )
             {
-                drop_on_el = $(target_el);
+                drop_on_el = document.id(target_el);
                 break;
             }
         }

@@ -649,7 +649,7 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
         spt.panel.load(attr, class_name, kwargs);
 
         var dialog_id = '%s';
-        spt.show( $(dialog_id) );
+        spt.show( document.id(dialog_id) );
 
         ''' % dialog_id
         } )

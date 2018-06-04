@@ -323,7 +323,7 @@ class PageHeaderWdg(Widget):
 
         button = ButtonWdg("Clear")
         button.add_style("margin: 5 10")
-        button.add_event("onclick", "$('spt_js_log_output_div').innerHTML = ''")
+        button.add_event("onclick", "document.id('spt_js_log_output_div').innerHTML = ''")
         js_content_div.add(button)
         js_content_div.add( HtmlElement.hr() )
 
@@ -417,7 +417,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
             menu_item.add_behavior( {
             'cbjs_action': '''
             //spt.popup.open('create_project_wizard');
-            //Effects.fade_in($('create_project_wizard'), 200);
+            //Effects.fade_in(document.id('create_project_wizard'), 200);
             var env = spt.Environment.get();
             var project = env.get_project();
             if (project == 'admin') {

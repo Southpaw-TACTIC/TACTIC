@@ -305,7 +305,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                             var target_top = bvr.src_el.getParent("."+target_top_class);
                         }
                         else {
-                            var target_top = $(document.body);
+                            var target_top = document.id(document.body);
                         }
                         var target = target_top.getElement("."+target_class);
                         if (target) {

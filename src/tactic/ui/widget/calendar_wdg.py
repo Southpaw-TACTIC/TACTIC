@@ -691,8 +691,8 @@ class CalendarWdg(BaseRefreshWdg):
         color1 = div.get_color("background")
         color2 = div.get_color("background", -20)
 
-        div.add_event("onmouseover", "$(this).setStyle('background','%s')" % color2)
-        div.add_event("onmouseout", "$(this).setStyle('background','%s')" % color1)
+        div.add_event("onmouseover", "document.id(this).setStyle('background','%s')" % color2)
+        div.add_event("onmouseout", "document.id(this).setStyle('background','%s')" % color1)
 
         return div
         
@@ -939,7 +939,7 @@ class CalendarInputWdg(BaseInputWdg):
             #text.set_option("read_only", read_only)
             text.set_disabled_look(False)
             # This is needed because of lack of support for behaviors
-            text.add_event('onclick', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
+            text.add_event('onclick', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
                     if (el)
                         spt.show(el);
                   
@@ -965,7 +965,7 @@ class CalendarInputWdg(BaseInputWdg):
                     })
             # TODO: this onblur is nice because it hides the calendar,
             # but it stops the input from functioning
-            #input.add_event('onblur', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
+            #input.add_event('onblur', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
 
             # TODO: focus behavior not supported yet
             #input.add_behavior( {
@@ -1913,7 +1913,7 @@ class TimeInputWdg(BaseInputWdg):
         input.add_class("spt_calendar_input")
         input.add_style("width: 100px")
         text = input.get_text()
-        text.add_event('onfocus', '''var el = $(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.show(el); spt.body.add_focus_element(el); var el = el.getElement('.spt_time_element'); el.focus(); el.select();''')
+        text.add_event('onfocus', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.show(el); spt.body.add_focus_element(el); var el = el.getElement('.spt_time_element'); el.focus(); el.select();''')
         text.add_event('onclick', '''event.stopPropagation();''')
 
         div = DivWdg()

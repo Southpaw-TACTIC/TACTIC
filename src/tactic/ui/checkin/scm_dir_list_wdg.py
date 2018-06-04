@@ -1284,7 +1284,7 @@ class ScmSignInWdg(BaseRefreshWdg):
                 }
 
                 // NOTE: this is global: find a check-in widget and refresh
-                var checkin_el = $(document.body).getElement(".spt_checkin_top");
+                var checkin_el = document.id(document.body).getElement(".spt_checkin_top");
                 spt.panel.refresh(checkin_el);
             }
 

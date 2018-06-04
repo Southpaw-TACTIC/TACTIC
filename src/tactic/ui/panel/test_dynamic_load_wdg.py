@@ -59,7 +59,7 @@ class TestDynamicLoadWdg(BaseRefreshWdg):
                     var count = 1;
                     var max = %s;
 
-                    var main = $('main_body');
+                    var main = document.id('main_body');
 
                     for( var c=count; c <= max; c++ ) {
                         spt.app_busy.show("Dynamic Loading ...", "Loading widget with count of " + c);
@@ -105,7 +105,7 @@ class TestDynamicLoadWdg(BaseRefreshWdg):
                         count: '%s'
                     };
                     var html = server.get_widget(widget_class, {args:args});
-                    var main = $('main_body');
+                    var main = document.id('main_body');
 
                     var div = document.createElement('div');
                     spt.behavior.replace_inner_html(div, html);

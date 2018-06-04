@@ -66,7 +66,7 @@ class LicenseManagerWdg(BaseRefreshWdg):
             behavior = {
                 'type': 'load',
                 'cbjs_action': '''
-                var el = $("LicenseManagerWdg");
+                var el = document.id("LicenseManagerWdg");
                 el.setStyle("display","");
                 '''
             }

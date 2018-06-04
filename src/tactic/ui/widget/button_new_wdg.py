@@ -547,10 +547,10 @@ class ButtonWdg(BaseRefreshWdg):
             'type': 'click_up',
             'dialog_id': dialog_id,
             'cbjs_action': '''
-            var dialog = $(bvr.dialog_id);
+            var dialog = document.id(bvr.dialog_id);
             var pos = bvr.src_el.getPosition();
             var size = bvr.src_el.getSize();
-            //var dialog = $(bvr.dialog_id);
+            //var dialog = document.id(bvr.dialog_id);
             dialog.setStyle("left", pos.x);
             dialog.setStyle("top", pos.y+size.y);
             spt.toggle_show_hide(dialog);
@@ -754,7 +754,7 @@ class ButtonWdg(BaseRefreshWdg):
             'dialog_id': dialog_id,
             'cbjs_action': '''
             var pos = bvr.src_el.getPosition();
-            var el = $(bvr.dialog_id);
+            var el = document.id(bvr.dialog_id);
             el.setStyle("left", pos.x);
             el.setStyle("top", pos.y+bvr.height+13);
             '''
@@ -764,7 +764,7 @@ class ButtonWdg(BaseRefreshWdg):
             'type': 'click_up',
             'dialog_id': dialog_id,
             'cbjs_action': '''
-            var dialog = $(bvr.dialog_id);
+            var dialog = document.id(bvr.dialog_id);
             spt.toggle_show_hide(dialog);
             '''
             } )

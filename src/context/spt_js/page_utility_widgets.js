@@ -25,10 +25,10 @@ spt.puw.get_loaded_map = function()
 
 spt.puw.process_new = function( start )
 {
-    var puw_list = $(start).getElements(".SPT_PUW");
+    var puw_list = document.id(start).getElements(".SPT_PUW");
     var puw_loaded_map = spt.puw.get_loaded_map();
 
-    var global_container = $("global_container");
+    var global_container = document.id("global_container");
 
     for( var c=0; c < puw_list.length; c++ ) {
         var el = puw_list[c];
@@ -45,7 +45,7 @@ spt.puw.process_new = function( start )
         }
 
         // remove from its parent and replace it with a puw_stub ...
-        var stub = $(document.createElement("div"));
+        var stub = document.id(document.createElement("div"));
         stub.inject( el, "before" );
 
         stub.addClass("SPT_PUW_STUB");
@@ -67,7 +67,7 @@ spt.puw.process_new = function( start )
             el_to_replace.getParent().removeChild( el_to_replace );
             spt.behavior.destroy_element( el_to_replace );
 
-            //$(stub_to_replace).getParent().removeChild( stub_to_replace );
+            //document.id(stub_to_replace).getParent().removeChild( stub_to_replace );
             // IE: for some reason, the parent can be null.  This was found
             // when opening and closing the subtask list repeatedly
             var parent_el = stub_to_replace.getParent();
@@ -96,7 +96,7 @@ spt.puw.process_new = function( start )
 spt.puw.stubs_get_element = function( start_el, mt_search_str )
 {
     var found_el = null;
-    var stub_list = $(start_el).getElements(".SPT_PUW_STUB");
+    var stub_list = document.id(start_el).getElements(".SPT_PUW_STUB");
 
     for( var c=0; c < stub_list.length; c++ ) {
         var stub = stub_list[c];
@@ -113,7 +113,7 @@ spt.puw.stubs_get_element = function( start_el, mt_search_str )
 spt.puw.stubs_get_elements = function( start_el, mt_search_str )
 {
     var found_el_list = [];
-    var stub_list = $(start_el).getElements(".SPT_PUW_STUB");
+    var stub_list = document.id(start_el).getElements(".SPT_PUW_STUB");
 
     for( var c=0; c < stub_list.length; c++ ) {
         var stub = stub_list[c];
@@ -127,7 +127,7 @@ spt.puw.stubs_get_elements = function( start_el, mt_search_str )
 
 spt.puw.get_elements_thru_stubs = function( start_el, mt_search_str, puw_ids )
 {
-    start_el = $(start_el);
+    start_el = document.id(start_el);
 
     var puw_id_match = {};
     var match_to_puw_ids = false;
@@ -178,7 +178,7 @@ spt.puw.get_parent_thru_stub = function( el, mt_search_str )
         return null;
     }
 
-    el = $(el);
+    el = document.id(el);
     var puw_el = null;
     if( el.hasClass("SPT_PUW_LOADED") ) {
         puw_el = el;

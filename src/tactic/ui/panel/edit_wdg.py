@@ -1192,7 +1192,7 @@ class EditWdg(BaseRefreshWdg):
 
         div.add_style('height: 35px')
         div.add_named_listener('close_EditWdg', '''
-            var popup = spt.popup.get_popup( $('edit_popup') );
+            var popup = spt.popup.get_popup( document.id('edit_popup') );
             if (popup != null) {
                 spt.popup.destroy(popup);
             }
@@ -1606,7 +1606,7 @@ class FileAppendWdg(EditWdg):
         behavior_cancel = {
             'type': 'click_up',
             'cb_fire_named_event': 'preclose_edit_popup',
-            'cbjs_postaction': "spt.popup.destroy( spt.popup.get_popup( $('edit_popup') ) );"
+            'cbjs_postaction': "spt.popup.destroy( spt.popup.get_popup( document.id('edit_popup') ) );"
         }
         button_list = [{'label':  "%s/Close" % self.mode.capitalize(),
             'bvr': behavior_submit},

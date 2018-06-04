@@ -154,7 +154,7 @@ spt.behavior.get_bvr_element = function( curr_el, el_ref )
         if( el_ref.match( /\@/ ) ) {
             // This handles previous '@' and '@.parentNode' spec and also new ones where you can use MooTools search
             // methods like '@.getElement(".SPT_CLASS_TAG")' ...
-            curr_el = $(curr_el);
+            curr_el = document.id(curr_el);
             var stmt = "el = " + el_ref.replace( /\@/g, "curr_el" );
             eval(stmt)
         }
@@ -164,7 +164,7 @@ spt.behavior.get_bvr_element = function( curr_el, el_ref )
         }
         else {
             // if we get here, then we assume that it is an element ID string
-            el = $(el_ref);
+            el = document.id(el_ref);
         }
     }
     else {
@@ -387,7 +387,9 @@ spt.behavior.construct_behaviors_on_startup = function()
 
 // Clone an element with full copying of behaviors
 spt.behavior.clone = function( element ) {
-    var clone = $(element).clone();
+    var element = document.id(element)
+    var clone = element.clone();
+
     var clone_el_list = clone.getElements( ".SPT_BVR" );
     spt.behavior._construct_behaviors( [clone] );
     spt.behavior._construct_behaviors( clone_el_list );
@@ -402,7 +404,7 @@ spt.behavior.clone = function( element ) {
 //
 spt.behavior.duplicate_element = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     var tag = el.get("tag");
     var dup_el = new Element( tag );
     var inner_html_to_copy = el.get("html");
@@ -462,7 +464,7 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     }
 
 
-    var children = $(tmp_table).getChildren()
+    var children = document.id(tmp_table).getChildren()
     var first_child = null;
 
     for( var c=0; c < children.length; c++ ) {
@@ -480,8 +482,8 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
         //        be generalized ...
         var error = first_child.getAttribute("spt_error")
         if (error == "true") {
-            el = $("error_container")
-            $("error_popup").setStyle("display", "block")
+            el = document.id("error_container")
+            document.id("error_popup").setStyle("display", "block")
         }
         return null;
     }
@@ -551,7 +553,7 @@ spt.behavior.destroy_element = function( el )
 
 spt.behavior.deactivate_children = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     if( ! el ) { return; }
 
     // Go through and remove events, listeners and stored data for any behaviors previously created on descendant
@@ -1181,11 +1183,24 @@ spt.behavior._construct_behaviors = function( el_list )
     spt.count = {};
     for( var i=0; i < el_list.length; i++ )
     {
-        var el = $(el_list[i]);
+        var el = document.id(el_list[i]);
 
-        var stmt = 'var bvr_spec_list = ' + el.getAttribute("SPT_BVR_LIST") + ';';
-        stmt = stmt.replace(/\&quot\;/g, '"');
-        eval(stmt);
+        if (el.bvr_spec_list) {
+            var bvr_spec_list = el.bvr_spec_list;
+        }
+        else {
+            var stmt = 'var bvr_spec_list = ' + el.getAttribute("SPT_BVR_LIST") + ';';
+            stmt = stmt.replace(/\&quot\;/g, '"');
+            eval(stmt);
+
+            // FIXME: this doesn't work with clones
+            /*
+            el.bvr_spec_list = bvr_spec_list;
+            el.removeAttribute("SPT_BVR_LIST");
+            el.removeAttribute("SPT_BVR_TYPE_LIST");
+            */
+        }
+
         if (bvr_spec_list == null) {
             continue;
         }
@@ -1195,6 +1210,7 @@ spt.behavior._construct_behaviors = function( el_list )
             var bvr_spec = bvr_spec_list[j];
             spt.behavior._construct_bvr( el, bvr_spec )
         }
+
     }
 
     //console.log(spt.count);

@@ -2352,7 +2352,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
                 var loadingImage = loadImage(
                     file,
                     function (img) {
-                        var div = $(document.createElement("div"));
+                        var div = document.id(document.createElement("div"));
                         list.appendChild(div);
                         div.setStyle("padding", "0px 5px");
                         div.setStyle("display", "inline-block");
@@ -2360,7 +2360,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
                         div.setStyle("width", "80px");
 
 
-                        img = $(img);
+                        img = document.id(img);
                         div.appendChild(img)
                         img.setStyle("width", "100%");
                         img.setStyle("height", "auto");
@@ -2370,7 +2370,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
             }
             else {
-                var div = $(document.createElement("div"));
+                var div = document.id(document.createElement("div"));
                 list.appendChild(div);
                 div.setStyle("padding", "0px 5px");
                 div.setStyle("display", "inline-block");

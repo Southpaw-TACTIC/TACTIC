@@ -950,7 +950,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     //evt.preventDefault();
 
                     el.setStyle('border','none');
-                    var top = $(el);
+                    var top = document.id(el);
 
                     spt.html5upload.clear();
                     var server = TacticServerStub.get();
@@ -1052,7 +1052,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                         el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
                     else
                         el.setStyle("box-shadow", "none");
-                    var top = $(el);
+                    var top = document.id(el);
                     var thumb_el = top.getElement(".spt_thumb_top");
 
 

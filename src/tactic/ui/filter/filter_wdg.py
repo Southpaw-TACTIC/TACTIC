@@ -723,7 +723,7 @@ class GeneralFilterWdg(BaseFilterWdg):
     
         checkbox.set_persist_on_submit()
         #checkbox.add_event("onclick", "spt.dg_table.disable_filter_cbk(this,'%s')" % filter_id)
-        #checkbox.add_behavior({'type': 'click_up', 'cbjs_action':  "var top = $(this).getParent('.spt_search'); var el = top.getElement('.spt_search_num_filters'); el.innerHTML = ''; bvr.src_el.checked = false;"})
+        #checkbox.add_behavior({'type': 'click_up', 'cbjs_action':  "var top = document.id(this).getParent('.spt_search'); var el = top.getElement('.spt_search_num_filters'); el.innerHTML = ''; bvr.src_el.checked = false;"})
         checkbox.add_behavior({"type": "click_up", "cbjs_action" : "var top = bvr.src_el.getParent('.spt_search'); var el = top.getElement('.spt_search_num_filters'); el.innerHTML = '';",
         "propagate_evt": True})
         """

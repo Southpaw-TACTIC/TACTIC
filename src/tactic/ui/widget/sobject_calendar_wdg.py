@@ -1005,8 +1005,8 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
 
-        div.add_event("onmouseover", "$(this).setStyle('background-color','%s')" % color2)
-        div.add_event("onmouseout", "$(this).setStyle('background-color','%s')" % color1)
+        div.add_event("onmouseover", "document.id(this).setStyle('background-color','%s')" % color2)
+        div.add_event("onmouseout", "document.id(this).setStyle('background-color','%s')" % color1)
 
         return div
 

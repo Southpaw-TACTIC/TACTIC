@@ -53,7 +53,6 @@ spt_js = [
     "api/utility.js",  # only basic form ganther is used here.
     "environment.js",
     "applet.js",
-    #"command.js",      # moved to dg_table.js which still requires this
     "client_api.js",   # Add the client api
     "mouse.js",
     "keyboard.js",
@@ -61,17 +60,11 @@ spt_js = [
     "behavior.js",
     #"ctx_menu.js",
     #"smart_menu.js",
-    #"smart_select_wdg.js", # DEPRECATED: moved to widget/smart_select_wdg.py
     "panel.js",
     #"side_bar.js",
     #"action_bar.js", # DEPRECATED
 
-    #"dg_table.js",
-    #"dg_table_action.js",
-    #"dg_table_editors.js",
 
-
-    #"sobject_planner.js",  # DEPRECATED - delete
     #"gantt.js",        # This has been moved to be dynamically loaded
     #"fx_anim.js",      # If this needs to be used, it should be loaded
                         # dynamically
@@ -82,27 +75,22 @@ spt_js = [
     "custom_project.js",
     "spt_onload_startup.js",
     "api/api.js",       # add in the new api
-    "load-image.min.js",
+
+
+    # TODO: make this optional
+    #"load-image.min.js",
+
 
     # TEST
     "mooScrollable/Scrollable.js",
 ]
 
 
-# in js_url ... tactic/src/context/javascript
-legacy_app = [
-    #"PyMaya.js",
-    #"PyHoudini.js",
-    #"PyXSI.js",
-    #"PyPerforce.js",
-    #"PyFlash.js",
-]
-
 
 all_lists = [
-    ("javascript", legacy_core),
+    #("javascript", legacy_core),
     ("spt_js", spt_js),
-    ("javascript", legacy_app),
+    #("javascript", legacy_app),
 ]
 
 

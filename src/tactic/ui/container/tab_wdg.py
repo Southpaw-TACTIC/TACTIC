@@ -61,13 +61,13 @@ spt.tab = {};
 spt.tab.top = null;
 
 spt.tab.set_main_body_tab = function() {
-    spt.tab.top = $(document.body).getElement(".spt_tab_top");
+    spt.tab.top = document.id(document.body).getElement(".spt_tab_top");
     return spt.tab.top;
 }
 
 // this is to be deprecated
 spt.tab.set_main_body_top = function() {
-    spt.tab.top = $('main_body').getElement(".spt_tab_top");
+    spt.tab.top = document.id('main_body').getElement(".spt_tab_top");
 }
 
 
@@ -431,7 +431,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
     if (subelement_name) {
         // find out if the subheader exists
         var subheader_id = header.getAttribute("spt_subheader_id");
-        var subheader_top = $(subheader_id);
+        var subheader_top = document.id(subheader_id);
         var subheaders = subheader_top.getElements(".spt_tab_subheader_item");
 
         var subheader_exists = false;
@@ -448,7 +448,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         if (subheader_exists == false) {
 
             // create a new one
-            var subheader = $(document.createElement("div"));
+            var subheader = document.id(document.createElement("div"));
             subheader.innerHTML = "<div style='padding: 5px 5px'><div class='spt_tab_header_label'>"+subelement_name+"</div></div>";
             subheader_top.appendChild(subheader);
             subheader.addClass("spt_tab_subheader_item");
@@ -765,7 +765,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
         if (header.hasClass("spt_tab_subheader_item")) {
             var subheader_top = header.getParent(".spt_tab_subheader");
             header_id = subheader_top.getAttribute("spt_header_id");
-            select_header = $(header_id);
+            select_header = document.id(header_id);
         }
         else {
             select_header = header;
@@ -1088,7 +1088,7 @@ spt.tab.close = function(src_el) {
         var element_name = header.getAttribute("spt_element_name");
 
         if (header) {
-            var subheader = $(header.getAttribute("spt_subheader_id"));
+            var subheader = document.id(header.getAttribute("spt_subheader_id"));
             if (subheader) {
                 var items = subheader.getElements(".spt_tab_subheader_item");
                 for (var i = 0; i < items.length; i++) {
@@ -1816,7 +1816,7 @@ spt.tab.close = function(src_el) {
                 subheaders[i].setStyle("display", "none");
             }
 
-            var el = $(subheader_id);
+            var el = document.id(subheader_id);
             var items = el.getElements(".spt_tab_subheader_item");
             if (items.length == 0) {
                 return;

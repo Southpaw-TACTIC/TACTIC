@@ -174,7 +174,7 @@ spt.css.get_color_rgb_values = function( color_value )
 
 spt.css.apply_style_mods = function( style_mods_map, target_el )
 {
-    target_el = $(target_el);
+    target_el = document.id(target_el);
 
     for( var style in style_mods_map ) {
         if( ! style_mods_map.hasOwnProperty( style ) ) { continue; }
@@ -259,7 +259,7 @@ spt.css.get_style_bkups = function( mod_styles_map, el )
 
 spt.css.get_el_style_map = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     var style_string = el.style.cssText;
     return spt.css.get_mod_styles_map( style_string );
 }
@@ -473,21 +473,21 @@ spt.css._select_core = function( operation, el )
 
 spt.css.deselect = function( el )
 {
-    spt.css._select_core( 'deselect', $(el) );
+    spt.css._select_core( 'deselect', document.id(el) );
 }
 
 
 
 spt.css.select = function( el )
 {
-    spt.css._select_core( 'select', $(el) );
+    spt.css._select_core( 'select', document.id(el) );
 }
 
 
 
 spt.css.toggle_select = function( el )
 {
-    spt.css._select_core( 'toggle', $(el) );
+    spt.css._select_core( 'toggle', document.id(el) );
 }
 
 
