@@ -4485,10 +4485,11 @@ spt.table.add_new_group = function(kwargs) {
     if (!group_level) {
         group_level = 0;
     }
+    var padding_multiplier = kwargs.padding_multiplier ? kwargs.padding_multiplier : 10
 
     var td = clone.getElement("td");
     td.setAttribute("colspan", headers.length);
-    td.setStyle("padding-left",10*group_level+3);
+    td.setStyle("padding-left", padding_multiplier*group_level+3);
 
     clone.setAttribute("spt_group_level", group_level);
 
@@ -6554,7 +6555,6 @@ spt.table.expand_table = function(mode) {
    
     // don't set the width of each column, this is simpler
     if ( mode != "full" && width == '100%') {
-        console.log("here");
         table.setStyle("width", "");
         if (header_table) {
             header_table.setStyle("width", "");
@@ -7093,6 +7093,45 @@ spt.table.operate_selected = function(action)
     }
     spt.confirm(msg, ok, cancel);
 }
+
+spt.table.get_parent_groups = function(src_el, level) {
+
+    if (!src_el.hasClass("spt_table_row_item")) {
+        var row = src_el.getParent(".spt_table_row_item");
+    } else {
+        var row = src_el;
+    }
+
+    if (row == null) {
+        return [];
+    }
+
+    var group_level = row.getAttribute("spt_group_level");
+    var group_parents = [];
+    var lowest_group_level = group_level;
+
+    while (true) {
+
+        var group = row.getPrevious(".spt_table_row_item");
+        if (!group) {
+            break;
+        }
+        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
+            row = group;
+            continue
+        }
+        lowest_group_level = group.getAttribute("spt_group_level");
+        if (level && level == group.getAttribute("spt_group_level")) {
+            return group;
+        } else {
+            group_parents.push(group);
+        }
+        row = group;
+    }
+
+    return group_parents;
+}
+
 
 
 // Search methods
