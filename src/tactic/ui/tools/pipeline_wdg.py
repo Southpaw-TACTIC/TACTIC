@@ -6358,7 +6358,13 @@ class PipelineSaveCbk(Command):
 
             xml.del_attribute(node, "settings")
 
-            settings = json.loads(settings_str)
+            if not settings_str:
+                settings = {}
+            else:
+                settings = json.loads(settings_str)
+
+                if isinstance(settings, basestring):
+                    settings = {}
             settings_list.append(settings)
 
 

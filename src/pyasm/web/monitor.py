@@ -91,14 +91,20 @@ class BaseProcessThread(threading.Thread):
 
     def _get_pid(self):
         '''Get PID from a file'''
-        log_dir = "%s/log" % Environment.get_tmp_dir()
-        pid_path = "%s/pid.%s" % (log_dir, self.port)
+        pid_path = self.get_pid_path()
         pid = 0
         if os.path.exists(pid_path):
             file = open(pid_path, "r")
             pid = file.read()
             file.close()
         return pid
+
+
+    def get_pid_path(self):
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+        pid_path = "%s/pid.%s" % (log_dir, self.port)
+        return pid_path
+
        
     def _check(self):
 
@@ -108,8 +114,8 @@ class BaseProcessThread(threading.Thread):
         if use_restart in [True, 'true']:
             if self.num_checks and self.num_checks % self.kill_interval == 0:
                 # read pid file
-                log_dir = "%s/log" % Environment.get_tmp_dir()
-                file = open("%s/pid.%s" % (log_dir,self.port), "r")
+                pid_path = self.get_pid_path()
+                file = open(pid_path, "r")
                 pid = file.read()
                 file.close()
                 Common.kill(pid)
@@ -131,10 +137,17 @@ class BaseProcessThread(threading.Thread):
                 Common.kill(pid)
         else:
             if response and response != "OK":
-                #self.end = True
                 pid = self._get_pid() 
                 if pid:
-                    Common.kill(pid)
+                    try:
+                        Common.kill(pid)
+                    except Exception, e:
+                        print("WARNING: process [%s] does not exist" % pid)
+
+                pid_path = self.get_pid_path()
+                if os.path.exists(pid_path):
+                    os.unlink(pid_path)
+
                 return
 
         '''
@@ -239,17 +252,67 @@ class JobQueueThread(BaseProcessThread):
     def __init__(self, idx):
         super(JobQueueThread,self).__init__()
         self.idx = idx
+        self.pid = 0
 
     def get_title(self):
         return "Job Task Queue"
 
-    def _check(self):
-        pass
+    def _get_pid(self):
+        return self.pid
+
+
+    def get_pid_path(self):
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+        pid_path = "%s/startup_queue.%s" % (log_dir, self.idx)
+        return pid_path
+
+
+    def check(self):
+
+        pid = self._get_pid()
+
+        pid_path = self.get_pid_path()
+        if not os.path.exists(pid_path):
+            return "restart"
+
+
+        f = open(pid_path, "r")
+        pid = f.read()
+        f.close()
+
+        if int(pid) != self._get_pid():
+            return "exit"
+
+
+        return "OK"
+ 
+
+
 
     def execute(self):
         # Run the job queue service
-        executable = '%s "%s/src/bin/startup_queue.py" -i %s' % (python, tactic_install_dir, self.idx)
-        os.system('%s' % (executable) )
+        #executable = '%s "%s/src/bin/startup_queue.py" -i %s' % (python, tactic_install_dir, self.idx)
+        #os.system('%s' % (executable) )
+
+        executable = [
+            python,
+            "%s/src/bin/startup_queue.py" % tactic_install_dir,
+            "-i",
+            str(self.idx),
+        ]
+        process = subprocess.Popen(executable)
+        self.pid = process.pid
+
+        time.sleep(5)
+
+        while 1:
+            if self.check() != "OK":
+                break
+            time.sleep(1)
+
+        # put a 5 second buffer
+        time.sleep(5)
+        return
 
 
 
@@ -305,7 +368,6 @@ class TacticTimedThread(threading.Thread):
 
     def run(self):
 
-        import time
         time.sleep(6)
 
         #print("Starting Timed Trigger")
@@ -386,7 +448,6 @@ class TacticSchedulerThread(threading.Thread):
         self.dev_mode = mode
 
     def run(self):
-        import time
         time.sleep(3)
 
         #print("Starting Scheduler ....")
@@ -860,8 +921,10 @@ class TacticMonitor(object):
                 monitor_stop = os.path.exists('%s/stop.monitor'%log_dir)
                 if monitor_stop:
                     for tactic_thread in self.tactic_threads:
-					    tactic_thread.end = True
+                        tactic_thread.end = True
                     break
+
+
                 if self.check_interval:
                     # don't check threads during startup period
                     if not self.startup:
@@ -871,6 +934,8 @@ class TacticMonitor(object):
                     else:
                         if time.time() - start_time > self.check_interval:
                             self.startup = False
+                        else:
+                            time.sleep(1)
 
                 else:
                     # Windows Service does not need this 0 check_interval
@@ -885,6 +950,7 @@ class TacticMonitor(object):
 
             if end:
                 break
+
 
         self.final_kill()
         

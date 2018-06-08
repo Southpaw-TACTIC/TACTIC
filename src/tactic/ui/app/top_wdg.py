@@ -996,6 +996,12 @@ class JavascriptImportWdg(BaseRefreshWdg):
         third_party = js_includes.third_party
         security = Environment.get_security()
 
+
+        if not web.is_admin_page():
+            Container.append_seq("Page:js", "%s/require.js" % spt_js_url)
+            Container.append_seq("Page:js", "%s/jquery.js" % spt_js_url)
+
+
         for include in js_includes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
 
@@ -1032,7 +1038,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
                 include = include.strip()
                 if include:
-                    print("include: ", include)
                     Container.append_seq("Page:js", include)
 
 
