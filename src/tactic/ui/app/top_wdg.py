@@ -20,7 +20,7 @@ import os
 import js_includes
 
 from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
-from pyasm.biz import Project
+from pyasm.biz import Project, ProjectSetting
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette, SpanWdg
 from pyasm.widget import IconWdg
 from pyasm.search import Search
@@ -1000,7 +1000,9 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         if not web.is_admin_page():
             Container.append_seq("Page:js", "%s/require.js" % spt_js_url)
-            Container.append_seq("Page:js", "%s/jquery.js" % spt_js_url)
+            use_jquery = ProjectSetting.get_value_by_key("js_libraries/jquery")
+            if use_jquery == "true":
+                Container.append_seq("Page:js", "%s/jquery.js" % spt_js_url)
 
 
         for include in js_includes.third_party:
@@ -1021,7 +1023,6 @@ class JavascriptImportWdg(BaseRefreshWdg):
             #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
-        from pyasm.biz import ProjectSetting
         includes = ProjectSetting.get_value_by_key("js_libraries")
         if includes == "__NONE__":
             pass
