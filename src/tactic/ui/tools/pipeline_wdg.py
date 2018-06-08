@@ -16,7 +16,7 @@ import re
 import os
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment, Common
+from pyasm.common import Environment, Common, jsonloads
 from pyasm.biz import Pipeline, Project
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
@@ -6347,7 +6347,6 @@ class PipelineSaveCbk(Command):
         project_code = self.kwargs.get('project_code')
 
         from pyasm.common import Xml
-        import json
         xml = Xml()
         xml.read_string(pipeline_xml)
         process_nodes = xml.get_nodes("pipeline/process")
@@ -6355,18 +6354,22 @@ class PipelineSaveCbk(Command):
 
         for node in process_nodes:
             settings_str = xml.get_attribute(node, "settings")
-
-            xml.del_attribute(node, "settings")
-
-            if not settings_str:
-                settings = {}
+            
+            if settings_str:
+                try:
+                    settings = jsonloads(settings_str)
+                    if type(settings) == unicode:
+                        import ast
+                        settings = ast.literal_eval(settings)
+                except:
+                    process_name = xml.get_attribute(node, "name")
+                    print "WARNING: Setting for process %s not saved." % process_name 
             else:
-                settings = json.loads(settings_str)
+                settings = {}
 
-                if isinstance(settings, basestring):
-                    settings = {}
             settings_list.append(settings)
-
+            
+            xml.del_attribute(node, "settings")
 
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
@@ -6397,7 +6400,6 @@ class PipelineSaveCbk(Command):
 
         for i in range(len(process_nodes)):
             node = process_nodes[i]
-            settings = settings_list[i]
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
@@ -6409,13 +6411,17 @@ class PipelineSaveCbk(Command):
                 process.set_value("process", process_name)
                 process.set_value("pipeline_code", pipeline_code)
             
+            settings = settings_list[i]
             process.set_value("workflow", settings)
+
             subpipeline_code = settings.get("subpipeline_code")
             if subpipeline_code:
                 process.set_value("subpipeline_code", subpipeline_code)
+            
             process.commit()
-
+            
             xml.set_attribute(node, "process_code", process.get_code())
+
 
         
 

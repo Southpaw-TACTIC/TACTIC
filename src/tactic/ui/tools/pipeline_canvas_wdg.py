@@ -4738,14 +4738,13 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             var settings = process.workflow;
             if (!settings) {
                 settings = {};
-            }
-            else {
+            } else {
                 settings = JSON.parse(settings);
             }
 
             // add the process name
-            settings['subpipeline_code'] = process.subpipeline_code;
-            settings['process'] = process.process;
+            if (process.subpipeline_code) settings['subpipeline_code'] = process.subpipeline_code;
+            if (process.process) settings['process'] = process.process;
             process_nodes[i].setAttribute("settings", JSON.stringify(settings));
         }
 
