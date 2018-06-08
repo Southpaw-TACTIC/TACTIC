@@ -45,7 +45,6 @@ legacy_core = [
 #
 spt_js = [
     "spt_init.js",     # MUST be FIRST of these includes
-    #"require.js",
     "effects.js",
     "utility.js",
     "dynamic_css.js",
@@ -77,7 +76,7 @@ spt_js = [
     "api/api.js",       # add in the new api
 
 
-    # TODO: make this optional
+    # Moved to top_wdg ... it is incompatible with require and needs to be loaded first
     #"load-image.min.js",
 
 
