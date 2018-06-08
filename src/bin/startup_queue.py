@@ -37,12 +37,22 @@ def main(options, site=None):
             max_jobs_completed=50
     )
 
-    while 1:
-        try:
-            time.sleep(1)
-        except (KeyboardInterrupt, SystemExit), e:
-            #print "Exiting ..."
-            raise
+    try:
+        while 1:
+            try:
+                time.sleep(1)
+            except (KeyboardInterrupt, SystemExit), e:
+                #print "Exiting ..."
+                raise
+
+    finally:
+
+        log_dir = "%s/log" % Environment.get_tmp_dir()
+        pid_path = "%s/startup_queue.%s" % (log_dir, idx)
+        if os.path.exists(pid_path):
+            os.unlink(pid_path)
+
+
 
 def write_pid(idx):
     log_dir = "%s/log" % Environment.get_tmp_dir()

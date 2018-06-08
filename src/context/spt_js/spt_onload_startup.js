@@ -18,7 +18,7 @@ spt.onload_startup = function()
 
     spt.behavior.construct_behaviors_on_startup();
 
-    var body_el = document.getElement("body");
+    var body_el = document.id(document.body);
 
     // setup body event for context menu and smart menu click-off checking ...
     //

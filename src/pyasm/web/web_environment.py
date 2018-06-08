@@ -224,14 +224,34 @@ class WebEnvironment(Environment):
 
 
     def is_admin_page(self):
+
+        from pyasm.security import Site
+        site = Site.get_site()
+
         project_code = Project.get_project_code()
         request_url = self.get_request_url()
         request_str = request_url.to_string()
-        if request_str.endswith("/%s/admin" % project_code) or \
-                request_str.endswith("/admin/Index"):
+
+        if request_str.endswith("/admin/Index"):
             return True
-        else:
-            return False
+
+        try:
+            parts = request_str.split("//")
+            parts = parts[1].split("/")
+            parts = parts[1:]
+            if parts[0] == "tactic":
+                parts = parts[1:]
+            if parts[0] == site:
+                parts = parts[1:]
+            if parts[0] == project_code:
+                parts = parts[1:]
+
+            is_admin = parts[0] == "admin"
+
+        except:
+            is_admin = False
+
+        return is_admin
 
 
     def is_title_page(self):

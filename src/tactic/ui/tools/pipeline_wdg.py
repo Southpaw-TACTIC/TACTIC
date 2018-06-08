@@ -6354,6 +6354,7 @@ class PipelineSaveCbk(Command):
 
         for node in process_nodes:
             settings_str = xml.get_attribute(node, "settings")
+            
             if settings_str:
                 try:
                     settings = jsonloads(settings_str)
@@ -6365,6 +6366,7 @@ class PipelineSaveCbk(Command):
                     print "WARNING: Setting for process %s not saved." % process_name 
             else:
                 settings = {}
+
             settings_list.append(settings)
             
             xml.del_attribute(node, "settings")

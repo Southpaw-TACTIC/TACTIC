@@ -1169,11 +1169,6 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
     editor.resize();
 
 }
-    var js_files = [
-        "ace/ace-1.2.3/src/ace.js",
-        //"ace/ace-1.2.3/src/ace-uncompressed.js",
-    ];
-
 
    
 
@@ -1195,7 +1190,15 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         }
     }
 
-    
+ 
+
+
+     var js_files = [
+        "/context/spt_js/ace/ace-1.2.3/src/ace.js",
+        //"ace/ace-1.2.3/src/ace-uncompressed.js",
+    ];
+
+   
 
 
     spt.dom.load_js(js_files, function() { 
@@ -1203,20 +1206,19 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         ace; require; define; 
 
         var core_js_files = [
-            "ace/ace-1.2.3/src/mode-javascript.js",
-            "ace/ace-1.2.3/src/mode-xml.js",
-            "ace/ace-1.2.3/src/mode-python.js",
-            "ace/ace-1.2.3/src/mode-html.js",
-            "ace/ace-1.2.3/src/theme-twilight.js",
-            "ace/ace-1.2.3/src/theme-textmate.js",
-            "ace/ace-1.2.3/src/theme-vibrant_ink.js",
-            "ace/ace-1.2.3/src/theme-merbivore.js",
-            "ace/ace-1.2.3/src/theme-clouds.js",
-            "ace/ace-1.2.3/src/theme-eclipse.js"
+            "/context/spt_js/ace/ace-1.2.3/src/mode-javascript.js",
+            "/context/spt_js/ace/ace-1.2.3/src/mode-xml.js",
+            "/context/spt_js/ace/ace-1.2.3/src/mode-python.js",
+            "/context/spt_js/ace/ace-1.2.3/src/mode-html.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-twilight.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-textmate.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-vibrant_ink.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-merbivore.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-clouds.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-eclipse.js"
         ];
         
-        //var supp_js_files = [];
-           
+        //require(core_js_files, ace_setup);
         spt.dom.load_js(core_js_files, ace_setup);
         
         //spt.dom.load_js(supp_js_files);      
