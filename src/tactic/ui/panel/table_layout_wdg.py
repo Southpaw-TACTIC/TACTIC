@@ -3775,6 +3775,28 @@ spt.table.get_row_by_search_key = function(search_key) {
 }
 
 
+spt.table.get_group_by_search_key = function(search_key, options) {
+    var rows = spt.table.get_group_rows();
+    var parent_group_key = null;
+    if (options) {
+        parent_group_key = options.parent_group_key;
+    }
+    var under_parent;
+    for (var i = 0; i < rows.length; i++) {
+        var row_search_key = rows[i].getAttribute("spt_search_key_v2");
+
+        if (parent_group_key) {
+            under_parent = under_parent ? true : parent_group_key == row_search_key;
+        } else {
+            under_parent = true;
+        }
+
+        if (search_key == row_search_key && under_parent) {
+            return rows[i];
+        }
+    }
+    return null;
+}
 
 
 spt.table.get_cells = function(element_name, tr) {
