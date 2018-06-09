@@ -1162,11 +1162,15 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             node_type = "unknown";
         }
 
+        var top = node.getParent(".spt_workflow_top");
+        var job_code = top.getAttribute("spt_job_code")
+
         var class_name = 'tactic.ui.tools.ProcessInfoWdg';
         var kwargs = {
             pipeline_code: group_name,
             process: node_name,
-            node_type: node_type
+            node_type: node_type,
+            job_code: job_code,
         }
         spt.panel.load(info, class_name, kwargs);
 
