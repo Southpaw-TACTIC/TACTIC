@@ -4727,9 +4727,6 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
 
     for (var i = 0; i < process_nodes.length; i++) {
-
-        xml_nodes.push(process_nodes[i]);
-
         // add a process code
         var name = process_nodes[i].getAttribute("name");
         var process = processes[name];
@@ -4747,6 +4744,8 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             if (process.process) settings['process'] = process.process;
             process_nodes[i].setAttribute("settings", JSON.stringify(settings));
         }
+        
+        xml_nodes.push(process_nodes[i]);
 
     }
 
@@ -4870,13 +4869,6 @@ spt.pipeline.get_node_values = function(node) {
 }
 
 
-spt.pipeline.update_node_settings = function(node, settings) {
-    // do nothing
-}
-
-
-
-
 spt.pipeline.import_nodes = function(group, xml_nodes) {
 
     // find the left most and top most position
@@ -4963,9 +4955,6 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
             settings = JSON.parse(settings);
             if (node.update_node_settings) {
                 node.update_node_settings(settings);
-            }
-            else {
-                spt.pipeline.update_node_settings(node, settings);
             }
         }
 

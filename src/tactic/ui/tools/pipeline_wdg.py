@@ -6368,9 +6368,10 @@ class PipelineSaveCbk(Command):
                 settings = {}
 
             settings_list.append(settings)
-            
+
             xml.del_attribute(node, "settings")
 
+        pipeline_xml = xml.to_string()
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
         if project_code:
@@ -6412,15 +6413,15 @@ class PipelineSaveCbk(Command):
                 process.set_value("pipeline_code", pipeline_code)
             
             settings = settings_list[i]
-            process.set_value("workflow", settings)
 
-            subpipeline_code = settings.get("subpipeline_code")
+            subpipeline_code = settings.pop("subpipeline_code", None)
             if subpipeline_code:
                 process.set_value("subpipeline_code", subpipeline_code)
             
+            process.set_value("workflow", settings)
+            
             process.commit()
             
-            xml.set_attribute(node, "process_code", process.get_code())
 
 
         
