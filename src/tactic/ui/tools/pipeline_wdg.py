@@ -6402,6 +6402,7 @@ class PipelineSaveCbk(Command):
         """
 
         pipeline.update_dependencies()
+
         
         self.description = "Updated workflow [%s]" % pipeline_code
 
@@ -6410,14 +6411,31 @@ class PipelineSaveCbk(Command):
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
+            print "process_code: ", "[%s]" % process_code, process_name
             if process_code:
                 process = Search.get_by_code("config/process", process_code)
-            
+
+
+            # try to find it by name
+            if not process:
+                search = Search("config/process")
+                search.add_filter("process", process_name)
+                search.add_filter("pipeline_code", pipeline_code)
+                process = search.get_sobject()
+
+
+
+            # else create a new one 
             if not process:
                 process = SearchType.create("config/process")
                 process.set_value("process", process_name)
                 process.set_value("pipeline_code", pipeline_code)
-            
+           
+
+            # set the process code
+            xml.set_attribute(node, "process_code", process.get_code())
+
+
             settings = settings_list[i]
 
             subpipeline_code = settings.pop("subpipeline_code", None)
