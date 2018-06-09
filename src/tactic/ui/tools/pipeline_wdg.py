@@ -1199,8 +1199,8 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 return;
             }
 
-            to_attr = connector.get_attr("to_attr"),
-            from_attr = connector.get_attr("from_attr")
+            to_attr = connector.get_attr("to_attr");
+            from_attr = connector.get_attr("from_attr");
             draw_attr = true;
 
             connector.draw_spline(draw_attr);
