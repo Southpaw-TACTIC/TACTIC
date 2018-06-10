@@ -2773,6 +2773,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         font_size = 12
         padding = 10
         extra_data = self.kwargs.get("extra_data") or {}
+        open_icon = "FA_FOLDER_OPEN_O"
+        closed_icon = "FA_FOLDER_O"
+        group_icon_styles = ""
         if extra_data:
             try:
                 extra_data = jsonloads(extra_data)
@@ -2791,16 +2794,27 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             font_size = extra_data.get("font_size") or font_size
             padding = extra_data.get("group_level_padding") or padding
 
+
+            if extra_data.get("group_icons"):
+                icons = extra_data.get("group_icons")
+                icons = icons.split(",")
+                open_icon = icons[0]
+                if len(icons) == 1:
+                    closed_icon = icons[0]
+                else:
+                    closed_icon = icons[1]
+
         table.add_style("font-size: %spx" % font_size)
 
         from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
         #swap = SwapDisplayWdg(title=title_div, is_on=self.is_on)
         swap = SwapDisplayWdg(is_on=self.is_on)
+
+
         swap.add_class("spt_group_row_collapse")
-        open_div = IconWdg("OPEN", "FA_FOLDER_OPEN_O") 
-        closed_div = IconWdg("CLOSED", "FA_FOLDER_O") 
+        open_div = IconWdg("OPEN", open_icon) 
+        closed_div = IconWdg("CLOSED", closed_icon) 
         swap.set_display_wdgs(open_div, closed_div)
-        swap.add_style("font-weight: bold")
         swap.add_style("margin-left: 5px")
         swap.add_style("line-height: %spx" % height)
         swap.set_behavior_top(self.table)
@@ -5506,10 +5520,14 @@ spt.table.save_changes = function(kwargs) {
 
     spt.app_busy.show("Saving Changes ...");
     var rows = spt.table.get_changed_rows();
+
+    // insert rows appear to be included now
+    /*
     var insert_rows = spt.table.get_insert_rows();
     for (var i = 0; i < insert_rows.length; i++) {
         rows.push(insert_rows[i]);
     }
+    */
 
     var insert_data = [];
     var update_data = [];
