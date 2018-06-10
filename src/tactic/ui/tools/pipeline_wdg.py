@@ -6345,6 +6345,7 @@ class PipelineSaveCbk(Command):
         pipeline_xml = self.kwargs.get('pipeline')
         pipeline_color = self.kwargs.get('color')
         project_code = self.kwargs.get('project_code')
+        timestamp = self.kwargs.get("timestamp")
 
         from pyasm.common import Xml
         xml = Xml()
@@ -6368,9 +6369,10 @@ class PipelineSaveCbk(Command):
                 settings = {}
 
             settings_list.append(settings)
-            
+
             xml.del_attribute(node, "settings")
 
+        pipeline_xml = xml.to_string()
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
         if project_code:
@@ -6378,6 +6380,8 @@ class PipelineSaveCbk(Command):
             if project_code == '__SITE_WIDE__':
                 project_code = ''
             data['project_code'] = project_code
+        if timestamp:
+            data['timestamp'] = timestamp
 
         server.insert_update(pipeline_sk, data = data)
 
@@ -6412,15 +6416,15 @@ class PipelineSaveCbk(Command):
                 process.set_value("pipeline_code", pipeline_code)
             
             settings = settings_list[i]
-            process.set_value("workflow", settings)
 
-            subpipeline_code = settings.get("subpipeline_code")
+            subpipeline_code = settings.pop("subpipeline_code", None)
             if subpipeline_code:
                 process.set_value("subpipeline_code", subpipeline_code)
             
+            process.set_value("workflow", settings)
+            
             process.commit()
             
-            xml.set_attribute(node, "process_code", process.get_code())
 
 
         
