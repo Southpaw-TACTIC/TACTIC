@@ -1149,6 +1149,8 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
 
+        var properties = spt.pipeline.get_node_properties(node);
+
         var node_name = spt.pipeline.get_node_name(node);
         var group_name = spt.pipeline.get_current_group();
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
@@ -1166,7 +1168,8 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         var kwargs = {
             pipeline_code: group_name,
             process: node_name,
-            node_type: node_type
+            node_type: node_type,
+            properties: properties
         }
         spt.panel.load(info, class_name, kwargs);
 
