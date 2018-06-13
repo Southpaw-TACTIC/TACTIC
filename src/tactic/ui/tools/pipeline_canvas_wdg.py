@@ -4456,9 +4456,12 @@ spt.pipeline.Connector = function(from_node, to_node) {
     }
 
 
-    this.select = function() {
+    this.select = function(color) {
         spt.pipeline.add_to_selected(this);
-        this.set_color("red");
+        if (!color) {
+            color = "red";
+        }
+        this.set_color(color);
     }
 
     this.set_from_node = function(from_node) {
