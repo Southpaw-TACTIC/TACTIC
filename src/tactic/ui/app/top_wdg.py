@@ -975,9 +975,16 @@ class TopWdg(Widget):
         for include in includes:
             include = include.strip()
             if include:
-                print("include: ", include)
                 widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
 
+
+
+        includes = ProjectSetting.get_value_by_key("css_libraries")
+        includes = includes.split(",")
+        for include in includes:
+            include = include.strip()
+            if include:
+                widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
         return widget
 
 
