@@ -2163,7 +2163,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
     var ctx = spt.pipeline.get_ctx();
     ctx.clearRect(left,top,width,height);
 
-    //spt.pipeline.clear_selected();
+    spt.pipeline.clear_selected();
 
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
