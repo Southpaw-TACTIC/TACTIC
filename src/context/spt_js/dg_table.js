@@ -62,9 +62,6 @@ Command.add_to_undo = function(cmd) {
 }
 
 
-
-
-
 Command.undo_last = function() {
     if (Command.command_index == -1) {
         alert("Nothing to undo");
@@ -74,9 +71,9 @@ Command.undo_last = function() {
     var cmd = Command.commands[Command.command_index];
     cmd.undo();
     Command.command_index -= 1;
+    return cmd
     
 }
-
 
 
 Command.redo_last = function() {
@@ -89,10 +86,9 @@ Command.redo_last = function() {
     var cmd = Command.commands[Command.command_index+1];
     cmd.redo();
     Command.command_index += 1;
+    return cmd
     
 }
-
-
 
 
 
