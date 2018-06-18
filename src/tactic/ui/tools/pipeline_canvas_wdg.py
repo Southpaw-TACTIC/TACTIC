@@ -417,9 +417,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
 
-
-        #canvas.add_style("width: 100%")
-        #canvas.add_style("height: 100%")
+        #canvas.add_class("spt_window_resize")
+        #canvas.add_attr("spt_window_resize_xoffset", 500)
+        #canvas.add_attr("spt_window_resize_offset", 200)
 
 
         canvas.add_behavior( {
@@ -2877,6 +2877,22 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         editor_top.addClass("spt_has_changes");
     }
 
+
+    // add to the undo queue
+    var NewNodeCmd = function() {
+        this.node = new_node;
+
+        this.execute = function() { this.redo(); }
+        this.redo = function() {
+            spt.pipeline.add_node(name, x, y, kwargs);
+        }
+        this.undo = function() {
+            spt.behavior.destroy_element(this.node);
+        }
+    }
+    var cmd = new NewNodeCmd();
+    Command.add_to_undo(cmd);
+
     return new_node;
 
 }
@@ -3401,7 +3417,30 @@ spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
         editor_top.addClass("spt_has_changes");
     }
 
+
+
+    // add to the undo queue
+    var NodeDragCmd = function(node, orig_node_pos) {
+        this.node = node;
+        this.orig_node_pos = {};
+        this.orig_node_pos.x = orig_node_pos.x;
+        this.orig_node_pos.y = orig_node_pos.y;
+
+        this.execute = function() { this.redo(); }
+        this.redo = function() {
+            alert("redo");
+        }
+        this.undo = function() {
+            var pos = this.orig_node_pos;
+            spt.pipeline.move_to(node, pos.x, pos.y);
+            spt.pipeline.redraw_canvas();
+        }
+    }
+    var cmd = new NodeDragCmd(node, spt.pipeline.orig_node_pos);
+    Command.add_to_undo(cmd);
+
 }
+
 
 
 spt.pipeline.last_connector = null;
@@ -4837,6 +4876,15 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
         workflow = node.workflow = {};
     }
 
+    if (!kwargs) {
+        kwargs = {};
+    }
+
+    var orig_value = workflow[name];
+    if (orig_value == value) {
+        return;
+    }
+
     workflow[name] = value;
 
     // node.properties goes into xml, code is redundant but it works for now
@@ -4855,6 +4903,33 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
             }
         }
     }
+
+
+    // add to the undo queue
+    if (kwargs.undo != false && value != orig_value) {
+        var NodeSettingsUndoCmd = function(node, name, orig_value, value, kwargs) {
+            this.node = node;
+            this.name = name;
+            this.orig_value = orig_value;
+            this.value = value;
+            this.kwargs = kwargs;
+            this.kwargs['undo'] = false;
+
+            console.log(name + " = " + value);
+
+            this.execute = function() { this.redo(); }
+            this.redo = function() {
+                spt.pipeline.set_node_value(this.node, this.name, this.value, this.kwargs);
+            }
+            this.undo = function() {
+                spt.pipeline.set_node_value(this.node, this.name, this.orig_value, this.kwargs);
+            }
+        }
+        var cmd = new NodeSettingsUndoCmd(node, name, orig_value, value, kwargs);
+        Command.add_to_undo(cmd);
+    }
+
+    return node;
 
 }
 

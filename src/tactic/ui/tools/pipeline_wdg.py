@@ -6411,7 +6411,6 @@ class PipelineSaveCbk(Command):
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
-            print "process_code: ", "[%s]" % process_code, process_name
             if process_code:
                 process = Search.get_by_code("config/process", process_code)
 
@@ -6439,7 +6438,7 @@ class PipelineSaveCbk(Command):
             settings = settings_list[i]
 
             subpipeline_code = settings.pop("subpipeline_code", None)
-            if subpipeline_code:
+            if subpipeline_code or subpipeline_code == "":
                 process.set_value("subpipeline_code", subpipeline_code)
             
             process.set_value("workflow", settings)
