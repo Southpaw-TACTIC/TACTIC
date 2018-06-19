@@ -2820,6 +2820,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     new_node.spt_name = name;
     new_node.setAttribute("title", name);
 
+
     // set any properties that might exist
     new_node.properties = {};
 
@@ -3517,7 +3518,7 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     if (to_node == null) {
         var pos = spt.pipeline.get_mouse_position(mouse_411);
         var default_node_type = null;
-        to_node = spt.pipeline.add_node(null, null, null, { node_type: null } );
+        to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
         // FIXME: hard coded
 
         var height = 40;
