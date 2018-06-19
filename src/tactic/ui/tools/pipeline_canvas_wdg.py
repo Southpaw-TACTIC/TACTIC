@@ -2745,6 +2745,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         if (kwargs.select_node != 'undefined') 
             select_node = kwargs.select_node;
         node_type = kwargs.node_type;
+        drag_new_node = kwargs.drag_new_node;
     }
     else {
         kwargs = {};
@@ -2820,6 +2821,9 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
     new_node.spt_name = name;
     new_node.setAttribute("title", name);
 
+    if (drag_new_node) {
+      new_node.addClass("spt_new_node");
+    }
 
     // set any properties that might exist
     new_node.properties = {};
@@ -3518,7 +3522,7 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     if (to_node == null) {
         var pos = spt.pipeline.get_mouse_position(mouse_411);
         var default_node_type = null;
-        to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
+        to_node = spt.pipeline.add_node(null, null, null, { node_type: null, drag_new_node: true } );
         // FIXME: hard coded
 
         var height = 40;
