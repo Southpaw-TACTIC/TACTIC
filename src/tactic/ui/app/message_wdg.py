@@ -797,7 +797,7 @@ class SubscriptionWdg(BaseRefreshWdg):
             search.add_filter("category", category)
 
 
-
+        mode = "nnn"
         if mode == "new":
             search.add_op("begin")
             search.add_filter("last_cleared", '"message"."timestamp"', quoted=False, op="<")
@@ -911,6 +911,7 @@ class SubscriptionWdg(BaseRefreshWdg):
 
         categories = ['chat','sobject','script','progress']
         categories = [None]
+        categories = ['feedback']
 
         has_entries = False
         for category in categories:
