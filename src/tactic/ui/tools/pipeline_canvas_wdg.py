@@ -4935,7 +4935,7 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
 
 spt.pipeline.get_node_value = function(node, name) {
     var workflow = node.workflow;
-    if (!node.workflow) {
+    if (!workflow) {
         return null;
     }
 
