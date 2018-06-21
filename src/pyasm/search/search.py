@@ -2988,6 +2988,9 @@ class SObject(object):
                 value = str(value)
                 return value
 
+            if value and isinstance(value, dict):
+                value = value.copy()
+
             if auto_convert and value == None:
                 col_type = SearchType.get_column_type(self.full_search_type, name)
                 if col_type in ['integer','float','numeric','decimal','double precision']:
@@ -3067,6 +3070,10 @@ class SObject(object):
     def get_json_value(self, name, default=None):
         '''get the value that is stored as a json data structure'''
         value = self.get_value(name)
+        if isinstance(value, dict):
+            value = value.copy()
+            return value
+
         if not isinstance(value, basestring):
             return value
 
@@ -3086,6 +3093,11 @@ class SObject(object):
 
     def set_json_value(self, name, value):
         if value is None:
+            self.set_value(name, value)
+            return
+    
+        column_type = SearchType.get_column_type(self.full_search_type, name)
+        if column_type in ['json']:
             self.set_value(name, value)
             return
 
@@ -3278,7 +3290,7 @@ class SObject(object):
                     value = value.decode('utf-8', 'ignore')
                 except UnicodeDecodeError, e:
                     value = value.decode('iso-8859-1', 'ignore')
-
+        
         self._set_value(name, value, quoted=quoted)
 
 

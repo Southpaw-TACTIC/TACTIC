@@ -227,18 +227,18 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
         top.add_style("padding-left: 3px")
         top.add_style("padding-right: 3px")
 
-        mode = self.kwargs.get("mode")
-        if not mode:
-            mode = 'normal'
-        assert mode in ['normal', 'line', 'square']
+        self.mode = self.kwargs.get("mode")
+        if not self.mode:
+            self.mode = 'normal'
+        assert self.mode in ['normal', 'line', 'square']
 
         # check if it is the first day of the week and then try to cascade
         # the indexes up
         wday = self.date.strftime("%w")
         if wday == "0":
-            first_day = True
+            self.first_day = True
         else:
-            first_day = False
+            self.first_day = False
 
 
         num_today = 0
@@ -259,76 +259,85 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
         else:
             for index, sobject in enumerate(self.sobjects_index):
-
-                content_wdg = DivWdg()
-                top.add(content_wdg)
-                content_wdg.add_style("white-space: nowrap")
-
-                content_wdg.add_style("padding: 1px 3px 1px 3px")
-
-                if sobject not in self.sobjects:
-                    # account for the border
-                    if mode == "line":
-                        content_wdg.add_style("height: 1px")
-                        content_wdg.add_style("overflow: hidden")
-                    elif mode == "square":
-                        content_wdg.add_style("display: none")
-                    else:
-                        content_wdg.add_style("margin: 4px -1px 4px -1px")
-                    content_wdg.add("&nbsp;")
-                    continue
-                else:
-                    if mode == "line":
-                        content_wdg.add_style("height: 1px")
-                        content_wdg.add_style("margin: 1px 1px 1px 1px")
-                    elif mode == "square":
-
-                        size = self.kwargs.get("square_size")
-                        if not size:
-                            size = "3px"
-                        content_wdg.add_style("height: %s" % size)
-                        content_wdg.add_style("width: %s" % size)
-                        content_wdg.add_style("margin: 1px 1px 1px 1px")
-                        content_wdg.add_style("float: left")
-                    else:
-                        content_wdg.add_border()
-                        #content_wdg.set_box_shadow("0px 0px 5px")
-                        #content_wdg.set_round_corners()
-                        content_wdg.add_style("margin: 3px 0px 3px 0px")
-                    content_wdg.add_style("overflow: hidden")
-
-                if not first_day and self.sobjects_drawn.get(sobject) == True:
-                    display_value = "&nbsp;"
-                    title_value = self.display_values.get(sobject.get_search_key())
-                    if title_value:
-                        content_wdg.add_attr("title", title_value)
-
-
-                else:
-                    if self.sobject_display_expr:
-                        display_value = Search.eval(self.sobject_display_expr, [sobject], single=True)
-                    else:
-                        display_value = self.get_display_value(sobject)
-
-                    if mode == "square":
-                        display_value = ""
-                    elif not display_value:
-                        display_value = sobject.get_code()
-
-                    content_wdg.add_attr("title", display_value)
-                    self.display_values[sobject.get_search_key()] = display_value
-
-                    if len(display_value) > 17:
-                        display_value = "%s..." % display_value[:20]
-                    self.sobjects_drawn[sobject] = True
-
-                color = self.get_color(sobject, index)
-                content_wdg.add_style("background: %s" % color)
-
-                content_wdg.add(display_value)
-
+                top.add( self.get_item_wdg(sobject, index) )
 
         return top
+
+
+
+    def get_item_wdg(self, sobject, index):
+
+        mode = self.mode
+
+        content_wdg = DivWdg()
+        content_wdg.add_style("white-space: nowrap")
+
+        content_wdg.add_style("padding: 1px 3px 1px 3px")
+
+        if sobject not in self.sobjects:
+            # account for the border
+            if mode == "line":
+                content_wdg.add_style("height: 1px")
+                content_wdg.add_style("overflow: hidden")
+            elif mode == "square":
+                content_wdg.add_style("display: none")
+            else:
+                content_wdg.add_style("margin: 4px -1px 4px -1px")
+            content_wdg.add("&nbsp;")
+            return content_wdg
+        else:
+            if mode == "line":
+                content_wdg.add_style("height: 1px")
+                content_wdg.add_style("margin: 1px 1px 1px 1px")
+            elif mode == "square":
+
+                size = self.kwargs.get("square_size")
+                if not size:
+                    size = "3px"
+                content_wdg.add_style("height: %s" % size)
+                content_wdg.add_style("width: %s" % size)
+                content_wdg.add_style("margin: 1px 1px 1px 1px")
+                content_wdg.add_style("float: left")
+            else:
+                content_wdg.add_border()
+                #content_wdg.set_box_shadow("0px 0px 5px")
+                #content_wdg.set_round_corners()
+                content_wdg.add_style("margin: 3px 0px 3px 0px")
+            content_wdg.add_style("overflow: hidden")
+
+        if not self.first_day and self.sobjects_drawn.get(sobject) == True:
+            display_value = "&nbsp;"
+            title_value = self.display_values.get(sobject.get_search_key())
+            if title_value:
+                content_wdg.add_attr("title", title_value)
+
+
+        else:
+            if self.sobject_display_expr:
+                display_value = Search.eval(self.sobject_display_expr, [sobject], single=True)
+            else:
+                display_value = self.get_display_value(sobject)
+
+            if mode == "square":
+                display_value = ""
+            elif not display_value:
+                display_value = sobject.get_code()
+
+            content_wdg.add_attr("title", display_value)
+            self.display_values[sobject.get_search_key()] = display_value
+
+            if len(display_value) > 17:
+                display_value = "%s..." % display_value[:20]
+            self.sobjects_drawn[sobject] = True
+
+        color = self.get_color(sobject, index)
+        content_wdg.add_style("background: %s" % color)
+
+        content_wdg.add(display_value)
+
+        return content_wdg
+
+
 
 
 
