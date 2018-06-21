@@ -1070,7 +1070,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def log_message(self, ticket, key, message=None, status=None, category="default"):
+    def log_message(self, ticket, key, message=None, status=None, category="default", log_history=True):
         '''Log a message which will be seen by all who are subscribed to
         the message "key".
 
@@ -1081,6 +1081,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @keyparams
         status - arbitrary status for this message
         category - value to categorize this message
+        log_history - flag to determine with to log history
 
         @return
         string - "OK"
@@ -1134,16 +1135,17 @@ class ApiXMLRPC(BaseApiXMLRPC):
             message_obj.commit()
 
             # repeat with update the message log
-            message_log_obj = SearchType.create("sthpw/message_log")
-            message_log_obj.set_value("message_code", key)
-            if message != None:
-                message_log_obj.set_value("message", message)
-            if status != None:
-                message_log_obj.set_value("status", status)
+            if log_history:
+                message_log_obj = SearchType.create("sthpw/message_log")
+                message_log_obj.set_value("message_code", key)
+                if message != None:
+                    message_log_obj.set_value("message", message)
+                if status != None:
+                    message_log_obj.set_value("status", status)
 
-            message_log_obj.set_value("login", login)
-            message_log_obj.set_value("project_code", project_code)
-            message_log_obj.set_value("timestamp", "NOW")
+                message_log_obj.set_value("login", login)
+                message_log_obj.set_value("project_code", project_code)
+                message_log_obj.set_value("timestamp", "NOW")
 
 
             return 
@@ -1177,23 +1179,24 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sql.do_update(statement)
       
         # repeat with update the message log
-        update = Insert()
-        update.set_database(sql)
-        update.set_table("message_log")
-        update.set_value("message_code", key)
-        if message != None:
-            update.set_value("message", message)
-        if status != None:
-            update.set_value("status", status)
+        if log_history:
+            update = Insert()
+            update.set_database(sql)
+            update.set_table("message_log")
+            update.set_value("message_code", key)
+            if message != None:
+                update.set_value("message", message)
+            if status != None:
+                update.set_value("status", status)
 
-        update.set_value("login", login)
-        update.set_value("project_code", project_code)
-        update.set_value("timestamp", "NOW")
+            update.set_value("login", login)
+            update.set_value("project_code", project_code)
+            update.set_value("timestamp", "NOW")
 
-        statement = update.get_statement()
-        sql.do_update(statement)
+            statement = update.get_statement()
+            sql.do_update(statement)
 
-        sql.close()
+            sql.close()
 
         #return last_message
         return "OK"

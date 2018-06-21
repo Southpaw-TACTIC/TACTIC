@@ -360,15 +360,39 @@ TacticServerStub = function() {
      * Messaging facilities
      */
 
-    this.get_message = function(key) {
-        return this._delegate("get_message", arguments);
+    this.get_message = function(key, kwargs, on_complete, on_error) {
+        //return this._delegate("get_message", arguments);
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("get_message", arguments, kwargs, null, on_complete, on_error);
+        // asynchronouse
+        if (on_complete) {
+            return;
+        }
+        // synchronouse
+        if (ret_val && ret_val.status == "ERROR") {
+            throw ret_val;
+        }
+        return ret_val;
     }
 
-    this.get_messages = function(keys) {
+
+
+
+    this.p_get_message = function(key, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
+            this.get_message(key, kwargs);
+        }.bind(this) )
+    }
+
+
+
+
+    this.get_messages = function(keys, kwargs) {
         return this._delegate("get_messages", arguments);
     }
-
-
 
 
     this.log_message = function(key, message, kwargs) {
@@ -1211,6 +1235,7 @@ TacticServerStub = function() {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
             kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
             return this.query2(search_type, kwargs);
         }.bind(this) )
     }
@@ -1233,6 +1258,7 @@ TacticServerStub = function() {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
             this.get_by_search_key(search_key, kwargs);
         }.bind(this) )
     }
@@ -1248,6 +1274,7 @@ TacticServerStub = function() {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
             this.get_by_code(search_type, code, kwargs);
         }.bind(this) )
     }
@@ -1291,6 +1318,7 @@ TacticServerStub = function() {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
             kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
             return this.update(search_type, data, kwargs);
         }.bind(this) )
     }
@@ -1339,6 +1367,7 @@ TacticServerStub = function() {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
             this.eval(expression, kwargs);
         }.bind(this) )
     }
@@ -1560,6 +1589,7 @@ TacticServerStub = function() {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
             this.execute_cmd(class_name, args, {}, kwargs);
         }.bind(this) )
     }

@@ -324,7 +324,8 @@ class JobQueueThread(BaseProcessThread):
             response = self.check()
             if response == "kill":
                 try:
-                    os.kill(self.pid, 9)
+                    #os.kill(self.pid, 9)
+                    Common.kill(self.pid)
                 except Exception, e:
                     print("WARNING for pid [%s]: " % self.pid, e)
 
