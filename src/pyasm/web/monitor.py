@@ -273,6 +273,7 @@ class JobQueueThread(BaseProcessThread):
 
 
     def check(self):
+
         pid = self._get_pid()
         if self.process.poll() != None:
             return "kill"
@@ -294,9 +295,8 @@ class JobQueueThread(BaseProcessThread):
         f = open(pid_path, "r")
         pid = f.read()
         f.close()
-
         if int(pid) != self._get_pid():
-            return "exit"
+            return "kill"
 
 
         return "OK"
@@ -330,6 +330,7 @@ class JobQueueThread(BaseProcessThread):
                     print("WARNING for pid [%s]: " % self.pid, e)
 
                 break
+
             if response != "OK":
                 break
             time.sleep(1)
