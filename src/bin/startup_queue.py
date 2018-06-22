@@ -31,10 +31,14 @@ def main(options, site=None):
         options.pop('index')
     write_pid(idx)
 
+    log_dir = "%s/log" % Environment.get_tmp_dir()
+    pid_path = "%s/startup_queue.%s" % (log_dir, idx)
+
 
     JobTask.start(
             check_interval=0.1,
-            max_jobs_completed=50
+            max_jobs_completed=50,
+            pid_path=pid_path,
     )
 
     try:
@@ -47,8 +51,6 @@ def main(options, site=None):
 
     finally:
 
-        log_dir = "%s/log" % Environment.get_tmp_dir()
-        pid_path = "%s/startup_queue.%s" % (log_dir, idx)
         if os.path.exists(pid_path):
             os.unlink(pid_path)
 

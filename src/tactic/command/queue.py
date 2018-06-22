@@ -134,9 +134,10 @@ class JobTask(SchedulerTask):
         if not self.max_jobs_completed:
             self.max_jobs_completed = -1
 
-        self.max_jobs = 2
+        self.max_jobs = 20
 
         self.queue_type = kwargs.get("queue")
+        self.pid_path = kwargs.get("pid_path")
         super(JobTask, self).__init__()
 
 
@@ -206,7 +207,12 @@ class JobTask(SchedulerTask):
         import time
         atexit.register( self.cleanup )
         while 1:
-            
+            time.sleep(20)
+
+            pid_path = self.pid_path
+            if pid_path and os.path.exists(pid_path):
+                os.utime(pid_path, None)
+
             self.check_existing_jobs()
             self.check_new_job()
             time.sleep(self.check_interval)
@@ -251,6 +257,7 @@ class JobTask(SchedulerTask):
 
 
     def check_new_job(self, queue_type=None):
+
 
         num_jobs = len(self.jobs)
         if num_jobs >= self.max_jobs:
@@ -351,14 +358,14 @@ class JobTask(SchedulerTask):
 
 
         elif queue_type == 'repeat':
-            
-            
+
+           
             attempts = 0
             max_attempts = 3
             retry_interval = 5
             Container.put(Transaction.KEY, None)
             while 1:
-			    
+		    
                 try:
                     cmd = Common.create_from_class_path(command, kwargs=kwargs)
                     

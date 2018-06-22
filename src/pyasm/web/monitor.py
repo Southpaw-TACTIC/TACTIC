@@ -253,6 +253,11 @@ class JobQueueThread(BaseProcessThread):
         super(JobQueueThread,self).__init__()
         self.idx = idx
         self.pid = 0
+        self.process_timeout = Config.get_value("services", "queue_process_timeout")
+        if not self.process_timeout:
+            self.process_timeout = -1
+        else:
+            self.process_timeout = int(self.process_timeout)
 
     def get_title(self):
         return "Job Task Queue"
@@ -268,12 +273,22 @@ class JobQueueThread(BaseProcessThread):
 
 
     def check(self):
-
         pid = self._get_pid()
+        if self.process.poll() != None:
+            return "kill"
 
         pid_path = self.get_pid_path()
         if not os.path.exists(pid_path):
-            return "restart"
+            return "kill"
+
+        # check how old the pid path is
+        import time
+        now = time.time()
+        pid_path = self.get_pid_path()
+        diff = now - os.path.getmtime(pid_path)
+        if self.process_timeout != -1 and diff > self.process_timeout:
+            print("Process [%s] timedout" % self.pid)
+            return "kill"
 
 
         f = open(pid_path, "r")
@@ -300,13 +315,21 @@ class JobQueueThread(BaseProcessThread):
             "-i",
             str(self.idx),
         ]
-        process = subprocess.Popen(executable)
-        self.pid = process.pid
+        self.process = subprocess.Popen(executable)
+        self.pid = self.process.pid
 
         time.sleep(5)
 
         while 1:
-            if self.check() != "OK":
+            response = self.check()
+            if response == "kill":
+                try:
+                    os.kill(self.pid, 9)
+                except Exception, e:
+                    print("WARNING for pid [%s]: " % self.pid, e)
+
+                break
+            if response != "OK":
                 break
             time.sleep(1)
 
