@@ -1285,15 +1285,15 @@ TacticServerStub = function() {
 
 
 
+
+
     this.p_update = function(search_type, data, kwargs) {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {};
             kwargs.on_complete = function(x) { resolve(x); }
-            return this.query2(search_type, data, kwargs);
+            return this.update(search_type, data, kwargs);
         }.bind(this) )
     }
-
-
 
 
 
@@ -1556,7 +1556,6 @@ TacticServerStub = function() {
     }
 
 
-    /* Test promises */
     this.p_execute_cmd = function(class_name, args, kwargs) {
         return new Promise( function(resolve, reject) {
             if (!kwargs) kwargs = {}
