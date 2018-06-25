@@ -1954,7 +1954,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return r'''
 
 
-spt.Environment.get().add_library("spt_pipeline");
+//spt.Environment.get().add_library("spt_pipeline");
 
 spt.pipeline = {};
 
@@ -2891,7 +2891,9 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         }
     }
     var cmd = new NewNodeCmd();
-    Command.add_to_undo(cmd);
+    if (Command) {
+        Command.add_to_undo(cmd);
+    }
 
     return new_node;
 
@@ -3437,7 +3439,9 @@ spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
         }
     }
     var cmd = new NodeDragCmd(node, spt.pipeline.orig_node_pos);
-    Command.add_to_undo(cmd);
+    if (Command) {
+        Command.add_to_undo(cmd);
+    }
 
 }
 
@@ -4926,7 +4930,9 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
             }
         }
         var cmd = new NodeSettingsUndoCmd(node, name, orig_value, value, kwargs);
-        Command.add_to_undo(cmd);
+        if (Command) {
+            Command.add_to_undo(cmd);
+        }
     }
 
     return node;
