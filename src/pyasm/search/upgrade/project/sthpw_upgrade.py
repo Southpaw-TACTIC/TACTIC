@@ -188,7 +188,7 @@ class SthpwUpgrade(BaseUpgrade):
 
     def upgrade_v4_5_0_a01_003(self):
         self.run_sql('''
-        ALTER TABLE sobject_log ADD COLUMN parent_code varchar(128);
+        ALTER TABLE sobject_log ADD COLUMN parent_code varchar(256);
         ''')
 
 

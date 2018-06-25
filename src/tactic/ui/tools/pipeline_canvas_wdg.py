@@ -4762,6 +4762,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
 
     var data = spt.pipeline.get_data();
     data.type = pipeline.type;
+    data.project_code = pipeline.project_code;
 
 
     // add the nodes
