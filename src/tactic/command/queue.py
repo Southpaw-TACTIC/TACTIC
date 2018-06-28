@@ -207,8 +207,6 @@ class JobTask(SchedulerTask):
         import time
         atexit.register( self.cleanup )
         while 1:
-            time.sleep(20)
-
             pid_path = self.pid_path
             if pid_path and os.path.exists(pid_path):
                 os.utime(pid_path, None)

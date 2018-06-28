@@ -765,7 +765,7 @@ class TacticServerStub(object):
 
 
 
-    def log_message(self, key, message, status="", category="default"):
+    def log_message(self, key, message, status="", category="default", log_history=True):
         '''API Function: log_message(key, message, status=None, category="default")
 
         Log a message which will be seen by all who are subscribed to
@@ -774,6 +774,7 @@ class TacticServerStub(object):
         @params:
         key - unique key for this message
         message - the message to be sent
+        log_history - flag to determine with to log history
 
         @keyparam:
         status - arbitrary status for this message
@@ -782,7 +783,7 @@ class TacticServerStub(object):
         @return:
         string - "OK"
         '''
-        return self.server.log_message(self.ticket, key, message, status, category)
+        return self.server.log_message(self.ticket, key, message, status, category, log_history)
 
 
     def subscribe(self, key, category="default"):
