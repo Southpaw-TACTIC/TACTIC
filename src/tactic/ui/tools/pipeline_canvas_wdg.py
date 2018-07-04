@@ -872,6 +872,37 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if show_nobs:
             self.add_nobs(node, width, height, offset)
 
+        transparent = DivWdg()
+        node.add(transparent)
+        transparent.add_style("margin-left: -10px")
+        transparent.add_style("margin-top: -10px")
+        transparent.add_style("width: %spx" % (width+20))
+        transparent.add_style("height: %spx" % (height+20))
+        transparent.add_style("position: absolute")
+        transparent.add_style("z-index", "-1")
+        transparent.add_class("transparent_node_layer")
+        transparent.add_behavior( {
+            'type': 'hover',
+            'cbjs_action_over': '''
+
+                var el = bvr.src_el.getParent(".spt_pipeline_node");
+                var nob = el.getElement(".spt_left_nob");
+                spt.show(nob);
+                var nob = el.getElement(".spt_right_nob");
+                spt.show(nob);
+
+            ''',
+            'cbjs_action_out': '''
+
+                var el = bvr.src_el;
+                var nob = el.getElement(".spt_left_nob");
+                spt.hide(nob);
+                var nob = el.getElement(".spt_right_nob");
+                spt.hide(nob);
+
+            '''
+            } )
+
 
         content = DivWdg()
         node.add(content)
@@ -1454,6 +1485,39 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         nobs_offset = 0
         self.add_nobs(node, width, height, nobs_offset)
+
+
+        transparent = DivWdg()
+        node.add(transparent)
+        transparent.add_style("margin-left: -10px")
+        transparent.add_style("margin-top: -10px")
+        transparent.add_style("width: %spx" % (width+20))
+        transparent.add_style("height: %spx" % (height+20))
+        transparent.add_style("position: absolute")
+        transparent.add_style("top", "0")
+        transparent.add_style("z-index", "-1")
+        transparent.add_class("transparent_node_layer")
+        transparent.add_behavior( {
+            'type': 'hover',
+            'cbjs_action_over': '''
+
+                var el = bvr.src_el.getParent(".spt_pipeline_node");
+                var nob = el.getElement(".spt_left_nob");
+                spt.show(nob);
+                var nob = el.getElement(".spt_right_nob");
+                spt.show(nob);
+
+            ''',
+            'cbjs_action_out': '''
+
+                var el = bvr.src_el;
+                var nob = el.getElement(".spt_left_nob");
+                spt.hide(nob);
+                var nob = el.getElement(".spt_right_nob");
+                spt.hide(nob);
+
+            '''
+            } )
 
 
         #content = DivWdg()
@@ -4919,8 +4983,6 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
             this.value = value;
             this.kwargs = kwargs;
             this.kwargs['undo'] = false;
-
-            console.log(name + " = " + value);
 
             this.execute = function() { this.redo(); }
             this.redo = function() {
