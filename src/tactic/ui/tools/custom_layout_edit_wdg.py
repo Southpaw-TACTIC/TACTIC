@@ -2676,14 +2676,15 @@ class CustomLayoutEditSaveCmd(Command):
         layout.append("<html>")
 
 
+        if html:
+            layout.append(html)
+
         if style:
             if style.find('<style type') != -1 or style.find('</style>') != -1:
                 raise TacticException("<style> tag is automatically added when it is saved. Do not include any <style> tags in styles section.")
             layout.append('''<style type="text/css">''')
             layout.append(style)
             layout.append('''</style>''')
-        if html:
-            layout.append(html)
 
 
 

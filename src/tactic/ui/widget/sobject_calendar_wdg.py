@@ -223,7 +223,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
     def get_display(self):
         top = DivWdg()
-        top.add_style("overflow-x: hidden")
+        #top.add_style("overflow-x: hidden")
         top.add_style("padding-left: 3px")
         top.add_style("padding-right: 3px")
 
@@ -762,7 +762,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
             # for each day in the sobject's timeline, add it to the appropriate
             # day list
-            days = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date))
+            days = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date+timedelta(days=1)))
             for date in days:
 
                 date_str = date.strftime("%Y-%m-%d")
@@ -906,7 +906,7 @@ class SObjectCalendarWdg(CalendarWdg):
         if self.width:
             div.add_style("width: %s" % self.width);
         div.add_style("min-height: %s" % self.height);
-        div.add_style("overflow: hidden");
+        #div.add_style("overflow: hidden");
         div.add_style("padding: 2px 0 2px 0")
 
         div.add_color("color", "color")

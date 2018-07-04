@@ -401,7 +401,7 @@ class CalendarWdg(BaseRefreshWdg):
                 td.add_style("padding: 0px")
                 td.add(self.get_day_wdg(month, day))
                 td.add_style("vertical-align: top")
-                td.add_style("overflow: hidden")
+                #td.add_style("overflow: hidden")
 
                 if border_type == 'all':
                     td.add_border()

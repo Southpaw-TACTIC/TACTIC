@@ -972,6 +972,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 var kwargs = {
                     pipeline_code: group_name,
                 }
+                info.setStyle("dipslay", "");
                 spt.panel.load(info, class_name, kwargs);
             }
 
@@ -1171,6 +1172,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             node_type: node_type,
             properties: properties
         }
+        info.setStyle("display", "");
         spt.panel.load(info, class_name, kwargs);
 
         '''
