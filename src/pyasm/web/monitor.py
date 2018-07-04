@@ -120,6 +120,10 @@ class BaseProcessThread(threading.Thread):
                 file.close()
                 Common.kill(pid)
 
+                pid_path = self.get_pid_path()
+                if os.path.exists(pid_path):
+                    os.unlink(pid_path)
+
                 #self.run()
                 self.num_checks += 1
                 return
@@ -948,7 +952,6 @@ class TacticMonitor(object):
                     for tactic_thread in self.tactic_threads:
                         tactic_thread.end = True
                     break
-
 
                 if self.check_interval:
                     # don't check threads during startup period
