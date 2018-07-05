@@ -557,8 +557,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         approval = self.get_approval_node("approval")
         template_div.add(approval)
 
-        approval = self.get_condition_node("condition")
-        template_div.add(approval)
+        condition = self.get_condition_node("condition")
+        template_div.add(condition)
 
         action = self.get_node("action", node_type="action")
         template_div.add(action)
@@ -579,6 +579,36 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         endpoint = self.get_endpoint_node("input", node_type="input")
         template_div.add(endpoint)
+	
+        """
+	Add template of connector panel
+
+        Define custom connector panel and custom connector info
+        per pipeline type in widget config using category "workflow_connector"
+        <config>
+	<my_pipeline_type>
+	    <element name="panel">
+	      <display class="path.to.my.ConnectorPanelWdg"/>
+	    </element>
+	    <element name="info">
+	      <display class="path.to.my.ConnectorInfoWdg"/>
+	    </element>
+	</my_pipeline_type>
+	</config>
+	"""
+        connector_panel_data = {} 
+        search = Search("config/widget_config")
+        search.add_filter("category", "workflow_connector")
+        configs = search.get_sobjects()
+        for config in configs:
+            pipeline_type = config.get_value("view")
+            class_name = config.get_display_handler("panel")
+            connector_panel = Common.create_from_class_path(class_name)
+            connector_panel.add_class("spt_connector_panel_template")
+            connector_panel.add_style("position", "absolute")
+            template_div.add(connector_panel)
+            connector_panel_data[pipeline_type] = class_name
+        top.set_attr("spt_connector_panel_data", jsondumps(connector_panel_data).replace('"', "&quot;"))
 
 
         # add trigger node
@@ -655,29 +685,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
        
-	"""
-	Define custom connector panel and custom connector info
-        per pipeline type in widget config using category "workflow_connector"
-        <config>
-	<my_pipeline_type>
-	    <element name="panel">
-	      <display class="path.to.my.ConnectorPanelWdg"/>
-	    </element>
-	    <element name="info">
-	      <display class="path.to.my.ConnectorInfoWdg"/>
-	    </element>
-	</my_pipeline_type>
-	</config>
-	"""
-        connector_panel_data = {} 
-        search = Search("config/widget_config")
-        search.add_filter("category", "workflow_connector")
-        configs = search.get_sobjects()
-        for config in configs:
-            pipeline_type = config.get_value("view")
-            class_name = config.get_display_handler("panel")
-            connector_panel_data[pipeline_type] = class_name
-        top.set_attr("spt_connector_panel_data", jsondumps(connector_panel_data).replace('"', "&quot;"))
         return top
 
 
@@ -3579,13 +3586,17 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     connector.set_attr("from_node", from_node.spt_name);
     connector.set_attr("to_node", to_node.spt_name);
     if (el) {
-        var data = spt.pipeline.get_data();
-        var pipeline_type = data.type;
-        var connector_panel_data = data.connector_panel_data;
-        if (connector_panel_data[pipeline_type]) {
-            var class_name = connector_panel_data[pipeline_type];
-            var kwargs = {'from_node': from_node.spt_name, 'to_node': to_node.spt_name, 'pipeline_code': group_name, 'overlap': connector.get_attr("overlap")};
-            spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
+        if (el.update_settings) {
+            el.update_settings({connector: connector});
+        } else {
+            var data = spt.pipeline.get_data();
+            var pipeline_type = data.type;
+            var connector_panel_data = data.connector_panel_data;
+            if (connector_panel_data[pipeline_type]) {
+                var class_name = connector_panel_data[pipeline_type];
+                var kwargs = {'from_node': from_node.spt_name, 'to_node': to_node.spt_name, 'pipeline_code': group_name, 'overlap': connector.get_attr("overlap")};
+                spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
+            }
         }
     }
 }
@@ -4396,16 +4407,20 @@ spt.pipeline.Connector = function(from_node, to_node) {
         
         if (connector_panel_data[pipeline_type]) {
             if (!this.panel) {
+                var top = spt.pipeline.top;
+                var template_container = top.getElement(".spt_pipeline_template");
+		var template = template_container.getElement(".spt_connector_panel_template");
+                var el = spt.behavior.clone(template);
+                el.removeClass("spt_connector_panel_template");
+                el.addClass("spt_connector_data");
+                
+                //var from_node = this.from_node.getAttribute("spt_element_name");
+                //var to_node = this.to_node.getAttribute("spt_element_name");
+                
                 var canvas = spt.pipeline.get_canvas();
-                var new_el = Element("div");
-                new_el.addClass("spt_connector_data");
-                new_el.setStyle("position", "absolute");
-                var from_node = this.from_node.getAttribute("spt_element_name");
-                var to_node = this.to_node.getAttribute("spt_element_name");
-                new_el.setAttribute("spt_from_node", from_node);
-                new_el.setAttribute("spt_to_node", to_node);
-                canvas.appendChild(new_el);
-                this.panel = new_el;
+                canvas.appendChild(el);
+                
+                this.panel = el;
             }
             var y = (unscaled_from_pos.y + unscaled_to_pos.y)/2;
             var dx = (unscaled_to_pos.x - unscaled_from_pos.x)/2;
@@ -4415,6 +4430,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
             dx = dx - 12
             dy = -8
             spt.pipeline.move_to(this.panel, unscaled_from_pos.x+dx, y+dy);
+
         }
             
 
@@ -4920,8 +4936,6 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
             this.kwargs = kwargs;
             this.kwargs['undo'] = false;
 
-            console.log(name + " = " + value);
-
             this.execute = function() { this.redo(); }
             this.redo = function() {
                 spt.pipeline.set_node_value(this.node, this.name, this.value, this.kwargs);
@@ -5115,17 +5129,26 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
         else
             group.add_connector(connector);
 
-        // Load connector panel
+        // Load / Update connector panel
         var el = connector.panel;
         if (el) {
+            if (el.update_settings) {
+                el.update_settings({connector: connector});
+            } else {
 	        var data = spt.pipeline.get_data();
 	        var pipeline_type = data.type;
 	        var connector_panel_data = data.connector_panel_data;
 	        if (connector_panel_data[pipeline_type]) {
-		        var class_name = connector_panel_data[pipeline_type];
-                var kwargs = {'from_node': from, 'to_node': to, 'pipeline_code': group_name, 'overlap': connector.get_attr("overlap")};
-		        spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
+                    var class_name = connector_panel_data[pipeline_type];
+                    var kwargs = {
+                        'from_node': from, 
+                        'to_node': to, 
+                        'pipeline_code': group_name, 
+                        'overlap': connector.get_attr("overlap")
+                    };
+                    spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
 	        }
+            }
         }
 
     }
@@ -5466,6 +5489,7 @@ spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
     var pipeline_code = spt.pipeline.get_current_group();
     var group = spt.pipeline.get_group(pipeline_code);
     var connectors = group.get_connectors();
+    
     var connector = null;
 
     for (var i = 0; i < connectors.length; i++) {
