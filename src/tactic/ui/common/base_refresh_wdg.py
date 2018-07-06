@@ -22,6 +22,7 @@ class BaseRefreshWdg(Widget):
         # get the them from cgi
         self.handle_args(kwargs)
         self.top = DivWdg()
+        self.widget_styles = {}
 
         super(BaseRefreshWdg,self).__init__()
 
@@ -263,6 +264,42 @@ class BaseRefreshWdg(Widget):
                     state = {}
         return state
     process_state = staticmethod(process_state)
+
+
+
+
+    """
+    def add_widget_style(self, widget, name, value=None):
+        self.widget_styles.append( [
+            widget, name, value
+        ] )
+
+
+    def get_style(self):
+        print "classes: ", self, self.top.classes
+        
+        from pyasm.web import HtmlElement
+        style = HtmlElement.style()
+
+
+        for widget_style in self_widget_styles:
+            top_class = "spt_top_class"
+            el = widget_style[0]
+
+            el_class = el.classes[0]
+            name = widget_style[1]
+            value = widget_style[2]
+
+            x = '''
+            .%s .%s {
+                %s: %s;
+            }
+            ''' % (name, value)
+        return x
+    """
+
+
+
 
 
 

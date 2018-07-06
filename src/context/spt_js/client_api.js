@@ -1775,8 +1775,11 @@ TacticServerStub = function() {
             callback = on_complete;
         }
         var err_callback = function(e) {
-            if (e == 0)
+            if (e == 0) {
                 e = 'Received an error (Error 0)';
+                var error = new Error();
+                console.log(error.stack);
+            }
             else if (e == 502)
                 e = 'Timeout Error (Error 502)';
             else if (e == 503)

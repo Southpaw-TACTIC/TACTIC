@@ -874,7 +874,7 @@ class HtmlElement(Widget):
     def get_timezone_value(cls, value, format="%b %d, %Y - %H:%M"):
         '''given a datetime value, use the My Preferences time zone'''
         timezone = PrefSetting.get_value_by_key('timezone')
-        
+
         if timezone in ["local", '']:
             value = SPTDate.convert_to_local(value)
         else:
