@@ -139,7 +139,6 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("border-radius: %spx" % border_radius)
 
         top.add_style("border: solid %spx %s" % (border_width, border_color))
-
         top.add_style("box-shadow: %s" % box_shadow)
 
 
@@ -2463,8 +2462,12 @@ spt.pipeline.select_node = function(node) {
         var outer = node.getElement(".spt_content");
     }
 
-
-    outer.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
+    var box_shadow = outer.getAttribute("spt_box_shadow");
+    if (box_shadow) {
+        outer.setStyle("box-shadow", box_shadow);
+    } else {
+        outer.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
+    }
     outer.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
     outer.setStyle("opacity", "0.8");
 
