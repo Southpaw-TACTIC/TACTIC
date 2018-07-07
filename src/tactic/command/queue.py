@@ -217,7 +217,12 @@ class JobTask(SchedulerTask):
             DbContainer.close_thread_sql()
 
             if self.max_jobs_completed != -1 and self.jobs_completed > self.max_jobs_completed:
-                Common.restart()
+
+                if os.environ.get('TACTIC_QUEUE_MODE') == "monitor":
+                    Common.kill()
+                else:
+                    Common.restart()
+
                 while 1:
                     print("Waiting to restart...")
                     time.sleep(1)
