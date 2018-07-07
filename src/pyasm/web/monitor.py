@@ -318,6 +318,8 @@ class JobQueueThread(BaseProcessThread):
             "%s/src/bin/startup_queue.py" % tactic_install_dir,
             "-i",
             str(self.idx),
+            "-m",
+            "monitor"
         ]
         self.process = subprocess.Popen(executable)
         self.pid = self.process.pid

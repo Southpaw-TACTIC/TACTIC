@@ -34,6 +34,9 @@ def main(options, site=None):
     log_dir = "%s/log" % Environment.get_tmp_dir()
     pid_path = "%s/startup_queue.%s" % (log_dir, idx)
 
+    if options.get("mode"):
+        os.environ['TACTIC_QUEUE_MODE'] = options.get("mode")
+
 
     JobTask.start(
             check_interval=0.1,
@@ -92,6 +95,7 @@ if __name__ == '__main__':
     parser.add_option("-q", "--queue", dest="queue", help="List of queues for this process", default=None)
     parser.add_option("-i", "--index", dest="index", help="index of this job queue", default=0)
     parser.add_option("-s", "--site", dest="site", help="Site to grab queue from")
+    parser.add_option("-m", "--mode", dest="mode", help="Mode to run (standalone or monitor)")
     
  
     (options, args) = parser.parse_args()
