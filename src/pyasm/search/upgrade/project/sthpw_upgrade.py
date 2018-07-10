@@ -22,7 +22,7 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.6.0.a03
     #
 
-    def upgrade_v4_6_0_a02_003(self):
+    def upgrade_v4_6_0_a03_001(self):
         self.run_sql('''
         ALTER TABLE "note" ADD COLUMN parent_code varchar(256);
         ''')
