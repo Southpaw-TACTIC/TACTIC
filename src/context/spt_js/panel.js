@@ -237,6 +237,8 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
         bvr2.options.on_close = kwargs.on_close;
     if (kwargs.allow_close != null) 
         bvr2.options.allow_close = kwargs.allow_close;
+    if (kwargs.top_class) 
+        bvr2.options.top_class = kwargs.top_class;
 
     return spt.popup.get_widget({}, bvr2);
 

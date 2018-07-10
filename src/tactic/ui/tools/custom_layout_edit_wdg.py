@@ -411,12 +411,21 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
+        # Get the config
+
+        cur_config = None
+ 
         view = self.kwargs.get("view")
         if view:
             view = view.replace("/", ".")
+        
+        search_key = self.kwargs.get("search_key")
+
         if view == '__new__':
             cur_config = None
-        if view:
+        elif search_key:
+            cur_config = Search.get_by_search_key(search_key) 
+        elif view:
             search = Search("config/widget_config")
             search.add_op('begin')
             search.add_filter("category", "CustomLayoutWdg")
@@ -483,9 +492,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var content = top.getElement(".spt_custom_layout_content");
+            var search_key = bvr.src_el.getAttribute("spt_search_key")
             var view = bvr.src_el.getAttribute("spt_view");
 
-            top.setAttribute("spt_view", view)
+            top.setAttribute("spt_view", view);
+            top.setAttribute("spt_search_key", search_key);
             spt.app_busy.show("Loading view ["+view+"]");
             spt.panel.refresh(top);
             spt.app_busy.hide();
@@ -727,6 +738,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             config_div.add(display_view)
             config_div.add_attr("spt_view", config_view)
             config_div.add_attr("spt_search_key", config.get_search_key())
+            
+            priority = config.get_value("priority")
+            if isinstance(priority, int) and int(priority) > 0:
+                config_div.add("<div style='display: inline-block; font-style: italic; padding-left: 3px;'>(%s)</div>" % priority)
+
 
             config_div.add_class("hand")
 
@@ -2674,7 +2690,6 @@ class CustomLayoutEditSaveCmd(Command):
 
 
         layout.append("<html>")
-
 
         if html:
             layout.append(html)
