@@ -144,10 +144,43 @@ class PopupWdg(BaseRefreshWdg):
         else:
             self.content_wdg.add(widget, name)
         
+    def get_styles(self):
+       
+        # Style of title_div
+        div = DivWdg()
+        palette = div.get_palette()
+        background = palette.color("background", -5)
+
+        text_color = palette.color("color")
+        
+        style = HtmlElement.style()
+        style.add('''
+        
+            .spt_popup_title {
+                font-weight: bold;
+                font-size: 12px;
+                padding: 6px;
+                color: %s;    
+                background: %s;
+            }
+        
+        ''' % (text_color, background))
+       
+            
+        style.add('''
+            .spt_popup_close {
+                margin: 8px 1px 3px 2px;
+            }
+
+        ''')
+
+        return style 
+
 
     def get_display(self):
 
         div = DivWdg()
+
 
         if not Container.get_dict("JSLibraries", "spt_popup"):
             div.add_style("position: fixed")
@@ -173,7 +206,9 @@ class PopupWdg(BaseRefreshWdg):
 
         widget = DivWdg()
         div.add(widget)
+        
         widget.add_class("spt_popup")
+        
 
 
 
@@ -252,7 +287,6 @@ class PopupWdg(BaseRefreshWdg):
             close_wdg = DivWdg(css='spt_popup_close')
             close_wdg.add_style("display: inline-block")
             close_wdg.add( IconWdg("Close", "FA_REMOVE", size=14) )
-            close_wdg.add_style("margin: 8px 1px 3px 2px")
             close_wdg.add_style("float: right")
             close_wdg.add_class("hand")
 
@@ -312,13 +346,6 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_class("spt_popup_width")
 
         drag_handle_div = DivWdg(id='%s_title' %self.name)
-        drag_handle_div.add_style("padding: 6px;")
-        #drag_handle_div.add_gradient("background", "background", +10)
-        drag_handle_div.add_color("background", "background", -5)
-        drag_handle_div.add_color("color", "color")
-        drag_handle_div.add_style("font-weight", "bold")
-        drag_handle_div.add_style("font-size", "12px")
-
 
         # add the drag capability.
         # NOTE: need to use getParent because spt.popup has not yet been
@@ -388,10 +415,6 @@ class PopupWdg(BaseRefreshWdg):
         # add the content
         content_div = DivWdg()
         content_div.add_color("color", "color2")
-        #content_div.add_color("background", "background2")
-        from pyasm.web.palette import Palette
-        palette = Palette.get()
-        content_div.add_color("color", "color2")
         content_div.add_color("background", "background2")
 
         content_div.add_style("margin", "0px, -1px -0px -1px")
@@ -440,7 +463,10 @@ class PopupWdg(BaseRefreshWdg):
 
         content_td.add(icon)
 
-        #return widget
+      
+        style = self.get_styles()
+        div.add(style)
+        
         return div
 
 
@@ -903,6 +929,7 @@ spt.popup.get_widget = function( evt, bvr )
     var resize = options["resize"];
     var on_close = options["on_close"];
     var allow_close = options["allow_close"];
+    var top_class = options["top_class"];
 
     // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
     var popup = null;
@@ -947,6 +974,8 @@ spt.popup.get_widget = function( evt, bvr )
         }
         spt.puw.process_new( popup.parentNode );
     }
+
+    if (top_class) popup.addClass(top_class);
 
     var close_wdg = popup.getElement('.spt_popup_close');
     var min_wdg = popup.getElement('.spt_popup_min');
