@@ -256,15 +256,18 @@ class ScriptTrigger(Handler):
 
         input = self.get_input_data()
         sobject = input.get("sobject")
-        search_key = sobject.get("__search_key__")
+        
+        # check if sobject is present before update
+        if sobject:
+            search_key = sobject.get("__search_key__")
 
-        process = input.get("process")
-        if not process:
-            return
+            process = input.get("process")
+            if not process:
+                return
 
-        server = TacticServerStub.get()
-        print "set_pipeline_event: ", search_key, process, status
-        server.call_pipeline_event(search_key, process, status, data )
+            server = TacticServerStub.get()
+            print "set_pipeline_event: ", search_key, process, status
+            server.call_pipeline_event(search_key, process, status, data )
 
 
 #
