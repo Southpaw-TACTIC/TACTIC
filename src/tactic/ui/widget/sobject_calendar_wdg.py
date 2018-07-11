@@ -804,6 +804,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
     def get_header_wdg(self):
         outer = DivWdg()
+        outer.add_class("spt_calendar_header")
 
         div = DivWdg()
         outer.add(div)
@@ -825,6 +826,7 @@ class SObjectCalendarWdg(CalendarWdg):
         month_wdg = DivWdg()
         month_wdg.add_style("width: 150px")
         month_wdg.add(date_str)
+        month_wdg.add_class("spt_calendar_current_month")
 
 
         prev_month_wdg = self.get_prev_month_wdg()
@@ -838,6 +840,7 @@ class SObjectCalendarWdg(CalendarWdg):
         div.add(table)
 
         return outer
+
 
 
 
