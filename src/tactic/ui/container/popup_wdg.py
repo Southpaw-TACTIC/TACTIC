@@ -250,7 +250,8 @@ class PopupWdg(BaseRefreshWdg):
 
         widget.add_color("background", "background")
 
-        #widget.set_box_shadow()
+        #widget.set_box_shadow(color="#000")
+        widget.set_box_shadow()
 
 
         table = Table()
