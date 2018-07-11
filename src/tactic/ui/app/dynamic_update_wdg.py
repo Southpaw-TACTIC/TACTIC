@@ -435,7 +435,6 @@ class DynamicUpdateCmd(Command):
                     handler = Common.create_from_class_path(handler, args=[], kwargs={'update':values})
                     # it could be a list
                     search_key = handler.get_search_key()
-                    print "Search key return from handler >>> ", search_key
                 else:
                     search_key = values.get("search_key")
 
@@ -520,7 +519,6 @@ class DynamicUpdateCmd(Command):
                     else:
                         sobject = None
                     cmp_result = Search.eval(compare, sobject, single=True)
-
                     if cmp_result == True:
                         continue
 
