@@ -783,7 +783,6 @@ class UpdateTest(unittest.TestCase):
 
 class DynamicUpdateHandler(object):
 
-
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
@@ -792,10 +791,6 @@ class DynamicUpdateHandler(object):
 
     def get_value(self):
         pass
-
-
-
-
 
 if __name__ == '__main__':
     unittest.main()
