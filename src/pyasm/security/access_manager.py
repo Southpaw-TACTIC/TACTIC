@@ -584,18 +584,22 @@ class AccessManager(Base):
 
                 column = rule.get('column')
                 value = rule.get('value')
-               
+                op = rule.get('op')
+
 
                 # If a relationship is set, then use that
                 related = rule.get('related')
 
                 sudo = Sudo()
                 if related:
-
                     sobjects = parser.eval(related)
-                    search.add_relationship_filters(sobjects)
+                    if isinstance(sobjects, Search):
+                        search.add_relationship_filters(sobjects, op=op)
+                    else:
+                        search.add_relationship_search_filters(sobjects, op=op)
+
                     del sudo
-                    return
+                    continue
 
 
                 # interpret the value
@@ -608,7 +612,6 @@ class AccessManager(Base):
                 else:
                     values = [value]
 
-                op = rule.get('op')
                 
 
                 # TODO: made this work with search.add_op_filters() with the expression parser instead of this
