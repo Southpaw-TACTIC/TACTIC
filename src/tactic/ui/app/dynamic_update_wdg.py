@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd']
+__all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd','DynamicUpdateHandler']
 
 import tacticenv
 from pyasm.common import jsonloads, Common
@@ -780,6 +780,17 @@ class UpdateTest(unittest.TestCase):
             # should be roughly the same minute, not hours apart
             print "Change timestamp diff is ", diff.seconds 
 
+
+class DynamicUpdateHandler(object):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def get_search_key(self):
+        pass
+
+    def get_value(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
