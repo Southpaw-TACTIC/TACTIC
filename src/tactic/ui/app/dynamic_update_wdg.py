@@ -432,7 +432,7 @@ class DynamicUpdateCmd(Command):
             for values in values_list:
                 handler = values.get("handler")
                 if handler:
-                    handler = Common.create_from_class_path(handler)
+                    handler = Common.create_from_class_path(handler, args=[], kwargs={'update':values})
                     # it could be a list
                     search_key = handler.get_search_key()
                 else:
@@ -481,7 +481,7 @@ class DynamicUpdateCmd(Command):
 
                 handler = values.get("handler")
                 if handler:
-                    handler = Common.create_from_class_path(handler)
+                    handler = Common.create_from_class_path(handler, kwargs={'update': values})
                     # handler can return a list of search_keys
                     search_key = handler.get_search_key()
                 else:

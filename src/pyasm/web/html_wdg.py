@@ -894,7 +894,7 @@ class HtmlElement(Widget):
     def eval_update(cls, update):
         handler = update.get("handler")
         if handler:
-            handler = Common.create_from_class_path(handler)
+            handler = Common.create_from_class_path(handler, kwargs={'update': update})
 
             value = handler.get_value()
             if value != None:
