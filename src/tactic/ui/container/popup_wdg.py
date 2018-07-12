@@ -173,6 +173,18 @@ class PopupWdg(BaseRefreshWdg):
             }
 
         ''')
+        
+       
+        border_color = palette.color("border")
+
+        style.add('''
+            .spt_popup {
+                border-style: solid;
+                border-width: 1px;
+                border-color: %s;
+            }
+
+        ''' % border_color)
 
         return style 
 
@@ -236,7 +248,6 @@ class PopupWdg(BaseRefreshWdg):
         widget.add_style("left: 400px")
         widget.add_style("top: 100px")
 
-        widget.add_border()
         widget.add_color("background", "background")
 
         #widget.set_box_shadow(color="#000")

@@ -51,6 +51,15 @@ class PipelineToolWdg(BaseRefreshWdg):
         inner = DivWdg()
         top.add(inner)
 
+        top.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            if (window.onresize) {
+                window.onresize();
+            }
+            '''
+        } )
+
         show_pipelines = self.kwargs.get("show_pipeline_list")
 
         #table = Table()
