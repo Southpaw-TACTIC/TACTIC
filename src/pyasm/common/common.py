@@ -355,16 +355,11 @@ class Common(Base):
 
 
     def generate_random_key(digits=None):
-        # generate a random key
-        random.seed()
-        random_key = ""
-        for i in range(0,19):
-            random_key += chr(random.randint(0,255))
-        #random_key = md5.new(random_key).hexdigest()
-        random_key = hashlib.md5(random_key).hexdigest()
-        if digits:
-            random_key = random_key[:digits]
-        return random_key
+        if not digits:
+            digits = 19
+        num_digits = digits
+        key = os.urandom(num_digits / 2).encode('hex')
+        return key
     generate_random_key = staticmethod(generate_random_key)
 
 
