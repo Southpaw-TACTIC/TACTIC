@@ -46,19 +46,42 @@ class PluginWdg(BaseRefreshWdg):
 
         # add the main layout
         #table = ResizableTableWdg()
-        table = Table()
-        table.add_color("color", "color")
+        #table = Table()
+
+        table = DivWdg()
         inner.add(table)
+        table.add_style("display: flex")
+        table.add_style("align-items: stretch")
+        table.add_style("align-content: stretch")
+        table.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            var parent = bvr.src_el.getParent(".spt_tab_content_top");
+            if (parent) {
+                var size = parent.getSize();
+                bvr.src_el.setStyle("height", size.y);
+            }
+            '''
+
+        } )
+
+        table.add_color("color", "color")
         table.add_style("margin: 0px -1px")
 
-        table.add_row()
-        left = table.add_cell()
+        #table.add_row()
+        #left = table.add_cell()
+        left = DivWdg()
+        table.add(left)
+        left.add_style("display: inline-block")
+        left.add_style("height: 100%")
+        left.add_style("overflow: auto")
+
         left.add_style("vertical-align: top")
         left.add_style("min-width: 275px")
-        left.add_style("height: 400px")
         left.add_style("padding: 0px")
         left.add_color("background", "background3")
         left.add_border()
+
 
         plugin_dir = Environment.get_plugin_dir()
         plugin_wdg = self.get_plugins_wdg("Plugin", plugin_dir)
@@ -75,11 +98,15 @@ class PluginWdg(BaseRefreshWdg):
         #template_dir = Environment.get_template_dir()
         #left.add(self.get_plugins_wdg("Template", template_dir) )
 
-        right = table.add_cell()
+        #right = table.add_cell()
+        right = DivWdg()
+        table.add(right)
+        right.add_style("display: inline-block")
+        right.add_style("height: auto")
+
         right.add_style("vertical-align: top")
         right.add_style("min-width: 400px")
         right.add_style("width: 100%")
-        right.add_style("height: 400px")
         right.add_style("padding: 5px")
         right.add_border()
 
