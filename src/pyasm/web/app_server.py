@@ -341,7 +341,7 @@ class BaseAppServer(Base):
             print("AppServer Exception: ", e)
             return self.handle_not_logged_in()
 
- 
+
         guest_mode = Config.get_value("security", "guest_mode")
         if not guest_mode:
             guest_mode = 'restricted'

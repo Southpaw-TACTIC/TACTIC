@@ -3731,7 +3731,7 @@ class SObject(object):
 
     def store_version(self):
         # versioning
-        versioning = True
+        versioning = False
         if versioning and self.get_base_search_type() in ["spme/wop","spme/shot"]:
             # find the last version
             last_search = Search("spme/version")
@@ -3768,8 +3768,11 @@ class SObject(object):
 
 
 
+    def get_statement(self):
+        return self.commit(return_sql=True)
 
-    def commit(self, triggers=True, log_transaction=True, cache=True):
+
+    def commit(self, triggers=True, log_transaction=True, cache=True, return_sql=False):
         '''commit all of the changes to the database'''
 
         is_insert = False 
@@ -3783,6 +3786,8 @@ class SObject(object):
 
         if not self.handle_commit_security():
             raise SecurityException("Security: Action not permitted")
+
+
 
 
         impl = self.get_database_impl()
@@ -3949,6 +3954,9 @@ class SObject(object):
             statement = update.get_statement()
             if not statement:
                 return
+
+            if return_sql:
+                return statement
 
             # SQL Server: before a redo, set IDENTITY_INSERT to ON
             # to allow an explicit ID value to be inserted into the ID column of the table.
