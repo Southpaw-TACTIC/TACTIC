@@ -106,7 +106,7 @@ class ClientWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = DivWdg()
-        top.add_border()
+        #top.add_border()
         top.add_style("padding: 10px")
         top.add_color("color", "color")
         top.add_gradient("background", "background", 0, -5)

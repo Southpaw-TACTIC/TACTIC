@@ -44,7 +44,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
         if width:
             td.add_style("width: %s" % width)
 
-        td.add_border()
+        #td.add_border()
 
         div = DivWdg()
         div.add_style("padding: 5px")
@@ -55,16 +55,18 @@ class ProjectConfigWdg(BaseRefreshWdg):
         div.add(title_wdg)
         title_wdg.add_style("padding: 5px")
         #title_wdg.add_style("margin: -12px -12px 10px -12px")
-        title_wdg.add_style("margin: -6px -7px 5px -7px")
-        title_wdg.add_style("font-weight: bold")
-        title_wdg.add_style("font-size: 14px")
-        title_wdg.add_style("height: 25px")
+        title_wdg.add_style("margin: -6px -6px 5px -6px")
+        #title_wdg.add_style("font-weight: bold")
+        title_wdg.add_style("font-size: 25px")
+        #title_wdg.add_style("height: 25px")
 
         if title:
-            title_wdg.add_color("background", "background", -5)
+            #title_wdg.add_color("background", "background", -5)
             title_wdg.add_color("color", "color", -10)
-            title_wdg.add_border()
+            #title_wdg.add_border()
             title_wdg.add(title)
+            title_wdg.add_style("padding-top: 10px")
+            title_wdg.add_style("padding-left: 10px")
 
             from tactic.ui.app import HelpButtonWdg
             help_wdg = HelpButtonWdg(alias=self.get_help_alias())
@@ -72,6 +74,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
             help_wdg.add_style("margin-top: -5px")
             title_wdg.add(help_wdg)
 
+            title_wdg.add("<hr/>")
         else:
             title_wdg.add_style("height: 10px")
 

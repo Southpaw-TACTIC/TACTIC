@@ -220,7 +220,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     def get_title_wdg(self, title, content_id=None, is_on=True):
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: -1")
+        title_wdg.add_style("margin: 0 -1 -1 0")
         title_wdg.add_style("height: 25px")
 
         title_wdg.add_color("background", "background", -10)
@@ -550,8 +550,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_color("color", "color")
         title_wdg.add_style("padding: 15px 10px 10px 10px")
         title_wdg.add_style("height: 16px")
-        #title_wdg.add_style("margin: -2px -1px 10px -2px")
-        title_wdg.add_border()
+        title_wdg.add_style("height: 16px")
+        #title_wdg.add_border()
         left_div.add_style("width: 100%")
 
 
@@ -601,6 +601,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         content_div = DivWdg()
         left_div.add_widget(content_div, "content")
         content_div.add_color("color", "color3")
+
+        content_div.add_style("padding-top: 5px")
 
 
         plugin_code = self.kwargs.get("plugin_code")
@@ -1343,7 +1345,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         shelf_wdg.add_color("background", "background", -10)
         shelf_wdg.add_style("padding: 3px")
         #shelf_wdg.add_style("margin: -2px -2px 8px -2px")
-        shelf_wdg.add_border(size="1px 1px 1px 0px")
+        #shelf_wdg.add_border(size="1px 1px 1px 0px")
 
 
         # refresh button

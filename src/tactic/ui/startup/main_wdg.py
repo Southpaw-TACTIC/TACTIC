@@ -71,7 +71,7 @@ class SectionWdg(BaseRefreshWdg):
         'type': 'click',
         'shadow': shadow,
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 5px " + bvr.shadow);
+        bvr.src_el.setStyle("box-shadow", "0px 0px 10px " + bvr.shadow);
         '''
         } )
 
@@ -79,7 +79,7 @@ class SectionWdg(BaseRefreshWdg):
         'type': 'mouseenter',
         'shadow': shadow,
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 5px " + bvr.shadow);
+        //bvr.src_el.setStyle("box-shadow", "0px 0px 10px " + bvr.shadow);
         ''',
         } )
 
@@ -197,7 +197,7 @@ class MainWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = DivWdg()
-        top.add_border()
+        #top.add_border()
         top.add_style("padding: 10px")
         top.add_color("color", "color")
         top.add_gradient("background", "background", 0, -5)
@@ -211,6 +211,14 @@ class MainWdg(BaseRefreshWdg):
         } )
 
 
+        title = DivWdg()
+        title.add_style("font-size: 25px")
+        title.add("Project Startup and Configuration")
+        top.add(title)
+        top.add("<hr/>")
+
+
+
         project = Project.get()
         title = DivWdg()
         title.add("Project Startup and Configuration")
@@ -220,7 +228,7 @@ class MainWdg(BaseRefreshWdg):
         title.add_style("padding: 10px")
         title.add_style("margin: -10px -10px 10px -10px")
 
-        top.add(title)
+        #top.add(title)
         title.add_gradient("background", "background3", 5, -10)
 
 
@@ -259,7 +267,7 @@ class MainWdg(BaseRefreshWdg):
 
 
         search_wdg = Table()
-        top.add(search_wdg)
+        #top.add(search_wdg)
         search_wdg.add_row()
 
         search_wdg.add_class("spt_main_top")
@@ -313,7 +321,6 @@ class MainWdg(BaseRefreshWdg):
         icon_div.add_style("padding-top: 7px")
         icon_div.add_style("padding-left: 4px")
         icon_div.add_style("text-align: center")
-        #icon_div.add_gradient("background", "background3", 15, -10)
         icon_div.add_color("background", "background3", 10)
         over_color = icon_div.get_color("background3", 0)
         out_color = icon_div.get_color("background3", 10)

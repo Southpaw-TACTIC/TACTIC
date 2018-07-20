@@ -2965,7 +2965,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
         }
     }
     var cmd = new NewNodeCmd();
-    if (Command) {
+    if (typeof(Command) != "undefined") {
         Command.add_to_undo(cmd);
     }
 
@@ -3513,7 +3513,7 @@ spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
         }
     }
     var cmd = new NodeDragCmd(node, spt.pipeline.orig_node_pos);
-    if (Command) {
+    if (typeof(Command) != "undefined") {
         Command.add_to_undo(cmd);
     }
 
@@ -5012,7 +5012,7 @@ spt.pipeline.set_node_value = function(node, name, value, kwargs) {
             }
         }
         var cmd = new NodeSettingsUndoCmd(node, name, orig_value, value, kwargs);
-        if (Command) {
+        if (typeof(Command) != "undefined") {
             Command.add_to_undo(cmd);
         }
     }
