@@ -68,7 +68,7 @@ class Palette(object):
     'tab_background': '#3C76C2',
     'table_border': '#E0E0E0',
     'theme':        'default',
-    'shadow':       'rgba(0,0,0,0.4)',
+    'shadow':       'rgba(0,0,0,0.1)',
     }
 
 

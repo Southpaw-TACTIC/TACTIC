@@ -275,9 +275,11 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
         # create the main table
         core_table = Table()
-        core_table.add_tbody()
-        core_table.set_style("border: 0px; border-collapse: collapse; width: 100%;")
-
+        #core_table.add_tbody()
+        core_table.add_row()
+        core_table.add_style("border: 0px")
+        core_table.add_style("border-collapse: collapse")
+        core_table.add_style("width: 100%")
 
         # add a spacer row
         #spacer_tr = core_table.add_row()
@@ -427,19 +429,6 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
         main_body_inner.add_style("min-height: 500px")
 
-
-        # DEBREACATED
-        """
-        # add a breadcrumb
-        breadcrumb_wdg = DivWdg()
-        # hide the breadcrumb
-        breadcrumb_wdg.add_style("display", "none")
-        Container.put("breadcrumb", breadcrumb_wdg)
-        breadcrumb_wdg.set_id("breadcrumb")
-        breadcrumb_wdg.add_style("text-align: left")
-        breadcrumb_wdg.add_looks( "fnt_title_3" )
-        main_body_inner.add(breadcrumb_wdg)
-        """
 
         main_body_panel = DivWdg()
         main_body_panel.set_id("main_body")

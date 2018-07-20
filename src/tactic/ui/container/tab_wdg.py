@@ -138,10 +138,8 @@ spt.tab.resize_headers = function() {
     var size = top.getSize();
     top.spt_last_width = size.x;
 
-    var els = bvr.src_el.getElements(".spt_tab_header");
+    var els = header_top.getElements(".spt_tab_header");
     var count = els.length;
-    console.log("resize: " + count);
-
 
     var width = parseInt((size.x-offset) / (count));
     if (width > 120) {
@@ -1394,6 +1392,7 @@ spt.tab.close = function(src_el) {
 
 
         header_div.add_style("width: 100%")
+        header_div.add_style("overflow: hidden")
 
         min_width = self.kwargs.get("min_width")
         if min_width:
@@ -1434,7 +1433,6 @@ spt.tab.close = function(src_el) {
                     var els = bvr.src_el.getElements(".spt_tab_header");
                     var count = els.length;
 
-
                     var width = parseInt((size.x-offset) / (count));
                     if (width > 120) {
                         width = 120;
@@ -1444,12 +1442,10 @@ spt.tab.close = function(src_el) {
                         width = 30;
                     }
 
-
                     for (var i = 0; i < els.length; i++) {
                         els[i].setStyle("width", width);
-                        //var title_el = els[i].getElement(".spt_tab_header_label");
-                        //title_el.setStyle("width", width);
                     }
+
 
                 }, 250);
                 '''
@@ -2362,6 +2358,7 @@ spt.tab.close = function(src_el) {
         header.add_class("hand")
 
         header.add_style("overflow: hidden")
+        header.add_style("box-sizing: border-box")
 
         if self.use_default_style:
             header.set_round_corners(5, corners=['TL','TR'])

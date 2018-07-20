@@ -917,7 +917,7 @@ class AceEditorWdg(BaseRefreshWdg):
                 width = "650px"
             height = self.kwargs.get("height")
             if not height:
-                height = "450px"
+                height = "500px"
         self.text_area.add_style("width: %s" % width)
         self.text_area.add_style("height: %s" % height)
 

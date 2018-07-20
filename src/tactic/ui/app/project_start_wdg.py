@@ -40,8 +40,6 @@ class ProjectStartWdg(BaseRefreshWdg):
 	section_wdg.add_style("height: 310px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        #section_wdg.set_round_corners()
-        #section_wdg.set_box_shadow("1px 1px 2px 2px")
 
 
         title_wdg = DivWdg()
@@ -51,7 +49,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 3px")
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "#F2F2F2")
 
         section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
@@ -103,7 +101,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 3px")
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "#F2F2F2")
 
         section_wdg.add_color("background", "background")
         #section_wdg.add_gradient("background", "background", 0, -3)
@@ -146,9 +144,9 @@ class ProjectStartWdg(BaseRefreshWdg):
 
         title = DivWdg()
         title.add("Advanced Project Setup Tools")
-        title.add_style("font-size: 18px")
-        title.add_style("font-weight: bold")
-        title.add_style("text-align: center")
+        title.add_style("font-size: 25px")
+        #title.add_style("font-weight: bold")
+        #title.add_style("text-align: center")
         title.add_style("padding: 10px")
         title.add_style("margin: -10px -10px 10px -10px")
 
@@ -157,7 +155,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         subtitle = TitleWdg(name_of_title='',help_alias='project-startup-configuration')
         top.add(subtitle)
 
-        title.add_gradient("background", "background3", 5, -10)
+        #title.add_gradient("background", "background3", 5, -10)
         top.add("<br/>")
 
 
@@ -177,7 +175,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         """
 
         button_div = DivWdg()
-        button = SingleButtonWdg(title="Project Startup", icon=IconWdg.HOME)
+        button = SingleButtonWdg(title="Project Startup", icon="FA_HOME")
         button_div.add(button)
         button_div.add_style("float: left")
 	button_div.add_style("margin-top: -10px")
@@ -475,7 +473,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         title.add("Quick Links")
         title.add_style("font-size: 16px")
         title.add_style("padding: 5px")
-        title.add_gradient("background", "background")
+        title.add_color("background", "#F2F2F2")
         title.add_border()
         title.set_round_corners(corners=['TL','TR'])
 

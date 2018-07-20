@@ -220,7 +220,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     def get_title_wdg(self, title, content_id=None, is_on=True):
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: -1")
+        title_wdg.add_style("margin: 0 -1 -1 0")
         title_wdg.add_style("height: 25px")
 
         title_wdg.add_color("background", "background", -10)
@@ -373,10 +373,20 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         } )
 
 
-        table = Table()
-        table.set_max_width()
+        #table = Table()
+        #table.set_max_width()
+        #table.add_row()
+
+
+        table = DivWdg()
+        table.add_style("display: flex")
+        table.add_style("align-items: stretch")
+        table.add_style("align-content: stretch")
+        table.add_style("width: 100%")
+
+
         inner.add(table)
-        table.add_row()
+
 
         search = Search("config/widget_config")
         search.add_op('begin')
@@ -440,20 +450,24 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-        table.add_row()
-
         table.add_border()
+        #table.add_style("height: 500px")
 
 
-        left = table.add_cell()
-        right = table.add_cell()
+        #table.add_row()
+        #left = table.add_cell()
+        #right = table.add_cell()
+        left = DivWdg()
+        table.add(left)
+        right = DivWdg()
+        table.add(right)
 
 
         left.add_color("background", "background3")
         left.add_color("color", "color3")
         #left.add_style("max-width: 250px")
         # use width instead so the left div doesn't jiggle when clicked on
-        left.add_style("width: 250px")
+        left.add_style("width: 300px")
         left.add_style("min-width: 200px")
 
 
@@ -478,8 +492,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         left.add_style("vertical-align: top")
         left_div.add_style("width: 250px")
         left_div.add_style("height", "100%")
+        left_div.add_style("overflow: auto")
 
-        left_div.add_style("padding-bottom: 15px")
         left_div.set_unique_id()
         left_div.add_smart_styles( "spt_custom_layout_item", {
             'padding': '3px 6px 3px 10px'
@@ -536,8 +550,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_color("color", "color")
         title_wdg.add_style("padding: 15px 10px 10px 10px")
         title_wdg.add_style("height: 16px")
-        #title_wdg.add_style("margin: -2px -1px 10px -2px")
-        title_wdg.add_border()
+        title_wdg.add_style("height: 16px")
+        #title_wdg.add_border()
         left_div.add_style("width: 100%")
 
 
@@ -587,6 +601,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         content_div = DivWdg()
         left_div.add_widget(content_div, "content")
         content_div.add_color("color", "color3")
+
+        content_div.add_style("padding-top: 5px")
 
 
         plugin_code = self.kwargs.get("plugin_code")
@@ -752,12 +768,18 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         right.add_style("vertical-align: top")
         right.add_color("background", "background", -3)
+        right.add_style("width: 100%")
+        right.add_style("height: 100%")
+
+
         right_div = DivWdg()
         right.add(right_div)
         right_div.add_color("color", "color")
         right_div.add_style("min-width: 800px")
         right_div.add_style("min-height: 500px")
         right_div.add_class("spt_custom_layout_content")
+
+        right_div.add_style("width: 100%")
 
       
 
@@ -1036,7 +1058,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             # start tab here
             from tactic.ui.container import TabWdg
             tab = TabWdg(selected=selected, show_add=False, show_remove=False, tab_offset="10px", show_context_menu=False, allow_drag=False)
-            tab.add_style("margin: 0px -2px 0px -2px")
+            #tab.add_style("margin: 5px -2px 0px -2px")
+            tab.add_style("margin: 10px -1px 0px -1px")
+            tab.add_style("overflow: hidden")
             right_div.add(tab)
 
             right_div.add_behavior( {
@@ -1321,7 +1345,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         shelf_wdg.add_color("background", "background", -10)
         shelf_wdg.add_style("padding: 3px")
         #shelf_wdg.add_style("margin: -2px -2px 8px -2px")
-        shelf_wdg.add_border(size="1px 1px 1px 0px")
+        #shelf_wdg.add_border(size="1px 1px 1px 0px")
 
 
         # refresh button

@@ -574,6 +574,8 @@ class TopWdg(Widget):
         html.add( body )
         body.add_event('onload', 'spt.onload_startup(this)')
 
+        body.add_style('overflow', 'hidden')
+
 
         top = self.top
 
@@ -1319,7 +1321,6 @@ class SitePage(AppServer):
         #if self.hash and self.hash[0] == 'ASSETS':
         #    self.top = XSendFileTopWdg(hash=self.hash)
         #    return self.top
-
 
         # REST API
         if self.hash and self.hash[0] == 'REST':

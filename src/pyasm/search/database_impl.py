@@ -3269,7 +3269,8 @@ class MySQLImpl(PostgresImpl):
 
             # rather big assumption that tinyint == boolean
             elif data_type.startswith("tinyint"):
-                size = data_type.replace("tinyint", "")
+                parts = data_type.split(" ")
+                size = parts[0].replace("tinyint", "")
                 size = size.replace("(", "")
                 size = size.replace(")", "")
                 if size:

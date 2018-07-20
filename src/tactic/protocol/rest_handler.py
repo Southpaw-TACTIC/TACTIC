@@ -139,7 +139,10 @@ class APIRestHandler(BaseRestHandler):
         keys = web.get_form_keys()
 
         kwargs = {}
+
+
         for key in keys:
+
             if key in ["method", "login_ticket", "password"]:
                 continue
 
@@ -151,7 +154,9 @@ class APIRestHandler(BaseRestHandler):
             else:
                 kwargs[key] = web.get_form_value(key)
 
+        print "kwargs: ", kwargs
         call = "server.%s(**kwargs)" % method
+        print "call: ", call
 
 
         return eval(call)
