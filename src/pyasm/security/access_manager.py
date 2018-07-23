@@ -594,9 +594,9 @@ class AccessManager(Base):
                 if related:
                     sobjects = parser.eval(related)
                     if isinstance(sobjects, Search):
-                        search.add_relationship_filters(sobjects, op=op)
-                    else:
                         search.add_relationship_search_filters(sobjects, op=op)
+                    else:
+                        search.add_relationship_filters(sobjects, op=op)
 
                     del sudo
                     continue
