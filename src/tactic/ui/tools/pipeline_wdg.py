@@ -552,11 +552,11 @@ class PipelineListWdg(BaseRefreshWdg):
             'PIPELINE_CTX': menus,
         }
         from tactic.ui.container.smart_menu_wdg import SmartMenu
+
         SmartMenu.attach_smart_context_menu( pipelines_div, menus_in, False )
 
 
         project_code = Project.get_project_code()
-
 
         # template pipeline
         if "template" in self.settings:
@@ -577,6 +577,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
             inner.add("<br/>")
+
 
 
 
@@ -987,6 +988,10 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
             editor_top.removeClass("spt_has_changes");
+            
+            
+            spt.command.clear();
+
 
         };
 
@@ -1017,6 +1022,9 @@ class PipelineListWdg(BaseRefreshWdg):
             spt.app_busy.hide();
 
             editor_top.removeClass("spt_has_changes");
+            
+            spt.command.clear();
+
         }
 
 
@@ -1030,6 +1038,7 @@ class PipelineListWdg(BaseRefreshWdg):
         } else {
             ok();
         }
+        
 
 
         '''
@@ -1041,6 +1050,8 @@ class PipelineListWdg(BaseRefreshWdg):
             'event': 'pipeline_%s|click' %pipeline_code,
             'cbjs_action': '''
              spt.named_events.fire_event(bvr.event, bvr);
+             spt.command.clear();
+
              '''
              })
 
@@ -5448,7 +5459,30 @@ class PipelineEditorWdg(BaseRefreshWdg):
         #button_row.set_round_corners(5)
         button_row.add_style("padding: 3px 10px 3px 5px")
         button_row.add_style("padding: 6px 10px 0px 5px")
+        button_row.add_style("overflow: hidden")
 
+
+        button = SingleButtonWdg(title="Undo", icon="BS_arrow_left", show_out=False)
+        button_row.add(button)
+        button.add_style("float: left")
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+        spt.command.undo_last();
+        '''
+        } )
+
+
+        button = SingleButtonWdg(title="Redo", icon="BS_arrow_right", show_out=False)
+        button_row.add(button)
+        button.add_style("float: left")
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+        spt.command.redo_last();
+        '''
+        } )
+        
         button = SingleButtonWdg(title="Zoom In", icon="BS_ZOOM_IN", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
