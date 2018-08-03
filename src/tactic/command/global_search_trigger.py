@@ -154,11 +154,17 @@ class GlobalSearchTrigger(Trigger):
         # If keywords_data column exists and collection is being changed 
         # or folder structure changed
         if has_keywords_data:
-            
             update_data = input.get("update_data")
 
-            # If Relative dir is changed or file is renamed, update path keywords
-            if ("relative_dir" in update_data or "name" in update_data) and not input.get("mode") == "insert":
+            keywords_handler = ProjectSetting.get_value_by_key("custom_keywords_data", search_type=base_search_type)
+            if keywords_handler:
+                handler = Common.create_from_class_path(keywords_handler, args=[], kwargs={'update_data': update_data, 'sobject': sobj})
+                keywords_data = handler.get_keywords_data()
+                sobj.set_json_value("keywords_data", keywords_data)
+                sobj.commit(triggers=False)
+                self.set_searchable_keywords(sobj)
+            elif ("relative_dir" in update_data or "name" in update_data) and not input.get("mode") == "insert":
+                # If Relative dir is changed or file is renamed, update path keywords
                 
                 file_path = input.get("sobject").get("relative_dir")
                 asset_name = input.get("sobject").get("name")
@@ -257,7 +263,7 @@ class GlobalSearchTrigger(Trigger):
             return
 
         keywords_data = sobj.get_json_value("keywords_data", {})
-        
+
         searchable_keywords = []
 
         if keywords_data:
@@ -278,6 +284,10 @@ class GlobalSearchTrigger(Trigger):
                 collection_keywords = " ".join(set(collection_keywords.split(" ")))
                 collection_keywords = collection_keywords.lower()
 
+            custom = ""
+            if 'custom' in keywords_data:
+                custom = keywords_data.get("custom")
+            
             if path:
                 if isinstance(path, unicode):
                     path = path.encode('utf-8','replace')
@@ -295,6 +305,7 @@ class GlobalSearchTrigger(Trigger):
                     searchable_keywords.append(user)
                 else:
                     searchable_keywords.extend(user)
+            
 
             
             if collection_keywords:
@@ -302,6 +313,15 @@ class GlobalSearchTrigger(Trigger):
                     searchable_keywords.append(collection_keywords)
                 else:
                     searchable_keywords.extend(collection_keywords)
+            
+            if custom:
+                if isinstance(custom, unicode):
+                    custom = custom.encode('utf-8','replace')
+
+                if isinstance(custom, basestring):
+                    searchable_keywords.append(custom)
+                else:
+                    searchable_keywords.extend(custom)
             
             searchable_keywords = list(set(searchable_keywords))
             searchable_keywords = " ".join(searchable_keywords) 
