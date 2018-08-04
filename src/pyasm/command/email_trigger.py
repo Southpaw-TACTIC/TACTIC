@@ -168,7 +168,8 @@ class EmailTrigger(Trigger):
 
             # set the email
             self.send(to_users, cc_users, bcc_users, subject, message)
-
+            
+            
             from_user = Environment.get_user_name()
 
             project_code = Project.get_project_code()
@@ -603,15 +604,16 @@ class EmailTrigger2(EmailTrigger):
 
         if not to_users:
             return
-        print "sending email: ", to_users
 
         #sobj_data = main_sobject.get_aux_data()
         #email_info = sobj_data.get('__tactic_email_info__')
         #extra_ccs = email_info.get('mail_cc')
         #extra_bccs = email_info.get('mail_bcc')
-        # set the email
-        self.send(to_users, cc_users, bcc_users, subject, message)
-        
+        # send the email
+        if handler.send_email():
+            self.send(to_users, cc_users, bcc_users, subject, message)
+
+    
         if isinstance(to_users, set) and isinstance(cc_users, set) and \
                 isinstance(bcc_users, set):
             all_users = to_users.union(cc_users).union(bcc_users)
