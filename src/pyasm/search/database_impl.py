@@ -2095,7 +2095,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             prefix = "%s" % db_resource.get_db_resource()
         else:
             prefix = "%s" % db_resource
-            
+
         if use_cache:
             # use global cache
             if prefix.endswith(':sthpw'):
@@ -2170,8 +2170,6 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                
 
                 cache[name] = info_dict
-
-      
 
         return cache
 
