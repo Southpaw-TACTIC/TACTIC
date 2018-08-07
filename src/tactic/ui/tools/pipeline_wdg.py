@@ -62,50 +62,96 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         show_pipelines = self.kwargs.get("show_pipeline_list")
 
-        #table = Table()
-        table = ResizableTableWdg()
-        inner.add(table)
-        table.add_style("width: 100%")
-        table.add_color("background", "background")
-        table.add_color("color", "color")
+
+        use_table = True
+        if use_table:
+            #table = Table()
+            table = ResizableTableWdg()
+            inner.add(table)
+            table.add_style("width: 100%")
+            table.add_color("background", "background")
+            table.add_color("color", "color")
 
 
 
-        table.add_row()
-        if show_pipelines not in [False, 'false']:
-            left = table.add_cell()
-        right = table.add_cell()
-        info = table.add_cell()
+            table.add_row()
+            if show_pipelines not in [False, 'false']:
+                left = table.add_cell()
+            right = table.add_cell()
+            info = table.add_cell()
 
 
-        """
-        container = DivWdg()
-        inner.add(container)
-        container.add_style("display: flex")
-        container.add_style("flex-direction: row")
-        container.add_style("flex-wrap: nowrap")
-        container.add_style("justify-content: center")
-        container.add_style("align-items: stretch")
-        container.add_style("width: 100%")
-        container.add_style("height: 100%")
-
-        if show_pipelines not in [False, 'false']:
-            left = DivWdg()
-            container.add(left)
-            left.add_style("overflow-y: auto")
-            left.add_style("overflow-x: hidden")
-
-        right = DivWdg()
-        right.add_style("flex-grow: 2")
-
-        container.add(right)
-        info = DivWdg()
-        container.add(info)
+        else:
+            container = DivWdg()
+            inner.add(container)
+            container.add_style("display: flex")
+            container.add_style("flex-wrap: nowrap")
+            container.add_style("align-items: stretch")
+            container.add_style("align-columns: stretch")
+            container.add_style("width: 100%")
+            container.add_style("height: 100%")
+            container.add_color("background", "background")
 
 
-        container.add_style("width: 100%")
-        container.add_color("background", "background")
-        """
+            if show_pipelines not in [False, 'false']:
+                left = DivWdg()
+                container.add(left)
+                left.add_style("overflow-y: auto")
+                left.add_style("overflow-x: hidden")
+                left.add_style("width: 250px")
+                left.add_style("min-width: 250px")
+
+            right = DivWdg()
+            right.add_style("width: 100%")
+            right.add_style("height: 100%")
+            right.add_style("overflow: hidden")
+
+            container.add(right)
+            info = DivWdg()
+            container.add(info)
+            info.add_style("width: 250px")
+
+
+
+            right.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            var body = document.id(document.body);
+
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var wrapper = top.getElement(".spt_pipeline_wrapper");
+
+
+            var offset = 710;
+            var top = bvr.src_el;
+            top.last_size = {};
+            var canvas = top.getElement("canvas");
+            var resize = function() {
+                spt.pipeline.init_cbk(wrapper);
+
+                if (! top.isVisible() ) {
+                    return;
+                }
+                var size = body.getSize();
+                if (size.x == top.last_size) {
+                    return;
+                }
+                spt.pipeline.set_size(size.x-2-offset);
+                top.last_size = size;
+
+            }
+            var interval_id = setInterval( resize, 250);
+            top.interval_id = interval_id;
+            '''
+            } )
+
+            right.add_behavior( {
+            'type': 'unload',
+            'cbjs_action': '''
+            var top = bvr.src_el;
+            clearInterval( top.interval_id );
+            '''
+            } )
 
 
 
@@ -213,9 +259,9 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         if show_pipelines not in [False, 'false']:
-            left.add_style("width: 200px")
-            left.add_style("min-width: 100px")
             left.add_style("vertical-align: top")
+            left.add_style("width: 250px")
+            left.add_style("min-width: 250px")
 
             expression = self.kwargs.get("expression")
 
@@ -226,6 +272,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         show_help = self.kwargs.get('show_help') or True
         width = self.kwargs.get("width")
+        width = "100%"
         pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'))
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
@@ -530,7 +577,7 @@ class PipelineListWdg(BaseRefreshWdg):
         pipelines_div.add_style("overflow-x: hidden")
         pipelines_div.add_style("min-height: 290px")
         pipelines_div.add_style("min-width: 100px")
-        pipelines_div.add_style("width: 200px")
+        pipelines_div.add_style("width: 100%")
         pipelines_div.add_style("height: auto")
 
         inner = DivWdg()

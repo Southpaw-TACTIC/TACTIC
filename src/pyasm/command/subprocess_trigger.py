@@ -105,7 +105,7 @@ class SubprocessTrigger(Handler):
 
             kwargs = data.get("kwargs")
             priority = kwargs.get("priority") or 99999
-            description = kwargs.get("description") or "Trigger"
+            description = kwargs.get("description") or self.description or "Trigger"
             queue_type = kwargs.get("trigger") or "trigger"
 
             class_name = "pyasm.command.QueueTrigger"

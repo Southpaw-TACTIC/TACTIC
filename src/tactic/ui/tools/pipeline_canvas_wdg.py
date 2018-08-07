@@ -4378,13 +4378,19 @@ spt.pipeline.set_size = function(width, height) {
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
     outer.setStyle("width", ""+width);
-    outer.setStyle("height", ""+height);
+    if (height) {
+        outer.setStyle("height", ""+height);
+    }
 
     paint.setAttribute("width", ""+width);
-    paint.setAttribute("height", ""+height);
-    paint.setStyle("margin-top", "" + (-height));
+    if (height) {
+        paint.setAttribute("height", ""+height);
+        paint.setStyle("margin-top", "" + (-height));
+    }
     canvas.setStyle("width", ""+width);
-    canvas.setStyle("height", ""+height);
+    if (height) {
+        canvas.setStyle("height", ""+height);
+    }
     spt.pipeline.redraw_canvas();
 
 /*

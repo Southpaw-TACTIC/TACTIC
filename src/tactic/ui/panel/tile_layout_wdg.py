@@ -298,7 +298,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if i+1 >= group_levels:
                     inner.add(group_wdg)
 
-                icon = IconWdg(name=title, icon="BS_FOLDER_OPEN")
+                icon = IconWdg(name=title, icon="FA_FOLDER_OPEN_O")
                 group_wdg.add(icon)
                 icon.add_style("display: inline-block")
                 icon.add_style("margin-right: 10px")
@@ -531,7 +531,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         self.top_styles = self.kwargs.get('styles')
         self.spacing = self.kwargs.get('spacing')
         if not self.spacing:
-            self.spacing = '10'
+            self.spacing = '15'
 
         self.overlay_expr = self.kwargs.get('overlay_expr')
         self.overlay_color = self.kwargs.get('overlay_color')
@@ -1380,13 +1380,16 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         div.add_class("spt_tile_top")
         div.add_class("unselectable")
-        div.add_style('margin', self.spacing)
+        div.add_style('margin-bottom', self.spacing)
+        div.add_style('margin-right', self.spacing)
         div.add_style('background-color','transparent')
         div.add_style('position','relative')
         div.add_style('vertical-align','top')
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
+
+        div.add("pig")
 
  
         if self.kwargs.get("show_title") not in ['false', False]:

@@ -32,6 +32,7 @@ class UploadServerWdg(Widget):
         num_files = web.get_form_value("num_files")
         files = []
 
+        print "web: ", web.get_form_keys()
 
         # HTML5 upload
         if num_files:
