@@ -174,11 +174,11 @@ def get_full_cmd(self, meth, ticket, args):
 
             debug = True
             if meth.func_name == "execute_cmd":
-                if len(args) > 1:
+                #if len(args) > 1:
+                if isinstance(args, tuple) and len(args) > 1:
                     _debug = args[1].get("_debug")
                     if _debug == False:
                         debug = False
-
 
             if self.get_protocol() != "local" and debug:
                 print "---"
@@ -5403,7 +5403,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         string - return data structure
         '''
-       
+
         # Do a security check
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
@@ -5430,6 +5430,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 from tactic.ui.filter import FilterData
                 filter_data = FilterData(values)
                 filter_data.set_to_cgi()
+
+
+            # args can come in as a string from REST
+            if isinstance(args, basestring):
+                args = jsonloads(args)
 
 
             args_array = []
