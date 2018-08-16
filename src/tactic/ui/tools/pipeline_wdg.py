@@ -14,6 +14,7 @@ __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'Pip
 
 import re
 import os
+import ast
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment, Common, jsonloads
@@ -6421,8 +6422,7 @@ class PipelineSaveCbk(Command):
                 try:
                     settings = jsonloads(settings_str)
                     if type(settings) == unicode:
-                        import ast
-                        settings = ast.literal_eval(settings)
+                        settings = jsonloads(settings)
                 except:
                     process_name = xml.get_attribute(node, "name")
                     print "WARNING: Setting for process %s not saved." % process_name 
