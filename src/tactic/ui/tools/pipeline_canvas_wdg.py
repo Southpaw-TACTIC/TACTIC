@@ -3813,6 +3813,12 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
             }
         }
     }
+
+    var editor_top = canvas.getParent(".spt_pipeline_editor_top");
+    if (editor_top) {
+        editor_top.addClass("spt_has_changes");
+    }
+
 }
 
 
@@ -3857,7 +3863,13 @@ spt.pipeline.delete_connector = function(connector) {
         spt.behavior.destroy_element(panel);    
     }
 
-    spt.pipeline.clear_selected(); 
+    spt.pipeline.clear_selected();
+
+    var editor_top = canvas.getParent(".spt_pipeline_editor_top");
+    if (editor_top) {
+        editor_top.addClass("spt_has_changes");
+    }
+
     return connector;
 }
 
