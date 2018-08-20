@@ -2808,6 +2808,9 @@ spt.pipeline.add_node_to_group = function(node, group_name) {
 // add a new node to the canvas 
 
 spt.pipeline.undo_add_nodes = []
+spt.pipeline.undo_remove_nodes = []
+spt.pipeline.undo_remove_connectors = []
+
 
 spt.pipeline._add_node = function(name,x, y, kwargs){
 
@@ -2956,6 +2959,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 	if (editor_top) {
 		editor_top.addClass("spt_has_changes");
 	}
+	
 
 	return new_node;
 }
@@ -2997,7 +3001,7 @@ spt.pipeline.AddNodeCmd = function(name, x, y, kwargs){
 
 }
 
-spt.pipeline.undo_remove_nodes = []
+
 
 spt.pipeline.remove_nodes = function(nodes) {
 
@@ -3029,17 +3033,24 @@ spt.pipeline.RemoveNodeCmd = function(nodes){
         spt.pipeline.undo_remove_nodes.push(this.nodes);
        	for(var i = 0; i < this.nodes.length; i++){
        		var node = nodes[i];
-       		spt.pipeline._add_node(node.spt_name, node.style.left.split("px")[0], node.style.top.split("px")[0]);
+       		var new_node = spt.pipeline._add_node(node.spt_name, node.style.left.split("px")[0], node.style.top.split("px")[0]);
        	}
-       	
+       	var group = spt.pipeline.get_group_by_node(new_node)
+       	var canvas = spt.pipeline.get_canvas();
+
+       	var connectors = spt.pipeline.undo_remove_connectors.pop();
+		for(var i = 0; i < connectors.length; i++){
+		    var connector = spt.pipeline.reset_connector(connectors[i]);
+			canvas.connectors.push(connector);
+			group.add_connector(connector)
+		    connector.draw()
+		}       	
     }
 }
 
 
 
-
 spt.pipeline._remove_nodes = function(nodes) {
-
     // remove the connectors that have this node
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
@@ -3064,7 +3075,9 @@ spt.pipeline._remove_nodes = function(nodes) {
 
         }
     }
-
+    
+    spt.pipeline.undo_remove_connectors.push(to_del);
+    
     for (var i = 0; i < to_del.length; i++) {
         spt.pipeline.delete_connector(to_del[i]);
     }
@@ -3089,6 +3102,7 @@ spt.pipeline._remove_nodes = function(nodes) {
 
     // remove the nodes
     var group;
+
     for (var j = nodes.length-1; j >= 0; j-- ) {
         var node = nodes[j];
         // remove the node from the group
@@ -3179,40 +3193,6 @@ spt.pipeline.get_group_color = function(group_name) {
     return color;
 }
 
-/*
-spt.pipeline.remove_nodes = function(nodes) {
-	var cmd = new spt.pipeline.RemoveNodeCmd(nodes);
-    spt.command.add_to_undo(cmd);
-    cmd.execute();
-}
-
-
-spt.pipeline.RemoveNodeCmd = function(nodes){
-
-	this.execute = function() {
-	    this.nodes = nodes;
-        spt.pipeline._remove_nodes(this.nodes);        
-    };
-    
-    this.redo = function() {
-    	var nodes = spt.pipeline.undo_remove_nodes.pop();
-    	for(var i = 0; i<nodes.length; i++){
-    		nodes[i] = spt.pipeline.reset_node(nodes[i]);
-    	}
-    	spt.pipeline._remove_nodes(nodes);
-		
-    }
-    
-    this.undo = function(){
-        spt.pipeline.undo_remove_nodes.push(this.nodes);
-       	for(var i = 0; i < this.nodes.length; i++){
-       		var node = nodes[i];
-       		spt.pipeline._add_node(node.spt_name, node.style.left.split("px")[0], node.style.top.split("px")[0]);
-       	}
-       	
-    }
-}
-*/
 
 spt.pipeline.rename_node = function(node, value) {
 	var cmd = new spt.pipeline.RenameNode(node, value);
@@ -3664,6 +3644,15 @@ spt.pipeline.reset_node = function(node){
 		node = document.querySelectorAll(q)[0];
 	}
 	return node;
+}
+
+spt.pipeline.reset_connector = function(connector){
+    var from_node = spt.pipeline.reset_node(connector.get_from_node())
+	connector.set_from_node(from_node)
+    var to_node = spt.pipeline.reset_node(connector.get_to_node())
+    connector.set_to_node(to_node)
+
+	return connector;
 }
 
 
@@ -5558,7 +5547,6 @@ spt.pipeline.set_task_color = function(group_name) {
 
 // Export group
 spt.pipeline.export_group = function(group_name) {
-    
     var data = spt.pipeline.get_data();
     var canvas = spt.pipeline.get_canvas();
 
@@ -5576,11 +5564,13 @@ spt.pipeline.export_group = function(group_name) {
     if (typeof(group_name) == 'undefined') {
         nodes = spt.pipeline.get_all_nodes(group_name);
         connectors = canvas.connectors;
+
     }
     else {
         nodes = spt.pipeline.get_nodes_by_group(group_name);
         connectors = group.get_connectors();
         dangling_connectors = group.get_dangling_connectors();
+
     }
 
     // copy the array and sort it
@@ -5692,7 +5682,6 @@ spt.pipeline.export_group = function(group_name) {
     }
 
    
-
     // export the connectors
     for (var i = 0; i < connectors.length; i++) {
         var connector = connectors[i];
