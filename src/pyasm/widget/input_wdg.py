@@ -323,8 +323,8 @@ class BaseInputWdg(HtmlElement):
             if not column:
                 column = self.name
 
-            if self.get_current_sobject() and \
-                    self.get_current_sobject().has_value(column):
+            current_sobject = self.get_current_sobject()
+            if current_sobject and current_sobject.has_value(column):
                 sobject = self.get_current_sobject()
                 values = [sobject.get_value(column)]
                 if not values:

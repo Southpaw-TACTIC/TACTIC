@@ -3017,6 +3017,10 @@ class SObject(object):
     def has_value(self, name):
         '''determines if the sobject contains a value with the given name'''
 
+        if name.find("->") != -1:
+            parts = name.split("->")
+            name = parts[0]
+
         # first look at the update data
         if self.update_data.has_key(name):
             return True
