@@ -901,8 +901,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # if there are no output processes then check for any hierarchy
         if not output_processes and self.parent_processes:
-            print("parent_pipelines: ", self.parent_pipelines)
-            print("parent_processes: ", self.parent_processes)
             # send a message up the hierarchy
             parent_pipelines = self.parent_pipelines[:]
             pipeline = parent_pipelines.pop()
@@ -1024,6 +1022,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             workflow = process_sobj.get_json_value("workflow", {})
             if workflow.get("autocreate_task") in ['true', True]:
                 autocreate_task = True
+            if workflow.get("task_creation") in ['none']:
+                autocreate_task = True
             
             process_obj = self.pipeline.get_process(self.process)
             if not process_obj:
@@ -1045,6 +1045,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
             if not tasks:
                 Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status)
+
             else:
                 self.set_all_tasks(self.sobject, self.process, mapped_status)
         else:
@@ -1221,6 +1222,7 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
                 # true, that will take precedence
                 if ret_val not in [True, 'true']:
                     break
+
 
         if ret_val in [False, 'false']:
             Trigger.call(self, "process|reject", self.input)
@@ -1660,6 +1662,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     attr = None
 
         else:
+
             event = "process|pending"
             if isinstance(ret_val, basestring): 
                 ret_val = [ret_val]
