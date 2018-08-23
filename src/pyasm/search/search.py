@@ -2617,6 +2617,13 @@ class SObject(object):
         if not prefix:
             prefix = self.get_table()
             prefix = prefix.upper()
+
+        elif prefix.startswith("{") and prefix.endswith("}"):
+            prefix = prefix.strip("{")
+            prefix = prefix.strip("}")
+            prefix = Search.eval(prefix, self, single=True)
+
+
         return prefix
 
 

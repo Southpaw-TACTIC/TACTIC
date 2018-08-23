@@ -1840,7 +1840,6 @@ class IngestUploadCmd(Command):
         update_data = self.kwargs.get("update_data")
         extra_data = self.kwargs.get("extra_data")
         if extra_data:
-            print "extra_data: ", extra_data
             extra_data = jsonloads(extra_data)
         else:
             extra_data = {}

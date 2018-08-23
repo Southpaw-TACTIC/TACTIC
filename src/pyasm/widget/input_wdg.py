@@ -305,6 +305,12 @@ class BaseInputWdg(HtmlElement):
         code.'''
         values = []
        
+        if self.get_option("value"):
+            values = [self.get_option("value")]
+            return values
+
+
+
         web = WebContainer.get_web()
         if self.has_option('search_key') and not self.get_current_sobject():
             sobject = SearchKey.get_by_search_key(self.options.get('search_key'))

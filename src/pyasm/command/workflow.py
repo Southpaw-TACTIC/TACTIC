@@ -901,8 +901,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # if there are no output processes then check for any hierarchy
         if not output_processes and self.parent_processes:
-            print("parent_pipelines: ", self.parent_pipelines)
-            print("parent_processes: ", self.parent_processes)
             # send a message up the hierarchy
             parent_pipelines = self.parent_pipelines[:]
             pipeline = parent_pipelines.pop()
@@ -1664,6 +1662,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     attr = None
 
         else:
+
             event = "process|pending"
             if isinstance(ret_val, basestring): 
                 ret_val = [ret_val]
