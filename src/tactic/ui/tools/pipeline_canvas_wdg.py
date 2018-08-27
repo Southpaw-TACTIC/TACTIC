@@ -2990,6 +2990,20 @@ spt.pipeline.AddNodeCmd = function(name, x, y, kwargs){
     	var node = spt.pipeline.undo_add_nodes.pop();
 
 		this.node  = spt.pipeline._add_node(node.spt_name, node.style.left.split("px")[0], node.style.top.split("px")[0], this.kwargs);
+        
+        var group = spt.pipeline.get_group_by_node(this.node)
+       	var canvas = spt.pipeline.get_canvas();
+
+       	var connectors = spt.pipeline.undo_remove_connectors.pop();
+
+
+		for(var i = 0; i < connectors.length; i++){
+		    var connector = spt.pipeline.reset_connector(connectors[i]);
+			canvas.connectors.push(connector);
+			group.add_connector(connector)
+		    connector.draw()
+		}   
+    
     }
     
     this.undo = function(){
@@ -3034,17 +3048,28 @@ spt.pipeline.RemoveNodeCmd = function(nodes){
        	for(var i = 0; i < this.nodes.length; i++){
        		var node = nodes[i];
        		var new_node = spt.pipeline._add_node(node.spt_name, node.style.left.split("px")[0], node.style.top.split("px")[0]);
+       	    		
+       	    var settings = node.getAttribute("spt_settings");
+       	    new_node.setAttribute("spt_settings",settings);
+            if(settings){
+                settings_json = JSON.parse(settings);
+            	new_node.update_node_settings(settings_json)
+            }
+
        	}
        	var group = spt.pipeline.get_group_by_node(new_node)
        	var canvas = spt.pipeline.get_canvas();
 
        	var connectors = spt.pipeline.undo_remove_connectors.pop();
+
+
 		for(var i = 0; i < connectors.length; i++){
 		    var connector = spt.pipeline.reset_connector(connectors[i]);
 			canvas.connectors.push(connector);
 			group.add_connector(connector)
 		    connector.draw()
-		}       	
+		}		
+		       	
     }
 }
 
@@ -3077,7 +3102,7 @@ spt.pipeline._remove_nodes = function(nodes) {
     }
     
     spt.pipeline.undo_remove_connectors.push(to_del);
-    
+
     for (var i = 0; i < to_del.length; i++) {
         spt.pipeline.delete_connector(to_del[i]);
     }
@@ -3194,9 +3219,12 @@ spt.pipeline.get_group_color = function(group_name) {
 }
 
 
-spt.pipeline.rename_node = function(node, value) {
+spt.pipeline.rename_node = function(node, value, undo_flag) {
 	var cmd = new spt.pipeline.RenameNode(node, value);
-    spt.command.add_to_undo(cmd);
+    if(!undo_flag){
+	    spt.command.add_to_undo(cmd);
+
+    }
     cmd.execute();
 }
 
@@ -3640,7 +3668,7 @@ spt.pipeline.NodeDragActionCmd = function(node, last_node_pos, orig_node_pos) {
 spt.pipeline.reset_node = function(node){
 	if (!document.body.contains(node)){
 		var name = node.spt_name;
-		var q = '[spt_element_name=' + name + ']';
+		var q = "[spt_element_name='" + name + "']";
 		node = document.querySelectorAll(q)[0];
 	}
 	return node;
@@ -3832,6 +3860,9 @@ spt.pipeline.connect_nodes = function(from_node, to_node) {
 
 
 spt.pipeline.delete_connector = function(connector) {
+    if(!connector){
+    	return;
+    }
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
     for (var i = 0; i < connectors.length; i++) {
@@ -5110,38 +5141,39 @@ spt.pipeline.import_schema = function(schema_code, color) {
 }
 
 
-
-
-
-spt.pipeline.set_node_value = function(node, name, value, kwargs) {
+//if undo_flag is true, add to undo cmd
+spt.pipeline.set_node_value = function(node, values, undo_flag) {
 	
-    var workflow = node.workflow;
+	var workflow = node.workflow;
     if (!node.workflow) {
         workflow = node.workflow = {};
     }
-
-    if (!kwargs) {
-        kwargs = {};
-    }
-
-    var orig_value = workflow[name];
-
-    if (orig_value == value) {
-        return;
-    }
+    orig_values = []
     
-	var cmd = new spt.pipeline.SetNodeValueCmd(node, name, orig_value, value, kwargs);
+	for(var i = 0; i < values.length; i++){
+		var name = values[i].name
+		var value = values[i].value
+		var kwargs = values[i].kwargs
+	    var orig_value = workflow[name];
+	    orig_values.push({
+	    	name: name,
+            value: orig_value,
+            kwargs: kwargs
+	    }) 
+	    
+	}
 
-    spt.command.add_to_undo(cmd);
-    
+	var cmd = new spt.pipeline.SetNodeValueCmd(node, values, orig_values);
+    if(!undo_flag){
+    	spt.command.add_to_undo(cmd);
+    }
     return cmd.execute();
 }
 
 
 
-
-spt.pipeline.SetNodeValueCmd = function(node, name, orig_value, value, kwargs) {
-
+spt.pipeline.SetNodeValueCmd = function(node, values, orig_values) {
+	this.node = node
 	this.execute = function(){
 		return this.redo();
 	}
@@ -5151,24 +5183,32 @@ spt.pipeline.SetNodeValueCmd = function(node, name, orig_value, value, kwargs) {
 		if (!node.workflow) {
 			workflow = node.workflow = {};
 		}
-		workflow[name] = value;
+		
+		
+		for(var i = 0; i < values.length; i++){
+			var name = values[i].name
+			var value = values[i].value
+			var kwargs = values[i].kwargs
+			workflow[name] = value;
 
-		// node.properties goes into xml, code is redundant but it works for now
-		spt.pipeline.set_node_property(node, "settings", workflow);
+			// node.properties goes into xml, code is redundant but it works for now
+			spt.pipeline.set_node_property(node, "settings", workflow);
 
-	
-		var class_name = kwargs.class_name;
-		if (class_name) {
-			var update_el = node.getElement("."+class_name);
-			if (update_el) {
-				if (update_el.update) {
-					update_el.update(value);
-				}
-				else {
-					update_el.innerHTML = value;
+			var class_name = kwargs.class_name;
+			if (class_name) {
+				var update_el = node.getElement("."+class_name);
+				if (update_el) {
+					if (update_el.update) {
+						update_el.update(value);
+					}
+					else {
+						update_el.innerHTML = value;
+					}
 				}
 			}
+		
 		}
+		
 		return node;
 
 	}
@@ -5179,30 +5219,36 @@ spt.pipeline.SetNodeValueCmd = function(node, name, orig_value, value, kwargs) {
 		if (!node.workflow) {
 			workflow = node.workflow = {};
 		}
-		workflow[name] = orig_value;
+		
+		
+		for(var i = 0; i < orig_values.length; i++){
+			var name = orig_values[i].name
+			var value = orig_values[i].value
+			var kwargs = orig_values[i].kwargs
+		
+			workflow[name] = value;
 
-		// node.properties goes into xml, code is redundant but it works for now
-		spt.pipeline.set_node_property(node, "settings", workflow);
+			// node.properties goes into xml, code is redundant but it works for now
+			spt.pipeline.set_node_property(node, "settings", workflow);
 
-	
-		var class_name = kwargs.class_name;
-		if (class_name) {
-			var update_el = node.getElement("."+class_name);
-			if (update_el) {
-				if (update_el.update) {
-					update_el.update(orig_value);
-				}
-				else {
-					update_el.innerHTML = orig_value;
+			var class_name = kwargs.class_name;
+			if (class_name) {
+				var update_el = node.getElement("."+class_name);
+				if (update_el) {
+					if (update_el.update) {
+						update_el.update(value);
+					}
+					else {
+						update_el.innerHTML = value;
+					}
 				}
 			}
+		
 		}
 		
 		return node;
+
 	}
-    
-
-
 }
 
 
@@ -5221,7 +5267,6 @@ spt.pipeline.get_node_values = function(node) {
 
 
 spt.pipeline.import_nodes = function(group, xml_nodes) {
-
     // find the left most and top most position
     var left = null;
     var top = null;
@@ -5303,9 +5348,10 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
 
         var settings = xml_nodes[i].getAttribute("settings");
         if (settings) {
-            settings = JSON.parse(settings);
+            settings_json = JSON.parse(settings);
             if (node.update_node_settings) {
-                node.update_node_settings(settings);
+                node.update_node_settings(settings_json);
+				node.setAttribute("spt_settings", settings)                
             }
         }
 

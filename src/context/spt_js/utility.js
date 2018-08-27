@@ -2263,6 +2263,7 @@ spt.command.undo_last = function() {
     var cmd = spt.command.commands[spt.command.command_index];
     cmd.undo();
     spt.command.command_index -= 1;
+
     return cmd
     
 }
