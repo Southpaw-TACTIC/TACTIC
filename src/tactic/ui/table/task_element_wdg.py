@@ -2264,7 +2264,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 #select = SelectWdg('status_%s'%task_id)
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
-                select.add_style("height: 22px")
+                select.add_style("height: 18px")
                 select.add_style("padding: 0px")
                 select.add_style("margin: 2px 0px 2px 5px")
 
@@ -2407,7 +2407,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select = SelectWdg(name)
                     select_div.add(select)
                     # just use the same class name as the status select for simplicity
-                    select.add_style("height: 22px")
+                    select.add_style("height: 18px")
                     select.add_style("padding: 0px")
                     select.add_style("margin: 2px 0px 2px 5px")
 

@@ -139,13 +139,14 @@ class IngestUploadWdg(BaseRefreshWdg):
         table = Table()
         top.add(table)
         table.add_row()
+        table.add_style("width: 100%")
 
         left = table.add_cell()
         left.add_style("vertical-align: top")
         left.add( self.get_content_wdg() )
 
         if not self.search_key or self.show_settings:
-            if self.show_settings:
+            if False and self.show_settings:
                 middle = table.add_cell()
                 middle.add_style("height: 10") # not sure why we need this height
                 middle.add_style("padding: 30px 20px")
@@ -321,7 +322,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         pipeline_search = Search("sthpw/pipeline")
-        if self.sobject:
+        if self.sobject and self.sobject.column_exists("pipeline_code"):
             pipeline_code = self.sobject.get_value("pipeline_code")
             if pipeline_code:
                 pipeline_search.add_filter("code", pipeline_code)
@@ -803,7 +804,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_style("border: 3px dashed %s" % border_color_light)
         #files_div.add_style("border-radius: 20px 20px 20px 20px")
         files_div.add_style("z-index: 1")
-        files_div.add_style("width", "586px")
+        files_div.add_style("margin: 5px 0px")
+        #files_div.add_style("width", "586px")
         #files_div.add_style("display: none")
 
         bgcolor = div.get_color("background")
