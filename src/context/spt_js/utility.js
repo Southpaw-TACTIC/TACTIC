@@ -2233,4 +2233,79 @@ spt.dom.load_js = function(js_files, cbk) {
 
     };
 
+spt.command = {}
+
+
+// store a list of commands that have been executed
+spt.command.commands = [];
+spt.command.command_index = -1;
+spt.command.execute_cmd = function(cmd) {
+    cmd.execute();
+}
+
+
+spt.command.add_to_undo = function(cmd) {
+    for (var i=spt.command.commands.length;i>spt.command.command_index+1;i--) {
+        spt.command.commands.pop();
+    }
+
+    spt.command.commands.push(cmd);
+    spt.command.command_index += 1;
+}
+
+
+spt.command.undo_last = function() {
+    if (spt.command.command_index == -1) {
+        alert("Nothing to undo");
+        return;
+    }
+    
+    var cmd = spt.command.commands[spt.command.command_index];
+    cmd.undo();
+    spt.command.command_index -= 1;
+
+    return cmd
+    
+}
+
+
+spt.command.redo_last = function() {
+
+    if (spt.command.command_index == spt.command.commands.length-1) {
+        alert("Nothing to redo");
+        return;
+    }
+
+    var cmd = spt.command.commands[spt.command.command_index+1];
+    cmd.redo();
+    spt.command.command_index += 1;
+    return cmd
+    
+}
+
+
+
+spt.command.undo_all = function() {
+    for (var i = spt.command.commands.length-1; i >= 0; i--) {
+        var cmd = spt.command.commands[i];
+        cmd.undo();
+    }
+}
+
+
+spt.command.test = function() {
+    for (var i=0; i < 5; i++) {
+        var cmd = new spt.command.command();
+        spt.command.execute_cmd(cmd);
+    }
+
+    // undo all of the commands
+    spt.command.undo_all()
+
+}
+
+spt.command.clear = function(){
+	spt.command.commands = [];
+    spt.command.command_index = -1;
+}
 
