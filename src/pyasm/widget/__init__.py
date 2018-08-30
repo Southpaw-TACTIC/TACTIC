@@ -35,7 +35,7 @@ from timecard_wdg import *
 # some higher level widgets
 from serial_status import *
 from parallel_status import *
-from discussion_wdg import *
+#from discussion_wdg import *
 from tab_wdg import *
 from statistic_wdg import *
 from gantt_wdg import *

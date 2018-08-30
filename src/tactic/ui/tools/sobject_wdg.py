@@ -744,6 +744,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                       <display class='tactic.ui.widget.DiscussionWdg'>
                         <search_key>%(search_key)s</search_key>
                         <width>100%%</width>
+                        <use_dialog>false</use_dialog>
                       </display>
                     </element>
                     </div>

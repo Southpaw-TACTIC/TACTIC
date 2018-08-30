@@ -329,7 +329,7 @@ class DiscussionWdg(BaseRefreshWdg):
             var top = discussion_top;
            
             var dialog_content = top.getElement(".spt_discussion_content");
-            var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_context_top") : null;
+            var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
 
             // refresh the dialog and the note count for this context
             if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
@@ -1028,7 +1028,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_discussion_top");
                 var dialog_content = top.getElement(".spt_discussion_content");
 
-                var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_context_top") : null;
+                var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
                 
                 // update dialog and the count if dialog is visible 
                 if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
@@ -1079,6 +1079,12 @@ class DiscussionWdg(BaseRefreshWdg):
         sobj = self.sobject
         has_process = self.sobject.has_value('process')
         has_context = self.sobject.has_value('context')
+
+        use_dialog = self.kwargs.get("use_dialog")
+        if use_dialog in ['false', False]:
+            use_dialog = False
+        else:
+            use_dialog = True
 
         if notes:
             expand_div = DivWdg()
@@ -1170,20 +1176,39 @@ class DiscussionWdg(BaseRefreshWdg):
             }
 
 
-            note_dialog = DialogWdg(display=False)
-            note_dialog.add_style("font-size: 12px")
-            note_dialog.add_title("Add Note")
-            note_dialog.add_style("overflow-y: auto")
-            no_notes_div.add(note_dialog)
-            #note_dialog.set_as_activator(no_notes_msg, offset={'x':-5,'y':0})
-            note_dialog.set_as_activator(no_notes_msg, position="right")
+
+            if use_dialog in [False, 'false']:
+                note_dialog = DivWdg()
+                no_notes_div.add(note_dialog)
+                unique_id = note_dialog.set_unique_id()
+                note_dialog.add_style("border: solid 1px #DDD")
+                note_dialog.add_style("width: 100%")
+                note_dialog.add_style("height: auto")
+                note_dialog.add_style("display: none")
+                note_dialog.add_style("box-sizing: border-box")
+                note_dialog.add_style("margin: 0px 30px 10px 20px")
+                note_dialog.add_style("padding: 0px 10px")
+                no_notes_msg.add_behavior( {
+                    'type': 'click',
+                    'unique_id': unique_id,
+                    'cbjs_action': '''
+                    spt.toggle_show_hide( document.id(bvr.unique_id) );
+                    '''
+                } )
+            else:
+                note_dialog = DialogWdg(display=False)
+                note_dialog.add_style("font-size: 12px")
+                note_dialog.add_title("Add Note")
+                note_dialog.add_style("overflow-y: auto")
+                no_notes_div.add(note_dialog)
+                note_dialog.set_as_activator(no_notes_msg, position="right")
+
 
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
 
             
-            #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
 
 
@@ -1265,19 +1290,23 @@ class DiscussionWdg(BaseRefreshWdg):
                 contexts_div.add(checkbox)
                 contexts_div.add(context)
                 contexts_div.add("&nbsp;"*3)
-            
-        #if mode == "icon":
-        #    contexts = contexts[:1]
+
+
+        processes_div = DivWdg()
+        top.add(processes_div)
+
+        content_div = DivWdg()
+        top.add(content_div)
 
         # go through every process and display notes.
-        #for context in contexts:
         for process in process_notes:
             #notes_list = context_notes.get(context)
 
             # This widget used to be context centric ... it is now process centric
             # ... for now, make the context variable equal to process
             context = process
-            notes_list = process_notes.get(context)
+
+            notes_list = process_notes.get(process)
 
             note_keys = []
             for note in notes_list:
@@ -1295,45 +1324,45 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-            context_top = DivWdg()
-            context_top.add_class("spt_discussion_context_top")
-            context_top.add_class("self_context")
-            context_top.add_class("hand")
-            #context_top.add_class("hand")
-            context_top.add_attr("self_context", context.encode('utf-8'))
-            top.add(context_top)
+            process_top = DivWdg()
+            processes_div.add(process_top)
+
+            process_top.add_class("spt_discussion_process_top")
+            process_top.add_class("self_context")
+            process_top.add_class("hand")
+            process_top.add_attr("self_context", context.encode('utf-8'))
 
             if context not in self.default_contexts_open:
-                context_top.add_attr("spt_state", 'closed')
+                process_top.add_attr("spt_state", 'closed')
 
             if mode == "icon":
                 if last_context.endswith("/review") or last_context.endswith("/error"):
-                    context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
-                    context_wdg.add_style("color: rgb(232, 74, 77)")
-                    context_wdg.add_style("margin-top: 2px")
-                    context_top.add("<div style='height: 3px'></div>")
+                    process_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
+                    process_wdg.add_style("color: rgb(232, 74, 77)")
+                    process_wdg.add_style("margin-top: 2px")
+                    process_top.add("<div style='height: 3px'></div>")
                 else:
-                    context_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL")
+                    process_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL")
 
-                context_top.add(context_wdg)
+                process_top.add(process_wdg)
                 if count:
-                    context_top.add("<i> (%s) </i>" % count)
+                    process_top.add("<i> (%s) </i>" % count)
 
-                context_wdg.add_style("margin-left: 5px")
+                process_wdg.add_style("margin-left: 5px")
 
 
             else:
-                context_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL", size="12")
-                context_top.add(context_wdg)
-                context_wdg.add_style("float: left")
+                process_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL", size="12")
+                process_top.add(process_wdg)
+                process_wdg.add_style("float: left")
 
                 # process arg is meaningless
-                context_wdg = self.get_context_wdg(process, context, count)
+                process_wdg = self.get_context_wdg(process, context, count)
 
-                context_top.add(context_wdg)
-                context_top.add_style("min-width: 300px")
+                process_top.add(process_wdg)
+                process_top.add_style("min-width: 300px")
                 if last_context.endswith("/review") or last_context.endswith("/error"):
-                    context_wdg.add_style("color: #F00")
+                    process_wdg.add_style("color: #F00")
 
 
             if self.contexts:
@@ -1353,15 +1382,34 @@ class DiscussionWdg(BaseRefreshWdg):
             context_count = 0
 
             note_dialog_div = DivWdg()
-            context_top.add(note_dialog_div)
+            process_top.add(note_dialog_div)
             note_dialog_div.add_style("font-size: 12px")
-           
-            note_dialog = DialogWdg(display=False)
-            note_dialog_div.add(note_dialog)
-            note_dialog.add_title("Notes for: %s" % context)
-            note_dialog.add_style("overflow-y: auto")
-            #note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
-            note_dialog.set_as_activator(context_wdg, position="right")
+
+            if use_dialog in [False, 'false']:
+                note_dialog = DivWdg()
+                note_dialog_div.add(note_dialog)
+                unique_id = note_dialog.set_unique_id()
+                note_dialog.add_style("border: solid 1px #DDD")
+                note_dialog.add_style("width: 100%")
+                note_dialog.add_style("height: auto")
+                note_dialog.add_style("display: none")
+                note_dialog.add_style("box-sizing: border-box")
+                note_dialog.add_style("margin: 0px 30px 10px 20px")
+                note_dialog.add_style("padding: 0px 10px")
+                process_wdg.add_behavior( {
+                    'type': 'click',
+                    'unique_id': unique_id,
+                    'cbjs_action': '''
+                    spt.toggle_show_hide( document.id(bvr.unique_id) );
+                    '''
+                } )
+            else:
+                note_dialog = DialogWdg(display=False)
+                note_dialog_div.add(note_dialog)
+                note_dialog.add_title("Notes for: %s" % context)
+                note_dialog.add_style("overflow-y: auto")
+                #note_dialog.set_as_activator(process_wdg, offset={'x':0,'y':0})
+                note_dialog.set_as_activator(process_wdg, position="right")
 
 
             show_add = self.kwargs.get("show_add")
@@ -1413,12 +1461,17 @@ class DiscussionWdg(BaseRefreshWdg):
             content = DivWdg()
             note_dialog.add(content)
             content.add_style("min-width: 300px")
+            if (use_dialog):
+                content.add_style("width: 395px")
+            else:
+                content.add_style("width: 100%")
+
             content.add_style("min-height: 150px")
             content.add_class("spt_discussion_content")
             content.add_color("background", "background")
             
             # context and parent_key are for dynamic update
-            context_wdg.add_behavior( {
+            process_wdg.add_behavior( {
                 'type': 'click',
                 'note_keys': note_keys,
                 'default_num_notes': self.default_num_notes,
@@ -1427,7 +1480,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 'context': context,
                 'parent_key': self.parent.get_search_key(),
                 'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_discussion_context_top");
+                var top = bvr.src_el.getParent(".spt_discussion_process_top");
                 if (top.getAttribute("spt_is_loaded") == "true") {
                     return;
                 }
@@ -1439,7 +1492,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     note_expandable: bvr.note_expandable,
                     note_format: bvr.note_format,
                     context: bvr.context,
-                    parent_key: bvr.parent_key
+                    parent_key: bvr.parent_key,
                 }
 
                 var el = top.getElement(".spt_discussion_content");
@@ -1477,10 +1530,8 @@ class DiscussionWdg(BaseRefreshWdg):
 
         div.add_color("color", "color")
         div.add_style("padding", "0px 0px 5px 5px")
-        #div.add_color("background", "background", -5, -5)
         div.add_style("height", "15px")
         div.add_style("font-weight", "bold")
-        #div.add_style("margin-bottom", "-1px")
         div.add_style("border-width: 0px 0px 0px 0px")
         div.add_style("border-style: solid")
         div.add_color("border-color", "table_border")
@@ -1500,10 +1551,6 @@ class DiscussionWdg(BaseRefreshWdg):
         count_div.add_style("font-style: italic")
         count_div.add_style("margin-left: 3px")
 
-        #count_div.add_update( {
-        #    'search_key': self.kwargs.get("search_key"),
-        #    'expression': "({@COUNT(sthpw/note['context','%s'])})" % context,
-        #} )
 
         return div
 
@@ -1560,19 +1607,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 
 
-            if True and parent:
-
-                """
-                search = Search("sthpw/snapshot")
-                search.add_parent_filter(parent)
-                #search.add_filter("process", process)
-                search.add_filter("context", context)
-                parent_snapshots = search.get_sobjects()
-                #parent_snapshots = Snapshot.get_by_sobject(parent, process=process)
-                """
-
-                #context = "attachment"
-                #parent_snapshots = Search.eval("@SOBJECT(sthpw/note.connect['context','%s'].sthpw/snapshot)" % context, notes)
+            if parent:
 
                 for note in notes:
 
@@ -1609,9 +1644,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
         
         context_count = 0
 
-
-
-       
+        width = self.kwargs.get("width") or "100%"
 
         for i, note in enumerate(notes):
 
@@ -1630,19 +1663,9 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
             note_wdg = self.get_note_wdg(note, note_hidden=note_hidden)
 
-
-            """
-            if i % 2 == 0:
-                note_wdg.add_color("background", "background", -3)
-            else:
-                note_wdg.add_color("background", "background", -6)
-            note_wdg.add_style("border-style: solid")
-            note_wdg.add_style("border-width: 0 0 1px 0")
-            note_wdg.add_style("border-color: %s" % div.get_color("table_border"))
-            """
-
             note_content.add(note_wdg)
-            note_wdg.add_style("width: 395px")
+
+            note_wdg.add_style("width: %s" % width)
 
             context_count += 1
 
@@ -2707,55 +2730,3 @@ class NoteStatusEditWdg(BaseRefreshWdg):
         return div
 
 
-'''
-#Testing of using the gear menu code 
-class NoteEditMenuWdg(BaseRefreshWdg):
-
-    def get_display(self):
-        from tactic.ui.container import SmartMenu, SmartMenuButtonDropdownWdg
-        menus = [ self.get_main_menu(), self.get_status_menu() ]
-
-    
-        #from tactic.ui.widget import SingleButtonWdg
-        #btn_dd = SingleButtonWdg(title='Global Options', icon=IconWdg.INFO, show_arrow=True)
-        btn = IconWdg(icon=IconWdg.INFO)
-
-
-        #btn_dd.add_behavior( { 'type': 'hover',
-        #            'mod_styles': 'background-image: url(/context/icons/common/gear_menu_btn_bkg_hilite.png); ' \
-        #                            'background-repeat: no-repeat;' } )
-        smenu_set = SmartMenu.add_smart_menu_set( btn, { 'NOTE_EDIT_MENU': menus } )
-        btn.add_class( "SPT_SMENU_CONTAINER" )
-        #SmartMenu.assign_as_local_activator( btn, "NOTE_EDIT_MENU", True )
-        btn_set = SmartMenuButtonDropdownWdg(menus=menus)
-        return btn_set
-
-
-    def get_main_menu(self):
-        return { 'menu_tag_suffix': 'MAIN', 'width': 100, 'opt_spec_list': [
-            { "type": "action", "label": "Edit",  "bvr_cb": {'cbjs_action': "alert('Edt')"} },
-            { "type": "action", "label": "Delete" },
-            { "type": "submenu", "label": "Status", "submenu_tag_suffix": "STATUS" },
-        ] }
-
-
-    def get_status_menu(self):
-        return {
-            'menu_tag_suffix': 'STATUS', 'width': 80, 'opt_spec_list': [
-
-                # { "type": "title", "label": "Edit" },
-
-                { "type": "action", "label": "New",
-                    "bvr_cb": {'cbjs_action': "alert(123)"}
-                },
-
-                { "type": "action", "label": "Read",
-                    "bvr_cb": {'cbjs_action': "alert(123)"}
-                },
-
-                { "type": "action", "label": "Old",
-                     "bvr_cb": {'cbjs_action':"alert(123)"}
-                }
-
-        ] }
-'''
