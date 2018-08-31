@@ -2617,6 +2617,13 @@ class SObject(object):
         if not prefix:
             prefix = self.get_table()
             prefix = prefix.upper()
+
+        elif prefix.startswith("{") and prefix.endswith("}"):
+            prefix = prefix.strip("{")
+            prefix = prefix.strip("}")
+            prefix = Search.eval(prefix, self, single=True)
+
+
         return prefix
 
 
@@ -3016,6 +3023,10 @@ class SObject(object):
 
     def has_value(self, name):
         '''determines if the sobject contains a value with the given name'''
+
+        if name.find("->") != -1:
+            parts = name.split("->")
+            name = parts[0]
 
         # first look at the update data
         if self.update_data.has_key(name):
