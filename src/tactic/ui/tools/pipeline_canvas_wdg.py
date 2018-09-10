@@ -5188,7 +5188,7 @@ spt.pipeline.SetNodeValueCmd = function(node, values, orig_values) {
 		for(var i = 0; i < values.length; i++){
 			var name = values[i].name
 			var value = values[i].value
-			var kwargs = values[i].kwargs
+			var kwargs = values[i].kwargs || {}
 			workflow[name] = value;
 
 			// node.properties goes into xml, code is redundant but it works for now
