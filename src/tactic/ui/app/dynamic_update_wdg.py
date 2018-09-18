@@ -512,7 +512,6 @@ class DynamicUpdateCmd(Command):
                     feed_search = Search.eval(feed_expr)
                     feed_search.add_filter("timestamp", last_timestamp, op=">")
                     sobjects = feed_search.get_sobjects()
-                    print sobjects, "**!!"
                     if not sobjects:
                         continue
                     values['feed_sobjects'] = sobjects
