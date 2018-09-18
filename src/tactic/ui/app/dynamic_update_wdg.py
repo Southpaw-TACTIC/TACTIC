@@ -405,7 +405,7 @@ class DynamicUpdateCmd(Command):
         timestamp = timestamp.strftime(format)
         
         updates = self.kwargs.get("updates")
-        
+
         if isinstance(updates, basestring):
             updates = jsonloads(updates)
         last_timestamp = self.kwargs.get("last_timestamp")
@@ -467,7 +467,7 @@ class DynamicUpdateCmd(Command):
                     search_key = "%s&code=%s" % (search_type, search_code)
                 changed_keys.add(u'%s'%search_key)
                 changed_types.add(search_type)
-
+  
         intersect_keys = client_keys.intersection(changed_keys)
         
         from pyasm.web import HtmlElement
@@ -507,6 +507,16 @@ class DynamicUpdateCmd(Command):
                 elif search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                     continue
                
+                feed_expr = values.get("feed_expr")
+                if feed_expr:
+                    feed_search = Search.eval(feed_expr)
+                    feed_search.add_filter("timestamp", last_timestamp, op=">")
+                    sobjects = feed_search.get_sobjects()
+                    print sobjects, "**!!"
+                    if not sobjects:
+                        continue
+                    values['feed_sobjects'] = sobjects
+                    
                 # evaluate any compare expressions
                 compare = values.get("compare")
                 if compare:
