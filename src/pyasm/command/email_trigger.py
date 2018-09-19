@@ -19,6 +19,7 @@ import smtplib
 import types
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.mime.application import MIMEApplication
 from email.MIMEImage import MIMEImage
 from email.Utils import formatdate
 from command import CommandException
@@ -437,11 +438,14 @@ class SendEmail(Command):
             #msg_text = MIMEText(message, _subtype=st, _charset=charset)
             #msg.attach(msg_text)
 
-            fp = open(path, "rb")
-            img = MIMEImage(fp.read())
-            fp.close()
-            img.add_header('Content-ID', '<{}>'.format(path))
-            msg.attach(img)
+            with open(path, "rb") as fil:
+                part = MIMEApplication(
+                    fil.read(),
+                    Name=os.path.basename(path)
+                )
+            # After the file is closed
+            part['Content-Disposition'] = 'attachment; filename="%s"' % os.path.basename(path)
+            msg.attach(part)
 
        
 
