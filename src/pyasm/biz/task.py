@@ -899,7 +899,7 @@ class Task(SObject):
 
     def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[],
             skip_duplicate=True, mode='standard',start_offset=0,assigned=None,
-            start_date=None, schedule_mode=None, parent_process=None
+            start_date=None, schedule_mode=None, parent_process=None, status=None
 
         ):
         '''add initial tasks based on the pipeline of the sobject'''
@@ -962,14 +962,6 @@ class Task(SObject):
         if not pipeline:
             print "WARNING: pipeline '%s' does not exist" %  pipeline_code
             return []
-
-
-        # get all of the processes that will have tasks
-        if processes:
-            process_names = processes
-        else:
-            process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual", "hierarchy"])
-
 
         # remember which ones already exist
         existing_tasks = Task.get_by_sobject(sobject, order=False)
@@ -1052,7 +1044,7 @@ class Task(SObject):
                 end_date_str = end_date.strftime("%Y-%m-%d")
 
                 # Create the task
-                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned)
+                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned, status=status)
                 
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -1087,18 +1079,21 @@ class Task(SObject):
             start_date = SPTDate.add_business_days(start_date, start_offset)
 
 
+
+
         # New task generator
         use_new_generator = True
-        if use_new_generator and not process_names:
+        if use_new_generator and not processes:
             task_generator = TaskGenerator()
             tasks = task_generator.execute(sobject, pipeline, start_date=start_date)
             old_generator_processes = []
         else:
+            process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual", "hierarchy"])
             old_generator_processes = process_names
 
 
 
-        # DEPRECATED
+        # create tasks when processes are explicitly specified
         for process_name in old_generator_processes:
 
             process_sobject = process_sobjects.get(process_name)
@@ -1141,7 +1136,7 @@ class Task(SObject):
 
                     # create the subtasks
                     if subpipeline_code:
-                        subtasks = Task.add_initial_tasks(sobject, subpipeline_code, start_date=start_date, parent_process=process_name )
+                        subtasks = Task.add_initial_tasks(sobject, subpipeline_code, start_date=start_date, parent_process=process_name, status=status )
 
                     # if we only have subtasks then remap the start date to the end
                     if task_creation == "subtasks_only":
@@ -1241,7 +1236,7 @@ class Task(SObject):
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
 
-                last_task = Task.create(sobject, full_process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
+                last_task = Task.create(sobject, full_process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, status=status)
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -1493,9 +1488,8 @@ class TaskGenerator(object):
 
 
 
-        # TODO: handled all of thes
+        # TODO: handled all of these
         #------------------
-        # create all of the tasks
         description = ""
         tasks = []
         bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
@@ -1654,11 +1648,6 @@ class TaskGenerator(object):
         process_obj = pipeline.get_process(process_name)
 
         workflow = process_sobject.get_json_value("workflow") or {}
-        task_creation = workflow.get('task_creation')
-        if task_creation == "none":
-            return
-
-
         process_type = process_obj.get_type()
         attrs = process_obj.get_attributes()
 
@@ -1681,7 +1670,6 @@ class TaskGenerator(object):
                         generator = TaskGenerator()
                         subtasks = generator.execute(self.sobject, subpipeline, start_date=self.start_date, parent_process=process_name)
 
-
                         self.tasks.extend(subtasks)
 
 
@@ -1701,12 +1689,24 @@ class TaskGenerator(object):
 
 
 
-        # determine if tasks are created for this process
+
         task_creation = workflow.get("task_creation")
-        if task_creation == "none":
+
+        if process_type in ["node","approval", "manual", "hierarchy"]:
+            # by default, tasks are created here
+            if task_creation in ['none', 'false']:
+                return
+
+        else:
+            # by default, most nodes do not create tasks unless explicitly set with "task_creation"
+            if task_creation not in ['true', True]:
+                return
+
+
+        # task that are autocreated should not be created here
+        autocreate_task = workflow.get('autocreate_task')
+        if autocreate_task in ['true', True]:
             return
-
-
 
 
 
@@ -1838,7 +1838,12 @@ class TaskGenerator(object):
                     continue
                 context = self._get_context(process_name, context)
 
-                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type)
+                #import time
+                #start = time.time()
+                triggers = "none"
+                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers)
+                #print "process: ", full_process_name
+                #print "time: ", time.time() - start
                  
                 # this avoids duplicated tasks for process connecting to multiple processes 
                 new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )

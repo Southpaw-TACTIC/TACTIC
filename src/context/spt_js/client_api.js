@@ -319,9 +319,19 @@ TacticServerStub = function() {
         return this._delegate("ping");
     }
 
-    this.async_ping = function() {
-        console.log("Async ping not implemented");
-        return "OK";
+    this.async_ping = function(kwargs={}) {
+    
+        var callback = kwargs['cbjs_action'];
+        if (!callback) {
+            callback = kwargs['callback'];
+        }
+        var on_error = function(e) {
+            callback(e);
+        };
+
+        this._delegate("ping", arguments, kwargs, null, callback, on_error);
+        return;
+    
     }
 
 

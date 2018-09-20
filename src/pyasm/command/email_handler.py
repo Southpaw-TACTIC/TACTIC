@@ -50,7 +50,9 @@ class EmailHandler(object):
         '''determine whether an email should be sent'''
         return True
         
-
+    def send_email(self):
+        '''return False to skip sending an email'''
+        return True
 
     def get_mail_users(self, column):
         # mail groups
@@ -84,7 +86,6 @@ class EmailHandler(object):
                     if results:
                         if isinstance(results[0], basestring):
                             login_sobjs = Search.eval("@SOBJECT(sthpw/login['login','in','%s'])" %'|'.join(results),  list=True)
-                        
                             login_list = SObject.get_values(login_sobjs, 'login')
                             
                             for result in results:
@@ -113,7 +114,7 @@ class EmailHandler(object):
 
         for login in logins:
             recipients.add(login) 
-
+ 
         return recipients
 
 

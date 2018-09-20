@@ -841,6 +841,10 @@ class EditWdg(BaseRefreshWdg):
 
             if show_title:
                 title = widget.get_title()
+                if title.find("->") != -1:
+                    parts = title.split("->")
+                    title = parts[1]
+
 
                 title_div = DivWdg()
                 title_div.add(title)

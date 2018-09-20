@@ -938,16 +938,17 @@ class Search(Base):
                 # assume default search_type/search_id schema like task, snapshot
                 # filter out the sobjects that are not the same search type
                 # as the search
-                search_type = self.get_search_type()
+                full_search_type = self.get_search_type()
                 filtered_sobjects = []
                 for sobject in sobjects:
-                    if sobject.get_value("%ssearch_type" % prefix) != search_type:
+                    if sobject.get_value("%ssearch_type" % prefix) != full_search_type:
                         continue
                     filtered_sobjects.append(sobject)
                 sobjects = filtered_sobjects
 
                 code_column = "%ssearch_code" % prefix
-                has_code = SearchType.column_exists(search_type, code_column)
+                has_code = SearchType.column_exists(related_type, code_column)
+
                 if has_code:
                     column = "%ssearch_code" % prefix
                     column2 = "code"
@@ -1072,20 +1073,20 @@ class Search(Base):
 
                     if relationship == "search_code":
                         search.add_column("code", distinct=True)
-                        self.add_search_filter("search_code", search)
+                        self.add_search_filter("search_code", search, op=op)
                     else:
                         search.add_column("id", distinct=True)
-                        self.add_search_filter("search_id", search)
+                        self.add_search_filter("search_id", search, op=op)
 
                 else:
                     search.add_filter("search_type", self.get_search_type())
 
                     if relationship == 'search_code':
                         search.add_column("search_code", distinct=True)
-                        self.add_search_filter("code", search)
+                        self.add_search_filter("code", search, op=op)
                     else:
                         search.add_column("search_id", distinct=True)
-                        self.add_search_filter("id", search)
+                        self.add_search_filter("id", search, op=op)
 
 
                 self.add_op('and')
@@ -2616,6 +2617,13 @@ class SObject(object):
         if not prefix:
             prefix = self.get_table()
             prefix = prefix.upper()
+
+        elif prefix.startswith("{") and prefix.endswith("}"):
+            prefix = prefix.strip("{")
+            prefix = prefix.strip("}")
+            prefix = Search.eval(prefix, self, single=True)
+
+
         return prefix
 
 
@@ -3015,6 +3023,10 @@ class SObject(object):
 
     def has_value(self, name):
         '''determines if the sobject contains a value with the given name'''
+
+        if name.find("->") != -1:
+            parts = name.split("->")
+            name = parts[0]
 
         # first look at the update data
         if self.update_data.has_key(name):

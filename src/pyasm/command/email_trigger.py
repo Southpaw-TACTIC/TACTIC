@@ -19,6 +19,7 @@ import smtplib
 import types
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.mime.application import MIMEApplication
 from email.MIMEImage import MIMEImage
 from email.Utils import formatdate
 from command import CommandException
@@ -168,7 +169,8 @@ class EmailTrigger(Trigger):
 
             # set the email
             self.send(to_users, cc_users, bcc_users, subject, message)
-
+            
+            
             from_user = Environment.get_user_name()
 
             project_code = Project.get_project_code()
@@ -436,11 +438,14 @@ class SendEmail(Command):
             #msg_text = MIMEText(message, _subtype=st, _charset=charset)
             #msg.attach(msg_text)
 
-            fp = open(path, "rb")
-            img = MIMEImage(fp.read())
-            fp.close()
-            img.add_header('Content-ID', '<{}>'.format(path))
-            msg.attach(img)
+            with open(path, "rb") as fil:
+                part = MIMEApplication(
+                    fil.read(),
+                    Name=os.path.basename(path)
+                )
+            # After the file is closed
+            part['Content-Disposition'] = 'attachment; filename="%s"' % os.path.basename(path)
+            msg.attach(part)
 
        
 
@@ -603,15 +608,16 @@ class EmailTrigger2(EmailTrigger):
 
         if not to_users:
             return
-        print "sending email: ", to_users
 
         #sobj_data = main_sobject.get_aux_data()
         #email_info = sobj_data.get('__tactic_email_info__')
         #extra_ccs = email_info.get('mail_cc')
         #extra_bccs = email_info.get('mail_bcc')
-        # set the email
-        self.send(to_users, cc_users, bcc_users, subject, message)
-        
+        # send the email
+        if handler.send_email():
+            self.send(to_users, cc_users, bcc_users, subject, message)
+            self.add_description('\nEmail sent to [%s]' %all_emails) 
+    
         if isinstance(to_users, set) and isinstance(cc_users, set) and \
                 isinstance(bcc_users, set):
             all_users = to_users.union(cc_users).union(bcc_users)
@@ -635,7 +641,6 @@ class EmailTrigger2(EmailTrigger):
         project_code = Project.get_project_code()
 
         all_emails = ", ".join(email_list)
-        self.add_description('\nEmail sent to [%s]' %all_emails) 
         self.add_notification(email_users, subject, message, project_code, from_user='')
 
     def add_notification(all_users, subject, message, project_code, from_user=''):

@@ -365,7 +365,7 @@ class BaseAppServer(Base):
         login_name = Environment.get_user_name()
 
         is_upload = '/UploadServer' in web.get_request_url().to_string()
-       
+
         # check if the user has permission to see this project
         project = web.get_context_name()
         if project == 'default':
@@ -701,7 +701,7 @@ class BaseAppServer(Base):
 
 
     def handle_security(self, security, allow_guest=False):
-        # set the seucrity object
+        # set the security object
 
         WebContainer.set_security(security)
 
@@ -710,6 +710,7 @@ class BaseAppServer(Base):
         is_from_login = web.get_form_value("is_from_login")
         
         ticket_key = web.get_form_value("login_ticket")
+
         # attempt to login in with a ticket
         if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
