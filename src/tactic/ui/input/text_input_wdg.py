@@ -114,7 +114,6 @@ class TextInputWdg(BaseInputWdg):
         if self.password in [True, 'true']:
             self.password = True
 
-        self.custom_text_wdg = kwargs.get("custom_text_wdg")
         input_type = kwargs.get("type")
 
         if self.password:
