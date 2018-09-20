@@ -93,6 +93,15 @@ class TextInputWdg(BaseInputWdg):
  
     def get_text(self):
         return self.text
+
+
+    def get_input_group_wdg(self):
+        input_group = DivWdg()
+        input_group.add_style("width: %s" % self.width)
+        input_group.add_style("height: %s" % self.height)
+        input_group.add_style("margin-right: 5px")
+
+        return input_group
  
 
     def __init__(self, **kwargs):
@@ -454,12 +463,9 @@ class TextInputWdg(BaseInputWdg):
             label_wdg.add(self.name)
 
 
-        input_group = DivWdg()
-        div.add(input_group)
+        input_group = self.get_input_group_wdg()
 
-        input_group.add_style("width: %s" % self.width)
-        input_group.add_style("height: %s" % self.height)
-        input_group.add_style("margin-right: 5px")
+        div.add(input_group)
         self.text.add_style("height: %s" % self.height)
 
         icon_styles = self.kwargs.get("icon_styles")
@@ -714,6 +720,13 @@ class LookAheadTextInputWdg(TextInputWdg):
         self.hidden.set_name(name)
 
 
+    def get_styles(self):
+
+        styles = HtmlElement.style("")
+
+        return styles
+
+
 
     def init(self):
         self.text.add_attr("autocomplete", "off")
@@ -744,6 +757,10 @@ class LookAheadTextInputWdg(TextInputWdg):
         do_search = self.kwargs.get("do_search")
         if not do_search:
             do_search = 'true'
+
+        results_on_blur = self.kwargs.get("results_on_blur")
+        if not results_on_blur:
+            results_on_blur = "none"
 
         self.add_behavior( {
             'type': 'load',
@@ -848,6 +865,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'event_name': event_name,
             'validate': str(validate),
             'do_search': do_search,
+            'results_on_blur': results_on_blur,
             'cbjs_action': '''
           
             // put a delay in here so that a click in the results
@@ -857,7 +875,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             setTimeout( function() {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
-                el.setStyle("display", "none");
+                el.setStyle("display", results_on_blur);
 
                 spt.text_input.last_index = 0;
                 spt.text_input.index = -1;
@@ -1090,9 +1108,85 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         } )
 
 
+        default_show = self.kwargs.get("default_show")
+
+        if default_show:
+            self.top.add_behavior({
+                'type': 'load',
+                'custom': custom_cbk,
+                'do_search': do_search,
+                'search_type': self.search_type,
+                'filter_search_type': filter_search_type,
+                'script_path': script_path,
+                'filters': filters,
+                'column': column,
+                'mode': mode,
+                'keyword_mode': keyword_mode,
+                'relevant': relevant,
+                'case_sensitive': case_sensitive,
+                'value_column': value_column,
+                'results_class_name': results_class_name,
+                'bg_color': bgcolor,
+                'cbjs_action': '''
+
+                var class_name = bvr.results_class_name;
+
+                var cbk = function(html) {
+                    var el = bvr.src_el.getElement(".spt_input_text_results");
+                    el.innerHTML = html;
+                }
+                var kwargs = {
+                    args: {
+                        search_type: bvr.search_type,
+                        filter_search_type: bvr.filter_search_type,
+                        filters: bvr.filters,
+                        column: bvr.column,
+                        value_column: bvr.value_column,
+                        relevant: bvr.relevant,
+                        script_path: bvr.script_path,
+                        do_search: bvr.do_search,
+                        case_sensitive: bvr.case_sensitive,
+                        value: "",
+                        mode: bvr.mode,
+                        keyword_mode: bvr.keyword_mode
+                    },
+                    cbjs_action: cbk,
+                }
+
+                var server = TacticServerStub.get();
+                server.async_get_widget(class_name, kwargs);
+                '''
+                })
+
+
+
+        results_div = self.get_results_div()
+        self.top.add(results_div)
+
+        
+        exp = "@SOBJECT(config/client_trigger['event','%s'])" %event_name 
+        client_triggers = Search.eval(exp)
+        for client_trigger in client_triggers:
+            results_div.add_behavior( {
+                'type': 'listen',
+                'unique' : True,
+                'event_name': event_name,
+                'script_path': client_trigger.get_value('callback'),
+                'cbjs_action': '''
+
+                var input = bvr.firing_data;
+                input.firing_element = bvr.firing_element; 
+                // 2nd arg is the args for this script
+                spt.CustomProject.run_script_by_path(bvr.script_path, input);
+                '''
+                })
+
+        self.top.add(self.get_styles())
+
+
+    def get_results_div(self):
 
         results_div = DivWdg()
-        self.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
         #results_div.add_style("top: 25px")
@@ -1125,7 +1219,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
-        
         # this is when the user clicks on a result item
         # it doesn't do a search right away, it fires the lookahead|<sType> event
         results_div.add_relay_behavior( {
@@ -1153,24 +1246,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
-        
-        exp = "@SOBJECT(config/client_trigger['event','%s'])" %event_name 
-        client_triggers = Search.eval(exp)
-        for client_trigger in client_triggers:
-            results_div.add_behavior( {
-                'type': 'listen',
-                'unique' : True,
-                'event_name': event_name,
-                'script_path': client_trigger.get_value('callback'),
-                'cbjs_action': '''
+        return results_div
 
-                var input = bvr.firing_data;
-                input.firing_element = bvr.firing_element; 
-                // 2nd arg is the args for this script
-                spt.CustomProject.run_script_by_path(bvr.script_path, input);
-                '''
-                })
-        
 
     def fill_data(self):
 
@@ -1309,27 +1386,31 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 raise TacticException("The length of value list and display list needs to match in [%s]" %script_path)
 
         for idx, keywords in enumerate(display_results):
-            div = DivWdg()
+            div = self.get_result_wdg(keywords)
             top.add(div)
-            div.add_style("padding: 3px")
-            
-            if isinstance(keywords, str):
-                keywords = unicode(keywords, errors='ignore')
-
-            if isinstance(keywords, basestring) and  len(keywords) > max:
-                display = "%s..." % keywords[:max-3]
-            else:
-                display = keywords
-
-            div.add(display)
-            div.add_class("spt_input_text_result")
             value = value_results[idx]
             div.add_attr("spt_value", value)
+
             # turn off cache to prevent ascii error
             keywords = HtmlElement.get_json_string(keywords, use_cache=False)
             div.add_attr("spt_display", keywords)
 
 
+    def get_result_wdg(self, keywords):
+        div = DivWdg()
+        div.add_style("padding: 3px")
+        div.add_class("spt_input_text_result")
+
+        if isinstance(keywords, str):
+            keywords = unicode(keywords, errors='ignore')
+
+        if isinstance(keywords, basestring) and  len(keywords) > max:
+            display = "%s..." % keywords[:max-3]
+        else:
+            display = keywords
+        div.add(display)
+
+        return div
 
 
     def get_icon_result_wdg(self, results, values, labels):
@@ -1423,13 +1504,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
         for i, result in enumerate(results):
             display = labels[i]
-            div = DivWdg()
-            div.add(display)
-            div.add_style("padding: 3px")
-            div.add_class("spt_input_text_result")
-            # turn off cache to prevent ascii error
-            display = HtmlElement.get_json_string(display, use_cache=False)
-            div.add_attr("spt_display", display)
+            div = self.get_result_wdg(display)
             div.add_attr("spt_value", values[i])
             top.add(div)
         if not results:
