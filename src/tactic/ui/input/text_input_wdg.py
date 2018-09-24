@@ -369,10 +369,6 @@ class TextInputWdg(BaseInputWdg):
         top.add_class("spt_text_top")
         top.add_class("spt_input_text_top")
 
-        preselected = self.kwargs.get("preselected")
-        if preselected:
-            top.add_attr("spt_preselected", preselected)
-
 
         if self.kwargs.get("required") in [True, 'true']:
             required_div = DivWdg("*")
@@ -1353,9 +1349,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 if value != None:
                     self.hidden.set_value(value)
 
-
+    # postaction script runs after the result wdg is loaded
     def get_postaction(self):
-
         return ""
 
 
