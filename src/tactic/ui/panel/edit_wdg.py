@@ -841,7 +841,7 @@ class EditWdg(BaseRefreshWdg):
 
             if show_title:
                 title = widget.get_title()
-                if title.find("->") != -1:
+                if isinstance(title, basestring) and title.find("->") != -1:
                     parts = title.split("->")
                     title = parts[1]
 

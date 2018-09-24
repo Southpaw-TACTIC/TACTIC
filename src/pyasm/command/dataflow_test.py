@@ -142,7 +142,9 @@ class WorkflowCmd(Command):
             Workflow().init()
             #self._test_file()
             #self._test_checkin()
-            self._test_context_output()
+            #self._test_context_output()
+            self._test_snapshot_package()
+            self._test_store_state()
         except Exception, e:
             print "Error: ", e
             raise
@@ -345,7 +347,7 @@ class WorkflowCmd(Command):
     def _test_checkin(self):
 
         # create a dummy sobject
-        sobject = self.setup()
+        jobject = self.setup()
 
         # create a pipeline
         pipeline_xml = '''
@@ -477,7 +479,6 @@ class WorkflowCmd(Command):
 
 
 
-
         process = processes.get("a")
         process.set_json_value("workflow", {
             'output': {
@@ -532,6 +533,230 @@ class WorkflowCmd(Command):
         task.set_value("status", "complete")
         task.commit()
 
+
+    def _test_snapshot_package(self):
+
+        # create a dummy sobject
+        sobject = self.setup()
+
+        # create a pipeline
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="action" name="b"/>
+          <process type="approval" name="c"/>
+          <process type="approval" name="d"/>
+          <process type="action" name="e"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+          <connect from="c" to="d"/>
+          <connect from="d" to="e"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+
+        # first process will check in 2 files
+        process = processes.get("a")
+        process.set_json_value("workflow", {
+            'on_action': r'''
+
+            path = "/tmp/test.txt"
+            f = open(path, 'w')
+            f.write("OMG\n")
+            f.close()
+
+            path2 = "/tmp/test2.txt"
+            f = open(path2, 'w')
+            f.write("OMG2\n")
+            f.close()
+
+            sobject = input.get("sobject")
+            search_key = sobject.get("__search_key__")
+            snapshot1 = server.simple_checkin(search_key, "test", path, mode="move")
+            snapshot2 = server.simple_checkin(search_key, "test2", path2, mode="move")
+
+            snapshot_codes = [snapshot1.get("code"), snapshot2.get("code")]
+
+            # set the output packages based on the checkins
+            output['packages'] = {
+                'default': {
+                    'type': 'snapshot',
+                    'snapshot_codes': snapshot_codes
+                }
+
+            }
+
+            '''
+        } )
+        process.commit()
+
+
+        # second process checks the package
+        process = processes.get("b")
+        process.set_json_value("workflow", {
+            'on_action': r'''
+            '''
+        } )
+        process.commit()
+
+
+        # create a task for b
+        Task.create(sobject, process="c")
+        Task.create(sobject, process="d")
+
+
+        # second process checks the package
+        process = processes.get("e")
+        process.set_json_value("workflow", {
+            'on_action': r'''
+
+            print("---")
+            print(input)
+
+            # receive the packages
+            packages = input.get("packages")
+
+            package = packages.get("default") or {}
+            if package:
+                package_type = package.get("type")
+                sobject.set_value('snapshot_codes', ",".join(package.get("snapshot_codes")))
+            else:
+                sobject.set_value('snapshot_codes', "No package found")
+
+
+            '''
+        } )
+        process.commit()
+
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process,
+        }
+
+        Trigger.call(self, "process|pending", output)
+
+        # the pipeline will stop at the manual task, so we set the task to complete
+        # which will continue the workflow
+        task = Task.get_by_sobject(sobject, process="c")[0]
+        task.set_value("status", "Complete")
+        task.commit()
+
+
+        # the pipeline will stop at the manual task, so we set the task to complete
+        # which will continue the workflow
+        task = Task.get_by_sobject(sobject, process="d")[0]
+        task.set_value("status", "Complete")
+        task.commit()
+
+        print("????")
+        print("????")
+        print("????")
+        print("snapshot_codes: ", sobject.get_value("snapshot_codes", no_exception=True))
+        print("????")
+        print("????")
+        print("????")
+
+
+
+
+    def _test_store_state(self):
+        '''ensure the the state goes through an approval'''
+
+        # create a dummy sobject
+        sobject = self.setup()
+
+        # create a pipeline
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="approval" name="b"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+        # first process will check in 1 files
+        process = processes.get("a")
+        process.set_json_value("workflow", {
+            'on_action': r'''
+            path = "/tmp/test.txt"
+            f = open(path, 'w')
+            f.write("OMG\n")
+            f.close()
+
+            search_key = sobject.get_search_key()
+            snapshot = server.simple_checkin(search_key, "test", path, mode="move")
+            snapshot_codes = [snapshot.get("code")]
+
+            sobject.set_value("a_snapshot_code", snapshot_codes[0])
+ 
+            # set the output packages based on the checkins
+            output['packages'] = {
+                'default': {
+                    'type': 'snapshot',
+                    'snapshot_codes': snapshot_codes
+                }
+
+            }
+
+            '''
+        } )
+        process.commit()
+
+
+        task = Task.create(sobject, process="b")
+
+        # last process checks package
+        process = processes.get("c")
+        process.set_json_value("workflow", {
+            'on_action': r'''
+            default = input.get("packages").get("default")
+            snapshot_codes = default.get("snapshot_codes")
+            if snapshot_codes:
+                sobject.set_value("c_snapshot_code", snapshot_codes[0] )
+            else:
+                sobject.set_value("c_snapshot_code", "")
+
+            '''
+        } )
+        process.commit()
+
+
+
+
+
+        # Run the pipeline
+        process = "a"
+        input = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process,
+        }
+
+        import time
+        start = time.time()
+        Trigger.call(self, "process|pending", input)
+
+        task.set_value("status", "Complete")
+        task.commit()
+
+        print "time: ", time.time() - start
+
+        self.assertEquals( sobject.get("a_snapshot_code"), sobject.get("c_snapshot_code") )
 
 
 

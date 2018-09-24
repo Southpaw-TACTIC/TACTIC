@@ -12,6 +12,8 @@
 
 __all__ = ["EmailHandler", 'TaskAssignEmailHandler', 'NoteEmailHandler', 'GeneralNoteEmailHandler', 'GeneralPublishEmailHandler','TaskStatusEmailHandler', 'SubmissionStatusEmailHandler', 'SubmissionEmailHandler', 'SubmissionNoteEmailHandler', 'TestEmailHandler']
 
+import tacticenv
+
 from pyasm.common import Environment, Xml, Date
 from pyasm.security import Login, LoginGroup, Sudo
 from pyasm.search import Search, SObject, SearchType
@@ -189,7 +191,7 @@ class EmailHandler(object):
                 unit = data.get("login_ticket_unit") or "day"
 
                 from datetime import datetime
-                from datetutils import relativedelta
+                from dateutil.relativedelta import relativedelta
 
                 today = datetime.now()
 
@@ -199,9 +201,9 @@ class EmailHandler(object):
                 if expiry == "next_friday":
                     expiry_date = today + relativedelta(weekday=FR)
 
-                elif units == "hour":
+                if unit == "hour":
                     expiry_date = today + relativedelta(hours=expiry)
-                elif units == "weeks":
+                elif unit == "weeks":
                     expiry_date = today + relativedelta(weeks=expiry)
                 else:
                     expiry_date = today + relativedelta(days=expiry)
@@ -211,7 +213,7 @@ class EmailHandler(object):
                 security = Environment.get_security()
 
                 login_name = "admin"
-                ticket = security.generate_ticket(login_name, expiry=expiry, category="temp")
+                ticket = security.generate_ticket(login_name, expiry=expiry_date, category="temp")
 
                 env_sobjects['login_ticket'] = ticket
                 variables["TICKET"] = ticket.get("ticket")

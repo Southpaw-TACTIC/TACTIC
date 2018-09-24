@@ -13,7 +13,7 @@ __all__ = ['BaseRefreshWdg']
 
 import types
 
-from pyasm.common import Common, Xml
+from pyasm.common import Common, Xml, jsondumps
 from pyasm.search import Search, SObject
 from pyasm.web import Widget, WebContainer, WidgetException, HtmlElement, DivWdg, WidgetSettings
 
@@ -239,6 +239,8 @@ class BaseRefreshWdg(Widget):
                     value = 'false'
             elif isinstance(value, SObject):
                 value = value.get_search_key()
+            elif isinstance(value, dict):
+                value = jsondumps(value)
             elif not isinstance(value, basestring):
                 value = str(value)
             # replace " with ' in case the kwargs is a dict

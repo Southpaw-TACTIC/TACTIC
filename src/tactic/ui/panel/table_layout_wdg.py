@@ -2055,7 +2055,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.add_color("background", "background", -8)
             border_color = table.get_color("table_border", default="border")
         else:
-            tr.add_color("background", "background", -5)
+            tr.add_color("background", "background", -2)
             border_color = table.get_color("table_border", 0, default="border")
        
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
@@ -6624,7 +6624,8 @@ spt.table.expand_table = function(mode) {
         }
 
         var parent = table.getParent();
-        if (parent.scrollHeight > parent.clientHeight) {
+        // NOTE: this offset of "9" is very arbitrary
+        if (parent.scrollHeight > parent.clientHeight + 9) {
             header_parent = header_table.getParent();
             header_parent.setStyle("margin-right", "17px");
 

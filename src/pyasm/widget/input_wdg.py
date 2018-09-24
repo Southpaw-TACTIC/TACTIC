@@ -1230,7 +1230,7 @@ class SelectWdg(BaseInputWdg):
         elif labels_option != "":
             self.labels = string.split( labels_option, "|" )
             if len(self.values) != len(self.labels):
-                raise InputException("values [%s] does not have the same number of elements as [%s]" % (`my.values`, `my.labels`))
+                raise InputException("values [%s] does not have the same number of elements as [%s]" % (`self.values`, `self.labels`))
 
         else:
             self.labels = self.values[:]

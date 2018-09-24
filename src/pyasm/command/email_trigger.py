@@ -260,6 +260,7 @@ class EmailTrigger(Trigger):
             sender.add(user_email)
 
         for x in to_users:
+            print "ssssss: ", x
             if isinstance(x, Login):
                 email = x.get_full_email()
             elif isinstance(x, SObject):

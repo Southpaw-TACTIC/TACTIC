@@ -301,7 +301,7 @@ class SPTDate(object):
 
 
 
-    def get_time_ago(cls, date, convert=False):
+    def get_time_ago(cls, date, convert=False, start=None):
 
         if isinstance(date, basestring):
             date = parser.parse(date)
@@ -311,7 +311,10 @@ class SPTDate(object):
         else:
             date = cls.strip_timezone(date)
 
-        now = cls.now()
+        if start:
+            now = start
+        else:
+            now = cls.now()
 
         diff = now - date
         if diff.days < 0:

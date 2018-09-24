@@ -15,7 +15,7 @@ __all__ = ['Workflow', 'WorkflowException', 'BaseWorkflowNodeHandler', 'BaseProc
 
 import tacticenv
 
-from pyasm.common import Common, Config, jsondumps, TacticException, Container, Environment
+from pyasm.common import Common, Config, jsondumps, jsonloads, TacticException, Container, Environment
 from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task, Note
@@ -45,13 +45,14 @@ class WorkflowException(Exception):
 
 class Workflow(object):
 
-    def init(self, startup=False):
+    def init(self, startup=False, quiet=False):
 
         is_initialized = Container.get("Workflow::is_initialized")
         if is_initialized == "true":
             return
 
-        print("Initializing Workflow Engine")
+        if not quiet:
+            print("Initializing Workflow Engine")
 
         # initialize the triggers for the workflow
         event = "process|pending"
@@ -159,6 +160,13 @@ class TaskStatusChangeTrigger(Trigger):
         if setting not in [True, 'true']:
             return
         """
+
+        # this prevents status trigger from running twice due to the workflow engine changing
+        # the status of all the tasks in a process.
+        is_internal = Container.get("TaskStatusChangeTrigger::internal")
+        if is_internal:
+            return
+
 
 
         # find the node in the pipeline
@@ -361,6 +369,29 @@ class BaseProcessTrigger(Trigger):
         return full_process_name
 
 
+    def get_process_sobj(self, pipeline=None, process=None):
+        if not process:
+            process = self.process
+        if not pipeline:
+            pipeline = self.pipeline
+
+        process_dict = Container.get_full_dict("NodeHandler::proces")
+
+        key = "NodeHandler::%s::%s" % (pipeline.get_code(), process)
+        process_sobj = process_dict.get(key)
+
+        if not process_sobj:
+            search = Search("config/process")        
+            search.add_filter("process", process)
+            search.add_filter("pipeline_code", pipeline.get_code())
+            process_sobj = search.get_sobject()
+
+            process_dict[key] = process_sobj
+
+
+        return process_sobj
+ 
+
 
     def set_all_tasks(self, sobject, process, status):
 
@@ -377,9 +408,15 @@ class BaseProcessTrigger(Trigger):
         title = status.replace("-", " ")
         title = title.replace("_", " ")
         title = Common.get_display_title(title)
+
+        # this will force TaskStatusChangeTrigger to ignore execution
+        Container.set("TaskStatusChangeTrigger::internal", True)
+
         for task in tasks:
             task.set_value("status", title)
             task.commit()
+
+        Container.set("TaskStatusChangeTrigger::internal", False)
 
         return tasks
 
@@ -402,10 +439,13 @@ class BaseProcessTrigger(Trigger):
 
         # get the node triggers
         # TODO: make this more efficient
+        """
         search = Search("config/process")        
         search.add_filter("pipeline_code", pipeline.get_code())
         search.add_filter("process", process)
         process_sobj = search.get_sobject()
+        """
+        process_sobj = self.get_process_sobj(pipeline, process)
 
         #print "callback process: ", process, pipeline.get_code()
         if not process_sobj:
@@ -458,19 +498,6 @@ class BaseProcessTrigger(Trigger):
 
 
 
-        # announce callback has been called for any listeners
-        """
-        search_type = pipeline.get_value("search_type")
-        if search_type:
-            event = "workflow|%s" % search_type
-            process_code = process_sobj.get_code()
-            Trigger.call(self, event, kwargs, process=process_code)
-
-            event = "workflow|%s" % search_type
-            Trigger.call(self, event, kwargs, process=process)
-        """
-
-
         return ret_val
 
 
@@ -483,6 +510,7 @@ class BaseProcessTrigger(Trigger):
         sobject = self.input.get("sobject")
         status = self.input.get("status")
         data = self.input.get("data")
+        packages = self.input.get("packages")
 
 
 
@@ -501,6 +529,7 @@ class BaseProcessTrigger(Trigger):
             'inputs': [x.get_name() for x in pipeline.get_input_processes(process)],
             'outputs': [x.get_name() for x in pipeline.get_output_processes(process)],
             'data': data,
+            'packages': packages,
         }
         return kwargs, input
 
@@ -686,43 +715,6 @@ class BaseProcessTrigger(Trigger):
         return state
 
 
-    def store_state(self):
-
-        # NOTE: use messagings for now
-        key = "%s|%s|state" % (self.sobject.get_search_key(), self.process)
-
-        from tactic_client_lib import TacticServerStub
-        server = TacticServerStub.get()
-
-        if not self.output_data:
-            self.output_data = {}
-
-        state = self.output_data.copy()
-        snapshot = state.get("snapshot")
-        if snapshot:
-            state['snapshot'] = snapshot.get_sobject_dict()
-
-        state = jsondumps(state)
-        server.log_message(key, state)
-
-
-        """
-        state_type = "???"
-
-        state_obj = SearchType.create(state_type)
-        state_obj.set_value("search_key", self.sobject.get_search_key())
-        state_obj.set_value("process", self.process)
-
-        state = self.output_data
-        state_sobj.set_json_value("state", state)
-
-        state_sobj.commit()
-        """
-
-
-
-
-
 
 class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
@@ -737,8 +729,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         self.process = self.input.get("process")
         self.parent_processes = self.input.get("parent_processes") or []
         self.sobject = self.input.get("sobject")
+
         self.input_data = self.input.get("data")
         self.data = self.input_data
+
+        # NOTE: this may not be necessary anymore because of the use of the Container flag
         self.internal = self.input.get("internal") or False
 
         if self.process.find(".") != -1:
@@ -748,11 +743,74 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         else:
             self.process_parts = []
 
+        # by default, output packages are the same as the input packages.  A node mae
+        # redefine the self.packages structure as it chooses.
+        self.input_packages = self.input.get("packages")
+        if not self.input_packages:
+            self.input_packages = {}
+            self.input_packages['default'] = {}
+            self.input['packages'] = self.input_packages
+        self.packages = self.input_packages
+        self.tasks = None
+
 
     def set_name(self, name):
         self.name = name
 
-        
+
+
+    def store_state(self):
+
+        print("Storing state")
+
+        # NOTE: use messagings for now
+        key = "%s|%s|state" % (self.sobject.get_search_key(), self.process)
+
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+
+        state = {}
+
+        state['data'] = self.data
+        state['packages'] = self.packages
+
+        print("store_state: ", state)
+
+        state = jsondumps(state)
+        server.log_message(key, state)
+
+        """
+
+        state_obj = SearchType.create(state_type)
+        state_obj.set_value("search_key", self.sobject.get_search_key())
+        state_obj.set_value("process", self.process)
+
+        state = self.output_data
+        state_sobj.set_json_value("state", state)
+
+        state_sobj.commit()
+        """
+
+
+    def retrieve_state(self):
+
+        print("Retrieving state")
+
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+
+        # NOTE: use messagings for now
+        key = "%s|%s|state" % (self.sobject.get_search_key(), self.process)
+
+        message = server.get_message(key)
+        state = message.get("message")
+        state = jsonloads(state)
+
+        return state
+
+
+
+
 
     def check_inputs(self):
         pipeline = self.input.get("pipeline")
@@ -819,6 +877,40 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         Trigger.call(self, "process|complete", output=self.input)
 
 
+
+
+    def get_output_packages(self):
+        '''build the output packages based on the checks of the current process node'''
+
+        package_type = "snapshot"
+
+        # get the packages data structure
+        packages = self.packages
+        package = packages.get("default")
+        if not package:
+            package = {}
+            packages['default'] = package
+
+
+        # set the type
+        package['type'] = package_type
+
+
+        # based on the type, create the package
+        if package_type == "snapshot":
+            from pyasm.biz import Snapshot
+            search = Search("sthpw/snapshot")
+            search.add_filter("process", self.process)
+            search.add_filter("is_latest", True)
+            snapshots = search.get_sobjects()
+            snapshot_codes = [x.get_code() for x in snapshots]
+            package['snapshot_codes'] = snapshot_codes
+
+        return packages
+
+
+
+
     def handle_complete(self):
 
         # run a nodes complete trigger
@@ -832,21 +924,24 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
-
-
         self.output_data = self.data
-        # ---------------------------------------
-        # build the output data
-        search = Search("config/process")        
-        search.add_filter("process", self.process)
-        search.add_filter("pipeline_code", self.pipeline.get_code())
-        process_sobj = search.get_sobject()
+        process_sobj = self.get_process_sobj()
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
         else:
             workflow = {}
 
-        process_output = workflow.get("output")
+
+
+        process_output = workflow.get("output") or {}
+
+
+        #packages = self.get_output_packages()
+
+        # ---------------------------------------
+        # build the output data
+
+        """
         if process_output:
             self.output_data = process_output.copy()
 
@@ -873,7 +968,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                     self.output_data['snapshot'] = snapshot
                     self.output_data['path'] = snapshot.get_lib_path_by_type()
 
-        self.store_state()
+        """
+
+        #self.store_state()
         # ---------------------------------------
 
 
@@ -892,7 +989,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 'parent_pipelines': self.parent_pipelines,
                 'parent_processes': self.parent_processes,
                 'process': output_process,
-                'data': self.output_data
+                'data': self.output_data,
+                'packages': self.packages
             }
 
             event = "process|pending"
@@ -914,7 +1012,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 'parent_pipelines': parent_pipelines,
                 'parent_processes': parent_processes,
                 'process': process,
-                'data': self.output_data
+                'data': self.output_data,
+                'packages': self.packages
             }
 
             event = "process|complete"
@@ -1006,15 +1105,16 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         if not self.check_inputs():
             return
 
+        print("pending: ", self.process)
+
         # simply calls action
         self.log_message(self.sobject, self.process, "pending")
 
 
+        process_sobj = self.get_process_sobj()
 
-        search = Search("config/process")        
-        search.add_filter("process", self.process)
-        search.add_filter("pipeline_code", self.pipeline.get_code())
-        process_sobj = search.get_sobject()
+
+        # check if tasks need to be autocreated
         autocreate_task = False
         mapped_status = "pending"
 
@@ -1044,15 +1144,18 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             full_process_name = self.get_full_process_name(self.process)
             tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
             if not tasks:
-                Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status)
+                tasks = Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status)
 
             else:
-                self.set_all_tasks(self.sobject, self.process, mapped_status)
+                tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
         else:
-            self.set_all_tasks(self.sobject, self.process, mapped_status)
+            tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
 
+
+        self.tasks = tasks
 
         self.run_callback(self.pipeline, self.process, "pending")
+
 
         Trigger.call(self, "process|action", output=self.input)
 
@@ -1076,11 +1179,23 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         return mapped_status
 
-    def handle_action(self):
-        self.log_message(self.sobject, self.process, "in_progress")
-        # does nothing
-        pass
 
+
+    def handle_action(self):
+
+        # if tasks was not set yet, then check for the tasks
+        if self.tasks == None:
+            full_process_name = self.get_full_process_name(self.process)
+            self.tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
+
+        # go to complete if there are no tasks
+        if not self.tasks:
+            Trigger.call(self, "process|complete", output=self.input)
+
+        else:
+            # store the state
+            self.store_state()
+            self.log_message(self.sobject, self.process, "in_progress")
 
 
     def handle_complete(self):
@@ -1152,6 +1267,7 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
         if not self.check_inputs():
             return
 
+
         # simply calls action
         Trigger.call(self, "process|action", output=self.input)
 
@@ -1165,15 +1281,9 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
 
         process_obj = self.pipeline.get_process(self.process)
+        process_sobj = self.get_process_sobj()
 
         # get the node's triggers
-        search = Search("config/process")        
-        search.add_filter("process", self.process)
-        search.add_filter("pipeline_code", self.pipeline.get_code())
-        process_sobj = search.get_sobject()
-
-        #process_sobj = self.pipeline.get_process_sobject(self.process)
-
 
         triggers = {}
         if process_sobj:
@@ -1185,21 +1295,24 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
         cbjs_action = triggers.get("cbjs_action")
         action_path = triggers.get("on_action_path")
         kwargs, input = self.build_trigger_input()
+        output = {}
+
         if action or action_path:
             from tactic.command import PythonCmd
             if action:
-                cmd = PythonCmd(code=action, input=input, **kwargs)
+                cmd = PythonCmd(code=action, input=input, output=output, **kwargs)
             else:
-                cmd = PythonCmd(script_path=action_path, input=input, **kwargs)
+                cmd = PythonCmd(script_path=action_path, input=input, output=output, **kwargs)
 
             ret_val = cmd.execute()
+
 
         elif cbjs_action:
             from tactic.command import JsCmd
             if cbjs_action:
-                cmd = JsCmd(code=cbjs_action, input=input, **kwargs)
+                cmd = JsCmd(code=cbjs_action, input=input, output=output, **kwargs)
             else:
-                cmd = JsCmd(script_path=script_path, input=input, **kwargs)
+                cmd = JsCmd(script_path=script_path, input=input, output=output, **kwargs)
 
             ret_val = cmd.execute()
         else:
@@ -1223,10 +1336,14 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
                 if ret_val not in [True, 'true']:
                     break
 
+        # copy the output from the scripts into the data structur that will be sent on
+        for name, value in output.items():
+            self.input[name] = value
+
 
         if ret_val in [False, 'false']:
             Trigger.call(self, "process|reject", self.input)
-        elif ret_val in [True, 'true']:
+        elif ret_val in [True, 'true', None, ""]:
             Trigger.call(self, "process|complete", self.input)
         elif ret_val in ["block", "wait"]:
             # NOTE: consider adding a "wait" message directly in the workflow
@@ -1241,10 +1358,7 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
     def handle_pending(self):
         self.log_message(self.sobject, self.process, "pending")
 
-        search = Search("config/process")        
-        search.add_filter("process", self.process)
-        search.add_filter("pipeline_code", self.pipeline.get_code())
-        process_sobj = search.get_sobject()
+        process_sobj = self.get_process_sobj()
 
         assigned = None
         if process_sobj:
@@ -1259,16 +1373,48 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         if not tasks:
             tasks = Task.add_initial_tasks(self.sobject, processes=[self.process], assigned=assigned)
         else:
-            self.set_all_tasks(self.sobject, self.process, "pending")
+            self.store_state()
+            tasks = self.set_all_tasks(self.sobject, self.process, "pending")
+
+        self.tasks = tasks
 
 
         Trigger.call(self, "process|action", self.input)
 
 
+
+
     def handle_action(self):
-        self.log_message(self.sobject, self.process, "action")
-        # does nothing
-        pass
+
+        # if tasks was not set yet, then check for the tasks
+        if self.tasks == None:
+            full_process_name = self.get_full_process_name(self.process)
+            self.tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
+
+        # go to complete if there are no tasks
+        if not self.tasks:
+            Trigger.call(self, "process|complete", output=self.input)
+
+        else:
+            # store the state
+            self.store_state()
+            self.log_message(self.sobject, self.process, "in_progress")
+
+
+
+
+    def handle_complete(self):
+        # restore the state
+        restore_state = True
+        if restore_state:
+            state = self.retrieve_state()
+            self.packages = state.get("packages")
+            self.data = state.get("data")
+
+        return super(WorkflowApprovalNodeHandler, self).handle_complete()
+
+
+
 
 
     def handle_reject(self):
