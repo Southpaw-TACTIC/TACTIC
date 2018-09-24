@@ -10,7 +10,7 @@
 #
 #
 
-import os, sys
+import os, sys, datetime
 
 # set up environment
 os.environ['TACTIC_APP_SERVER'] = "cherrypy"
@@ -135,8 +135,8 @@ def startup(port, server=""):
     # send the stdout and stdin out to files
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    sys.stdout = open('%s/stdout.log' % log_dir,'a')
-    sys.stderr = open('%s/stderr.log' % log_dir,'a')
+    sys.stdout = open('{}/{}_stdout.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")),'a')
+    sys.stderr = open('{}/{}_stderr.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")),'a')
 
 
 
