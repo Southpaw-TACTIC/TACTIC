@@ -875,7 +875,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             setTimeout( function() {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
-                el.setStyle("display", results_on_blur);
+                el.setStyle("display", bvr.results_on_blur);
 
                 spt.text_input.last_index = 0;
                 spt.text_input.index = -1;
@@ -953,6 +953,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         filters = self.kwargs.get("filters")
         script_path = self.kwargs.get("script_path")
         bgcolor = self.text.get_color("background3")
+
+        postaction = self.kwargs.get("postaction")
+        if not postaction:
+            postaction = self.get_postaction()
        
 
         self.top.add_relay_behavior( {
@@ -972,6 +976,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'value_column': value_column,
             'results_class_name': results_class_name,
             'bg_color': bgcolor,
+            'postaction': postaction,
             'cbjs_action': '''
             var key = evt.key;
             try {
@@ -1080,6 +1085,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 el.innerHTML = html;
 
                 spt.text_input.is_on = false;
+
+                if (bvr.postaction) {
+                    postaction_cbk = function(el) {
+                        eval(bvr.postaction);
+                    }
+                    postaction_cbk(el);
+                }
             }
             var kwargs = {
                 args: {
@@ -1127,6 +1139,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 'value_column': value_column,
                 'results_class_name': results_class_name,
                 'bg_color': bgcolor,
+                'postaction': postaction,
                 'cbjs_action': '''
 
                 var class_name = bvr.results_class_name;
@@ -1134,6 +1147,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 var cbk = function(html) {
                     var el = bvr.src_el.getElement(".spt_input_text_results");
                     el.innerHTML = html;
+
+                    if (bvr.postaction) {
+                       postaction_cbk = function(el) {
+                           eval(bvr.postaction);
+                       }
+                       postaction_cbk(el);
+                    }
                 }
                 var kwargs = {
                     args: {
@@ -1329,6 +1349,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 if value != None:
                     self.hidden.set_value(value)
 
+    # postaction script runs after the result wdg is loaded
+    def get_postaction(self):
+        return ""
 
 
 
