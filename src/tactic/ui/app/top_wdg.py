@@ -151,6 +151,7 @@ class TopWdg(Widget):
                 targets.push(dialog);
             }
 
+            var hitEls = [];
             // find out if any of the parents of target is the focus element
             for (var i = 0; i < spt.body.focus_elements.length; i++) {
                 var el = spt.body.focus_elements[i];
@@ -165,8 +166,10 @@ class TopWdg(Widget):
                     }
                 }
         
-                if (hit)
-                    break;
+                if (hit) {
+                    hitEls.push(el);
+                    continue;
+                }
                 else {
                     if ( el.isVisible() && el.on_complete ) {
                         el.on_complete(el);
@@ -177,8 +180,8 @@ class TopWdg(Widget):
       
                 }
             }
-            if (!hit)
-                spt.body.focus_elements = [];
+
+            spt.body.focus_elements = hitEls;
 
         }
         //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
