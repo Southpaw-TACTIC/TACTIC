@@ -1252,7 +1252,7 @@ class Snapshot(SObject):
     #get_by_sobject = staticmethod(get_by_sobject)
 
 
-    def get_by_sobject(sobject, context=None, process=None, is_latest=False, order_by="timestamp desc"):
+    def get_by_sobject(sobject, context=None, process=None, is_latest=False, order_by="timestamp desc", status=None):
         search = Search(Snapshot.SEARCH_TYPE)
 
         if context != None:
@@ -1260,6 +1260,9 @@ class Snapshot(SObject):
 
         if process != None:
             search.add_filter("process", process)
+
+        if status != None:
+            search.add_filter("status", status)
 
         if is_latest:
             search.add_filter('is_latest', True)
@@ -1614,7 +1617,7 @@ class Snapshot(SObject):
 
 
 
-    def get_by_sobjects(cls, sobjects, context=None, is_latest=False, is_current=False, show_retired=False, return_dict=False, version=None, process=None ):
+    def get_by_sobjects(cls, sobjects, context=None, is_latest=False, is_current=False, show_retired=False, return_dict=False, version=None, process=None, status=None ):
         '''NOTE: if context=None, is_latest=True, the result could be more than 1 since there can be multiple 
         is_latest per parent given several contexts. use return_dict=True in that case to get the latest for each subgroup
         of snapshots.
@@ -1687,6 +1690,15 @@ class Snapshot(SObject):
                 search.add_filters("process", process)
             else:
                 search.add_filter("process", process)
+
+        if status:
+            if type(status) == types.ListType:
+                search.add_filters("status", status)
+            else:
+                search.add_filter("status", status)
+
+
+
 
         if is_latest:
             search.add_filter("is_latest", True)

@@ -144,7 +144,8 @@ class WorkflowCmd(Command):
             #self._test_checkin()
             #self._test_context_output()
             self._test_snapshot_package()
-            self._test_store_state()
+            self._test_approval_state()
+            self._test_manual_state()
         except Exception, e:
             print "Error: ", e
             raise
@@ -668,7 +669,7 @@ class WorkflowCmd(Command):
 
 
 
-    def _test_store_state(self):
+    def _test_approval_state(self):
         '''ensure the the state goes through an approval'''
 
         # create a dummy sobject
@@ -759,6 +760,79 @@ class WorkflowCmd(Command):
         self.assertEquals( sobject.get("a_snapshot_code"), sobject.get("c_snapshot_code") )
 
 
+
+
+
+    def _test_manual_state(self):
+        '''ensure the the state goes through an approval'''
+
+        # create a dummy sobject
+        sobject = self.setup()
+
+        # create a pipeline
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="manual" name="b"/>
+          <connect from="a" to="b"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+        # first process will check in 1 files
+        process = processes.get("a")
+        process.set_json_value("workflow", {
+            'on_action': r'''
+            path = "/tmp/test.txt"
+            f = open(path, 'w')
+            f.write("OMG\n")
+            f.close()
+
+            search_key = sobject.get_search_key()
+            snapshot = server.simple_checkin(search_key, "test", path, mode="move")
+            snapshot_codes = [snapshot.get("code")]
+
+            sobject.set_value("a_snapshot_code", snapshot_codes[0])
+ 
+            # set the output packages based on the checkins
+            output['packages'] = {
+                'default': {
+                    'type': 'snapshot',
+                    'snapshot_codes': snapshot_codes
+                }
+
+            }
+
+            '''
+        } )
+        process.commit()
+
+
+        task = Task.create(sobject, process="b")
+
+        # Run the pipeline
+        a_process = "a"
+        input = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": a_process,
+        }
+
+        import time
+        start = time.time()
+        Trigger.call(self, "process|pending", input)
+
+
+        # query state of the task
+        key = "%s|%s|state" % (task.get_search_key(), process.get_value("process"))
+        print "key: ", key
+        message = Search.get_by_code("sthpw/message", key).get_json_value("message")
+
+        print "key: ", key
+        print "message: ", message
 
 
 
