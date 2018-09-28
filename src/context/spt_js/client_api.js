@@ -319,9 +319,8 @@ TacticServerStub = function() {
         return this._delegate("ping");
     }
 
-
-	this.async_ping = function(kwargs={}) {
-
+    this.async_ping = function(kwargs={}) {
+    
         var callback = kwargs['cbjs_action'];
         if (!callback) {
             callback = kwargs['callback'];
@@ -332,7 +331,6 @@ TacticServerStub = function() {
 
         this._delegate("ping", arguments, kwargs, null, callback, on_error);
         return;
-
     }
 
 

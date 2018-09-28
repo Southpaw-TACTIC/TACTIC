@@ -70,7 +70,7 @@ def startup(port, server=""):
     try:
         cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
     except:
-        cherypy_major_version = 3
+        cherrypy_major_version = 3
 
     if cherrypy_major_version >= 3:
         if not thread_count:
