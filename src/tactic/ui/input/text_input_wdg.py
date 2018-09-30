@@ -875,7 +875,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             setTimeout( function() {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
-                el.setStyle("display", results_on_blur);
+                el.setStyle("display", bvr.results_on_blur);
 
                 spt.text_input.last_index = 0;
                 spt.text_input.index = -1;
