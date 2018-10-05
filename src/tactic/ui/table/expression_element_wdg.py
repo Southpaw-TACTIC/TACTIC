@@ -191,6 +191,46 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         self.init_kwargs()
 
+
+
+    def get_data(self, sobject):
+
+        # use current sobject
+        if not self.expression:
+            self.init_kwargs()
+
+        try:
+            use_cache = self.get_option("use_cache") in ['true', True]
+
+            # TEST TESt TEST
+            use_cache = True
+
+            if use_cache:
+                result = sobject.get_value(self.get_name())
+            else:
+                result = self._get_result(sobject, self.expression)
+
+        except Exception, e:
+            result = ""
+
+        return result
+
+
+
+    def get_onload_js(self):
+        name = self.get_name()
+        value_class = "spt_%s_expr" % name
+        return '''
+        var value = sobject[element_name]
+        var value_el = cell.getElement(".%s");
+        value_el.setAttribute("search_key", sobject.__search_key__);
+        value_el.innerHTML = value;
+        ''' % value_class
+
+
+
+
+
     def get_required_columns(self):
         '''method to get the require columns for this'''
         return []
@@ -513,8 +553,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
         #self.init_kwargs()
 
         self.sobject = self.get_current_sobject()
-        if not self.sobject or self.sobject.is_insert():
+        if not self.sobject:
             return ""
+
+        if self.sobject.is_insert():
+            pass
+
 
         name = self.get_name()
 
@@ -561,6 +605,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
             widget = DivWdg()
             widget.add("Expression error: %s" % e)
             return widget
+
+
 
         if isinstance(result, list):
             delimiter = ', '

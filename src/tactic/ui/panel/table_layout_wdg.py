@@ -2993,6 +2993,22 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             td.add_class("spt_cell_edit")
             td.add_style("overflow: hidden")
 
+            if sobject.is_insert():
+                onload_js = widget.get_onload_js()
+                if onload_js:
+                    td.add_behavior( {
+                        'type': 'load',
+                        'cbjs_action': '''
+                        try {
+                            bvr.src_el.loadXYZ = function(element_name,cell, sobject) { %s }
+                        }
+                        catch(e) {
+                            console.log("Error in load code for column");
+                        }
+                        ''' % onload_js
+                    } )
+
+
 
             widths = self.kwargs.get("column_widths")
             if widths:
@@ -4429,6 +4445,11 @@ spt.table.add_extra_action = function(row, action, data) {
 
 
 
+spt.table.add_new_row = function(kwargs) {
+    return spt.table.add_new_item(kwargs);
+}
+
+
 
 
 spt.table.add_new_item = function(kwargs) {
@@ -4438,9 +4459,9 @@ spt.table.add_new_item = function(kwargs) {
     }
 
     var layout = spt.table.get_layout();
-    var table = layout.getElement(".spt_table_insert_table")
-    var insert_row = table.getElement(".spt_table_insert_row");
-    //var insert_row = spt.table.get_insert_row();
+    //var table = layout.getElement(".spt_table_insert_table")
+    //var insert_row = table.getElement(".spt_table_insert_row");
+    var insert_row = spt.table.get_insert_row();
 
     var search_type = layout.getAttribute("spt_search_type");
 
@@ -4525,6 +4546,7 @@ spt.table.add_new_item = function(kwargs) {
     return clone;
 
 }
+
 
 
 

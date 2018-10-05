@@ -701,11 +701,15 @@ class ThumbWdg(BaseTableElementWdg):
                 self.set_sobject(sobject)
             else:
                 return self.get_no_icon_wdg()
+
         elif sobject.get_id() == -1:
+            """
             div = DivWdg()
             div.add("&nbsp;")
             div.add_style("text-align: center")
             return div
+            """
+            pass
 
 
 

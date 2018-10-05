@@ -319,10 +319,16 @@ class Search(Base):
 
     def get_id_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = self.db_resource.get_database_impl()
         search_type = self.full_search_type
-        return database_impl.get_id_col(self.db_resource, search_type)
-        #return self.search_type_obj.get_id_col()
+        key = "SObject::%s::id_col" % search_type
+        id_col = Container.get(key)
+        if not id_col:
+            database_impl = self.db_resource.get_database_impl()
+            id_col =  database_impl.get_id_col(self.db_resource, search_type)
+            Container.put(key, id_col)
+
+        return id_col
+
 
 
     def get_code_col(self):
@@ -2707,9 +2713,18 @@ class SObject(object):
 
     def get_id_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = self.db_resource.get_database_impl()
         search_type = self.full_search_type
-        return database_impl.get_id_col(self.db_resource, search_type)
+        key = "SObject::%s::id_col" % search_type
+        id_col = Container.get(key)
+        if not id_col:
+            database_impl = self.db_resource.get_database_impl()
+            id_col =  database_impl.get_id_col(self.db_resource, search_type)
+            Container.put(key, id_col)
+
+        return id_col
+
+
+
 
     def get_id(self):
         '''returns the id of the sobject'''

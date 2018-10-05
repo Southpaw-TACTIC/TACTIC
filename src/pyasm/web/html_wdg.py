@@ -1457,6 +1457,9 @@ class Table(HtmlElement):
             self.dynamic_row = self.add_row()
 
 
+    def get_current_row(self):
+        return self.current_row
+
     def get_current_cell(self):
         return self.current_cell
 

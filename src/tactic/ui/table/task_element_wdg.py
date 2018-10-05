@@ -443,7 +443,10 @@ class TaskElementWdg(BaseTableElementWdg):
         self._get_display_options()
 
         web = WebContainer.get_web()
-        web_data = web.get_form_values("web_data")
+        if web:
+            web_data = web.get_form_values("web_data")
+        else:
+            web_data = None
         if web_data:
             try:
                 web_data = jsonloads(web_data[0])
