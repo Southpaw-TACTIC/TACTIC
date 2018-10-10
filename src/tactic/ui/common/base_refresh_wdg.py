@@ -240,7 +240,10 @@ class BaseRefreshWdg(Widget):
             elif isinstance(value, SObject):
                 value = value.get_search_key()
             elif isinstance(value, dict):
-                value = jsondumps(value)
+                try:
+                    value = jsondumps(value)
+                except:
+                    value = str(value)
             elif not isinstance(value, basestring):
                 value = str(value)
             # replace " with ' in case the kwargs is a dict
