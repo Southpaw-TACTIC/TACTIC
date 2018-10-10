@@ -1082,7 +1082,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
                 el.setStyle("display", "");
-                el.innerHTML = html;
+                //el.innerHTML = html;
+                spt.behavior.replace_inner_html(el, html);
 
                 spt.text_input.is_on = false;
 
@@ -1146,7 +1147,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
                 var cbk = function(html) {
                     var el = bvr.src_el.getElement(".spt_input_text_results");
-                    el.innerHTML = html;
+                    //el.innerHTML = html;
+                    spt.behavior.replace_inner_html(el, html);
 
                     if (bvr.postaction) {
                        postaction_cbk = function(el) {

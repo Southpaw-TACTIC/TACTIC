@@ -13,6 +13,9 @@
 
 __all__ = ['DiscussionWdg', 'CommentAttr', 'CommentCmd', 'NoteUtilWdg','NoteUtilCmd']
 
+
+# DEPRECATED
+
 import time, types, re 
 
 from pyasm.common import Xml, Date, Common, Environment, UserException
@@ -70,14 +73,14 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         self.init_cgi()
         
 
-    def is_ajax(self, xx=None):
+    def is_refresh(self, xx=None):
         return self.kwargs.get("refresh") == "true"
         
 
     def init_cgi(self):
 
         # get the sobject
-        if not self.is_ajax(True):
+        if not self.is_refresh(True):
             return
         keys = self.web.get_form_keys()
         search_key = self.web.get_form_value("search_key")
@@ -568,7 +571,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
         web = WebContainer.get_web()
 
-        if not self.is_ajax():
+        if not self.is_refresh():
             self.sobject = self.get_current_sobject()
         else:
             self.name = web.get_form_value("name")
@@ -619,7 +622,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         
 
       
-        if self.is_ajax():
+        if self.is_refresh():
             main_div = Widget()
         else:
             main_div = DivWdg()
@@ -649,25 +652,21 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
                 main_div.add_attr("spt_append_context", self.append_context)
             main_div.add_attr("spt_append_setting", self.append_setting)
            
-        
-        div = DivWdg()
+       
 
+
+        div = DivWdg()
         div.add_color('background','background', -10)
         div.add_style('width: 96%')
         div.add_style('padding: 5px')
-        #div.add_style('width', '%spx' %self.wdg_width) 
         main_div.add(div)
         
         # these are for compatibility with CommentCmd
         hidden_base = HiddenWdg('base_name', self.base_name)
         div.add(hidden_base)
-
         hidden_base = HiddenWdg('search_key', self.sobject.get_search_key())
         div.add(hidden_base)
 
-        #event = WebContainer.get_event_container()
-        #caller = event.get_event_caller(SiteMenuWdg.EVENT_ID)
-        #main_div.set_post_ajax_script(caller)
 
         # collect the notes
         if not self.preprocess_notes:
@@ -715,8 +714,6 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         # add expand/collapse button
         swap = SwapDisplayWdg()
     
-        #swap.add_action_script(event.get_event_caller(event_name1), \
-        #    event.get_event_caller(event_name2))
         swap.add_action_script(
             "spt.named_events.fire_event('%s', {})" % event_name1,
             "spt.named_events.fire_event('%s', {})" % event_name2
@@ -773,6 +770,8 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         # add a hidden input for storing parent_id
         hidden = HiddenWdg('%s_parent' %self.base_name, '')
         div.add(hidden)
+
+
         return main_div
 
 

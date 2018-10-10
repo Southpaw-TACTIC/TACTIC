@@ -331,7 +331,6 @@ TacticServerStub = function() {
 
         this._delegate("ping", arguments, kwargs, null, callback, on_error);
         return;
-    
     }
 
 

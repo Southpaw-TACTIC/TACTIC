@@ -73,7 +73,7 @@ class Batch(Environment):
 
         # start workflow engine
         #from pyasm.command import Workflow
-        #Workflow().init()
+        #Workflow().init(quiet=True)
 
         DbContainer.commit_thread_sql()
 

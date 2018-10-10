@@ -176,7 +176,11 @@ def get_full_cmd(self, meth, ticket, args):
             if meth.func_name == "execute_cmd":
                 #if len(args) > 1:
                 if isinstance(args, tuple) and len(args) > 1:
-                    _debug = args[1].get("_debug")
+                    first_arg = args[1]
+                    if isinstance(first_arg, basestring):
+                        first_arg = jsonloads(first_arg)
+                        
+                    _debug = first_arg.get("_debug")
                     if _debug == False:
                         debug = False
 
@@ -1175,7 +1179,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         update.set_value("timestamp", "NOW")
 
         statement = update.get_statement()
-            
+
         sql.do_update(statement)
       
         # repeat with update the message log
@@ -1203,6 +1207,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         # FIXME: this does not work anymore because Sql objects are take from
         # the thread and not the transaction
+        """
         transaction = Transaction.get(force=True)
         transaction.set_record(False)
         sobject = Search.eval("@SOBJECT(sthpw/message['code','%s'])" % key, single=True)
@@ -1217,6 +1222,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject.commit(triggers=False)
         transaction.commit()
         transaction.remove_from_stack()
+        """
+
+
 
     @xmlrpc_decorator
     def subscribe(self, ticket, key, category=None):
@@ -5189,6 +5197,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp = hpy()
         hp.setrelheap()
         '''
+
         try:
             Ticket.update_session_expiry()
         except:

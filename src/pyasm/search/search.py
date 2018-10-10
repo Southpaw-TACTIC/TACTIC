@@ -562,8 +562,7 @@ class Search(Base):
                     table = parts[0]
                     name = parts[1]
 
-
-                if value.startswith("{") and value.endswith("}"):
+                if isinstance(value, basestring) and value.startswith("{") and value.endswith("}"):
                     value = Search.eval(value, single=True)
 
 
@@ -587,6 +586,9 @@ class Search(Base):
                         op = '<='
                     
                     quoted = True
+                    if isinstance(value, int) or isinstance(value, float):
+                        quoted = False
+
                     # special case for NULL
                     if value == 'NULL':
                         quoted = False
