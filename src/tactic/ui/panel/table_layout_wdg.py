@@ -6041,19 +6041,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             //spt.app_busy.show("Replacing changed rows ...");
 
             var dummy = document.createElement("div");
-            spt.behavior.replace_inner_html(dummy, widget_html);
+            // behaviors are only process when in the actual dom
+            //spt.behavior.replace_inner_html(dummy, widget_html);
+            dummy.innerHTML = widget_html;
         
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
-            /*
-                // transfer the widths to the new row
-                var widths = spt.table.get_column_widths();
-                for (var element_name in widths) {
-                    var width = widths[element_name];
-                    spt.table.set_column_width(element_name, width);
-                }
-            */
-
-                // FIXME: for now expand and see if its too disconcerting
                 spt.table.expand_table();
             }
 
@@ -6067,6 +6059,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
                 // replace the new row
                 new_rows[i].inject( rows[i], "after" );
+
+
+                // now create new behaviors for new innerHTML under "el" element ...
+                var bvr_el_list = new_rows[i].getElements( ".SPT_BVR" );
+                spt.behavior._construct_behaviors( bvr_el_list );
 
                 // destroy the old row
                 rows[i].destroy();

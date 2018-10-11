@@ -380,6 +380,45 @@ class Pipeline(SObject):
 
 
 
+    def check_circular_dependency(self):
+
+        process_names = self.get_process_names()
+        first_process_name = process_names[0]
+
+        class CircularException(Exception):
+            pass
+
+
+        def handle_process(pipeline, process, branch):
+            print process, " -> ", branch
+            if process in branch:
+                raise CircularException()
+
+            branch.append(process)
+
+            output_process_names = self.get_output_process_names(process)
+
+            for output_process_name in output_process_names:
+                handle_process(pipeline, output_process_name, branch)
+
+            branch.pop()
+
+
+        branch = []
+        try:
+            handle_process(self, first_process_name, branch)
+        except CircularException, e:
+            return True
+
+        return False
+
+
+
+
+
+
+
+
 
 
     def update_dependencies(self):
