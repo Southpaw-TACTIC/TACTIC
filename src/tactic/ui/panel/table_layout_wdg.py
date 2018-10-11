@@ -6216,7 +6216,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
 
    
     var data = document.createElement("div");
-    spt.behavior.replace_inner_html(data, widget_html);
+    //spt.behavior.replace_inner_html(data, widget_html);
+    data.innerHTML = widget_html;
 
     // FIXME: might be just faster to refresh the whole page
     var data_rows = data.getElements(".spt_table_row");
@@ -6245,6 +6246,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
              cells[j].inject(tgt_cell, "after"); 
              tgt_cell.destroy();
          }
+
+         spt.behavior.init_behaviors(cells[j]);
     }
     // add bottom row
     if (bottom_row && data_bottom_row) {
@@ -6262,6 +6265,11 @@ spt.table.modify_columns = function(element_names, mode, values) {
    
 
     for ( var i = 0; i < rows.length; i++ ) {
+        if (i == data_rows.length) {
+            spt.alert("Not enough data to fill all rows");
+            break;
+        }
+
         var cells = data_rows[i].getElements(".spt_cell_edit");
         for (var j = 0; j < cells.length; j++) {
 
@@ -6274,6 +6282,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
                 cells[j].inject(tgt_cell, "after"); 
                 tgt_cell.destroy();
             }
+            spt.behavior.init_behaviors(cells[j]);
         }
     }
 
@@ -6290,6 +6299,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
                     
                     cells[j].inject(tgt_cell, "after"); 
                     tgt_cell.destroy();
+
+                    spt.behavior.init_behaviors(cells[j]);
                 }
             }
         }
@@ -6865,9 +6876,9 @@ spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
     clone.setStyle("max-width", "200px");
     clone.setStyle("min-height", "30px");
     //clone.setStyle("height", size.y);
-    clone.setStyle("background", "yellow");
+    clone.setStyle("background", "#CCC");
     clone.setStyle("border", "solid 1px black");
-    clone.setStyle("opacity", "0.5");
+    //clone.setStyle("opacity", "0.5");
 
 
     // get the element name
@@ -6898,7 +6909,7 @@ spt.table.drag_reorder_header_motion = function(evt, bvr, mouse_411)
     }
 
     clone.setStyle("left", clone_pos.x+5);
-    clone.setStyle("top", clone_pos.y+5);
+    //clone.setStyle("top", clone_pos.y+5);
 
     // find out which resize handle is the closes
     var smallest_dd = -1;
