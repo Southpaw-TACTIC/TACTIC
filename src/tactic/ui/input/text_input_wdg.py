@@ -957,6 +957,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         postaction = self.kwargs.get("postaction")
         if not postaction:
             postaction = self.get_postaction()
+
+        default_show = self.kwargs.get("default_show")
        
 
         self.top.add_relay_behavior( {
@@ -977,6 +979,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'results_class_name': results_class_name,
             'bg_color': bgcolor,
             'postaction': postaction,
+            'default_show': default_show,
             'cbjs_action': '''
             var key = evt.key;
             try {
@@ -1072,7 +1075,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             }
 
             var value = bvr.src_el.value;
-            if (value == '') {
+            if (value == '' && !bvr.default_show) {
                 return;
             }
 
@@ -1119,9 +1122,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             }
             '''
         } )
-
-
-        default_show = self.kwargs.get("default_show")
 
         if default_show:
             self.top.add_behavior({
