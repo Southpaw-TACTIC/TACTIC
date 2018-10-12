@@ -1115,12 +1115,16 @@ class Ticket(SObject):
                 cur_ticket.delete()
         """
 
+        from datetime import datetime
+
         # it makes no sense for Sqlite sessions to expire
         # FIXME: this is a bit of a hack until we figure out how
         # timestamps work in sqlite (all are converted to GMT?!)
         if impl.get_database_type() in ['Sqlite', 'MySQL']:
             print("WARNING: no expiry on ticket for Sqlite and MySQL")
             ticket.set_value("expiry", 'NULL', quoted=0)
+        elif isinstance(expiry, datetime):
+            ticket.set_value("expiry", expiry)
         else:
             ticket.set_value("expiry", expiry, quoted=0)
         ticket.commit(triggers="none")

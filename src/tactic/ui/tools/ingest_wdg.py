@@ -641,6 +641,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
         else:
             title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
+
+        description = self.kwargs.get("description")
+        if description in ["none", ""]:
+            title_description = ""
        
         title_wdg = DivWdg()
         header_div.add(title_wdg)
@@ -850,7 +854,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         } ) 
 
 
-        background.add( self.get_select_files_button() )
+        #background.add( self.get_select_files_button() )
 
 
 

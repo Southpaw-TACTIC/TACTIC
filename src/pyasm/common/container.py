@@ -83,6 +83,12 @@ class Container(object):
     put = staticmethod(put)
 
 
+    def set(key, value):
+        _get_instance().info[key] = value
+    set = staticmethod(set)
+
+
+
     stats = {}
 
     def get(key):

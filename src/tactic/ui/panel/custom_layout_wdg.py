@@ -772,6 +772,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
                 modkeys = Xml.get_attribute(behavior_node, 'modkeys')
 
+                mouse_btn = Xml.get_attribute(behavior_node, 'mouse_btn')
+
                 relay_class = Xml.get_attribute(behavior_node, 'relay_class')
 
                 if not behavior_str:
@@ -794,6 +796,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     if modkeys:
                         bvr['modkeys'] = modkeys
 
+
+                    if mouse_btn:
+                        bvr['mouse_btn'] = mouse_btn
 
 
                     # add the kwargs to this so behaviors have access

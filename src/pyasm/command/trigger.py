@@ -439,6 +439,7 @@ class Trigger(Command):
     def call(cls, caller, event, output={}, process=None, search_type=None, project_code=None, forced_mode=''):
         '''message is part of a function name and so should
         not contain spaces '''
+
         # build the call event key
         call_event = {}
         call_event['event'] = event

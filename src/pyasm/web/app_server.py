@@ -433,7 +433,6 @@ class BaseAppServer(Base):
                 return
 
 
-
         if login_name == 'guest':
             # let the site handle the guest completely
             guest_wdg = site_obj.get_guest_wdg(self.hash)
@@ -771,7 +770,6 @@ class BaseAppServer(Base):
                 site_obj.set_site(site)
 
             login = security.login_with_ticket(ticket_key, add_access_rules=False, allow_guest=allow_guest)
-           
             # In the midst of logging out, login is None
             if not login:
                 if site:

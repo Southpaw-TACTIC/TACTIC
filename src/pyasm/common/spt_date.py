@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from dateutil.tz import *
 
+
 TZLOCAL = tzlocal()
 TZUTC = tzutc()
 TZGMT = gettz('GMT')
@@ -295,13 +296,41 @@ class SPTDate(object):
     has_timezone = classmethod(has_timezone)
  
 
-    def get_display_date(cls, date):
-        '''convert to local timezone'''
-        pass
+    def get_display_date(cls, date, date_format=None, timezone=None):
+        '''Given a datetime value, convert to timezone, and convert to date format.'''
+        from pyasm.biz import PrefSetting, ProjectSetting
+        
+        if not timezone:
+            timezone = PrefSetting.get_value_by_key('timezone')
+            if not timezone:
+                timezone = ProjectSetting.get_value_by_key("timezone")
+
+        if timezone in [None, "local", '']:
+            value = SPTDate.convert_to_local(date)
+        else:
+            value = SPTDate.convert_to_timezone(date, timezone)
+        
+        if not date_format:
+            date_format = PrefSetting.get_value_by_key('date_format')
+            if not date_format:
+                date_format = ProjectSetting.get_value_by_key("date_format")
+
+        if not date_format:
+            date_format = "%Y %m %d %H:%M"
+
+        try:
+            encoding = locale.getlocale()[1]		
+            value = value.strftime(date_format).decode(encoding)
+        except:
+            value = value.strftime(date_format)
+           
+        return value
+   
+    get_display_date = classmethod(get_display_date)
 
 
 
-    def get_time_ago(cls, date, convert=False):
+    def get_time_ago(cls, date, convert=False, start=None):
 
         if isinstance(date, basestring):
             date = parser.parse(date)
@@ -311,7 +340,10 @@ class SPTDate(object):
         else:
             date = cls.strip_timezone(date)
 
-        now = cls.now()
+        if start:
+            now = start
+        else:
+            now = cls.now()
 
         diff = now - date
         if diff.days < 0:

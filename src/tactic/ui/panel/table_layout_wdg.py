@@ -959,6 +959,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             scroll.add(table)
             #if table_width:
             #    table.add_style("width: %s" % table_width)
+            self.scroll = scroll
 
             table.add_color("color", "color")
 
@@ -2055,7 +2056,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             tr.add_color("background", "background", -8)
             border_color = table.get_color("table_border", default="border")
         else:
-            tr.add_color("background", "background", -5)
+            tr.add_color("background", "background", -2)
             border_color = table.get_color("table_border", 0, default="border")
        
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
@@ -2070,6 +2071,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # boolean to determine if there is any width set for any columns
         width_set = False
 
+        lock_width = 0
+
 
         for i, widget in enumerate(self.widgets):
             name = widget.get_name()
@@ -2079,6 +2082,24 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             if widths:
                 th.add_style("width", widths[i])
             th.add_style("padding: 3px")
+
+
+
+            lock_columns = 0
+            if i < lock_columns:
+                width = widths[i]
+                if isinstance(width, basestring):
+                    width = int(width)
+                th.add_style("position: absolute")
+                th.add_style("left: %spx" % lock_width)
+                th.add_attr("spt_lock_width", lock_width)
+                th.add_style("background: #BBB")
+                th.add_style("z-index: 1")
+                th.add_class("spt_table_cell_fixed")
+
+
+                lock_width += width
+
 
             # this is meant for views that haven't been saved to default
             # to fit the whole screen
@@ -2962,6 +2983,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if self.kwargs.get("show_select") not in [False, 'false']:
             self.handle_select(table, sobject)
 
+        lock_width = 0
 
         for i, widget in enumerate(self.widgets):
 
@@ -2975,6 +2997,70 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             widths = self.kwargs.get("column_widths")
             if widths:
                 td.add_style("width", widths[i])
+
+            lock_columns = 0
+            if i < lock_columns:
+                td.add_style("position: absolute")
+                td.add_style("left: %spx" % lock_width)
+                td.add_attr("spt_lock_width", lock_width)
+                td.add_style("background: #FFF")
+                td.add_style("height: auto%")
+                td.add_style("height: 35px")
+                td.add_style("z-index: 10")
+                td.add_class("spt_table_cell_fixed")
+
+
+                # NOTE: widths must obviously exist, but there is a check before to see if it does
+
+                cur_width = widths[0]
+                if isinstance(cur_width, basestring):
+                    cur_width = int(cur_width)
+                lock_width += cur_width
+
+
+                if i == lock_columns - 1 and not self.kwargs.get("temp"):
+                    td.add_style("border-right: solid 2px #F33")
+                    td.add_style("border-left: none")
+
+                    table.add_style("margin-left: %spx" % lock_width)
+                    #table.add_style("margin-left: 0")
+                    #table.add_style("position: relative")
+                    self.scroll.add_style("width: 100%")
+                    self.scroll.add_style("position: relative")
+                    self.scroll.add_style("overscroll-behavior: none")
+     
+                    self.scroll.add_behavior( {
+                        'type': 'load',
+                        'cbjs_action': '''
+                        var el = bvr.src_el;
+                        var table = bvr.src_el.getElement("table");
+                        var layout = table.getParent(".spt_layout");
+                        var header_table = layout.getElement(".spt_table_with_headers");
+
+                        var els = layout.getElements(".spt_table_cell_fixed");
+                        bvr.src_el.interval = setInterval( function() {
+                            els = layout.getElements(".spt_table_cell_fixed");
+                        }, 2000);
+
+                        el.onscroll = function(e) {
+                            header_table.setStyle("margin-left", -el.scrollLeft-1);
+                            for (var i = 0; i < els.length; i++) {
+                                var lock_width = els[i].getAttribute("spt_lock_width");
+                                lock_width = parseInt(lock_width);
+                                if (!lock_width) lock_width = 0;
+                                els[i].setStyle("left", el.scrollLeft+lock_width);
+
+                            }
+                        } 
+                        '''
+                    } )
+
+                    self.scroll.add_behavior( {
+                        'type': 'unload',
+                        'cbjs_action': '''
+                        clearInterval(bvr.src_el.interval);
+                        '''
+                    } )
 
 
 
@@ -5933,19 +6019,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             //spt.app_busy.show("Replacing changed rows ...");
 
             var dummy = document.createElement("div");
-            spt.behavior.replace_inner_html(dummy, widget_html);
+            // behaviors are only process when in the actual dom
+            //spt.behavior.replace_inner_html(dummy, widget_html);
+            dummy.innerHTML = widget_html;
         
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
-            /*
-                // transfer the widths to the new row
-                var widths = spt.table.get_column_widths();
-                for (var element_name in widths) {
-                    var width = widths[element_name];
-                    spt.table.set_column_width(element_name, width);
-                }
-            */
-
-                // FIXME: for now expand and see if its too disconcerting
                 spt.table.expand_table();
             }
 
@@ -5959,6 +6037,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
                 // replace the new row
                 new_rows[i].inject( rows[i], "after" );
+
+
+                // now create new behaviors for new innerHTML under "el" element ...
+                var bvr_el_list = new_rows[i].getElements( ".SPT_BVR" );
+                spt.behavior._construct_behaviors( bvr_el_list );
 
                 // destroy the old row
                 rows[i].destroy();
@@ -6591,6 +6674,8 @@ spt.table.expand_table = function(mode) {
         header_table = table;
         headers = layout.getElements(".spt_table_th");
     }
+
+
     var width = header_table.getStyle("width");
    
     // don't set the width of each column, this is simpler
@@ -6624,7 +6709,8 @@ spt.table.expand_table = function(mode) {
         }
 
         var parent = table.getParent();
-        if (parent.scrollHeight > parent.clientHeight) {
+        // NOTE: this offset of "9" is very arbitrary
+        if (parent.scrollHeight > parent.clientHeight + 9) {
             header_parent = header_table.getParent();
             header_parent.setStyle("margin-right", "17px");
 
