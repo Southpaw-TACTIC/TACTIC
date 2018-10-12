@@ -403,7 +403,7 @@ class Sql(Base):
         return self.row_count
 
 
-    def get_autocommit(self)
+    def get_autocommit(self):
         return self.conn.autcommit
 
     def set_autocommit(self, flag=False):

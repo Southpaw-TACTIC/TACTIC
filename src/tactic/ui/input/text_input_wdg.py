@@ -957,7 +957,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         postaction = self.kwargs.get("postaction")
         if not postaction:
             postaction = self.get_postaction()
-       
+
+        expression = self.kwargs.get("expression") or ""
+        self.top.add_attr("expression", expression);
 
         self.top.add_relay_behavior( {
             'type': 'keyup',
@@ -979,9 +981,11 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'postaction': postaction,
             'cbjs_action': '''
             var key = evt.key;
+
+            var top = bvr.src_el.getParent(".spt_input_text_top");
+
             try {
                 if (key == 'down') {
-                    var top = bvr.src_el.getParent(".spt_input_text_top");
                     var els = top.getElements(".spt_input_text_result");
                     spt.text_input.last_index = spt.text_input.index;
                     spt.text_input.index += 1;
@@ -999,7 +1003,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     return;
                 }
                 else if (key == 'up') {
-                    var top = bvr.src_el.getParent(".spt_input_text_top");
                     var els = top.getElements(".spt_input_text_result");
                     spt.text_input.last_index = spt.text_input.index;
                     spt.text_input.index -= 1;
@@ -1017,7 +1020,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     return;
                 }
                 else if (key == 'enter' || key =='tab') {
-                    var top = bvr.src_el.getParent(".spt_input_text_top");
                     var els = top.getElements(".spt_input_text_result");
                     if (els && spt.text_input.index > -1) {
                         var el = els[spt.text_input.index];
@@ -1051,7 +1053,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     return;
                 }
                 else if (key == 'esc') {
-                    var top = bvr.src_el.getParent(".spt_input_text_top");
                     var res_top = top.getElement(".spt_input_text_results");
                     spt.hide(res_top);
                     return;
@@ -1077,6 +1078,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             }
 
             var class_name = bvr.results_class_name;
+
+            var expression = top.getAttribute("expression");
 
             var cbk = function(html) {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
@@ -1107,6 +1110,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     case_sensitive: bvr.case_sensitive,
                     value: value,
                     mode: bvr.mode,
+                    expression: bvr.expression,
                     keyword_mode: bvr.keyword_mode
                 },
                 cbjs_action: cbk,
@@ -1122,6 +1126,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
 
         default_show = self.kwargs.get("default_show")
+
+        expression = self.kwargs.get("expression") or ""
 
         if default_show:
             self.top.add_behavior({
@@ -1140,6 +1146,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 'value_column': value_column,
                 'results_class_name': results_class_name,
                 'bg_color': bgcolor,
+                'expression': expression,
                 'postaction': postaction,
                 'cbjs_action': '''
 
@@ -1170,6 +1177,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                         case_sensitive: bvr.case_sensitive,
                         value: "",
                         mode: bvr.mode,
+                        expression: bvr.expression,
                         keyword_mode: bvr.keyword_mode
                     },
                     cbjs_action: cbk,
@@ -1361,7 +1369,7 @@ __all__.append("TextInputResultsWdg")
 class TextInputResultsWdg(BaseRefreshWdg):
 
     # search LIMIT, even if we display only 10, the right balance is to set a limit to 80 to get more diverse results back
-    LIMIT = 80
+    LIMIT = 1000
     DISPLAY_LENGTH = 35
 
     def is_number(self, value):
@@ -1634,8 +1642,21 @@ class TextInputResultsWdg(BaseRefreshWdg):
         top_sType = Project.extract_base_search_type(top_sType)
         schema = Schema.get()
 
+        expression = self.kwargs.get("expression")
+
         for search_type, info_dict in search_dict.items():
-            search = Search(search_type)
+
+            if expression:
+                try:
+                    search = Search.eval(expression)
+                except Exception, e:
+                    print("WARNING: Error in expression [%s]" % expression)
+                    print(e)
+                    search = Search(search_type)
+
+            else:
+                search = Search(search_type)
+
 
             # relevant is ON, then only search for stuff that is relevant in the current table
            
@@ -1693,7 +1714,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 search.add_filters(connected_col, rel_values, op='in')
 
 
-            search.add_limit(self.LIMIT)
+            #search.add_limit(self.LIMIT)
 
             results = search.get_sobjects()
 
