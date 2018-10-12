@@ -252,6 +252,15 @@ class DatabaseImpl(DatabaseImplInterface):
     #
     # Database methods for base database implementation
     #
+
+    def set_autocommit(self, sql, flag):
+        sql.conn.autocommit = flag
+
+
+    def autocommit_on_schema_change(self):
+        return False
+
+
     def has_sequences(self):
         raise DatabaseImplException("TACTIC database implementation for current database vendor does not have method has_sequences() defined.")
 
@@ -3505,6 +3514,14 @@ class MySQLImpl(PostgresImpl):
         cmd.close()
 
 
+
+    def set_autocommit(self, sql, flag):
+        sql.conn.autocommit(flag)
+
+
+
+    def autocommit_on_schema_change(self):
+        return True
 
 
 
