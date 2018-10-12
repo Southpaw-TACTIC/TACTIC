@@ -403,12 +403,21 @@ class Sql(Base):
         return self.row_count
 
 
+    def get_autocommit(self)
+        return self.conn.autcommit
+
+    def set_autocommit(self, flag=False):
+        self.conn.autcommit = flag
+
+
     def start(self):
         '''start a transaction'''
         self.transaction_count += 1
 
     def set_savepoint(self, name='save_pt'):
         '''set a savepoint'''
+        if self.conn.autocommit == True:
+            return
         stmt = self.database_impl.set_savepoint(name)
         if stmt:
             cursor = self.conn.cursor()
@@ -416,6 +425,8 @@ class Sql(Base):
 
     def rollback_savepoint(self, name='save_pt', release=True):
         '''rollback to a savepoint'''
+        if self.conn.autocommit == True:
+            return
         self.cursor = self.conn.cursor()
         stmt = self.database_impl.rollback_savepoint(name)
         if not stmt:
@@ -425,6 +436,8 @@ class Sql(Base):
             self.release_savepoint(name)
 
     def release_savepoint(self, name='save_pt'):
+        if self.conn == True:
+            return
         release_stmt = self.database_impl.release_savepoint(name)
         if not release_stmt:
             return
@@ -1305,6 +1318,7 @@ class DbContainer(Base):
             assert DbResource.is_instance(db_resource)
         else:
             db_resource = DbResource.get_default("sthpw")
+
 
         sql = cls.get_connection_pool_sql(db_resource)
 
@@ -3546,11 +3560,22 @@ class CreateTable(Base):
         exists = impl.table_exists(db_resource, self.table)
         if not exists:
 
+
             if sql.get_vendor() == "MongoDb":
                 impl.execute_create_table(sql, self)
             else:
-                statement = self.get_statement()
-                sql.do_update(statement)
+
+                # check to see if autocommit should be on
+                if impl.autocommit_on_schema_change():
+                    impl.set_autocommit(sql, True)
+
+                try:
+                    statement = self.get_statement()
+                    sql.do_update(statement)
+                finally:
+                    if impl.autocommit_on_schema_change():
+                        impl.set_autocommit(sql, False)
+
 
             sql.clear_table_cache(self.database)
 
@@ -3625,10 +3650,16 @@ class DropTable(Base):
             print("SqlException: ", e)
             raise
 
-        sql.do_update(self.statement)
-        sql.clear_table_cache()
+        impl = sql.get_database_impl()
+        if impl.autocommit_on_schema_change():
+            impl.set_autocommit(sql, True)
 
-
+        try:
+            sql.do_update(self.statement)
+            sql.clear_table_cache()
+        finally:
+            if impl.autocommit_on_schema_change():
+                impl.set_autocommit(sql, False)
 
 
 class AlterTable(CreateTable):
@@ -3733,15 +3764,25 @@ class AlterTable(CreateTable):
         impl = sql.get_database_impl()
         #database = sql.get_database_name()
         exists = impl.table_exists(self.db_resource, self.table)
-        
-        if exists:
-            statements = self.get_statements()
-            for statement in statements:
-                sql.do_update(statement)
-        else:
-            print("WARNING: table [%s] does not exist ... skipping" % self.table)
 
+        # check to see if autocommit should be on
+        if impl.autocommit_on_schema_change():
+            impl.set_autocommit(sql, True)
 
+        try:
+            
+            if exists:
+                statements = self.get_statements()
+                for statement in statements:
+                    sql.do_update(statement)
+            else:
+                print("WARNING: table [%s] does not exist ... skipping" % self.table)
+
+        finally:
+            # set autocommit back
+            if impl.autocommit_on_schema_change():
+                impl.set_autocommit(sql, False)
+     
 
 
 
