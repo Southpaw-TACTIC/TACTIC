@@ -601,7 +601,7 @@ class Sql(Base):
             raise
             raise DatabaseException(e)
 
-        assert self.conn    
+        assert self.conn
 
         return self
 
@@ -821,7 +821,7 @@ class Sql(Base):
             #self.execute(query)
             from pyasm.security import Site
             self.cursor.execute(query)
-            
+  
             # remember the row count
             self.row_count = self.cursor.rowcount
 
@@ -3560,11 +3560,8 @@ class CreateTable(Base):
             if sql.get_vendor() == "MongoDb":
                 impl.execute_create_table(sql, self)
             else:
-                try:
-                    statement = self.get_statement()
-                    sql.do_update(statement)
-                finally:
-                    pass
+	        statement = self.get_statement()
+	        sql.do_update(statement)
 
             sql.clear_table_cache(self.database)
 
@@ -3603,7 +3600,7 @@ class DropTable(Base):
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
         
         self.database = self.db_resource.get_database()
-        
+ 
         search_type_obj = SearchType.get(search_type)
         assert self.database
         self.table = search_type_obj.get_table()
@@ -3649,13 +3646,11 @@ class DropTable(Base):
         impl = sql.get_database_impl()
         if impl.commit_on_schema_change():
 	    DbContainer.commit_thread_sql()
+            
+        sql.do_update(self.statement)
+        sql.clear_table_cache()
 
-        try:
-            sql.do_update(self.statement)
-            print "update finished!"
-            sql.clear_table_cache()
-        finally:
-            pass
+
 
 class AlterTable(CreateTable):
     '''Class to nonlinearly build up an alter table statement'''
@@ -3764,17 +3759,12 @@ class AlterTable(CreateTable):
         if impl.commit_on_schema_change():
 	    DbContainer.commit_thread_sql()
         
-        try:
-            
-            if exists:
-                statements = self.get_statements()
-                for statement in statements:
-                    sql.do_update(statement)
-            else:
-                print("WARNING: table [%s] does not exist ... skipping" % self.table)
-
-        finally:
-            pass 
+        if exists:
+            statements = self.get_statements()
+            for statement in statements:
+                sql.do_update(statement)
+        else:
+            print("WARNING: table [%s] does not exist ... skipping" % self.table)
 
 
 
