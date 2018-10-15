@@ -403,13 +403,6 @@ class Sql(Base):
         return self.row_count
 
 
-    def get_autocommit(self):
-        return self.conn.autcommit
-
-    def set_autocommit(self, flag=False):
-        self.conn.autcommit = flag
-
-
     def start(self):
         '''start a transaction'''
         self.transaction_count += 1
@@ -811,7 +804,7 @@ class Sql(Base):
         try:
             if not self.conn:
                 self.connect()
-            
+
             # store the last query
             #print("[%s]" % self.database_name, query)
 
@@ -821,7 +814,7 @@ class Sql(Base):
             #self.execute(query)
             from pyasm.security import Site
             self.cursor.execute(query)
-  
+
             # remember the row count
             self.row_count = self.cursor.rowcount
 
@@ -3560,8 +3553,8 @@ class CreateTable(Base):
             if sql.get_vendor() == "MongoDb":
                 impl.execute_create_table(sql, self)
             else:
-	        statement = self.get_statement()
-	        sql.do_update(statement)
+                statement = self.get_statement()
+                sql.do_update(statement)
 
             sql.clear_table_cache(self.database)
 
@@ -3600,7 +3593,7 @@ class DropTable(Base):
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
         
         self.database = self.db_resource.get_database()
- 
+
         search_type_obj = SearchType.get(search_type)
         assert self.database
         self.table = search_type_obj.get_table()
