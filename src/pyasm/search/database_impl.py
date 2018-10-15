@@ -3173,6 +3173,8 @@ class MySQLImpl(PostgresImpl):
         return version_parts
 
 
+  
+
     def process_value(self, name, value, column_type="varchar"):
         if column_type == 'boolean':
             quoted = False
@@ -3332,6 +3334,13 @@ class MySQLImpl(PostgresImpl):
     def get_serial(self, length=4, not_null=False):
         parts = []
         parts.append("serial")
+        return " ".join(parts)
+
+    def get_text(self, not_null=False):
+        parts = []
+        parts.append("longtext")
+        if not_null:
+            parts.append("NOT NULL")
         return " ".join(parts)
 
 
@@ -3513,12 +3522,9 @@ class MySQLImpl(PostgresImpl):
             print(result)
         cmd.close()
 
-
-
     def set_autocommit(self, sql, flag):
+        '''Note: This must be performed before transactions are started.'''
         sql.conn.autocommit(flag)
-
-
 
     def autocommit_on_schema_change(self):
         return True
