@@ -257,7 +257,7 @@ class DatabaseImpl(DatabaseImplInterface):
         sql.conn.autocommit = flag
 
 
-    def autocommit_on_schema_change(self):
+    def commit_on_schema_change(self):
         return False
 
 
