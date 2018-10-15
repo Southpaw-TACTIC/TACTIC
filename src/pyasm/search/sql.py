@@ -3638,7 +3638,7 @@ class DropTable(Base):
 
         impl = sql.get_database_impl()
         if impl.commit_on_schema_change():
-	    DbContainer.commit_thread_sql()
+            DbContainer.commit_thread_sql()
             
         sql.do_update(self.statement)
         sql.clear_table_cache()
@@ -3750,7 +3750,7 @@ class AlterTable(CreateTable):
 
         # check to see if autocommit should be on
         if impl.commit_on_schema_change():
-	    DbContainer.commit_thread_sql()
+            DbContainer.commit_thread_sql()
         
         if exists:
             statements = self.get_statements()
