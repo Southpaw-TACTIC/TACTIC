@@ -425,6 +425,8 @@ class Sql(Base):
             self.release_savepoint(name)
 
     def release_savepoint(self, name='save_pt'):
+        if self.conn == True:
+            return
         release_stmt = self.database_impl.release_savepoint(name)
         if not release_stmt:
             return
@@ -1305,6 +1307,7 @@ class DbContainer(Base):
             assert DbResource.is_instance(db_resource)
         else:
             db_resource = DbResource.get_default("sthpw")
+
 
         sql = cls.get_connection_pool_sql(db_resource)
 
@@ -3546,6 +3549,7 @@ class CreateTable(Base):
         exists = impl.table_exists(db_resource, self.table)
         if not exists:
 
+
             if sql.get_vendor() == "MongoDb":
                 impl.execute_create_table(sql, self)
             else:
@@ -3579,18 +3583,22 @@ class CreateTable(Base):
 
 
 class DropTable(Base):
+
     def __init__(self, search_type=None):
+        
         self.search_type = search_type
         # derive db from search_type_obj
         from search import SearchType
         from pyasm.biz import Project
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
+        
         self.database = self.db_resource.get_database()
 
         search_type_obj = SearchType.get(search_type)
         assert self.database
         self.table = search_type_obj.get_table()
         self.statement = self.get_statement()
+        
 
     def get_statement(self):
         sql = DbContainer.get(self.db_resource)
@@ -3602,6 +3610,8 @@ class DropTable(Base):
         return statement
 
     def commit(self):
+   
+        
         sql = DbContainer.get(self.db_resource)
         if not sql.table_exists(self.table):
             print("WARNING: table [%s] does not exist in database [%s]" % (self.table, self.database))
@@ -3615,6 +3625,7 @@ class DropTable(Base):
         if os.path.exists(schema_path):
             os.unlink(schema_path)
 
+
         # dump the table to a file and store it in cache
         from sql_dumper import TableSchemaDumper
         dumper = TableSchemaDumper(self.search_type)
@@ -3625,9 +3636,12 @@ class DropTable(Base):
             print("SqlException: ", e)
             raise
 
+        impl = sql.get_database_impl()
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
+            
         sql.do_update(self.statement)
         sql.clear_table_cache()
-
 
 
 
@@ -3733,6 +3747,10 @@ class AlterTable(CreateTable):
         impl = sql.get_database_impl()
         #database = sql.get_database_name()
         exists = impl.table_exists(self.db_resource, self.table)
+
+        # check to see if autocommit should be on
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
         
         if exists:
             statements = self.get_statements()
@@ -3740,8 +3758,6 @@ class AlterTable(CreateTable):
                 sql.do_update(statement)
         else:
             print("WARNING: table [%s] does not exist ... skipping" % self.table)
-
-
 
 
 
