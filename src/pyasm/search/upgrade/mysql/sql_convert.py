@@ -55,7 +55,8 @@ class MySQLConverter(BaseSQLConverter):
         line = line.replace("key ", "\"key\" ")
         line = line.replace("(key)", "(\"key\")")
         line = line.replace("timestamp,", "timestamp NULL,")
-
+        
+        line = line.replace(" text,", " longtext,")
         #if line.find("timestamp") != -1 and line.find("now()") == -1 and \
         #        line.find("timestamp_idx") == -1:
         #    line = line.replace("timestamp", "timestamp NULL DEFAULT NULL")
