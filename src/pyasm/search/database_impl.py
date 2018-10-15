@@ -3526,7 +3526,7 @@ class MySQLImpl(PostgresImpl):
         '''Note: This must be performed before transactions are started.'''
         sql.conn.autocommit(flag)
 
-    def autocommit_on_schema_change(self):
+    def commit_on_schema_change(self):
         return True
 
 

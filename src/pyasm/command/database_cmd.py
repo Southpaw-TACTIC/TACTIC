@@ -156,6 +156,10 @@ class ColumnAddCmd(Command):
             if statement:
                 if not self.nullable:
                     statement = '%s NOT NULL' %statement
+                
+                if impl.commit_on_schema_change():
+                    DbContainer.commit_thread_sql()
+                
                 sql.do_update(statement)
                 AlterTableUndo.log_add(db_resource,table,column,type)
 
