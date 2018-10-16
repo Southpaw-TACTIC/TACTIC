@@ -6712,13 +6712,31 @@ spt.table.expand_table = function(mode) {
     var width = header_table.getStyle("width");
    
     // don't set the width of each column, this is simpler
-    if ( mode != "full" && width == '100%') {
+    if ( (mode != "full" && width == '100%') || mode == "free") {
         table.setStyle("width", "");
         if (header_table) {
             header_table.setStyle("width", "");
+
+            // remove the widths of all the cells
+            var cells = header_table.getElements("th");
+              cells.forEach( function(cell){
+              cell.setStyle("width", "100px");
+          })
+
+
         }
-        if (subtable) {
-            subtable.setStyle("width", "");
+        if (table) {
+            table.setStyle("width", "");
+
+            var rows = spt.table.get_all_rows();
+            rows.forEach( function(row) {
+              var cells = row.getElements("td");
+              cells.forEach( function(cell){
+                  cell.setStyle("width", "100px");
+              })
+            })
+
+ 
 
         }
     }
@@ -6726,24 +6744,58 @@ spt.table.expand_table = function(mode) {
         table.setStyle("width", "100%");
         if (header_table) {
             header_table.setStyle("width", "100%");
+
+            // remove the widths of all the cells
+            var cells = header_table.getElements("th");
+              cells.forEach( function(cell){
+              cell.setStyle("width", "");
+          })
+
         }
+        if (table) {
+            table.setStyle("width", "100%");
+
+            var rows = spt.table.get_all_rows();
+            rows.forEach( function(row) {
+              var cells = row.getElements("td");
+              cells.forEach( function(cell){
+                  cell.setStyle("width", "");
+              })
+            })
+
+        }
+
+
         if (subtable) {
             subtable.setStyle("width", "100%");
+
+            var rows = spt.table.get_all_rows();
+            rows.forEach( function(row) {
+              var cells = row.getElements("td");
+              cells.forEach( function(cell){
+                  cell.setStyle("width", "");
+              })
+            })
+
         }
         layout.setStyle("width", "100%");
     }
 
 
     // adjust for windows scrollbar
-    if (spt.browser.os_is_Windows()) {
+    if (spt.browser.os_is_Windows() && table) {
         var div = layout.getElement(".spt_header_padding"); 
         if (div) {
             spt.behavior.destroy_element(div);
         }
 
-        var parent = table.getParent();
+
+        var header_size = header_table.getSize();
+        var table_size = table.getSize();
+
         // NOTE: this offset of "9" is very arbitrary
-        if (parent.scrollHeight > parent.clientHeight + 9) {
+        //if (parent.scrollHeight > parent.clientHeight + 9) {
+        if (header_size.x > table_size.x) {
             header_parent = header_table.getParent();
             header_parent.setStyle("margin-right", "17px");
 
@@ -6756,6 +6808,9 @@ spt.table.expand_table = function(mode) {
             div.setStyle("height", height);
             div.setStyle("background", "#F5F5F5");
             div.setStyle("float", "right");
+
+            div.setStyle("box-sizing", "border-box");
+            div.setStyle("border-right", "solid 1px #DDD")
 
             div.inject(header_parent, "before");
         }
@@ -6805,7 +6860,6 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     spt.table.last_header_inner = header_inner;
     spt.table.last_size = header.getSize();
     spt.table.last_mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
-
 
 
     return;

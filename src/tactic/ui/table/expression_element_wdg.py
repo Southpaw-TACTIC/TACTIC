@@ -441,7 +441,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-        # FIXME: don't know how to do this any other way
+        # if the result has a get_display_value call, then use that.
         try:
             if not list:
                 result = result.get_display_value()
@@ -634,6 +634,18 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
         outer = DivWdg()
+
+
+        cbjs_action = self.kwargs.get("cbjs_action")
+        if cbjs_action:
+            outer.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': cbjs_action
+            })
+
+
+
+
         for i, result in enumerate(results):
             div = DivWdg()
             outer.add(div)
@@ -685,7 +697,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                 return_type = self.kwargs.get("return")
                 if return_type in ['list']:
-                    div.add( "- " )
+                    #div.add( "- " )
                     div.add_style("max-width: 400px")
 
                 div.add( display_result )
@@ -767,7 +779,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
                         spt.table.open_link(bvr);
                         '''
                     } )
-
 
 
 
