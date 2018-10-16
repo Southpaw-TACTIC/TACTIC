@@ -436,8 +436,8 @@ class PluginCreator(PluginBase):
         else:
             zip_path = "%s/%s.zip" % (dist_dir, basecode)
 
-        print "Zipping up plugin file [%s]" % zip_path
-        print "    from [%s]" % self.plugin_dir
+        print("Zipping up plugin file [%s]" % zip_path)
+        print("    from [%s]" % self.plugin_dir)
         from pyasm.common import ZipUtil
         ignore_dirs = ['.svn']
 
@@ -452,7 +452,7 @@ class PluginCreator(PluginBase):
             include_dirs = None
 
         ZipUtil.zip_dir(root_dir, zip_path, ignore_dirs=ignore_dirs, include_dirs=include_dirs)
-        print "... done"
+        print("... done")
 
         #f = codecs.open(zip_path, 'w')
         #zip = zipfile.ZipFile(f, 'w', compression=zipfile.ZIP_DEFLATED)
@@ -462,7 +462,7 @@ class PluginCreator(PluginBase):
 
         # encrypt the file
         """
-        print "encrypting!!!!", zip_path
+        print("encrypting!!!!", zip_path)
         self.enc_path = "%s.enc" % zip_path
         from pyasm.common import EncryptUtil
         ticket = "OMG"
@@ -537,7 +537,7 @@ class PluginCreator(PluginBase):
             else:
                 path = self.get_path_from_node(node)
                 if path and os.path.exists(path):
-                    print "Deleting: ", path
+                    print("Deleting: ", path)
                     if os.path.isdir(path):
                         shutil.rmtree(path)
                     else:
@@ -580,9 +580,9 @@ class PluginCreator(PluginBase):
 
         for filename in filenames:
             path = "%s/%s" % (dir, filename)
-            print path
+            print(path)
             if os.path.isdir(path):
-                print " ... directory!"
+                print(" ... directory!")
             if os.path.isdir(path):
                 if rel_dir:
                     self.zip_dir(zip, base_dir, plugin, "%s/%s" % (rel_dir,filename))
@@ -631,7 +631,7 @@ class PluginCreator(PluginBase):
         # the new pipeline and not the original ... 
         sobjects = self.get_sobjects_by_node(node)
         if not sobjects:
-            #print "Skipping as no sobjects found for [%s]" %search_type
+            #print("Skipping as no sobjects found for [%s]" %search_type)
             return []
 
 
@@ -641,7 +641,7 @@ class PluginCreator(PluginBase):
 
         path = self.get_path_from_node(node)
         
-        #print "Writing: ", path
+        #print("Writing: ", path)
         fmode = 'w'
         if os.path.exists(path):
             fmode = 'a'
@@ -674,7 +674,7 @@ class PluginCreator(PluginBase):
 
         dumper.dump_tactic_inserts(path, mode='sobject', relative_dir_column=relative_dir_column)
 
-        print "\t....dumped [%s] entries" % (len(sobjects))
+        print("\t....dumped [%s] entries" % (len(sobjects)))
 
         return sobjects
 
@@ -749,7 +749,7 @@ class PluginCreator(PluginBase):
             manifest = cmd.execute()
 
         if not manifest:
-            print "No manifest discovered in [%s]" %path
+            print("No manifest discovered in [%s]" %path)
             return
 
         xml = Xml()
@@ -789,7 +789,7 @@ class PluginCreator(PluginBase):
 
         path = "__snapshot_files.spt"
         path = "%s/%s" % (self.plugin_dir, path)
-        print "Writing: ", path
+        print("Writing: ", path)
         # write out an empty file
         #f = open(path, 'w')
 
@@ -964,7 +964,7 @@ class PluginInstaller(PluginBase):
                     continue
 
                 if self.verbose:
-                    print "Reading search_type: ", path
+                    print("Reading search_type: ", path)
 
                 # NOTE: priviledged knowledge of the order or return values
                 jobs = tools.import_data(path, commit=True)
@@ -988,7 +988,7 @@ class PluginInstaller(PluginBase):
                     search_type_chk = SearchType.get(search_type)
                     if search_type_chk:
                         if self.verbose:
-                            print 'WARNING: Search Type [%s] is already registered' % search_type_chk.get_value("search_type")
+                            print('WARNING: Search Type [%s] is already registered' % search_type_chk.get_value("search_type"))
                     else:
                         search_type_obj.commit()
                 except SearchException as e:
@@ -999,9 +999,9 @@ class PluginInstaller(PluginBase):
                 has_table = False
                 if has_table:
                     if self.verbose:
-                        print 'WARNING: Table [%s] already exists'
+                        print('WARNING: Table [%s] already exists')
                 elif table:
-                    #print table.get_statement()
+                    #print(table.get_statement())
                     if table:
                         database = table.get_database()
                         table_name = table.get_table()
@@ -1042,7 +1042,7 @@ class PluginInstaller(PluginBase):
                     unique = False
 
                 if self.verbose: 
-                    print "Reading: ", path
+                    print("Reading: ", path)
 
 
                 ignore_columns = Xml.get_attribute(node, "ignore_columns")
@@ -1121,17 +1121,17 @@ class PluginInstaller(PluginBase):
             self.plugin.set_value("transaction", transaction_str)
             self.plugin.commit()
         except Exception as e:
-            print "Error: ", e.message
+            print("Error: ", e.message)
         '''
 
 class PluginReloader(PluginBase):
 
     def execute(self):
-    	print "Uninstalling plugin: ", self.plugin_dir
+    	print("Uninstalling plugin: ", self.plugin_dir)
     	uninstaller = PluginUninstaller(plugin_dir=self.plugin_dir, verbose=False)
     	uninstaller.execute()
     	
-    	print "Installing plugin: ", self.plugin_dir
+    	print("Installing plugin: ", self.plugin_dir)
     	installer = PluginInstaller(plugin_dir=self.plugin_dir, verbose=False, register=True)
     	installer.execute()
         
@@ -1185,7 +1185,7 @@ class PluginUninstaller(PluginBase):
 
         sobjects = self.get_sobjects_by_node(node)
         if not sobjects:
-            #print "Skipping as no sobjects found for: ", node
+            #print("Skipping as no sobjects found for: ", node)
             return
 
         # delete all the sobjects present in the plugin
@@ -1193,7 +1193,7 @@ class PluginUninstaller(PluginBase):
             try:
                 sobject.delete()
             except Exception as e:
-                print "WARNING: could not delete [%s] due to error [%s]" % (sobject.get_search_key(), e)
+                print("WARNING: could not delete [%s] due to error [%s]" % (sobject.get_search_key(), e))
 
 
     def handle_include(self, node):
@@ -1225,7 +1225,7 @@ class PluginUninstaller(PluginBase):
         
         # if no path, then nothing to undo
         if not path:
-            print "No undo_path defined for this python node"
+            print("No undo_path defined for this python node")
             return
 
         if not path.endswith('.py'):
@@ -1328,7 +1328,7 @@ class PluginTools(PluginBase):
         # the new pipeline and not the original ... 
         sobjects = self.get_sobjects_by_node(node)
         if not sobjects:
-            #print "Skipping as no sobjects found for [%s]" %search_type
+            #print("Skipping as no sobjects found for [%s]" %search_type)
             return []
 
 
@@ -1338,7 +1338,7 @@ class PluginTools(PluginBase):
 
         path = self.get_path_from_node(node)
         
-        #print "Writing: ", path
+        #print("Writing: ", path)
         fmode = 'w'
         if os.path.exists(path):
             fmode = 'a'
@@ -1369,7 +1369,7 @@ class PluginTools(PluginBase):
         
         dumper.dump_tactic_inserts(path, mode='sobject')
 
-        print "\t....dumped [%s] entries" % (len(sobjects))
+        print("\t....dumped [%s] entries" % (len(sobjects)))
 
         return sobjects
 
@@ -1432,7 +1432,7 @@ class PluginTools(PluginBase):
         search_type_sobj = search.get_sobject()
 
         if not search_type_sobj:
-            print "WARNING: Search type [%s] does not exist" % search_type
+            print("WARNING: Search type [%s] does not exist" % search_type)
             return
 
 
@@ -1454,7 +1454,7 @@ class PluginTools(PluginBase):
             table_drop.commit()
             # NOTE: do we need to log the undo for this?
         except Exception as e:
-            print "Error: ", e.message
+            print("Error: ", e.message)
 
 
         # NOTE: it is not clear that unloading a plugin should delete
@@ -1475,7 +1475,7 @@ class PluginTools(PluginBase):
 
         # remove search type entry
         if search_type.startswith("config/") or search_type.startswith("sthpw/"):
-            print "WARNING: A plugin cannot deregister a search type from the 'sthpw' or 'config' namespace'"
+            print("WARNING: A plugin cannot deregister a search type from the 'sthpw' or 'config' namespace'")
         else:
 
             search = Search("sthpw/search_object")
@@ -1528,7 +1528,7 @@ class PluginTools(PluginBase):
             unique = False
 
         if self.verbose: 
-            print "Reading: ", path
+            print("Reading: ", path)
         # jobs doesn't matter for sobject node
         jobs = tools.import_data(path, unique=unique, ignore_columns=ignore_columns)
 
@@ -1591,7 +1591,7 @@ class PluginTools(PluginBase):
 
         if not os.path.exists(path):
             # This is printed too often in harmless situations
-            #print "WARNING: path [%s] does not exist" % path
+            #print("WARNING: path [%s] does not exist" % path)
             return []
 
 
@@ -1608,7 +1608,7 @@ class PluginTools(PluginBase):
                         subf.close()
                         f.append("\n")
                     except Exception as e:
-                        print "WARNING: ", e
+                        print("WARNING: ", e)
         else:
             #f = codecs.open(path, 'r', 'utf-8')
             f = codecs.getreader('utf8')(open(path, 'r'))
@@ -1652,12 +1652,12 @@ class PluginTools(PluginBase):
                 try:
                     exec(statement_str)
                 except SqlException as e:
-                    print "ERROR (SQLException): ", e
+                    print("ERROR (SQLException): ", e)
                 except Exception as e:
-                    print "ERROR: ", e
-                    print
-                    print statement_str
-                    print
+                    print("ERROR: ", e)
+                    print("\n")
+                    print(statement_str)
+                    print("\n")
                     raise
                     continue
 
@@ -1793,13 +1793,13 @@ class PluginTools(PluginBase):
                             except UnicodeDecodeError, e:
                                 raise
                             except Exception as e:
-                                print "WARNING: could not commit [%s] due to error [%s]" % (sobject.get_search_key(), e)
+                                print("WARNING: could not commit [%s] due to error [%s]" % (sobject.get_search_key(), e))
                                 continue
 
 
                             chunk = 100
                             if self.verbose and count and count % chunk == 0:
-                                print "\t... handled entry [%s]" % count
+                                print("\t... handled entry [%s]" % count)
 
 
                             if self.plugin and self.plugin.get_value("type", no_exception=True) == "config":
@@ -1810,7 +1810,7 @@ class PluginTools(PluginBase):
                                 plugin_content.commit()
 
                     except UnicodeDecodeError, e:
-                        print "Skipping due to unicode decode error: [%s]" % statement_str
+                        print("Skipping due to unicode decode error: [%s]" % statement_str)
                         continue
 
 
@@ -1833,7 +1833,7 @@ class PluginTools(PluginBase):
             f.close()
 
         if self.verbose:
-            print "\t... added [%s] entries" % count
+            print("\t... added [%s] entries" % count)
         return jobs
 
   
