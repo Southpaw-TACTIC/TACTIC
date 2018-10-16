@@ -140,11 +140,11 @@ class SerializeWdg(BaseRefreshWdg):
         sobject_str = serialized.get_value("config/custom/element/display/sobjects")
         
         sobjects = serializer.loads("prod/asset", sobject_str)
-        print sobjects
+        print(sobjects)
 
         top = DivWdg()
         self.set_as_panel(top)
-        print top.attrs
+        print(top.attrs)
 
         from pyasm.widget import WidgetConfig
         config = WidgetConfig.get(view='custom', xml=serialized)

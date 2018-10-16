@@ -1435,7 +1435,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
             except:
                 # this seems redundant but required.
                 # usually caused by the time in the date string, so try stripping it
-                print "Error parsing: %s. Reparsing without time." %date
+                print("Error parsing: %s. Reparsing without time." %date)
                 if date.find(' ') != -1:
                     tmps = date.split(' ')
                     if tmps[1].find(':') != -1:
