@@ -411,11 +411,11 @@ if __name__ == '__main__':
 
 
     date1 = SPTDate.now()
-    date2 = SPTDate.now()  + timedelta(days=1, hours=2)
+    date2 = SPTDate.now()  + timedelta(hours=2)
 
     print "Date 1 :" , date1 , " Date 2: ", date2
 
-    print SPTDate.get_date_difference(date1, date2)
+    print SPTDate.get_business_days_duration(date1, date2)
 
 
 
