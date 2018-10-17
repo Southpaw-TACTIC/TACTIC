@@ -409,7 +409,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
             # backwards compatible:
             tmp_set_instance = set_instance
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             # make sure the set_instance comes from this set
@@ -434,7 +434,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
             # backwards compatible
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             self.handle_instance(table, set_instance, ref_asset, publish=False)
@@ -455,7 +455,7 @@ class AppSObjectCheckinWdg(CheckinWdg):
 
             # backwards compatible
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             self.handle_missing_instance(table, set_instance, ref_asset)
