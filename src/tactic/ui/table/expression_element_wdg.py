@@ -381,7 +381,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
             try:
                 return sobject.get_value(element_name)
             except Exception as e:
-                print "Error: ", e.message
+                print("Error: ", e.message)
 
 
         if type(sobject) != types.ListType:
@@ -597,8 +597,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
             else:
                 self.alt_result = result
         except Exception as e:
-            print "Expression error: ", e
-            print "    in column [%s] with [%s]" % (self.get_name(), self.expression)
+            print("Expression error: ", e)
+            print("    in column [%s] with [%s]" % (self.get_name(), self.expression))
             #from pyasm.widget import ExceptionWdg
             #widget = ExceptionWdg(e)
             #return widget
@@ -682,7 +682,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     try:
                         display_result = Search.eval(display_expr, self.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=self.show_retired)
                     except Exception as e:
-                        print "WARNING in display expression [%s]: " % display_expr, e
+                        print("WARNING in display expression [%s]: " % display_expr, e)
                         display_result = "ERROR: %s" % e
 
                 elif format_str:
@@ -1109,7 +1109,7 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
         try:
             value = Search.eval(value)
         except Exception as e:
-            print e.message
+            print(e.message)
             value = "Error [%s]" % value
 
         return "%s" % value
