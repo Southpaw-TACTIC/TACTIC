@@ -413,9 +413,9 @@ if __name__ == '__main__':
     date1 = SPTDate.now()
     date2 = SPTDate.now()
 
-    print "Date 1 :" , date1 , " Date 2: ", date2
+    #print("Date 1 :" , date1 , " Date 2: ", date2)
 
-    print SPTDate.get_business_days_duration(date1, date2)
+    #print(SPTDate.get_business_days_duration(date1, date2))
 
 
 
