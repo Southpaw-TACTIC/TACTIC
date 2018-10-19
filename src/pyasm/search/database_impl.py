@@ -3187,7 +3187,7 @@ class MySQLImpl(PostgresImpl):
         elif isinstance(value, datetime.datetime):
             value_str = str(value)
             if value_str.find("+") != -1:
-                return value_str
+                return {"value": value_str, "quoted": True}
             if value_str.endswith("+00:00"):
                 parts = datetime.split("+")
                 return {"value": parts[0], "quoted": True}
