@@ -49,10 +49,12 @@ class PluginWdg(BaseRefreshWdg):
         #table = Table()
 
         table = DivWdg()
+
         inner.add(table)
         table.add_style("display: flex")
         table.add_style("align-items: stretch")
         table.add_style("align-content: stretch")
+
         table.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -67,6 +69,7 @@ class PluginWdg(BaseRefreshWdg):
 
         table.add_color("color", "color")
         table.add_style("margin: 0px -1px")
+        table.add_style("height: 100%")
 
         #table.add_row()
         #left = table.add_cell()

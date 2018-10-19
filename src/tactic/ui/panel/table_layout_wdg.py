@@ -819,7 +819,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 default_width = int(default_width)
 
             if not default_width:
-                default_width = 100
+                default_width = -1
             
             width = self.attributes[i].get("width")
 
@@ -844,8 +844,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 continue
             table_width += column_widths[i]
 
-        #self.kwargs["column_widths"] = []
-        #table_width = "100%"
 
         self.kwargs["column_widths"] = column_widths
 
@@ -2031,7 +2029,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         # Add the headers
         tr = table.add_row()
         tr.add_class("spt_table_header_row")
-        #tr.add_style("display: none")
         tr.add_class("SPT_DTS")
 
         if hidden:
@@ -2078,9 +2075,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             name = widget.get_name()
 
             th = table.add_header()
-
-            if widths:
+            if widths and widths[i] != -1:
                 th.add_style("width", widths[i])
+                th.add_attr("last_width", widths[i])
+
+
             th.add_style("padding: 3px")
 
 
@@ -3011,8 +3010,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
             widths = self.kwargs.get("column_widths")
-            if widths:
+            if widths and widths[i] != -1:
                 td.add_style("width", widths[i])
+                td.add_attr("last_width", widths[i])
 
             lock_columns = 0
             if i < lock_columns:
@@ -3190,8 +3190,8 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 if value == None:
                     value = ""
             
-
-                td.add_attr("spt_input_value", value)
+                if td.get_attr("spt_input_value") == None:
+                    td.add_attr("spt_input_value", value)
                 #td.add_attr("spt_input_column", column)
             else:
                 td.add_class("spt_cell_no_edit")
@@ -3575,6 +3575,11 @@ spt.table.get_group_elements = function() {
 
 
 spt.table.set_layout = function(layout) {
+    if (!layout) {
+        spt.alert("Layout is null on spt.table.set_layout()");
+        return;
+    }
+
     spt.table.layout = layout;
     var table = layout.getElement(".spt_table_table");
     spt.table.last_table = table;
@@ -5732,12 +5737,23 @@ spt.table.save_changes = function(kwargs) {
     }
 
 
+
+    var layout_top = layout.getParent(".spt_layout_top")
+    var edit_view = null;
+    if (layout_top) {
+        var edit_view = layout_top.getAttribute("spt_edit_view");
+    }
+    if (!edit_view) {
+        var edit_view = "edit_item";
+    }
+
+
     var config_xml = layout.getAttribute("spt_config_xml");
 
     var kwargs2 = {
         parent_key: parent_key,
         search_keys: search_keys,
-        view: 'edit_item',
+        view: edit_view,
         element_names: element_names,
         input_prefix: '__NONE__',
         update_data: JSON.stringify(update_data),
@@ -6618,17 +6634,6 @@ spt.table.set_column_width = function(element_name, width) {
         }
 
 
-        //header.setStyle("width", new_width);
-        //if (row)
-        //    cells[i].setStyle("width", new_width);
-        /*
-        if (new_width) {
-            header.setStyle("width", new_width);
-            if (row && cells.length != 0) {
-                cells[i].setStyle("width", new_width);
-            }
-        }
-        */
     }
 
     var curr_header = spt.table.get_header_by_cell(cell);
@@ -6656,7 +6661,9 @@ spt.table.set_column_width = function(element_name, width) {
     }
 
     curr_header.setStyle("width", width);
+    curr_header.setAttribute("last_width", width);
     cell.setStyle("width", width);
+    cell.setAttribute("last_width", width);
 
 
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
@@ -6719,9 +6726,15 @@ spt.table.expand_table = function(mode) {
 
             // remove the widths of all the cells
             var cells = header_table.getElements("th");
-              cells.forEach( function(cell){
-              cell.setStyle("width", "100px");
-          })
+            cells.forEach( function(cell) {
+                var last_width = cell.getAttribute("last_width");
+                if (last_width && last_width != "-1") {
+                    cell.setStyle("width", last_width);
+                }
+                else {
+                    cell.setStyle("width", "100px");
+                }
+            })
 
 
         }
@@ -6730,10 +6743,21 @@ spt.table.expand_table = function(mode) {
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
-              var cells = row.getElements("td");
-              cells.forEach( function(cell){
-                  cell.setStyle("width", "100px");
-              })
+                var cells = row.getElements(".spt_cell_edit");
+                cells.forEach( function(cell){
+
+                    if (cell.hasClass("spt_table_select") ) {
+                        return;
+                    }
+
+                    var last_width = cell.getAttribute("last_width");
+                    if (last_width && last_width != "-1") {
+                        cell.setStyle("width", last_width);
+                    }
+                    else {
+                        cell.setStyle("width", "100px");
+                    }
+                })
             })
 
  
@@ -6747,9 +6771,12 @@ spt.table.expand_table = function(mode) {
 
             // remove the widths of all the cells
             var cells = header_table.getElements("th");
-              cells.forEach( function(cell){
-              cell.setStyle("width", "");
-          })
+            cells.forEach( function(cell) {
+                var last_width = cell.getAttribute("last_width");
+                if (!last_width) {
+                    cell.setStyle("width", "");
+                }
+           })
 
         }
         if (table) {
@@ -6757,10 +6784,18 @@ spt.table.expand_table = function(mode) {
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
-              var cells = row.getElements("td");
-              cells.forEach( function(cell){
-                  cell.setStyle("width", "");
-              })
+                var cells = row.getElements("spt_cell_edit");
+                cells.forEach( function(cell) {
+
+                    if (cell.hasClass("spt_table_select") ) {
+                        return;
+                    }
+
+                    var last_width = cell.getAttribute("last_width");
+                    if (!last_width) {
+                      cell.setStyle("width", "");
+                    }
+                })
             })
 
         }
@@ -6842,7 +6877,9 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     var src_el = spt.behavior.get_bvr_src( bvr );
 
     var layout = src_el.getParent(".spt_layout");
-    spt.table.set_layout(layout)
+    spt.table.set_layout(layout);
+
+    spt.table.expand_table("free");
 
 
     var header = src_el.getParent(".spt_table_header");

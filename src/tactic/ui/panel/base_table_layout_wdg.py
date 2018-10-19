@@ -2688,10 +2688,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         project_code = Project.get_project_code()
         spec_list = [ { "type": "title", "label": 'Item "{display_label}"' }]
         if self.view_editable:
-            edit_view = self.kwargs.get("edit_view")
             
             access_keys = self._get_access_keys("edit",  project_code)
             if security.check_access("builtin", access_keys, "edit"):
+
+                edit_view = self.kwargs.get("edit_view")
                 if not edit_view or edit_view == 'None':
                     edit_view = "edit"
             
