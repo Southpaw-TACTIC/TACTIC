@@ -2140,7 +2140,6 @@ class Select(object):
             quoted = False
 
 
-
         # This check added to handle cases where a list is empty,
         # as 'value[0]' is not defined in that case. We assume in this
         # case that the intended value is NULL
@@ -2167,14 +2166,15 @@ class Select(object):
                 column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
                 column_type = column_types.get(column)
 
-                info = self.impl.process_value(column, value, column_type)
-
-                if info:
-                    value = info.get("value")
-                    value = self._convert_to_database_boolean(value)
-                    quoted = info.get("quoted")
             else:
                 quoted = True
+
+
+            info = self.impl.process_value(column, value, column_type)
+            if info:
+                value = info.get("value")
+                value = self._convert_to_database_boolean(value)
+                quoted = info.get("quoted")
 
 
         if quoted:
@@ -3161,9 +3161,9 @@ class Update(object):
             self.filters.pop(name)
 
 
+
     def add_filter(self, column, value, column_type="", table="", quoted=None):
         assert self.table
-
 
         # store all the raw filter data
         self.raw_filters.append( {

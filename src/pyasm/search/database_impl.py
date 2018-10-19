@@ -135,6 +135,7 @@ class DatabaseImpl(DatabaseImplInterface):
                 value: the new value
                 quoted: True|False - determines whether the value is quoted or not
         '''
+
         return None
     
     def process_date(self, value):
@@ -1805,6 +1806,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     #
     def process_value(self, name, value, column_type="varchar"):
         '''Postgres process_value'''
+
         if column_type == 'timestamp':
             quoted = True
             if value == "NOW":
@@ -3181,6 +3183,18 @@ class MySQLImpl(PostgresImpl):
             else:
                 value = 0
             return {"value": value, "quoted": quoted}
+
+        elif isinstance(value, datetime.datetime):
+            value_str = str(value)
+            if value_str.find("+") != -1:
+                return value_str
+            if value_str.endswith("+00:00"):
+                parts = datetime.split("+")
+                return {"value": parts[0], "quoted": True}
+            else:
+                parts = datetime.split("+")
+                return {"value": "CONVERT_TZ('%s','00:00','+%s')" % (parts[0], parts[1]), "quoted": False}
+
 
 
     def get_table_info(self, db_resource):
