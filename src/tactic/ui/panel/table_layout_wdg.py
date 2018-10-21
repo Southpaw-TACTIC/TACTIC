@@ -32,10 +32,9 @@ from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
 
 from base_table_layout_wdg import BaseTableLayoutWdg
-#class FastTableLayoutWdg(TableLayoutWdg):
 
 
-class FastTableLayoutWdg(BaseTableLayoutWdg):
+class TableLayoutWdg(BaseTableLayoutWdg):
     SCROLLBAR_WIDTH = 17
 
     #CATEGORY_KEYS = {
@@ -601,14 +600,14 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         top.add_class("spt_sobject_top")
         top.add_class("spt_layout_top")
 
-        # FIXME: still need to set an id for Column Manager
+        # NOTE: still need to set an id for Column Manager
         top.set_id("%s_layout" % self.table_id)
 
         inner = DivWdg()
         top.add(inner)
         inner.add_color("background", "background")
         inner.add_color("color", "color")
-        # FIXME: this is not the table and is called this for backwards
+        # NOTE: this is not the table and is called this for backwards
         # compatibility
         if self.kwargs.get("is_inner") not in ['true', True]:
             inner.add_class("spt_layout")
@@ -741,8 +740,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        #is_refresh = self.kwargs.get("is_refresh")
-
         if self.kwargs.get("show_shelf") not in ['false', False]:
             # draws the row of buttons to insert and refresh
             action = self.get_action_wdg()
@@ -791,13 +788,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             inner.add(limit_wdg)
 
     
-        # do not set it to 100% here, there are conditions later to change it to 100%
-        table_width = self.kwargs.get("width")
-        if not table_width:
-            table_width= ''
-        table_width = ''
-
-
         # handle column widths
         column_widths = self.kwargs.get("column_widths")
         if not column_widths:
@@ -822,7 +812,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 default_width = -1
             
             width = self.attributes[i].get("width")
-
            
             if i >= len(column_widths):
                 # default width
@@ -835,14 +824,12 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 column_widths[i] = default_width 
 
 
-
-        # IS this needed?
-        table_width = 30
-        for i in range(0, len(column_widths)):
-            width = column_widths[i]
-            if isinstance(width, basestring):
-                continue
-            table_width += column_widths[i]
+        # resize the widths so that the last one is free
+        for i, item in enumerate(reversed(column_widths)):
+            if i == 0:
+                column_widths[-(i+1)] = -1
+            elif item == -1:
+                column_widths[-(i+1)] = 120
 
 
         self.kwargs["column_widths"] = column_widths
@@ -888,8 +875,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             self.header_table.set_id("spt_table_with_headers")
             self.header_table.set_unique_id()
             self.handle_headers(self.header_table)
-            if table_width:
-                self.header_table.add_style("width: %s" % table_width)
 
             scroll = DivWdg()
             h_scroll.add(scroll)
@@ -955,8 +940,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 table.add_style("font-size: %s" % font_size)
                 self.header_table.add_style("font-size: %s" % font_size)
             scroll.add(table)
-            #if table_width:
-            #    table.add_style("width: %s" % table_width)
             self.scroll = scroll
 
             table.add_color("color", "color")
@@ -982,8 +965,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
             table.add_class("spt_table_table")
             table.add_class("spt_table_with_headers")
-            if table_width:
-                table.add_style("width: %s" % table_width)
             table.add_color("color", "color")
 
             self.handle_headers(self.header_table)
@@ -1074,10 +1055,60 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         chunk_size = 20
 
-
+        # group stack
         gstack = []
 
         document_mode = self.kwargs.get("document_mode") or False
+
+
+        js_load = False 
+        if js_load == True:
+
+            data_div = DivWdg()
+            inner.add(data_div)
+            data_div.add_class("spt_data")
+
+            data = []
+            for i, sobject in enumerate(self.sobjects):
+                sobject_dict = {}
+                data.append(sobject_dict)
+
+                sobject_dict['__search_key__'] = sobject.get_search_key()
+                sobject_dict['__search_key_v1__'] = sobject.get_search_key(use_id=True)
+                sobject_dict['__display_value__'] = sobject.get_display_value()
+
+
+                # allow each widget to add values it needs to the sobject
+                for widget in self.widgets:
+                    widget.set_current_index(i)
+                    element_name = widget.get_name()
+
+                    sobject_data = widget.get_data(sobject)
+                    sobject_dict[element_name] = sobject_data
+
+
+
+
+            data_str = jsondumps(data)
+            data_str = data_str.replace('"', "&quot;")
+
+            data_div.add_attr("spt_data", data_str)
+
+            data_div.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+                var data_str = bvr.src_el.getAttribute("spt_data");
+                var data = JSON.parse(data_str);
+                console.log(data);
+                spt.table.load_data(data)
+                '''
+            } )
+
+            self.sobjects = []
+
+
+
+
 
         for row, sobject in enumerate(self.sobjects):
 
@@ -1229,8 +1260,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
 
         if not self.sobjects:
             self.handle_no_results(table)
-            #if table_width:
-            #    table.add_style("width: %s" % table_width)
 
         # refresh columns have init_load_num = -1 and temp = True
         if init_load_num < 0 or temp != True: 
@@ -4310,7 +4339,7 @@ spt.table.add_rows = function(row, search_type, level, expression, kwargs) {
         }
     }
 
-    var class_name = 'tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg';
+    var class_name = 'tactic.ui.panel.TableLayoutWdg';
     server.async_get_widget(class_name, kw);
 }
 
@@ -6720,9 +6749,8 @@ spt.table.expand_table = function(mode) {
    
     // don't set the width of each column, this is simpler
     if ( (mode != "full" && width == '100%') || mode == "free") {
-        table.setStyle("width", "");
+
         if (header_table) {
-            header_table.setStyle("width", "");
 
             // remove the widths of all the cells
             var cells = header_table.getElements("th");
@@ -6732,14 +6760,20 @@ spt.table.expand_table = function(mode) {
                     cell.setStyle("width", last_width);
                 }
                 else {
-                    cell.setStyle("width", "100px");
+                    var size = cell.getSize();
+                    if (size.x) {
+                        cell.setStyle("width", size.x);
+                    }
+                    else {
+                        cell.setStyle("width", "100px");
+                    }
                 }
             })
+            header_table.setStyle("width", "0px");
 
 
         }
         if (table) {
-            table.setStyle("width", "");
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
@@ -6755,17 +6789,24 @@ spt.table.expand_table = function(mode) {
                         cell.setStyle("width", last_width);
                     }
                     else {
-                        cell.setStyle("width", "100px");
+                        var size = cell.getSize();
+                        if (size.x) {
+                            cell.setStyle("width", size.x);
+                        }
+                        else {
+                            cell.setStyle("width", "100px");
+                        }
                     }
                 })
             })
+            table.setStyle("width", "0px");
 
  
 
         }
     }
     else {
-        table.setStyle("width", "100%");
+
         if (header_table) {
             header_table.setStyle("width", "100%");
 
@@ -7476,6 +7517,120 @@ spt.table.load_search = function(search_view, kwargs) {
 */
 }
 
+/*
+ * Dynamically load data rows through javascript
+ */
+
+spt.table.sobjects = [];
+
+spt.table.load_data = function(sobjects) {
+
+  if(sobjects) {
+      spt.table.sobjects = sobjects;
+  }
+  else {
+      sobjects = spt.table.sobjects;
+  }
+
+  for (var i = 0; i < sobjects.length; i++) {
+//  for (var i = 0; i < 200; i++) {
+
+    var sobject = sobjects[i];
+
+    var row = spt.table.add_new_item();
+    var insert_row = spt.table.get_insert_row();
+
+    // a bunch of code to dynamically "reverse" the insert state of the row
+    row.setAttribute("spt_search_key", sobject.__search_key_v1__);
+    row.setAttribute("spt_search_key_v2", sobject.__search_key__);
+    row.setAttribute("spt_display_value", sobject.__display_value__);
+
+    row.setStyle("background", "#FFF");
+    row.removeClass("spt_table_insert_row");
+    row.addClass("spt_table_row");
+
+/* Remove behaviors ... note this should be done on the original source.
+    var bvrs = row.getElements(".SPT_BVR");
+    for (var j = 0; j < bvrs.length; j++) {
+        bvrs[j].removeAttribute("spt_bvr_list");
+        bvrs[j].removeAttribute("spt_bvr_type_list");
+        bvrs[j].removeClass("SPT_BVR");
+    }
+*/
+
+    var cells = row.getElements(".spt_cell_edit");
+    var insert_cells = row.getElements(".spt_cell_edit");
+
+
+    for (var j = 0; j < cells.length; j++) {
+        var cell = cells[j];
+        var insert_cell = insert_cells[j];
+
+        var element_name = cell.getAttribute("spt_element_name");
+        var value = sobject[element_name];
+
+
+        if (insert_cell.loadXYZ) {
+            try {
+                insert_cell.loadXYZ(element_name, cell, sobject);
+            }
+            catch(e) {
+                console.log("Error in load data for element ["+element_name+"]");
+            }
+            //continue;
+        }
+
+        else if (element_name == "preview") {
+            var img = cell.getElement("img");
+            value = "https://www.telegraph.co.uk/content/dam/news/2018/10/03/TELEMMGLPICT000158935687_trans_NvBQzQNjv4BqeK8ehqBZJSTiVTgumtathbH8AD1LYTdJsoz8pklmEgw.jpeg?imwidth=450"
+            img.setAttribute("src", value);
+            continue;
+        }
+        else {
+            if (value)
+                cell.getFirst().innerHTML = value;
+        }
+        
+
+        if (value) {
+            cell.setAttribute("spt_input_value",value);
+        }
+    }
+  }
+
+  spt.table.expand_table("full");
+}
+
+
+
+spt.table.clear_table = function() {
+    var rows = spt.table.get_all_rows();
+    for (var i = 0; i < rows.length; i++) {
+        spt.behavior.destroy(rows[i]);
+    }
+}
+
+
+spt.table.sort_sobjects = function(sobjects, column) {
+    sobjects.sort( function(a,b) {
+        a_value = a[column];
+        b_value = b[column];
+        if (a_value == null) return 1;
+        if (b_value == null) return -1;
+
+        if (a_value < b_value)
+           return 1;
+        if (a_value > b_value)
+           return -1;
+        return 0;
+    } )
+   
+}
+
+
+
+
+
 
 
 // Tools
@@ -7536,6 +7691,9 @@ spt.table.open_ingest_tool = function(search_type) {
             'shadow_color': shadow_color,
             'cbjs_action' : cbjs_action
         } )
+
+
+
 
 
     #
@@ -7648,8 +7806,8 @@ spt.table.open_ingest_tool = function(search_type) {
 
 
 
-
-class TableLayoutWdg(FastTableLayoutWdg):
+# DEPRECATED: Old name
+class FastTableLayoutWdg(TableLayoutWdg):
     pass
 
 

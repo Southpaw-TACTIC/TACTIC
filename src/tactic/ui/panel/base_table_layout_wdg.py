@@ -539,6 +539,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
 
+
+
+
+
         expr_search = None
         expression = self.kwargs.get('expression')
         if self.expr_sobjects:
@@ -586,18 +590,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         
-        """
-        ###FIX ME 
-        table_search = self.search_wdg.get_search()
-        if expr_search:
-            #table_search.add_relationship_search_filter(expr_search)
-            expr_search.add_relationship_search_filter(table_search)
-            search = expr_search
-        else:
-            search = table_search
-       
-        self.search = search
-        """
         search = self.search_wdg.get_search()
         self.search = search
 
@@ -1241,6 +1233,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'type': 'click_up',
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
+
+                spt.table.set_layout(layout);
+                spt.table.expand_table();
+                return;
 
                 var version = layout.getAttribute("spt_version");
                 var headers;
