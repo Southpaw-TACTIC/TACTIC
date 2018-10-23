@@ -877,6 +877,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             self.handle_headers(self.header_table)
 
             scroll = DivWdg()
+            scroll.add_class("spt_table_scroll")
             h_scroll.add(scroll)
             height = self.kwargs.get("height")
             if height:
@@ -917,8 +918,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             scroll.add_style("overflow-x: hidden")  
-
-            # new
             scroll.add_style("overflow-x: auto")  
 
 
@@ -1099,7 +1098,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'cbjs_action': '''
                 var data_str = bvr.src_el.getAttribute("spt_data");
                 var data = JSON.parse(data_str);
-                console.log(data);
                 spt.table.load_data(data)
                 '''
             } )
@@ -2112,13 +2110,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             th.add_style("padding: 3px")
 
 
-
             lock_columns = 0
             if i < lock_columns:
+                th.add_style("position: absolute")
+
                 width = widths[i]
                 if isinstance(width, basestring):
                     width = int(width)
-                th.add_style("position: absolute")
                 th.add_style("left: %spx" % lock_width)
                 th.add_attr("spt_lock_width", lock_width)
                 th.add_style("background: #BBB")
@@ -3043,17 +3041,22 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 td.add_style("width", widths[i])
                 td.add_attr("last_width", widths[i])
 
+
+            # TEST
             lock_columns = 0
             if i < lock_columns:
                 td.add_style("position: absolute")
+                td.add_style("background: #FFF")
+
                 td.add_style("left: %spx" % lock_width)
                 td.add_attr("spt_lock_width", lock_width)
-                td.add_style("background: #FFF")
-                td.add_style("height: auto%")
-                td.add_style("height: 35px")
                 td.add_style("z-index: 10")
                 td.add_class("spt_table_cell_fixed")
 
+
+                if i == lock_columns-1:
+                    td.add_style("border-right: solid 2px #CCC")
+                    td.add_style("border-left: none")
 
                 # NOTE: widths must obviously exist, but there is a check before to see if it does
 
@@ -3062,52 +3065,141 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     cur_width = int(cur_width)
                 lock_width += cur_width
 
+                if i == 0 and not sobject.is_insert() and not self.kwargs.get("temp"):
 
-                if i == lock_columns - 1 and not self.kwargs.get("temp"):
-                    td.add_style("border-right: solid 2px #F33")
-                    td.add_style("border-left: none")
+                    load_div = DivWdg()
+                    self.top.add(load_div)
 
-                    table.add_style("margin-left: %spx" % lock_width)
-                    #table.add_style("margin-left: 0")
-                    #table.add_style("position: relative")
-                    self.scroll.add_style("width: 100%")
-                    self.scroll.add_style("position: relative")
-                    self.scroll.add_style("overscroll-behavior: none")
-     
-                    self.scroll.add_behavior( {
+                    load_div.add_behavior( {
                         'type': 'load',
+                        'lock_columns': lock_columns,
                         'cbjs_action': '''
                         var el = bvr.src_el;
-                        var table = bvr.src_el.getElement("table");
-                        var layout = table.getParent(".spt_layout");
+                        if (el.processed == true) return;
+
+                        el.processed = true;
+
+                        var top = bvr.src_el.getParent(".spt_layout_top");
+                        var layout = top.getElement(".spt_layout");
+                        spt.table.set_layout(layout);
+                        spt.table.expand_table("free");
+
+                        var table = spt.table.get_table();
                         var header_table = layout.getElement(".spt_table_with_headers");
+                        var table_scroll = layout.getElement(".spt_table_scroll");
 
-                        var els = layout.getElements(".spt_table_cell_fixed");
-                        bvr.src_el.interval = setInterval( function() {
-                            els = layout.getElements(".spt_table_cell_fixed");
-                        }, 2000);
+                        table_scroll.setStyle("position", "relative");
 
-                        el.onscroll = function(e) {
-                            header_table.setStyle("margin-left", -el.scrollLeft-1);
-                            for (var i = 0; i < els.length; i++) {
-                                var lock_width = els[i].getAttribute("spt_lock_width");
-                                lock_width = parseInt(lock_width);
-                                if (!lock_width) lock_width = 0;
-                                els[i].setStyle("left", el.scrollLeft+lock_width);
 
+                        // removed fixed layout for now
+                        table.setStyle("table-layout", "")
+                        header_table.setStyle("table-layout", "")
+
+
+                        var table_els = table.getElements(".spt_table_cell_fixed");
+                        table_els.forEach( function(el) {
+                            el.setStyle("position", "absolute");
+                            el.setStyle("background", "#FFF");
+                        } );
+
+
+                        // sync all of the row heights
+
+                        var interval_id = setInterval( function(e) {
+                            if (!layout.isVisible()) return;
+                            spt.table.set_layout(layout);
+
+                            table.setStyle("width", "");
+                            header_table.setStyle("width", "");
+
+                            var rows = spt.table.get_all_rows();
+                            for (var i = 0; i < rows.length; i++) {
+
+                                var height = rows[i].getSize().y;
+
+                                var table_els = rows[i].getElements(".spt_table_cell_fixed");
+                                for (var j = 0; j < table_els.length; j++) {
+                                    if (table_els[j].scrollHeight > height) {
+                                        height = table_els[j].scrollHeight;
+                                    }
+                                }
+                                for (var j = 0; j < table_els.length; j++) {
+                                    table_els[j].setStyle("height", height);
+                                }
+                                rows[i].setStyle("height", height);
                             }
+                        }, 1000);
+                        bvr.src_el.height_interval_id = interval_id;
+
+
+                        var header_els = header_table.getElements(".spt_table_cell_fixed");
+                        header_els.forEach( function(el) {
+                            el.setStyle("position", "absolute");
+                            //el.setStyle("height", height);
+                            
+                        } );
+
+
+
+                        var offset = 120*bvr.lock_columns;
+                        header_table.setStyle("margin-left", offset);
+                        table.setStyle("margin-left", offset);
+
+
+
+                        var scroll = document.id(document.createElement("div"));
+                        scroll.inject(table_scroll, "after");
+                        var scroll_content = document.id(document.createElement("div"));
+                        scroll_content.inject(scroll);
+                        scroll_content.innerHTML = "hello";
+
+                        scroll.setStyle("position", "relative");
+                        scroll.setStyle("width", "100%");
+                        scroll.setStyle("background", "blue");
+                        scroll.setStyle("height", "17px");
+                        scroll.setStyle("margin-top", "-17px");
+                        scroll.setStyle("overflow-x", "scroll");
+                        scroll.setStyle("overflow-y", "hidden");
+
+                        scroll.setStyle("z-index", "2");
+                        table_scroll.setStyle("z-index", "1");
+
+                        setTimeout( function() {
+                            var size = table_scroll.getSize().x;
+                            scroll.setStyle("width", size);
+                            var size = table_scroll.scrollWidth;
+                            scroll_content.setStyle("width", size+200);
+                        }, 1000);
+
+                        // remove the scrollbars
+                        table_scroll.setStyle("overflow-x", "hidden");
+
+                        //scroll.setStyle("border", "solid 2px green");
+                        //scroll.scrollLeft = 30;
+                        scroll.onscroll = function(e) {
+                            header_table.setStyle("margin-left", -scroll.scrollLeft+offset);
+                            table.setStyle("margin-left", -scroll.scrollLeft+offset);
                         } 
+
+
+                        setTimeout( function() {
+                            spt.table.expand_table("free");
+                        }, 1000 )
+
+
+
+
                         '''
                     } )
 
-                    self.scroll.add_behavior( {
+                    load_div.add_behavior( {
                         'type': 'unload',
+                        'lock_columns': lock_columns,
                         'cbjs_action': '''
-                        clearInterval(bvr.src_el.interval);
+                        var interval_id = bvr.src_el.height_interval_id = interval_id;
+                        clearTimeout(interval_id);
                         '''
                     } )
-
-
 
             # Qt webkit ignores these
             if self.browser == 'Qt':
@@ -3448,6 +3540,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         if sobject and sobject.is_insert():
             icon_div = DivWdg()
+            icon_div.add_class("spt_select_new")
             #icon = IconWdg("New", IconWdg.NEW)
             icon = IconWdg("New", "BS_ASTERISK") 
             icon_div.add(icon)
@@ -7533,7 +7626,6 @@ spt.table.load_data = function(sobjects) {
   }
 
   for (var i = 0; i < sobjects.length; i++) {
-//  for (var i = 0; i < 200; i++) {
 
     var sobject = sobjects[i];
 
@@ -7544,6 +7636,10 @@ spt.table.load_data = function(sobjects) {
     row.setAttribute("spt_search_key", sobject.__search_key_v1__);
     row.setAttribute("spt_search_key_v2", sobject.__search_key__);
     row.setAttribute("spt_display_value", sobject.__display_value__);
+
+    var new_el = row.getElement(".spt_select_new");
+    if (new_el) new_el.destroy();
+
 
     row.setStyle("background", "#FFF");
     row.removeClass("spt_table_insert_row");
@@ -7582,8 +7678,12 @@ spt.table.load_data = function(sobjects) {
 
         else if (element_name == "preview") {
             var img = cell.getElement("img");
-            value = "https://www.telegraph.co.uk/content/dam/news/2018/10/03/TELEMMGLPICT000158935687_trans_NvBQzQNjv4BqeK8ehqBZJSTiVTgumtathbH8AD1LYTdJsoz8pklmEgw.jpeg?imwidth=450"
-            img.setAttribute("src", value);
+            if (!value) {
+                value = "https://www.telegraph.co.uk/content/dam/news/2018/10/03/TELEMMGLPICT000158935687_trans_NvBQzQNjv4BqeK8ehqBZJSTiVTgumtathbH8AD1LYTdJsoz8pklmEgw.jpeg?imwidth=450"
+            }
+            if (value) {
+                img.setAttribute("src", value);
+            }
             continue;
         }
         else {

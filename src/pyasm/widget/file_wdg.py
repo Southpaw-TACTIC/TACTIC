@@ -655,6 +655,143 @@ class ThumbWdg(BaseTableElementWdg):
         self.top.add_style(name, value)
 
 
+
+    def get_data(self, sobject):
+
+        # if there is a redirect to the sobject (a relation), use that
+        redirect = self.get_option("redirect")
+        redirect_expr = self.get_option("redirect_expr")
+        parser = ExpressionParser()
+        
+        if redirect and sobject:
+            if redirect == "true":
+                # use search_type and search_id pair
+                # FIXME: go up a maximum of 2 .. this is not so stable as
+                # the parent may have a similar relationship
+                for i in range(0,2):
+                    if not sobject:
+                        #return self.get_no_icon_wdg()
+                        return ""
+
+                    if sobject.has_value("search_type"):
+                        search_type = sobject.get_value("search_type")
+                        # if search_type does not exist, just break out
+                        if not search_type:
+                            break
+
+                        search_code = sobject.get_value("search_code", no_exception=True)
+                        if search_code:
+                            sobject = Search.get_by_code(search_type, search_code)
+                        else:
+                            search_id = sobject.get_value("search_id", no_exception=True)
+                            sobject = Search.get_by_id(search_type, search_id)
+                        if sobject:
+                            break
+
+            elif redirect.count("|") == 2:
+                search_type, col1, col2 = redirect.split("|")
+                search = Search(search_type)
+                search.add_filter(col1, sobject.get_value(col2) )
+                sobject = search.get_sobject()
+                if not sobject:
+                    #return self.get_no_icon_wdg()
+                    return ""
+
+        elif redirect_expr and sobject:
+            redirect_sobject = parser.eval(redirect_expr, sobjects=[sobject], single=True)
+            if redirect_sobject:
+                sobject = redirect_sobject
+            else:
+                #return self.get_no_icon_wdg()
+                return ""
+
+        # get the icon context from the sobject
+        icon_context = self.get_option("icon_context")
+        if not icon_context:
+            icon_context = sobject.get_icon_context(self.context)
+
+        # try to get an icon first
+        if isinstance(sobject, Snapshot):
+            snapshot = sobject
+            # check if the sobject actually exists
+            try:
+                snapshot.get_sobject()
+            except SObjectNotFoundException as e:
+                #return IconWdg('sobject n/a for snapshot code[%s]' %snapshot.get_code(), icon=IconWdg.ERROR)
+                return ""
+            except SearchException as e:
+                #return IconWdg('parent for snapshot [%s] not found' %snapshot.get_code(), icon=IconWdg.ERROR)
+                return ""
+       
+        else:
+            # this is to limit unnecessary queries
+            snapshot = None
+            if self.data:
+                search_key = SearchKey.get_by_sobject(sobject, use_id=False)
+                snapshot = self.data.get(search_key)
+            elif self.is_ajax(check_name=False) or redirect or redirect_expr:
+                if self.show_latest_icon:
+                    icon_context = None
+                    
+                snapshot = Snapshot.get_latest_by_sobject(sobject, icon_context, show_retired=False)
+
+                # get the latest icon period
+                if not snapshot and icon_context == 'icon':
+                    snapshot = Snapshot.get_latest_by_sobject(sobject, show_retired=False)
+
+
+        if not snapshot:
+            #return self.get_no_icon_wdg()
+            return ""
+
+
+        xml = snapshot.get_xml_value("snapshot")
+        
+        # data structure to store self.info
+        self.info = {}
+        # get the file objects if they have not already been cached
+        if not self.file_objects:
+            file_objects = {}
+            snapshot_file_objects = File.get_by_snapshot(snapshot)
+            
+            for file_object in snapshot_file_objects:
+                file_objects[file_object.get_code()] = file_object
+        else:
+            file_objects = self.file_objects
+
+        protocol = self.get_option("protocol")
+        if not protocol:
+            from pyasm.prod.biz import ProdSetting
+            protocol = ProdSetting.get_value_by_key('thumbnail_protocol')
+
+        # go through the nodes and try to find appropriate paths
+        self.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, self.show_versionless, protocol=protocol) 
+        # find the link that will be used when clicking on the icon
+        link_path = ThumbWdg.get_link_path(self.info, image_link_order=self.image_link_order)
+
+        if link_path == None:
+            
+            # check for ref snapshot
+            snapshots = snapshot.get_all_ref_snapshots()
+            snapshot_file_objects = []
+            if snapshots:
+                snapshot = snapshots[0]
+                # change the sobject value here also, affects the Thumb id below
+                sobject = snapshot.get_sobject()
+                xml = snapshot.get_xml_value("snapshot")
+                snapshot_file_objects = File.get_by_snapshot(snapshot)
+                
+            for file_object in snapshot_file_objects:
+                file_objects[file_object.get_code()] = file_object
+            self.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, self.show_versionless, protocol=protocol) 
+            link_path = ThumbWdg.get_link_path(self.info, image_link_order=self.image_link_order)
+
+        print("link_path: ", link_path)
+        return link_path
+ 
+
+
+
     def get_display(self):
         self.aspect = self.get_option('aspect')
         if not self.aspect:
@@ -681,6 +818,8 @@ class ThumbWdg(BaseTableElementWdg):
         min_size = self.get_option("min_icon_size")
         if not min_size:
             min_size = 45 
+
+
 
 
         sobject = self.get_current_sobject()

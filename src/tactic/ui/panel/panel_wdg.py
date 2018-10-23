@@ -1693,6 +1693,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
               <display class='LinkWdg'>
                   <search_type>%s</search_type>
                   <view>table</view>
+                  <height>auto</height>
                   <schema_default_view>true</schema_default_view>
               </display>
             </element>
