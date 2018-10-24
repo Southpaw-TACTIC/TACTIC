@@ -203,8 +203,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
             use_cache = self.get_option("use_cache") in ['true', True]
 
             # TEST TESt TEST
-            use_cache = True
-            #use_cache = False
+            #use_cache = True
+            use_cache = False
 
             if use_cache:
                 result = sobject.get_value(self.get_name())

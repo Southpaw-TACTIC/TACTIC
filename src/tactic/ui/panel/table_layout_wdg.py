@@ -792,10 +792,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         column_widths = self.kwargs.get("column_widths")
         if not column_widths:
             column_widths = []
-            # THIS IS WRONG: the Row Select is not part of the self.widgets
-            # The first one is the selection widget
-            #column_widths = [60]
-            #self.kwargs["column_widths"] = column_widths
 
 
         self.element_names = self.config.get_element_names()  
@@ -826,7 +822,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # resize the widths so that the last one is free
         for i, item in enumerate(reversed(column_widths)):
-            if i == 0:
+            expand_full_width = True
+            if i == 0 and not expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item == -1:
                 column_widths[-(i+1)] = 120
@@ -891,7 +888,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             scroll.add_class("spt_table_scroll")
-            scroll.add_attr( "onScroll", '''document.id(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
+            #scroll.add_attr( "onScroll", '''document.id(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
             # Scroll event not implemented in behaviors yet
             """
             scroll.add_behavior( {
@@ -903,6 +900,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             """
 
             scroll.add_style("overflow-y: auto")
+            scroll.add_style("overflow-x: auto")  
+            scroll.add_style("position: relative")
 
             # Moo scrollbar
             """
@@ -915,10 +914,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             } )
             """
 
-
-
-            scroll.add_style("overflow-x: hidden")  
-            scroll.add_style("overflow-x: auto")  
 
 
             if not height and self.kwargs.get("__hidden__") not in [True, 'True', 'true']:
@@ -1059,9 +1054,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         document_mode = self.kwargs.get("document_mode") or False
 
-
-        js_load = False 
-        if js_load == True:
+        # TEST javascript loading of rows
+        if self.js_load == True:
 
             data_div = DivWdg()
             inner.add(data_div)
@@ -1099,6 +1093,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 var data_str = bvr.src_el.getAttribute("spt_data");
                 var data = JSON.parse(data_str);
                 spt.table.load_data(data)
+                spt.table.expand_table("full");
+                bvr.src_el.removeAttribute("spt_data");
                 '''
             } )
 
@@ -1248,7 +1244,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 var unique_id = "loading|"+bvr.unique_id;
                 spt.named_events.fire_event(unique_id, {});
                 if (bvr.expand_on_load) {
-                     spt.table.expand_table("full");
+                    spt.table.expand_table("full");
                 }
             '''
             } )
@@ -1560,10 +1556,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             column_widths = []
 
         
-
+        # NOTE: DISABLED - not neccessary anymore
         if self.kwargs.get('temp') != True:
             table.add_behavior( {
-                'type': 'load',
+                'type': 'loadX',
                 'element_names': self.element_names,
                 'column_widths': column_widths,
                 'cbjs_action': '''
@@ -2109,17 +2105,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             th.add_style("padding: 3px")
 
-
-            lock_columns = 0
-            if i < lock_columns:
+            if i < self.num_lock_columns:
                 th.add_style("position: absolute")
 
                 width = widths[i]
                 if isinstance(width, basestring):
-                    width = int(width)
+                    width = int(width.replace("px",""))
                 th.add_style("left: %spx" % lock_width)
                 th.add_attr("spt_lock_width", lock_width)
-                th.add_style("background: #BBB")
+                th.add_style("background: #F9F9F9")
                 th.add_style("z-index: 1")
                 th.add_class("spt_table_cell_fixed")
 
@@ -3043,10 +3037,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             # TEST
-            lock_columns = 0
-            if i < lock_columns:
+            if i < self.num_lock_columns:
                 td.add_style("position: absolute")
                 td.add_style("background: #FFF")
+
+
+                if i == self.num_lock_columns-1:
+                    td.add_style("border-right: solid 2px #CCC")
+                    td.add_style("border-left: none")
 
                 td.add_style("left: %spx" % lock_width)
                 td.add_attr("spt_lock_width", lock_width)
@@ -3054,30 +3052,32 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 td.add_class("spt_table_cell_fixed")
 
 
-                if i == lock_columns-1:
-                    td.add_style("border-right: solid 2px #CCC")
-                    td.add_style("border-left: none")
+                self.expand_on_load = False
+
+
 
                 # NOTE: widths must obviously exist, but there is a check before to see if it does
 
                 cur_width = widths[0]
                 if isinstance(cur_width, basestring):
-                    cur_width = int(cur_width)
+                    cur_width = int(cur_width.replace("px",""))
                 lock_width += cur_width
 
-                if i == 0 and not sobject.is_insert() and not self.kwargs.get("temp"):
-
+                #if row == 0 and i == 0 and not sobject.is_insert() and not self.kwargs.get("temp"):
+                if sobject.is_insert():
                     load_div = DivWdg()
                     self.top.add(load_div)
 
                     load_div.add_behavior( {
                         'type': 'load',
-                        'lock_columns': lock_columns,
+                        'lock_columns': self.num_lock_columns,
                         'cbjs_action': '''
                         var el = bvr.src_el;
                         if (el.processed == true) return;
 
                         el.processed = true;
+
+                        var lock_columns = bvr.lock_columns;
 
                         var top = bvr.src_el.getParent(".spt_layout_top");
                         var layout = top.getElement(".spt_layout");
@@ -3092,8 +3092,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
                         // removed fixed layout for now
-                        table.setStyle("table-layout", "")
-                        header_table.setStyle("table-layout", "")
+                        table.setStyle("table-layout", "fixed")
+                        header_table.setStyle("table-layout", "fixed")
 
 
                         var table_els = table.getElements(".spt_table_cell_fixed");
@@ -3102,15 +3102,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                             el.setStyle("background", "#FFF");
                         } );
 
+                        header_table.setStyle("width", "max-content");
+                        table.setStyle("width", "max-content");
 
                         // sync all of the row heights
 
-                        var interval_id = setInterval( function(e) {
+                        var resize_heights = function() {
+
                             if (!layout.isVisible()) return;
                             spt.table.set_layout(layout);
-
-                            table.setStyle("width", "");
-                            header_table.setStyle("width", "");
 
                             var rows = spt.table.get_all_rows();
                             for (var i = 0; i < rows.length; i++) {
@@ -3128,26 +3128,34 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                                 }
                                 rows[i].setStyle("height", height);
                             }
+                        }
+                        resize_heights();
+
+                        var interval_id = setInterval( function(e) {
+                            resize_heights()
                         }, 1000);
                         bvr.src_el.height_interval_id = interval_id;
+
 
 
                         var header_els = header_table.getElements(".spt_table_cell_fixed");
                         header_els.forEach( function(el) {
                             el.setStyle("position", "absolute");
+                            //var height = "35px";
                             //el.setStyle("height", height);
                             
                         } );
 
 
 
-                        var offset = 120*bvr.lock_columns;
+                        var offset = 120*lock_columns;
                         header_table.setStyle("margin-left", offset);
                         table.setStyle("margin-left", offset);
 
 
 
                         var scroll = document.id(document.createElement("div"));
+                        scroll.addClass("spt_horizontal_scroll");
                         scroll.inject(table_scroll, "after");
                         var scroll_content = document.id(document.createElement("div"));
                         scroll_content.inject(scroll);
@@ -3157,7 +3165,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         scroll.setStyle("width", "100%");
                         scroll.setStyle("background", "blue");
                         scroll.setStyle("height", "17px");
-                        scroll.setStyle("margin-top", "-17px");
+                        //scroll.setStyle("margin-top", "-17px");
                         scroll.setStyle("overflow-x", "scroll");
                         scroll.setStyle("overflow-y", "hidden");
 
@@ -3167,8 +3175,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         setTimeout( function() {
                             var size = table_scroll.getSize().x;
                             scroll.setStyle("width", size);
-                            var size = table_scroll.scrollWidth;
-                            scroll_content.setStyle("width", size+200);
+
+                            var size2 = table_scroll.scrollWidth;
+                            var size2 = header_table.getSize().x;
+                            scroll_content.setStyle("width", size2+offset+100);
+
+                            if (size2 <= size) {
+                                //scroll.setStyle("display", "none");
+                            }
+
                         }, 1000);
 
                         // remove the scrollbars
@@ -3182,8 +3197,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         } 
 
 
+                        //header_table.setStyle("width", "max-content");
+                        //table.setStyle("width", "max-content");
                         setTimeout( function() {
-                            spt.table.expand_table("free");
+                            //spt.table.expand_table("free");
                         }, 1000 )
 
 
@@ -3194,7 +3211,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                     load_div.add_behavior( {
                         'type': 'unload',
-                        'lock_columns': lock_columns,
+                        'lock_columns': self.num_lock_columns,
                         'cbjs_action': '''
                         var interval_id = bvr.src_el.height_interval_id = interval_id;
                         clearTimeout(interval_id);
@@ -6744,6 +6761,12 @@ spt.table.set_column_width = function(element_name, width) {
     // Commented out: not necessary for basic table structure
     for (var i = 0; i < headers.length; i++) {
         var header = headers[i];
+
+        // ignore floating columns
+        if (header.getStyle("position", "absolute")) {
+            continue;
+        }
+
         if (header.getAttribute("spt_element_name") == element_name) {
             var new_width = width + "";
             new_width = parseInt( new_width.replace("px", "") );
@@ -6760,6 +6783,7 @@ spt.table.set_column_width = function(element_name, width) {
 
     var curr_header = spt.table.get_header_by_cell(cell);
     if (total_width) {
+        /*
         header_table.setStyle("width", total_width);
         table.setStyle("width", total_width);
         subtable = table.getElement(".spt_table_table");
@@ -6767,19 +6791,7 @@ spt.table.set_column_width = function(element_name, width) {
             subtable.setStyle("width", total_width);
             
         }
-
-        var layout = spt.table.get_layout();
-        if (layout.getAttribute("has_extra_header") == "true") {
-            layout_width = total_width+66;
-        }
-        else {
-            layout_width = total_width+30;
-        }
-        if (layout_width < 750) layout_width = 700;
-
-        //layout.setStyle("width", layout_width);
-        layout.setStyle("width", "auto");
-        //layout.setStyle("overflow-x", "auto");
+        */
     }
 
     curr_header.setStyle("width", width);
@@ -7625,7 +7637,9 @@ spt.table.load_data = function(sobjects) {
       sobjects = spt.table.sobjects;
   }
 
-  for (var i = 0; i < sobjects.length; i++) {
+  var r_sobjects = sobjects.reverse();
+
+  for (var i = 0; i < r_sobjects.length; i++) {
 
     var sobject = sobjects[i];
 
@@ -7657,7 +7671,6 @@ spt.table.load_data = function(sobjects) {
     var cells = row.getElements(".spt_cell_edit");
     var insert_cells = row.getElements(".spt_cell_edit");
 
-
     for (var j = 0; j < cells.length; j++) {
         var cell = cells[j];
         var insert_cell = insert_cells[j];
@@ -7678,8 +7691,8 @@ spt.table.load_data = function(sobjects) {
 
         else if (element_name == "preview") {
             var img = cell.getElement("img");
-            if (!value) {
-                value = "https://www.telegraph.co.uk/content/dam/news/2018/10/03/TELEMMGLPICT000158935687_trans_NvBQzQNjv4BqeK8ehqBZJSTiVTgumtathbH8AD1LYTdJsoz8pklmEgw.jpeg?imwidth=450"
+            if (!value || value == "__no_preview__") {
+                value = "/context/icons/common/no_image.png";
             }
             if (value) {
                 img.setAttribute("src", value);
@@ -7698,7 +7711,6 @@ spt.table.load_data = function(sobjects) {
     }
   }
 
-  spt.table.expand_table("full");
 }
 
 

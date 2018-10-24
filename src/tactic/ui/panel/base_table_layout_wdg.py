@@ -124,6 +124,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.order_element = ""
         self.show_retired_element = ""
 
+        self.num_lock_columns = kwargs.get("num_lock_columns") or 0
+        if self.num_lock_columns:
+            self.num_lock_columns = int(self.num_lock_columns)
+
+        self.js_load = kwargs.get("js_load") or False
+        if self.js_load in ['true', True]:
+            self.js_load = True
+        else:
+            self.js_laod = False
+
+
 
         self.group_info = DivWdg()
         self.group_info.add_class("spt_table_group_info")
