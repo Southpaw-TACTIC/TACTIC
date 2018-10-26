@@ -21,6 +21,12 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.6.0.a03
     #
+    def upgrade_v4_6_0_a03_007(self):
+       self.run_sql('''
+       ALTER TABLE "login_group" ADD COLUMN data jsonb;
+       ''')
+
+
     def upgrade_v4_6_0_a03_006(self):
        self.run_sql('''
        ALTER TABLE "login" ADD COLUMN data jsonb;
