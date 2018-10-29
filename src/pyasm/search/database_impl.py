@@ -1281,7 +1281,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         # this may not return the type exacty like before like varchar is in place of
         # varchar(256) due to the column type returned from the sql impl
         statements = []
-        statements.append('ALTER TABLE "%s" ALTER COLUMN "%s" %s' \
+        statements.append('ALTER TABLE "%s" MODIFY COLUMN "%s" %s' \
             % (table,column,type))
         if not_null == None:
             return statements
@@ -1293,10 +1293,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
             # Now that any existing NULL values for that column are set to the empty string,
             # proceed to alter the column so that it disallows NULL values.
-            statements.append('ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL' \
+            statements.append('ALTER TABLE "%s" MODIFY COLUMN "%s" %s NOT NULL' \
             % (table,column,type))
         else:
-            statements.append('ALTER TABLE "%s" ALTER COLUMN "%s" %s' \
+            statements.append('ALTER TABLE "%s" MODIFY COLUMN "%s" %s' \
                 % (table, column, type))
         return statements
 
