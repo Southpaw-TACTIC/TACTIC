@@ -621,6 +621,22 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("has_extra_header", "true")
 
 
+        style_div = HtmlElement("style")
+        top.add(style_div)
+        style_div.add('''
+.spt_layout .spt_cell_edit {
+
+    padding: 3px 8px;
+    vertical-align: top;
+
+    background-repeat: no-repeat;
+    background-position: bottom right;
+}
+        ''')
+
+
+
+
         if self.extra_data:
             if not isinstance(self.extra_data, basestring):
                 inner.set_json_attr("spt_extra_data", self.extra_data)
@@ -821,16 +837,21 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         # resize the widths so that the last one is free
-        for i, item in enumerate(reversed(column_widths)):
-            expand_full_width = True
-            if i == 0 and not expand_full_width:
+        expand_full_width = True
+        default_width = 120
+        min_width = 45
+        #expand_full_width = False
+        for i, item_width in enumerate(reversed(column_widths)):
+            if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
-            elif item == -1:
-                column_widths[-(i+1)] = 120
+            elif item_width == -1:
+                column_widths[-(i+1)] = default_width
+            elif item_width < min_width:
+                column_widths[-(i+1)] = min_width
+
 
 
         self.kwargs["column_widths"] = column_widths
-
 
 
         sticky_header = self.kwargs.get("sticky_header")
@@ -886,9 +907,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_class("spt_window_resize")
                 scroll.add_attr("spt_window_resize_offset", window_resize_offset)
 
-
+            # sync header to this scroll
+            # FIXME: this does not work with locked columns as the locked columns have their own
+            # scrollbar
             scroll.add_class("spt_table_scroll")
-            #scroll.add_attr( "onScroll", '''document.id(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
+            scroll.add_attr( "onScroll", '''document.id(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
             # Scroll event not implemented in behaviors yet
             """
             scroll.add_behavior( {
@@ -1087,14 +1110,21 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             data_div.add_attr("spt_data", data_str)
 
+            if self.num_lock_columns:
+                expand_table = "free"
+            else:
+                expand_table = "full"
+
+
             data_div.add_behavior( {
                 'type': 'load',
+                'expand_table': expand_table,
                 'cbjs_action': '''
                 var data_str = bvr.src_el.getAttribute("spt_data");
                 var data = JSON.parse(data_str);
-                spt.table.load_data(data)
-                spt.table.expand_table("full");
                 bvr.src_el.removeAttribute("spt_data");
+                spt.table.load_data(data);
+                spt.table.expand_table(bvr.expand_table);
                 '''
             } )
 
@@ -1555,35 +1585,29 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if not column_widths:
             column_widths = []
 
-        
-        # NOTE: DISABLED - not neccessary anymore
+       
+        # set all of the column widths in javascript
         if self.kwargs.get('temp') != True:
             table.add_behavior( {
-                'type': 'loadX',
+                'type': 'load',
                 'element_names': self.element_names,
                 'column_widths': column_widths,
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
                 spt.table.set_layout(layout);
 
-                // determine the widths of the screen
-                var size = layout.getSize();
-                var total_size = 30 + 32;
-                for (var i = 0; i < bvr.column_widths.length; i++) {
-                    total_size += bvr.column_widths[i];
-                }
-
                 for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
                     var width = bvr.column_widths[i];
+                    if (width == -1) {
+                        continue;
+                    }
                     spt.table.set_column_width(name, width);
                 }
 
                
                 '''
             } )
-
-       
 
 
         # all for collapsing of columns
@@ -1787,12 +1811,16 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'cbjs_action': '''
             bvr.src_el.addEvent('mouseover:relay(.spt_cell_edit)',
                 function(event, src_el) {
-                    if (src_el.hasClass("spt_cell_insert_no_edit")) {
+
+                    src_el.setStyle("background-repeat", "no-repeat");
+                    src_el.setStyle("background-position", "bottom right");
+
+                    if (src_el.hasClass("spt_cell_never_edit")) {
+                    }
+                    else if (src_el.hasClass("spt_cell_insert_no_edit")) {
                         src_el.setStyle("background-image", "url(/context/icons/custom/no_edit.png)" );
                     }
-                    else if (!src_el.hasClass("spt_cell_no_edit")) {
-                        src_el.setStyle("background-repeat", "no-repeat" );
-                        src_el.setStyle("background-position", "bottom right");
+                    else {
                     }
 
                 } )
@@ -1839,14 +1867,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         }
 
 
-
-        cell_styles = {
-            "padding": "3px 8px",
-
-            "vertical-align": "top",
-            "background-repeat": "no-repeat",
-            "background-position": "bottom right",
-        }
+        cell_styles = {}
 
 
         show_border = self.kwargs.get("show_border")
@@ -1859,7 +1880,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             cell_styles["border"] = "solid 1px %s" % border_color
             cell_styles["padding"] = "3px"
             select_styles["border"] = "solid 1px %s" % border_color
-
 
 
 
@@ -1944,20 +1964,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'border': 'solid 1px %s' % border_color
         } )
 
-
-
-        # show hidden row test
-        """
-        table.add_behavior( {
-            'type': 'smart_click_up',
-            'bvr_match_class': 'spt_cell_edit',
-            'cbjs_action': '''
-            var row = bvr.src_el.getParent(".spt_table_row");
-            var class_name = 'tactic.ui.widget.CalendarWdg';
-            spt.table.add_hidden_row(row, class_name);
-            '''
-        } )
-        """
 
 
 
@@ -2098,9 +2104,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             name = widget.get_name()
 
             th = table.add_header()
-            if widths and widths[i] != -1:
-                th.add_style("width", widths[i])
-                th.add_attr("last_width", widths[i])
+            if widths:
+                if widths[i] != -1:
+                    th.add_style("width", widths[i])
+                    th.add_attr("last_width", widths[i])
 
 
             th.add_style("padding: 3px")
@@ -3034,17 +3041,21 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             if widths and widths[i] != -1:
                 td.add_style("width", widths[i])
                 td.add_attr("last_width", widths[i])
+            else:
+                td.add_style("width", "auto")
+                td.add_attr("last_width", widths[i])
 
 
             # TEST
             if i < self.num_lock_columns:
                 td.add_style("position: absolute")
-                td.add_style("background: #FFF")
+                td.add_style("background: inherit")
+                td.add_style("background-color: inherit")
 
 
                 if i == self.num_lock_columns-1:
                     td.add_style("border-right: solid 2px #CCC")
-                    td.add_style("border-left: none")
+                    #td.add_style("border-left: none")
 
                 td.add_style("left: %spx" % lock_width)
                 td.add_attr("spt_lock_width", lock_width)
@@ -3062,6 +3073,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 if isinstance(cur_width, basestring):
                     cur_width = int(cur_width.replace("px",""))
                 lock_width += cur_width
+
+
+
 
                 #if row == 0 and i == 0 and not sobject.is_insert() and not self.kwargs.get("temp"):
                 if sobject.is_insert():
@@ -3099,7 +3113,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         var table_els = table.getElements(".spt_table_cell_fixed");
                         table_els.forEach( function(el) {
                             el.setStyle("position", "absolute");
-                            el.setStyle("background", "#FFF");
+                            el.setStyle("background", "inherit");
                         } );
 
                         header_table.setStyle("width", "max-content");
@@ -3197,13 +3211,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         } 
 
 
-                        //header_table.setStyle("width", "max-content");
-                        //table.setStyle("width", "max-content");
-                        setTimeout( function() {
-                            //spt.table.expand_table("free");
-                        }, 1000 )
-
-
+                        // add an observer to the layout
+                        /*
+                        var callback = function() {
+                            var size = header_table.getSize();
+                            scroll_content.setStyle("width", size.x+120);
+                            //var size = layout.getSize();
+                            //scroll.setStyle("width", size.x);
+                        }
+                        var observer = new ResizeObserver(callback);
+                        observer.observe(header_table);
+                        layout.setStyle("border", "solid 1px red");
+                        */
 
 
                         '''
@@ -6490,8 +6509,11 @@ spt.table.remove_columns = function(columns) {
             }
         }
 
-
+        console.log("header");
+        console.log(header);
         header.destroy();
+
+
         for (var j = 0; j < cells.length; j++) {
             cells[j].destroy();
         }
@@ -6800,10 +6822,35 @@ spt.table.set_column_width = function(element_name, width) {
     cell.setAttribute("last_width", width);
 
 
+
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
     if (insert_cell)
         insert_cell.setStyle("width", width);
    
+}
+
+
+
+spt.table.set_column_widths = function(widths) {
+
+    var element_names = spt.table.get_element_names();
+    if (Number.isInteger(widths) ) {
+        var width = widths;
+        widths = [];
+        element_names.forEach( function(element_name) {
+            widths.push(width); 
+        } );
+    }
+
+
+    var index = 0;
+    widths.forEach( function(width) {
+        var element_name = element_names[index];
+        spt.table.set_column_width(element_name, width);
+
+        index += 1;
+    } )
+
 }
 
 
@@ -6828,6 +6875,10 @@ spt.table.get_column_widths = function() {
 
 spt.table.expand_table = function(mode) {
 
+    if (!mode) {
+        mode = "full";
+    }
+
     var layout = spt.table.get_layout();
     var version = layout.getAttribute("spt_version");
     var headers;
@@ -6850,18 +6901,28 @@ spt.table.expand_table = function(mode) {
     }
 
 
+    var layout_width = layout.getSize().x;
     var width = header_table.getStyle("width");
-   
+
     // don't set the width of each column, this is simpler
-    if ( (mode != "full" && width == '100%') || mode == "free") {
+    if ( mode == "free") {
 
         if (header_table) {
+
+            var total_width = 0;
 
             // remove the widths of all the cells
             var cells = header_table.getElements("th");
             cells.forEach( function(cell) {
+
                 var last_width = cell.getAttribute("last_width");
-                if (last_width && last_width != "-1") {
+
+                // if this is the last cell
+                if (cell == cells[cells.length-1] && total_width < layout_width - 120) {
+                    cell.setStyle("width", layout_width-total_width)
+                }
+
+                else if (last_width && last_width != "-1") {
                     cell.setStyle("width", last_width);
                 }
                 else {
@@ -6873,24 +6934,36 @@ spt.table.expand_table = function(mode) {
                         cell.setStyle("width", "100px");
                     }
                 }
+
+                var size = cell.getSize();
+                total_width += size.x;
             })
-            header_table.setStyle("width", "0px");
+            //header_table.setStyle("width", "0px");
+            header_table.setStyle("width", "max-content");
 
 
         }
         if (table) {
+
+            var total_width = 0;
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
                 var cells = row.getElements(".spt_cell_edit");
                 cells.forEach( function(cell){
 
+                    var last_width = cell.getAttribute("last_width");
+
                     if (cell.hasClass("spt_table_select") ) {
                         return;
                     }
 
-                    var last_width = cell.getAttribute("last_width");
-                    if (last_width && last_width != "-1") {
+
+                    // if this is the last cell
+                    if (cell == cells[cells.length-1] && total_width < layout_width - 120) {
+                        cell.setStyle("width", layout_width-total_width)
+                    }
+                    else if (last_width && last_width != "-1") {
                         cell.setStyle("width", last_width);
                     }
                     else {
@@ -6902,9 +6975,16 @@ spt.table.expand_table = function(mode) {
                             cell.setStyle("width", "100px");
                         }
                     }
+
+                    var size = cell.getSize();
+                    total_width += size.x;
+
                 })
             })
-            table.setStyle("width", "0px");
+
+
+            //table.setStyle("width", "0px");
+            table.setStyle("width", "max-content");
 
  
 
@@ -7221,6 +7301,8 @@ spt.table.drag_reorder_header_action = function(evt, bvr, mouse_411)
     }
 
     spt.table.drag_init();
+
+    spt.table.expand_table("free");
 }
 
 

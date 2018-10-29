@@ -711,8 +711,13 @@ spt.simple_search = {};
 spt.simple_search.get_top = function() {
     var layout = spt.table.get_layout();
     var panel = layout.getParent(".spt_view_panel_top");
-    var top = panel.getElement(".spt_simple_search");
-    return top;
+    if (panel) {
+        var top = panel.getElement(".spt_simple_search");
+        return top;
+    }
+    else {
+        return null;
+    }
 }
 
 

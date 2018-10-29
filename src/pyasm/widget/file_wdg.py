@@ -506,15 +506,7 @@ class ThumbWdg(BaseTableElementWdg):
     def handle_td(self, td):
         td.set_attr('spt_input_type', 'upload')
         td.add_style("min-width", "55px")
-        return
-
-
-        #td.set_style("width: 1px")
-        if not self.width:
-            td.add_style("width", "55px")
-        else:
-            td.add_style("width: %s" % self.width)
-
+        td.add_class("spt_cell_never_edit")
 
 
     def set_icon_size(self, size):
@@ -595,8 +587,9 @@ class ThumbWdg(BaseTableElementWdg):
 
         div = self.top
         div.add_style("position: relative")
-        div.add_style("margin: 3px")
+        div.add_style("margin: 2px")
         div.add_class("spt_thumb_top")
+        div.add_style("box-sizing: border-box")
 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         icon_size = self.get_icon_size()
@@ -981,21 +974,6 @@ class ThumbWdg(BaseTableElementWdg):
         div.add_class("spt_thumb_top")
         div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
 
-        """
-        # This is taken care of in the TileLayoutWdg or CollectionLayoutWdg
-        if sobject.get_value("_is_collection", no_exception=True):
-            expr = "@COUNT(jobs/media_in_media)"
-            num_items = Search.eval(expr, sobject)
-            if not num_items:
-                num_items = "0"
-            num_div = DivWdg(num_items)
-            num_div.add_class("badge")
-            num_div.add_style("font-size: 0.8em")
-            num_div.add_style("margin: 2px")
-            num_div.add_style("position: absolute")
-            div.add(num_div)
-             
-        """
       
         # if no link path is found, display the no icon image
         if link_path == None:
@@ -1249,43 +1227,6 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         return
-
-        """
-        if script_path:
-            widget.add_behavior( {
-            'type': 'click_up',
-            'script_path': script_path,
-            'cbjs_action': '''
-            var script = spt.CustomProject.get_script_by_path(bvr.script_path);
-            spt.CustomProject.exec_script(script);
-            '''
-            } )
-
-        else:
-            widget.add_behavior( {
-            'type': 'click_up',
-            'class_name': class_name,
-            'search_key': search_key,
-            'code': code,
-            'cbjs_action': '''
-            spt.tab.set_main_body_tab();
-            var class_name = bvr.class_name;
-            if ( ! class_name )
-                class_name = 'tactic.ui.tools.SObjectDetailWdg';
-
-            var kwargs = {
-                search_key: bvr.search_key
-            };
-            var element_name = "detail_"+bvr.code;
-            var title = "Detail ["+bvr.code+"]";
-            spt.tab.add_new(element_name, title, class_name, kwargs);
-            '''
-            } )
-        """
-
-
-
-
 
 
     
