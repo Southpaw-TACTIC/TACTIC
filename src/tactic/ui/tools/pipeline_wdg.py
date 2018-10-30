@@ -739,7 +739,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 content_div.add(no_items)
                 no_items.add("<i>-- No Items --</i>")
 
-        except Exception as  e:
+        except Exception as e:
             print("WARNING: ", e)
             none_wdg = DivWdg("<i>&nbsp;&nbsp;-- Error --</i>")
             none_wdg.add("<div>%s</div>" % str(e))
@@ -761,16 +761,23 @@ class PipelineListWdg(BaseRefreshWdg):
             #search.add_filter("search_type", "NULL", op='is', quoted=False)
             search.add_op("or")
             search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            search.add_op("begin")
             search.add_filter("type", "template", op="!=")
+            search.add_filter("type", "NULL", op='is', quoted=False)
+            search.add_op("or")
             pipelines = search.get_sobjects()
 
             if pipelines:
 
-                swap = SwapDisplayWdg()
-                inner.add(swap)
-                swap.add_style("float: left")
+                title = DivWdg()
+                inner.add(title)
+                title.add_style("display: flex")
+                title.add_style("align-items: center")
 
-                title = DivWdg("<b>Task Status Workflows</b> <i>(%s)</i>" % len(pipelines))
+                swap = SwapDisplayWdg()
+                title.add(swap)
+
+                title.add("<div><b>Task Status Workflows</b> <i>(%s)</i></div>" % len(pipelines))
                 title.add_style("padding-bottom: 2px")
                 title.add_style("padding-top: 3px")
                 inner.add(title)
@@ -854,13 +861,16 @@ class PipelineListWdg(BaseRefreshWdg):
             if pipelines:
                 inner.add("<br clear='all'/>")
 
-                swap = SwapDisplayWdg()
-
                 title = DivWdg()
-                inner.add(swap)
-                swap.add_style("margin-top: -2px")
                 inner.add(title)
-                swap.add_style("float: left")
+
+                title.add_style("display: flex")
+                title.add_style("align-items: center")
+
+                swap = SwapDisplayWdg()
+                title.add(swap)
+
+
                 title.add("<b>Site Wide Workflows</b> <i>(%s)</i><br/>" % len(pipelines))
               
                 site_wide_div = DivWdg()

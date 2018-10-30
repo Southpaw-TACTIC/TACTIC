@@ -3734,7 +3734,7 @@ spt.table.get_group_elements = function() {
 
 spt.table.set_layout = function(layout) {
     if (!layout) {
-        spt.alert("Layout is null on spt.table.set_layout()");
+        //spt.alert("Layout is null on spt.table.set_layout()");
         return;
     }
 

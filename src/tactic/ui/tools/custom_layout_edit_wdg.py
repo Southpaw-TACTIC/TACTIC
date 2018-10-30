@@ -383,6 +383,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         table.add_style("align-items: stretch")
         table.add_style("align-content: stretch")
         table.add_style("width: 100%")
+        table.add_style("box-sizing: border-box")
 
 
         inner.add(table)
@@ -3383,7 +3384,6 @@ class CustomLayoutActionCbk(Command):
         for config in configs:
             view = config.get_value("view")
             new_view = self.new_view(view, new_folder)
-            print("new_view: ", new_view)
 
             config_xml = config.get_xml_value("config")
 
