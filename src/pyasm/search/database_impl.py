@@ -3184,6 +3184,26 @@ class MySQLImpl(PostgresImpl):
                 value = 0
             return {"value": value, "quoted": quoted}
 
+        if (column_type == 'timestamp'):
+            # We are converting a timestamp ISO string to datetime obj.
+            from dateutil import parser
+            try:
+                value = parser.parse(value)
+            except:
+                value = value
+
+        if isinstance(value, datetime.datetime):
+            # We need to convert the time to UTC, and strip the timezone info.
+            if value.tzinfo is not None:
+                # Convert to UTC
+                if value.utcoffset() is not None:
+                    value = value - value.utcoffset()
+            # Strip the timezone info.
+            value = value.replace(tzinfo=None)
+            # We now have a datetime obj without timezone info.
+            value_str = value.strftime("%Y-%m-%d %H:%M:%S")
+            return {"value": value_str, "quoted": True}
+
 
     def get_table_info(self, db_resource):
 
@@ -3510,8 +3530,12 @@ class MySQLImpl(PostgresImpl):
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.   mysql --host=localhost --port=5432 --user=root --password=south123paw --execute="create database unittest"
         drop_SQL_arg = 'DROP DATABASE %s' % database.get_database()
-        create = 'mysql --host=%s --port=%s --user=%s --password=%s --execute="%s"' % \
-                 (self.server, self.port, self.user, self.password, drop_SQL_arg)
+        if self.password == 'none':
+            create = 'mysql --host=%s --port=%s --user=%s --execute="%s"' % \
+                (self.server, self.port, self.user, drop_SQL_arg)
+        else:
+            create = 'mysql --host=%s --port=%s --user=%s --password=%s --execute="%s"' % \
+                (self.server, self.port, self.user, self.password, drop_SQL_arg)
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:

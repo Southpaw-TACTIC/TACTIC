@@ -2160,12 +2160,12 @@ class Select(object):
                 column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
                 column_type = column_types.get(column)
 
-                info = self.impl.process_value(column, value, column_type)
+            info = self.impl.process_value(column, value, column_type)
 
-                if info:
-                    value = info.get("value")
-                    value = self._convert_to_database_boolean(value)
-                    quoted = info.get("quoted")
+            if info:
+                value = info.get("value")
+                value = self._convert_to_database_boolean(value)
+                quoted = info.get("quoted")
             else:
                 quoted = True
 
