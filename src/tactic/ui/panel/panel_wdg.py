@@ -3340,6 +3340,26 @@ class ViewPanelWdg(BaseRefreshWdg):
         kwargs['config_xml'] = self.kwargs.get("config_xml")
 
 
+        # set up the extra keys (for all layouts)
+        if not layout or layout == "table":
+            layout_class_path = "tactic.ui.panel.TableLayoutWdg"
+        else:
+            layout_class_path = None
+
+        if layout_class_path:
+            (module_name, class_name) = Common.breakup_class_path(layout_class_path)
+            try:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                extra_keys = eval("%s.get_kwargs_keys()" % class_name )
+            except Exception as e:
+                extra_keys = []
+
+            for key in extra_keys:
+                kwargs[key] = self.kwargs.get(key)
+            kwargs['extra_keys'] = ",".join(extra_keys)
+
+
+
         if layout == 'tile':
             from tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = self.kwargs.get("top_view")
@@ -3368,10 +3388,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'widget'
             layout_table = StaticTableLayoutWdg(**kwargs)
+
         elif layout == 'raw_table':
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
+
         elif layout in ['fast_table', 'table']:
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
@@ -3449,11 +3471,17 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
         else:
+            from table_layout_wdg import TableLayoutWdg
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['show_border'] = self.kwargs.get("show_border")
             kwargs['edit'] = self.kwargs.get("edit")
-            from table_layout_wdg import FastTableLayoutWdg
-            layout_table = FastTableLayoutWdg(**kwargs)
+            layout_table = TableLayoutWdg(**kwargs)
+
+
+
+
+
+
 
         layout_table.set_search_wdg(search_wdg)
 

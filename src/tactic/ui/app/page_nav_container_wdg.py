@@ -516,8 +516,6 @@ class PageNavContainerWdg(BaseRefreshWdg):
       //console.log("offset: " + offset);
 
       var els = body.getElements(".spt_window_resize");
-      console.log("resize_els: " + els.length);
-
       for (var i = 0; i < els.length; i++) {
           var el = els[i];
           var offset = el.getAttribute("spt_window_resize_offset");

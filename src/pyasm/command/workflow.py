@@ -1022,6 +1022,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
     def handle_reject(self):
+
         self.log_message(self.sobject, self.process, "reject")
         self.run_callback(self.pipeline, self.process, "reject")
 

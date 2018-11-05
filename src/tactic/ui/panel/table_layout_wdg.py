@@ -246,6 +246,16 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     GROUP_COLUMN_PREFIX = "__group_column__"
 
 
+
+    def get_kwargs_keys(cls):
+        return ['select_color']
+    get_kwargs_keys = classmethod(get_kwargs_keys)
+
+
+
+
+
+
     def get_layout_version(self):
         return "2"
 
@@ -3647,6 +3657,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
     def handle_load_behaviors(self, table):
 
+
+        select_color = self.kwargs.get("select_color")
+        if not select_color:
+            select_color = table.get_color("background3")
+
+        shadow_color = table.get_color("shadow")
+
+
         if self.kwargs.get('temp') != True:
             cbjs_action = '''
             // set the current table layout on load
@@ -3668,10 +3686,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         if Container.get_dict("JSLibraries", "spt_table"):
             return
-
-
-        select_color = table.get_color("background3")
-        shadow_color = table.get_color("shadow")
 
       
         cbjs_action =  '''
@@ -3708,7 +3722,7 @@ spt.table.set_table = function(table) {
 
     var layout = table.getParent(".spt_layout");
     spt.table.set_layout(layout);
-   
+
 }
 
 spt.table.get_group_elements = function() {
@@ -3742,6 +3756,19 @@ spt.table.set_layout = function(layout) {
     var table = layout.getElement(".spt_table_table");
     spt.table.last_table = table;
     spt.table.element_names = null;
+
+    /*
+    var data = layout.getAttribute("spt_data");
+    if (data) {
+        data = JSON.parse(data);
+    }
+    else {
+        data = {};
+    }
+    spt.table.data = data;
+    */
+
+
 }
 
 spt.table.get_layout = function() {
@@ -7861,6 +7888,8 @@ spt.table.open_ingest_tool = function(search_type) {
             spt.table.last_table = null;
             spt.table.layout = null;
             spt.table.element_names = null;
+
+            spt.table.data = {};
 
             spt.table.select_color = bvr.select_color;
             spt.table.shadow_color = bvr.shadow_color;
