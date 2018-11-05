@@ -1827,7 +1827,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 first = " ".join(first)
 
                 # add the first word filtered
-                if first.startswith(orig_value) and first not in first_filtered:
+                if keyword_mode == "contains" and orig_value in first:
+                    first_filtered.append(first)
+                elif first.startswith(orig_value) and first not in first_filtered:
                     first_filtered.append(first)
                 
                 # get all the other keywords
@@ -1836,8 +1838,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
                         continue
                     
                     key = "%s %s" % (first, second)
-                    if not key.startswith(orig_value):
+                    if keyword_mode == "contains" and orig_value not in key:
                         continue
+                    elif not key.startswith(orig_value):
+                        continue
+
                     if key not in second_filtered:
                         second_filtered.append(key)
 
