@@ -631,14 +631,17 @@ class EmailTrigger2(EmailTrigger):
         # filter out email addr as set does not work on SObjects
         email_list = []
         email_users = set()
-        for user in all_users:
-            if type(user) in types.StringTypes:
-                email = user
-            else:
-                email =  user.get_value('email')
-            if email not in email_list:
-                email_users.add(user)
-                email_list.append(email)
+        if handler.send_email():
+            for user in all_users:
+                if type(user) in types.StringTypes:
+                    email = user
+                else:
+                    email =  user.get_value('email')
+                if email not in email_list:
+                    email_users.add(user)
+                    email_list.append(email)
+        else:
+            email_users = all_users
         project_code = Project.get_project_code()
 
         all_emails = ", ".join(email_list)

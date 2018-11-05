@@ -21,6 +21,32 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.6.0.a03
     #
+    def upgrade_v4_6_0_a03_007(self):
+       self.run_sql('''
+       ALTER TABLE "login_group" ADD COLUMN data jsonb;
+       ''')
+
+
+    def upgrade_v4_6_0_a03_006(self):
+       self.run_sql('''
+       ALTER TABLE "login" ADD COLUMN data jsonb;
+       ''')
+
+
+    def upgrade_v4_6_0_a03_005(self):
+       self.run_sql('''
+       ALTER TABLE "login" ADD COLUMN keywords_data jsonb;
+       ''')
+
+    def upgrade_v4_6_0_a03_004(self):
+       self.run_sql('''
+       ALTER TABLE "login" ADD COLUMN keywords text;
+       ''')
+
+    def upgrade_v4_6_0_a03_003(self):
+       self.run_sql('''
+       ALTER TABLE "notification_login" ADD COLUMN status varchar(256);
+       ''')
 
     def upgrade_v4_6_0_a03_002(self):
        self.run_sql('''

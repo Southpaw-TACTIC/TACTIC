@@ -258,7 +258,7 @@ class DatabaseImpl(DatabaseImplInterface):
         sql.conn.autocommit = flag
 
 
-    def autocommit_on_schema_change(self):
+    def commit_on_schema_change(self):
         return False
 
 
@@ -3175,6 +3175,8 @@ class MySQLImpl(PostgresImpl):
         return version_parts
 
 
+  
+
     def process_value(self, name, value, column_type="varchar"):
         if column_type == 'boolean':
             quoted = False
@@ -3184,17 +3186,25 @@ class MySQLImpl(PostgresImpl):
                 value = 0
             return {"value": value, "quoted": quoted}
 
-        elif isinstance(value, datetime.datetime):
-            value_str = str(value)
-            if value_str.find("+") != -1:
-                return {"value": value_str, "quoted": True}
-            if value_str.endswith("+00:00"):
-                parts = datetime.split("+")
-                return {"value": parts[0], "quoted": True}
-            else:
-                parts = datetime.split("+")
-                return {"value": "CONVERT_TZ('%s','00:00','+%s')" % (parts[0], parts[1]), "quoted": False}
+        if column_type == 'timestamp':
+            # We are converting a timestamp ISO string to datetime obj.
+            from dateutil import parser
+            try:
+                value = parser.parse(value)
+            except:
+                value = value
 
+        if isinstance(value, datetime.datetime):
+            # We need to convert the time to UTC, and strip the timezone info.
+            if value.tzinfo is not None:
+                # Convert to UTC
+                if value.utcoffset() is not None:
+                    value = value - value.utcoffset()
+            # Strip the timezone info.
+            value = value.replace(tzinfo=None)
+            # We now have a datetime obj without timezone info.
+            value_str = value.strftime("%Y-%m-%d %H:%M:%S")
+            return {"value": value_str, "quoted": True}
 
 
     def get_table_info(self, db_resource):
@@ -3346,6 +3356,13 @@ class MySQLImpl(PostgresImpl):
     def get_serial(self, length=4, not_null=False):
         parts = []
         parts.append("serial")
+        return " ".join(parts)
+
+    def get_text(self, not_null=False):
+        parts = []
+        parts.append("longtext")
+        if not_null:
+            parts.append("NOT NULL")
         return " ".join(parts)
 
 
@@ -3515,8 +3532,12 @@ class MySQLImpl(PostgresImpl):
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.   mysql --host=localhost --port=5432 --user=root --password=south123paw --execute="create database unittest"
         drop_SQL_arg = 'DROP DATABASE %s' % database.get_database()
-        create = 'mysql --host=%s --port=%s --user=%s --password=%s --execute="%s"' % \
-                 (self.server, self.port, self.user, self.password, drop_SQL_arg)
+        if self.password == 'none':
+            create = 'mysql --host=%s --port=%s --user=%s --execute="%s"' % \
+                (self.server, self.port, self.user, drop_SQL_arg)
+        else:
+            create = 'mysql --host=%s --port=%s --user=%s --password=%s --execute="%s"' % \
+                (self.server, self.port, self.user, self.password, drop_SQL_arg)
         cmd = os.popen(create)
         result = cmd.readlines()
         if not result:
@@ -3527,14 +3548,11 @@ class MySQLImpl(PostgresImpl):
             print(result)
         cmd.close()
 
-
-
     def set_autocommit(self, sql, flag):
+        '''Note: This must be performed before transactions are started.'''
         sql.conn.autocommit(flag)
 
-
-
-    def autocommit_on_schema_change(self):
+    def commit_on_schema_change(self):
         return True
 
 

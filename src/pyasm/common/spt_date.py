@@ -17,6 +17,7 @@ __all__ = ['SPTDate']
 from datetime import datetime, timedelta
 from dateutil import parser
 from dateutil.tz import *
+from dateutil.rrule import DAILY, rrule, MO, TU, WE, TH, FR
 
 TZLOCAL = tzlocal()
 TZUTC = tzutc()
@@ -149,6 +150,23 @@ class SPTDate(object):
         return current_date
     subtract_business_days = classmethod(subtract_business_days)
 
+
+    def get_business_days_duration(cls, start_date, end_date):
+
+        days = rrule(DAILY, dtstart=start_date + timedelta(days=1), until=end_date - timedelta(days=1), byweekday=(MO,TU,WE,TH,FR))
+
+        if days.count():
+            first_day_minute = float(start_date.minute / 60)
+            end_day_minute = float(end_date.minute / 60)
+
+            first_day = float((23 - (start_date.hour + first_day_minute)) / 23.0)
+            last_day = float((end_date.hour + end_day_minute) / 23.0)
+
+            return days.count() + first_day + last_day
+        else:
+            return (end_date - start_date).total_seconds() / (60 * 60 * 24) 
+
+    get_business_days_duration = classmethod(get_business_days_duration)
 
 
     def convert_to_local(cls, date):
@@ -295,9 +313,37 @@ class SPTDate(object):
     has_timezone = classmethod(has_timezone)
  
 
-    def get_display_date(cls, date):
-        '''convert to local timezone'''
-        pass
+    def get_display_date(cls, date, date_format=None, timezone=None):
+        '''Given a datetime value, convert to timezone, and convert to date format.'''
+        from pyasm.biz import PrefSetting, ProjectSetting
+        
+        if not timezone:
+            timezone = PrefSetting.get_value_by_key('timezone')
+            if not timezone:
+                timezone = ProjectSetting.get_value_by_key("timezone")
+
+        if timezone in [None, "local", '']:
+            value = SPTDate.convert_to_local(date)
+        else:
+            value = SPTDate.convert_to_timezone(date, timezone)
+        
+        if not date_format:
+            date_format = PrefSetting.get_value_by_key('date_format')
+            if not date_format:
+                date_format = ProjectSetting.get_value_by_key("date_format")
+
+        if not date_format:
+            date_format = "%Y %m %d %H:%M"
+
+        try:
+            encoding = locale.getlocale()[1]		
+            value = value.strftime(date_format).decode(encoding)
+        except:
+            value = value.strftime(date_format)
+           
+        return value
+   
+    get_display_date = classmethod(get_display_date)
 
 
 
@@ -364,9 +410,12 @@ class SPTDate(object):
 if __name__ == '__main__':
 
 
-    date = SPTDate.now() - timedelta(minutes=500.23)
+    date1 = SPTDate.now()
+    date2 = SPTDate.now()
 
-    print SPTDate.get_time_ago(date)
+    #print("Date 1 :" , date1 , " Date 2: ", date2)
+
+    #print(SPTDate.get_business_days_duration(date1, date2))
 
 
 

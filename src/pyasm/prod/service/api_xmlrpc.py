@@ -843,7 +843,6 @@ class BaseApiXMLRPC(XmlrpcServer):
 
 
             for column in columns:
-
                 if column.startswith("__"):
                     continue
 
@@ -889,6 +888,8 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
                     elif isinstance(value, long) and value > MAXINT:
                         value2 = str(value)
+                    elif isinstance(value, long):
+                        continue
                     elif isinstance(value, decimal.Decimal):
                         # use str to avoid loss of precision
                         value2 = str(value)
