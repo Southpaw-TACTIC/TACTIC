@@ -152,19 +152,42 @@ class SPTDate(object):
 
 
     def get_business_days_duration(cls, start_date, end_date):
+        if isinstance(start_date, basestring):
+            start_date = parser.parse(start_date)
+        if isinstance(end_date, basestring):
+            end_date = parser.parse(end_date)
 
-        days = rrule(DAILY, dtstart=start_date + timedelta(days=1), until=end_date - timedelta(days=1), byweekday=(MO,TU,WE,TH,FR))
 
-        if days.count():
-            first_day_minute = float(start_date.minute / 60)
-            end_day_minute = float(end_date.minute / 60)
-
-            first_day = float((23 - (start_date.hour + first_day_minute)) / 23.0)
-            last_day = float((end_date.hour + end_day_minute) / 23.0)
-
-            return days.count() + first_day + last_day
-        else:
+        # intraday
+        if (end_date - start_date).days == 0:
             return (end_date - start_date).total_seconds() / (60 * 60 * 24) 
+
+
+        # first and last days are handled separately
+        s = start_date + timedelta(days=1)
+        s = s.date()
+        e = end_date - timedelta(days=1)
+        e = e.date()
+        days = rrule(DAILY, dtstart=s, until=e, byweekday=(MO,TU,WE,TH,FR))
+
+
+        first_day_minute = float(start_date.minute) / 60
+        end_day_minute = float(end_date.minute) / 60
+
+        if start_date.weekday() not in (5,6):
+            first_day = (24 - (float(start_date.hour) + first_day_minute)) / 24.0
+        else:
+            first_day = 0
+
+
+        if end_date.weekday() not in (5,6):
+            last_day = (float((end_date.hour) + end_day_minute) / 24.0)
+        else:
+            last_day = 0
+
+        result = days.count() + first_day + last_day
+        return result
+
 
     get_business_days_duration = classmethod(get_business_days_duration)
 
