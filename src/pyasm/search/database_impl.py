@@ -135,6 +135,7 @@ class DatabaseImpl(DatabaseImplInterface):
                 value: the new value
                 quoted: True|False - determines whether the value is quoted or not
         '''
+
         return None
     
     def process_date(self, value):
@@ -1805,6 +1806,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     #
     def process_value(self, name, value, column_type="varchar"):
         '''Postgres process_value'''
+
         if column_type == 'timestamp':
             quoted = True
             if value == "NOW":
@@ -3184,7 +3186,7 @@ class MySQLImpl(PostgresImpl):
                 value = 0
             return {"value": value, "quoted": quoted}
 
-        if (column_type == 'timestamp'):
+        if column_type == 'timestamp':
             # We are converting a timestamp ISO string to datetime obj.
             from dateutil import parser
             try:
