@@ -203,6 +203,7 @@ CREATE TABLE "login_group" (
     "start_link" longtext,
     "access_level" character varying(32),
     "is_default" boolean,
+    "data" longtext,
     CONSTRAINT "login_group_code_idx" UNIQUE ("code")
 );
 

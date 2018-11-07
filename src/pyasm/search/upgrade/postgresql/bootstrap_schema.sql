@@ -82,6 +82,7 @@ CREATE TABLE "login" (
     "project_code" text,
     "license_type" character varying(256),
     "hourly_wage" float,
+    "data" jsonb,
     CONSTRAINT "login_code_idx" UNIQUE ("code"),
     CONSTRAINT "login_upn_idx" UNIQUE ("upn")
 );

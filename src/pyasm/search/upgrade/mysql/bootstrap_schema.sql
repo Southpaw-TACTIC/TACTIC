@@ -83,6 +83,7 @@ CREATE TABLE "login" (
     "project_code" longtext,
     "license_type" character varying(256),
     "hourly_wage" float,
+    "data" longtext,
     CONSTRAINT "login_code_idx" UNIQUE ("code"),
     CONSTRAINT "login_upn_idx" UNIQUE ("upn")
 );
