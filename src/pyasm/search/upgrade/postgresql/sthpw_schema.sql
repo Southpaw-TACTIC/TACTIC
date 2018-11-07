@@ -202,6 +202,7 @@ CREATE TABLE "login_group" (
     "start_link" text,
     "access_level" character varying(32),
     "is_default" boolean,
+    "data" jsonb,
     CONSTRAINT "login_group_code_idx" UNIQUE ("code")
 );
 

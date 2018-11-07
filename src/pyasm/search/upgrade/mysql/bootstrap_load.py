@@ -97,7 +97,7 @@ def upgrade():
     if not python:
         python = "python"
 
-    cmd = "%s \"%s/src/bin/upgrade_db.py\" -f -y -p sthpw" % (python, install_dir)
+    cmd = "%s \"%s/src/bin/upgrade_db.py\" -q -f -y -p sthpw" % (python, install_dir)
     print cmd
 
     os.system(cmd)
