@@ -166,6 +166,8 @@ class BaseUpgrade(Command):
             # TEST for Sqlite
             if str(e).startswith("duplicate column name:"):
                 pass
+
+
             elif str(e).startswith("table") and str(e).endswith("already exists"):
                 pass
 

@@ -403,13 +403,6 @@ class Sql(Base):
         return self.row_count
 
 
-    def get_autocommit(self):
-        return self.conn.autcommit
-
-    def set_autocommit(self, flag=False):
-        self.conn.autcommit = flag
-
-
     def start(self):
         '''start a transaction'''
         self.transaction_count += 1
@@ -2144,7 +2137,6 @@ class Select(object):
             quoted = False
 
 
-
         # This check added to handle cases where a list is empty,
         # as 'value[0]' is not defined in that case. We assume in this
         # case that the intended value is NULL
@@ -2171,14 +2163,12 @@ class Select(object):
                 column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
                 column_type = column_types.get(column)
 
-                info = self.impl.process_value(column, value, column_type)
 
-                if info:
-                    value = info.get("value")
-                    value = self._convert_to_database_boolean(value)
-                    quoted = info.get("quoted")
-            else:
-                quoted = True
+            info = self.impl.process_value(column, value, column_type)
+            if info:
+                value = info.get("value")
+                value = self._convert_to_database_boolean(value)
+                quoted = info.get("quoted")
 
 
         if quoted:
@@ -3165,9 +3155,9 @@ class Update(object):
             self.filters.pop(name)
 
 
+
     def add_filter(self, column, value, column_type="", table="", quoted=None):
         assert self.table
-
 
         # store all the raw filter data
         self.raw_filters.append( {
@@ -3564,18 +3554,8 @@ class CreateTable(Base):
             if sql.get_vendor() == "MongoDb":
                 impl.execute_create_table(sql, self)
             else:
-
-                # check to see if autocommit should be on
-                if impl.autocommit_on_schema_change():
-                    impl.set_autocommit(sql, True)
-
-                try:
-                    statement = self.get_statement()
-                    sql.do_update(statement)
-                finally:
-                    if impl.autocommit_on_schema_change():
-                        impl.set_autocommit(sql, False)
-
+                statement = self.get_statement()
+                sql.do_update(statement)
 
             sql.clear_table_cache(self.database)
 
@@ -3604,18 +3584,22 @@ class CreateTable(Base):
 
 
 class DropTable(Base):
+
     def __init__(self, search_type=None):
+        
         self.search_type = search_type
         # derive db from search_type_obj
         from search import SearchType
         from pyasm.biz import Project
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
+        
         self.database = self.db_resource.get_database()
 
         search_type_obj = SearchType.get(search_type)
         assert self.database
         self.table = search_type_obj.get_table()
         self.statement = self.get_statement()
+        
 
     def get_statement(self):
         sql = DbContainer.get(self.db_resource)
@@ -3627,6 +3611,8 @@ class DropTable(Base):
         return statement
 
     def commit(self):
+   
+        
         sql = DbContainer.get(self.db_resource)
         if not sql.table_exists(self.table):
             print("WARNING: table [%s] does not exist in database [%s]" % (self.table, self.database))
@@ -3640,6 +3626,7 @@ class DropTable(Base):
         if os.path.exists(schema_path):
             os.unlink(schema_path)
 
+
         # dump the table to a file and store it in cache
         from sql_dumper import TableSchemaDumper
         dumper = TableSchemaDumper(self.search_type)
@@ -3651,15 +3638,12 @@ class DropTable(Base):
             raise
 
         impl = sql.get_database_impl()
-        if impl.autocommit_on_schema_change():
-            impl.set_autocommit(sql, True)
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
+            
+        sql.do_update(self.statement)
+        sql.clear_table_cache()
 
-        try:
-            sql.do_update(self.statement)
-            sql.clear_table_cache()
-        finally:
-            if impl.autocommit_on_schema_change():
-                impl.set_autocommit(sql, False)
 
 
 class AlterTable(CreateTable):
@@ -3766,23 +3750,15 @@ class AlterTable(CreateTable):
         exists = impl.table_exists(self.db_resource, self.table)
 
         # check to see if autocommit should be on
-        if impl.autocommit_on_schema_change():
-            impl.set_autocommit(sql, True)
-
-        try:
-            
-            if exists:
-                statements = self.get_statements()
-                for statement in statements:
-                    sql.do_update(statement)
-            else:
-                print("WARNING: table [%s] does not exist ... skipping" % self.table)
-
-        finally:
-            # set autocommit back
-            if impl.autocommit_on_schema_change():
-                impl.set_autocommit(sql, False)
-     
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
+        
+        if exists:
+            statements = self.get_statements()
+            for statement in statements:
+                sql.do_update(statement)
+        else:
+            print("WARNING: table [%s] does not exist ... skipping" % self.table)
 
 
 

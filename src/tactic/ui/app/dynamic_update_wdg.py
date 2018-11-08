@@ -425,6 +425,8 @@ class DynamicUpdateCmd(Command):
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
+
+
         for id, values_list in updates.items():
             if isinstance(values_list, dict):
                 values_list = [values_list]
