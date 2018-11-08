@@ -355,7 +355,7 @@ CREATE TABLE "task" (
     "id" serial PRIMARY KEY,
     "assigned" character varying(100),
     "description" longtext,
-    "status" longtext,
+    "status" character varying(32),
     "discussion" longtext,
     "bid_start_date" timestamp NULL,
     "bid_end_date" timestamp NULL,
