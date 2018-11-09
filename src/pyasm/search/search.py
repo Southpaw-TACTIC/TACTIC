@@ -3062,6 +3062,8 @@ class SObject(object):
 
     def get_datetime_value(self, name):
         value = self.get_value(name)
+        if isinstance(value, datetime.datetime):
+            return value
         if value:
             value = parser.parse(value)
         else:

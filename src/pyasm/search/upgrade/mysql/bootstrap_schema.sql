@@ -1,4 +1,4 @@
-SET sql_mode='ANSI_QUOTES';
+SET sql_mode='PIPES_AS_CONCAT,ANSI_QUOTES';
 --
 --
 
