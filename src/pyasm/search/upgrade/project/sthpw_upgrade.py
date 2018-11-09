@@ -2355,35 +2355,20 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
     def upgrade_v3_5_0_rc03_003(self):
-        # We are not going to run this update for MySQL since
-        # ../mysql/sthpw_schema.sql is more up to date than this.
-        if self.get_database_type() == 'MySQL':
-            pass
-        else:
-            self.run_sql('''
-            ALTER TABLE pref_setting DROP CONSTRAINT pref_setting_login_fkey CASCADE;
-            ''')
+        self.run_sql('''
+        ALTER TABLE pref_setting DROP CONSTRAINT pref_setting_login_fkey CASCADE;
+        ''')
 
 
     def upgrade_v3_5_0_rc03_002(self):
-        # We are not going to run this update for MySQL since
-        # ../mysql/sthpw_schema.sql is more up to date than this.
-        if self.get_database_type() == 'MySQL':
-            pass
-        else:
-            self.run_sql('''
-            ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_project_code_fkey CASCADE;
-            ''')
+        self.run_sql('''
+        ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_project_code_fkey CASCADE;
+        ''')
 
     def upgrade_v3_5_0_rc03_001(self):
-        # We are not going to run this update for MySQL since
-        # ../mysql/sthpw_schema.sql is more up to date than this.
-        if self.get_database_type() == 'MySQL':
-            pass
-        else:
-            self.run_sql('''
-            ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_login_fkey CASCADE;
-            ''')
+        self.run_sql('''
+        ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_login_fkey CASCADE;
+        ''')
  
 
     #
