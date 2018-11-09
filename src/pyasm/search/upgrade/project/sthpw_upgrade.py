@@ -726,7 +726,7 @@ class SthpwUpgrade(BaseUpgrade):
 
     def upgrade_v4_0_0_rc01_001(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" add "code" VARCHAR(256);
+        ALTER TABLE "trigger" add "code" VARCHAR(256);
         ''')
 
     #
@@ -1932,7 +1932,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     def upgrade_v3_8_0_a01_005(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" add column "process" varchar(256);
+        ALTER TABLE "trigger" add column "process" varchar(256);
         ''')
 
     def upgrade_v3_8_0_a01_004(self):
@@ -2355,20 +2355,35 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
     def upgrade_v3_5_0_rc03_003(self):
-        self.run_sql('''
-        ALTER TABLE pref_setting DROP CONSTRAINT pref_setting_login_fkey CASCADE;
-        ''')
+        if self.get_database_type() == 'MySQL':
+            self.run_sql('''
+            ALTER TABLE pref_setting DROP INDEX pref_setting_login_fkey;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE pref_setting DROP CONSTRAINT pref_setting_login_fkey CASCADE;
+            ''')
 
 
     def upgrade_v3_5_0_rc03_002(self):
-        self.run_sql('''
-        ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_project_code_fkey CASCADE;
-        ''')
+        if self.get_database_type() == 'MySQL':
+            self.run_sql('''
+            ALTER TABLE wdg_settings DROP INDEX wdg_settings_project_code_fkey;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_project_code_fkey CASCADE;
+            ''')
 
     def upgrade_v3_5_0_rc03_001(self):
-        self.run_sql('''
-        ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_login_fkey CASCADE;
-        ''')
+        if self.get_database_type() == 'MySQL':
+            self.run_sql('''
+            ALTER TABLE wdg_settings DROP INDEX wdg_settings_login_fkey;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_login_fkey CASCADE;
+            ''')
  
 
     #
@@ -2493,7 +2508,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     def upgrade_v3_0_0_rc03_001(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" ALTER COLUMN event TYPE varchar(256);
+        ALTER TABLE "trigger" ALTER COLUMN event TYPE varchar(256);
         ''')
 
    
@@ -2588,7 +2603,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     def upgrade_v2_6_0_rc01_001(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" ADD COLUMN mode varchar(256);
+        ALTER TABLE "trigger" ADD COLUMN mode varchar(256);
         ''')
 
     #
@@ -2597,18 +2612,18 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v2_6_0_b05_002(self):
         if self.get_database_type() == 'MySQL':
             self.run_sql('''
-            ALTER table "sthpw"."trigger" MODIFY class_name varchar(256) NULL;
+            ALTER table "trigger" MODIFY class_name varchar(256) NULL;
             ''')
         else:
             self.run_sql('''
-            ALTER TABLE "sthpw"."trigger" ALTER COLUMN class_name DROP NOT NULL;
+            ALTER TABLE "trigger" ALTER COLUMN class_name DROP NOT NULL;
             ''')
 
 
 
     def upgrade_v2_6_0_b05_001(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" ADD COLUMN script_path varchar(256);
+        ALTER TABLE "trigger" ADD COLUMN script_path varchar(256);
         ''')
 
 
@@ -2711,7 +2726,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     def upgrade_v2_5_0_rc20_005(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
+        ALTER TABLE "trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
         ''')
 
     def upgrade_v2_5_0_rc20_006(self):
@@ -2730,7 +2745,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     def upgrade_v2_5_0_rc20_008(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" add constraint trigger_class_name_event_project_unique UNIQUE(class_name, event, project_code);
+        ALTER TABLE "trigger" add constraint trigger_class_name_event_project_unique UNIQUE(class_name, event, project_code);
         ''')
 
     #
@@ -2744,13 +2759,13 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     def upgrade_v2_5_0_rc19_002(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
+        ALTER TABLE "trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
         ''')
 
 
     def upgrade_v2_5_0_rc19_003(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" add constraint trigger_class_name_event_project_unique UNIQUE(class_name, event, project_code);
+        ALTER TABLE "trigger" add constraint trigger_class_name_event_project_unique UNIQUE(class_name, event, project_code);
         ''')
 
     #
@@ -2853,7 +2868,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     def upgrade_v2_5_0_rc02_001(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" add column "s_status" varchar(256);
+        ALTER TABLE "trigger" add column "s_status" varchar(256);
         ''')
 
     def upgrade_v2_5_0_rc01_003(self):
@@ -3042,12 +3057,12 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     def upgrade_v2_2_0_rc03_002(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" add constraint trigger_class_name_event_unique UNIQUE(class_name, event);
+        ALTER TABLE "trigger" add constraint trigger_class_name_event_unique UNIQUE(class_name, event);
         ''')
 
     def upgrade_v2_2_0_rc03_001(self):
         self.run_sql('''
-        ALTER TABLE "sthpw"."trigger" DROP CONSTRAINT trigger_class_name_key CASCADE;
+        ALTER TABLE "trigger" DROP CONSTRAINT trigger_class_name_key CASCADE;
         ''')
 
     def upgrade_v2_2_0_rc02_001(self):
