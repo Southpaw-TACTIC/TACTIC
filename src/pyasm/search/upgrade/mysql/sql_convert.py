@@ -37,7 +37,7 @@ class MySQLConverter(BaseSQLConverter):
         if self.namespace:
             return []
         else:
-            return ["SET sql_mode='ANSI_QUOTES';\n"];
+            return ["SET sql_mode='PIPES_AS_CONCAT,ANSI_QUOTES';\n"];
 
 
 
