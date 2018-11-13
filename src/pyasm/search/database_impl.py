@@ -1281,7 +1281,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         # this may not return the type exacty like before like varchar is in place of
         # varchar(256) due to the column type returned from the sql impl
         statements = []
-        statements.append('ALTER TABLE "%s" MODIFY COLUMN "%s" %s' \
+        statements.append('ALTER TABLE "%s" ALTER COLUMN "%s" %s' \
             % (table,column,type))
         if not_null == None:
             return statements
@@ -1293,10 +1293,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
             # Now that any existing NULL values for that column are set to the empty string,
             # proceed to alter the column so that it disallows NULL values.
-            statements.append('ALTER TABLE "%s" MODIFY COLUMN "%s" %s NOT NULL' \
+            statements.append('ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL' \
             % (table,column,type))
         else:
-            statements.append('ALTER TABLE "%s" MODIFY COLUMN "%s" %s' \
+            statements.append('ALTER TABLE "%s" ALTER COLUMN "%s" %s' \
                 % (table, column, type))
         return statements
 
@@ -3521,6 +3521,15 @@ class MySQLImpl(PostgresImpl):
         else:
             print(result)
         cmd.close()
+
+    def get_modify_column(self, table, column, type, not_null=None):
+        ''' get the statement for setting the column type '''
+        # this may not return the type exacty like before like varchar is in place of
+        # varchar(256) due to the column type returned from the sql impl
+        statement = 'ALTER TABLE "%s" MODIFY "%s" %s' % (table,column,type)
+        if not_null:
+            statement = '%s NOT NULL' % statement
+        return [statement]
 
     def set_autocommit(self, sql, flag):
         '''Note: This must be performed before transactions are started.'''
