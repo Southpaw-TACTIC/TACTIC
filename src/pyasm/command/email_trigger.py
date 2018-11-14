@@ -610,15 +610,6 @@ class EmailTrigger2(EmailTrigger):
         if not to_users:
             return
 
-        #sobj_data = main_sobject.get_aux_data()
-        #email_info = sobj_data.get('__tactic_email_info__')
-        #extra_ccs = email_info.get('mail_cc')
-        #extra_bccs = email_info.get('mail_bcc')
-        # send the email
-        if handler.send_email():
-            self.send(to_users, cc_users, bcc_users, subject, message)
-            self.add_description('\nEmail sent to [%s]' %all_emails) 
-    
         if isinstance(to_users, set) and isinstance(cc_users, set) and \
                 isinstance(bcc_users, set):
             all_users = to_users.union(cc_users).union(bcc_users)
@@ -645,6 +636,16 @@ class EmailTrigger2(EmailTrigger):
         project_code = Project.get_project_code()
 
         all_emails = ", ".join(email_list)
+
+        #sobj_data = main_sobject.get_aux_data()
+        #email_info = sobj_data.get('__tactic_email_info__')
+        #extra_ccs = email_info.get('mail_cc')
+        #extra_bccs = email_info.get('mail_bcc')
+        # send the email
+        if handler.send_email():
+            self.send(to_users, cc_users, bcc_users, subject, message)
+            self.add_description('\nEmail sent to [%s]' %all_emails) 
+
         self.add_notification(email_users, subject, message, project_code, from_user='')
 
     def add_notification(all_users, subject, message, project_code, from_user=''):
