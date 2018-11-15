@@ -4604,8 +4604,6 @@ class ProcessInfoCmd(Command):
             
             if script:
                 trigger.set_value("script_path", script_path)
-            else:
-                trigger.set_value("class_name", on_action_class)
 
             trigger.set_value("class_name", "NULL", quoted=False)
 
@@ -6451,7 +6449,8 @@ class PipelineSaveCbk(Command):
 
         for node in process_nodes:
             settings_str = xml.get_attribute(node, "settings")
-            
+
+            settings = {}
             if settings_str:
                 try:
                     settings = jsonloads(settings_str)
@@ -6460,8 +6459,6 @@ class PipelineSaveCbk(Command):
                 except:
                     process_name = xml.get_attribute(node, "name")
                     print "WARNING: Setting for process %s not saved." % process_name 
-            else:
-                settings = {}
 
             settings_list.append(settings)
 
@@ -6503,6 +6500,7 @@ class PipelineSaveCbk(Command):
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
+
             if process_code:
                 process = Search.get_by_code("config/process", process_code)
 
@@ -6515,7 +6513,6 @@ class PipelineSaveCbk(Command):
                 process = search.get_sobject()
 
 
-
             # else create a new one 
             if not process:
                 process = SearchType.create("config/process")
@@ -6526,14 +6523,18 @@ class PipelineSaveCbk(Command):
             # set the process code
             xml.set_attribute(node, "process_code", process.get_code())
 
+            curr_settings = settings_list[i]
+            if process:
+                curr_settings = process.get_json_value("workflow")
 
-            settings = settings_list[i]
-
-            subpipeline_code = settings.pop("subpipeline_code", None)
+            subpipeline_code = None
+            if curr_settings:
+                curr_settings.pop("subpipeline_code", None)
             if subpipeline_code or subpipeline_code == "":
                 process.set_value("subpipeline_code", subpipeline_code)
             
-            process.set_value("workflow", settings)
+            if curr_settings:
+                process.set_value("workflow", curr_settings)
             
             process.commit()
             
