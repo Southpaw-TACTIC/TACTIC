@@ -313,6 +313,15 @@ class HtmlElement(Widget):
             self.add_smart_style(class_name, name, value)
 
 
+    def add_relay_style(self, class_name, name, value):
+        return self.add_relay_style(class_name, name, value)
+
+    def add_relay_styles(self, class_name, data):
+        for name, value in data.items():
+            self.add_smart_style(class_name, name, value)
+
+
+
 
     def get_palette(self):
         from palette import Palette
@@ -1456,6 +1465,9 @@ class Table(HtmlElement):
         if self.is_dynamic_flag:
             self.dynamic_row = self.add_row()
 
+
+    def get_current_row(self):
+        return self.current_row
 
     def get_current_cell(self):
         return self.current_cell

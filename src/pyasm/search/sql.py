@@ -409,6 +409,8 @@ class Sql(Base):
 
     def set_savepoint(self, name='save_pt'):
         '''set a savepoint'''
+        if self.conn.autocommit == True:
+            return
         stmt = self.database_impl.set_savepoint(name)
         if stmt:
             cursor = self.conn.cursor()
@@ -416,6 +418,8 @@ class Sql(Base):
 
     def rollback_savepoint(self, name='save_pt', release=True):
         '''rollback to a savepoint'''
+        if self.conn.autocommit == True:
+            return
         self.cursor = self.conn.cursor()
         stmt = self.database_impl.rollback_savepoint(name)
         if not stmt:

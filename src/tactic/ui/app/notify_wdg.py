@@ -189,7 +189,7 @@ class NotifyPollCmd(BaseRefreshWdg):
 
     def get_display(self):
 
-        print "NotifyPollCmd"
+        print("NotifyPollCmd")
 
         user = Environment.get_user_name()
 

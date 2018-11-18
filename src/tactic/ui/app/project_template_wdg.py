@@ -429,12 +429,12 @@ class ProjectTemplateInstallCmd(Command):
             if not upload_path.endswith(".zip"):
                 continue
 
-            print "upload: ", upload_path
+            print("upload: ", upload_path)
             if not os.path.exists(upload_path):
                 continue
 
 
-            print "template_dir: ", template_dir
+            print("template_dir: ", template_dir)
             shutil.move(upload_path, template_dir)
             to_path = "%s/%s" % (template_dir, basename)
 

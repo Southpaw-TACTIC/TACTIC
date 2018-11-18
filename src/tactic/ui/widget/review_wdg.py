@@ -203,7 +203,7 @@ class ReviewWdg(BaseRefreshWdg):
             for related_note in related_notes:
                 vnote_div.add(related_note.get_value("note") )
                 
-            print "related_notes: ", related_notes
+            print("related_notes: ", related_notes)
 
 
             vnote_div.add("<hr/>")

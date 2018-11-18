@@ -164,7 +164,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
                     raise
 
             except Exception as e:
-                print "Exception: ", e
+                print("Exception: ", e)
 
 
 

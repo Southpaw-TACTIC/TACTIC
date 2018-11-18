@@ -443,7 +443,10 @@ class TaskElementWdg(BaseTableElementWdg):
         self._get_display_options()
 
         web = WebContainer.get_web()
-        web_data = web.get_form_values("web_data")
+        if web:
+            web_data = web.get_form_values("web_data")
+        else:
+            web_data = None
         if web_data:
             try:
                 web_data = jsonloads(web_data[0])
@@ -3088,21 +3091,9 @@ class TaskSummaryElementWdg(TaskElementWdg):
 
         for task in self.tasks:
             bgColor = ''
-            process = task.get_value("process").lower()
-            parts = re.split( re.compile("[ -_]"), process)
-            if len(parts) == 1:
-                #title = parts[0][:3]
-                title = parts[0]
-            else:
-                parts = [x[:1] for x in parts]
-                title = "".join(parts)
-            parts = re.split( re.compile("[ -_]"), process)
-            #if len(parts) == 1:
-            #    parts.append("")
-            #    parts.append("")
-            #else:
-            #    parts.append("")
-            title = "<br/>".join(parts)
+            process = task.get_value("process")
+            parts = re.split( re.compile(r"[-_]"), process)
+            title = " ".join(parts)
 
             status = task.get_value("status")
 
@@ -3135,7 +3126,8 @@ class TaskSummaryElementWdg(TaskElementWdg):
             title_div = DivWdg()
             title_div.add(title)
             title_div.add_style("max-height: 30px")
-            title_div.add_style("height: 25px")
+            title_div.add_style("margin-bottom: 3px")
+            #title_div.add_style("height: 25px")
             title_div.add_style("overflow: hidden")
 
             td.add(title_div)
