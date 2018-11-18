@@ -198,6 +198,9 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
 
         return color
 
+
+
+
 class TaskCalendarDayWdg(BaseCalendarDayWdg):
 
     def init(self):
@@ -425,6 +428,7 @@ class TaskCalendarDayWdg(BaseCalendarDayWdg):
                 search.add_project_filter()
             else:
                 search.add_project_filter(project_code)
+
 
 
 

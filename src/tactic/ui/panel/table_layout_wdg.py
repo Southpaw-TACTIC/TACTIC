@@ -623,6 +623,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_class("spt_layout")
         inner.add_class("spt_table")
 
+        inner.add_style("postion: relative")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px")
         inner.add_style("border-color", inner.get_color("border"))
@@ -1655,7 +1656,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'drag_el': '@',
             'bvr_match_class': 'spt_resize_handle',
             "cbjs_action": '''
-            bvr.src_el.setStyle("background", "#FF0");
+            bvr.src_el.setStyle("background", "#333");
             '''
         } )
 
@@ -2167,7 +2168,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add_style("position: relative")
             inner_div.add_style("width: auto")
             inner_div.add_class("spt_table_header_inner")
-            inner_div.add_style("overflow: hidden")
+            #inner_div.add_style("overflow: hidden")
 
             inner_div.add_style("min-width: 20px")
             inner_div.add_style("margin-top: 4px")
@@ -2194,6 +2195,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             th.add_style("background-repeat: no-repeat")
             th.add_style("background-position: bottom center")
             th.add_style("vertical-align: top")
+            th.add_style("overflow: hidden")
 
 
 
@@ -2202,6 +2204,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner_div.add(resize_div)
             resize_div.add("&nbsp;")
             resize_div.add_class("spt_resize_handle")
+            resize_div.add_style("position: absolute")
+            resize_div.add_style("top: -10px")
+            resize_div.add_style("right: -3px")
+            resize_div.add_style("width: 3px")
 
 
 
@@ -4969,8 +4975,9 @@ spt.table.show_edit = function(cell) {
 
 
     // add the edit to the DOM
+    var layout = spt.table.get_layout();
     var table = spt.table.get_table();
-    table.appendChild(edit_wdg);
+    layout.appendChild(edit_wdg);
     spt.body.add_focus_element(edit_wdg);
 
     // store a reference to the cell it represents
@@ -4986,8 +4993,6 @@ spt.table.show_edit = function(cell) {
     //cell.appendChild(edit_wdg);
 
     edit_wdg.setStyle("position", "absolute");
-    //edit_wdg.setStyle("top", "0px");
-    //edit_wdg.setStyle("left", "0px");
     edit_wdg.position( {
         position: {x: 0, y:0},
         relativeTo: cell,
@@ -7214,15 +7219,14 @@ spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
     clone.inject(layout)
 
     clone.setStyle("position", "absolute");
+    clone.setStyle("z-index", "100");
     clone.setStyle("left", mouse_411.curr_x-layout_pos.x+5);
     clone.setStyle("top", mouse_411.curr_y-layout_pos.y+5);
     clone.setStyle("width", size.x);
     clone.setStyle("max-width", "200px");
     clone.setStyle("min-height", "30px");
-    //clone.setStyle("height", size.y);
     clone.setStyle("background", "#CCC");
     clone.setStyle("border", "solid 1px black");
-    //clone.setStyle("opacity", "0.5");
 
 
     // get the element name
@@ -7270,7 +7274,7 @@ spt.table.drag_reorder_header_motion = function(evt, bvr, mouse_411)
     for (var i = 0; i < spt.table.resize_handles.length; i++) {
         var handle = spt.table.resize_handles[i];
         if (i == index) {
-            handle.setStyle("background-color", "#F00");
+            handle.setStyle("background-color", "#333");
         }
         else {
             handle.setStyle("background-color", "");

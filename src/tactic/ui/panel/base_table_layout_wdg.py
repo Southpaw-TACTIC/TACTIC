@@ -1234,7 +1234,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_expand:
             from tactic.ui.widget.button_new_wdg import ButtonNewWdg
 
-            button = ButtonNewWdg(title='Expand Table', icon='BS_FULLSCREEN', show_menu=False, is_disabled=False)
+            button = ButtonNewWdg(title='Expand Table', icon='FA_ARROWS_H', show_menu=False, is_disabled=False)
             
             expand_behavior = self.get_expand_behavior()
             if expand_behavior:
@@ -1512,7 +1512,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_save_button(self):
+    def get_save_button(self, mode="icon"):
         show_save = self.get_setting("save")
 
         if self.edit_permission == False or not self.view_editable:
@@ -1526,15 +1526,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # Save button
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-        save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
-        #save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
-        #save_button.add_style("padding: none")
+        if mode == "icon":
+            save_button = ButtonNewWdg(title='Save', icon="FA_SAVE", show_menu=False, show_arrow=False)
+        else:
+            save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
+            #save_button_top.add_class("btn-primary")
 
-        #save_button.add_style("display", "none")
         save_button.add_class("spt_save_button")
+
         # it needs to be called save_button_top for the button to re-appear after its dissapeared
 
-        #save_button_top.add_class("btn-primary")
         save_button.add_style("margin-left: 10px")
 
         
@@ -1601,7 +1602,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search_type_title = search_type_obj.get_value("title")
 
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
-            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
+            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="FA_PLUS")
 
             button_row_wdg.add(button)
             button.add_behavior( {
@@ -1800,7 +1801,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             # Save button
             #save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
-            save_button = ButtonNewWdg(title='Save Current Table', icon="BS_SAVE", is_disabled=False)
+            save_button = ButtonNewWdg(title='Save Current Table', icon="FA_SAVE", is_disabled=False)
             save_button_top = save_button.get_top()
             save_button_top.add_style("display", "none")
             save_button_top.add_class("spt_save_button")
@@ -1835,7 +1836,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if self.can_use_gear() and self.get_setting("gear"):
-            button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
+            button = ButtonNewWdg(title='More Options', icon="FA_GEAR", show_arrow=True)
             button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
@@ -1858,7 +1859,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
             #button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
-            button = ButtonNewWdg(title='View Advanced Search', icon="BS_SEARCH", show_menu=False, show_arrow=False)
+            button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
             #button.add_style("float: left")
             div.add(button)
 
@@ -1956,7 +1957,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
-        layout = ButtonNewWdg(title='Switch Layout', icon="BS_TH", show_arrow=True)
+        layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
 
         SwitchLayoutMenu(search_type=self.search_type, view=self.view, activator=layout.get_button_wdg())
         return layout
@@ -2052,7 +2053,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
 
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
-        button = ButtonNewWdg(title='Column Manager', icon="BS_TH_LIST", show_arrow=False)
+        button = ButtonNewWdg(title='Column Manager', icon="FA_LIST", show_arrow=False)
 
         search_type_obj = SearchType.get(self.search_type)
 

@@ -489,6 +489,8 @@ class TacticSchedulerThread(threading.Thread):
 
         # set the site
         from pyasm.security import Site
+        print "WARNING: hard codding site"
+        site = "workflow"
         Site.set_site(site)
         
 

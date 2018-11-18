@@ -585,6 +585,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
     def get_collection_wdg(self):
 
+        parent_key = self.kwargs.get("parent_key")
+
         div = DivWdg()
         div.add_style("margin: 15px 0px")
 
@@ -725,7 +727,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
-        collections_div = CollectionFolderWdg(search_type=search_type)
+        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=parent_key)
         div.add(collections_div)
 
         return div
@@ -762,6 +764,12 @@ class CollectionFolderWdg(BaseRefreshWdg):
         self.search_type = self.kwargs.get("search_type")
         search = Search(self.search_type)
         search.add_filter("_is_collection", True)
+
+        parent_key = self.kwargs.get("parent_key")
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            search.add_parent_filter(parent)
+
         collections = search.get_sobjects()
         collections_div = DivWdg()
 
@@ -925,10 +933,18 @@ class CollectionContentWdg(BaseRefreshWdg):
         self.kwargs["expand_mode"] = "gallery"
         self.kwargs["show_search_limit"] = False
 
-        from tile_layout_wdg import TileLayoutWdg
-        tile = TileLayoutWdg(
-            **self.kwargs
-        )
+        mode = "tile"
+        #mode = "table"
+        if mode == "table":
+            from table_layout_wdg import TableLayoutWdg
+            tile = TableLayoutWdg(
+                **self.kwargs
+            )
+        else:
+            from tile_layout_wdg import TileLayoutWdg
+            tile = TileLayoutWdg(
+                **self.kwargs
+            )
         parent_dict = self.kwargs.get("parent_dict")
         has_parent=False
         if parent_dict:

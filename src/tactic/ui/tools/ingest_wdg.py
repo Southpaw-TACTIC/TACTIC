@@ -1998,6 +1998,7 @@ class IngestUploadCmd(Command):
                 sobject = None 
 
 
+
             # Create a new entry
             if not sobject:
                 if update_mode not in ['true', True, "update"]:
@@ -2151,7 +2152,7 @@ class IngestUploadCmd(Command):
                     sobject.set_value("relative_dir", full_relative_dir)
            
             # Add parent sObject
-            if parent_key:
+            if parent_key and parent_key != search_key:
                 parent = Search.get_by_search_key(parent_key)
                 if parent:
                     try:

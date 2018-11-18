@@ -93,6 +93,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.add_style("height: 100%")
             container.add_color("background", "background")
 
+            container.add_class("spt_window_resize")
+            container.add_attr("spt_window_resize_offset", "80px")
+
 
             if show_pipelines not in [False, 'false']:
                 left = DivWdg()
