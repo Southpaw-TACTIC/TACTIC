@@ -99,7 +99,10 @@ class WidgetDbConfig(SObject):
                 config_xml = self.get_value("config")
                 config_xml = config_xml.replace("&lt;", "<")
                 config_xml = config_xml.replace("&gt;", ">")
-                config_xml = Common.run_mako(config_xml)
+                try:
+                    config_xml = Common.run_mako(config_xml)
+                except Exception as e:
+                    print("WARNING: ", e)
 
                 self.xml = Xml()
                 self.xml.read_string(config_xml)

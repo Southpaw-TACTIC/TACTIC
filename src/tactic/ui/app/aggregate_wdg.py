@@ -162,7 +162,7 @@ class AggregateWdg(BaseRefreshWdg):
         '''
         cmd = AggregateCmd(**self.kwargs)
 
-        print "registering scheduled task"
+        print("registering scheduled task")
         scheduler = Scheduler.get()
         scheduler.start_thread()
         task = AggregateRefreshTask(name="cow", command=cmd)
@@ -236,7 +236,7 @@ class AggregateRegisterCmd(Command):
             # modify the table
             #alter = AlterTable(self.search_type)
             #alter.modify(self.search_type, data_type)
-            #print alter.get_statements()
+            #print(alter.get_statements())
 
 
         job.set_value("serialized", str(self.kwargs) )
@@ -271,7 +271,7 @@ class AggregateCmd(Command):
 
         self.search_type = self.kwargs.get('search_type')
         self.element_name = self.kwargs.get('element_name')
-        #print "Calculating aggregate: ", self.search_type, self.element_name
+        #print("Calculating aggregate: ", self.search_type, self.element_name)
 
         self.view = self.kwargs.get('view')
         if not self.view:
@@ -290,7 +290,7 @@ class AggregateCmd(Command):
             widget.set_current_index(i)
             value = widget.get_text_value()
 
-            print sobject.get_code(), "value [%s]: " %value
+            print(sobject.get_code(), "value [%s]: " %value)
 
             # all cache columns need are named with a c_ preceeding it
             # s_status

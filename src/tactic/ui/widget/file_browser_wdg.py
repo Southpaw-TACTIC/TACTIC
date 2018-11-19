@@ -1754,12 +1754,12 @@ class FileIngestCmd(DatabaseAction):
 
 
 
-        #print "tran_mode: ", transfer_mode
-        #print "checkin_mode: ", checkin_mode
-        #print "dir: ", dirs
-        #print "context: ", context
-        #print "subcontext_mode: ", subcontext_mode
-        #print "subcontext: ", subcontext
+        #print("tran_mode: ", transfer_mode)
+        #print("checkin_mode: ", checkin_mode)
+        #print("dir: ", dirs)
+        #print("context: ", context)
+        #print("subcontext_mode: ", subcontext_mode)
+        #print("subcontext: ", subcontext)
 
         # checkin all the files in the folder
         if checkin_mode == 'file':
@@ -1774,7 +1774,7 @@ class FileIngestCmd(DatabaseAction):
                     for file in files:
                         if not pattern:
                             pattern = file
-                            #print pattern, file
+                            #print(pattern, file)
                     
                     for file in files:
                         paths.append( "%s/%s" % (path, file))
@@ -1794,7 +1794,7 @@ class FileIngestCmd(DatabaseAction):
         '''having multiple files in one single check-in'''
         from pyasm.checkin import FileCheckin
         if subcontext_mode == '{leaf}':
-            print "WARNING: {leaf} mode is not supported in file group checkin!"
+            print("WARNING: {leaf} mode is not supported in file group checkin!")
         if subcontext_mode == '{folder}':
             tmp = path.replace("/", "_")
 	    checkin_context = "%s/%s" % (context, tmp)
@@ -1991,7 +1991,7 @@ class IngestCmd(Command):
 
         #dir = "/home/apache/tactic_plugin"
         #dir = "/home/apache/python"
-        print "dir: ", dir
+        print("dir: ", dir)
 
         items = os.listdir(dir)
         for item in items:
@@ -2007,7 +2007,7 @@ class IngestCmd(Command):
                 sub_path = "%s/%s" % (path, item)
                 self.handle_path(sub_path)
         else:
-            print "path: ", path
+            print("path: ", path)
             self.checkin_file(path)
 
 
@@ -2049,7 +2049,7 @@ class IngestCmd(Command):
         builder = SnapshotBuilder()
         builder.add_file(file, info={'file_type':file_type})
         xml_string = builder.to_string()
-        #print xml_string
+        #print(xml_string)
         snapshot.set_value("snapshot", xml_string)
         snapshot.commit()
 

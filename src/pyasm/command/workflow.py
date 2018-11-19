@@ -763,7 +763,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         print("Storing state")
 
-        # NOTE: use messagings for now
+        # NOTE: use messages for now
         key = "%s|%s|state" % (self.sobject.get_search_key(), self.process)
 
         from tactic_client_lib import TacticServerStub
@@ -902,6 +902,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             search = Search("sthpw/snapshot")
             search.add_filter("process", self.process)
             search.add_filter("is_latest", True)
+            search.add_filter("status", "Final")
+            search.add_parent_filter(self.sobject)
             snapshots = search.get_sobjects()
             snapshot_codes = [x.get_code() for x in snapshots]
             package['snapshot_codes'] = snapshot_codes
@@ -1022,6 +1024,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
     def handle_reject(self):
+
         self.log_message(self.sobject, self.process, "reject")
         self.run_callback(self.pipeline, self.process, "reject")
 
@@ -1104,8 +1107,6 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         if not self.check_inputs():
             return
-
-        print("pending: ", self.process)
 
         # simply calls action
         self.log_message(self.sobject, self.process, "pending")
@@ -1226,12 +1227,15 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             return
 
 
+        # build an output package
+        self.packages = self.get_output_packages()
+
         return super(WorkflowManualNodeHandler, self).handle_complete()
 
 
        
     def handle_reject(self):
-        self.input['error'] = "Rejected from '%s'" % self.process
+        #self.input['error'] = "Rejected from '%s'" % self.process
         return super(WorkflowManualNodeHandler, self).handle_reject()
 
 
@@ -1335,6 +1339,12 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
                 # true, that will take precedence
                 if ret_val not in [True, 'true']:
                     break
+
+
+
+        # store state after the action has been completed
+        #self.store_state()
+
 
         # copy the output from the scripts into the data structur that will be sent on
         for name, value in output.items():
@@ -1853,6 +1863,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                 'pipeline': pipeline,
                 'process': process_name,
                 'data': self.data,
+                'packages': self.packages,
             }
             Trigger.call(self, event, output)
 
@@ -1864,6 +1875,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
         self.run_callback(self.pipeline, self.process, "complete")
 
         self.set_all_tasks(self.sobject, self.process, "complete")
+
+        #self.store_state()
 
 
 ###---------------------------------

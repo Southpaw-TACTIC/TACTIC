@@ -179,9 +179,9 @@ class CheckinWdg(BaseRefreshWdg):
             self.subcontext = ""
 
         """
-        print "process: ", self.process
-        print "context: ", self.context
-        print "subcontext: ", self.subcontext
+        print("process: ", self.process)
+        print("context: ", self.context)
+        print("subcontext: ", self.subcontext)
         """
 
 
@@ -1625,12 +1625,12 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 try:
                     from_sobjects = Search.eval(from_expression, self.sobject)
                 except SearchException as e:
-                    print "WARNINIG: expression [%s] gave error: " % from_expression, e
+                    print("WARNINIG: expression [%s] gave error: " % from_expression, e)
 
             elif from_pipeline:
                 pipeline = Pipeline.get_by_code(from_pipeline)
                 if not pipeline:
-                    print "WARNING: pipeline [%s] not found"
+                    print("WARNING: pipeline [%s] not found")
                     continue
 
                     search_type = pipeline.get_value("search_type")
@@ -1643,7 +1643,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                 try:
                     from_sobjects = Search.eval(from_expression, self.sobject)
                 except SearchException as e:
-                    print "WARNINIG: expression [%s] gave error: " % from_expression, e
+                    print("WARNINIG: expression [%s] gave error: " % from_expression, e)
 
 
             table = Table()
@@ -2043,12 +2043,12 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
                     try: 
                         to_sobjects = Search.eval(to_expression, self.sobject)
                     except SearchException as e:
-                        print "WARNINIG: expression [%s] gave error: " % to_expression, e
+                        print("WARNINIG: expression [%s] gave error: " % to_expression, e)
 
                 if to_pipeline:
                     pipeline = Pipeline.get_by_code(to_pipeline)
                     if not pipeline:
-                        print "WARNING: pipeline [%s] not found"
+                        print("WARNING: pipeline [%s] not found" % to_pipeline)
                         continue
 
                         search_type = pipeline.get_value("search_type")

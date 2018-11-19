@@ -117,7 +117,7 @@ class SObjectGroupUtil(object):
 
 
         self.prev_sobj = self.sobject
-        #print self.sobject.get_code(), self.sobject.get_search_key()
+        #print(self.sobject.get_code(), self.sobject.get_search_key())
         return div
 
      
@@ -210,7 +210,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
 
         sobjects.sort(compare)
         for sobject in sobjects:
-            print sobject.get_code()
+            print(sobject.get_code())
 
     '''        
 
@@ -236,7 +236,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                 search_codes = SObject.get_values(self.sobjects, 'search_code', unique=True)
                 search_ids = None
             except Exception as e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
                 search_ids = SObject.get_values(self.sobjects, 'search_id', unique=True)
                 search_codes = None
         else:
@@ -260,7 +260,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                         Environment.add_warning(warning, warning)
                 except SearchException as e:
                     # skips unknown search_type/project
-                    print e.__str__()
+                    print(e.__str__())
                     continue
 
         elif len(search_types) == 1:
@@ -272,7 +272,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                     ref_sobjs = Search.get_by_id(search_type, search_ids)
             except SearchException as e:
                 # skips unknown search_type/project
-                print e.__str__()
+                print(e.__str__())
                 pass
 
         # TODO: None defaults to search_key, should be empty
@@ -429,7 +429,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                 if not ref_sobject:
                     return None
             except SearchException as e:
-                print e.__str__()
+                print(e.__str__())
                 return None
 
         return ref_sobject
@@ -497,7 +497,7 @@ class ParentGroupTableElementWdg(BaseTableElementWdg):
                 value = "&nbsp;"
         except SearchException as e:
             # skips unknown search_type/project
-            print e.__str__()
+            print(e.__str__())
             search_type =   sobject.get_search_type()
             if search_type in ['sthpw/task','sthpw/note','sthpw/snapshot']:
                 value =  "Parent cannot be found for this parent key [%s&id=%s]" %(sobject.get_value('search_type'), sobject.get_value('search_id'))
@@ -524,8 +524,8 @@ class ParentGroupAction(DatabaseAction):
             return
 
         sobject.add_relationship(value)
-        #print "-"*20
-        #print value
-        #print "-"*20
+        #print("-"*20)
+        #print(value)
+        #print("-"*20)
 
 

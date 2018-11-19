@@ -152,7 +152,6 @@ class ForeignKeyElementWdg(SimpleTableElementWdg):
         self.set_value(self.value)
 
 
-        #print "setting: ", self.get_value()
         div = DivWdg()
         display_value = WikiUtil().convert(self.value)
         div.add(self.value)

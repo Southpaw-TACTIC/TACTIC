@@ -2263,7 +2263,10 @@ class MethodMode(ExpressionParser):
                 if sobject:
                     list.append(sobject)
 
-            elif i == 0 and related_type == cur_search_type:
+            #elif i == 0 and related_type == cur_search_type:
+            elif False:
+                # NOTE: this is no longer valid as it is nnow handled in the next clause
+                # Relationships defined in the schema can self reference
                 # no need to search for itself again
                 if is_search:
                     related_search = Search(related_type)
@@ -2271,9 +2274,10 @@ class MethodMode(ExpressionParser):
                         related_search.set_show_retired(True) 
                     if related_sobjects:
                         related_search.add_relationship_filters(related_sobjects)
+
                 break
 
-            #elif mode == 'fast':
+
             else:
                 filters = related_types_filters.get(related_expr)
                 path = related_types_paths.get(related_expr)

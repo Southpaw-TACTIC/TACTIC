@@ -617,7 +617,7 @@ class EmailTrigger2(EmailTrigger):
         # send the email
         if handler.send_email():
             self.send(to_users, cc_users, bcc_users, subject, message)
-            self.add_description('\nEmail sent to [%s]' %all_emails) 
+            self.add_description('\nEmail sent to [%s]' % to_users) 
     
         if isinstance(to_users, set) and isinstance(cc_users, set) and \
                 isinstance(bcc_users, set):

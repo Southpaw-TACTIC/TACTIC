@@ -49,10 +49,12 @@ class PluginWdg(BaseRefreshWdg):
         #table = Table()
 
         table = DivWdg()
+
         inner.add(table)
         table.add_style("display: flex")
         table.add_style("align-items: stretch")
         table.add_style("align-content: stretch")
+
         table.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -67,6 +69,7 @@ class PluginWdg(BaseRefreshWdg):
 
         table.add_color("color", "color")
         table.add_style("margin: 0px -1px")
+        table.add_style("height: 100%")
 
         #table.add_row()
         #left = table.add_cell()
@@ -81,6 +84,13 @@ class PluginWdg(BaseRefreshWdg):
         left.add_style("padding: 0px")
         left.add_color("background", "background3")
         left.add_border()
+
+
+        table.add_class("spt_window_resize")
+        table.add_attr("spt_window_resize_offset", "73")
+
+
+
 
 
         plugin_dir = Environment.get_plugin_dir()
@@ -124,8 +134,6 @@ class PluginWdg(BaseRefreshWdg):
     def get_plugins_wdg(self, title, plugin_dir, is_editable=True):
         div = DivWdg()
 
-
-
         # use the file system
         if not os.path.exists(plugin_dir):
             os.makedirs(plugin_dir)
@@ -162,7 +170,7 @@ class PluginWdg(BaseRefreshWdg):
         title_div.add("%s List" % title)
         title_div.add_style("font-size: 14px")
         title_div.add_style("font-weight: bold")
-        title_div.add_gradient("background", "background", 0, -10)
+        title_div.add_color("background", "background", 0, -10)
         title_div.add_style("padding: 10px 5px 10px 5px")
         title_div.add_style("margin-bottom: 15px")
 
@@ -178,7 +186,7 @@ class PluginWdg(BaseRefreshWdg):
        
 
         if is_editable:
-            new_button = ButtonNewWdg(title="Create a New Plugin", icon=IconWdg.NEW)
+            new_button = ButtonNewWdg(title="Create a New Plugin", icon="FA_PLUS")
 
             button_row.add(new_button)
             new_button.add_behavior( {
@@ -196,7 +204,7 @@ class PluginWdg(BaseRefreshWdg):
 
 
 
-            add_button = ButtonNewWdg(title="Install a Plugin", icon=IconWdg.ADD)
+            add_button = ButtonNewWdg(title="Install a Plugin", icon="FA_UPLOAD")
             button_row.add(add_button)
 
             add_button.add_behavior( {
@@ -225,8 +233,7 @@ class PluginWdg(BaseRefreshWdg):
 
      
             help_button = ButtonNewWdg(title="Show Plugin Manger Help", icon=IconWdg.HELP)
-            
-            button_row.add(help_button)
+            #button_row.add(help_button)
             help_button.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
@@ -317,6 +324,8 @@ class PluginWdg(BaseRefreshWdg):
                     folder_header = DivWdg()
                     folder_content = DivWdg()
                     folder_content.add_style("margin-left: 13px")
+
+                    folder_header.add_class("tactic_hover")
 
 
                     from tactic.ui.widget import SwapDisplayWdg
@@ -424,7 +433,7 @@ class PluginWdg(BaseRefreshWdg):
             plugin_div.add(icon)
 
             if is_active:
-                icon = IconWdg("Active in project", IconWdg.CHECK)
+                icon = IconWdg("Active in project", "FA_CHECK")
 
                 if show_active_only: 
                     swap.set_on(True) 
@@ -616,7 +625,7 @@ class PluginEditWdg(BaseRefreshWdg):
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("margin: -5 -5 10px -5")
         title_wdg.add_style("padding: 10px 15px 10px 15px")
-        title_wdg.add_gradient("background", "background", 0, -10)
+        title_wdg.add_color("background", "background", 0, -10)
 
         self.mode = self.kwargs.get("mode")
         if self.mode != 'insert':
@@ -922,7 +931,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button_row.add_style("float: left")
 
 
-            button = ButtonNewWdg(title="Refresh", icon=IconWdg.REFRESH)
+            button = ButtonNewWdg(title="Refresh", icon="FA_REFRESH")
             button_row.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -937,7 +946,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
 
 
-            button = ButtonNewWdg(title="New File", icon=IconWdg.ADD)
+            button = ButtonNewWdg(title="New File", icon="FA_PLUS")
             button_row.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -963,7 +972,7 @@ class PluginEditWdg(BaseRefreshWdg):
             } )
 
 
-            button = ButtonNewWdg(title="New Folder", icon=IconWdg.FOLDER)
+            button = ButtonNewWdg(title="New Folder", icon="FA_FOLDER")
             button_row.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -1359,8 +1368,9 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button = ActionButtonWdg(title="Create")
             doc_div.add(button)
-            button.add_style("margin-left: auto")
-            button.add_style("margin-right: auto")
+            button.add_style("width: 100px")
+            button.add_style("margin: 10px auto")
+
 
             button.add_behavior( {
                 'type': 'click_up',

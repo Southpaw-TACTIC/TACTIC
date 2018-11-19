@@ -955,7 +955,7 @@ class ActionButtonWdgOld(DivWdg):
                 self.add_top_behaviors(request_top_wdg)
                 request_top_wdg.add_class("spt_button_behaviors")
         except Exception as e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
 
         title = self.kwargs.get("title")
@@ -1176,7 +1176,7 @@ class ActionButtonWdg(DivWdg):
                 self.add_top_behaviors(request_top_wdg)
                 request_top_wdg.add_class("spt_button_behaviors")
         except Exception as e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
 
 
         title = self.kwargs.get("title")

@@ -108,7 +108,7 @@ class SyncUtils(object):
         if not project_code:
             project_code = Project.get_project_code()
 
-        print "search_keys: ", search_keys
+        print("search_keys: ", search_keys)
 
         if search_keys:
             search_keys_str = "|".join(search_keys)
@@ -143,7 +143,7 @@ class SyncUtils(object):
             raise TacticException("No start date expression given")
 
 
-        print "# remote codes: ", len(remote_codes)
+        print("# remote codes: ", len(remote_codes))
 
 
 
@@ -153,9 +153,9 @@ class SyncUtils(object):
         search.add_filter("namespace", project_code)
         search.add_op_filters(filters)
         search.add_order_by("timestamp")
-        print "search: ", search.get_statement()
+        print("search: ", search.get_statement())
         local_codes = search.get_sobjects()
-        print "local codes: ", local_codes
+        print("local codes: ", local_codes)
 
         lset = set()
         for lt in local_codes:
@@ -256,7 +256,7 @@ class SyncUtils(object):
     """
     def sync_remote_transactions(self):
 
-        print "executing missing transactions locally: ", len(missing_transactions)
+        print("executing missing transactions locally: ", len(missing_transactions))
         # execute missing transactions on the local machine
         for transaction in missing_transactions:
             cmd = RunTransactionCmd(transaction_xml=transaction)

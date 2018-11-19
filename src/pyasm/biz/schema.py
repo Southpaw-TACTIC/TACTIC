@@ -743,6 +743,7 @@ class Schema(SObject):
         except ExitLoop:
             pass
 
+
         if connect is not None:
             if self.xml.get_attribute(connect, "from") == search_type:
                 direction = 'forward'

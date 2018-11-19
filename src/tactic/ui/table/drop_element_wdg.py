@@ -370,7 +370,6 @@ class DropElementAction(DatabaseAction):
 
 
         src_search_keys = jsonloads(value)
-        #print "xxx: ", type(src_search_keys), src_search_keys
 
         # get all fo the sobjects from the search keys
         #src_sobjects = SearchKey.get_by_search_keys(src_search_keys)

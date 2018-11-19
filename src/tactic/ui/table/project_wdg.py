@@ -49,7 +49,6 @@ class ProjectWdg(BaseTableElementWdg):
         try:
             exists = project.database_exists()
         except:
-            #print "Error checking if database exists for project [%s]" % project.get_code()
             exists = False
 
         if exists:
