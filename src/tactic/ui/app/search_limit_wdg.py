@@ -566,9 +566,9 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         #if num_pages == 1:
         #    return top
 
-        #print "current: ", current_offset
-        #print "search_limit: ", search_limit
-        #print "current_page: ", current_page
+        #print("current: ", current_offset)
+        #print("search_limit: ", search_limit)
+        #print("current_page: ", current_page)
 
         table = Table()
         table.add_style("float: right")

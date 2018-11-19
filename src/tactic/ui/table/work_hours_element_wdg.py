@@ -601,7 +601,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                         if row_to_draw == self.OT_ROW:
                             # Skip if the category field does not have a 'ot' indicated.
                             if not category:
-                                print "Warning this work_hour entry has no category [%s]" % entry.get_code()
+                                print("Warning this work_hour entry has no category [%s]" % entry.get_code())
                                 continue
                        
                         # Check if there exist a value in the straight_time column
@@ -817,7 +817,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                         if row_to_draw == self.OT_ROW:
                             # Skip if the category field does not have a 'ot' indicated.
                             if not category:
-                                print "Warning this work_hour entry has no category [%s]" % entry.get_code()
+                                print("Warning this work_hour entry has no category [%s]" % entry.get_code())
                                 continue
                        
                         # Check if there exist a value in the straight_time column

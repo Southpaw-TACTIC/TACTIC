@@ -79,6 +79,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
         top = self.top
 
+
         # TEST: NEW LAYOUT
         if Config.get_value("install", "layout") == "fixed":
             top.add_style("position: fixed")
@@ -95,6 +96,12 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.set_attr('spt_class_name', Common.get_full_class_name(self))
+
+
+        div.add_class("spt_window_resize")
+        div.add_attr("spt_window_resize_offset", "35")
+        div.add_color("background", "background3")
+
 
         # remove the default round corners by making this div the same color
         div.add_color("background", "background3")
@@ -127,7 +134,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
         outer_div = DivWdg()
-        outer_div.add_style("overflow: hidden")
+        #outer_div.add_style("overflow: hidden")
         div.add(outer_div)
         inner_div = DivWdg()
         inner_div.set_id("side_bar_scroll")
@@ -1673,6 +1680,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         search_types.sort()
 
+        js_load ="false"
+
         config_xml.append( '''
         <%s>
         ''' % view)
@@ -1693,10 +1702,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
               <display class='LinkWdg'>
                   <search_type>%s</search_type>
                   <view>table</view>
+                  <height>auto</height>
+                  <js_load>%s</js_load>
                   <schema_default_view>true</schema_default_view>
               </display>
             </element>
-            ''' % (search_type, title, search_type) )
+            ''' % (search_type, title, search_type, js_load) )
         config_xml.append( '''
         </%s>
         ''' % view)
@@ -3226,11 +3237,15 @@ class ViewPanelWdg(BaseRefreshWdg):
         is_inner = self.kwargs.get("is_inner")
 
         document_mode = self.kwargs.get("document_mode")
+
+        js_load = self.kwargs.get("js_load") or False
        
 
         save_inputs = self.kwargs.get("save_inputs")
         no_results_mode = self.kwargs.get("no_results_mode")
         no_results_msg = self.kwargs.get("no_results_msg")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
 
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
@@ -3316,13 +3331,33 @@ class ViewPanelWdg(BaseRefreshWdg):
             "extra_data": extra_data,
             #"search_wdg": search_wdg
             "document_mode": document_mode,
-            
+            "window_resize_offset": window_resize_offset,
         }
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 
 
         kwargs['config_xml'] = self.kwargs.get("config_xml")
+
+
+        # set up the extra keys (for all layouts)
+        if not layout or layout == "table":
+            layout_class_path = "tactic.ui.panel.TableLayoutWdg"
+        else:
+            layout_class_path = None
+
+        if layout_class_path:
+            (module_name, class_name) = Common.breakup_class_path(layout_class_path)
+            try:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                extra_keys = eval("%s.get_kwargs_keys()" % class_name )
+            except Exception as e:
+                extra_keys = []
+
+            for key in extra_keys:
+                kwargs[key] = self.kwargs.get(key)
+            kwargs['extra_keys'] = ",".join(extra_keys)
+
 
 
         if layout == 'tile':
@@ -3353,10 +3388,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'widget'
             layout_table = StaticTableLayoutWdg(**kwargs)
+
         elif layout == 'raw_table':
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
+
         elif layout in ['fast_table', 'table']:
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
@@ -3434,11 +3471,17 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
         else:
+            from table_layout_wdg import TableLayoutWdg
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['show_border'] = self.kwargs.get("show_border")
             kwargs['edit'] = self.kwargs.get("edit")
-            from table_layout_wdg import FastTableLayoutWdg
-            layout_table = FastTableLayoutWdg(**kwargs)
+            layout_table = TableLayoutWdg(**kwargs)
+
+
+
+
+
+
 
         layout_table.set_search_wdg(search_wdg)
 

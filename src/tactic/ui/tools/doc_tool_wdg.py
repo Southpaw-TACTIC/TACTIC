@@ -91,9 +91,9 @@ class DocToolWdg(BaseRefreshWdg):
                 except:
                     self.doc_mode = "formatted"
                     html = html.replace("&amp;", "&")
-                    print
-                    print "WARNING: cannot parse as XML"
-                    print
+                    print("\n")
+                    print("WARNING: cannot parse as XML")
+                    print("\n")
                     return html
 
 
@@ -134,7 +134,7 @@ class DocToolWdg(BaseRefreshWdg):
             text = "\n".join(lines2)
 
 
-            #print 'text', text
+            #print('text', text)
             #import html2text
             #text = html2text.html2text(html)
 

@@ -125,9 +125,7 @@ class RelatedElementWdg(BaseTableElementWdg):
         for result in results:
             id = result.get_value("%s_id" % join_table)
             data[id] = result
-            print id, result.get_data()
 
-        print "results: ", len(results)
         return data
 
 

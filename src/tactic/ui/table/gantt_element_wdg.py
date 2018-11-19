@@ -440,7 +440,7 @@ class GanttElementWdg(BaseTableElementWdg):
                 self.start_date = self.start_date - datetime.timedelta(days=buffer)
                 self.end_date = self.end_date + datetime.timedelta(days=buffer)
             except:
-                print "ERROR: could not parse either [%s] or [%s]" % (start_date_option, end_date_option)
+                print("ERROR: could not parse either [%s] or [%s]" % (start_date_option, end_date_option))
 
         if not self.start_date or not self.end_date:
             # find the min and max
@@ -2213,9 +2213,6 @@ class GanttLegendCbk(Command):
 
         pipeline_code = self.kwargs.get("pipeline")[0]
         pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
-
-        #print pipeline.get_process_names()
-
 
 
         process = self.kwargs.get("process")

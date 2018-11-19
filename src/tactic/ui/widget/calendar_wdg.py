@@ -250,7 +250,9 @@ class CalendarWdg(BaseRefreshWdg):
 
     def get_weeks(self, year, month):
         #HAS_CALENDAR = False
+
         if HAS_CALENDAR:
+            """
             first_day_of_week = self.kwargs.get("first_day_of_week")
             if first_day_of_week or first_day_of_week == 0:
                 first_day_of_week = int(first_day_of_week)
@@ -263,6 +265,30 @@ class CalendarWdg(BaseRefreshWdg):
 
             self.cal = Calendar(first_day_of_week)
             weeks = self.cal.monthdatescalendar(self.year, month)
+            print "weeks: ", weeks
+            print
+            """
+
+            from dateutil.rrule import rrule, DAILY, MO, TU, WE, TH, FR
+            from datetime import date, datetime, timedelta
+            start = datetime(year=year, month=month, day=1)
+            weekday = start.weekday()
+            start = start - timedelta(days=weekday+1)
+
+            days_in_week = 7
+            num_weeks = 6
+            days = list(rrule(freq=DAILY, count=days_in_week*num_weeks, dtstart=start))
+            weeks = []
+            for i in range(0, num_weeks):
+                week = days[i*days_in_week:i*days_in_week+days_in_week]
+                date_week = []
+                for day in week:
+                    day = date(day.year,day.month,day.day)
+                    date_week.append(day)
+
+                weeks.append(date_week)
+
+
         else:
             # for Python 2.4, build it up manually
             class Day(object):
@@ -1435,7 +1461,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
             except:
                 # this seems redundant but required.
                 # usually caused by the time in the date string, so try stripping it
-                print "Error parsing: %s. Reparsing without time." %date
+                print("Error parsing: %s. Reparsing without time." %date)
                 if date.find(' ') != -1:
                     tmps = date.split(' ')
                     if tmps[1].find(':') != -1:

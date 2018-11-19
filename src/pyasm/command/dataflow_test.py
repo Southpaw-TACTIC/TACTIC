@@ -658,13 +658,7 @@ class WorkflowCmd(Command):
         task.set_value("status", "Complete")
         task.commit()
 
-        print("????")
-        print("????")
-        print("????")
-        print("snapshot_codes: ", sobject.get_value("snapshot_codes", no_exception=True))
-        print("????")
-        print("????")
-        print("????")
+        #print("snapshot_codes: ", sobject.get_value("snapshot_codes", no_exception=True))
 
 
 
