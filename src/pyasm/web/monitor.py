@@ -487,6 +487,8 @@ class TacticSchedulerThread(threading.Thread):
         #print("Starting Scheduler ....")
 
         # NOTE: not sure why we have to do a batch here
+        from pyasm.security import Site
+        Site.set_site("teague")
         from pyasm.security import Batch
         Batch(login_code="admin")
 
