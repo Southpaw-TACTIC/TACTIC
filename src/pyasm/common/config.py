@@ -45,7 +45,7 @@ class Config(Base):
         '''get configuration file value'''
 
         data = Container.get(Config.CONFIG_KEY)
-        if data == None:
+        if data is None:
             data = {}
             Container.put(Config.CONFIG_KEY, data)
 
@@ -54,7 +54,7 @@ class Config(Base):
             KEY = "%s:%s:%s" % (module_name, key, sub_key)
         value = data.get(KEY)
 
-        if not use_cache or value == None:
+        if not use_cache or value is None:
             xml_data = Config.get_xml_data()
 
             version = xml_data.get_value("config/@version")
@@ -169,7 +169,7 @@ class Config(Base):
         xml_data.set_node_value(node, value)
 
         data = Container.get(Config.CONFIG_KEY)
-        if data == None:
+        if data is None:
             data = {}
             Container.put(Config.CONFIG_KEY, data)
 
@@ -240,15 +240,16 @@ class Config(Base):
         '''the priority goes from 
            TACTIC_CONFIG_PATH > TACTIC_DATA_DIR > TACTIC_SITE_DIR (depreceated)'''
         dirname = None
+
         path = os.environ.get("TACTIC_CONFIG_PATH")
         if path:
-            dirname = path.replace("\\", "/")
+            path = path.replace("\\", "/")
             dirname = os.path.dirname(path)
 
-	if not dirname:
-	    dirname = os.environ.get("TACTIC_DATA_DIR")
-	    if dirname:
-                dirname = "%s/config" % dirname
+        if not dirname:
+            dirname = os.environ.get("TACTIC_DATA_DIR")
+            if dirname:
+                    dirname = "%s/config" % dirname
 
         # DEPRECATED
         if not dirname:
@@ -284,6 +285,7 @@ class Config(Base):
             os.environ.pop("TACTIC_TMP_CONFIG_PATH")
         except:
             pass
+
     unset_tmp_config = staticmethod(unset_tmp_config)
 
 
@@ -298,24 +300,24 @@ class Config(Base):
         if path:
             path = path.replace("\\", "/")
 
-	if not path:
-	    path = os.environ.get("TACTIC_DATA_DIR")
-	    if path:
-                path = "%s/config/tactic-conf.xml" % path
+        if not path:
+            path = os.environ.get("TACTIC_DATA_DIR")
+            if path:
+                    path = "%s/config/tactic-conf.xml" % path
 
                 #if os.name == 'nt':
                 #    path = "%s/config/tactic_win32-conf.xml" % path
                 #else:
                 #    path = "%s/config/tactic_linux-conf.xml" % path
 
-	
-	if not path:
-            path = cls.get_default_config_path()
+
+        if not path:
+                path = cls.get_default_config_path()
 
 
         if no_exception == False and not os.path.exists(path):
-	    raise TacticException("Config path [%s] does not exist" % path)
-	
+            raise TacticException("Config path [%s] does not exist" % path)
+
 
         return path
 
