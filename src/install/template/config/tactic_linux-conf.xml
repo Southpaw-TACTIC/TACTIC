@@ -17,6 +17,7 @@
 <install>
     <hostname>localhost</hostname>
     <tmp_dir>/home/apache/tactic_temp</tmp_dir>
+    <log_type>file</log_type>
 </install>
 
 
