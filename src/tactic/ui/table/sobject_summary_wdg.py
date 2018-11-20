@@ -170,7 +170,6 @@ class SObjectFilesElementWdg(ButtonElementWdg):
     def init(self):
         # FIXME: this dos not work here yet .. do it in javascript
         #layout = self.get_layout_wdg()
-        #print "layout: ", layout
 
         mode = self.get_option("mode")
         if not mode:

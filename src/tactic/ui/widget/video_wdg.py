@@ -119,7 +119,7 @@ class VideoWdg(BaseRefreshWdg):
 
             video.add(source)
 
-        #print top.get_buffer_display()
+        #print(top.get_buffer_display())
         return top
 
 
@@ -330,7 +330,7 @@ class VideoJsWdg(BaseRefreshWdg):
 
             video.add(source)
 
-        #print top.get_buffer_display()
+        #print(top.get_buffer_display())
         return top
 
 

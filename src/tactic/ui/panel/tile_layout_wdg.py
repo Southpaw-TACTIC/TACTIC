@@ -289,14 +289,19 @@ class TileLayoutWdg(ToolLayoutWdg):
                 else:
                     group_wdg.add_style("margin: 0px 0px 5px 0px")
 
-                group_wdg.add_style("padding: 0px 10px 0px %spx" % (i*10))
+                group_wdg.add_style("padding: 0px 10px 0px %spx" % ((i-1)*10))
+
                 group_wdg.add_style("width: auto")
 
 
                 group_levels = len(self.group_columns)
-                #group_levels = 1
                 if i+1 >= group_levels:
                     inner.add(group_wdg)
+
+                    group_wdg.add_style("border-bottom: solid 1px #DDD")
+                    group_wdg.add_style("margin: 0px 0px 15px 0px")
+
+
 
                 icon = IconWdg(name=title, icon="FA_FOLDER_OPEN_O")
                 group_wdg.add(icon)
@@ -1389,7 +1394,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
 
-        div.add("pig")
+        div.add(" ")
 
  
         if self.kwargs.get("show_title") not in ['false', False]:
@@ -2240,7 +2245,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 detail_div.add_class("spt_tile_detail")
                 detail_div.add_style("color: #FFF")
 
-                detail = IconButtonWdg(title="Detail", icon="BS_SEARCH")
+                detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
                 detail_div.add(detail)
                 detail_div.add_style("margin-right: 3px")
 

@@ -230,6 +230,20 @@ class BaseTableElementWdg(HtmlElement):
             value = widget
         return value
 
+
+
+    # functions taht for a standard way for an widget to deliver data
+    def get_data(self, sobject):
+        name = self.name
+        return sobject.get_value(name, no_exception=True)
+
+
+    def get_onload_js(self):
+        return
+
+
+
+
     def get_simple_display(self):
         '''provide a simple display of this table element'''
         sobject = self.get_current_sobject()

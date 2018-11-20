@@ -47,7 +47,7 @@ class ProcessElementWdg(SimpleTableElementWdg):
             try:
                 parent = sobj.get_parent()
             except SObjectSecurityException as e:
-                print "SObjectSecurityException raised for getting parent of [%s]" %sobj.get_code()
+                print("SObjectSecurityException raised for getting parent of [%s]" %sobj.get_code())
                 pass
             except SearchException as e:
                 if e.__str__().find('not registered') != -1:
@@ -57,7 +57,7 @@ class ProcessElementWdg(SimpleTableElementWdg):
                 else:
                     raise
             except Exception as e:
-                print "WARNING: ", e
+                print("WARNING: ", e)
 
 
         if parent:

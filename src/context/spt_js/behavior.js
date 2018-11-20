@@ -397,6 +397,18 @@ spt.behavior.clone = function( element ) {
 }
 
 
+spt.behavior.init_behaviors = function(element) {
+    var element = document.id(element)
+
+    var el_list = element.getElements( ".SPT_BVR" );
+    spt.behavior._construct_behaviors( [element] );
+    spt.behavior._construct_behaviors( el_list );
+    return element;
+}
+
+
+
+
 // Duplicate an element, including all behaviors ...
 //
 // NOTE: this function should be used instead of the above 'spt.behavior.clone()', which causes bugs in IE

@@ -2187,13 +2187,24 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         aorder = a.get('order') or 99
         border = b.get('order') or 99
 
+        int_cmp = True
         if isinstance(aorder, basestring):
-            aorder = int(aorder)
+            try:
+                aorder = int(aorder)
+            except:
+                int_cmp = False
         if isinstance(border, basestring):
-            border = int(border)
+            try:
+                border = int(border)
+            except:
+                int_cmp = False
 
-        avalue = "%s|%0.2d" % (acategory, aorder)
-        bvalue = "%s|%0.2d" % (bcategory, border)
+        if int_cmp:
+            avalue = "%s|%0.2d" % (acategory, aorder)
+            bvalue = "%s|%0.2d" % (bcategory, border)
+        else:
+            avalue = "%s|%s" % (acategory, aorder)
+            bvalue = "%s|%s" % (bcategory, border)
 
         if avalue == None:
             return 1
