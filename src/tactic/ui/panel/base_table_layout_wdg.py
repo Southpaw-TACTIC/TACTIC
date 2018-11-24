@@ -1353,7 +1353,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if show_collection_tool not in ["false", False] and SearchType.column_exists(self.search_type, "_is_collection"):
             from collection_wdg import CollectionAddWdg
-            collection_div = CollectionAddWdg(search_type=self.search_type)
+            collection_div = CollectionAddWdg(search_type=self.search_type, parent_key=self.parent_key)
             wdg_list.append( {'wdg': collection_div} )
         
 
