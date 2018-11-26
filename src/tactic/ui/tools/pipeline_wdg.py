@@ -645,6 +645,8 @@ class PipelineListWdg(BaseRefreshWdg):
                 if isinstance(result, Search):
                     search = result
                     search.add_filter("project_code", project_code)
+                    if search.column_exists("parent_code"):
+                        search.add_filter("parent_code", "NULL", quoted=False, op="is")
 
                     search.add_op("begin")
                     search.add_filter("search_type", "sthpw/task", op="!=")
@@ -670,6 +672,8 @@ class PipelineListWdg(BaseRefreshWdg):
             else:
                 search = Search("sthpw/pipeline")
                 search.add_filter("project_code", project_code)
+                if search.column_exists("parent_code"):
+                    search.add_filter("parent_code", "NULL", quoted=False, op="is")
 
                 search.add_op("begin")
                 search.add_filter("search_type", "sthpw/task", op="!=")

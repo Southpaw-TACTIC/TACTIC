@@ -248,7 +248,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
     def get_kwargs_keys(cls):
-        return ['select_color']
+        return ['select_color', 'js_load']
     get_kwargs_keys = classmethod(get_kwargs_keys)
 
 
@@ -4647,6 +4647,9 @@ spt.table.add_new_row = function(kwargs) {
 
 
 
+spt.table.add_row = function(kwargs) {
+    return spt.table.add_new_item(kwargs);
+}
 
 spt.table.add_new_item = function(kwargs) {
 
@@ -6541,8 +6544,6 @@ spt.table.remove_columns = function(columns) {
             }
         }
 
-        console.log("header");
-        console.log(header);
         header.destroy();
 
 
@@ -6700,8 +6701,6 @@ spt.table.collapse_group = function(group_row) {
 
         if (show) {
 
-           console.log(row.getAttribute('spt_table_state'));
-        
            if (row.getAttribute('spt_table_state') == 'closed') {
            
               spt.show(row);

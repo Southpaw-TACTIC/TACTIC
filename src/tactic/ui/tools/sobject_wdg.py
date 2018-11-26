@@ -756,6 +756,37 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
+            elif tab == "files":
+                import os
+                sobject_dir = self.sobject.get_lib_dir()
+
+                basename = sobject_dir
+                dirname = self.sobject.get("code")
+
+                values['base_dir'] = basename
+                values['dirname'] = dirname
+                config_xml.append('''
+                <element name="files" title="Files">
+                  <display class="tactic.ui.panel.CustomLayoutWdg">
+                  <html>
+                  <div style="padding: 20px">
+                    <div style="font-size: 25px">Files</div>
+                    <div>Directory list of all files for this item</div>
+                    <hr/>
+                    <br/>
+                    <element>
+                      <display class="tactic.ui.app.PluginDirListWdg">
+                        <base_dir>%(base_dir)s</base_dir>
+                        <location>server</location>
+                        <dirname>%(dirname)s</dirname>
+                      </display>
+                    </element>
+                  </div>
+                  </html>
+                  </display>
+                </element>
+                ''' % values)
+
 
 
 
@@ -794,7 +825,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 else:
                     view = tab
                     parts = tab.split(".")
-                    name = parts[-1]
+                    #name = parts[-1]
+                    name = tab
 
                 title = None
                 if config:
