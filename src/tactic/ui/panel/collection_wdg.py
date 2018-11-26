@@ -35,6 +35,7 @@ class CollectionAddWdg(BaseRefreshWdg):
     def get_display(self):
         
         search_type = self.kwargs.get('search_type')
+        parent_key = self.kwargs.get('parent_key')
         
         top = self.top
         top.add_class("spt_dialog")
@@ -50,7 +51,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         dialog.set_as_activator(button, offset={'x':-25,'y': 0})
         dialog.add_title("Collections")
 
-        dialog_content = CollectionAddDialogWdg(search_type= search_type)
+        dialog_content = CollectionAddDialogWdg(search_type= search_type, parent_key=parent_key)
         dialog.add(dialog_content)
         
         return top
@@ -63,13 +64,14 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
        
         search_type = self.kwargs.get("search_type")
 
+        parent_key = self.kwargs.get("parent_key")
+
         search = Search(search_type)
         if not search.column_exists("_is_collection"):
             return self.top
 
         search.add_filter("_is_collection", True)
         collections = search.get_sobjects()
-
         
         dialog = DivWdg()
         self.set_as_panel(dialog)
@@ -104,9 +106,11 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                 spt.panel.refresh(dialog_content);
             '''})
 
+        
         add_div.add_behavior( {
             'type': 'click_up',
             'insert_view': insert_view,
+            'parent_key': parent_key,
             'event_name': 'refresh_col_dialog',
             'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
@@ -119,6 +123,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
 
                 kwargs = {
                   search_type: search_type,
+                  parent_key: bvr.parent_key,
                   mode: "insert",
                   view: bvr.insert_view,
                   save_event: bvr.event_name,
@@ -129,6 +134,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
                   }
                 };
                 spt.panel.load_popup("Create New Collection", "tactic.ui.panel.EditWdg", kwargs);
+            
             '''
         } )
 
@@ -176,7 +182,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         filters.append(("_is_collection",True))
         filters.append(("status","Verified"))
         text = LookAheadTextInputWdg(
-            search_type = "workflow/asset",
+            search_type = search_type,
             column="name",
             icon_pos="right",
             width="100%",
@@ -585,7 +591,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
     def get_collection_wdg(self):
 
-        parent_key = self.kwargs.get("parent_key")
+        parent_key = self.parent_key
 
         div = DivWdg()
         div.add_style("margin: 15px 0px")
@@ -618,13 +624,17 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         insert_view = "edit_collection"
 
+
         button.add_behavior( {
             'type': 'click_up',
             'insert_view': insert_view,
             'search_type': self.search_type,
+            'event_name': 'refresh_col_dialog',
+            'parent_key': parent_key,
             'cbjs_action': '''
                 kwargs = {
                   search_type: bvr.search_type,
+                  parent_key: bvr.parent_key,
                   mode: 'insert',
                   view: bvr.insert_view,
                   save_event: bvr.event_name,
@@ -682,7 +692,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         filters.append(("_is_collection",True))
         filters.append(("status","Verified"))
         text = LookAheadTextInputWdg(
-            search_type = "workflow/asset",
+            search_type = self.search_type,
             column="name",
             width="100%",
             height="30px",
@@ -700,6 +710,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         text_div.add_style("display: inline-block")
 
         # Asset Library folder access
+        library_title = "Asset Library"
+        
         div.add("<br clear='all'/>")
         asset_lib_div = DivWdg()
         div.add(asset_lib_div)
@@ -712,7 +724,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         asset_lib_div.add_style("padding-bottom: 5px")
         asset_lib_div.add_style("font-weight: bold")
 
-        asset_lib_div.add("Asset Library")
+        asset_lib_div.add(library_title)
         asset_lib_div.add_class("tactic_hover")
         asset_lib_div.add_class("hand")
         asset_lib_div.add_behavior( {
@@ -727,7 +739,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
-        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=parent_key)
+        collections_div = CollectionFolderWdg(search_type=search_type)
         div.add(collections_div)
 
         return div
@@ -780,6 +792,14 @@ class CollectionFolderWdg(BaseRefreshWdg):
             div = DivWdg()
             self.set_as_panel(div)
             div.add_class("spt_collection_left_side")
+
+
+        collections_div.add_behavior( {
+            'type': 'listen',
+            'event_name': 'refresh_col_dialog',
+            'cbjs_action': '''
+                spt.panel.refresh(bvr.src_el);
+            '''})
             
         div.add(collections_div)
 
@@ -806,6 +826,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
         collections_div.add_relay_behavior( {
             'type': 'mouseup',
             'search_type': self.search_type,
+            'parent_key': parent_key,
             'collection_type': collection_type,
             'bvr_match_class': 'spt_collection_item',
             'cbjs_action': '''
@@ -850,7 +871,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
                 show_shelf: false,
                 show_search_limit: true,
                 expression: expr,
-                parent_dict: parent_dict
+                parent_dict: parent_dict,
             }
             spt.panel.load(content, cls, kwargs);
 
@@ -921,6 +942,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        self.parent_key = self.kwargs.get("parent_key")
         self.collection_key = self.kwargs.get("collection_key")
 
         collection = Search.get_by_search_key(self.collection_key)
@@ -960,7 +982,9 @@ class CollectionContentWdg(BaseRefreshWdg):
             asset_lib_span_div = SpanWdg()
             title_div.add(asset_lib_span_div)
 
-            icon = IconWdg(name="Asset Library", icon="BS_FOLDER_OPEN")
+	    # Asset Library folder access
+	    library_title = "Asset Library"
+            icon = IconWdg(name=library_title, icon="BS_FOLDER_OPEN")
             
             asset_lib_span_div.add(icon)
 
@@ -1022,6 +1046,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                 title_div.add_relay_behavior( {
                     'type': 'mouseup',
                     'search_type': self.kwargs.get("search_type"),
+                    'parent_key': self.parent_key,
                     'collection_type': collection_type,
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
@@ -1045,7 +1070,8 @@ class CollectionContentWdg(BaseRefreshWdg):
                             search_type: bvr.search_type,
                             show_shelf: false,
                             show_search_limit: true,
-                            expression: expr
+                            expression: expr,
+                            parent_key: bvr.parent_key
                         }
                         spt.panel.load(content, cls, kwargs);
 
