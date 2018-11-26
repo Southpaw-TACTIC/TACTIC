@@ -379,6 +379,75 @@ class Pipeline(SObject):
             pipeline.delete()
 
 
+    def save_version(self):
+        pipeline_code = self.get_code()
+
+        # get the latest version
+        search = Search("sthpw/pipeline")
+        search.add_filter("parent_code", pipeline_code)
+        search.add_order_by("version desc")
+        latest = search.get_sobject()
+        if not latest:
+            version = 0
+        else:
+            version = latest.get_value("version")
+            if not version:
+                version = 0
+
+        # clone the latest
+        extra_data = {
+            "version": version+1,
+            "parent_code": pipeline_code
+        }
+        pipeline2 = self.clone(related_types=["config/process"], extra_data=extra_data)
+        return pipeline2
+
+
+
+    def set_to_latest(cls, sobject):
+
+        pipeline = Pipeline.get_by_sobject(sobject)
+ 
+        parent_code = pipeline.get_value("parent_code")
+        if parent_code:
+            pipeline_code = parent_code
+        else:
+            pipeline_code = pipeline_code.get_code()
+
+
+        search = Search("sthpw/pipeline")
+        search.add_filter("parent_code", pipeline_code)
+        search.add_order_by("version desc")
+        latest = search.get_sobject()
+        if latest:
+            latest_pipelien_code = latest.get_value("pipeline_code")
+            sobject.set_value("pipeline_code", latest_pipeline_code)
+            sobject.commit()
+
+    set_to_latest = classmethod(set_to_latest)
+ 
+
+    def set_to_versionless(cls, sobject):
+ 
+        pipeline_code = sobject.get_value("pipeline_code")
+
+        search = Search("sthpw/pipeline")
+        search.add_filter("parent_code", pipeline_code)
+        search.add_order_by("version desc")
+        versionless = search.get_sobject()
+        if versionless:
+            versionless_pipelien_code = versionless.get_value("pipeline_code")
+            sobject.set_value("pipeline_code", versionless_pipeline_code)
+            sobject.commit()
+
+    set_to_versionless = classmethod(set_to_versionless)
+        
+
+
+
+
+
+
 
     def check_circular_dependency(self):
 
