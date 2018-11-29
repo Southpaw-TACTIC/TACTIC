@@ -709,6 +709,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
         shelf_div.add(button)
+
+        button.add_behavior( {
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+        } )
+
         button.add_behavior( {
             'type': 'click',
             'normal_ext': File.NORMAL_EXT,
@@ -729,7 +735,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             var upload_button = top.getElement(".spt_upload_files_top");
 
             var onchange = function (evt) {
-
                 var files = spt.html5upload.get_files();
                 spt.ingest.select_files(top, files, bvr.normal_ext);
             }
