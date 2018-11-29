@@ -17,6 +17,7 @@
 <install>
     <hostname>localhost</hostname>
     <tmp_dir>C:/ProgramData/Southpaw/tactic_temp</tmp_dir>
+    <log_type>file_with_date</log_type>
 </install>
 
 <!-- external services

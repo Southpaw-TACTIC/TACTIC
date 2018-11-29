@@ -3548,6 +3548,15 @@ class MySQLImpl(PostgresImpl):
             print(result)
         cmd.close()
 
+    def get_modify_column(self, table, column, type, not_null=None):
+        ''' get the statement for setting the column type '''
+        # this may not return the type exacty like before like varchar is in place of
+        # varchar(256) due to the column type returned from the sql impl
+        statement = 'ALTER TABLE "%s" MODIFY "%s" %s' % (table,column,type)
+        if not_null:
+            statement = '%s NOT NULL' % statement
+        return [statement]
+
     def set_autocommit(self, sql, flag):
         '''Note: This must be performed before transactions are started.'''
         sql.conn.autocommit(flag)
