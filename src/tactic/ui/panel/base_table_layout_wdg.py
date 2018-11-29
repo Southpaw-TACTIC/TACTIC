@@ -1422,7 +1422,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         custom_shelf_view = self.kwargs.get("shelf_view")
         if custom_shelf_view:
             from tactic.ui.panel import CustomLayoutWdg
-            widget = CustomLayoutWdg(view=custom_shelf_view)
+            widget = CustomLayoutWdg(view=custom_shelf_view, panel_kwargs=self.kwargs)
             if widget:
                 wdg_list.append( { 'wdg': widget } )
             else:
