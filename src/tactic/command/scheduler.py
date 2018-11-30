@@ -197,9 +197,6 @@ class SchedulerTask(object):
             self.site = Site.get_site()
             self.kwargs["site"] = self.site
 
-        if not user or not project:
-            raise Exception("...")
-
         self.user = user
         self.project = project
 
