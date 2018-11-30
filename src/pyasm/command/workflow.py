@@ -989,6 +989,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 'sobject': self.sobject,
                 'parent_pipelines': self.parent_pipelines,
                 'parent_processes': self.parent_processes,
+                'calling_process': self.process,
                 'process': output_process,
                 'data': self.output_data,
                 'packages': self.packages
