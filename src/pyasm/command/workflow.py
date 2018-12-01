@@ -325,6 +325,17 @@ class ProcessStatusTrigger(Trigger):
 
 
 #
+# Packaging
+#
+
+class BaseWorkflowPackage(object):
+
+    def get_package(self):
+
+        return {}
+
+
+#
 # Built in process triggers
 #
 
@@ -882,31 +893,73 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
     def get_output_packages(self):
         '''build the output packages based on the checks of the current process node'''
 
-        package_type = "snapshot"
+
+        # TODO: need to define which package names are created for a node
+        package_names = ["default", "asset"]
+        package_names = ["default"]
 
         # get the packages data structure
         packages = self.packages
-        package = packages.get("default")
-        if not package:
-            package = {}
-            packages['default'] = package
 
 
-        # set the type
-        package['type'] = package_type
+        for package_name in package_names:
+
+            # get the existing package
+            package = packages.get(package_name)
+
+            # create one if it does not exist
+            if not package:
+                package = {}
+                packages[package_name] = package
+
+            # set the type
+            if package_name == "default":
+                package_type = "snapshot"
+            elif package_name in ['sobject']:
+                package_type = package_name
+            else:
+                package_type = "snapshot"
+            package['type'] = package_type
 
 
-        # based on the type, create the package
-        if package_type == "snapshot":
-            from pyasm.biz import Snapshot
-            search = Search("sthpw/snapshot")
-            search.add_filter("process", self.process)
-            search.add_filter("is_latest", True)
-            search.add_filter("status", "Final")
-            search.add_parent_filter(self.sobject)
-            snapshots = search.get_sobjects()
-            snapshot_codes = [x.get_code() for x in snapshots]
-            package['snapshot_codes'] = snapshot_codes
+            # based on the type, create the package
+            if package_type == "snapshot":
+
+                # This package type contains a list search code retrieved by the process
+
+                from pyasm.biz import Snapshot
+                search = Search("sthpw/snapshot")
+                search.add_filter("process", self.process)
+                search.add_filter("is_latest", True)
+                search.add_filter("status", "Final")
+                search.add_parent_filter(self.sobject)
+                snapshots = search.get_sobjects()
+                snapshot_codes = [x.get_code() for x in snapshots]
+                package['snapshot_codes'] = snapshot_codes
+
+            elif package_type == "sobject":
+
+                # sobject package types contain a list of sobject codes
+                sobject = self.sobject
+
+                # Get these from prod_setting???
+                search_type = "workflow/job_asset"
+                status = "Final"
+
+                search = Search(search_type)
+                search.add_filter("process", self.process)
+                search.add_filter("status", final)
+                search.add_parent_filter(self.sobject)
+                sobjects = search.get_sobjects()
+                codes = [x.get_code() for x in sobjects]
+                package['sobject_codes'] = sobject_codes
+
+            elif package_type == "custom":
+                # TEST
+                packager = BaseWorkflowPackage()
+                package = packager.get_package()
+
+
 
         return packages
 
@@ -938,42 +991,10 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         process_output = workflow.get("output") or {}
 
 
+
+        # These are currently in Manual node.  Note sure if it should be generic to all nodes
         #packages = self.get_output_packages()
-
-        # ---------------------------------------
-        # build the output data
-
-        """
-        if process_output:
-            self.output_data = process_output.copy()
-
-            output_type = process_output.get("type")
-            if output_type == "file":
-                self.output_data['snapshot'] = None
-                self.output_data['path'] = process_output.get("path")
-
-            # default is snapshot
-            else:
-                from pyasm.biz import Snapshot
-
-                context = process_output.get("context")
-                if context:
-                    contexts = context.split(",")
-                    context = contexts[0]
-                    snapshot = Snapshot.get_latest_by_sobject(self.sobject, context=context)
-
-                else:
-                    # else get the latest checkin from the process
-                    snapshot = Snapshot.get_latest_by_sobject(self.sobject, process=process_output.get("process"))
-
-                if snapshot:
-                    self.output_data['snapshot'] = snapshot
-                    self.output_data['path'] = snapshot.get_lib_path_by_type()
-
-        """
-
         #self.store_state()
-        # ---------------------------------------
 
 
 
@@ -1229,6 +1250,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # build an output package
         self.packages = self.get_output_packages()
+        self.store_state()
 
         return super(WorkflowManualNodeHandler, self).handle_complete()
 
@@ -2391,8 +2413,26 @@ class ProcessCustomTrigger(BaseProcessTrigger):
                 Trigger.call(self, event, output)
 
         else:
-            # Do nothing
-            pass
+
+            connects = pipeline.get_output_connects(process)
+            for connect in connects:
+                from_attr = connect.get_from_attr()
+                to_process = connect.get_to()
+
+                if status == from_attr or status == to_process:
+
+                    event = "process|pending"
+
+                    output = {
+                        'sobject': sobject,
+                        'pipeline': pipeline,
+                        'process': to_process,
+                        'status': to_status,
+                        #'data': self.data
+                    }
+                    Trigger.call(self, event, output)
+
+
 
 
 

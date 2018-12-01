@@ -230,6 +230,12 @@ class ProcessConnect(Base):
     def get_title(self):
         return Xml.get_attribute(self.node, "title")
 
+    def get_to_attr(self):
+        return Xml.get_attribute(self.node, "to_attr") or "input"
+
+    def get_from_attr(self):
+        return Xml.get_attribute(self.node, "from_attr") or "output"
+
 
 
     def get_to_pipeline(self):

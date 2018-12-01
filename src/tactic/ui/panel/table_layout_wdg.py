@@ -1596,6 +1596,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if not column_widths:
             column_widths = []
 
+
+
        
         # set all of the column widths in javascript
         if self.kwargs.get('temp') != True:
@@ -1604,15 +1606,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'element_names': self.element_names,
                 'column_widths': column_widths,
                 'cbjs_action': '''
+
+                var column_widths = bvr.column_widths;
+
                 var layout = bvr.src_el.getParent(".spt_layout");
                 spt.table.set_layout(layout);
 
                 for (var i = 0; i < bvr.element_names.length; i++) {
                     var name = bvr.element_names[i];
-                    var width = bvr.column_widths[i];
+                    var width = column_widths[i];
                     if (width == -1) {
                         continue;
                     }
+                    console.log(name, width);
                     spt.table.set_column_width(name, width);
                 }
 
@@ -5118,8 +5124,12 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
         }
 
         // find the key in the cell (NOTE: this should be "spt_input_key"
-        if (! key)
-            key = cell.getAttribute("spt_input_value");
+        if (! key) {
+            key = cell.getAttribute("spt_input_key");
+            if (!key) {
+                key = cell.getAttribute("spt_input_value");
+            }
+        }
 
         // find the key
         var found = false;
@@ -5458,6 +5468,9 @@ spt.table.open_link = function(bvr) {
         var server = TacticServerStub.get();
         var sss = server.eval(expression, {search_keys: search_key, single: true})
         search_key = sss.__search_key__;
+
+        title = sss.code;
+        name = sss.code;
     }
 
 
@@ -6916,20 +6929,21 @@ spt.table.expand_table = function(mode) {
     var table = null;
     var subtable = null;
     var header_table = null;
-    if (version == '2') {
-        spt.table.set_layout(layout);
-        table = spt.table.get_table();
-        var subtable = table.getElement(".spt_table_table");
 
-        headers = spt.table.get_headers();
-        header_table = spt.table.get_header_table();
+    spt.table.set_layout(layout);
+    table = spt.table.get_table();
 
+    // if there is a subtable, then use that instead
+    var subtable = table.getElement(".spt_table_table");
+
+    var expand_last_column = true;
+    if (subtable) {
+        table = subtable;
+        expand_last_column = false;
     }
-    else {
-        table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
-        header_table = table;
-        headers = layout.getElements(".spt_table_th");
-    }
+
+    headers = spt.table.get_headers();
+    header_table = spt.table.get_header_table();
 
 
     var layout_width = layout.getSize().x;
@@ -6949,7 +6963,7 @@ spt.table.expand_table = function(mode) {
                 var last_width = cell.getAttribute("last_width");
 
                 // if this is the last cell
-                if (cell == cells[cells.length-1] && total_width < layout_width - 120) {
+                if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
                     cell.setStyle("width", layout_width-total_width)
                 }
 
@@ -6991,7 +7005,7 @@ spt.table.expand_table = function(mode) {
 
 
                     // if this is the last cell
-                    if (cell == cells[cells.length-1] && total_width < layout_width - 120) {
+                    if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
                         cell.setStyle("width", layout_width-total_width)
                     }
                     else if (last_width && last_width != "-1") {
@@ -7058,6 +7072,7 @@ spt.table.expand_table = function(mode) {
         }
 
 
+        /*
         if (subtable) {
             subtable.setStyle("width", "100%");
 
@@ -7070,7 +7085,12 @@ spt.table.expand_table = function(mode) {
             })
 
         }
+        */
+
+
         layout.setStyle("width", "100%");
+
+
     }
 
 
@@ -7085,8 +7105,6 @@ spt.table.expand_table = function(mode) {
         var header_size = header_table.getSize();
         var table_size = table.getSize();
 
-        // NOTE: this offset of "9" is very arbitrary
-        //if (parent.scrollHeight > parent.clientHeight + 9) {
         if (header_size.x > table_size.x) {
             header_parent = header_table.getParent();
             header_parent.setStyle("margin-right", "17px");

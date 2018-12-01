@@ -171,6 +171,7 @@ class Scheduler(object):
 
 
 
+
 class SchedulerTask(object):
     '''Base class for the scheduler'''
     def __init__(self, **kwargs):
@@ -223,7 +224,6 @@ class SchedulerTask(object):
             project = self.kwargs.get("project")
             if project:
                 Project.set_project(project)
-
 
             self.execute()
 

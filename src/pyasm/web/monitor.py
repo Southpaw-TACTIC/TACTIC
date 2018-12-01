@@ -491,6 +491,7 @@ class TacticSchedulerThread(threading.Thread):
         from pyasm.security import Site
         print "WARNING: hard codding site"
         site = "workflow"
+        site = "teague"
         Site.set_site(site)
         
 
@@ -576,6 +577,8 @@ class TacticSchedulerThread(threading.Thread):
 
             if has_triggers and self.dev_mode:
                 print("Found [%s] scheduled triggers in project [%s]..." % (project_triggers_count, project_code))
+
+
 
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
