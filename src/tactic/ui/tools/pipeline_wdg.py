@@ -6541,12 +6541,10 @@ class PipelineSaveCbk(Command):
             xml.set_attribute(node, "process_code", process.get_code())
 
             curr_settings = settings_list[i]
-            if process:
-                curr_settings = process.get_json_value("workflow")
 
             subpipeline_code = None
             if curr_settings:
-                curr_settings.pop("subpipeline_code", None)
+                subpipeline_code = curr_settings.pop("subpipeline_code", None)
             if subpipeline_code or subpipeline_code == "":
                 process.set_value("subpipeline_code", subpipeline_code)
             

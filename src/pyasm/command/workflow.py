@@ -223,27 +223,26 @@ class TaskStatusChangeTrigger(Trigger):
                 process_name = part
                 process = pipeline.get_process(process_name)
 
-                if not process:
-                    raise Exception("Process [%s] not in pipeline" % process_name)
+                if process:
 
-                # find the pipeline
-                search = Search("config/process")
-                search.add_filter("pipeline_code", pipeline.get_code())
-                search.add_filter("process", process_name)
-                process_sobj = search.get_sobject()
+                    # find the pipeline
+                    search = Search("config/process")
+                    search.add_filter("pipeline_code", pipeline.get_code())
+                    search.add_filter("process", process_name)
+                    process_sobj = search.get_sobject()
 
-                parent_pipeline = pipeline
-                parent_pipelines.append(pipeline)
-                parent_process = process_name
-                parent_processes.append(process_name)
+                    parent_pipeline = pipeline
+                    parent_pipelines.append(pipeline)
+                    parent_process = process_name
+                    parent_processes.append(process_name)
 
-                # find the current process and pipeline_code
-                pipeline_code = process_sobj.get_value("subpipeline_code")
-                pipeline = Pipeline.get_by_code(pipeline_code)
+                    # find the current process and pipeline_code
+                    pipeline_code = process_sobj.get_value("subpipeline_code")
+                    pipeline = Pipeline.get_by_code(pipeline_code)
 
-                process = pipeline.get_process(parts[-1])
+                    process = pipeline.get_process(parts[-1])
 
-                break
+                    break
 
         else:
             process = pipeline.get_process(process_name)
@@ -1011,6 +1010,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 'sobject': self.sobject,
                 'parent_pipelines': self.parent_pipelines,
                 'parent_processes': self.parent_processes,
+                'calling_process': self.process,
                 'process': output_process,
                 'data': self.output_data,
                 'packages': self.packages
