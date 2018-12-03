@@ -1519,8 +1519,6 @@ class WebLoginWdg(Widget):
             table.add_style('position','absolute')
 
 
-        table.add_style("width: 100%")
-        table.add_style("height: 85%")
         table.add_row()
         td = table.add_cell()
         td.add_style("vertical-align: middle")
@@ -1528,8 +1526,23 @@ class WebLoginWdg(Widget):
         td.add_style("background: transparent")
         td.add(box)
         widget.add(table)
+
+        styles = self.get_styles()
+        widget.add(styles)
         
         return widget
+
+    def get_styles(self):
+
+        styles = HtmlElement.style()
+        styles.add(""" 
+            .spt_login_screen {
+                width: 100%;
+                height: 85%;
+            }
+        """)
+
+        return styles
 
 
 # DEPRECATED: moved lower to pyasm/web
