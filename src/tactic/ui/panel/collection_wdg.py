@@ -70,6 +70,11 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         if not search.column_exists("_is_collection"):
             return self.top
 
+        parent_key = self.kwargs.get("parent_key")
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            search.add_parent_filter(parent)
+        
         search.add_filter("_is_collection", True)
         collections = search.get_sobjects()
         
@@ -746,7 +751,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
-        collections_div = CollectionFolderWdg(search_type=search_type)
+        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key)
         div.add(collections_div)
 
         return div
@@ -791,7 +796,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search.add_parent_filter(parent)
-
+        
         collections = search.get_sobjects()
         collections_div = DivWdg()
 
