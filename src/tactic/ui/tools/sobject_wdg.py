@@ -397,9 +397,18 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         selected = self.kwargs.get("selected")
 
+
+        save_state = self.kwargs.get("tab_save_state") or ""
+
         #menu = self.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
-        tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=10, selected=selected )
+        show_add = False
+        show_remove = False
+
+        #show_add = True
+        #show_remove = True
+
+        tab = TabWdg(config=config, state=state, show_add=show_add, show_remove=show_remove, tab_offset=10, selected=selected, save_state=save_state )
         tab.add_style("margin: 0px -1px -1px -1px")
 
 

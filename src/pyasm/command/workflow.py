@@ -47,7 +47,8 @@ class Workflow(object):
 
     def init(self, startup=False, quiet=False):
 
-        is_initialized = Container.get("Workflow::is_initialized")
+        key = "Workflow::is_initialized"
+        is_initialized = Container.get(key)
         if is_initialized == "true":
             return
 
@@ -145,7 +146,7 @@ class Workflow(object):
         Trigger.append_static_trigger(trigger, startup=startup)
 
 
-        Container.put("Workflow::is_initialized", "true")
+        Container.put(key, "true")
 
 
 

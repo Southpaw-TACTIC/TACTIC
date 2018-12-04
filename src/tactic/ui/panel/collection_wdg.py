@@ -538,6 +538,13 @@ class CollectionAddCmd(Command):
 
 class CollectionLayoutWdg(ToolLayoutWdg):
 
+
+    def get_kwargs_keys(cls):
+        return ['group_elements']
+    get_kwargs_keys = classmethod(get_kwargs_keys)
+
+
+
     def get_content_wdg(self):
 
         self.search_type = self.kwargs.get("search_type")
@@ -755,6 +762,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         #shelf_wdg.add_style("float: right")
         #div.add(shelf_wdg)
 
+        group_elements = self.kwargs.get("group_elements") or []
+
         tile = CollectionContentWdg(
                 search_type=self.search_type,
                 show_shelf=False,
@@ -762,7 +771,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 sobjects=self.sobjects,
                 detail_element_names=self.kwargs.get("detail_element_names"),
                 do_search='false',
-                upload_mode=self.kwargs.get("upload_mode")
+                upload_mode=self.kwargs.get("upload_mode"),
+                group_elements=group_elements
         )
         div.add(tile)
 
@@ -951,7 +961,7 @@ class CollectionContentWdg(BaseRefreshWdg):
         top.add_style("min-height: 400px")
 
         self.kwargs["scale"] = 75
-        self.kwargs["show_scale"] = True
+        self.kwargs["show_scale"] = False
         self.kwargs["expand_mode"] = "gallery"
         self.kwargs["show_search_limit"] = False
 
