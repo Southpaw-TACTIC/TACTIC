@@ -6690,7 +6690,7 @@ spt.table.collapse_group = function(group_row) {
         var break_cond2 = row.getAttribute('idx') == idx
         
         
-        if (row_level == group_level) {
+        if (row_level <= group_level) {
            
            break;
 
