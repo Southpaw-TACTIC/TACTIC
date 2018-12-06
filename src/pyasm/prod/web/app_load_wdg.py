@@ -31,7 +31,6 @@ class SObjectLoadWdg(Widget):
     LOAD_TYPE = "asset"
 
     def __init__(self, **kwargs):
-        sdfsfda
         self.kwargs = kwargs
         super(SObjectLoadWdg,self).__init__(self)
 
