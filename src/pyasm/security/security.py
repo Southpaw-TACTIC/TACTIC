@@ -1096,8 +1096,8 @@ class Ticket(SObject):
                 # check an external source whether the key is valid.  If so, create a ticket
                 handler_class = Config.get_value("security", "authenticate_ticket_class")
                 if handler_class:
-                    handler = Common.create_from_class_path(auth_class)
-                    ticket = handler.validate(key)
+                    handler = Common.create_from_class_path(handler_class)
+                    ticket = handler.validate_key(key)
                     if isinstance(ticket, basestring):
                         ticket = Ticket.create(ticket, commit=None)
 
