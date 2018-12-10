@@ -2565,7 +2565,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
             # FIXME: make this faster
-            snapshot = Snapshot.get_snapshot(search_type, search_code) #, process=processes)
+            snapshot = Snapshot.get_snapshot(search_type, search_code, process=processes)
 
 
         if not snapshot:

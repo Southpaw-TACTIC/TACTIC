@@ -4732,7 +4732,9 @@ spt.table.add_new_item = function(kwargs) {
     // fire a client event
     var tableId = spt.table.layout.getAttribute("spt_table_id");
     var event = "insert|tableId|"+tableId;
-    //var event = "insertX|"+search_type;
+    spt.named_events.fire_event(event, {src_el: clone});
+    
+    var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
 
     // find the no items row
