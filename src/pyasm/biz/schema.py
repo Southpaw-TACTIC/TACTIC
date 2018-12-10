@@ -176,6 +176,8 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <connect from="sthpw/work_hour" to="sthpw/login"
             relationship='code' from_col='login' to_col='login'/>
 
+    <connect from="sthpw/task" to="sthpw/login_group"
+            relationship='code' from_col='assigned_group' to_col='login_group'/>
 
     <connect to='*' from='sthpw/connection'
             relationship='search_id' type='hierarchy'

@@ -449,13 +449,6 @@ class BaseProcessTrigger(Trigger):
 
 
         # get the node triggers
-        # TODO: make this more efficient
-        """
-        search = Search("config/process")        
-        search.add_filter("pipeline_code", pipeline.get_code())
-        search.add_filter("process", process)
-        process_sobj = search.get_sobject()
-        """
         process_sobj = self.get_process_sobj(pipeline, process)
 
         #print "callback process: ", process, pipeline.get_code()

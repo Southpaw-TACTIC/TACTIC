@@ -527,6 +527,7 @@ class DirListWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_class("hand")
         div.add_class("SPT_DTS")
+        div.add_style("display: flex")
         div.add_style("margin-top: 2px")
         div.add_style("margin-bottom: 2px")
         div.add_style("height: 18px")
@@ -811,6 +812,8 @@ class DirListWdg(BaseRefreshWdg):
         item_div.add_style("padding-left: %spx" % left_padding)
         item_div.add_attr("spt_padding_left", left_padding)
         item_div.add_class("hand")
+
+        item_div.add_style("display: flex")
 
 
         self.add_file_behaviors(item_div, dirname, basename)
