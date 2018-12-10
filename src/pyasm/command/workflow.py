@@ -451,7 +451,7 @@ class BaseProcessTrigger(Trigger):
         # get the node triggers
         process_sobj = self.get_process_sobj(pipeline, process)
 
-        #print "callback process: ", process, pipeline.get_code()
+        #print("callback process: ", process, pipeline.get_code())
         if not process_sobj:
             raise TacticException('Process item [%s] has not been created.'%process)
 
