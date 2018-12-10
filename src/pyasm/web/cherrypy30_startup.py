@@ -96,7 +96,7 @@ class CherryPyStartup(CherryPyStartup20):
         parts = path.split("/")
         if len(parts) < 3:
             cherrypy.response.body = '<meta http-equiv="refresh" content="0;url=/tactic" />'
-            return 
+            return
 
         from pyasm.security import Site
         site_obj = Site.get()
@@ -201,6 +201,30 @@ class CherryPyStartup(CherryPyStartup20):
             # so feasible ... need a way to return the request after registering the
             # project
 
+            # For REST requests, we will send the request again after registering the project.
+            # NOTE: cherrypy.request.path_info only gives us the URL without the query string.
+            # So path.endswith('/REST') will work both for GET and POST.
+            if path.endswith('/REST'):
+                import requests
+                base_url = 'http://localhost'
+
+                # For CherryPy, the port could be other than 80
+                if startup.port:
+                    base_url += ':' + str(startup.port)
+
+                # Add the path (e.g. /tactic/xxxx/yyyy/REST) to the base_url.
+                url = base_url + str(path)
+                print("Sending the request again to URL:" + str(url))
+                if request.method == 'POST':
+                    r = requests.post(url, data = request.body.params)
+                    return r.text
+                elif request.method == 'GET':
+                    # The query string is in cherrypy.request.params. So we are
+                    # sending it as a POST request here without reconstructing the query string
+                    # and sending it as GET.
+                    r = requests.post(url, data = request.params)
+                    return r.text
+
             """
             # if there is hash, then attempt to get it
             hash = "/rest"
@@ -235,12 +259,12 @@ class CherryPyStartup(CherryPyStartup20):
             # this response.body is not needed, can be commented out in the future
             response.body = ''
             return html_response
-     
+
 
 
         # return 404 error
         try:
-        
+
             from pyasm.web import WebContainer, DivWdg
             from pyasm.widget import Error404Wdg
             from cherrypy30_adapter import CherryPyAdapter
@@ -299,7 +323,7 @@ class CherryPyStartup(CherryPyStartup20):
 
 
         config = {
-            
+
             'global': {
                 'server.socket_host': '127.0.0.1',
                 'server.socket_port': 80,
@@ -360,9 +384,9 @@ class CherryPyStartup(CherryPyStartup20):
                         'tools.staticdir.on': True,
                         'tools.staticdir.dir': dist_dir,
                         },
- 
 
- 
+
+
 
         }
 
@@ -408,7 +432,7 @@ class CherryPyStartup(CherryPyStartup20):
         from pyasm.security import Site
         site_obj = Site.get()
         site_obj.register_sites(self, config)
- 
+
 
         #self.register_project("vfx", config, site="vfx_demo")
         #self.register_project("default", config, site="vfx_demo")
@@ -474,7 +498,7 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-        # get the contexts: 
+        # get the contexts:
         if project in ("admin", "default", "template", "unittest"):
             context_dir = Environment.get_install_dir().replace("\\", "/")
             context_dir = "%s/src/tactic_sites/%s/context" % (context_dir, project)
@@ -516,7 +540,7 @@ class CherryPyStartup(CherryPyStartup20):
                 raise
                 #return
 
-            
+
             path = "/tactic/%s/%s" % (project, context)
             settings = {}
             config[path] = settings
@@ -525,7 +549,7 @@ class CherryPyStartup(CherryPyStartup20):
                 #settings['request.dispatch'] = cherrypy.dispatch.XMLRPCDispatcher(),
                 settings['tools.xmlrpc.on'] = True
                 settings['tools.xmlrpc.encoding'] = 'utf-8'
-                settings['tools.xmlrpc.allow_none'] = True 
+                settings['tools.xmlrpc.allow_none'] = True
 
 
 
