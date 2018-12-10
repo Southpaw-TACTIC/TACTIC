@@ -6475,7 +6475,7 @@ class PipelineSaveCbk(Command):
                         settings = jsonloads(settings)
                 except:
                     process_name = xml.get_attribute(node, "name")
-                    print "WARNING: Setting for process %s not saved." % process_name 
+                    print("WARNING: Setting for process %s not saved." % process_name )
 
             settings_list.append(settings)
 
