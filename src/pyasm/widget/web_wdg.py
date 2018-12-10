@@ -1362,7 +1362,11 @@ class WebLoginWdg(Widget):
             if custom_projects == 0:
                 text_wdg.set_value('admin')
                 
-        
+       
+        login_placeholder = self.kwargs.get("login_placeholder")
+        if login_placeholder:
+            text_wdg.add_attr("placeholder", login_placeholder)
+
         #text_wdg.add_event("onLoad", "this.focus()")
         table.add_cell( text_wdg )
 
@@ -1391,6 +1395,11 @@ class WebLoginWdg(Widget):
             password_wdg.add_style("background: #EEE")
             password_wdg.add_style("padding: 2px")
             password_wdg.add_style("width: 130px")
+        
+        password_placeholder = self.kwargs.get("password_placeholder")
+        if password_placeholder:
+            password_wdg.add_attr("placeholder", password_placeholder)
+
         th = table.add_header( "<b> %s: </b>"%password_label )
         th.add_style("padding: 5px")
         table.add_cell( password_wdg )
