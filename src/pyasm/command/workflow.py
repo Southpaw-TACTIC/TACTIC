@@ -846,7 +846,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 task = search.get_sobject()
                 if task:
                     task_status = task.get("status")
-                    if status.lower() != "complete":
+                    if task_status.lower() != "complete":
                         complete = False
                         break
 

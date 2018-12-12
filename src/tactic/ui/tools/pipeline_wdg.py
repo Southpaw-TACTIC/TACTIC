@@ -2965,10 +2965,12 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         return div
 
-# DEPRECATED
-"""
+
+
 class ScriptCreateWdg(BaseRefreshWdg):
     ''' Blank Text area for New Script Creation '''
+
+    '''This is still used in the trigger interface for process nodes '''
     def get_display(self):
 
         script_path = ''
@@ -2993,7 +2995,6 @@ class ScriptCreateWdg(BaseRefreshWdg):
         script_text.add_style("width: 100%")
 
         return div
-"""
 
 
 class ScriptSettingsWdg(BaseRefreshWdg):
