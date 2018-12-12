@@ -426,7 +426,7 @@ class Pipeline(SObject):
         search.add_order_by("version desc")
         latest = search.get_sobject()
         if latest:
-            latest_pipelien_code = latest.get_value("pipeline_code")
+            latest_pipeline_code = latest.get_value("pipeline_code")
             sobject.set_value("pipeline_code", latest_pipeline_code)
             sobject.commit()
 
@@ -442,7 +442,7 @@ class Pipeline(SObject):
         search.add_order_by("version desc")
         versionless = search.get_sobject()
         if versionless:
-            versionless_pipelien_code = versionless.get_value("pipeline_code")
+            versionless_pipeline_code = versionless.get_value("pipeline_code")
             sobject.set_value("pipeline_code", versionless_pipeline_code)
             sobject.commit()
 

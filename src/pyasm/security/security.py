@@ -1032,7 +1032,7 @@ class TicketHandler(object):
 
     def validate_key(cls, key):
         '''validate a ticket key using some external source.  Simply return the key to create a
-        stadard TACTIC ticket in the database or create a ticket directly in the function below
+        standard TACTIC ticket in the database or create a ticket directly in the function below
         using the following create function:
 
             return Ticket.create(key, login, expiry=None, interval=None, category=None)
