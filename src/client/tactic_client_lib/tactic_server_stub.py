@@ -2989,6 +2989,18 @@ class TacticServerStub(object):
 
 
 
+    def get_task_status_colors(self, ticket):
+        '''Get all the colors for a task status
+
+        ticket - authentication ticket
+
+        @return:
+        dictionary of colors
+        '''
+        return self.server.add_initial_tasks(self.ticket)
+
+
+
     def get_input_tasks(self, search_key):
         '''API Function: get_input_tasks(search_key)
         
