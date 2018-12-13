@@ -21,10 +21,32 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.6.0.a03
     #
+    def upgrade_v4_6_0_a03_011(self):
+        self.run_sql('''
+        ALTER TABLE "task" ADD COLUMN assigned_group varchar(256);
+        ''')
+
+
+
+    def upgrade_v4_6_0_a03_010(self):
+        self.run_sql('''
+        ALTER TABLE "pipeline" ADD COLUMN parent_code varchar(256);
+        ''')
+
+
+
+    def upgrade_v4_6_0_a03_009(self):
+        self.run_sql('''
+        ALTER TABLE "pipeline" ADD COLUMN version integer;
+        ''')
+
+
     def upgrade_v4_6_0_a03_008(self):
         self.run_sql('''
         ALTER TABLE "task" ADD COLUMN parent_task_code varchar(256);
         ''')
+
+
 
     def upgrade_v4_6_0_a03_007(self):
         if self.get_database_type() == 'MySQL':

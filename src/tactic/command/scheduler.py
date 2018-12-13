@@ -175,6 +175,7 @@ class SchedulerTaskCmd(Command):
         task = self.kwargs.get("task")
         task.execute()
 
+
 class SchedulerTask(object):
     '''Base class for the scheduler'''
     def __init__(self, **kwargs):

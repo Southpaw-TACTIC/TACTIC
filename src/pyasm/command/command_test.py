@@ -67,7 +67,7 @@ class SampleCopyCmd(Command):
         return "Test"
 
     def undo(data):
-        print data.get_xml()
+        print(data.get_xml())
 
         search_type = data.get_value("sobject/@search_type")
         search_id = data.get_value("sobject/@search_id")
@@ -306,7 +306,7 @@ class CommandTest(unittest.TestCase):
             cmd = SampleTaskCmd()
             Command.execute_cmd(cmd)
 
-            #print "You should see the message: sending email!!! once"
+            #print("You should see the message: sending email!!! once")
             # confirm by notification log
             log_msgs = Search.eval("@GET(sthpw/notification_log['subject', 'NEQ', 'Note']['@ORDER_BY', 'timestamp desc']['@LIMIT','4'].subject)")
             self.assertEquals(log_msgs[0] , 'Sub: Unittest a task is created for john')
@@ -363,7 +363,7 @@ class CommandTest(unittest.TestCase):
         finally:
             #transaction = Transaction.get()
             transaction.rollback()
-            print "Ensure the unittest trigger is removed"
+            print("Ensure the unittest trigger is removed")
 
 
     def _test_insert_trigger(self):

@@ -45,6 +45,7 @@ class Trigger(Command):
         self.input = {}
         self.output = {}
         self.description = ''
+        self.ret_val = None
         self.kwargs = kwargs
         super(Trigger,self).__init__()
 
@@ -113,6 +114,14 @@ class Trigger(Command):
         self.description = description
     def get_description(self):
         return self.description
+
+
+    def get_ret_val(self):
+        return self.ret_val
+
+    def set_ret_val(self, value):
+        self.ret_val = value
+
 
     def execute(self):
         raise TriggerException("Must override execute function")
@@ -582,7 +591,8 @@ class Trigger(Command):
 
             # otherwise call the trigger immediately
             try:
-                trigger.execute()
+                ret_val = trigger.execute()
+                trigger.set_ret_val(ret_val)
             except Exception as e:
                 #log = ExceptionLog.log(e)
 

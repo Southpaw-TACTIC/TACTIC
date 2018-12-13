@@ -3141,8 +3141,10 @@ spt.dg_table.set_process = function(bvr) {
 }
 
 
-// TEST!!! for a more complex key callback
+// DEPRECATED
 spt.dg_table.get_status_key = function(cell_to_edit, edit_cell) {
+
+    alert("spt_dg_table.set_status_key() is deprecated");
 
     var task_pipeline = null;
 

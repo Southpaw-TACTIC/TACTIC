@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
+__all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "TicketHandler", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types
 #import tacticenv
@@ -1008,6 +1008,43 @@ class Site(object):
     get_db_resource = classmethod(get_db_resource)
 
 
+class TicketHandler(object):
+    '''This is a base class to handle the generation, creation or validation of authentication
+    tickets'''
+
+
+    def generate_key(login, expiry, category):
+        '''By default TACTIC generates a random key on login, however, this can be overridden here
+        to generate any external method to generate a new key'''
+        ticket_key = Common.generate_random_key()
+        return ticket_key
+    generate_key = staticmethod(generate_key)
+
+
+    def create(key, login, expiry=None, interval=None, category=None):
+        '''On login (with a name and password, for example), this function will be called.
+        At this point a ticket can be created that will be reused for authentication
+        '''
+        # ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
+        return None
+    create = staticmethod(create)
+
+
+    def validate_key(cls, key):
+        '''validate a ticket key using some external source.  Simply return the key to create a
+        standard TACTIC ticket in the database or create a ticket directly in the function below
+        using the following create function:
+
+            return Ticket.create(key, login, expiry=None, interval=None, category=None)
+
+        Return None is the ticket is not valid'''
+
+        return None
+
+    validate_key = classmethod(validate_key)
+
+
+
 
 class Ticket(SObject):
     '''When a user logins, a ticket is created.  This ticket is stored in the
@@ -1040,13 +1077,30 @@ class Ticket(SObject):
         if site:
             Site.set_site("default")
 
+
         ticket = None
         try:
+            # get the ticket from the database
             search = Search("sthpw/ticket")
             search.add_filter("ticket", key)
             now = search.get_database_impl().get_timestamp_now()
             search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
             ticket = search.get_sobject()
+
+            # if it can't find the key in the database, then it is possible to use
+            # some external source to get the ticket.  If just the key is returned,
+            # then default, in memory one will be created.  However, the validate function
+            # can create ticket itself.  If the ticket was committed, then this would be
+            # found by the above search
+            if not ticket:
+                # check an external source whether the key is valid.  If so, create a ticket
+                handler_class = Config.get_value("security", "authenticate_ticket_class")
+                if handler_class:
+                    handler = Common.create_from_class_path(handler_class)
+                    ticket = handler.validate_key(key)
+                    if isinstance(ticket, basestring):
+                        ticket = Ticket.create(ticket, commit=None)
+
         finally:
             if site:
                 Site.pop_site()
@@ -1070,10 +1124,8 @@ class Ticket(SObject):
  
 
 
-      
 
-
-    def create(key, login, expiry=None, interval=None, category=None):
+    def create(key, login, expiry=None, interval=None, category=None, commit=True):
         '''creation function to create a new ticket
             @keyparam: 
                 expiry: exact expiry timestamp
@@ -1084,7 +1136,6 @@ class Ticket(SObject):
         impl = Sql.get_default_database_impl()
         now = impl.get_timestamp_now()
 
-        # expire in 1 hour
         if expiry == -1:
             expiry = "NULL"
         elif not expiry:
@@ -1127,7 +1178,9 @@ class Ticket(SObject):
             ticket.set_value("expiry", expiry)
         else:
             ticket.set_value("expiry", expiry, quoted=0)
-        ticket.commit(triggers="none")
+
+        if commit:
+            ticket.commit(triggers="none")
    
 
         return ticket
@@ -1723,6 +1776,7 @@ class Security(Base):
 
 
     # DEPRECATED as 2.5
+    """
     def login_user_version_1(self, login_name, password, expiry=None):
         '''login user with a name and password combination
        
@@ -1803,7 +1857,7 @@ class Security(Base):
         self._ticket = self._generate_ticket(login_name, expiry)
 
         self._do_login()
-
+    """
 
 
 
@@ -1812,17 +1866,32 @@ class Security(Base):
 
 
     def _generate_ticket(self, login_name, expiry=None, category=None):
-        # create a new ticket for the user
-        ticket_key = Common.generate_random_key()
+
+        handler_class = Config.get_value("security", "authenticate_ticket_class")
+        handler = Common.create_from_class_path(handler_class)
+        if handler:
+            ticket_key = handler.generate_key(login_name, expiry, category)
+        else:
+            # create a new ticket for the user
+            ticket_key = Common.generate_random_key()
 
         ticket_key = Site.get().build_ticket(ticket_key)
+
 
         # make sure the ticket is always generated on the default site
         site = Site.get_site()
         if site:
             Site.set_site("default")
         try:
-            ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
+            
+            if handler:
+                ticket = handler.create(ticket_key,login_name, expiry, category=category)
+                if not ticket:
+                    # use default method if not implemented
+                    ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
+            else:
+                ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
+
         finally:
             if site:
                 Site.pop_site()

@@ -664,7 +664,7 @@ class CardLayoutWdg(ToolLayoutWdg):
                 try:
                     element.handle_layout_behaviors(self.layout_wdg)
                 except Exception as e:
-                    print "e :", e
+                    print("e :", e)
                     pass
 
 
