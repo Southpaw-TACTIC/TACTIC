@@ -1866,10 +1866,12 @@ class Security(Base):
 
 
     def _generate_ticket(self, login_name, expiry=None, category=None):
+ 
+        handler = None
 
         handler_class = Config.get_value("security", "authenticate_ticket_class")
-        handler = Common.create_from_class_path(handler_class)
-        if handler:
+        if handler_class:
+            handler = Common.create_from_class_path(handler_class)
             ticket_key = handler.generate_key(login_name, expiry, category)
         else:
             # create a new ticket for the user
