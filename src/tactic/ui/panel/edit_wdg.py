@@ -41,7 +41,7 @@ class EditTitleWdg(BaseInputWdg):
 
 
         #description = self.get_description()
-        #print "description: ", description
+        #print("description: ", description)
 
 
         """
@@ -287,7 +287,7 @@ class EditWdg(BaseRefreshWdg):
                 try:
                     default_data = eval(default_data)
                 except:
-                    print "Warning: Cannot evaluate [%s]" %default_data
+                    print("Warning: Cannot evaluate [%s]" %default_data)
                     default_data = {}
 
         if sobject:
@@ -1398,7 +1398,7 @@ class EditWdg(BaseRefreshWdg):
             input = None
         else:
             # else try to instantiate it as a class
-            print "WARNING: EditWdg handles type [%s] as default TextWdg" %element_type
+            print("WARNING: EditWdg handles type [%s] as default TextWdg" %element_type)
             input = TextWdg()
             input.add("No input defined")
 

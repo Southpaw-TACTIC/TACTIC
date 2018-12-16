@@ -564,8 +564,6 @@ class UserPageCreatorCmd(Command):
 
     def execute(self):
 
-        print "kwargs: ", self.kwargs
-
         options = {}
         class_name = "tactic.ui.panel.CustomLayoutWdg"
         widget_key = ""
@@ -590,8 +588,6 @@ class UserPageCreatorCmd(Command):
                 options[option_key] = value
 
 
-
-        print "options: ", options
 
         name = self.kwargs.get("name")
         description = self.kwargs.get("description") or " "
@@ -648,8 +644,6 @@ class UserPageCreatorCmd(Command):
 </config>
         ''' % (view, name, description, display_line, option_str, view)
 
-        print "config_xml: ", config_xml
-
         xml = Xml()
         xml.read_string(config_xml)
         config_xml = xml.to_string()
@@ -685,5 +679,5 @@ if __name__ == '__main__':
     html = panel.get_buffer_display()
     xml = Xml()
     xml.read_string(html)
-    print xml.to_string()
+    print(xml.to_string())
 

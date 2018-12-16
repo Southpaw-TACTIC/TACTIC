@@ -135,8 +135,8 @@ class WorkflowCmd(Command):
 
         #from pyasm.security import Site
         #from pyasm.biz import Project
-        #print "site: " ,Site.get_site()
-        #print "project: ", Project.get().get_data()
+        #print("site: " ,Site.get_site())
+        #print("project: ", Project.get().get_data())
 
         try:
             Workflow().init()
@@ -147,7 +147,7 @@ class WorkflowCmd(Command):
             self._test_approval_state()
             self._test_manual_state()
         except Exception, e:
-            print "Error: ", e
+            print("Error: ", e)
             raise
 
 
@@ -274,10 +274,10 @@ class WorkflowCmd(Command):
                 'path': '/tmp/whatever2.txt',
             },
             'on_action': r'''
-            print "a"
+            print("a")
             data = input.get("data")
             path = data.get("path")
-            print "path: ", path
+            print("path: ", path)
 
             '''
         } )
@@ -291,10 +291,10 @@ class WorkflowCmd(Command):
                 'path': '/tmp/whatever3.txt',
             },
             'on_action': r'''
-            print "b"
+            print("b")
             data = input.get("data")
             path = data.get("path")
-            print "path: ", path
+            print("path: ", path)
 
             self.output = {
                 'type': 'file',
@@ -308,10 +308,10 @@ class WorkflowCmd(Command):
         process = processes.get("c")
         process.set_json_value("workflow", {
             'on_action': r'''
-            print "c"
+            print("c")
             data = input.get("data")
             path = data.get("path")
-            print "path: ", path
+            print("path: ", path)
 
             '''
         } )
@@ -339,7 +339,7 @@ class WorkflowCmd(Command):
         import time
         start = time.time()
         Trigger.call(self, "process|pending", output)
-        print time.time() - start
+        print(time.time() - start)
 
 
 
@@ -381,7 +381,7 @@ class WorkflowCmd(Command):
 
             sobject = input.get("sobject")
             search_key = sobject.get("__search_key__")
-            print "a: "
+            print("a: ")
             print
 
             server.simple_checkin(search_key, "test", path, mode="move")
@@ -400,7 +400,7 @@ class WorkflowCmd(Command):
             data = input.get("data")
             path = data.get("path")
 
-            print "path: ", path
+            print("path: ", path0
 
             f = open(path, "r")
             content = f.read()
@@ -414,7 +414,7 @@ class WorkflowCmd(Command):
             f.write("\n")
             f.close()
 
-            print "b: "
+            print("b: ")
             sobject = input.get("sobject")
             search_key = sobject.get("__search_key__")
             print
@@ -432,7 +432,7 @@ class WorkflowCmd(Command):
             data = input.get("data")
             path = data.get("path")
             print
-            print "path: ", path
+            print("path: ", path)
             print
             assert(path)
             '''
@@ -529,7 +529,7 @@ class WorkflowCmd(Command):
         dataflow = Dataflow()
         path = dataflow.get_input_path(sobject, "b")
 
-        print "path: ", path
+        print("path: ", path)
 
         task.set_value("status", "complete")
         task.commit()
@@ -749,7 +749,7 @@ class WorkflowCmd(Command):
         task.set_value("status", "Complete")
         task.commit()
 
-        print "time: ", time.time() - start
+        print("time: ", time.time() - start)
 
         self.assertEquals( sobject.get("a_snapshot_code"), sobject.get("c_snapshot_code") )
 
@@ -822,11 +822,11 @@ class WorkflowCmd(Command):
 
         # query state of the task
         key = "%s|%s|state" % (task.get_search_key(), process.get_value("process"))
-        print "key: ", key
+        print("key: ", key)
         message = Search.get_by_code("sthpw/message", key).get_json_value("message")
 
-        print "key: ", key
-        print "message: ", message
+        print("key: ", key)
+        print("message: ", message)
 
 
 

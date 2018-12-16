@@ -1880,8 +1880,8 @@ class LinkSecurityWdg(ProjectSecurityWdg):
         element_names = config.get_element_names()
         for element_name in element_names:
             if not element_name:
-                print "WARNING: Empty element name found in Link security"
-                print config.get_xml().to_string()
+                print("WARNING: Empty element name found in Link security")
+                print(config.get_xml().to_string())
                 continue
 
             names.append(element_name)
@@ -2699,6 +2699,6 @@ if __name__ == '__main__':
     builder.add_project("fickle3")
     builder.add_project("big_test22")
 
-    print builder.to_string()
+    print(builder.to_string())
 
 

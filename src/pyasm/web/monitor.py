@@ -577,6 +577,8 @@ class TacticSchedulerThread(threading.Thread):
             if has_triggers and self.dev_mode:
                 print("Found [%s] scheduled triggers in project [%s]..." % (project_triggers_count, project_code))
 
+
+
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
 

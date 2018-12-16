@@ -339,7 +339,7 @@ class ManageSearchTypeMenuWdg(BaseSectionWdg):
                             user_node = user_config.get_element_node(elem)
                             default_config.append_xml_element(elem, node=user_node)
                 except SqlException as e:
-                     print "Search ERROR: ", e.__str__()
+                     print("Search ERROR: ", e.__str__())
                      default_config = None
                 
                 if default_config:
@@ -939,7 +939,7 @@ class WidgetDetailSimpleModeWdg(BaseRefreshWdg):
         xml = Xml()
         xml.read_string(config_string)
 
-        #print "config_string: ", config_string
+        #print("config_string: ", config_string)
 
         # get values from the config file
         element_name = xml.get_value('element/@name')

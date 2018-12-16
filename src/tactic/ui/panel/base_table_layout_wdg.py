@@ -450,8 +450,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # passed in filter overrides
         values = filter_data.get_values_by_prefix("group")
-        print
-        print "values: ", values
         if values:
 
             group_values = values[0]
@@ -744,7 +742,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             try:
                 sobjects = widget.process_sobjects(self.sobjects, search)
             except Exception as e:
-                #print str(e)
+                #print(str(e))
                 pass
             else:
                 if sobjects:
@@ -950,7 +948,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search.add_filter("search_type", self.search_type)
             config_sobj = search.get_sobject()
         except Exception as e:
-            print "WARNING: When trying to find config: ", e
+            print("WARNING: When trying to find config: ", e)
             config_sobj = None
 
         if config_sobj:
@@ -978,7 +976,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 script_s_key = "config/custom_script?project=%s&code=%s" % (prj_code, post_delete_script)
                 custom_script_sobj = Search.get_by_search_key( script_s_key )
                 if not custom_script_sobj:
-                    print 'Did NOT find a code="%s" custom_script entry for post DG table save' % (post_delete_script)
+                    print('Did NOT find a code="%s" custom_script entry for post DG table save' % (post_delete_script))
                 cbjs_post_delete = custom_script_sobj.get_value('script')
 
             if self.kwargs.get("post_delete_js"):
@@ -1426,7 +1424,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if widget:
                 wdg_list.append( { 'wdg': widget } )
             else:
-                print "WARNING: shelf view '%s' not defined" % custom_shelf_view
+                print("WARNING: shelf view '%s' not defined" % custom_shelf_view)
 
         custom_shelf_view = "_layout_shelf"
         if custom_shelf_view:
@@ -1437,7 +1435,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     widget = config.get_display_widget(element_names[0])
                     wdg_list.append( { 'wdg': widget } )
                 else:
-                    print "WARNING: shelf view '%s' not defined" % custom_shelf_view
+                    print("WARNING: shelf view '%s' not defined" % custom_shelf_view)
  
 
 

@@ -544,7 +544,7 @@ class Sql(Base):
                                             charset=charset,
                                             use_unicode=True,
                                             passwd=self.password )
-                self.do_query("SET sql_mode='PIPES_AS_CONCAT,ANSI_QUOTES';SET NAMES %s"%encoding)
+                self.do_query("SET sql_mode='PIPES_AS_CONCAT,ANSI_QUOTES,NO_BACKSLASH_ESCAPES';SET NAMES %s"%encoding)
 
             elif self.vendor == "Oracle":
                 # if we connect as a single user (like most databases, then

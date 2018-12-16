@@ -621,7 +621,7 @@ class UploadAction(DatabaseAction):
             handoff_path = "%s/upload/%s/%s" % (Environment.get_tmp_dir(), ticket, handoff_path)
 
 
-            print "Uploaded path: ", handoff_path
+            print("Uploaded path: ", handoff_path)
             if not os.path.exists(handoff_path):
                 raise Exception("Uploaded Path [%s] does not exist" % handoff_path)
 
@@ -1167,10 +1167,10 @@ class ProjectCreateAction(DatabaseAction):
         database = DatabaseImpl.get()
 
         # check if database exists
-        print "Creating database '%s' ..." % project_code
+        print("Creating database '%s' ..." % project_code)
 
         if database.database_exists(project_code):
-            print "... already exists"
+            print("... already exists")
         else:
             # create the datbase
             database.create_database(project_code)
@@ -1197,9 +1197,9 @@ class ProjectCreateAction(DatabaseAction):
 
 
         # copy all of the files from the template to the template directory
-        print "Creating project directories [%s]..." % project_dir
+        print("Creating project directories [%s]..." % project_dir)
         if not os.path.exists(template_dir):
-            print "... skipping: template dir [%s] does not exist" % template_dir
+            print("... skipping: template dir [%s] does not exist" % template_dir)
             return 
 
         if not os.path.exists(project_dir):
@@ -1223,9 +1223,9 @@ class ProjectCreateAction(DatabaseAction):
 
                     shutil.copyfile(old,new)
         else:
-            print "... skipping.  Already exists."
+            print("... skipping.  Already exists.")
 
-        print "Done."
+        print("Done.")
 
 
 
