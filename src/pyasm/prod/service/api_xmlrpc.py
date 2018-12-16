@@ -4685,7 +4685,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def get_task_status_colors(self, ticket):
+    def get_task_status_olors(self, ticket):
         '''Get all the colors for a task status
 
         ticket - authentication ticket
