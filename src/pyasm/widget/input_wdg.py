@@ -1590,7 +1590,7 @@ class MultiSelectWdg(SelectWdg):
         # this may be a single string array
         if len(current_values) == 1:
             current_value = current_values[0]
-            if current_value.startswith("||") and current_value.endswith("||"):
+            if current_value and current_value.startswith("||") and current_value.endswith("||"):
                 current_value = current_value.strip("||")
                 current_values = current_value.split("||")
 
