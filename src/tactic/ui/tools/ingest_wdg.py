@@ -261,11 +261,21 @@ class IngestUploadWdg(BaseRefreshWdg):
         if sobject:
             from pyasm.common import FormatValue
             from tactic.ui.panel import ThumbWdg2
+
+
+            if sobject.get_base_search_type() != "sthpw/snapshot":
+                search_code = sobject.get_code()
+                search = Search("sthpw/snapshot")
+                search.add_filter("search_code", search_code)
+                search.add_filter("is_latest", True)
+                snapshot = search.get_sobject()
+            else:
+                snapshot = sobject
+
             thumb = ThumbWdg2()
             thumb_div.add(thumb)
-            thumb.set_sobject(sobject)
+            thumb.set_sobject(snapshot)
             lib_path = thumb.get_lib_path()
-
 
             name = os.path.basename(lib_path)
             name = re.sub(r"_v\d+", "", name)
@@ -1356,6 +1366,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             zip_mode: zip_mode,
             project_code: project_code,
         }
+
+        console.log("kwargymans", kwargs);
         on_complete = function(rtn_data) {
 
         ''' + oncomplete_script + '''
@@ -1901,12 +1913,11 @@ class IngestUploadCmd(Command):
                     continue
 
 
-
             if filename.startswith("search_key:"):
                 mode = "search_key"
                 tmp, search_key = filename.split("search_key:")
                 snapshot = Search.get_by_search_key(search_key)
-                if snapshot.get_search_type() == "sthpw/snapshot":
+                if snapshot.get_base_search_type() == "sthpw/snapshot":
                     lib_path = snapshot.get_lib_path_by_type()
                     filename = os.path.basename(lib_path)
                     new_filename = re.sub(r"_v\d+", "", filename)
@@ -1958,7 +1969,6 @@ class IngestUploadCmd(Command):
                 continue
 
 
-
             if self.sobject:
                 sobject = self.sobject
 
@@ -2001,7 +2011,6 @@ class IngestUploadCmd(Command):
 
             else:
                 sobject = None 
-
 
 
             # Create a new entry
@@ -2179,6 +2188,10 @@ class IngestUploadCmd(Command):
 
             if new_data:
                 from tactic.ui.panel import EditCmd
+
+                if sobject.get_base_search_type() != "sthpw/snapshot":
+                    new_data = {}
+
                 cmd = EditCmd(
                         view="edit",
                         sobject=sobject,
