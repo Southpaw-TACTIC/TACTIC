@@ -1367,7 +1367,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             project_code: project_code,
         }
 
-        console.log("kwargymans", kwargs);
         on_complete = function(rtn_data) {
 
         ''' + oncomplete_script + '''
