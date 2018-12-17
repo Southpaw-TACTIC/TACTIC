@@ -1,4 +1,5 @@
 ###########################################################
+        irint "values: ", values
 #
 # Copyright (c) 2012, Southpaw Technology
 #                     All Rights Reserved
@@ -211,10 +212,9 @@ class SyncImportWdg(BaseRefreshWdg):
             data_input.add_style("display: none")
             div.add(data_input)
 
-            #print "xxxx: ", self.data
             data_str = jsondumps(self.data)
             #data_str = data_str.replace('"', "'")
-            print "data: ", data_str
+            print("data: ", data_str)
             data_input.set_value(data_str)
 
 
@@ -411,7 +411,7 @@ class SyncImportWdg(BaseRefreshWdg):
 class SyncImportCmd(Command):
 
     def execute(self):
-        print "SyncImportCmd"
+        print("SyncImportCmd")
 
         # extract the version
         basename = self.kwargs.get("basename")

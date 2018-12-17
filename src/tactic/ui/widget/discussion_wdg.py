@@ -1198,12 +1198,15 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             else:
+                dialog_position = self.kwargs.get("dialog_position")
+                if not dialog_position:
+                    dialog_position = "right"
                 note_dialog = DialogWdg(display=False)
                 note_dialog.add_style("font-size: 12px")
                 note_dialog.add_title("Add Note")
                 note_dialog.add_style("overflow-y: auto")
                 no_notes_div.add(note_dialog)
-                note_dialog.set_as_activator(no_notes_msg, position="right")
+                note_dialog.set_as_activator(no_notes_msg, position=dialog_position)
 
 
             add_note_wdg = DivWdg()
@@ -1416,7 +1419,10 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog.add_title("Notes for: %s" % context)
                 note_dialog.add_style("overflow-y: auto")
                 #note_dialog.set_as_activator(process_wdg, offset={'x':0,'y':0})
-                note_dialog.set_as_activator(process_wdg, position="right")
+                dialog_position = self.kwargs.get("dialog_position")
+                if not dialog_position:
+                    dialog_position = "right"
+                note_dialog.set_as_activator(process_wdg, position=dialog_position)
 
 
             show_add = self.kwargs.get("show_add")
@@ -1468,10 +1474,11 @@ class DiscussionWdg(BaseRefreshWdg):
             content = DivWdg()
             note_dialog.add(content)
             content.add_style("min-width: 300px")
-            if use_dialog:
-                content.add_style("width: 395px")
-            else:
-                content.add_style("width: 100%")
+            #if use_dialog:
+            #    content.add_style("width: 395px")
+            #else:
+            #    content.add_style("width: 100%")
+            content.add_style("width: 100%")
 
             content.add_style("min-height: 150px")
             content.add_class("spt_discussion_content")

@@ -145,7 +145,7 @@ class WidgetDbConfig(SObject):
             if len(element_names) > len(unique_element_names):
                 for x in unique_element_names:
                     element_names.remove(x)
-                raise SObjectException('This element [%s] is not unique in definition view.'  %','.join(element_names))
+                raise SObjectException('This element [%s] is not unique in definition view for [%s].'  % (','.join(element_names), self.get("search_type")))
 
         xml = self.get_xml_value('config')
         node = xml.get_node("config")

@@ -265,7 +265,7 @@ class CalendarWdg(BaseRefreshWdg):
 
             self.cal = Calendar(first_day_of_week)
             weeks = self.cal.monthdatescalendar(self.year, month)
-            print "weeks: ", weeks
+            print("weeks: ", weeks)
             print
             """
 

@@ -185,6 +185,14 @@ class HtmlElement(Widget):
         '''Set an attribute of the html element'''
         self.set_attr(name, value)
 
+    def add_attribute(self, name, value):
+        '''Set an attribute of the html element'''
+        self.set_attr(name, value)
+
+    def set_attribute(self, name, value):
+        '''Set an attribute of the html element'''
+        self.set_attr(name, value)
+
 
     def set_json_attr(self, name, value):
         value = jsondumps(value).replace('"', "&quot;")

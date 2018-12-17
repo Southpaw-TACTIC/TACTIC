@@ -140,6 +140,97 @@ class ProcessElementWdg(SimpleTableElementWdg):
     process_sobjects = staticmethod(process_sobjects)
 
 
+
+    def get_display(self):
+        top = self.top
+
+        sobject = self.get_current_sobject()
+        value = self.get_value()
+
+        parts = value.split("/")
+        if len(parts) > 1:
+
+            task_type = sobject.get_value("task_type")
+            if task_type == "activity":
+                top.add_style("margin-left: 30px")
+
+                name = sobject.get_value("description")
+                top.add(name)
+
+            else:
+                top.add("<i class='fa fa-angle-right'> </i> &nbsp; ")
+
+                """
+                add_div = DivWdg()
+                top.add(add_div)
+                add_div.add("<i style='opacity: 0.2' class='fa fa-plus'> </i>")
+                add_div.add_style("float: right")
+                add_div.add_behavior( {
+                    'type': 'click',
+                    'cbjs_action': '''
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    var row = bvr.src_el.getParent(".spt_table_row");
+
+                    spt.table.add_new_item( {row: row} );
+                    '''
+                } )
+                """
+
+                expression = "@SEARCH(sthpw/task['task_type','activity'])"
+                top.add_class("hand")
+                top.set_attribute("spt_state", "none")
+                top.add_behavior( {
+                    'type': 'click',
+                    'expression': expression,
+                    'cbjs_action': '''
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    var row = bvr.src_el.getParent(".spt_table_row");
+
+                    var level = 2;
+
+                    var icon = bvr.src_el.getElement(".fa");
+                    var state = bvr.src_el.getAttribute("spt_state");
+                    if (state == "open") {
+                        bvr.src_el.setAttribute("spt_state", "closed")
+
+                        icon.addClass("fa-angle-right")
+                        icon.removeClass("fa-angle-down")
+
+                        spt.table.collapse_group(row);
+                    }
+                    else if (state == "none") {
+                        bvr.src_el.setAttribute("spt_state", "open")
+                        icon.addClass("fa-angle-down")
+                        icon.removeClass("fa-angle-right")
+
+                        spt.table.add_rows(row, "sthpw/task", level, bvr.expression)
+                    }
+                    else {
+                        bvr.src_el.setAttribute("spt_state", "open")
+                        icon.addClass("fa-angle-down")
+                        icon.removeClass("fa-angle-right")
+
+                        spt.table.collapse_group(row);
+                    }
+
+                    '''
+                } )
+
+                top.add_style("margin-left: 5px")
+
+                top.add(parts[1])
+        else:
+            top.add(value)
+
+
+        top.add_style("white-space: nowrap")
+
+
+        return top
+
+
 class SubContextElementWdg(BaseTableElementWdg):
 
     def is_editable(cls):
