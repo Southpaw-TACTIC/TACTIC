@@ -315,16 +315,16 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         element_attr = config_view.get_element_attributes(element_name)
 
         for config in config_view.get_configs():
-            #print config
+            #print(config)
             view = config.get_view()
             file_path = config.get_file_path()
             if not file_path:
                 file_path = "from Database"
-            #print view, file_path
+            #print(view, file_path)
 
             xml = config.get_element_xml(element_name)
-            #print xml
-            #print "-"*20
+            #print(xml)
+            #print("-"*20)
 
 
 

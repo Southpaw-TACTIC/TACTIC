@@ -748,7 +748,13 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
                     #div.add_attr("name", "%s: %s" % (sobj_title, name))
-                    div.add_attr("name", display_result)
+                    if display_result:
+                        name = display_result
+                        title = display_result
+
+                        div.add_attr("name", name)
+                        div.add_attr("title", title)
+
 
                     # click up blocks any other behavior
                     div.add_behavior( {

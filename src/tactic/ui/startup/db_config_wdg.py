@@ -620,7 +620,7 @@ class DbConfigCbk(Command):
                 return
 
         else:
-            print "Running bootstrap"
+            print("Running bootstrap")
 
             install_dir = Environment.get_install_dir()
             python = Config.get_value("services", "python")
@@ -645,7 +645,7 @@ class DbConfigCbk(Command):
         except Exception as e:
             self.info['error'] = "Could not connect to database with (vendor=%s, server=%s, user=%s, port=%s)" % (vendor, server, user, port)
             self.info['message'] = str(e)
-            print e
+            print(e)
 
 
 
@@ -666,7 +666,7 @@ class DbConfigSaveCbk(Command):
         # copy config to the path
         config_path = Config.get_config_path()
         if not os.path.exists(config_path):
-            print "Installing default config file"
+            print("Installing default config file")
 
             dirname = os.path.dirname(config_path)
             if not os.path.exists(dirname):
@@ -731,12 +731,12 @@ class DbConfigSaveCbk(Command):
     def load_bootstrap(self):
         impl = DatabaseImpl.get()
         exists = impl.database_exists("sthpw")
-        print "exists: ", exists
+        print("exists: ", exists)
 
         vendor = impl.get_database_type()
 
         if not exists:
-            print "Running bootstrap"
+            print("Running bootstrap")
 
             install_dir = Environment.get_install_dir()
             python = Config.get_value("services", "python")

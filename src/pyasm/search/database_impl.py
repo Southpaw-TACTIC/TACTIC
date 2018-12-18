@@ -3180,7 +3180,7 @@ class MySQLImpl(PostgresImpl):
     def process_value(self, name, value, column_type="varchar"):
         if column_type == 'boolean':
             quoted = False
-            if value in ['true', 1, True]:
+            if value in ['true', 1, True, "True"]:
                 value = 1
             else:
                 value = 0

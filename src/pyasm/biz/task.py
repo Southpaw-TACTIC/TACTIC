@@ -110,8 +110,10 @@ OTHER_COLORS = {
     "Ready":    "#a3d991",
     "In_Progress":"#e9e386",
     "Cancelled":"#DDDDDD",
-    "Canceled":"#DDDDDD",
-    "On Hold":"#a96ccf"
+    "Canceled": "#DDDDDD",
+    "On Hold":  "#a96ccf",
+    "Archived": "#DDDDDD",
+    "Not Required": "#DDDDDD",
 }
 
 
@@ -566,27 +568,6 @@ class Task(SObject):
 
 
         return
-
-        """
-        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
-        if not bid_duration_unit:
-            bid_duration_unit = 'hour'
-
-        # if there is no end date specified, return
-        if not bid_end_date:
-            bid_duration = self.get_value("bid_duration")
-            if bid_duration and bid_start_date:
-                date = Date(db=bid_start_date)
-                bid_duration = float(bid_duration)
-                if bid_duration_unit == 'minute':
-                    date.add_minutes(bid_duration)
-                else:
-                    date.add_hours(bid_duration)
-                bid_end_date = date.get_db_time()
-            else:
-                return
-        """
-
 
 
 
@@ -1655,6 +1636,8 @@ class TaskGenerator(object):
         process_type = process_obj.get_type()
         attrs = process_obj.get_attributes()
 
+        task_creation = workflow.get("task_creation")
+
 
         # if this process has hierarchy, then create the subtasks
         if process_type in ['hierarchy']:
@@ -1691,10 +1674,6 @@ class TaskGenerator(object):
                     # don't create any further tasks
                     return
 
-
-
-
-        task_creation = workflow.get("task_creation")
 
         if process_type in ["node","approval", "manual", "hierarchy"]:
             # by default, tasks are created here

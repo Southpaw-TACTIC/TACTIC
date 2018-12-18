@@ -1689,7 +1689,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             try:
                 search_type_obj = SearchType.get(search_type)
             except:
-                print "WARNING: search type [%s] does not exist" % search_type
+                print("WARNING: search type [%s] does not exist" % search_type)
                 continue
             if not search_type_obj:
                 continue
@@ -1862,12 +1862,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         except XmlException as e:
             msg = "Error with view [%s]"% ' '.join(views)
-            print "Error: ", str(e)
+            print("Error: ", str(e))
             
             error_list = Container.get_seq(SideBarBookmarkMenuWdg.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(SideBarBookmarkMenuWdg.ERR_MSG, msg)
-                print e.__str__()
+                print(e.__str__())
 
 
     add_internal_config = staticmethod(add_internal_config)
@@ -1876,7 +1876,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
     def get_config(cls, config_search_type, view, default=False, personal=False):
 
-        #print "view: ", view
+        #print("view: ", view)
 
         config = None
         configs = []
@@ -2019,7 +2019,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         for element_name in element_names:
             if not element_name:
-                print "WARNING: element name is None in Sidebar config"
+                print("WARNING: element name is None in Sidebar config")
                 continue
 
             display_class = config.get_display_handler(element_name)
@@ -2967,7 +2967,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             try:
                 self.state = eval(self.state)
             except Exception as e:
-                print "WARNING: eval(state) error", e.__str__()
+                print("WARNING: eval(state) error", e.__str__())
                 self.state = {}
         Container.put("global_state", self.state)
 
@@ -3013,7 +3013,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         try:
             search_type_obj = SearchType.get(search_type)
         except SearchException as e:
-            print "Warning: can't find search type [%s]" % search_type
+            print("Warning: can't find search type [%s]" % search_type)
             return top
 
 

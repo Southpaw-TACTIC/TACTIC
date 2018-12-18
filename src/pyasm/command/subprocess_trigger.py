@@ -266,7 +266,6 @@ class ScriptTrigger(Handler):
                 return
 
             server = TacticServerStub.get()
-            print "set_pipeline_event: ", search_key, process, status
             server.call_pipeline_event(search_key, process, status, data )
 
 
