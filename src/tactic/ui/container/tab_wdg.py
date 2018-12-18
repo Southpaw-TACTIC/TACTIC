@@ -1616,7 +1616,9 @@ spt.tab.close = function(src_el) {
         #    inner.add( self.get_edit_wdg() )
 
 
-        inner.add("<br clear='all'>")
+        if not self.mode == "hidden":
+            inner.add("<br clear='all'>")
+
 
 
         content_top = DivWdg()
