@@ -107,17 +107,20 @@ class IngestUploadWdg(BaseRefreshWdg):
             self.show_settings = self.kwargs.get("show_settings")
             if self.show_settings in [False, 'false']:
                 self.show_settings = False
+            elif self.show_settings in [True, 'true']:
+                self.show_settings = True
 
 
-
-        else: 
+        else:
             self.search_type = self.kwargs.get("search_type")
             self.sobject = None
             self.search_key = None
 
             self.show_settings = self.kwargs.get("show_settings")
-            if self.show_settings == None:
+            if self.show_settings == None or self.show_settings in [True, 'true']:
                 self.show_settings = True
+            elif self.show_settings in [False, 'false']:
+                self.show_settings = False
 
 
         top = self.top
@@ -307,7 +310,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("width: 400px")
         div.add_style("padding: 20px")
-        
+
         title_wdg = DivWdg()
         div.add(title_wdg)
         title_wdg.add("Ingest Settings")
@@ -335,11 +338,11 @@ class IngestUploadWdg(BaseRefreshWdg):
         pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
             process_names.update(pipeline.get_process_names())
-  
+
         selected_process = self.kwargs.get("process")
         if selected_process:
-            process_names.add(selected_process) 
-        
+            process_names.add(selected_process)
+
         if process_names:
             process_names = list(process_names)
             process_names.sort()
@@ -409,7 +412,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             metadata_element_names = self.kwargs.get("metadata_element_names")
 
-            if self.show_settings: 
+            if self.show_settings:
                 edit = EditWdg(
                         search_key=sobject.get_search_key(),
                         mode='view',
@@ -421,7 +424,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                         extra_data=self.kwargs.get("extra_data"),
                         default=self.kwargs.get("default"),
                 )
-                
+
                 div.add(edit)
 
 
@@ -645,7 +648,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         description = self.kwargs.get("description")
         if description in ["none", ""]:
             title_description = ""
-       
+
         title_wdg = DivWdg()
         header_div.add(title_wdg)
         title_wdg.add("<span style='font-size: 25px'>%s</span>" % title)
@@ -723,7 +726,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
             var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
-        
+
             //clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
             if (upload_bar) {
@@ -769,7 +772,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var button = top.getElement(".spt_upload_file_button");
             button.setStyle("display", "none");
 
-        
+
             //clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
             if (upload_bar) {
@@ -856,7 +859,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             bvr.src_el.setStyle("border", "3px dashed %s")
             bvr.src_el.setStyle("background","%s")
             ''' % (border_color_light, background_mouseout)
-        } ) 
+        } )
 
 
         #background.add( self.get_select_files_button() )
@@ -922,11 +925,11 @@ class IngestUploadWdg(BaseRefreshWdg):
                                 thumb_el.appendChild(img);
                             else
                                 draw_empty_icon();
-                                
+
                             },
                             {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
                         );
-                        
+
                 }
                 else {
                     draw_empty_icon();
@@ -966,7 +969,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
             reader.readAsDataURL(file);
             */
-         
+
             clone.getElement(".spt_name").innerHTML = file.name;
             clone.getElement(".spt_size").innerHTML = size + " KB";
             clone.inject(top);
@@ -1111,7 +1114,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         for sobject in self.sobjects:
             files_div.add( self.get_file_wdg(sobject) )
 
-        
+
         # add the template
         files_div.add( self.get_file_wdg() )
 
@@ -1132,7 +1135,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         library_mode = self.kwargs.get("library_mode") or False
         dated_dirs = self.kwargs.get("dated_dirs") or False
- 
+
 
 
 
@@ -1182,7 +1185,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         spt.message.stop_interval(message_key);
 
         var info_el = top.getElement(".spt_upload_info");
-        info_el.innerHTML = ''; 
+        info_el.innerHTML = '';
 
         var progress_el = top.getElement(".spt_upload_progress");
         var progress_top = top.getElement(".spt_upload_progress_top");
@@ -1194,15 +1197,15 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         spt.panel.refresh(top);
         '''
-        
-        script_found = True 
+
+        script_found = True
         oncomplete_script_path = self.kwargs.get("oncomplete_script_path")
         if oncomplete_script_path:
             script_folder, script_title = oncomplete_script_path.split("/")
-            oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
+            oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)
             server = TacticServerStub.get()
             oncomplete_script_ret = server.eval(oncomplete_script_expr, single=True)
-            
+
             if oncomplete_script_ret:
                 oncomplete_script = oncomplete_script + oncomplete_script_ret
             else:
@@ -1221,7 +1224,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
         var update_data_top = top.getElement(".spt_edit_top");
-      
+
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
@@ -1229,7 +1232,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         var info_el = top.getElement(".spt_upload_info");
-        
+
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
         var context = bvr.kwargs.context;
@@ -1253,7 +1256,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var ignore_ext = null;
         var column = null;
         var zip_mode = null;
- 
+
         var update_mode_select = top.getElement(".spt_update_mode_select");
         if (update_mode_select)
             update_mode = update_mode_select.value;
@@ -1364,10 +1367,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         var class_name = bvr.action_handler;
-        // TODO: make the async_callback return throw an e so we can run 
+        // TODO: make the async_callback return throw an e so we can run
         // server.abort
         server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete});
-        
+
         on_progress = function(message) {
 
             msg = JSON.parse(message.message);
@@ -1447,7 +1450,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
-          
+
             var file_els = top.getElements(".spt_upload_file");
             var num_files = file_els.length;
             var files_top = top.getElement(".spt_to_ingest_files")
@@ -1495,7 +1498,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_progress: upload_progress
             };
             if (bvr.ticket)
-               upload_file_kwargs['ticket'] = bvr.ticket; 
+               upload_file_kwargs['ticket'] = bvr.ticket;
 
             %s;
 
@@ -1585,7 +1588,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
             var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
-        
+
             // clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
             if (upload_bar) {
@@ -1615,7 +1618,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
             var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
-        
+
             // clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
             if (upload_bar) {
@@ -1627,7 +1630,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
-                var delay = 0; 
+                var delay = 0;
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
                     var file_name = files[i].name;
@@ -1778,7 +1781,7 @@ class IngestUploadCmd(Command):
 
         self.server = None
 
-        self.message_key = self.kwargs.get("message_key")        
+        self.message_key = self.kwargs.get("message_key")
         try:
             return self._execute()
         except Exception as e:
@@ -1801,7 +1804,7 @@ class IngestUploadCmd(Command):
         current_folder = 0
 
         dated_dirs = self.kwargs.get("dated_dirs")
-        
+
         filenames = self.kwargs.get("filenames")
         relative_dir = self.kwargs.get("relative_dir")
 
@@ -1892,7 +1895,7 @@ class IngestUploadCmd(Command):
         snapshots = []
 
         for count, filename in enumerate(filenames):
-        # Check if files should be updated. 
+        # Check if files should be updated.
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
 
@@ -1924,7 +1927,7 @@ class IngestUploadCmd(Command):
                 new_filename = filename
 
             if library_mode:
-                
+
                 # get count of number of files in the current asset ingest dir
                 import glob
                 abs_path = Environment.get_asset_dir() + "/" + relative_dir + "/*"
@@ -2000,7 +2003,7 @@ class IngestUploadCmd(Command):
                     sobject = None
 
             else:
-                sobject = None 
+                sobject = None
 
 
 
@@ -2045,9 +2048,9 @@ class IngestUploadCmd(Command):
             if cmd_keyword_mode == "simplified":
                 file_keywords = []
             else:
-                file_keywords = Common.extract_keywords_from_path(path_for_keywords)      
-            
-            # Extract keywords from the path to be added to keywords_data, 
+                file_keywords = Common.extract_keywords_from_path(path_for_keywords)
+
+            # Extract keywords from the path to be added to keywords_data,
             # if ignore_path_keywords is found, remove the specified keywords
             # from the path keywords
 
@@ -2079,7 +2082,7 @@ class IngestUploadCmd(Command):
                 # remove duplicated
                 new_file_keywords = set( new_file_keywords.split(" ") )
                 new_file_keywords = " ".join(new_file_keywords)
-                
+
                 if not cmd_keyword_mode == "none":
                     sobject.set_value("keywords", new_file_keywords)
 
@@ -2122,7 +2125,7 @@ class IngestUploadCmd(Command):
             """
 
 
-            # check if the file exists 
+            # check if the file exists
             if mode != "search_key" and not os.path.exists(file_path):
                 raise Exception("Path [%s] does not exist" % file_path)
 
@@ -2143,7 +2146,7 @@ class IngestUploadCmd(Command):
                         date_str = parts[0].replace(":", "-")
                         date_str = "%s %s" % (date_str, parts[1])
 
-                        from dateutil import parser 
+                        from dateutil import parser
                         orig_date = parser.parse(date_str)
 
                         if category == "by_day":
@@ -2155,7 +2158,7 @@ class IngestUploadCmd(Command):
 
                     full_relative_dir = "%s/%s" % (relative_dir, date_str)
                     sobject.set_value("relative_dir", full_relative_dir)
-           
+
             # Add parent sObject
             if parent_key and parent_key != search_key:
                 parent = Search.get_by_search_key(parent_key)
@@ -2228,7 +2231,7 @@ class IngestUploadCmd(Command):
                 context = "%s/%s" % (context, filename)
 
             if context_mode == "case_insensitive":
-                context = context.lower()                
+                context = context.lower()
 
 
             version = None
@@ -2247,7 +2250,7 @@ class IngestUploadCmd(Command):
                 else:
                     version += 1
 
-            
+
             if update_mode == "sequence":
 
                 file_range = sequence.get("range")
@@ -2260,7 +2263,7 @@ class IngestUploadCmd(Command):
                 else:
                     file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
                     snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded', version=version)
-            
+
             elif mode == "search_key":
 
                 if lib_path.find("##") != -1:
@@ -2274,11 +2277,11 @@ class IngestUploadCmd(Command):
                     shutil.copy(file_path, tmp_path)
                     # auto create icon
                     snapshot = server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
-                
+
             elif self.kwargs.get("base_dir"):
                 # auto create icon
                 snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move', version=version)
-                
+
             else:
                 snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded', version=version)
 
@@ -2307,7 +2310,7 @@ class IngestUploadCmd(Command):
             }
             server.log_message(self.message_key, msg, status="complete")
 
-        
+
         return
 
 
@@ -2332,11 +2335,11 @@ class IngestUploadCmd(Command):
 
     def natural_sort(self,l):
         '''
-        natural sort will makesure a list of names passed in is 
+        natural sort will makesure a list of names passed in is
         sorted in an order of 1000 to be after 999 instead of right after 101
         '''
-        convert = lambda text: int(text) if text.isdigit() else text.lower() 
-        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+        convert = lambda text: int(text) if text.isdigit() else text.lower()
+        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
         return sorted(l, key = alphanum_key)
 
 
@@ -2364,7 +2367,7 @@ class IngestUploadCmd(Command):
 
             if not count:
                 raise TacticException("Please ingest sequences only.")
-            
+
             base, file_ext = os.path.splitext(filename)
 
             if file_ext:
@@ -2374,8 +2377,8 @@ class IngestUploadCmd(Command):
             # because common.get_dir_info only works with 3 of more digits
             if len(count[-1]) <= 1 and file_ext.isalpha():
                 raise TacticException('Please modify sequence naming to have at least three digits.')
-            
-            
+
+
             # if file extension found, and contains a number in the extension (but also not completely numbers)
             # grab the second last set of digits
             # ie. .mp3, .mp4, .23p
@@ -2395,10 +2398,10 @@ class IngestUploadCmd(Command):
                 except:
                     sequences[None].append(filename)
                     continue
-            
+
             # then for regular filenames, try grabbing filenames by looking at the digits before the last dot
             # for files with extensions:
-            # abc.0001.png, abc.0001.mp3, abc0001.mp3, 
+            # abc.0001.png, abc.0001.mp3, abc0001.mp3,
             else:
                 try:
                     pattern_expr = re.compile('^(.*)(\d{%d})(\..*)$'%seq_digit_length)
@@ -2406,7 +2409,7 @@ class IngestUploadCmd(Command):
                     sequences[None].append(filename)
                     continue
 
-            
+
             pound_length = seq_digit_length
             pounds = "#" * pound_length
 
