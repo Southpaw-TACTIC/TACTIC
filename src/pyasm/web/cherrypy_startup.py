@@ -22,40 +22,40 @@ from pyasm.web import WebEnvironment
 from pyasm.biz import Project
 
 
-class FlashWrapper: 
-     
-    def before_request_body(self): 
-        if not cherrypy.config.get("flashwrapper.on", False): 
-            return 
-         
-        h = cherrypy.request.headers 
-         
+class FlashWrapper:
+
+    def before_request_body(self):
+        if not cherrypy.config.get("flashwrapper.on", False):
+            return
+
+        h = cherrypy.request.headers
+
         if h.get('Content-Type').startswith('multipart/'):
             user_agent = h.get('User-Agent', '')
             if user_agent.find('Shockwave Flash') != -1 or\
-                user_agent.find('Adobe Flash') != -1: 
-                clen = h.get('Content-Length', '0') 
-                try: 
-                    clen = int(clen) 
-                except ValueError: 
-                    return 
+                user_agent.find('Adobe Flash') != -1:
+                clen = h.get('Content-Length', '0')
+                try:
+                    clen = int(clen)
+                except ValueError:
+                    return
 
                 from cherrypy.lib import httptools
-                wrap = httptools.MultipartWrapper 
-                cherrypy.request.rfile = wrap(cherrypy.request.rfile, clen) 
+                wrap = httptools.MultipartWrapper
+                cherrypy.request.rfile = wrap(cherrypy.request.rfile, clen)
 
-             
+
 
 def _cp_on_http_error(status, message):
     # check if this project exists
-    
+
     response = cherrypy.response
     path = cherrypy.request.path
 
     parts = path.split("/")
     if len(parts) < 3:
         cherrypy.response.body = '<meta  http-equiv="refresh" content="0;url=/tactic" />'
-        return 
+        return
     else:
         project_code = parts[2]
     from pyasm.security import TacticInit
@@ -96,12 +96,12 @@ def _cp_on_http_error(status, message):
         # either refresh ... (LATER: or recreate the page on the server end)
         response.body = '<meta http-equiv="Refresh" content="0; url=%s">' % path
         return
- 
+
 
     # check to see if this project exists in the database?
     #project = Project.get_by_code(project_code)
     #print(project)
-    
+
     from pyasm.web import Widget, WebApp, AppServer
     from pyasm.widget import TopWdg, BottomWdg, Error404Wdg
     class xyz(AppServer):
@@ -116,10 +116,10 @@ def _cp_on_http_error(status, message):
             widget.status = status
             widget.message = message
             return widget
-    
+
     xyz = xyz(status, message)
     response.body = xyz.get_display()
-    return 
+    return
 
 
 class Root:
@@ -156,9 +156,12 @@ class CherryPyStartup(object):
 
     def __init__(self, port=''):
 
+        if port:
+            self.port = port
+
         # It is possible on startup that the database is not running.
         from pyasm.common import Environment
-        from pyasm.search import DbContainer, DatabaseException, Sql
+        from pyasm.search import DbContainer, DatabaseException, Sql, SqlException
         plugin_dir = Environment.get_plugin_dir()
         sys.path.insert(0, plugin_dir)
 
@@ -191,7 +194,8 @@ class CherryPyStartup(object):
             except:
                 print "Could not connect to the database."
                 raise
-
+	except SqlException as e:
+	    print "Sql error has occured."
 
         # is it CherryPyStartup's responsibility to start batch?
         from pyasm.security import Batch
@@ -213,7 +217,7 @@ class CherryPyStartup(object):
 
 
         # this initializes the web.
-        # - sets up virtual implied tiggers 
+        # - sets up virtual implied tiggers
         from web_init import WebInit
         WebInit().execute()
 
@@ -224,7 +228,7 @@ class CherryPyStartup(object):
             cache_mode = 'complete'
             if os.name == 'nt':
                 cache_mode = 'basic'
-            
+
         from cache_startup import CacheStartup
         cmd = CacheStartup(mode=cache_mode)
         cmd.execute()
@@ -306,7 +310,7 @@ class CherryPyStartup(object):
         else:
             conf = "tactic_linux-conf.xml"
 
-        # set up config path 
+        # set up config path
         os.environ['TACTIC_CONFIG_PATH'] = "%s/config/%s" % (self.site_dir,conf)
         """
 
@@ -358,7 +362,7 @@ class CherryPyStartup(object):
         cherrypy.root.projects = TitlePage()
 
 
-       
+
         sites = []
 
         # add the tactic projects
@@ -367,9 +371,9 @@ class CherryPyStartup(object):
         for context_dir in os.listdir(site_dir):
             if context_dir.startswith(".svn"):
                 continue
-                
+
             full_path  = "%s/%s" % (site_dir, context_dir)
-            
+
             if os.path.isdir(full_path):
                 sites.append(context_dir)
 
@@ -381,9 +385,9 @@ class CherryPyStartup(object):
         for context_dir in os.listdir(site_dir):
             if context_dir.startswith(".svn"):
                 continue
-                
+
             full_path  = "%s/%s" % (site_dir, context_dir)
-            
+
             if os.path.isdir(full_path):
                 sites.append(context_dir)
 
@@ -432,9 +436,9 @@ class CherryPyStartup(object):
             exec("cherrypy.root.tactic.%s = TacticIndex()" % site)
             exec("cherrypy.root.projects.%s = TacticIndex()" % site)
 
-            
 
-        # get the contexts: 
+
+        # get the contexts:
         if site in ("admin", "default", "template", "unittest"):
             context_dir = Environment.get_install_dir().replace("\\", "/")
             context_dir = "%s/src/tactic_sites/%s/context" % (context_dir, site)
@@ -472,7 +476,7 @@ class CherryPyStartup(object):
                 raise
                 #return
 
-            
+
             path = "/tactic/%s/%s" % (site, context)
             settings = {}
             config[path] = settings

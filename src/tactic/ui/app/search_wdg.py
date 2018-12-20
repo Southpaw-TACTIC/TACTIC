@@ -387,7 +387,7 @@ class SearchWdg(BaseRefreshWdg):
 
         try:
             self.alter_search()
-            self.set_persistent_value()
+            #self.set_persistent_value()
 
         except SearchInputException as e:
             self.clear_search_data(self.search_type)
