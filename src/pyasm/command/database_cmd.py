@@ -128,7 +128,6 @@ class ColumnAddCmd(Command):
             columns = sql.get_columns(table)
             # if the column exists already, skip it
             if column in columns:
-                print "skipping: ", column
                 raise TacticException('[%s] already existed in this table [%s]'%(column, table))
                 return
 

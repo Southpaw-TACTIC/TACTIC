@@ -187,7 +187,7 @@ class RedoCmd(Command):
         # update the change timestamps
         transaction.update_change_timestamps(self.transaction_log)
 
-        print "RedoCmd: ", time.time() - start
+        print("RedoCmd: ", time.time() - start)
         print
 
 

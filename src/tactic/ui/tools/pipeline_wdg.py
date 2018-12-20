@@ -645,6 +645,8 @@ class PipelineListWdg(BaseRefreshWdg):
                 if isinstance(result, Search):
                     search = result
                     search.add_filter("project_code", project_code)
+                    if search.column_exists("parent_code"):
+                        search.add_filter("parent_code", "NULL", quoted=False, op="is")
 
                     search.add_op("begin")
                     search.add_filter("search_type", "sthpw/task", op="!=")
@@ -670,6 +672,8 @@ class PipelineListWdg(BaseRefreshWdg):
             else:
                 search = Search("sthpw/pipeline")
                 search.add_filter("project_code", project_code)
+                if search.column_exists("parent_code"):
+                    search.add_filter("parent_code", "NULL", quoted=False, op="is")
 
                 search.add_op("begin")
                 search.add_filter("search_type", "sthpw/task", op="!=")
@@ -2961,10 +2965,12 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         return div
 
-# DEPRECATED
-"""
+
+
 class ScriptCreateWdg(BaseRefreshWdg):
     ''' Blank Text area for New Script Creation '''
+
+    '''This is still used in the trigger interface for process nodes '''
     def get_display(self):
 
         script_path = ''
@@ -2989,7 +2995,6 @@ class ScriptCreateWdg(BaseRefreshWdg):
         script_text.add_style("width: 100%")
 
         return div
-"""
 
 
 class ScriptSettingsWdg(BaseRefreshWdg):
@@ -6471,7 +6476,7 @@ class PipelineSaveCbk(Command):
                         settings = jsonloads(settings)
                 except:
                     process_name = xml.get_attribute(node, "name")
-                    print "WARNING: Setting for process %s not saved." % process_name 
+                    print("WARNING: Setting for process %s not saved." % process_name )
 
             settings_list.append(settings)
 
@@ -6537,12 +6542,10 @@ class PipelineSaveCbk(Command):
             xml.set_attribute(node, "process_code", process.get_code())
 
             curr_settings = settings_list[i]
-            if process:
-                curr_settings = process.get_json_value("workflow")
 
             subpipeline_code = None
             if curr_settings:
-                curr_settings.pop("subpipeline_code", None)
+                subpipeline_code = curr_settings.pop("subpipeline_code", None)
             if subpipeline_code or subpipeline_code == "":
                 process.set_value("subpipeline_code", subpipeline_code)
             

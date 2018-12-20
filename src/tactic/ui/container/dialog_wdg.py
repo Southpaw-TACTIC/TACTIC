@@ -227,6 +227,19 @@ class DialogWdg(BaseRefreshWdg):
                     dialog.setStyle("overflow-y", "auto");
                 }
 
+                else if (bvr.position == "center") {
+                    width = 800;
+                    height = 400;
+                    dialog.setStyle("position", "fixed");
+                    dialog.setStyle("width", width);
+                    dialog.setStyle("height", height);
+                    dialog.setStyle("top", win_size.y/2-height/2);
+                    dialog.setStyle("left", win_size.x/2-width/2);
+                    dialog.setStyle("overflow-y", "auto");
+ 
+                }
+
+
 
                 // adjust the pointer
                 /*

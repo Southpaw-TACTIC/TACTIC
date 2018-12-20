@@ -110,8 +110,10 @@ OTHER_COLORS = {
     "Ready":    "#a3d991",
     "In_Progress":"#e9e386",
     "Cancelled":"#DDDDDD",
-    "Canceled":"#DDDDDD",
-    "On Hold":"#a96ccf"
+    "Canceled": "#DDDDDD",
+    "On Hold":  "#a96ccf",
+    "Archived": "#DDDDDD",
+    "Not Required": "#DDDDDD",
 }
 
 
@@ -357,7 +359,7 @@ class Task(SObject):
 
         defaults = {
             "pipeline_code": pipeline_code,
-            "project_code": Project.get_project_code(), 
+            "project_code": Project.get_project_code(),
             "context": context,
             "search_type": search_type,
             "search_id": search_id
@@ -448,7 +450,7 @@ class Task(SObject):
 
     def get_name(self, long=False):
         return "%s (%s)" % (self.get_value("process"), self.get_id())
-   
+
 
     def get_assigned(self):
         return self.get_value('assigned')
@@ -545,7 +547,7 @@ class Task(SObject):
                 task_length = task_end_date - task_start_date
 
 
-            # set task start to 1 day after 
+            # set task start to 1 day after
             new_task_start_date = prev_task_end_date + timedelta(days=1)
 
             if not use_time:
@@ -566,27 +568,6 @@ class Task(SObject):
 
 
         return
-
-        """
-        bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
-        if not bid_duration_unit:
-            bid_duration_unit = 'hour'
-
-        # if there is no end date specified, return
-        if not bid_end_date:
-            bid_duration = self.get_value("bid_duration")
-            if bid_duration and bid_start_date:
-                date = Date(db=bid_start_date)
-                bid_duration = float(bid_duration)
-                if bid_duration_unit == 'minute':
-                    date.add_minutes(bid_duration)
-                else:
-                    date.add_hours(bid_duration)
-                bid_end_date = date.get_db_time()
-            else:
-                return
-        """
-
 
 
 
@@ -671,10 +652,10 @@ class Task(SObject):
                 multi_stypes = True
                 break
 
-        
+
         search = Search( Task.SEARCH_TYPE )
         if multi_stypes:
-            # sort this into a dictionary and make multiple calls to 
+            # sort this into a dictionary and make multiple calls to
             # search.add_relationship_filters
             # use the first sobject as a sample
             sobjects_dict = {}
@@ -686,7 +667,7 @@ class Task(SObject):
                 else:
                     sobj_list.append(sobject)
 
-        
+
             search.add_op('begin')
             for key, sobj_list in sobjects_dict.items():
                 search.add_op('begin')
@@ -740,7 +721,7 @@ class Task(SObject):
             search.add_order_by("id")
 
         if process:
-           
+
             if isinstance(process, basestring):
                 search.add_filter("process", process)
             else:
@@ -759,7 +740,7 @@ class Task(SObject):
     def create(cls, sobject, process, description="", assigned="", supervisor="",\
             status=None, depend_id=None, project_code=None, pipeline_code='', \
             start_date=None, end_date=None, context='', bid_duration=8, \
-            task_type=None, triggers=True):
+            task_type=None, triggers=True, assigned_group=""):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
@@ -777,7 +758,7 @@ class Task(SObject):
         if not project_code:
             project_code = sobject.get_project_code()
         task.set_value("project_code", project_code )
-        task.set_value("pipeline_code", pipeline_code) 
+        task.set_value("pipeline_code", pipeline_code)
 
         if not status:
             pipeline = task.get_pipeline()
@@ -807,13 +788,16 @@ class Task(SObject):
         if depend_id:
             task.set_value("depend_id", depend_id)
 
-        # created by 
+        # created by
         if task.has_value('login'):
             user = Environment.get_user_name()
             task.set_value('login', user)
 
         if task_type:
             task.set_value("task_type", task_type)
+
+        if assigned_group:
+            task.set_value("assigned_group", assigned_group)
 
         task.commit(triggers=triggers)
 
@@ -831,12 +815,12 @@ class Task(SObject):
         # reorder the tasks per shot
         sorted_tasks = []
 
-        all_shot_tasks = {} 
+        all_shot_tasks = {}
         key_order = []
         for task in tasks:
             id = task.get_value("search_id")
             search_type = task.get_value("search_type")
-            
+
             key = '%s|%s' %(search_type, id)
             shot_tasks = all_shot_tasks.get(key)
             if not shot_tasks:
@@ -847,8 +831,8 @@ class Task(SObject):
 
             if key not in key_order:
                 key_order.append(key)
-           
-        
+
+
         for key in key_order:
             shot_tasks = all_shot_tasks.get(key)
             shot_tasks = Task.sort_shot_tasks(shot_tasks)
@@ -918,22 +902,22 @@ class Task(SObject):
                 max_num = 0
                 for item in existing_task_dict.keys():
                     item_stripped = re.sub('/\d+$', '', item)
-                    
+
                     #if item.startswith(compare_key):
                     if item_stripped == compare_key:
                         existing_context = item.replace('%s:'%process_name,'')
                         suffix = existing_context.split('/')[-1]
-                        try:    
+                        try:
                             num = int(suffix)
                         except:
                             num = 0
-                          
+
                         if num > max_num:
                             max_num = num
 
                         existed = True
-            
-         
+
+
                 if existed:
                     context = "%s/%0.3d" % (context, max_num+1)
 
@@ -954,7 +938,7 @@ class Task(SObject):
             ''')
             # HACK to initialize virtual pipeline
             pipeline.set_pipeline(pipeline.get_value("pipeline"))
- 
+
 
         else:
             pipeline = Pipeline.get_by_code(pipeline_code)
@@ -965,7 +949,7 @@ class Task(SObject):
 
         # remember which ones already exist
         existing_tasks = Task.get_by_sobject(sobject, order=False)
-    
+
         existing_task_dict = {}
         for x in existing_tasks:
             key1 = '%s:%s' %(x.get_value('process'),x.get_value("context"))
@@ -979,7 +963,7 @@ class Task(SObject):
         description = ""
         tasks = []
 
-        
+
         bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
             bid_duration_unit = 'hour'
@@ -1001,7 +985,7 @@ class Task(SObject):
             start_date = SPTDate.add_business_days(start_date, start_offset)
 
             for context_combo in contexts:
-                process_name, context = context_combo.split(':')               
+                process_name, context = context_combo.split(':')
 
                 # depend_id is None since these are arbitrary tasks
                 depend_id = None
@@ -1039,14 +1023,16 @@ class Task(SObject):
                 # for a task to be x days long, we need duration x-1.
                 end_date = SPTDate.add_business_days(start_date, duration-1)
 
-                
+
                 start_date_str = start_date.strftime("%Y-%m-%d")
                 end_date_str = end_date.strftime("%Y-%m-%d")
 
+                assigned_login_group = attrs.get("assigned_login_group") or None
+
                 # Create the task
-                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned, status=status)
-                
-                # this avoids duplicated tasks for process connecting to multiple processes 
+                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned, status=status, assigned_group=assigned_login_group)
+
+                # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
                 existing_task_dict[new_key] = True
                 # for backward compatibility, if the process has been created, we will skip later below
@@ -1105,7 +1091,6 @@ class Task(SObject):
             process_type = process_obj.get_type()
             attrs = process_obj.get_attributes()
 
-
             duration = attrs.get("duration")
             if duration:
                 duration = int(duration)
@@ -1118,6 +1103,7 @@ class Task(SObject):
             else:
                 bid_duration = int(bid_duration)
 
+            assigned_login_group = attrs.get("assigned_login_group") or None
 
             workflow = process_sobject.get_json_value("workflow") or {}
 
@@ -1130,7 +1116,7 @@ class Task(SObject):
             if process_type in ['hierarchy']:
                 subpipeline_code = process_sobject.get("subpipeline_code")
 
-                # subtasks_only, top_only, all, none 
+                # subtasks_only, top_only, all, none
                 subtasks = []
                 if task_creation in ['subtasks_only', 'all']:
 
@@ -1236,9 +1222,9 @@ class Task(SObject):
                     continue
                 context = _get_context(existing_task_dict, process_name, context)
 
-                last_task = Task.create(sobject, full_process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, status=status)
-                 
-                # this avoids duplicated tasks for process connecting to multiple processes 
+                last_task = Task.create(sobject, full_process_name, description, depend_id=depend_id, pipeline_code=pipe_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, status=status, assigned_group=assigned_login_group)
+
+                # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
                 existing_task_dict[new_key] = True
                 # for backward compatibility, if the process has been created, we will skip later below
@@ -1271,7 +1257,7 @@ class Task(SObject):
         return tasks
 
     add_initial_tasks = staticmethod(add_initial_tasks)
-            
+
 
 
 
@@ -1317,16 +1303,16 @@ class TaskAutoSchedule(object):
 
 
     def round_second(mydate):
-        
+
         if isinstance(mydate, basestring):
             mydate = parser.parse(mydate, fuzzy=True)
 
         microS = mydate.microsecond
         new_date = mydate - relativedelta(microseconds = microS)
-        
+
         if round(microS * 0.000001) == 1:
             new_date = new_date + relativedelta(seconds = 1)
-            
+
         return new_date
     round_second = staticmethod(round_second)
 
@@ -1459,7 +1445,7 @@ class TaskGenerator(object):
         self.process_tasks = {}
         self.tasks = []
 
- 
+
 
     def execute(self, sobject, pipeline, parent_process=None, start_date=None, end_date=None):
 
@@ -1477,7 +1463,7 @@ class TaskGenerator(object):
 
         # remember which ones already exist
         existing_tasks = Task.get_by_sobject(sobject, order=False)
-    
+
         self.existing_task_set = set()
         for x in existing_tasks:
             key = '%s:%s' %(x.get_value('process'),x.get_value("context"))
@@ -1528,22 +1514,22 @@ class TaskGenerator(object):
             max_num = 0
             for item in self.existing_task_set:
                 item_stripped = re.sub('/\d+$', '', item)
-                
+
                 #if item.startswith(compare_key):
                 if item_stripped == compare_key:
                     existing_context = item.replace('%s:'%process_name,'')
                     suffix = existing_context.split('/')[-1]
-                    try:    
+                    try:
                         num = int(suffix)
                     except:
                         num = 0
-                      
+
                     if num > max_num:
                         max_num = num
 
                     existed = True
-        
-     
+
+
             if existed:
                 context = "%s/%0.3d" % (context, max_num+1)
 
@@ -1643,7 +1629,6 @@ class TaskGenerator(object):
         handled_processes = self.handled_processes
         process_sobjects = self.process_sobjects
 
-
         process_sobject = process_sobjects.get(process_name)
         process_obj = pipeline.get_process(process_name)
 
@@ -1651,13 +1636,15 @@ class TaskGenerator(object):
         process_type = process_obj.get_type()
         attrs = process_obj.get_attributes()
 
+        task_creation = workflow.get("task_creation")
+
 
         # if this process has hierarchy, then create the subtasks
         if process_type in ['hierarchy']:
             subpipeline_code = process_sobject.get("subpipeline_code")
 
 
-            # subtasks_only, top_only, all, none 
+            # subtasks_only, top_only, all, none
             subtasks = []
             if task_creation in ['subtasks_only', 'all']:
 
@@ -1679,7 +1666,7 @@ class TaskGenerator(object):
                     if subtasks:
                         #self.start_date = subtasks[-1].get_datetime_value("bid_end_date")
 
-                        # store the last task 
+                        # store the last task
                         last_task = subtasks[-1]
                         self.process_tasks[process_name] = last_task
 
@@ -1687,10 +1674,6 @@ class TaskGenerator(object):
                     # don't create any further tasks
                     return
 
-
-
-
-        task_creation = workflow.get("task_creation")
 
         if process_type in ["node","approval", "manual", "hierarchy"]:
             # by default, tasks are created here
@@ -1804,7 +1787,8 @@ class TaskGenerator(object):
             if start_date.weekday() == 6:
                 end_date = self.start_date + timedelta(days=1)
 
-            
+            # get from XML data
+            assigned_login_group = attrs.get("assigned_login_group") or None
 
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
@@ -1838,14 +1822,15 @@ class TaskGenerator(object):
                     continue
                 context = self._get_context(process_name, context)
 
+
                 #import time
                 #start = time.time()
                 triggers = "none"
-                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers)
+                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_login_group)
                 #print "process: ", full_process_name
                 #print "time: ", time.time() - start
-                 
-                # this avoids duplicated tasks for process connecting to multiple processes 
+
+                # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )
                 self.existing_task_set.add(new_key)
 
@@ -1878,7 +1863,7 @@ class TaskGenerator(object):
 class Timecard(SObject):
 
     SEARCH_TYPE = "sthpw/timecard"
-    
+
     def get(cls, search_key, week, year, desc=None, login=None, project=None):
 
         search = Search(cls.SEARCH_TYPE)
@@ -1893,7 +1878,7 @@ class Timecard(SObject):
             search.add_filter('week', week)
         if year:
             search.add_filter('year', year)
-        # get the current user if not specified    
+        # get the current user if not specified
         if not login:
             login = Environment.get_user_name()
         search.add_filter('login', login)
@@ -1901,7 +1886,7 @@ class Timecard(SObject):
         if not project:
             project = Project.get_project_name()
         search.add_filter('project_code', project)
-  
+
         # try getting from cache
         key = '||'.join([Timecard._get_key(search_key), str(Timecard._get_key(year)),\
             str(Timecard._get_key(week)),\
@@ -1910,28 +1895,28 @@ class Timecard(SObject):
         cached = cls.get_cached_obj(key)
         if cached != None:
             return cached
-        
+
         sobjs = search.get_sobjects()
-        
+
         dict = cls.get_cache_dict()
 
         dict[key] = sobjs
-        
+
         return sobjs
 
     get = classmethod(get)
-   
+
     def get_registered_hours(search_key, week, weekday, year, desc=None, login=None, project=None):
         ''' get the total registered hours for the week. ADD YEAR!!!'''
         timecards = Timecard.get(search_key, week, year, desc, login, project)
-        
+
         hours = SObject.get_values(timecards, weekday, unique=False)
-        
+
         reg_hours = 0.0
         for hour in hours:
             if hour:
                 reg_hours += float(hour)
-        
+
         return reg_hours
 
     get_registered_hours = staticmethod(get_registered_hours)
@@ -1944,7 +1929,7 @@ class Timecard(SObject):
         else:
             return value
 
-    _get_key = staticmethod(_get_key)  
+    _get_key = staticmethod(_get_key)
 
 
 

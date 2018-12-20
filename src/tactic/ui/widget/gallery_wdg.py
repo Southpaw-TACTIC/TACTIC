@@ -356,7 +356,7 @@ class GalleryWdg(BaseRefreshWdg):
             try:
                 thumb_path = thumb_paths[i]
             except IndexError:
-                print "Cannot find the thumb_path [%s] "%i 
+                print("Cannot find the thumb_path [%s] "%i )
                 thumb_path = ''
 
             #path_div.add_style("width: %s" % width)

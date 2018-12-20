@@ -263,7 +263,7 @@ class FileUpload(Base):
         try:
             data.close()
         except Exception, e:
-            print str(e)
+            print(str(e))
 
         # when upload is running in append mode f_progress could be None
         if f_progress:

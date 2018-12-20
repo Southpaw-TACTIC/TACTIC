@@ -397,9 +397,18 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         selected = self.kwargs.get("selected")
 
+
+        save_state = self.kwargs.get("tab_save_state") or ""
+
         #menu = self.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
-        tab = TabWdg(config=config, state=state, show_add=False, show_remove=False, tab_offset=10, selected=selected )
+        show_add = False
+        show_remove = False
+
+        #show_add = True
+        #show_remove = True
+
+        tab = TabWdg(config=config, state=state, show_add=show_add, show_remove=show_remove, tab_offset=10, selected=selected, save_state=save_state )
         tab.add_style("margin: 0px -1px -1px -1px")
 
 
@@ -756,6 +765,37 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
+            elif tab == "files":
+                import os
+                sobject_dir = self.sobject.get_lib_dir()
+
+                basename = sobject_dir
+                dirname = self.sobject.get("code")
+
+                values['base_dir'] = basename
+                values['dirname'] = dirname
+                config_xml.append('''
+                <element name="files" title="Files">
+                  <display class="tactic.ui.panel.CustomLayoutWdg">
+                  <html>
+                  <div style="padding: 20px">
+                    <div style="font-size: 25px">Files</div>
+                    <div>Directory list of all files for this item</div>
+                    <hr/>
+                    <br/>
+                    <element>
+                      <display class="tactic.ui.app.PluginDirListWdg">
+                        <base_dir>%(base_dir)s</base_dir>
+                        <location>server</location>
+                        <dirname>%(dirname)s</dirname>
+                      </display>
+                    </element>
+                  </div>
+                  </html>
+                  </display>
+                </element>
+                ''' % values)
+
 
 
 
@@ -794,7 +834,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 else:
                     view = tab
                     parts = tab.split(".")
-                    name = parts[-1]
+                    #name = parts[-1]
+                    name = tab
 
                 title = None
                 if config:
@@ -899,7 +940,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             try:
                 value = Search.eval(expr, sobject)
             except Exception as e:
-                print "WARNING: ", e.message
+                print("WARNING: ", e.message)
                 continue
 
 

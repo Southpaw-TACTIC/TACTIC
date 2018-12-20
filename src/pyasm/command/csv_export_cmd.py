@@ -164,7 +164,7 @@ class CsvExportCmd(Command):
                 display_wdg = config.get_display_widget(element_name)
 
             except ImportError, e:
-                print "WARNING: ", str(e)
+                print("WARNING: ", str(e))
                 from tactic.ui.common import SimpleTableElementWdg
                 display_wdg = SimpleTableElementWdg()
                 display_wdg.set_name(element_name)

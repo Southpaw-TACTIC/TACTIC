@@ -4857,7 +4857,6 @@ class SObject(object):
 
                 related_sobjects = self.get_related_sobjects(related_type)
 
-                #print("found: ", related_type, len(related_sobjects))
                 for related_sobject in related_sobjects:
                     related_sobject.clone(parent=clone)
 

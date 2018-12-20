@@ -1853,7 +1853,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                         
 
             else:
-                print "WARNING: relation [%s] not implemented" % relation
+                print("WARNING: relation [%s] not implemented" % relation)
                 continue
 
 
@@ -1876,7 +1876,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                     search.add_op(op)
                     search.add_op('begin', upper_begin_idx)
 
-        #print "FINAL", search.select.wheres
+        #print("FINAL", search.select.wheres)
         return num_enabled
 
     alter_sobject_search = classmethod(alter_sobject_search)
