@@ -1180,7 +1180,7 @@ class Ticket(SObject):
             ticket.set_value("expiry", expiry, quoted=0)
 
         if commit:
-	          try:
+	    try:
                 ticket.commit(triggers="none")
             except SqlException as e:
                 print "Sql error has occured."
