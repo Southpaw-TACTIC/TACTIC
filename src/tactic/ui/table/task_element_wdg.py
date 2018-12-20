@@ -2131,17 +2131,23 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         process = task.get_value("process")
         if self.show_process == 'true' and (len(self.tasks) >= 1 or process != 'publish'):
             process_div = DivWdg()
+            process_div.add_style("overflow: hidden")
+            process_div.add_style("text-overflow: ellipsis")
+            process_div.add_style("white-space: nowrap")
+            process_div.add_style("box-sizing: border-box")
+
             if self.layout in ['horizontal', 'vertical']:
                 #process_div.add_style("float: left")
                 # if the process is too long, it will cut off cleanly and
                 # not bleed
-                process_div.add_style("overflow: hidden")
                 process_div.add_style("margin-right: 5px")
                 td = table.add_cell(process_div)
                 if self.layout == 'vertical':
                     td.add_style("width: %spx"%self.LAYOUT_WIDTH)
+                    process_div.add_style("max-width: %spx"%self.LAYOUT_WIDTH)
                 else:
                     td.add_style("width: 75px")
+                    process_div.add_style("max-width: 75px")
             else:
                 div.add(process_div)
 
@@ -2184,6 +2190,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if self.show_dates != 'false':
             date_div = DivWdg()
+            date_div.add_style("opacity: 0.5")
+            date_div.add_style("margin: 2px")
+
             if self.layout in ['horizontal', 'vertical']:
                 #date_div.add_style("float: left")
                 td = table.add_cell(date_div)
@@ -2195,7 +2204,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 div.add(date_div)
 
-            date_div.add_style("font-size: %spx" % (self.font_size-1))
+            date_div.add_style("font-size: %spx" % (self.font_size-2))
             if self.text_color:
                 date_div.add_style("color", self.text_color)
             else:
@@ -2270,6 +2279,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.add_style("height: 18px")
                 select.add_style("padding: 0px")
                 select.add_style("margin: 2px 0px 2px 5px")
+
+                select.add_style("border: none")
+                select.add_style("box-shadow: none")
+
 
                 if node_type in ['auto', 'condition']:
                     select.add_attr("readonly","true")
@@ -2413,6 +2426,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.add_style("height: 18px")
                     select.add_style("padding: 0px")
                     select.add_style("margin: 2px 0px 2px 5px")
+
+
+                    select.add_style("border: none")
+                    select.add_style("box-shadow: none")
+
+
 
                     key = "%s|%s" % (pipeline_code, process)
                     if self.assigned_login_groups.get(key):

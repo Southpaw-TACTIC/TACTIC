@@ -62,7 +62,7 @@ class HashPanelWdg(BaseRefreshWdg):
         p = re.compile("^/(\w+)")
         m = p.search(hash)
         if not m:
-            print "Cannot parse hash[%s]" % hash
+            print("Cannot parse hash[%s]" % hash)
             return None
         key = m.groups()[0]
 
@@ -198,7 +198,7 @@ class HashPanelWdg(BaseRefreshWdg):
                     { "element": "*", "project": project_code }
             ]
             if not personal and not security.check_access("link", keys, "allow", default="deny"):
-                print "Not allowed"
+                print("Not allowed")
                 return None
 
 
@@ -324,7 +324,7 @@ class HashPanelWdg(BaseRefreshWdg):
         if not m:
             if return_none:
                 return None
-            print "Cannot parse hash[%s]" % hash
+            print("Cannot parse hash[%s]" % hash)
             return DivWdg("Cannot parse hash [%s]" % hash)
         key = m.groups()[0]
         

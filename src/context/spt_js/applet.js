@@ -11,6 +11,10 @@
  */ 
 
 
+// DEPRECATED: this is largely deprecated because of the discontinued support of Java applets
+// on all major browsers
+
+
 
 /*
  * Javascript wrapper around the General Applet.  The gernal Applet is a thin

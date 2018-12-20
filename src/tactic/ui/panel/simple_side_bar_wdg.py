@@ -210,10 +210,10 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         #display_options = config.get_display_options(element_name)
         #class_name = display_options.get("class_name")
-        #print element_name
-        #print display_options
-        #print class_name
-        #print "---"
+        #print(element_name)
+        #print(display_options)
+        #print(class_name)
+        #print("---")
 
 
         li = HtmlElement.li()

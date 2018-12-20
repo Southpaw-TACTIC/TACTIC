@@ -70,6 +70,11 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         if not search.column_exists("_is_collection"):
             return self.top
 
+        parent_key = self.kwargs.get("parent_key")
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            search.add_parent_filter(parent)
+        
         search.add_filter("_is_collection", True)
         collections = search.get_sobjects()
         
@@ -538,6 +543,13 @@ class CollectionAddCmd(Command):
 
 class CollectionLayoutWdg(ToolLayoutWdg):
 
+
+    def get_kwargs_keys(cls):
+        return ['group_elements']
+    get_kwargs_keys = classmethod(get_kwargs_keys)
+
+
+
     def get_content_wdg(self):
 
         self.search_type = self.kwargs.get("search_type")
@@ -739,7 +751,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
-        collections_div = CollectionFolderWdg(search_type=search_type)
+        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key)
         div.add(collections_div)
 
         return div
@@ -755,6 +767,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         #shelf_wdg.add_style("float: right")
         #div.add(shelf_wdg)
 
+        group_elements = self.kwargs.get("group_elements") or []
+
         tile = CollectionContentWdg(
                 search_type=self.search_type,
                 show_shelf=False,
@@ -762,7 +776,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 sobjects=self.sobjects,
                 detail_element_names=self.kwargs.get("detail_element_names"),
                 do_search='false',
-                upload_mode=self.kwargs.get("upload_mode")
+                upload_mode=self.kwargs.get("upload_mode"),
+                group_elements=group_elements
         )
         div.add(tile)
 
@@ -781,7 +796,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search.add_parent_filter(parent)
-
+        
         collections = search.get_sobjects()
         collections_div = DivWdg()
 
@@ -951,7 +966,7 @@ class CollectionContentWdg(BaseRefreshWdg):
         top.add_style("min-height: 400px")
 
         self.kwargs["scale"] = 75
-        self.kwargs["show_scale"] = True
+        self.kwargs["show_scale"] = False
         self.kwargs["expand_mode"] = "gallery"
         self.kwargs["show_search_limit"] = False
 

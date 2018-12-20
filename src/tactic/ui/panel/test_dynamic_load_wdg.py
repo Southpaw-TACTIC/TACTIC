@@ -37,7 +37,7 @@ class TestDynamicLoadWdg(BaseRefreshWdg):
         top.add_styles("border: 1px solid black;")
 
         count = self.kwargs.get('count')
-        print "count: ", count
+        print("count: ", count)
         if count:
             count = int(count)
         else:
@@ -84,7 +84,7 @@ class TestDynamicLoadWdg(BaseRefreshWdg):
         top.add_styles("border: 1px solid black;")
 
         count = self.kwargs.get('count')
-        print "count: ", count
+        print("count: ", count)
         if count:
             count = int(count)
         else:

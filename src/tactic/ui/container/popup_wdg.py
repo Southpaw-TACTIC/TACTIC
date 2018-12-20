@@ -959,10 +959,9 @@ spt.popup.get_widget = function( evt, bvr )
     var popup_template = null;
     if( ! popup ) {
         // get the common popup, clone it and fill it in
-        popup_template = document.id("popup_template");
+        var popup_template = document.id("popup_template");
         // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
         var popup = spt.behavior.duplicate_element(popup_template);
-
 
 
         if( popup_id ) {

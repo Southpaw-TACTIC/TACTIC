@@ -53,7 +53,7 @@ class SignOutCmd(Command):
 
 
         login_name = ticket.get_value("login")
-        print "Signing out: ", login_name
+        print("Signing out: ", login_name)
 
         # expire the ticket
 

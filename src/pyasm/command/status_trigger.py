@@ -72,7 +72,7 @@ class StatusTrigger(Trigger):
         # the parent is the asset or shot
         parent = sobject.get_parent()
        
-        print "Check finished"
+        print("Check finished")
         tasks = Task.get_by_sobject(parent, 'compositing')
         # about to commit
         task_ids = []
@@ -81,7 +81,7 @@ class StatusTrigger(Trigger):
                 task.set_value('status','Pending')
                 task.commit()
                 task_ids.append(task.get_id())
-        print "Changed task status to [Pending] for task id %s'" %str(task_ids)
+        print("Changed task status to [Pending] for task id %s'" %str(task_ids))
 
     def handle_done(self):
         pass

@@ -67,8 +67,8 @@ class WorkflowCmd(Command):
 
         #from pyasm.security import Site
         #from pyasm.biz import Project
-        #print "site: " ,Site.get_site()
-        #print "project: ", Project.get().get_data()
+        #print("site: " ,Site.get_site())
+        #print("project: ", Project.get().get_data())
 
         try:
             Workflow().init()
@@ -95,7 +95,7 @@ class WorkflowCmd(Command):
             self._test_approval()
             self._test_dependency()
         except Exception, e:
-            print "Error: ", e
+            print("Error: ", e)
             raise
 
 
@@ -249,7 +249,7 @@ class WorkflowCmd(Command):
         import time
         start = time.time()
         Trigger.call(self, "process|pending", output)
-        #print "time: ", time.time() - start
+        #print("time: ", time.time() - start)
         self.assertEquals( "complete", sobject.get_value("a"))
         self.assertEquals( "complete", sobject.get_value("b"))
         self.assertEquals( "complete", sobject.get_value("c"))
@@ -628,7 +628,7 @@ class WorkflowCmd(Command):
 
     def _test_manual(self):
 
-        print "test manual"
+        print("test manual")
 
         # create a dummy sobject
         sobject = SearchType.create("sthpw/virtual")
@@ -785,11 +785,11 @@ class WorkflowCmd(Command):
         script.set_value("folder", folder)
         script.set_value("title", "process_trigger")
         script.set_value("script", '''
-        print "---"
+        print("---")
         for key, value in input.items():
-            print key, value
-        print "---"
-        print "process: ", input.get("process")
+            print(key, value)
+        print("---")
+        print("process: ", input.get("process"))
         ''')
         script.commit()
  
@@ -1319,13 +1319,6 @@ class WorkflowCmd(Command):
         Trigger.call(self, "process|custom", output)
 
         self.assertEquals("Do It", sobject.get_value("b"))
-
-
-
-        #search = Search("sthpw/message")
-        #sobjects = search.get_sobjects()
-        #for sobject in sobjects:
-        #    print "sss: ", sobject.get("code"), sobject.get("message")
 
 
 

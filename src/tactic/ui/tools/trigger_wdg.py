@@ -2414,7 +2414,7 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
             class_name = trigger.get_value("class_name")
             if class_name == "tactic.command.PipelineTaskStatusTrigger":
                 data = trigger.get_json_value("data")
-                if data:
+                if data and isinstance(data, dict):
                     class_path = data.get("class_path")
                     if class_path:
                         class_name = class_path

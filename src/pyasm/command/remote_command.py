@@ -51,13 +51,13 @@ class XmlRpcExec(RemoteExec):
         pickled = pickle.dumps(command)
 
         try:
-            print "slave command ...."
+            print("slave command ....")
             server_url = "http://saba:8081/xmlrpc"
             server = xmlrpclib.ServerProxy(server_url)
-            print server.do_login(ticket)
+            print(server.do_login(ticket))
 
-            print server.do_command(pickled)
-            print "... done!!!!"
+            print(server.do_command(pickled))
+            print("... done!!!!")
 
         except (socket.error), e:
             raise SetupException( 'Could not connect to slave server "%s":\n\nError given: %s' % (server_url, e.__str__() ))
