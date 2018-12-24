@@ -3229,6 +3229,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         settings = self.kwargs.get("settings")
         gear_settings = self.kwargs.get("gear_settings")
         shelf_view = self.kwargs.get("shelf_view")
+        badge_view = self.kwargs.get("badge_view")
         extra_data = self.kwargs.get("extra_data")
         if extra_data:
             if isinstance(extra_data, dict):
@@ -3246,6 +3247,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         no_results_msg = self.kwargs.get("no_results_msg")
 
         window_resize_offset = self.kwargs.get("window_resize_offset")
+
 
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
@@ -3282,6 +3284,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_insert": show_insert,
             "show_group_insert": show_group_insert,
             "shelf_view": shelf_view,
+            "badge_view": badge_view,
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
