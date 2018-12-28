@@ -765,8 +765,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
     def store_state(self):
 
-        print("Storing state")
-
         # NOTE: use messages for now
         key = "%s|%s|state" % (self.sobject.get_search_key(), self.process)
 
@@ -777,8 +775,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         state['data'] = self.data
         state['packages'] = self.packages
-
-        print("store_state: ", state)
 
         state = jsondumps(state)
         server.log_message(key, state)
