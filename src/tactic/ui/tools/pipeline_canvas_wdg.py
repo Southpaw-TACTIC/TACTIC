@@ -135,6 +135,10 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("width", height)
             top.add_style("border-radius: %spx" % border_radius)
 
+        elif shape == "diamond":
+            top.add_style("transform: rotate(-45deg)")
+            top.add_style("width", height)
+
         else:
             top.add_style("border-radius: %spx" % border_radius)
 

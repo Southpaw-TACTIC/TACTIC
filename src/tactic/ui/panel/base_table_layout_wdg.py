@@ -1337,6 +1337,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             search_label = 'Search'
             button = ActionButtonWdg(title=search_label)
+
+            #button = DivWdg("<button class='btn btn-default' style='height: 30px; margin-left: -1px'><i class='fa fa-search'> </i> </button>")
+
             self.run_search_bvr = self.kwargs.get('run_search_bvr')
             if self.run_search_bvr:
                 button.add_behavior(self.run_search_bvr)

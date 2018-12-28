@@ -14,7 +14,7 @@ __all__ = ["Task", "Timecard", "Milestone"]
 
 import types
 import re
-from pyasm.common import Xml, Environment, Common, SPTDate, Config
+from pyasm.common import Xml, Environment, Common, SPTDate, Config, Container
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
 from prod_setting import ProdSetting, ProjectSetting
 from pipeline import Pipeline
@@ -121,6 +121,7 @@ OTHER_COLORS = {
 class Task(SObject):
 
     SEARCH_TYPE = "sthpw/task"
+
 
     def get_search_columns():
         return ['code','description']
@@ -267,6 +268,10 @@ class Task(SObject):
 
     def get_status_colors():
 
+        status_colors = Container.get("Task::status_colors")
+        if status_colors != None:
+            return status_colors
+
         status_colors = {}
 
         task_pipelines = Search.eval("@SOBJECT(sthpw/pipeline['search_type','sthpw/task'])")
@@ -284,6 +289,8 @@ class Task(SObject):
                         color = Task.get_default_color(process.get_name())
 
                     process_dict[process.get_name()] = color
+
+        Container.put("Task::status_colors", status_colors)
 
         return status_colors
 

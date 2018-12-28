@@ -222,7 +222,7 @@ class SchedulerTask(object):
         try:
             Environment.set_security(self.security)
 
-            Workflow().init()
+            Workflow().init(quiet=True)
 
             # set the project if passed in
             project = self.kwargs.get("project")

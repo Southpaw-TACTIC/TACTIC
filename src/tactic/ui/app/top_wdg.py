@@ -1010,6 +1010,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
+        Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
 
         if not web.is_admin_page():
             Container.append_seq("Page:js", "%s/require.js" % spt_js_url)
