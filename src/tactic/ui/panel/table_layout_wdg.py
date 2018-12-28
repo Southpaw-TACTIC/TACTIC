@@ -4739,6 +4739,10 @@ spt.table.add_new_item = function(kwargs) {
     spt.remove_class(clone, 'spt_clone');
 
     // fire a client event
+    var tableId = spt.table.layout.getAttribute("spt_table_id");
+    var event = "insert|tableId|"+tableId;
+    spt.named_events.fire_event(event, {src_el: clone});
+    
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
 
@@ -6704,7 +6708,7 @@ spt.table.collapse_group = function(group_row) {
         var break_cond2 = row.getAttribute('idx') == idx
         
         
-        if (row_level == group_level) {
+        if (row_level <= group_level) {
            
            break;
 

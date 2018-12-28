@@ -224,6 +224,9 @@ class WidgetConfig(Base):
         # the order dictates the order of preference
         return self.get_element_names(type='', attrs=['title'])
 
+    def get_element_title(self, element_name):
+        return self.get_element_attributes(element_name).get("title")
+
     def get_element_widths(self):
         '''get the width of each element in a list.'''
         # the order dictates the order of preference

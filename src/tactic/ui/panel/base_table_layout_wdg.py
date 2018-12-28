@@ -960,7 +960,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 custom_gear_menus = "CONFIG-ERROR"
 
 
-
         # add gear menu here
         self.view_save_dialog = None
         show_gear = self.get_setting("gear")
@@ -1312,7 +1311,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
                 help_wdg.add_style("margin-top: -2px")
 
+        
+
         wdg_list = []
+        
+
+        badge_view = self.kwargs.get("badge_view")
+        if badge_view:
+            from tactic.ui.panel import CustomLayoutWdg
+            widget = CustomLayoutWdg(view=badge_view, panel_kwargs=self.kwargs)
+            if widget:
+                wdg_list.append( { 'wdg': widget } )
+            else:
+                print("WARNING: badge view '%s' not defined" % custom_shelf_view)
+ 
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
@@ -1445,7 +1457,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         xx = DivWdg()
-
+        
         #horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         #xx.add(horiz_wdg)
 
