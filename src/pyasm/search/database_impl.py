@@ -3610,7 +3610,8 @@ class MySQLImpl(PostgresImpl):
             # prefix matching
             value = '%s:*'%value
         
-        where = "MATCH (%s) AGAINST ('%s' in NATURAL LANGUAGE MODE)" % (column, value)
+        where = "MATCH (%s) AGAINST ('%s' WITH QUERY EXPANSION)" % (column, value)
+
         
         return where
 
