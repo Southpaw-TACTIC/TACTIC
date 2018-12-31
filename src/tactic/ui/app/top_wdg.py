@@ -818,8 +818,13 @@ class TopWdg(Widget):
 
     
         from pyasm.security import Site
+	from pyasm.prod.biz import ProdSetting
         site = Site.get_site()
-       
+
+	master_url = ProdSetting.get_value_by_key("spme/master/url")
+	master_login_ticket = ProdSetting.get_value_by_key("spme/master/login_ticket")
+	master_project_code = ProdSetting.get_value_by_key("spme/master/project_code")
+
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
             kiosk_mode = 'false'
@@ -835,8 +840,12 @@ class TopWdg(Widget):
         env.set_client_handoff_dir('%s');
         env.set_client_repo_dir('%s');
         env.set_kiosk_mode('%s');
+	env.set_master_url('%s');
+	env.set_master_login_ticket('%s');
+	env.set_master_project_code('%s');
 
-        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode))
+        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
+		master_url, master_login_ticket, master_project_code))
         top.add(script)
 
 
@@ -1010,6 +1019,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
+        Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
 
         if not web.is_admin_page():
             Container.append_seq("Page:js", "%s/require.js" % spt_js_url)

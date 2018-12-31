@@ -135,6 +135,10 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("width", height)
             top.add_style("border-radius: %spx" % border_radius)
 
+        elif shape == "diamond":
+            top.add_style("transform: rotate(-45deg)")
+            top.add_style("width", height)
+
         else:
             top.add_style("border-radius: %spx" % border_radius)
 
@@ -1472,8 +1476,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         width = custom_wdg.get_width()
         height = custom_wdg.get_height()
 
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+        enable_context_menu = self.kwargs.get("enable_context_menu")
+
+        if enable_context_menu not in ['false', False]:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
  
         node_behaviors = self.get_node_behaviors()

@@ -506,6 +506,32 @@ class CollectionAddCmd(Command):
 
             Select parent_code from res;
             '''% var_dict
+        elif database == "MySQL":
+            statement = '''
+            WITH recursive res(parent_code, parent_name, child_code, child_name, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."search_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p2."code" IN ('%(collection_code)s')
+
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                  CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."search_code" = ng."parent_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+
+            Select parent_code from res;
+            '''% var_dict
         else:
             statement = '''
             WITH RECURSIVE res(parent_code, parent_name, child_code, child_name, path, depth) AS (

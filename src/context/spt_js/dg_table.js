@@ -2262,7 +2262,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var gear_settings = target.getAttribute("spt_gear_settings") || "";
 
     var shelf_view = target.getAttribute("spt_shelf_view") || "";
-
+    var badge_view = target.getAttribute("spt_badge_view") || "";
     var extra_data = target.getAttribute("spt_extra_data") || "";
 
     var height = target.getAttribute("spt_height") || "";
@@ -2353,6 +2353,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'settings': settings,
         'gear_settings': gear_settings,
         'shelf_view': shelf_view,
+        'badge_view': badge_view,
         'extra_data': extra_data,
     }
 

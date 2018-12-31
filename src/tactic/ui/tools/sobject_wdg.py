@@ -13,7 +13,7 @@ __all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'Sna
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment, SPTDate, Common, FormatValue
+from pyasm.common import Environment, SPTDate, Common, FormatValue, Xml
 from pyasm.biz import Snapshot, Pipeline
 from pyasm.web import DivWdg, WebContainer, Table, WebState
 from pyasm.search import Search, SearchType, SearchKey
@@ -492,26 +492,32 @@ class SObjectDetailWdg(BaseRefreshWdg):
         <config>
         <tab>''')
 
-
-        search_type_obj = SearchType.get(self.search_type)
-        settings = search_type_obj.get_value("settings", no_exception=True)
-
-
         tabs = self.kwargs.get("tab_element_names")
 
         tab_view = self.kwargs.get("tab_view")
         if not tab_view:
             tab_view = "tab_element_names"
 
+        config = None
 
-        config_search = Search("config/widget_config")
-        config_search.add_filter("view", tab_view)
-        config_search.add_filter("search_type", self.search_type)
-        config_search.add_order_by("timestamp desc")
-        configs = config_search.get_sobjects()
+        # SObject settings overridews WidgetConfig entry
+        sobject_settings = self.sobject.get_json_value("settings", default={}, no_exception=True)
+        if sobject_settings:
+            config = sobject_settings.get("config")
+            xml = Xml()
+            xml.read_string(config)
+            config = WidgetConfig.get("tab_element_names", xml=xml)
 
-        from pyasm.search import WidgetDbConfig
-        config = WidgetDbConfig.merge_configs(configs)
+        if not config: 
+            config_search = Search("config/widget_config")
+            config_search.add_filter("view", tab_view)
+            config_search.add_filter("search_type", self.search_type)
+            config_search.add_order_by("timestamp desc")
+            configs = config_search.get_sobjects()
+
+            from pyasm.search import WidgetDbConfig
+            config = WidgetDbConfig.merge_configs(configs)
+
 
         if tabs:
             tabs = [x.strip() for x in tabs.split(',')] 

@@ -161,7 +161,7 @@ class CherryPyStartup(object):
 
         # It is possible on startup that the database is not running.
         from pyasm.common import Environment
-        from pyasm.search import DbContainer, DatabaseException, Sql
+        from pyasm.search import DbContainer, DatabaseException, Sql, SqlException
         plugin_dir = Environment.get_plugin_dir()
         sys.path.insert(0, plugin_dir)
 
@@ -178,7 +178,10 @@ class CherryPyStartup(object):
                     else:
                         start_port = 8081
                     if port and int(port) == start_port:
-                         sql.do_update('DELETE from "ticket" where "code" is NULL')
+		        try:
+                            sql.do_update('DELETE from "ticket" where "code" is NULL')
+                        except SqlException as e:
+                            print "Sql error has occured."
         except DatabaseException as e:
             # TODO: need to work on this
             print("ERROR: could not connect to [sthpw] database")
@@ -194,7 +197,6 @@ class CherryPyStartup(object):
             except:
                 print "Could not connect to the database."
                 raise
-
 
         # is it CherryPyStartup's responsibility to start batch?
         from pyasm.security import Batch

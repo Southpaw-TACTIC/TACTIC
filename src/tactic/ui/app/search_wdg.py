@@ -15,6 +15,7 @@ import os, types
 
 from pyasm.common import Xml, Common, Environment, XmlException, UserException, Container, SetupException
 from pyasm.command import Command
+from pyasm.prod.biz import ProdSetting
 from pyasm.search import Search, SearchType, SObject, SearchInputException, DbContainer, SearchException
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, WebContainer, WidgetSettings
 from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, TextWdg, ButtonWdg, IconWdg, HiddenWdg, SwapDisplayWdg, IconButtonWdg, ProdIconButtonWdg, HintWdg, WidgetConfigView
@@ -388,6 +389,9 @@ class SearchWdg(BaseRefreshWdg):
         try:
             self.alter_search()
             self.set_persistent_value()
+            set_persistent_search = ProdSetting.get_value_by_key("set_persistent_search")
+            if set_persistent_search != "false":
+               self.set_persistent_value()
 
         except SearchInputException as e:
             self.clear_search_data(self.search_type)
