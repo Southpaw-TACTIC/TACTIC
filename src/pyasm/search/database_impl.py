@@ -577,6 +577,7 @@ class DatabaseImpl(DatabaseImplInterface):
         wheres.append("to_tsquery('%s', '%s')" % (config, value) )
 
         where = " ".join(wheres)
+
         return where
 
     get_text_search_filter = classmethod(get_text_search_filter)
@@ -3563,6 +3564,57 @@ class MySQLImpl(PostgresImpl):
 
     def commit_on_schema_change(self):
         return True
+    
+    def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
+        '''default impl works with Postgres'''
+
+        if isinstance(keywords, basestring):
+            def split_keywords(keywords):
+                keywords = keywords.strip()
+                # The input should be stripped and single spaced. This line seems redundant, to be removed
+                keywords = keywords.replace("  ", "")
+                parts = keywords.split(" ")
+                op_str = " %s " % op
+                value = op_str.join(parts)
+                return value
+            
+            if keywords.find("|") != -1 or keywords.find("&") != -1:
+                # prevent syntax error from multiple | or &
+                keywords = re.sub( r'\|+', r'|', keywords)
+                keywords = re.sub( r'\&+', r'&', keywords)
+                keywords = keywords.rstrip('&')
+                value = keywords
+                if keywords.find("|") == -1 and  keywords.find("&") == -1:
+                    value = split_keywords(keywords)
+            else:
+                value = split_keywords(keywords)
+
+        elif type(keywords) == types.ListType:
+            # remove empty strings from the list
+            keywords = filter(None, keywords)
+            value = ' & '.join(keywords)
+        else:
+            value = str(keywords)
+
+        # avoid syntax error
+        value = value.replace("'", "''")
+
+        if table:
+            column = '"%s"."%s"' % (table, column)
+        else:
+            column = '"%s"' % column
+
+        if column_type in ['integer','serial']:
+            column = "CAST(%s AS varchar(10))" %column
+        else:
+            # prefix matching
+            value = '%s:*'%value
+        
+        where = "MATCH (%s) AGAINST ('%s' WITH QUERY EXPANSION)" % (column, value)
+
+        
+        return where
+
 
 
 

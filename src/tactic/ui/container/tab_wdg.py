@@ -1886,12 +1886,17 @@ spt.tab.close = function(src_el) {
         icon_div.add_style("opacity: 0.5")
 
         icon_div.add(icon)
+
+        add_bvr = self.kwargs.get("add_bvr")
+        if not add_bvr:
+            add_bvr = """
+                spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
+                spt.tab.add_new();
+            """
+         
         icon.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
-        spt.tab.add_new();
-        '''
+            'type': 'click_up',
+            'cbjs_action': add_bvr
         } )
 
         icon_div.add_style("float: left")
