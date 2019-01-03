@@ -388,7 +388,6 @@ class SearchWdg(BaseRefreshWdg):
 
         try:
             self.alter_search()
-            self.set_persistent_value()
             set_persistent_search = ProdSetting.get_value_by_key("set_persistent_search")
             if set_persistent_search != "false":
                self.set_persistent_value()
