@@ -3188,6 +3188,8 @@ class MySQLImpl(PostgresImpl):
 
         if column_type == 'timestamp':
             # We are converting a timestamp ISO string to datetime obj.
+            if value == "NOW":
+                return {"value": "now()", "quoted": False}
             from dateutil import parser
             try:
                 value = parser.parse(value)
