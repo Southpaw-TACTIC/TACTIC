@@ -5118,7 +5118,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
-        button = ButtonNewWdg(title="Save Current Workflow", icon="BS_SAVE")
+        button = ButtonNewWdg(title="Save Current Workflow", icon="FA_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -5314,7 +5314,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Add Process", icon="BS_PLUS")
+        button = ButtonNewWdg(title="Add Process", icon="FA_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
@@ -5456,7 +5456,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Delete Selected", icon="BS_TRASH")
+        button = ButtonNewWdg(title="Delete Selected", icon="FA_TRASH")
         button_row.add(button)
 
         button.add_behavior( {
@@ -5526,7 +5526,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row.add_style("overflow: hidden")
 
 
-        button = SingleButtonWdg(title="Undo", icon="BS_arrow_left", show_out=False)
+        button = SingleButtonWdg(title="Undo", icon="FA_UNDO", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5537,7 +5537,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Redo", icon="BS_arrow_right", show_out=False)
+        button = SingleButtonWdg(title="Redo", icon="FA_REPEAT", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5547,7 +5547,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
         
-        button = SingleButtonWdg(title="Zoom In", icon="BS_ZOOM_IN", show_out=False)
+        button = SingleButtonWdg(title="Zoom In", icon="FA_SEARCH_PLUS", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5565,7 +5565,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Zoom Out", icon="BS_ZOOM_OUT", show_out=False)
+        button = SingleButtonWdg(title="Zoom Out", icon="FA_SEARCH_MINUS", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
 

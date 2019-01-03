@@ -2161,9 +2161,12 @@ TacticServerStub.get = function() {
 }
 
 TacticServerStub.get_master = function() {
-        this.server = new TacticServerStub();
+    var env = spt.Environment.get();
+    var master_slave_setup = env.get_master_enabled();
 
-	var env = spt.Environment.get();
+    if (master_slave_setup) {
+        this.server = new TacticServerStub();
+        var master_slave_setup = env.get_master_enabled();
         var url = env.get_master_url();
         var login_ticket = env.get_master_login_ticket();
         var site = env.get_master_site();
@@ -2174,8 +2177,12 @@ TacticServerStub.get_master = function() {
         this.server.set_site(site);
         this.server.set_project(project_code);
         this.server.set_transaction_ticket(login_ticket);
+    } else {
+        this.server = this.get(); 
+    }
     return this.server;
 }
+
 
 TACTIC = TacticServerStub;
 

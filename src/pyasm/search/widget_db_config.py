@@ -254,7 +254,7 @@ class WidgetDbConfig(SObject):
 
 
     def get_element_attribute(self, element_name, name):
-        attrs = self.get_ellement_attributes(element_name)
+        attrs = self.get_element_attributes(element_name)
         return attrs.get(name)
 
 

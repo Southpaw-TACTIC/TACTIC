@@ -3106,9 +3106,9 @@ class SObject(object):
 
 
 
-    def get_json_value(self, name, default=None):
+    def get_json_value(self, name, default=None, no_exception=False):
         '''get the value that is stored as a json data structure'''
-        value = self.get_value(name)
+        value = self.get_value(name, no_exception=no_exception)
         if isinstance(value, dict):
             value = value.copy()
             return value

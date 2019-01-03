@@ -37,6 +37,7 @@ spt.Environment = function() {
     this.colors = {};
     this.libraries = {};
     this.kiosk_mode = false;
+    this.master_enabled = false;
     this.master_url = null;
     this.master_login_ticket = null;
     this.master_project_code = null;
@@ -152,6 +153,15 @@ spt.Environment = function() {
         return this.kiosk_mode;
     }
 
+    this.set_master_enabled = function(mode) {
+        if (mode == 'true' || mode == true) {
+            this.master_enabled = true;
+        }
+    }
+    this.get_master_enabled = function() {
+        return this.master_enabled;
+    }
+
     this.set_master_url = function(url) {
         this.master_url = url;
     }
@@ -174,7 +184,9 @@ spt.Environment = function() {
     }
 
     this.set_master_site = function(site) {
-        this.master_site = site;
+        if (site) {
+            this.master_site = site;
+        }
     }
     this.get_master_site = function() {
         return this.master_site;

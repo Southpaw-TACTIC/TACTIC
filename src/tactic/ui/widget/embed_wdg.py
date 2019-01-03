@@ -77,13 +77,14 @@ class EmbedWdg(BaseRefreshWdg):
         #height = "auto"
 
 
-        #div = DivWdg()
-        #top.add(div)
         div = top
         div.add_class("unselectable")
         div.add_style("opacity", opacity)
-        div.add_style("overflow-x: hidden")
-        div.add_style("overflow-y: hidden")
+
+        # Not sure what this is for??
+        #div.add_style("overflow-x: hidden")
+        #div.add_style("overflow-y: hidden")
+
         div.add_style("margin-left: auto")
         div.add_style("margin-right: auto")
         div.add_style("text-align: center")
