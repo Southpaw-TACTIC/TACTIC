@@ -402,8 +402,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         #menu = self.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
-        tab_kwargs = self.kwargs.get("tab_kwargs")
-        tab_kwargs = jsonloads(tab_kwargs)      
+        tab_kwargs = self.kwargs.get("tab_kwargs") or {}
+        if isinstance(tab_kwargs, basestring):
+            tab_kwargs = jsonloads(tab_kwargs)      
 
         show_remove = False
         show_add = tab_kwargs.get("show_add") or False

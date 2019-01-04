@@ -3567,8 +3567,11 @@ class MySQLImpl(PostgresImpl):
     def commit_on_schema_change(self):
         return True
     
+
+    #
+    # Schema functions
+    #
     def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
-        '''default impl works with Postgres'''
 
         if isinstance(keywords, basestring):
             def split_keywords(keywords):
@@ -3616,6 +3619,105 @@ class MySQLImpl(PostgresImpl):
 
         
         return where
+    
+    def get_parent_cte(self,  op_filters):
+        '''MySQL parent CTE'''
+        where = self._get_cte_where(op_filters)
+
+        stmt = '''WITH recursive res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(r."child_keyword_code" AS varchar(256)),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE (%s)
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        CAST ((path + ' > ' + r."child_keyword_code") AS varchar(256)),
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."child_keyword_code" = ng."parent_keyword_code" and depth < 5
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
+
+    def get_child_cte(self, op_filters):
+        '''MySQL child CTE'''
+        where = self._get_cte_where(op_filters)
+
+        stmt = '''WITH recursive res(parent_keyword_code, parent_key, child_keyword_code, child_key, alias, path,  depth) AS (
+                  SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p1."alias",
+                        CAST(r."parent_keyword_code" AS varchar(256)),
+                  1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
+                 WHERE ( %s )
+                    
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                 UNION ALL
+                 SELECT
+                  r."parent_keyword_code", p1."name",
+                  r."child_keyword_code", p2."name",
+                        p2."alias",
+                        CAST((path + ' > ' + r."parent_keyword_code") AS varchar(256)),
+                  ng.depth + 1
+                 FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
+                  res AS ng
+                 WHERE r."parent_keyword_code" = ng."child_keyword_code" and depth < 10
+                 AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
+                )
+
+        Select * from res;'''%where
+
+        return stmt
+
+    def get_child_codes_cte(self, collection_type, search_type, parent_collection_code):
+        '''MySQL collection child codes CTE'''
+
+        var_dict = {
+            'parent_collection_code': parent_collection_code,
+            'collection_type': collection_type.split("/")[1],
+            'search_type': search_type.split("/")[1]
+        }
+
+        stmt = '''
+            WITH recursive res(parent_code, parent_key, search_code, search_key, path, depth) AS (
+            SELECT
+            r."parent_code", p1."name",
+            r."search_code", p2."name",
+                  CAST(r."parent_code" AS varchar(256)),
+             1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
+            WHERE p1."code" IN ('%(parent_collection_code)s')
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            UNION ALL
+            SELECT
+             r."parent_code", p1."name",
+             r."search_code", p2."name",
+                   CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+             ng.depth + 1
+            FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
+             res AS ng
+            WHERE r."parent_code" = ng."search_code" and depth < 10
+            AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
+            )
+            
+            Select search_code from res;
+            ''' % var_dict
+
+        return stmt
 
 
 
