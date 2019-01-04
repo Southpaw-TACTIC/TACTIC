@@ -2314,6 +2314,12 @@ class IngestUploadCmd(Command):
                 server.log_message(self.message_key, msg, status="in progress")
 
 
+            if self.info.get("snapshots"):
+                self.info["snapshots"].append(snapshot)
+            else:
+                self.info["snapshots"] = [snapshot]
+
+
 
         if self.message_key:
             msg = {
