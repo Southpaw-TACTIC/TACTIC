@@ -337,6 +337,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.filter_node_name = True
         else:
             self.filter_node_name = False
+
+        self.allow_cycle = self.kwargs.get('allow_cycle')
+        if self.allow_cycle in [False, 'false']:
+            self.allow_cycle = False
+        else:
+            self.allow_cycle = True
             
 
         top.add_style("position: relative")
@@ -2039,6 +2045,8 @@ spt.pipeline.top = null;
 
 spt.pipeline.background_color = "#fff";
 
+spt.pipeline.allow_cycle = true;
+
 // External method to initialize callback
 spt.pipeline.init_cbk = function(common_top) {
     spt.pipeline.top = common_top.getElement(".spt_pipeline_top");
@@ -2069,6 +2077,11 @@ spt.pipeline.set_top = function(top) {
 spt.pipeline._init = function() {
     var top = spt.pipeline.top;
     var canvas = top.getElement(".spt_pipeline_canvas");
+
+    var allow_cycle = top.getAttribute("spt_allow_cycle");
+    if (allow_cycle) {
+        if (allow_cycle == "false") spt.pipeline.allow_cycle = false;
+    }
 
     if (canvas) {
         spt.pipeline.background_color = canvas.getAttribute("spt_background_color");
@@ -3748,6 +3761,63 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
 
 }
 
+spt.pipeline.construct_graph = function(nodes, connectors) {
+    var graph = {};
+    for (var i = 0; i < nodes.length; i++) {
+        graph[nodes[i].title] = [];
+    }
+    for (var i = 0; i < connectors.length; i++) {
+        graph[connectors[i].from_node.title].push(connectors[i].to_node.title);
+    }
+
+    return graph;
+}
+
+spt.pipeline._detect_cycle = function(graph, node, visited, stack) {
+    visited.find(x => x.node === node).bool = true;
+    stack.find(x => x.node === node).bool = true;
+
+    for (var i = 0; i < graph[node].length; i++) {
+        if (!visited.find(x => x.node === graph[node][i]).bool) {
+            if (spt.pipeline._detect_cycle(graph, graph[node][i], visited, stack)) {
+                return true;
+            }
+        } else if (stack.find(x => x.node === graph[node][i]).bool) {
+            return true;
+        }
+    }
+
+    stack.find(x => x.node === node).bool = false;
+    return false;
+}
+
+spt.pipeline.detect_cycle = function() {
+    var nodes = spt.pipeline.get_all_nodes();
+    var connectors = spt.pipeline.get_canvas().connectors;
+    var graph = spt.pipeline.construct_graph(nodes, connectors);
+
+    var visited = [];
+    var stack = [];
+    for (var i = 0; i < nodes.length; i++) {
+        var object = {
+            node: nodes[i].title,
+            bool: false
+        }
+
+        visited.push(object);
+        stack.push(object);
+    }
+
+    for (var i = 0; i < nodes.length; i++) {
+        if (!visited.find(x => x.node === nodes[i].title).bool) {
+            if (spt.pipeline._detect_cycle(graph, nodes[i].title, visited, stack)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     var drop_on_el = spt.get_event_target(evt);
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
@@ -3804,7 +3874,17 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
 
         }
 
+        var temp = connectors.slice();
         connectors.push(connector);
+
+        // check if cycle exists
+        if (!spt.pipeline.allow_cycle) {
+            if (spt.pipeline.detect_cycle()) {
+                spt.alert("Cyclic connections are not allowed");
+                canvas.connectors = temp;
+                return;
+            }
+        }
 
         // add the connector to the source group
         var group = spt.pipeline.add_group(group_name);
