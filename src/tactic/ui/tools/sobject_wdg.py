@@ -13,7 +13,7 @@ __all__ = ['SObjectDetailWdg', 'SObjectDetailInfoWdg', 'RelatedSObjectWdg', 'Sna
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.common import Environment, SPTDate, Common, FormatValue, Xml
+from pyasm.common import Environment, SPTDate, Common, FormatValue, Xml, jsonloads
 from pyasm.biz import Snapshot, Pipeline
 from pyasm.web import DivWdg, WebContainer, Table, WebState
 from pyasm.search import Search, SearchType, SearchKey
@@ -402,13 +402,27 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         #menu = self.get_extra_menu()
         #tab = TabWdg(config=config, state=state, extra_menu=menu)
-        show_add = False
-        show_remove = False
+        tab_kwargs = self.kwargs.get("tab_kwargs") or {}
+        if isinstance(tab_kwargs, basestring):
+            tab_kwargs = jsonloads(tab_kwargs)      
 
+        show_remove = False
+        show_add = tab_kwargs.get("show_add") or False
+        add_bvr = tab_kwargs.get("add_bvr") or ""
         #show_add = True
         #show_remove = True
-
-        tab = TabWdg(config=config, state=state, show_add=show_add, show_remove=show_remove, tab_offset=10, selected=selected, save_state=save_state )
+        
+ 
+        tab = TabWdg(
+            config=config, 
+            state=state, 
+            show_add=show_add, 
+            add_bvr=add_bvr,
+            show_remove=show_remove, 
+            tab_offset=10, 
+            selected=selected, 
+            save_state=save_state 
+        )
         tab.add_style("margin: 0px -1px -1px -1px")
 
 
@@ -503,7 +517,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
         # SObject settings overridews WidgetConfig entry
         sobject_settings = self.sobject.get_json_value("settings", default={}, no_exception=True)
         if sobject_settings:
-            config = sobject_settings.get("config")
+            wdg_settings = sobject_settings.get("SObjectDetailWdg")
+            config = wdg_settings.get("config")
             xml = Xml()
             xml.read_string(config)
             config = WidgetConfig.get("tab_element_names", xml=xml)

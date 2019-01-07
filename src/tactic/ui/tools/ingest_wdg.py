@@ -1886,7 +1886,7 @@ class IngestUploadCmd(Command):
             sequences = FileRange.get_sequences(filenames)
             filenames = []
             for sequence in sequences:
-                print("sequence: ", sequence)
+                
                 if sequence.get('is_sequence'):
                     filename = sequence.get("template")
                 else:
@@ -1910,15 +1910,23 @@ class IngestUploadCmd(Command):
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
 
+    
+          
             if filename.endswith("/"):
                 # this is a folder:
                     continue
 
-
+            new_keywords = keywords
+ 
             if filename.startswith("search_key:"):
                 mode = "search_key"
                 tmp, search_key = filename.split("search_key:")
                 snapshot = Search.get_by_search_key(search_key)
+                
+                source_keywords = snapshot.get_value("keywords", no_exception=True)
+                if source_keywords:
+                    new_keywords = "%s %s" % (new_keywords, source_keywords)
+
                 if snapshot.get_base_search_type() == "sthpw/snapshot":
                     lib_path = snapshot.get_lib_path_by_type()
                     filename = os.path.basename(lib_path)
@@ -1931,6 +1939,8 @@ class IngestUploadCmd(Command):
 
                 if not snapshot:
                     raise Exception("Must pass in snapshot search_key")
+                
+                
 
             else:
                 mode = "multi"
@@ -2043,6 +2053,28 @@ class IngestUploadCmd(Command):
                 path = "%s/%s" % (relative_dir, filename)
             else:
                 path = filename
+            
+            # Handle update data
+            # for some unknown reason, this input prefix is ignored
+            new_data = {}
+            for name, value in update_data.items():
+                if name == "input_prefix":
+                    continue
+
+                name = name.replace("%s|"%input_prefix, "")
+                new_data[name] = value
+          
+            if new_data:
+                from tactic.ui.panel import EditCmd
+
+                cmd = EditCmd(
+                        view="edit",
+                        sobject=sobject,
+                        data=new_data,
+                        commit="false",
+                )
+                cmd.execute()
+
 
             # Don't want the keywords being extracted from lib_path, extract the relative dir path instead
             # Using new_filename because it is the filename without version numbers
@@ -2070,17 +2102,16 @@ class IngestUploadCmd(Command):
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
+
             new_file_keywords = ""
-
-
 
             # handle setting keywords to parent
             if SearchType.column_exists(search_type, "keywords"):
 
                 old_keywords = sobject.get_value("keywords")
 
-                if keywords:
-                    new_file_keywords = "%s %s" % (keywords, file_keywords)
+                if new_keywords:
+                    new_file_keywords = "%s %s" % (new_keywords, file_keywords)
                 else:
                     new_file_keywords = file_keywords
 
@@ -2090,20 +2121,20 @@ class IngestUploadCmd(Command):
                 # remove duplicated
                 new_file_keywords = set( new_file_keywords.split(" ") )
                 new_file_keywords = " ".join(new_file_keywords)
-
+ 
                 if not cmd_keyword_mode == "none":
                     sobject.set_value("keywords", new_file_keywords)
 
 
             if SearchType.column_exists(search_type, "user_keywords"):
-                if keywords:
+                if new_keywords:
                     if not cmd_keyword_mode == "none":
-                        sobject.set_value("user_keywords", keywords)
+                        sobject.set_value("user_keywords", new_keywords)
 
 
             if SearchType.column_exists(search_type, "keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
-                data['user'] = keywords
+                data['user'] = new_keywords
                 data['path'] = file_keywords
                 sobject.set_json_value("keywords_data", data)
 
@@ -2176,33 +2207,8 @@ class IngestUploadCmd(Command):
                     except:
                         pass
 
-            # for some unknown reason, this input prefix is ignored
-            if update_data.has_key("input_prefix"):
-                del(update_data['input_prefix'])
-            new_data = {}
-            for name, value in update_data.items():
-                if name == "input_prefix":
-                    continue
 
-                name = name.replace("%s|"%input_prefix, "")
-                new_data[name] = value
-
-
-            if new_data:
-                from tactic.ui.panel import EditCmd
-
-                if sobject.get_base_search_type() != "sthpw/snapshot":
-                    new_data = {}
-
-                cmd = EditCmd(
-                        view="edit",
-                        sobject=sobject,
-                        data=new_data,
-                        commit="false",
-
-                )
-                cmd.execute()
-
+            # Handle extra_data
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
                     sobject.set_value(key, value)
@@ -2312,6 +2318,12 @@ class IngestUploadCmd(Command):
                 }
 
                 server.log_message(self.message_key, msg, status="in progress")
+
+
+            if self.info.get("snapshots"):
+                self.info["snapshots"].append(snapshot)
+            else:
+                self.info["snapshots"] = [snapshot]
 
 
 
