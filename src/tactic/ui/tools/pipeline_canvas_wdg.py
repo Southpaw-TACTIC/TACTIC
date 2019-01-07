@@ -339,10 +339,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.filter_node_name = False
 
         self.allow_cycle = self.kwargs.get('allow_cycle')
-        if self.filter_node_name in [False, 'false']:
-            self.filter_node_name = False
+        if self.allow_cycle in [False, 'false']:
+            self.allow_cycle = False
         else:
-            self.filter_node_name = True
+            self.allow_cycle = True
             
 
         top.add_style("position: relative")
