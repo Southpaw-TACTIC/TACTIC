@@ -818,8 +818,15 @@ class TopWdg(Widget):
 
     
         from pyasm.security import Site
+        from pyasm.prod.biz import ProdSetting
         site = Site.get_site()
-       
+
+        master_enabled = ProdSetting.get_value_by_key("master/enabled")
+        master_url = ProdSetting.get_value_by_key("master/url")
+        master_login_ticket = ProdSetting.get_value_by_key("master/login_ticket")
+        master_project_code = ProdSetting.get_value_by_key("master/project_code")
+        master_site = ProdSetting.get_value_by_key("master/site")
+
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
             kiosk_mode = 'false'
@@ -835,8 +842,13 @@ class TopWdg(Widget):
         env.set_client_handoff_dir('%s');
         env.set_client_repo_dir('%s');
         env.set_kiosk_mode('%s');
-
-        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode))
+        env.set_master_enabled('%s');
+        env.set_master_url('%s');
+        env.set_master_login_ticket('%s');
+        env.set_master_project_code('%s');
+        env.set_master_site('%s');
+        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
+		master_enabled, master_url, master_login_ticket, master_project_code, master_site))
         top.add(script)
 
 
