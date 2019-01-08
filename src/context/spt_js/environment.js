@@ -37,6 +37,11 @@ spt.Environment = function() {
     this.colors = {};
     this.libraries = {};
     this.kiosk_mode = false;
+    this.master_enabled = false;
+    this.master_url = null;
+    this.master_login_ticket = null;
+    this.master_project_code = null;
+    this.master_site = null;
 
     // by default, look at the browser
     if (typeof(document) != 'undefined') {
@@ -148,9 +153,44 @@ spt.Environment = function() {
         return this.kiosk_mode;
     }
 
+    this.set_master_enabled = function(mode) {
+        if (mode == 'true' || mode == true) {
+            this.master_enabled = true;
+        }
+    }
+    this.get_master_enabled = function() {
+        return this.master_enabled;
+    }
 
+    this.set_master_url = function(url) {
+        this.master_url = url;
+    }
+    this.get_master_url = function() {
+        return this.master_url;
+    }
 
+    this.set_master_login_ticket = function(ticket) {
+        this.master_login_ticket = ticket;
+    }
+    this.get_master_login_ticket = function() {
+        return this.master_login_ticket;
+    }
 
+    this.set_master_project_code = function(code) {
+        this.master_project_code = code;
+    }
+    this.get_master_project_code = function() {
+        return this.master_project_code;
+    }
+
+    this.set_master_site = function(site) {
+        if (site) {
+            this.master_site = site;
+        }
+    }
+    this.get_master_site = function() {
+        return this.master_site;
+    }
 
 
     /*

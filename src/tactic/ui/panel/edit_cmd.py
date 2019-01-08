@@ -69,16 +69,16 @@ class EditCmd(Command):
             form_data = {}
             self.config_xml = None
 
-
         self.multiplier = 1
         self.multiplier_str = kwargs.get("multiplier")
         if not self.multiplier_str:
             self.multiplier_str = web.get_form_value("multiplier")
-            if self.multiplier_str:
-                try:
-                    self.multiplier = int(self.multiplier_str)
-                except:
-                    pass
+        
+        if self.multiplier_str:
+	    try:
+	        self.multiplier = int(self.multiplier_str)
+	    except:
+	        pass
 
 
 

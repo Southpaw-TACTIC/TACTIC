@@ -164,7 +164,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
     def get_top(self):
         top = self.top
-        top.add_color("background", "background", -5)
+        top.add_color("background", "background", -2)
         top.add_style("margin-bottom: -2px")
         top.add_class("spt_filter_top")
 
@@ -223,7 +223,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         td.add(title_div)
         title_div.add("<div style='font-size: 16px'>Search Criteria</div>")
         title_div.add("<div>Select filters to refine your search</div>")
-        title_div.add_style("padding: 20px 0px 0px 20px")
+        title_div.add_style("padding: 10px 0px 0px 20px")
 
         table.add_style("margin-left: auto")
         table.add_style("margin-right: auto")
@@ -397,7 +397,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         elements_wdg.add_style("padding-bottom: 15px")
 
         #elements_wdg.add_color("background", "background3", 0)
-        elements_wdg.add_color("background", "background", -3)
+        elements_wdg.add_color("background", "background")
         elements_wdg.add_border()
 
 

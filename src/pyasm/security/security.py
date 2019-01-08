@@ -1167,8 +1167,8 @@ class Ticket(SObject):
         """
 
         from datetime import datetime
-
-        # it makes no sense for Sqlite sessions to expire
+        from pyasm.search import SqlException
+	# it makes no sense for Sqlite sessions to expire
         # FIXME: this is a bit of a hack until we figure out how
         # timestamps work in sqlite (all are converted to GMT?!)
         if impl.get_database_type() in ['Sqlite', 'MySQL']:
@@ -1180,7 +1180,10 @@ class Ticket(SObject):
             ticket.set_value("expiry", expiry, quoted=0)
 
         if commit:
-            ticket.commit(triggers="none")
+	    try:
+                ticket.commit(triggers="none")
+            except SqlException as e:
+                print "Sql error has occured."
    
 
         return ticket

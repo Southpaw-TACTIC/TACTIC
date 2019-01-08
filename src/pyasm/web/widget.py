@@ -589,7 +589,7 @@ class WidgetSettings(SObject):
         if not DATABASE:
             return default
 
-        settings = WidgetSettings.get_by_key(key, auto_create=auto_create)
+        settings = WidgetSettings.get_by_key(key)
         if not settings:
             return default
 
@@ -725,7 +725,7 @@ class WidgetSettings(SObject):
 
 
 
-    def get_by_key(key, auto_create=True):
+    def get_by_key(key, auto_create=False):
         login = WebContainer.get_user_name()
         dict_key = '%s:%s' %(WidgetSettings.SEARCH_TYPE, login) 
         settings_dict = Container.get(dict_key)
