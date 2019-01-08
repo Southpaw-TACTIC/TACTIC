@@ -48,6 +48,9 @@ class BaseNodeWdg(BaseRefreshWdg):
     def get_height(self):
         return 40
 
+    def get_label_width(self):
+        return
+
     def get_border_radius(self):
         return 0
 
@@ -65,9 +68,6 @@ class BaseNodeWdg(BaseRefreshWdg):
 
     def get_node_behaviors(self):
         return []
-
-    def get_content(self):
-        return DivWdg()
 
     def get_shape(self):
         return ""
@@ -1550,7 +1550,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add(label)
         label.add_style("position: absolute")
 
-        label.add_style("width: %spx" % width)
+        label_width = custom_wdg.get_label_width()
+        if label_width == None:
+            label_width = width
+
+        label.add_style("width: %spx" % label_width)
         label.add_style("height: %spx" % height)
 
         label.add_style("top: 0px")

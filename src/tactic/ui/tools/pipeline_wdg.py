@@ -904,14 +904,18 @@ class PipelineListWdg(BaseRefreshWdg):
             if pipelines:
                 inner.add("<br clear='all'/>")
 
-                # misc status pipelines
-                swap = SwapDisplayWdg()
-                inner.add(swap)
-                swap.add_style("float: left")
+                title = DivWdg()
+                inner.add(title)
 
-                title = DivWdg("<b>Templates</b> <i>(%s)</i>" % len(pipelines))
-                title.add_style("padding-bottom: 2px")
-                title.add_style("padding-top: 3px")
+                title.add_style("display: flex")
+                title.add_style("align-items: center")
+
+                swap = SwapDisplayWdg()
+                title.add(swap)
+
+                title.add("<b>Templates</b> <i>(%s)</i><br/>" % len(pipelines))
+              
+ 
                 inner.add(title)
                 content_div = DivWdg()
                 content_div.add_styles('padding-top: 6px') 
