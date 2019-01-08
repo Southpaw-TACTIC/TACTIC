@@ -1701,8 +1701,19 @@ TacticServerStub = function() {
     //
     // Trigger methods
     //
-    this.call_trigger = function(search_key, event, kwargs) {
-        return this._delegate("call_trigger", arguments, kwargs);
+    this.call_trigger = function(search_key, event, kwargs, on_complete, on_error) {
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("call_trigger", arguments, kwargs, null, on_complete, on_error);
+        return ret_val
+    }
+
+    this.p_call_trigger = function(search_key, event, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
+            this.call_trigger(search_key, event, kwargs);
+        }.bind(this) )
     }
 
 
