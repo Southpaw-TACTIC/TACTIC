@@ -141,11 +141,13 @@ class SqlTest(unittest.TestCase):
     def _test_update_class(self):
         """test an update"""
         update = Update()
+        update.set_database("sthpw")
         update.set_table("person");
         update.set_value("name_first", "megumi");
         update.add_where("\"person_id\" = '1'");
         statement = update.get_statement()
-        expected = "UPDATE \"person\" SET \"name_first\" = 'megumi' WHERE \"person_id\" = '1'"
+        #expected = "UPDATE \"person\" SET \"name_first\" = 'megumi' WHERE \"person_id\" = '1'"
+        expected = """UPDATE "sthpw"."public"."person" SET "name_first" = \'megumi\' WHERE "person_id" = \'1\'"""
 
         self.assertEqual( expected, statement )
 
