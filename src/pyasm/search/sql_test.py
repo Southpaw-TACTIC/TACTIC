@@ -307,10 +307,7 @@ class SqlTest(unittest.TestCase):
         select.add_enum_order_by("code", ['cow', 'dog', 'horse'])
 
         expected = '''SELECT %s"asset".* FROM %s"asset" ORDER BY ( CASE "code"
-WHEN 'cow' THEN 1
-WHEN 'dog' THEN 2
-WHEN 'horse' THEN 3
-ELSE 4 END )''' % (self.prefix, self.prefix)
+WHEN 'cow' THEN 1 \nWHEN 'dog' THEN 2 \nWHEN 'horse' THEN 3 \nELSE 4 END )''' % (self.prefix, self.prefix)
 
         statement = select.get_statement()
 
