@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser']
+__all__ = ['ParserImportError', 'CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser']
 
 
 import os, sys, re, subprocess
@@ -56,7 +56,9 @@ except:
     HAS_XMP = False
 
 
-
+class ParserImportError(ImportError):
+    def __init__(self,*args,**kwargs):
+        ImportError.__init__(self,*args,**kwargs)
 
 class CheckinMetadataHandler():
     def __init__(self, **kwargs):
@@ -330,8 +332,10 @@ class PILMetadataParser(BaseMetadataParser):
         }
 
     def get_metadata(self):
-        path = self.kwargs.get("path")
+        if not HAS_PIL:
+            raise ParserImportError("Unable to import PIL parser.")
 
+        path = self.kwargs.get("path")
         try:
             from PIL import Image
             im = Image.open(path)
@@ -389,6 +393,9 @@ class ExifMetadataParser(BaseMetadataParser):
 
 
     def get_metadata(self):
+        if not HAS_EXIF:
+            raise("Unable to import EXIF parser.")
+
         path = self.kwargs.get("path")
 
         from pyasm.checkin import exifread
@@ -419,6 +426,9 @@ class IPTCMetadataParser(BaseMetadataParser):
 
 
     def get_metadata(self):
+        if not HAS_IPTC:
+            raise ParserImportError("Unable to import IPTC parser.")
+
         path = self.kwargs.get("path")
 
         from pyasm.checkin.iptcinfo import IPTCInfo, c_datasets, c_datasets_r
@@ -462,6 +472,9 @@ class XMPMetadataParser(BaseMetadataParser):
 
 
     def get_metadata(self):
+        if not HAS_XMP:
+            raise ParserImportError("Unable to import XMP parser.")
+
         path = self.kwargs.get("path")
 
         from libxmp.utils import file_to_dict
@@ -508,6 +521,9 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         }
 
     def get_metadata(self):
+        if not HAS_IMAGEMAGICK:
+            raise ParserImportError("Unable to import IMAGEMAGICK parser.")
+
         path = self.kwargs.get("path")
 
         import subprocess, re
