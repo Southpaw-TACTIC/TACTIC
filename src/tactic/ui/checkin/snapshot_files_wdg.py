@@ -1070,10 +1070,31 @@ class PathMetadataWdg(BaseRefreshWdg):
             parser = BaseMetadataParser.get_parser_by_path(path)
 
         if parser:
-            if use_tactic_tags in ['true', True]:
-                metadata = parser.get_tactic_metadata()
-            else:
-                metadata = parser.get_metadata()
+            try:
+                if use_tactic_tags in ['true', True]:
+                    metadata = parser.get_tactic_metadata()
+                else:
+                    metadata = parser.get_metadata()
+            except:
+                top = DivWdg()
+                div = DivWdg()
+                div.add_class("fa")
+                div.add_class("fa-chain-broken")
+                div.add_style("font-size: 800%")
+                div.add_style("color: grey")
+                div.add_style("line-height: 100px")
+                
+                msg_div = DivWdg()
+                msg_div.add("Missing parser!")
+                msg_div.add_style("font-size: 200%")
+                msg_div.add_style("color: grey")
+                top.add(div)
+                top.add(msg_div)
+                top.add_style("display: flex")
+                top.add_style("flex-direction: column")
+                top.add_style("justify-content: center")
+                top.add_style("align-items: center")
+                return top
         else:
             metadata = {}
 
