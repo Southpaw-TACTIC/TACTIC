@@ -541,7 +541,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         p = re.compile(":\ +")
 
         level = 0
-        names = []
+        names = set()
         curr_ret = ret
         for line in ret_val.split("\n"):
             line = line.strip()
@@ -580,13 +580,13 @@ class ImageMagickMetadataParser(BaseMetadataParser):
                    value = unicode(value, errors='ignore').encode('utf-8')
 
                 ret[name] = value
-                names.append(name)
+                names.add(name)
             except Exception, e:
                 print "WARNING: Cannot handle line [%s] with error: " % line, e
 
 
         if names:
-            ret['__keys__'] = names
+            ret['__keys__'] = list(names)
 
 
         return ret
