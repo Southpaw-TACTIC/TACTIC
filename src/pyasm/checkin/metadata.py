@@ -803,7 +803,7 @@ class XMPKeywordsParser(BaseMetadataParser):
 
             keywords = [x.text.lower() for x in nodes]
 
-            return {"keywords": ", ".join(keywords)}
+            return {"keywords": " ".join(keywords)}
         else:
             return {"keywords": ""}
 
