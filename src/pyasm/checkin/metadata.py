@@ -396,7 +396,7 @@ class ExifMetadataParser(BaseMetadataParser):
 
     def get_metadata(self):
         if not HAS_EXIF:
-            raise("Unable to import EXIF parser.")
+            raise ParserImportError("Unable to import EXIF parser.")
 
         path = self.kwargs.get("path")
 
