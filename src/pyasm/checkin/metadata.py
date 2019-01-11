@@ -10,12 +10,12 @@
 #
 #
 
-__all__ = ['ParserImportError', 'CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser']
+__all__ = ['ParserImportError', 'CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser', 'XMPKeywordsParser']
 
 
 import os, sys, re, subprocess
 
-from pyasm.common import Common
+from pyasm.common import Common, Xml
 from pyasm.biz import File
 
 try:
@@ -308,6 +308,8 @@ class BaseMetadataParser(object):
             parser = PILMetadataParser(path=path)
         elif parser_str == "FFMPEG":
             parser = FFProbeMetadataParser(path=path)
+        elif parser_str == "XMP Keywords":
+            parser = XMPKeywordsParser(path=path)
         else:
             parser = None
 
@@ -708,6 +710,102 @@ class FFProbeMetadataParser(BaseMetadataParser):
             'audio_bitrate': 'audio:bit_rate',
         }
 
+class XMPKeywordsParser(BaseMetadataParser):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def get_title(self):
+        return "XMP Keywords"
+
+
+    def get_initial_data(self):
+        return {
+            'media_type': 'image',
+            'parser': 'XMP Keywords'
+        }
+
+    def check_xmpmetadata(self):
+        '''Checking if the file has x:xmpmeta tag.
+        
+        We are reading the first 1000 lines of the file and 512 bytes of each line.
+        It will return True if there is x:xmpemeta tag in the file. False otherwise.
+        '''
+        path = self.kwargs.get("path")
+        cnt = 0
+        f = open(path, "rb")
+        while True:
+            line = f.readline(512)
+            if not line:
+                break
+            cnt += 1
+            if cnt > 1000:
+                return False
+            line = line.strip()
+            if line.startswith( "<x:xmpmeta"):
+                return True
+        f.close()
+        return False
+
+    def get_metadata(self):
+        '''Extract Adobe Lightroom XMP metadata.
+        
+        First, check if the xmpmeta tag is in the file.
+        If not, return None.
+        If there is, read the data, and extract the keywords.
+        Return an array of keywords in lower case.
+        '''
+
+        path = self.kwargs.get("path")
+
+        if not self.check_xmpmetadata():
+            return {"keywords": ""}
+
+        f = open(path, "rb")
+
+        lines = []
+        lines.append( '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>''')
+
+        start = False
+
+        while True:
+
+            line = f.readline()
+
+            # this is just in case
+            if not line:
+                break
+
+            line = line.strip()
+
+            if not start:
+                if line.startswith( "<x:xmpmeta"):
+                    start = True
+                    lines.append(line)
+                continue
+
+
+            if line.startswith("</x:xmpmeta>"):
+                lines.append(line)
+                break
+
+            lines.append(line)
+
+        if len(lines) > 1:
+            doc = " ".join(lines)
+            doc = doc.replace("dc:", "")
+            doc = doc.replace("rdf:", "")
+
+            xml = Xml()
+            xml.read_string(doc)
+
+            nodes = xml.get_nodes("//subject//li")
+
+            keywords = [x.text.lower() for x in nodes]
+
+            return {"keywords": ", ".join(keywords)}
+        else:
+            return {"keywords": ""}
 
 
 # DEPRECATED: use python one
