@@ -214,6 +214,11 @@ class Sql(Base):
         self.transaction_count = 0
         self.description = None
 
+        self.sslmode = 'disable'
+        sslmode = Config.get_value("database", "sslmode")
+        if sslmode:
+            self.sslmode = sslmode
+
 
     def get_db_resource(self):
         db_resource = DbResource(self.database_name, host=self.host, port=self.port, vendor=self.vendor, user=self.user, password=self.password)
@@ -496,10 +501,10 @@ class Sql(Base):
                     password_str = "password=%s" % self.password
                 if not self.port:
                     self.port = 5432
-                sslmode = "require"
-                sslmode = "disable"
+                #sslmode = "require"
+                #sslmode = "disable"
                 auth = "host=%s port=%s dbname=%s sslmode=%s user=%s %s" % \
-                    (self.host, self.port, self.database_name, sslmode, self.user, password_str)
+                    (self.host, self.port, self.database_name, self.sslmode, self.user, password_str)
                 self.conn = self.pgdb.connect(auth)
 
                 #TODO: check other db impl on timezone impl
