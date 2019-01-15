@@ -501,8 +501,7 @@ class Sql(Base):
                     password_str = "password=%s" % self.password
                 if not self.port:
                     self.port = 5432
-                #sslmode = "require"
-                #sslmode = "disable"
+
                 auth = "host=%s port=%s dbname=%s sslmode=%s user=%s %s" % \
                     (self.host, self.port, self.database_name, self.sslmode, self.user, password_str)
                 self.conn = self.pgdb.connect(auth)
