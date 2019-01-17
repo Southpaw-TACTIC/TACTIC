@@ -1643,9 +1643,11 @@ spt.tab.close = function(src_el) {
 
 
         resize_offset = self.kwargs.get("resize_offset")
+        resize_attr = self.kwargs.get("resize_attr") or "height"
         if resize_offset != None:
             content_top.add_class("spt_window_resize")
             content_top.add_attr("spt_window_resize_offset", resize_offset)
+            content_top.add_attr("spt_window_resize_attr", resize_attr)
             #content_top.add_style("overflow: auto")
             content_top.add_style("overflow: none")
 
