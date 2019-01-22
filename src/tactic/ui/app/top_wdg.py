@@ -823,7 +823,8 @@ class TopWdg(Widget):
 
         master_enabled = ProdSetting.get_value_by_key("master/enabled")
         master_url = ProdSetting.get_value_by_key("master/url")
-        master_login_ticket = ProdSetting.get_value_by_key("master/login_ticket")
+        #master_login_ticket = ProdSetting.get_value_by_key("master/login_ticket")
+	master_login_ticket = Environment.get_ticket() 
         master_project_code = ProdSetting.get_value_by_key("master/project_code")
         master_site = ProdSetting.get_value_by_key("master/site")
 
