@@ -479,7 +479,6 @@ class Project(SObject):
             key = { 'code': project_code }
             key2 = { 'code': "*" }
             keys = [key, key2]
-	    #if False:
             if not security.check_access("project", keys, access="allow", default="deny"):
                 user = Environment.get_login()
                 if user:

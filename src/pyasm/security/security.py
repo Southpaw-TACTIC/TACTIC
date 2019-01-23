@@ -1383,14 +1383,13 @@ class Security(Base):
             #self.login_cache.set_attr("%s:groups" % login, self._groups)
             #self.login_cache.set_attr("%s:group_names" % login, self._group_names)
 
-	#print "before"
+
         # Setup the access manager and access rules
         # Admin and admin group do not get access rules
         is_admin = self.setup_access_manager()
         if not is_admin and self.add_access_rules_flag:
             self.add_access_rules()
 
-	#print "after"
         # record that the login is logged in
         self._is_logged_in = 1
 
@@ -1413,7 +1412,7 @@ class Security(Base):
         self.add_access_rules_flag = True
        
         self._do_login()
-	print "test!!"
+
 
 
     def login_as_guest(self):
@@ -1675,7 +1674,8 @@ class Security(Base):
             
             auth_login_name = login_name
 
-    
+     
+
         authenticate = Common.create_from_class_path(auth_class)
         try:
             is_authenticated = authenticate.verify(auth_login_name, password)
@@ -1693,6 +1693,7 @@ class Security(Base):
         if not mode:
             mode = 'default'
 
+        
         # lowercase name if case-insensitive is set to true
         if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':
             login_name = login_name.lower()
@@ -1742,6 +1743,7 @@ class Security(Base):
             if not self._login:
                 self._login = Login.get_by_login(login_name, use_upn=True)
 
+
         # if it doesn't exist, then the login fails
         if not self._login:
             raise SecurityException("Login/Password combination incorrect")
@@ -1759,12 +1761,14 @@ class Security(Base):
             except LicenseException as e:
                 raise SecurityException(str(e))
 
+
         # create a new ticket for the user
         self._ticket = self._generate_ticket(login_name, expiry, category="gui")
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
 
         self._do_login()
+
 
         # allow for some postprocessing
         authenticate.postprocess(self._login, self._ticket)
@@ -1877,6 +1881,7 @@ class Security(Base):
             ticket_key = Common.generate_random_key()
 
         ticket_key = Site.get().build_ticket(ticket_key)
+
 
         # make sure the ticket is always generated on the default site
         site = Site.get_site()
