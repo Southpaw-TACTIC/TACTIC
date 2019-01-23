@@ -795,7 +795,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         spt.text_input.run_client_trigger(bvr2, kwargs.event_name, display_value, kwargs.hidden_value);
         return;
     }
-
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
         var hidden_el = top.getElement(".spt_text_value");
@@ -1647,8 +1646,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 search.add_filter("search_type", filter_search_type)
 
             if filters:
-                search.add_op_filters(filters)
-            
+                if isinstance(filters, basestring):
+                    import json
+                    search.add_op_filters(json.loads(filters))
+                else:
+                    search.add_op_filters(filters)
             search.add_op("begin")
 
             search_type_obj = SearchType.get(search_type)
