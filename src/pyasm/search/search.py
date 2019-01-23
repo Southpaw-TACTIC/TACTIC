@@ -3351,7 +3351,7 @@ class SObject(object):
 
 
     def set_data_value(self, column, name, value, quoted=True):
-        data = self.get_value(column) or {}
+        data = self.get_json_value(column, default={})
         data = data.copy()
 
         data[name] = value
