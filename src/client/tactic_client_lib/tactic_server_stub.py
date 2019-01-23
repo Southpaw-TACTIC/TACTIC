@@ -148,7 +148,6 @@ class TacticServerStub(object):
         if not self.project_code:
             self.project_code = ''
 
-	print "set_transaction_ticket_start"
         self.ticket = {
             'ticket': ticket,
             'project': self.project_code,
@@ -254,15 +253,12 @@ class TacticServerStub(object):
            Set the project code'''
         self.project_code = project_code
         if self.protocol == 'local':
-	    print "local protocol"
             from pyasm.biz import Project
             Project.set_project(project_code)
-	    print "local_end"
         #self.set_project_state(project_code)
-	#print "here123"
+
         # switch the project code on the ticket
         self.set_transaction_ticket(self.transaction_ticket)
-        print "set_project_end"
 
     def get_project(self):
         return self.project_code
