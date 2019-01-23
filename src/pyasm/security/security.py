@@ -1759,16 +1759,13 @@ class Security(Base):
             except LicenseException as e:
                 raise SecurityException(str(e))
 
-	print "44444444444444444$$", login_name
         # create a new ticket for the user
         self._ticket = self._generate_ticket(login_name, expiry, category="gui")
-	print "4.555555555555", login_name
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
 
         self._do_login()
 
-	print "55555555555555555555", login_name
         # allow for some postprocessing
         authenticate.postprocess(self._login, self._ticket)
         
@@ -1899,11 +1896,6 @@ class Security(Base):
             if site:
                 Site.pop_site()
 
-	import traceback
-
-	#print ticket.get_sobject_dict(), login_name
-	if login_name == "celton":
-	    traceback.print_stack()
         return ticket
 
 
