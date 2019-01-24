@@ -118,21 +118,6 @@ spt.hotkeys.handle_key_input_no_mods = function( key_info )
     var action_done = false;
     var key_code = spt.kbd.get_key_info_code( key_info );
 
-    /*
-    // DISABLING HOT KEY FOR ACTION BAR ... to be completely removed soon as we are deprecating the use of
-    // the Action Bar, but keeping this code around for now until every thing is verified as working with
-    // the new Gear Menus ...
-    if( key_code == spt.key_const.key_2() && ! key_info.ctrl ) {
-        // 2 ... toggle display of ACTION BAR popup ...
-        spt.popup.toggle_display('ActionBarWdg_popup', false);
-        action_done = true;
-    }
-    else if( key_code == spt.key_const.key_shift_2() && key_info.shift == true && ! key_info.ctrl ) {
-        // SHIFT+2 for reset of ACTION BAR popup ...
-        spt.popup.open('ActionBarWdg_popup', true);
-        action_done = true;
-    }
-    */
     if( key_code == spt.key_const.key_9() && ! key_info.ctrl ) {
         // 9 ... toggle display of the TACTIC Script Editor popup ...
         var js_popup_id = "TACTIC Script Editor";

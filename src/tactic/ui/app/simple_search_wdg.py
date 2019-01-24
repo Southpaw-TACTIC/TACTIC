@@ -180,7 +180,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
         # add the load wdg
         show_saved_search = True
         if show_saved_search:
-            saved_button = ActionButtonWdg(title='Saved', tip='Load Saved Searches')
+            saved_button = ActionButtonWdg(title='Saved Searches', tip='Load Saved Searches', width=125)
             saved_button.add_class("spt_simple_search_save_button")
             saved_button.add_behavior( {
                 #'type': 'load',
@@ -206,7 +206,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
         clear_button = ActionButtonWdg(title='Clear', tip='Clear all of the filters' )
-        td.add(clear_button)
+        #td.add(clear_button)
         clear_button.add_class("spt_simple_search_clear_button")
         clear_button.add_style("float: right")
         clear_button.add_style("margin: 10px")
@@ -264,6 +264,20 @@ class SimpleSearchWdg(BaseRefreshWdg):
             td.add_style("padding: 5px 10px")
             #td.add_border()
             #td.add_color("background", "background", -10)
+
+            clear_button = ActionButtonWdg(title='Clear', tip='Clear all of the filters' )
+            td.add(clear_button)
+            clear_button.add_class("spt_simple_search_clear_button")
+            clear_button.add_style("float: right")
+            clear_button.add_style("margin: 6px 8px")
+            clear_button.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+            spt.api.Utility.clear_inputs(bvr.src_el.getParent(".spt_filter_top"));
+            '''
+            } )
+
+
 
 
 
@@ -643,10 +657,18 @@ class SimpleSearchWdg(BaseRefreshWdg):
         if self.kwargs.get('run_search_bvr'):
             run_search_bvr = self.kwargs.get('run_search_bvr')
         else:
+            mode = self.kwargs.get("mode")
             run_search_bvr = {
-                'type':         'click_up',
+                'type': 'click_up',
+                'mode': mode,
                 'cbjs_action':  '''
-                spt.simple_search.hide();
+
+                if (bvr.mode == "inline") {
+                }
+                else {
+                    spt.simple_search.hide();
+                }
+
                 spt.dg_table.search_cbk(evt, bvr);
                 ''',
                 'new_search':   True,
@@ -654,7 +676,10 @@ class SimpleSearchWdg(BaseRefreshWdg):
             }
 
 
-        title = "Apply"
+
+        title = self.kwargs.get("action_title")
+        if not title:
+            title = "Apply"
 
         button = ActionButtonWdg(title=title, tip='Run search with this criteria' )
         search_div.add(button)

@@ -4129,6 +4129,8 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
                 continue;
             }
             var sk = tbodies[k].getAttribute('spt_search_key');
+  
+            
             sel_search_keys.push(sk);
         }
         if( sel_search_keys.length == 0 ) {

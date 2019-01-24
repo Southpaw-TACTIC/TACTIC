@@ -3138,9 +3138,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             custom_simple_search_view = self.kwargs.get("search_view")
 
         if search_class:
+            simple_search_mode = self.kwargs.get("simple_search_mode")
             kwargs = {
                 "search_type": search_type,
-                "search_view": custom_simple_search_view
+                "search_view": custom_simple_search_view,
+                "mode": simple_search_mode,
             }
             if run_search_bvr:
                 kwargs['run_search_bvr'] = run_search_bvr
