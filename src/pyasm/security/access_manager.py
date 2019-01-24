@@ -459,7 +459,6 @@ class AccessManager(Base):
             key - string or list of dictiorary like view_side_bar or ['search_type':'sthpw/task', 'project','main']
             required_access - speific access level like allow, deny, edit, view, delete'''
 
-
         if self.is_admin():
             return True
 
@@ -506,7 +505,7 @@ class AccessManager(Base):
         required_access = self._get_access_enum(required_access)
         user_access = self._get_access_enum(user_access)
 
-	print "user_access: ", user_access, " required_access: ", required_access
+
         
         if is_match:
             if user_access == required_access:

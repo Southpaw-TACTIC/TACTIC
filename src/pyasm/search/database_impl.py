@@ -3179,7 +3179,7 @@ class MySQLImpl(PostgresImpl):
   
 
     def process_value(self, name, value, column_type="varchar"):
-	if column_type == 'boolean':
+        if column_type == 'boolean':
             quoted = False
             if value in ['true', 1, True, "True"]:
                 value = 1
@@ -3192,7 +3192,7 @@ class MySQLImpl(PostgresImpl):
             if value == "NOW":
                 return {"value": "now()", "quoted": False}
             from dateutil import parser
-	    try:
+            try:
                 value = parser.parse(value)
             except:
                 value = value
