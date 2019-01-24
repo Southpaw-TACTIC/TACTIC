@@ -352,7 +352,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     spt.toggle_show_hide(add_note);
 
                 // update dialog
-                
                 spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
                
                 // update note count
@@ -1031,7 +1030,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
                 
                 // update dialog and the count if dialog is visible 
-                if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
+                if (group_top && group_top.getAttribute("spt_is_loaded") == "true" && 
+                    group_top.getAttribute("spt_update_mode") == "load") {
                     var parent_key = dialog_content.getAttribute('spt_parent_key');
                     var class_name = 'tactic.ui.widget.NoteCollectionWdg';
                     var kwargs = {
@@ -1336,6 +1336,9 @@ class DiscussionWdg(BaseRefreshWdg):
             process_top.add_class("self_context")
             process_top.add_class("hand")
             process_top.add_attr("self_context", context.encode('utf-8'))
+
+            update_mode = self.kwargs.get("update_mode") or "load"
+            process_top.add_attr("spt_update_mode", update_mode)
 
             if context not in self.default_contexts_open:
                 process_top.add_attr("spt_state", 'closed')

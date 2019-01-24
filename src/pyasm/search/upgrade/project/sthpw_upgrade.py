@@ -21,9 +21,12 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.6.0.a03
     #
+    def upgrade_v4_6_0_a03_012(self):
+        self.run_sql('''
+        ALTER TABLE "pipeline" ADD COLUMN use_workflow boolean default TRUE;
+        ''')
 
     def upgrade_v4_6_0_a03_011(self):
-
         self.run_sql('''
         ALTER TABLE "task" ADD COLUMN assigned_group varchar(256);
         ''')

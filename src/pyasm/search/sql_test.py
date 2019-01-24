@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/python
 ###########################################################
 #
 # Copyright (c) 2005, Southpaw Technology
@@ -37,7 +37,7 @@ class SqlTest(unittest.TestCase):
 
     def test_all(self):
 
-      
+
 
         try:
 
@@ -72,7 +72,7 @@ class SqlTest(unittest.TestCase):
             # it doesn't allow dropping of a column
             if db_type != 'Sqlite':
                 self._test_add_drop_column()
-       
+
         finally:
             Project.set_project('unittest')
             self.test_env.delete()
@@ -83,7 +83,7 @@ class SqlTest(unittest.TestCase):
         db_resource= project.get_project_db_resource()
         sql1 = DbContainer.get(db_resource)
         sql2 = DbContainer.get(db_resource)
-        
+
         self.assertEquals(sql1, sql2)
 
     def _test_select_class(self):
@@ -97,7 +97,7 @@ class SqlTest(unittest.TestCase):
 
         statement = select.get_statement()
 
-        
+
         sql = DbContainer.get(db_res)
         impl = sql.get_database_impl()
         db_type = impl.get_database_type()
@@ -141,11 +141,13 @@ class SqlTest(unittest.TestCase):
     def _test_update_class(self):
         """test an update"""
         update = Update()
+        update.set_database("sthpw")
         update.set_table("person");
         update.set_value("name_first", "megumi");
         update.add_where("\"person_id\" = '1'");
         statement = update.get_statement()
-        expected = "UPDATE \"person\" SET \"name_first\" = 'megumi' WHERE \"person_id\" = '1'"
+        #expected = "UPDATE \"person\" SET \"name_first\" = 'megumi' WHERE \"person_id\" = '1'"
+        expected = """UPDATE "sthpw"."public"."person" SET "name_first" = \'megumi\' WHERE "person_id" = \'1\'"""
 
         self.assertEqual( expected, statement )
 
@@ -298,7 +300,7 @@ class SqlTest(unittest.TestCase):
 
 
     def _test_order_by(self):
-        
+
 
         select = Select()
         db_res = DbResource.get_default('unittest')
@@ -307,10 +309,7 @@ class SqlTest(unittest.TestCase):
         select.add_enum_order_by("code", ['cow', 'dog', 'horse'])
 
         expected = '''SELECT %s"asset".* FROM %s"asset" ORDER BY ( CASE "code"
-WHEN 'cow' THEN 1 
-WHEN 'dog' THEN 2 
-WHEN 'horse' THEN 3 
-ELSE 4 END )''' % (self.prefix, self.prefix)
+WHEN 'cow' THEN 1 \nWHEN 'dog' THEN 2 \nWHEN 'horse' THEN 3 \nELSE 4 END )''' % (self.prefix, self.prefix)
 
         statement = select.get_statement()
 
@@ -349,7 +348,7 @@ ELSE 4 END )''' % (self.prefix, self.prefix)
         expected = """SELECT "asset".* FROM "asset" WHERE "status" = 'complete'"""
         self.assertEquals(expected, statement)
 
- 
+
 
         # assumed begin
         select = Select()
@@ -391,16 +390,47 @@ ELSE 4 END )''' % (self.prefix, self.prefix)
         search = Search(search_type)
         search.add_filter("project_code", project_code)
         search.add_filter("search_type", filter_search_type)
-        
+
         search.add_op("begin")
         values = ["chr001"]
         columns = ['keywords']
         for column in columns:
-            search.add_startswith_keyword_filter(column, values) 
+            search.add_startswith_keyword_filter(column, values)
 
         statement = search.get_statement()
         expected = '''SELECT %s"sobject_list".* FROM %s"sobject_list" WHERE "sobject_list"."project_code" = 'unittest' AND "sobject_list"."search_type" = 'unittest/city' AND ( lower("sobject_list"."keywords") like lower('%% chr001%%') OR lower("sobject_list"."keywords") like lower('chr001%%') )''' % (self.sthpw_prefix, self.sthpw_prefix)
         self.assertEquals(expected, statement)
+
+
+        ############################## Test case for stripping outside brackets ###################
+        search = Search("unittest/car")
+
+        search.add_filter("code", "123")
+        search.add_filter("name", "xyz")
+
+        search.add_op("begin")
+        search.add_filter("login", "joe")
+        search.add_filter("login", "jack")
+        search.add_op("or")
+        statement = search.get_statement()
+        expected = """SELECT "unittest"."public"."car".* FROM "unittest"."public"."car" WHERE "car"."code" = '123' AND "car"."name" = 'xyz' AND ( "car"."login" = 'joe' OR "car"."login" = 'jack' )"""
+        self.assertEquals( expected, statement )
+
+
+        ############################# Test case for stripping outside brackets ######################
+        search = Search("unittest/car")
+
+        search.add_filter("code", "123")
+        search.add_filter("name", "xyz")
+        search.add_op("and")
+
+        search.add_op("begin")
+        search.add_filter("login", "joe")
+        search.add_filter("login", "jack")
+        search.add_op("or")
+        statement = search.get_statement()
+        expected = """SELECT "unittest"."public"."car".* FROM "unittest"."public"."car" WHERE ( "car"."code" = '123' AND "car"."name" = 'xyz' ) AND ( "car"."login" = 'joe' OR "car"."login" = 'jack' )"""
+        self.assertEquals( expected, statement )
 
     def _test_search_filter(self):
 
@@ -429,7 +459,7 @@ ELSE 4 END )''' % (self.prefix, self.prefix)
         statement = select3.get_statement()
         expected = '''SELECT %s"request".* FROM %s"request" WHERE "request"."id" in ( SELECT %s"job"."request_id" FROM %s"job" WHERE "job"."code" = '123MMS' )''' % (self.prefix, self.prefix, self.prefix, self.prefix)
         self.assertEquals(expected, statement)
- 
+
     def _test_add_drop_column(self):
         #Project.set_project('unittest')
         from pyasm.command import ColumnAddCmd, ColumnDropCmd, Command
@@ -438,7 +468,7 @@ ELSE 4 END )''' % (self.prefix, self.prefix)
         search_type = 'unittest/country'
 
         # clear cache
-       
+
         SearchType.clear_column_cache(search_type)
 
         DatabaseImpl.clear_table_cache()
@@ -453,7 +483,7 @@ ELSE 4 END )''' % (self.prefix, self.prefix)
         SearchType.clear_column_cache(search_type)
         cache_dict = Container.get("DatabaseImpl:column_info")
 
-       
+
         # assume database is the same as sthpw
         database_type = Project.get_by_code("unittest").get_database_type()
         db_resource = DbResource.get_default('unittest')
@@ -531,7 +561,7 @@ ELSE 4 END )''' % (self.prefix, self.prefix)
 
 
 
-    
+
 if __name__ == "__main__":
     Batch()
     unittest.main()
