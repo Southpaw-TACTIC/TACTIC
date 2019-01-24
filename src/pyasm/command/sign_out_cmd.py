@@ -15,7 +15,7 @@ __all__ = ["SignOutCmd", "PasswordEditCmd"]
 
 from pyasm.common import Environment, UserException
 from command import *
-from pyasm.search import SearchKey, Search
+from pyasm.search import SearchKey
 
 import hashlib
 class SignOutCmd(Command):
@@ -46,18 +46,11 @@ class SignOutCmd(Command):
 
         # invalidate the ticket
         security = Environment.get_security()
+        ticket = security.get_ticket()
 
-        target = self.kwargs.get('target')
-        target_ticket = self.kwargs.get('target_ticket')
-        if target:
-           search = Search('sthpw/ticket')
-           search.add_filter('ticket', target_ticket)
-           ticket = search.get_sobject()
-        else:
-           ticket = security.get_ticket()
-
-	if ticket == None:
+        if ticket == None:
             return
+
 
         login_name = ticket.get_value("login")
         print("Signing out: ", login_name)
