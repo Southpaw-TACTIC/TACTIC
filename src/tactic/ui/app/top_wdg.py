@@ -825,7 +825,9 @@ class TopWdg(Widget):
         master_site = ProdSetting.get_value_by_key("master/site")
         master_url = Config.get_value("master", "url")
         master_url = "http://" + master_url + "/tactic/default/Api/"
-        master_login_ticket = Config.get_value("master", "login_ticket")
+        security = Environment.get_security()
+        ticket = security.get_ticket()
+        master_login_ticket = ticket.get_value("ticket")
         master_project_code = Config.get_value("master", "project_code")
 
         kiosk_mode = Config.get_value("look", "kiosk_mode")
