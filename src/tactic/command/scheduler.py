@@ -235,6 +235,11 @@ class SchedulerTask(object):
         finally:
             if self.site:
                 Site.pop_site()
+            
+            from pyasm.search import DbContainer
+            DbContainer.close_thread_sql()
+            DbContainer.commit_thread_sql()
+            DbContainer.close_all()
 
 
     def execute(self):
