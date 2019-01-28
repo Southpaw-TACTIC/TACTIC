@@ -675,6 +675,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "search_type": self.search_type,
                 "search_view": simple_search_view,
                 "keywords": self.kwargs.get("keywords"),
+                "show_saved_search": self.kwargs.get("show_saved_search"),
             }
 
             if simple_search_config:

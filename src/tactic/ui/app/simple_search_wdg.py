@@ -178,7 +178,12 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
 
         # add the load wdg
-        show_saved_search = True
+        show_saved_search = self.kwargs.get("show_saved_search")
+        if not show_saved_search in ['false', False]:
+            show_saved_search = False
+        else:
+            show_saved_search = True
+
         if show_saved_search:
             saved_button = ActionButtonWdg(title='Saved Searches', tip='Load Saved Searches', width=125)
             saved_button.add_class("spt_simple_search_save_button")
