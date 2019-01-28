@@ -575,7 +575,11 @@ class TopWdg(Widget):
         # add the body
         body = self.body
         html.add( body )
-        body.add_event('onload', 'spt.onload_startup(this)')
+
+        if web.is_admin_page():
+            body.add_event('onload', 'spt.onload_startup(admin=true)')
+        else:
+            body.add_event('onload', 'spt.onload_startup(admin=false)')
 
         body.add_style('overflow', 'hidden')
 
