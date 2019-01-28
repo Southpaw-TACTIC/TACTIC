@@ -4610,7 +4610,7 @@ spt.dg_table.update_row = function(evt, bvr)
     
     var tr = null;
 
-    var server = TacticServerStub.get();
+    var server = TacticServerStub.get_master();
     server.start({title:"Inserting/Updating entries"});
     var is_insert = false;
     

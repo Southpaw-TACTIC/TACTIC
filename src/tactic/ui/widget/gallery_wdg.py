@@ -369,7 +369,7 @@ class GalleryWdg(BaseRefreshWdg):
             path_div.add_style("overflow-y: hidden")
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i, controls="true")
+            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i, controls="true", layout="fit")
             path_div.add(embed)
 
 

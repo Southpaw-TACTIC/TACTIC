@@ -575,7 +575,11 @@ class TopWdg(Widget):
         # add the body
         body = self.body
         html.add( body )
-        body.add_event('onload', 'spt.onload_startup(this)')
+
+        if web.is_admin_page():
+            body.add_event('onload', 'spt.onload_startup(admin=true)')
+        else:
+            body.add_event('onload', 'spt.onload_startup(admin=false)')
 
         body.add_style('overflow', 'hidden')
 
@@ -821,11 +825,14 @@ class TopWdg(Widget):
         from pyasm.prod.biz import ProdSetting
         site = Site.get_site()
 
-        master_enabled = ProdSetting.get_value_by_key("master/enabled")
-        master_url = ProdSetting.get_value_by_key("master/url")
-        master_login_ticket = ProdSetting.get_value_by_key("master/login_ticket")
-        master_project_code = ProdSetting.get_value_by_key("master/project_code")
+        master_enabled = Config.get_value("master", "enabled")
         master_site = ProdSetting.get_value_by_key("master/site")
+        master_url = Config.get_value("master", "url")
+        master_url = "http://" + master_url + "/tactic/default/Api/"
+        security = Environment.get_security()
+        ticket = security.get_ticket()
+        master_login_ticket = ticket.get_value("ticket")
+        master_project_code = Config.get_value("master", "project_code")
 
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
