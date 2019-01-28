@@ -5937,7 +5937,7 @@ spt.table.save_changes = function(kwargs) {
     element_names = element_names.join(",");
 
     // actually do the update
-    var server = TacticServerStub.get();
+    var server = TacticServerStub.get_master();
 
     // use the edit command to understand what do do with the update data
     var layout = spt.table.get_layout()
