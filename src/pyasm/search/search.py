@@ -2983,11 +2983,18 @@ class SObject(object):
             return None
 
         is_data = False
-        if name.find("->") != -1:
+        if name.find("->>") != -1:
+            parts = name.split("->>")
+            is_data = True
+            name = parts[0]
+            attr = parts[1]
+        elif name.find("->") != -1:
             parts = name.split("->")
             is_data = True
             name = parts[0]
             attr = parts[1]
+
+
 
         from pyasm.biz import Translation
         lang = Translation.get_language()
@@ -3048,9 +3055,13 @@ class SObject(object):
     def has_value(self, name):
         '''determines if the sobject contains a value with the given name'''
 
-        if name.find("->") != -1:
+        if name.find("->>") != -1:
+            parts = name.split("->>")
+            name = parts[0]
+        elif name.find("->") != -1:
             parts = name.split("->")
             name = parts[0]
+
 
         # first look at the update data
         if self.update_data.has_key(name):

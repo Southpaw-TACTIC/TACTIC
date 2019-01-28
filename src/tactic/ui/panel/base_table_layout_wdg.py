@@ -918,6 +918,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add the ability to put in a custom shelf
         shelf_view = self.kwargs.get("shelf_view")
+        """
+
         if shelf_view:
             from tactic.ui.panel import CustomLayoutWdg
             kwargs = {
@@ -925,7 +927,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             }
             shelf = CustomLayoutWdg(**kwargs)
             return shelf
-
+        """
 
 
         # determine from the view if the insert button is visible
