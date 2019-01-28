@@ -12,7 +12,7 @@
 
 __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 
 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 
-'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItemWdg', 'PipelineSetCateogryCmd', 'PipelineSaveCmd']
+'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItemWdg', 'PipelineSaveCmd']
 
 import re
 import os
@@ -6981,21 +6981,6 @@ class DocumentInlineInputWdg(BaseRefreshWdg):
         top = self.top
 
         return top
-
-
-class PipelineSetCateogryCmd(Command):
-
-    def execute(self):
-        search_key = self.kwargs.get("search_key")
-        category = self.kwargs.get("category")
-
-        pipeline = Search.get_by_search_key(search_key)
-        pipeline.set_value("category", category)
-        pipeline.commit()
-
-        kwargs = self.kwargs
-        cmd = DocumentSaveCmd(**kwargs)
-        cmd.execute
 
 
 class PipelineSaveCmd(Command):
