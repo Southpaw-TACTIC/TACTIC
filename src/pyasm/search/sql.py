@@ -2122,6 +2122,17 @@ class Select(object):
 
 
 
+        subcolumn = None
+        if column.find("->>") != -1:
+            parts = column.split("->>")
+            column = parts[0]
+            subcolumn = parts[1]
+        elif column.find("->") != -1:
+            parts = column.split("->")
+            column = parts[0]
+            subcolumn = parts[1]
+
+
 
         if not table:
             table = self.tables[0]
@@ -2179,9 +2190,15 @@ class Select(object):
             value = Sql.quote(value)
 
         if table:
-            where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
+            if subcolumn:
+                where = "\"%s\".\"%s\"->>'%s' %s %s" % (table, column, subcolumn, op, value)
+            else:
+                where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
         else:
-            where = "\"%s\" %s %s" % (column, op, value)
+            if subcolumn:
+                where = "\"%s\"->>'%s' %s %s" % (column, subcolumn, op, value)
+            else:
+                where = "\"%s\" %s %s" % (column, op, value)
         self.add_where(where)
 
 
@@ -3173,6 +3190,7 @@ class Update(object):
     def add_filter(self, column, value, column_type="", table="", quoted=None):
         assert self.table
 
+
         # store all the raw filter data
         self.raw_filters.append( {
                 'column': column,
@@ -3183,6 +3201,16 @@ class Update(object):
                 'quoted': quoted,
         } )
 
+
+        subcolumn = None
+        if column.find("->>") != -1:
+            parts = column.split("->>")
+            column = parts[0]
+            subcolumn = parts[1]
+        elif column.find("->") != -1:
+            parts = column.split("->")
+            column = parts[0]
+            subcolumn = parts[1]
 
         if not column_type and self.sql:
             # get column type from database
@@ -3200,9 +3228,15 @@ class Update(object):
             value = Sql.quote(value)
 
         if table:
-            where = "\"%s\".\"%s\" = %s" % (table, column, value)
+            if subcolumn:
+                where = "\"%s\".\"%s\"->>'%s' = %s" % (table, column, subcolumn, value)
+            else:
+                where = "\"%s\".\"%s\" = %s" % (table, column, value)
         else:
-            where = "\"%s\" = %s" % (column, value)
+            if subcolumn:
+                where = "\"%s\"->>'%s' = %s" % (column, subcolumn, value)
+            else:
+                where = "\"%s\" = %s" % (column, value)
 
         self.add_where(where)
 

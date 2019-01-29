@@ -821,6 +821,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             column_widths = []
 
 
+
+        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['hidden']:
+            inner.set_style("display: none")
+
+
+
         self.element_names = self.config.get_element_names()  
        
         for i, widget in enumerate(self.widgets):
@@ -1341,10 +1347,25 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("total_count", self.total_count)
 
 
+        top.add(self.get_styles())
+
         if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_layout_top .spt_group_td_inner {
+                align-items: center;
+            }
+
+            ''')
+
+        return styles
 
     
     def _get_simplified_time(self, group_value):
@@ -1851,6 +1872,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # row highlighting
 
+
         if self.kwargs.get("show_row_highlight") not in [False, 'false']:
             table.add_behavior( {
             'type': 'load',
@@ -1961,17 +1983,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
-        # group mouse over color
-        table.add_relay_behavior( {
-            'type': "mouseover",
-            'bvr_match_class': 'spt_group_row',
-            'cbjs_action': "spt.mouse.table_layout_hover_over({}, {src_el: bvr.src_el, add_color_modifier: -5})"
-        } )
-        table.add_relay_behavior( {
-            'type': "mouseout",
-            'bvr_match_class': 'spt_group_row',
-            'cbjs_action': "spt.mouse.table_layout_hover_out({}, {src_el: bvr.src_el})"
-        } )
+        if self.kwargs.get("show_group_highlight") not in [False, 'false']:
+            # group mouse over color
+            table.add_relay_behavior( {
+                'type': "mouseover",
+                'bvr_match_class': 'spt_group_row',
+                'cbjs_action': "spt.mouse.table_layout_hover_over({}, {src_el: bvr.src_el, add_color_modifier: -5})"
+            } )
+            table.add_relay_behavior( {
+                'type': "mouseout",
+                'bvr_match_class': 'spt_group_row',
+                'cbjs_action': "spt.mouse.table_layout_hover_out({}, {src_el: bvr.src_el})"
+            } )
 
 
 
@@ -2366,9 +2389,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 group_label_view = self.kwargs.get("group_label_view")
 
+
                 # this is set in handle_group
                 group_value = td.group_value
                 group_div = td.group_div
+
+
                 if group_div:
                     if not group_label_view and group_value == '__NONE__':
                         label = '---'
@@ -2899,6 +2925,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         td_inner.add_style("box-sizing: border-box")
         td.add(td_inner)
         td_inner.add_style("display: flex")
+        td_inner.add_class("spt_group_td_inner")
 
         td_inner.add(swap)
         td_inner.add(title_div)
@@ -5937,7 +5964,7 @@ spt.table.save_changes = function(kwargs) {
     element_names = element_names.join(",");
 
     // actually do the update
-    var server = TacticServerStub.get();
+    var server = TacticServerStub.get_master();
 
     // use the edit command to understand what do do with the update data
     var layout = spt.table.get_layout()
@@ -6791,6 +6818,130 @@ spt.table.get_group_states = function() {
 }
 
 
+/**
+ * 
+ * Get child rows in the form of nested tuples and lists
+ * 
+ * @return array    tuple, in the form of (group, list of children)
+ *  
+ * e.g.
+ * 
+ * (src_el, 
+ *     [(group, 
+ *         [(group,
+ *             [row]), 
+ *         row, 
+ *         row]),
+ *     row,
+ *     (group, 
+ *         [row])
+ * ])
+ *
+ */
+
+
+spt.table.get_child_rows = function(src_el) {
+    if (!src_el.hasClass("spt_table_row_item")) {
+        var row = src_el.getParent(".spt_table_row_item");
+    } else {
+        var row = src_el;
+    }
+
+    if (!row.hasClass("spt_table_group_row") && !row.hasClass("spt_group_row")) { 
+        return row;
+    } else {
+        var top_level = row.getAttribute("spt_group_level");
+        var tuple = [src_el, []];
+        var stack = [tuple];
+        while (true) {
+            var group_level = row.getAttribute("spt_group_level");
+            var next = row.getNext(".spt_table_row_item");
+            if (!next || next.getAttribute("spt_group_level") <= top_level) {
+                break;
+            }
+
+            if (next.getAttribute("spt_group_level") <= parseInt(group_level)) {
+                var diff = parseInt(group_level) - next.getAttribute("spt_group_level");
+                for (let i=0; i<diff+1; i++) {
+                    stack.pop();
+                }
+            }
+
+            if (!next.hasClass("spt_table_group_row")) var new_item = next;
+            else var new_item = [next, []];
+
+            var curr_tuple = stack[stack.length-1];
+            var curr_list = spt.table.get_child_rows_tuple(curr_tuple, true);
+            curr_list.push(new_item);
+
+            stack.push(new_item);
+
+            row = next;
+        }
+        return tuple;
+    }
+}
+
+/**
+ * 
+ * Get child rows in the form of nested tuples and lists
+ * 
+ * 
+ * @param array    tuple, in the form of (group, list of children)
+ *                        see spt.table.get_child_rows for an example
+ * @param boolean  attribute    determines whether the first or second part of the tuple is returned
+ *                              true: list of children is returned
+ *                              false: group is returned
+ *
+ */
+
+spt.table.get_child_rows_tuple = function(tuple, attribute) {
+    if (tuple.length != 2) spt.alert("Child row tuples must contain 2 elements");
+
+    if (attribute) return tuple[1]
+    else return tuple[0]
+}
+
+
+spt.table.get_parent_groups = function(src_el, level) {
+
+    if (!src_el.hasClass("spt_table_row_item")) {
+        var row = src_el.getParent(".spt_table_row_item");
+    } else {
+        var row = src_el;
+    }
+
+    if (row == null) {
+        return [];
+    }
+
+    var group_level = row.getAttribute("spt_group_level");
+    var group_parents = [];
+    var lowest_group_level = group_level;
+
+    while (true) {
+
+        var group = row.getPrevious(".spt_table_row_item");
+        if (!group) {
+            break;
+        }
+        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
+            row = group;
+            continue
+        }
+        lowest_group_level = group.getAttribute("spt_group_level");
+        if (level && level == group.getAttribute("spt_group_level")) {
+            return group;
+        } else {
+            group_parents.push(group);
+        }
+        row = group;
+    }
+
+    return group_parents;
+}
+
+
 
 
 // setting width of columns
@@ -7451,7 +7602,8 @@ spt.table.delete_row = function(row) {
     return spt.table.delete_rows(rows);
 }
 
-spt.table.delete_rows = function(rows) {
+spt.table.delete_rows = function(rows, args) {
+    if (!args) args = {};
 
     var row = rows[0];
     var layout = spt.table.get_layout();
@@ -7485,17 +7637,20 @@ spt.table.delete_rows = function(rows) {
     }
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
-    var on_post_delete = function() {
-        var on_complete = function(id) {
-            spt.behavior.destroy_element(document.id(id));
-        }
-        for (var i = 0; i < rows.length; i++) {
-            var row = rows[i];
-            row.addClass("spt_removed");
-            if (layout.getAttribute("spt_version") == "2") {
-                spt.table.remove_hidden_row(row);
+    var on_post_delete = args.on_post_delete;
+    if (!on_post_delete) {
+        on_post_delete = function() {
+            var on_complete = function(id) {
+                spt.behavior.destroy_element(document.id(id));
             }
-            Effects.fade_out(row, 500, on_complete);
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                row.addClass("spt_removed");
+                if (layout.getAttribute("spt_version") == "2") {
+                    spt.table.remove_hidden_row(row);
+                }
+                Effects.fade_out(row, 500, on_complete);
+            }
         }
     }
 
@@ -7505,7 +7660,9 @@ spt.table.delete_rows = function(rows) {
 }
 
 
-spt.table.remove_rows = function(rows) {
+spt.table.remove_rows = function(rows, args) {
+    if (!args) args = {};
+
     var layout = spt.table.get_layout();
     var on_complete = function(id) {
         spt.behavior.destroy_element(document.id(id));
@@ -7516,7 +7673,8 @@ spt.table.remove_rows = function(rows) {
         if (layout.getAttribute("spt_version") == "2") {
             spt.table.remove_hidden_row(row);
         }
-        Effects.fade_out(row, 500, on_complete);
+        if (args.no_animation) spt.behavior.destroy_element(row);
+        else Effects.fade_out(row, 500, on_complete);
     }
 
 }
@@ -7624,44 +7782,6 @@ spt.table.operate_selected = function(action)
     spt.confirm(msg, ok, cancel);
 }
 
-spt.table.get_parent_groups = function(src_el, level) {
-
-    if (!src_el.hasClass("spt_table_row_item")) {
-        var row = src_el.getParent(".spt_table_row_item");
-    } else {
-        var row = src_el;
-    }
-
-    if (row == null) {
-        return [];
-    }
-
-    var group_level = row.getAttribute("spt_group_level");
-    var group_parents = [];
-    var lowest_group_level = group_level;
-
-    while (true) {
-
-        var group = row.getPrevious(".spt_table_row_item");
-        if (!group) {
-            break;
-        }
-        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
-            row = group;
-            continue
-        }
-        lowest_group_level = group.getAttribute("spt_group_level");
-        if (level && level == group.getAttribute("spt_group_level")) {
-            return group;
-        } else {
-            group_parents.push(group);
-        }
-        row = group;
-    }
-
-    return group_parents;
-}
-
 
 
 // Search methods
@@ -7719,42 +7839,152 @@ spt.table.load_search = function(search_view, kwargs) {
     } } );
 
     return;
+}
+
 
 /*
-    var top = layout.getParent(".spt_view_panel");
-    var search_top = top.getElement(".spt_search_top");
-    var simple_search_top = top.getElement(".spt_simple_search_top");
-    var simple_search_top = top.getElement(".spt_simple_search");
+ * Export to CSV tools
+ */
 
-    var class_name = "tactic.ui.app.SearchWdg";
-    var options = {
+spt.table.export = function(mode) {
+
+    var bvr = {};
+    bvr.mode = mode;
+
+    var layout = spt.table.get_layout();
+    var table = spt.table.get_table();
+
+    var search_type = table.get("spt_search_type");
+    var view = table.get("spt_view");
+    var search_values_dict;
+
+    spt.table.set_layout(layout);
+    var header = spt.table.get_header_row();
+    // include header input for widget specific settings
+    var header_inputs = spt.api.Utility.get_input_values(header, null, false);
+    search_values_dict = header_inputs;
+
+
+    var element_names = spt.table.get_element_names();
+
+    var search_class = table.get("spt_search_class") || "";
+
+    var tmp_bvr = {};
+
+    var search_view;
+    // init the args to be passed to CsvExportWdg
+    tmp_bvr.args = {
+        'table_id': table.get('id'),
         'search_type': search_type,
-        'display': 'block',
-        'view': search_view
+        'selected_search_keys': '',
+        'view': view,
+        'element_names': element_names,
+        'search_class': search_class,
+        'mode': bvr.mode,
+        'search_view': search_view
     };
 
-
-    // replace the search widget
-    spt.panel.load(search_top, class_name, options, {}, {
-        callback: function() {
-        }
-    });
-
-
-    // store the search view that was just loaded
-    search_top.setAttribute("spt_search_view", search_view);
-
-    if (simple_search_top) {
-        var class_name = "tactic.ui.app.SimpleSearchWdg";
-        var options = {
-            'search_type': search_type,
-            'filter_view': search_view,
-            'search_view': "order_filter"
-        };
-        spt.panel.load(simple_search_top, class_name, options);
+    var title = '';
+    var sel_search_keys = [];
+    if( bvr.mode=='export_all' ) {
+        tmp_bvr.args.is_export_all = true;
+        title = 'Export All items from "' + search_type + '" list ';
     }
-*/
+    else if (bvr.mode=='export_matched') {
+        title = 'Export Matched items from "' + search_type + '" list ';
+        var top = table.getParent(".spt_view_panel");
+
+        var search_wdg;
+        if (top) {
+            search_wdg = top.getElement(".spt_search");
+            var matched_search_type = search_type == top.getAttribute('spt_search_type');
+            var simple_search_view  = top.getAttribute('spt_simple_search_view');
+            search_view = search_wdg.getAttribute("spt_view");
+            tmp_bvr.args.search_view = search_view;
+            tmp_bvr.args.simple_search_view = simple_search_view;
+        }
+        if (!top || !search_wdg || !matched_search_type) {
+            spt.alert('The search box is not found. Please use "Export Selected, Export Displayed" instead')
+            return;
+        }
+
+        var search_values = spt.dg_table.get_search_values(search_wdg);
+        search_values_dict['json'] = search_values;
+
+    }
+    else if (bvr.mode=='export_displayed') {
+        title = 'Export displayed items from "' + search_type + '" list ';
+        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
+        var tbodies = table.getElements(css);
+        for (var k=0; k < tbodies.length; k++) {
+            if (tbodies[k].getStyle('display') == 'none'){
+                continue;
+            }
+            var sk = tbodies[k].getAttribute('spt_search_key');
+
+
+            sel_search_keys.push(sk);
+        }
+        if( sel_search_keys.length == 0 ) {
+            spt.alert('No rows displayed for exporting to CSV ... skipping "Export Displayed" action.');
+            return;
+        }
+    }
+
+    else {
+        title = 'Export Selected items from "' + search_type + '" list ';
+        if (version == 2)
+            var selected_rows = spt.table.get_selected_rows();
+        else
+            var selected_rows = spt.dg_table.get_selected(table,  {'include_embedded_tables': true} );
+        var sel_search_keys = [];
+
+        related_views = []
+        for (var c=0; c < selected_rows.length; c++) {
+            search_key = selected_rows[c].getAttribute("spt_search_key");
+            sel_search_keys.push(search_key);
+
+            var parent_table = selected_rows[c].getParent('.spt_table');
+            var parent_view = parent_table.getAttribute('spt_view');
+            if (! related_views.contains(parent_view))
+                related_views.push(parent_view);
+        }
+
+        //var sel_tr_list = spt.dg_table.get_selected( table.get('id') );
+        if( sel_search_keys.length == 0 ) {
+            spt.alert('No rows selected for exporting to CSV ... skipping "Export Selected" action.');
+            return;
+        }
+        if (related_views.length > 1) {
+            spt.alert('More than 1 type of item is selected ... skipping "Export Selected" action.');
+            return;
+        }
+        tmp_bvr.args.related_view = related_views[0];
+    }
+
+
+    var view_name = '';
+
+    title += "in [" + view + "] view";
+
+    tmp_bvr.options = {
+        'title': title + " to CSV",
+        'class_name': 'tactic.ui.widget.CsvExportWdg',
+        'popup_id' : 'Export CSV'
+    };
+    tmp_bvr.args.selected_search_keys = sel_search_keys;
+    tmp_bvr.values = search_values_dict;
+
+
+    var popup = spt.popup.get_widget( {}, tmp_bvr );
+
+    // add the search_values_dict to the popup
+    popup.values_dict = search_values_dict;
+
 }
+
+
+
 
 /*
  * Dynamically load data rows through javascript

@@ -1207,7 +1207,7 @@ class MethodMode(ExpressionParser):
             return_mode = Container.get("Expression::return_mode")
             if return_mode == 'dict':
                 sobjects = self.get_flat_cache()
-            
+
             results = self.get(sobjects, column)
             if format and results:
                 results = self.format_results(results, format)

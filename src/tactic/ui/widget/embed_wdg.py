@@ -119,6 +119,9 @@ class EmbedWdg(BaseRefreshWdg):
             if layout == "landscape":
                 embed.add_style("width: auto")
                 embed.add_style("height: 100%")
+            elif layout == "fit":
+                embed.add_style("width: 100%")
+                embed.add_style("height: 100%")
             else:
                 embed.add_style("width: 100%")
                 embed.add_style("height: auto")
@@ -167,6 +170,10 @@ class EmbedWdg(BaseRefreshWdg):
                 if layout == "landscape":
                     img.add_style("width: auto")
                     img.add_style("height: 100%")
+                elif layout == "fit":
+                    img.add_style("width: 100%")
+                    img.add_style("height: 100%")
+                    img.add_style("object-fit: contain")
                 else:
                     img.add_style("width: 100%")
                     img.add_style("height: auto")

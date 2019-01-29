@@ -451,36 +451,7 @@ class WebEnvironment(Environment):
 
     def get_skin(self):
         # DEPRECATED: replaced by palettes
-
-        """
-
-        # TODO: prod setting shouldn't be in prod!!!
-        from pyasm.prod.biz import ProdSetting
-        web = WebContainer.get_web()
-        skin = web.get_form_value("skin")
-
-        # look at users preferences
-        if not skin:
-            skin = PrefSetting.get_value_by_key("skin")
-
-        # if skin isn't found in user preference settings then look for it
-        # in the projects/config XML file ...
-        if not skin:
-            skin = Config.get_value("look", "skin")
-
-        if not skin:
-            skin = "dark"
-
-        # MMS-TACTIC ... allow for 'MMS' skin to be returned for use in overriding some colors (MMS is a copy of
-        # 'dark' skin)
-        if skin == 'MMS':
-            return 'MMS'
-
-        """
-
         return "dark"
-
-
 
 
     def get_palette(cls):
