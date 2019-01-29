@@ -6783,13 +6783,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             #drag_action_script="spme/workflow_document_drag_action",
             extra_data={
                 "min_height": 14,
-                #"font_size": 10,
                 "single_line": "true",
-                #"mode": pipeline_type,
-                #"group_level_padding": 15,
-                #"group_icons": "/plugins/technicolor/spme/media/arrow.png,FA_CHEVRON_RIGHT",
-                #"group_icons": "FA_CHEVRON_DOWN,FA_CHEVRON_RIGHT",
-                #"group_icons_class": "whatever",
             },
         )
         top.add(document_wdg)
