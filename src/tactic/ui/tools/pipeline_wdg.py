@@ -6625,54 +6625,37 @@ class PipelineCopyCmd(Command):
 class PipelineDocumentWdg(BaseRefreshWdg):
 
     def get_document(self):
-        project_code = self.kwargs.get("project_code") or Project.get_project_code()
+        content = [{
+            "type": "group",
+            "state": "on",
+            "group_level": 0,
+            "title": "Workflows",
+        }]
+        content += self.get_default_content()
 
         document = {
             'type': 'table',
-            'content': [
-                {
-                    "type": "group",
-                    "state": "on",
-                    "group_level": 0,
-                    "title": "Workflows",
-                },
-                {
-                    "type": "group",
-                    "state": "on",
-                    "group_level": 1,
-                    "title": "Job",
-                },
-                {   
-                    "type": "sobject",
-                    "group_level": 2,
-                    "expression": "@SEARCH(sthpw/pipeline['category','Job']['@ORDER_BY','name']['project_code', '%s'])" % (project_code)
-                },
-                {
-                    "type": "group",
-                    "state": "on",
-                    "group_level": 1,
-                    "title": "Site Wide Workflows",
-                },
-                {   
-                    "type": "sobject",
-                    "group_level": 2 ,
-                    "expression": "@SEARCH(sthpw/pipeline['category', 'Site Wide Workflows']['@ORDER_BY','name'])"
-                },
-                {
-                    "type": "group",
-                    "state": "on",
-                    "group_level": 1,
-                    "title": "Templates",
-                },
-                {
-                    "type": "sobject",
-                    "group_level": 2,
-                    "expression": "@SEARCH(sthpw/pipeline['category','Template']['@ORDER_BY','name']['project_code', '%s'])" % (project_code)
-                },
-            ]
+            'content': content
         }
 
         return document
+
+
+    def get_default_content(self):
+        project_code = self.kwargs.get("project_code") or Project.get_project_code()
+
+        return [{
+            "type": "group",
+            "state": "on",
+            "group_level": 1,
+            "title": "Uncategorized"
+        },
+        {   
+            "type": "sobject",
+            "group_level": 2,
+            "expression": "@SEARCH(sthpw/pipeline['category', 'is', 'NULL']['@ORDER_BY','timestamp desc']['project_code', '%s'])" % (project_code)
+        }]
+
 
 
     def get_styles(self):
@@ -6771,6 +6754,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
         if config:
             document = config.get_json_value("config")
+            content = document.get("content")
+            content += self.get_default_content()
+            document['content'] = content
 
         # if no document found, use default
         if not document:
