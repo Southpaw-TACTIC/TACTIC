@@ -1163,7 +1163,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # check if tasks need to be autocreated
         autocreate_task = False
-        mapped_status = "pending"
+        mapped_status = "Pending"
 
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
@@ -1186,14 +1186,16 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # check to see if the tasks exist and if they don't then create one
         if autocreate_task:
-            mapped_status = self.get_mapped_status(process_obj)
 
             full_process_name = self.get_full_process_name(self.process)
             tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
             if not tasks:
+                # If we are creating new tasks here, then the status will be set to Assignment
+                mapped_status = self.get_mapped_status(process_obj, "Assignment")
                 tasks = Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status)
 
             else:
+                mapped_status = self.get_mapped_status(process_obj, "Pending")
                 tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
         else:
             tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
@@ -1207,9 +1209,9 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         Trigger.call(self, "process|action", output=self.input)
 
 
-    def get_mapped_status(self, process_obj):
+    def get_mapped_status(self, process_obj, status="Pending"):
         '''Get what status is mapped to Pending'''
-        mapped_status = 'pending'
+        mapped_status = status
 
         status_pipeline_code = process_obj.get_task_pipeline()
         search = Search("config/process")        

@@ -1073,13 +1073,14 @@ class Task(SObject):
 
 
 
-
         # New task generator
         use_new_generator = True
         if use_new_generator and not processes:
             task_generator = TaskGenerator()
             tasks = task_generator.execute(sobject, pipeline, start_date=start_date)
             old_generator_processes = []
+        elif processes:
+            old_generator_processes = processes
         else:
             process_names = pipeline.get_process_names(recurse=True, type=["node","approval", "manual", "hierarchy"])
             old_generator_processes = process_names
