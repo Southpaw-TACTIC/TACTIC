@@ -147,6 +147,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         config_xml = self.kwargs.get("config_xml")
         config_code = self.kwargs.get("config_code")
         self.config_xml = config_xml
+
         if config_xml:
             # get the base configs
             config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
@@ -544,7 +545,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.is_sobjects_explicitly_set():
             return
 
-        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
+        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False, 'hidden']:
             return
 
 
@@ -673,7 +674,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             kwargs = {
                 "search_type": self.search_type,
                 "search_view": simple_search_view,
-                "keywords": self.kwargs.get("keywords")
+                "keywords": self.kwargs.get("keywords"),
+                "show_saved_search": self.kwargs.get("show_saved_search"),
             }
 
             if simple_search_config:
@@ -914,6 +916,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     def get_action_wdg(self):
+
+        # add the ability to put in a custom shelf
+        shelf_view = self.kwargs.get("shelf_view")
+        """
+
+        if shelf_view:
+            from tactic.ui.panel import CustomLayoutWdg
+            kwargs = {
+                "view": shelf_view
+            }
+            shelf = CustomLayoutWdg(**kwargs)
+            return shelf
+        """
 
 
         # determine from the view if the insert button is visible
