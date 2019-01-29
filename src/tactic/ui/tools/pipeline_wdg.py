@@ -20,7 +20,7 @@ import ast
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment, Common, jsonloads
-from pyasm.biz import Pipeline, Project
+from pyasm.biz import Pipeline, Project, ProjectSetting
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey, SObject
@@ -272,8 +272,11 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             expression = self.kwargs.get("expression")
 
-            #pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression )
-            pipeline_list = PipelineDocumentWdg()
+            use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
+            if use_document_pipeline in [True, "true"]:
+                pipeline_list = PipelineDocumentWdg()
+            else:
+                pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression )
             left.add(pipeline_list)
 
 
@@ -2419,7 +2422,6 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-        from pyasm.biz import ProjectSetting
         setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
         if setting in ["true"]:
 
