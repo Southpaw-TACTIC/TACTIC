@@ -1197,7 +1197,6 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             else:
                 mapped_status = self.get_mapped_status(process_obj, "Pending")
                 tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
-                gogogog()
         else:
             tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
 
