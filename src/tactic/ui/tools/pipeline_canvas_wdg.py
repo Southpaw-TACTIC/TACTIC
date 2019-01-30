@@ -2635,6 +2635,13 @@ spt.pipeline.get_node_by_name = function(name) {
 }
 
 
+spt.pipeline.set_node_name = function(node, name) {
+    node.setAttribute("spt_element_name", name);
+    node.spt_name = name;
+    var label = node.getElement(".spt_label");
+    label.innerText = name;
+}
+
 
 spt.pipeline.get_node_name = function(node) {
     return node.getAttribute("spt_element_name");
@@ -5789,11 +5796,12 @@ spt.pipeline.export_group = function(group_name) {
         }
 
         var properties = node.properties;
+        console.log(properties);
         for (var key in properties) {
            
             if (!properties.hasOwnProperty(key))
                 continue;
-            if (['name','xpos','ypos','type','names','namedItem','item'].contains(key)) {
+            if (['name', 'xpos','ypos','type','names','namedItem','item'].contains(key)) {
                 continue;
             }
 
@@ -5822,6 +5830,9 @@ spt.pipeline.export_group = function(group_name) {
         var from_node_name = connector.get_from_node().spt_name;
         var to_node_name = connector.get_to_node().spt_name;
 
+        console.log("connector nodes", connector.get_from_node(), connector.get_to_node());
+        console.log("connector names:", from_node_name, to_node_name);
+
         if (data.has_prefix && from_node_name.indexOf("/") == -1) {
             var prefix = node.getAttribute("spt_prefix");
             if (!prefix) {
@@ -5837,7 +5848,10 @@ spt.pipeline.export_group = function(group_name) {
             to_node_name = prefix + "/" + to_node_name;
         }
 
+        console.log(xml);
         xml += '  <connect from="'+from_node_name+'" to="'+to_node_name+'"';
+
+        console.log(xml);
 
         var attrs = connector.get_attrs();
         if (group_type == 'schema' && !('relationship' in attrs) ) {
@@ -5865,6 +5879,8 @@ spt.pipeline.export_group = function(group_name) {
         xml += '/>\n';
     }
     xml += '</'+group_type+'>\n';
+
+    console.log("ret", xml);
 
     return xml;
 

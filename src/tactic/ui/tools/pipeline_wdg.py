@@ -1666,12 +1666,32 @@ class PipelineInfoWdg(BaseRefreshWdg):
         text.add_style("padding: 10px")
         text.add(description)
         text.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var node = spt.pipeline.get_selected_node();
+            console.log("loading desc wdg..", node);
+            if (node) {
+                var desc = spt.pipeline.get_node_property(node, "description");
+                if (desc) bvr.src_el.value = desc;
+            }
+
+            '''
+        } )
+
+        text.add_behavior( {
             'type': 'blur',
             'search_key': pipeline.get_search_key(),
             'cbjs_action': '''
             var desc = bvr.src_el.value;
-            var server = TacticServerStub.get();
-            server.update(bvr.search_key, {description: desc} );
+            var node = spt.pipeline.get_selected_node();
+            if (node) {
+                spt.pipeline.set_node_property(node, "description", desc);
+                spt.named_events.fire_event('pipeline|change', {});
+            }
+            
+            /*var server = TacticServerStub.get();
+            server.update(bvr.search_key, {description: desc} );*/
             '''
         } )
 
@@ -2063,12 +2083,30 @@ class BaseInfoWdg(BaseRefreshWdg):
 
         if process_sobj:
             text.add_behavior( {
+                'type': 'load',
+                'cbjs_action': '''
+
+                var node = spt.pipeline.get_selected_node();
+                console.log("loading baseinfo desc wdg..", node);
+                if (node) {
+                    var desc = spt.pipeline.get_node_property(node, "description");
+                    if (desc) bvr.src_el.value = desc;
+                }
+
+                '''
+            } )
+
+            text.add_behavior( {
                 'type': 'blur',
                 'search_key': process_sobj.get_search_key(),
                 'cbjs_action': '''
                 var desc = bvr.src_el.value;
-                var server = TacticServerStub.get();
-                server.update(bvr.search_key, {description: desc} );
+                var node = spt.pipeline.get_selected_node();
+                spt.pipeline.set_node_property(node, "description", desc);
+
+                spt.named_events.fire_event('pipeline|change', {});
+                /* var server = TacticServerStub.get();
+                server.update(bvr.search_key, {description: desc} ); */
                 '''
             } )
 
@@ -2178,7 +2216,12 @@ class BaseInfoWdg(BaseRefreshWdg):
             'type': 'blur',
             'cbjs_action': '''
             var node = spt.pipeline.get_selected_node();
-            spt.pipeline.rename_node(node, bvr.src_el.value);
+            spt.pipeline.set_node_name(node, bvr.src_el.value);
+            spt.pipeline.set_node_property(node, "name", bvr.src_el.value);
+            //spt.pipeline.rename_node(node, bvr.src_el.value);
+
+            // Add edited flag
+            spt.named_events.fire_event('pipeline|change', {});
 
             '''
         } )
@@ -2247,14 +2290,11 @@ class BaseInfoWdg(BaseRefreshWdg):
                 var process = bvr.process;
 
                 // change node_type
-                var node = spt.pipeline.get_node_by_name(process);
-                var parent = node.getParent();
+                var node = spt.pipeline.get_selected_node();
 
                 node.setStyle("box-shadow", "0px 0px 15px rgba(255,0,0,0.5)"); 
 
                 var pos = spt.pipeline.get_position(node);
-
-                //parent.removeChild(node);
 
                 var group = spt.pipeline.get_group_by_node(node);
                 for (var i = 0; i < group.nodes.length; i++) {
@@ -2289,7 +2329,7 @@ class BaseInfoWdg(BaseRefreshWdg):
                 spt.pipeline.redraw_canvas();
 
                 // click on the new node
-                new_node.click();
+                spt.pipeline.select_single_node(new_node);
 
                 spt.named_events.fire_event('pipeline|change', {});
 
@@ -4884,6 +4924,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
         top = self.top
         self.set_as_panel(top)
         top.add_class("spt_pipeline_editor_top")
+        
+        has_change_action = '''
+            bvr.src_el.addClass("spt_has_changes");
+        ''';
+
+        top.add_named_listener('pipeline|change', has_change_action)
 
         self.save_new_event = self.kwargs.get("save_new_event")
         self.show_gear = self.kwargs.get("show_gear")
@@ -4955,11 +5001,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
             process: node_name,
             pipeline_code: pipeline_code
         }
-        var server = TacticServerStub.get();
-        server.get_unique_sobject( "config/process", data );
+        // var server = TacticServerStub.get();
+        // server.get_unique_sobject( "config/process", data );
 
         // save the pipeline when a new node is added
-        spt.named_events.fire_event('pipeline|save_button', bvr );
+        // spt.named_events.fire_event('pipeline|save_button', bvr );
 
         node.click();
         '''
@@ -4984,11 +5030,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         // rename the process on the server
         var group_name = spt.pipeline.get_current_group();
-        var process = server.eval("@SOBJECT(config/process['process','"+old_name+"']['pipeline_code','"+group_name+"'])", {single: true});
 
-        if (process) {
-            server.update(process, {process: name});
-        }
+        // var process = server.eval("@SOBJECT(config/process['process','"+old_name+"']['pipeline_code','"+group_name+"'])", {single: true});
+
+        // if (process) {
+        //    server.update(process, {process: name});
+        // }
 
         // select the node
         node.click();
@@ -5327,13 +5374,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        // Add edited flag
+
         var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        editor_top.addClass("spt_has_changes");
-        
         var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
         spt.pipeline.add_node();
+
+        // Add edited flag
+        spt.named_events.fire_event('pipeline|change', {});
 
         '''
         } )
@@ -6525,6 +6573,7 @@ class PipelineSaveCbk(Command):
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
+            description = xml.get_attribute(node, "description") or ""
 
             if process_code:
                 process = Search.get_by_code("config/process", process_code)
@@ -6543,7 +6592,8 @@ class PipelineSaveCbk(Command):
                 process = SearchType.create("config/process")
                 process.set_value("process", process_name)
                 process.set_value("pipeline_code", pipeline_code)
-           
+
+            # process.set_value("description", description)
 
             # set the process code
             xml.set_attribute(node, "process_code", process.get_code())
@@ -6561,7 +6611,7 @@ class PipelineSaveCbk(Command):
             
             process.commit()
             
-
+        print "finished cbk for loop"
 
         
 
