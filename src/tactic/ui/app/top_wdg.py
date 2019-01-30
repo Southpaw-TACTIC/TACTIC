@@ -831,7 +831,10 @@ class TopWdg(Widget):
         master_url = "http://" + master_url + "/tactic/default/Api/"
         security = Environment.get_security()
         ticket = security.get_ticket()
-        master_login_ticket = ticket.get_value("ticket")
+        if ticket:
+            master_login_ticket = ticket.get_value("ticket")
+        else:
+            master_login_ticket = ""
         master_project_code = Config.get_value("master", "project_code")
 
         kiosk_mode = Config.get_value("look", "kiosk_mode")
