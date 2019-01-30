@@ -42,6 +42,7 @@ from static_table_layout_wdg import *
 from tool_layout_wdg import *
 
 from collection_wdg import *
+from document_wdg import *
 
 
 

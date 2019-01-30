@@ -1347,10 +1347,25 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("total_count", self.total_count)
 
 
+        top.add(self.get_styles())
+
         if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_layout_top .spt_group_td_inner {
+                align-items: center;
+            }
+
+            ''')
+
+        return styles
 
     
     def _get_simplified_time(self, group_value):
@@ -1857,6 +1872,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # row highlighting
 
+
         if self.kwargs.get("show_row_highlight") not in [False, 'false']:
             table.add_behavior( {
             'type': 'load',
@@ -1967,17 +1983,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         } )
 
 
-        # group mouse over color
-        table.add_relay_behavior( {
-            'type': "mouseover",
-            'bvr_match_class': 'spt_group_row',
-            'cbjs_action': "spt.mouse.table_layout_hover_over({}, {src_el: bvr.src_el, add_color_modifier: -5})"
-        } )
-        table.add_relay_behavior( {
-            'type': "mouseout",
-            'bvr_match_class': 'spt_group_row',
-            'cbjs_action': "spt.mouse.table_layout_hover_out({}, {src_el: bvr.src_el})"
-        } )
+        if self.kwargs.get("show_group_highlight") not in [False, 'false']:
+            # group mouse over color
+            table.add_relay_behavior( {
+                'type': "mouseover",
+                'bvr_match_class': 'spt_group_row',
+                'cbjs_action': "spt.mouse.table_layout_hover_over({}, {src_el: bvr.src_el, add_color_modifier: -5})"
+            } )
+            table.add_relay_behavior( {
+                'type': "mouseout",
+                'bvr_match_class': 'spt_group_row',
+                'cbjs_action': "spt.mouse.table_layout_hover_out({}, {src_el: bvr.src_el})"
+            } )
 
 
 
@@ -2372,9 +2389,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 group_label_view = self.kwargs.get("group_label_view")
 
+
                 # this is set in handle_group
                 group_value = td.group_value
                 group_div = td.group_div
+
+
                 if group_div:
                     if not group_label_view and group_value == '__NONE__':
                         label = '---'
@@ -2905,6 +2925,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         td_inner.add_style("box-sizing: border-box")
         td.add(td_inner)
         td_inner.add_style("display: flex")
+        td_inner.add_class("spt_group_td_inner")
 
         td_inner.add(swap)
         td_inner.add(title_div)
@@ -6797,6 +6818,130 @@ spt.table.get_group_states = function() {
 }
 
 
+/**
+ * 
+ * Get child rows in the form of nested tuples and lists
+ * 
+ * @return array    tuple, in the form of (group, list of children)
+ *  
+ * e.g.
+ * 
+ * (src_el, 
+ *     [(group, 
+ *         [(group,
+ *             [row]), 
+ *         row, 
+ *         row]),
+ *     row,
+ *     (group, 
+ *         [row])
+ * ])
+ *
+ */
+
+
+spt.table.get_child_rows = function(src_el) {
+    if (!src_el.hasClass("spt_table_row_item")) {
+        var row = src_el.getParent(".spt_table_row_item");
+    } else {
+        var row = src_el;
+    }
+
+    if (!row.hasClass("spt_table_group_row") && !row.hasClass("spt_group_row")) { 
+        return row;
+    } else {
+        var top_level = row.getAttribute("spt_group_level");
+        var tuple = [src_el, []];
+        var stack = [tuple];
+        while (true) {
+            var group_level = row.getAttribute("spt_group_level");
+            var next = row.getNext(".spt_table_row_item");
+            if (!next || next.getAttribute("spt_group_level") <= top_level) {
+                break;
+            }
+
+            if (next.getAttribute("spt_group_level") <= parseInt(group_level)) {
+                var diff = parseInt(group_level) - next.getAttribute("spt_group_level");
+                for (let i=0; i<diff+1; i++) {
+                    stack.pop();
+                }
+            }
+
+            if (!next.hasClass("spt_table_group_row")) var new_item = next;
+            else var new_item = [next, []];
+
+            var curr_tuple = stack[stack.length-1];
+            var curr_list = spt.table.get_child_rows_tuple(curr_tuple, true);
+            curr_list.push(new_item);
+
+            stack.push(new_item);
+
+            row = next;
+        }
+        return tuple;
+    }
+}
+
+/**
+ * 
+ * Get child rows in the form of nested tuples and lists
+ * 
+ * 
+ * @param array    tuple, in the form of (group, list of children)
+ *                        see spt.table.get_child_rows for an example
+ * @param boolean  attribute    determines whether the first or second part of the tuple is returned
+ *                              true: list of children is returned
+ *                              false: group is returned
+ *
+ */
+
+spt.table.get_child_rows_tuple = function(tuple, attribute) {
+    if (tuple.length != 2) spt.alert("Child row tuples must contain 2 elements");
+
+    if (attribute) return tuple[1]
+    else return tuple[0]
+}
+
+
+spt.table.get_parent_groups = function(src_el, level) {
+
+    if (!src_el.hasClass("spt_table_row_item")) {
+        var row = src_el.getParent(".spt_table_row_item");
+    } else {
+        var row = src_el;
+    }
+
+    if (row == null) {
+        return [];
+    }
+
+    var group_level = row.getAttribute("spt_group_level");
+    var group_parents = [];
+    var lowest_group_level = group_level;
+
+    while (true) {
+
+        var group = row.getPrevious(".spt_table_row_item");
+        if (!group) {
+            break;
+        }
+        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
+            row = group;
+            continue
+        }
+        lowest_group_level = group.getAttribute("spt_group_level");
+        if (level && level == group.getAttribute("spt_group_level")) {
+            return group;
+        } else {
+            group_parents.push(group);
+        }
+        row = group;
+    }
+
+    return group_parents;
+}
+
+
 
 
 // setting width of columns
@@ -7457,7 +7602,8 @@ spt.table.delete_row = function(row) {
     return spt.table.delete_rows(rows);
 }
 
-spt.table.delete_rows = function(rows) {
+spt.table.delete_rows = function(rows, args) {
+    if (!args) args = {};
 
     var row = rows[0];
     var layout = spt.table.get_layout();
@@ -7491,17 +7637,20 @@ spt.table.delete_rows = function(rows) {
     }
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
-    var on_post_delete = function() {
-        var on_complete = function(id) {
-            spt.behavior.destroy_element(document.id(id));
-        }
-        for (var i = 0; i < rows.length; i++) {
-            var row = rows[i];
-            row.addClass("spt_removed");
-            if (layout.getAttribute("spt_version") == "2") {
-                spt.table.remove_hidden_row(row);
+    var on_post_delete = args.on_post_delete;
+    if (!on_post_delete) {
+        on_post_delete = function() {
+            var on_complete = function(id) {
+                spt.behavior.destroy_element(document.id(id));
             }
-            Effects.fade_out(row, 500, on_complete);
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                row.addClass("spt_removed");
+                if (layout.getAttribute("spt_version") == "2") {
+                    spt.table.remove_hidden_row(row);
+                }
+                Effects.fade_out(row, 500, on_complete);
+            }
         }
     }
 
@@ -7511,7 +7660,9 @@ spt.table.delete_rows = function(rows) {
 }
 
 
-spt.table.remove_rows = function(rows) {
+spt.table.remove_rows = function(rows, args) {
+    if (!args) args = {};
+
     var layout = spt.table.get_layout();
     var on_complete = function(id) {
         spt.behavior.destroy_element(document.id(id));
@@ -7522,7 +7673,8 @@ spt.table.remove_rows = function(rows) {
         if (layout.getAttribute("spt_version") == "2") {
             spt.table.remove_hidden_row(row);
         }
-        Effects.fade_out(row, 500, on_complete);
+        if (args.no_animation) spt.behavior.destroy_element(row);
+        else Effects.fade_out(row, 500, on_complete);
     }
 
 }
@@ -7628,44 +7780,6 @@ spt.table.operate_selected = function(action)
         //spt.app_busy.hide();
     }
     spt.confirm(msg, ok, cancel);
-}
-
-spt.table.get_parent_groups = function(src_el, level) {
-
-    if (!src_el.hasClass("spt_table_row_item")) {
-        var row = src_el.getParent(".spt_table_row_item");
-    } else {
-        var row = src_el;
-    }
-
-    if (row == null) {
-        return [];
-    }
-
-    var group_level = row.getAttribute("spt_group_level");
-    var group_parents = [];
-    var lowest_group_level = group_level;
-
-    while (true) {
-
-        var group = row.getPrevious(".spt_table_row_item");
-        if (!group) {
-            break;
-        }
-        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
-            row = group;
-            continue
-        }
-        lowest_group_level = group.getAttribute("spt_group_level");
-        if (level && level == group.getAttribute("spt_group_level")) {
-            return group;
-        } else {
-            group_parents.push(group);
-        }
-        row = group;
-    }
-
-    return group_parents;
 }
 
 
