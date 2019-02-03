@@ -1224,6 +1224,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     swap.setAttribute("spt_content_id", content_id);
                     text.setAttribute("id", content_id)
 
+                    clone.removeClass("spt_behavior_template");
+                    clone.addClass("spt_behavior_item");
+
                     '''
                 } )
 
@@ -1317,17 +1320,20 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     content_div.add_style("display: none")
                     content_div.add_class("spt_behavior_text")
 
-                    bvr_text = TextAreaWdg("behavior_content")
-                    bvr_text.add_style("font-size: 12px")
-                    bvr_text.add_style("font-family: courier")
-                    bvr_text.add_style("padding: 5px")
-                    bvr_text.add_attr("spt_is_multiple", "true")
-                    content_div.add(bvr_text)
-                    bvr_text.add_style("width: 100%")
-                    bvr_text.add_style("min-height: 400px")
+                    if behavior_node == "__new__":
+                        bvr_text = TextAreaWdg("behavior_content")
+                        bvr_text.add_style("font-size: 12px")
+                        bvr_text.add_style("font-family: courier")
+                        bvr_text.add_style("padding: 5px")
+                        bvr_text.add_attr("spt_is_multiple", "true")
+                        content_div.add(bvr_text)
+                        bvr_text.add_style("width: 100%")
+                        bvr_text.add_style("min-height: 400px")
 
-                    bvr_text.set_value( value )
-
+                        bvr_text.set_value( value )
+                    else:
+                        editor = AceEditorWdg(width="100%", language="javascript", code=value, show_options=False, editor_id='custom_layout_behavior')
+                        content_div.add(editor)
 
 
             # callbacks
@@ -1451,20 +1457,32 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 spt.custom_layout_editor = {};
                  
                 spt.custom_layout_editor.compile_behaviors = function(values) {
-                
+                    
+                    
+                    var behavior_tab = bvr.src_el.getElement(".spt_behavior_top");
+                    
+                    var behavior_elements = behavior_tab.getElements(".spt_behavior_item");
+                    
                     var behavior = '\\n';
-
-                    var behavior_names = values.behavior_name;
-                    var behavior_contents =  values.behavior_content;
-                    var behavior_events = values.behavior_event;
-
-                    for (var i = 0; i < behavior_names.length; i++) {
-                        if (behavior_names[i] == "") {
+                    for (var i = 0; i < behavior_elements.length; i++) {
+                        
+                        var item = behavior_elements[i];
+                        var inputs = spt.api.get_input_values(item);
+                        var behavior_name = inputs.behavior_name[0];
+                        if (behavior_name === "") {
                             continue;
                         }
+                        var behavior_event = inputs.behavior_event[0]; 
 
-                        behavior += '<behavior class="'+behavior_names[i]+'" event="'+behavior_events[i]+'">';
-                        behavior += behavior_contents[i];
+                        try {
+                            spt.ace_editor.set_editor_top(item);
+                            var content = spt.ace_editor.get_value();
+                        } catch(e) {
+                            var content = inputs.behavior_content[0];
+                        }
+
+                        behavior += '<behavior class="'+behavior_name+'" event="'+behavior_event+'">';
+                        behavior += content;
                         behavior += '</behavior>';
                         behavior += '\\n';
                     }
