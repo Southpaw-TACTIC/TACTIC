@@ -13,7 +13,7 @@
 __all__ = ['CustomLayoutEditWdg', 'CustomLayoutEditTestWdg','CustomLayoutHelpWdg', 'CustomLayoutEditSaveCmd', 'CustomLayoutActionCbk']
 from pyasm.common import  jsondumps, jsonloads, TacticException, Environment
 from pyasm.search import Search, SearchType
-from pyasm.biz import Project
+from pyasm.biz import Project, ProjectSetting
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg, Widget, WebContainer
 from pyasm.widget import IconWdg
 from pyasm.widget import TextWdg, TextAreaWdg, XmlWdg, HiddenWdg, SelectWdg
@@ -1187,8 +1187,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             behavior_div.add(title_wdg)
 
 
-            use_textarea = True
-            if use_textarea:
+            seperate_behaviors = ProjectSetting.get_value_by_key("custom_layout_editor/behavior_seperation")
+            if seperate_behaviors:
                 behavior_div.add(text)
                 text.add_style("width: 100%")
                 text.add_style("height: 450px")
@@ -1286,7 +1286,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     event_div.add("<div style='margin-right: 5px;'>Event: </div>")
                     event_div.add_style("display: flex")
                     event_div.add_style("align-items: center")
-                    event_select = SelectWdg(name="event%s" % i)
+                    event_select = SelectWdg(name="behavior_event")
+                    event_select.add_attr("spt_is_multiple", "true")
                     event_div.add(event_select)
                     event_select.set_option("values", "click|load|unload|double_click|keyup|mouseenter|mouseleave|listen")
                     event_select.add_empty_option("-- Select --")
@@ -1443,7 +1444,35 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 msg_div.add_style("padding: 30px")
             """
  
+        top.add_behavior({
+            'type': 'load',
+            'cbjs_action': """
 
+                spt.custom_layout_editor = {};
+                 
+                spt.custom_layout_editor.compile_behaviors = function(values) {
+                
+                    var behavior = '\\n';
+
+                    var behavior_names = values.behavior_name;
+                    var behavior_contents =  values.behavior_content;
+                    var behavior_events = values.behavior_event;
+
+                    for (var i = 0; i < behavior_names.length; i++) {
+                        if (behavior_names[i] == "") {
+                            continue;
+                        }
+
+                        behavior += '<behavior class="'+behavior_names[i]+'" event="'+behavior_events[i]+'">';
+                        behavior += behavior_contents[i];
+                        behavior += '</behavior>';
+                        behavior += '\\n';
+                    }
+                    return behavior;
+
+                };
+            """
+        })
 
 
         if self.kwargs.get("is_refresh") == 'true':
@@ -1518,26 +1547,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var style = values.style;
             var kwargs = values.kwargs;
 
-            var behavior = values.behavior;
+            var behavior = spt.custom_layout_editor.compile_behaviors(values);
             var callback = values.callback;
-
-            /*
-            var behavior_names = values.behavior_name;
-            var behavior_contents = values.behavior_content;
-            var behavior = "\n";
-            for (var i = 0; i < behavior_names.length; i++) {
-                if (behavior_names[i] == "") {
-                    continue;
-                }
-
-                var event = values["event"+i];
-                behavior += '<behavior class="'+behavior_names[i]+'" event="'+event+'">';
-                behavior += behavior_contents[i];
-                behavior += '</behavior>';
-                behavior += '\n';
-            }
-            */
-
 
             if (!view) {
                 spt.alert("A view name must be provided to save. e.g. 'custom/task_list' will create a custom folder with a task_list view");
@@ -1638,7 +1649,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             if (!values.view) {
                 values.view = "__test__"
             }
-
+        
+            values.behavior = spt.custom_layout_editor.compile_behaviors(values);
 
 
             var class_name = 'tactic.ui.tools.CustomLayoutEditTestWdg';
