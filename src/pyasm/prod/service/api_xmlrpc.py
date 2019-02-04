@@ -204,7 +204,7 @@ def get_full_cmd(self, meth, ticket, args):
                    raise ApiException("Access denied")
 
             self2.results = exec_meth(self, ticket, meth, args)
-            if isinstance(self2.results, dict) and self2.results.get("description"):
+            if meth.__name__ == "execute_cmd" and isinstance(self2.results, dict) and self2.results.get("description"):
                 self2.add_description( self2.results.get("description") )
 
             self2.sobjects = self.get_sobjects()
