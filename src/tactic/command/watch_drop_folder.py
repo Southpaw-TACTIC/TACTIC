@@ -23,6 +23,7 @@ import sys
 from pyasm.common import Environment, Config, Common
 from pyasm.security import Batch
 from pyasm.biz import Project
+from pyasm.prod.biz import ProdSetting
 from pyasm.search import DbContainer
 from pyasm.search import Search, Transaction, SearchType
 from pyasm.command import Command, SendEmail
