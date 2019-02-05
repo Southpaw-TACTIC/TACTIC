@@ -2167,8 +2167,6 @@ spt.pipeline.first_init = function(bvr) {
         data.colors[sobj[key]] = sobj.color;
     }
 
-    console.log(sobjs);
-
     data.descriptions = {};
     for (var i = 0; i < sobjs.length; i++) {
         var sobj = sobjs[i];
@@ -3278,7 +3276,8 @@ spt.pipeline.get_node_multi_kwargs = function(node) {
     var multi_kwargs = spt.pipeline.get_node_kwargs(node);
     if (!multi_kwargs) return {};
     if (!multi_kwargs.multi) {
-        console.log("ERROR: not multi_kwargs");
+        
+        ("ERROR: not multi_kwargs");
         return {};
     }
     var kwargs_name = multi_kwargs.selected;
