@@ -3276,8 +3276,7 @@ spt.pipeline.get_node_multi_kwargs = function(node) {
     var multi_kwargs = spt.pipeline.get_node_kwargs(node);
     if (!multi_kwargs) return {};
     if (!multi_kwargs.multi) {
-        
-        ("ERROR: not multi_kwargs");
+        console.log("ERROR: not multi_kwargs");
         return {};
     }
     var kwargs_name = multi_kwargs.selected;
@@ -5948,9 +5947,6 @@ spt.pipeline.export_group = function(group_name) {
         var from_node_name = connector.get_from_node().spt_name;
         var to_node_name = connector.get_to_node().spt_name;
 
-        console.log("connector nodes", connector.get_from_node(), connector.get_to_node());
-        console.log("connector names:", from_node_name, to_node_name);
-
         if (data.has_prefix && from_node_name.indexOf("/") == -1) {
             var prefix = node.getAttribute("spt_prefix");
             if (!prefix) {
@@ -5966,10 +5962,7 @@ spt.pipeline.export_group = function(group_name) {
             to_node_name = prefix + "/" + to_node_name;
         }
 
-        console.log(xml);
         xml += '  <connect from="'+from_node_name+'" to="'+to_node_name+'"';
-
-        console.log(xml);
 
         var attrs = connector.get_attrs();
         if (group_type == 'schema' && !('relationship' in attrs) ) {
@@ -5997,8 +5990,6 @@ spt.pipeline.export_group = function(group_name) {
         xml += '/>\n';
     }
     xml += '</'+group_type+'>\n';
-
-    console.log("ret", xml);
 
     return xml;
 
