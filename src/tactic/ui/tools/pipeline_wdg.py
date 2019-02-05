@@ -2086,12 +2086,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
 class BaseInfoWdg(BaseRefreshWdg):
 
 
-    def get_description_wdg(self, process_sobj):
-        if not process_sobj:
-            description = "N/A"
-        else:
-            description = process_sobj.get_value("description")
-
+    def get_description_wdg(self):
         desc_div = DivWdg()
         desc_div.add_style("margin: 20px 10px")
         desc_div.add("<div><b>Details:</b></div>")
@@ -2100,11 +2095,9 @@ class BaseInfoWdg(BaseRefreshWdg):
         text.add_style("width: 100%")
         text.add_style("height: 60px")
         text.add_style("padding: 10px")
-        text.add(description)
 
         text.add_behavior( {
             'type': 'load',
-            'description': description,
             'cbjs_action': '''
 
             var node = spt.pipeline.get_info_node();
@@ -2466,7 +2459,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         node_type = self.kwargs.get("node_type")
         properties = self.kwargs.get("properties")
 
-        process_code = properties.get("process_code")
+        process_code = properties.get("process_code") or ""
         search = Search("config/process")
         search.add_filter("code", process_code)
 
@@ -2498,15 +2491,15 @@ class DefaultInfoWdg(BaseInfoWdg):
         title_wdg = self.get_title_wdg(node_type)
         top.add( title_wdg )
 
-        if not process_sobj:
-            msg = DivWdg()
-            top.add(msg)
-            msg.add("No process found.  Please save")
-            msg.add_style("margin: 30px auto")
-            msg.add_style("text-align: center")
-            msg.add_style("width: 80%")
-            msg.add_style("padding: 20px")
-            return top
+        # if not process_sobj:
+        #     msg = DivWdg()
+        #     top.add(msg)
+        #     msg.add("No process found.  Please save")
+        #     msg.add_style("margin: 30px auto")
+        #     msg.add_style("text-align: center")
+        #     msg.add_style("width: 80%")
+        #     msg.add_style("padding: 20px")
+        #     return top
 
 
         info_div = DivWdg()
@@ -2515,25 +2508,25 @@ class DefaultInfoWdg(BaseInfoWdg):
         info_div.add_style("margin: 10px 10px 20px 10px")
 
 
-        desc_div = self.get_description_wdg(process_sobj)
+        desc_div = self.get_description_wdg()
         top.add(desc_div)
 
 
 
         #show error message if the node has not been registered 
-        if not process_sobj:
-            warning_div = DivWdg()
-            #width = 16 makes the icon smaller
-            warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
-            warning_msg = "This process node has not been registered in the process table, please save your changes."
+        # if not process_sobj:
+        #     warning_div = DivWdg()
+        #     #width = 16 makes the icon smaller
+        #     warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
+        #     warning_msg = "This process node has not been registered in the process table, please save your changes."
            
-            warning_div.add(warning_icon)
-            warning_div.add(warning_msg)
-            top.add(warning_div)
-            warning_div.add_style("padding: 20px 30px")
-            warning_div.add_style("font-size: 15px")
+        #     warning_div.add(warning_icon)
+        #     warning_div.add(warning_msg)
+        #     top.add(warning_div)
+        #     warning_div.add_style("padding: 20px 30px")
+        #     warning_div.add_style("font-size: 15px")
 
-            return top
+        #     return top
 
 
 
@@ -2545,7 +2538,7 @@ class DefaultInfoWdg(BaseInfoWdg):
             div.add("<b>Task Setup</b><br/>")
             div.add("Task options allow you to control various default properties of tasks.")
 
-            process_key = process_sobj.get_search_key()
+            #process_key = process_sobj.get_search_key()
 
             div.add("<br/>"*2)
 
@@ -2556,7 +2549,7 @@ class DefaultInfoWdg(BaseInfoWdg):
                 'type': 'click_up',
                 'pipeline_code': pipeline_code,
                 'process': process,
-                'search_key': process_sobj.get_search_key(),
+                #'search_key': process_sobj.get_search_key(),
                 'cbjs_action': '''
                 var class_name = "tactic.ui.tools.PipelinePropertyWdg";
                 var kwargs = {
@@ -2586,10 +2579,6 @@ class DefaultInfoWdg(BaseInfoWdg):
             top.add(detail_wdg)
             detail_wdg.add_style("margin: 10px")
 
-
-
-
-        process_code = process_sobj.get_value("code")
 
         # triggers
         search = Search("config/trigger")
@@ -2773,6 +2762,7 @@ class DefaultInfoWdg(BaseInfoWdg):
                 'process': process,
                 'search_key': process_sobj.get_search_key(),
                 'cbjs_action': '''
+
                 var class_name = 'tactic.ui.panel.EditWdg';
                 var kwargs = {
                     search_type: "config/process",
@@ -2793,6 +2783,9 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
     def get_default_properties(self):
+        if not self.process_sobj:
+            return {}
+
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
 
@@ -3653,7 +3646,7 @@ class ActionInfoWdg(BaseInfoWdg):
         info_div.add_style("margin: 10px 10px 20px 10px")
 
 
-        desc_div = self.get_description_wdg(process_sobj)
+        desc_div = self.get_description_wdg()
         top.add(desc_div)
 
 
@@ -3951,6 +3944,9 @@ class ActionInfoWdg(BaseInfoWdg):
 
 
     def get_default_properties(self):
+        if not self.process_sobj:
+            return {}
+
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
 
@@ -4060,7 +4056,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
 
 
 
-        desc_div = self.get_description_wdg(process_sobj)
+        desc_div = self.get_description_wdg()
         top.add(desc_div)
 
 
@@ -4151,6 +4147,9 @@ class ApprovalInfoWdg(BaseInfoWdg):
 
 
     def get_default_properties(self):
+        if not self.process_sobj:
+            return {}
+
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
 
@@ -4273,6 +4272,9 @@ class HierarchyInfoWdg(BaseInfoWdg):
 
 
     def get_default_kwargs(self):
+        if not self.process_sobj:
+            return {}
+
         process_sobj = self.process_sobj
         subpipeline_code = process_sobj.get_value("subpipeline_code")
 
@@ -4286,6 +4288,9 @@ class HierarchyInfoWdg(BaseInfoWdg):
 
 
     def get_default_properties(self):
+        if not self.process_sobj:
+            return {}
+
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
 
