@@ -2171,6 +2171,12 @@ spt.pipeline.first_init = function(bvr) {
         data.colors[sobj[key]] = sobj.color;
     }
 
+    data.descriptions = {};
+    for (var i = 0; i < sobjs.length; i++) {
+        var sobj = sobjs[i];
+        data.descriptions[sobj[key]] = sobj.description;
+    }
+
 }
 
 
@@ -2558,7 +2564,18 @@ spt.pipeline.enable_node = function(node) {
 }
 
 
+// For info wdg, not sure if this should be here
+spt.pipeline = spt.pipeline || {};
+spt.pipeline.info_node;
 
+spt.pipeline.set_info_node = function(node) {
+    spt.pipeline.info_node = node;
+}
+
+
+spt.pipeline.get_info_node = function() {
+    return spt.pipeline.info_node;
+}
 
 
 
@@ -2638,6 +2655,13 @@ spt.pipeline.get_node_by_name = function(name) {
     return null;
 }
 
+
+spt.pipeline.set_node_name = function(node, name) {
+    node.setAttribute("spt_element_name", name);
+    node.spt_name = name;
+    var label = node.getElement(".spt_label");
+    label.innerText = name;
+}
 
 
 spt.pipeline.get_node_name = function(node) {
@@ -2926,7 +2950,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 
 	// set any properties that might exist
-	new_node.properties = {};
+	new_node.properties = kwargs.properties || {};
 
 
 	// add to a group
@@ -3203,7 +3227,93 @@ spt.pipeline.get_node_properties = function(node) {
     return node.properties;
 }
 
+// Kwargs are ProcessInfoCmd inputs
+spt.pipeline.get_node_kwargs = function(node) {
+    var type = spt.pipeline.get_node_type(node);
+    var property = node.properties;
+    if (property) return property[type] || {};
+    return {};
+}
 
+spt.pipeline.get_node_kwarg = function(node, name) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    return kwargs[name];
+}
+
+spt.pipeline.set_node_kwargs = function(node, kwargs) {
+    var type = spt.pipeline.get_node_type(node);
+    spt.pipeline.set_node_property(node, type, kwargs);
+}
+
+spt.pipeline.set_node_kwarg = function(node, name, value) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!kwargs) kwargs = {};
+    kwargs[name] = value;
+    spt.pipeline.set_node_kwargs(node, kwargs);
+}
+
+// Supports both kwargs and multi kwargs
+spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+        if (value || value === "") input_el.value = value;
+    }
+}
+
+spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+        if (input_el.value == value) input_el.checked = true;
+    }
+}
+
+// Used for InfoWdgs with dynamic forms
+spt.pipeline.get_node_multi_kwargs = function(node) {
+    var multi_kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!multi_kwargs) return {};
+    if (!multi_kwargs.multi) {
+        console.log("ERROR: not multi_kwargs");
+        return {};
+    }
+    var kwargs_name = multi_kwargs.selected;
+    return multi_kwargs[kwargs_name] || {};
+}
+
+spt.pipeline.get_node_multi_kwarg = function(node, name) {
+    var kwargs = spt.pipeline.get_node_multi_kwargs(node);
+    return kwargs[name];
+}
+
+spt.pipeline.set_node_multi_kwarg = function(node, name, value) {
+    var multi_kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!multi_kwargs.multi) return;
+    var kwargs_name = multi_kwargs.selected;
+    var kwargs = multi_kwargs[kwargs_name];
+    kwargs[name] = value;
+    multi_kwargs[kwargs_name] = kwargs;
+    spt.pipeline.set_node_kwargs(node, multi_kwargs);
+}
+
+spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value) {
+    var type = spt.pipeline.get_node_type(node);
+    var multi_kwargs = spt.pipeline.get_node_property(node, type);
+    if (!multi_kwargs) multi_kwargs = {};
+    multi_kwargs.multi = true;
+    multi_kwargs.selected = kwargs_name;
+    var kwargs = multi_kwargs[kwargs_name];
+    if (!kwargs) kwargs = {};
+    kwargs[name] = value;
+    multi_kwargs[kwargs_name] = kwargs;
+    spt.pipeline.set_node_property(node, type, multi_kwargs);
+}
 
 
 spt.pipeline.set_color = function(node, color) {
@@ -5007,6 +5117,7 @@ spt.pipeline.Group = function(name) {
             spt.pipeline.set_color(this.nodes[i], color);
         }
     }
+
     this.get_color = function() {
         return this.color;
     }
@@ -5026,6 +5137,16 @@ spt.pipeline.Group = function(name) {
         this.node_type = node_type;
     }
 
+    this.set_description = function(description) {
+        this.description = description;
+
+        var data = spt.pipeline.get_data();
+        data.descriptions[this.get_name()] = description;
+    }
+
+    this.get_description = function() {
+        return this.description;
+    }
 
 
 }
@@ -5797,7 +5918,11 @@ spt.pipeline.export_group = function(group_name) {
            
             if (!properties.hasOwnProperty(key))
                 continue;
-            if (['name','xpos','ypos','type','names','namedItem','item'].contains(key)) {
+            if (['name', 'xpos', 'ypos', 'type', 'names', 'namedItem', 'item', 'kwargs'].contains(key)) {
+                continue;
+            }
+
+            if (['manual', 'action', 'condition', 'hierarchy', 'dependency', 'progress', 'client'].contains(key)) {
                 continue;
             }
 
