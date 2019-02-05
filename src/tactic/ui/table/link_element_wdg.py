@@ -58,7 +58,8 @@ class LinkElementWdg(SimpleTableElementWdg):
 
         top = DivWdg()
         top.add_class("hand")
-        top.add_style("width: 0%")
+        top.add_style("text-align: center")
+        top.add_style("max-width: 30px")
 
         if value:
             top.add_behavior( {
@@ -79,11 +80,11 @@ class LinkElementWdg(SimpleTableElementWdg):
 
             icon = self.get_option("icon")
             if not icon:
-                icon = 'jump'
+                icon = "FA_LINK"
 
             from pyasm.widget import IconWdg
             icon = icon.upper()
-            icon = IconWdg( value, eval("IconWdg.%s" % icon) )
+            icon = IconWdg( value, icon )
             top.add(icon)
         
 

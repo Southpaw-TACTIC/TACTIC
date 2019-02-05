@@ -2068,6 +2068,14 @@ class Select(object):
 
     def add_op(self, op, idx=None):
         assert op in ['and', 'or', 'begin']
+
+        self.raw_filters.append( {
+            'op': op,
+        } )
+
+
+
+
         if idx == None:
             # TODO: determine if this is needed later
             #if self.wheres and op != "begin" and self.wheres[-1] == "begin":
