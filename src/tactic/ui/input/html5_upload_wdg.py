@@ -511,9 +511,16 @@ class UploadButtonWdg(BaseUploadWdg):
 
         color = self.kwargs.get("color")
         width = self.kwargs.get("width")
+
+        mode = self.kwargs.get("mode")
+
+        if mode == "icon":
+            button = DivWdg("<button class='btn btn-default'><i class='fa fa-paperclip'> </i></button>")
+            button.add_attr("title", "Upload File")
+        else:
  
-        from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title, color=color, width=width, size='b')
+            from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
+            button = ActionButtonWdg(title="Upload File", color=color, width=width, size='b')
         return button
 
 

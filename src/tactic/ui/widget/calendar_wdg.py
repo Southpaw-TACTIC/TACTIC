@@ -73,6 +73,13 @@ class CalendarWdg(BaseRefreshWdg):
         self.top_wdg = DivWdg()
         self.top_wdg.add_style("z-index: 100")
         css_class = self.kwargs.get('css_class')
+        print
+        print
+        print "!!!: ", css_class
+        print
+        print
+        print
+
         if not css_class:
             css_class = "spt_calendar_top"
         self.top_wdg.add_class(css_class)
