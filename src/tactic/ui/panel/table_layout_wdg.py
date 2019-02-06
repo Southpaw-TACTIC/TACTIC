@@ -2391,6 +2391,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 group_label_class = self.kwargs.get("group_label_class")
                 # Common.create_from_class_path(group_label_class, args, kwargs)
 
+                print "meme", group_label_view, group_label_class
+
 
                 # this is set in handle_group
                 group_value = td.group_value
@@ -2438,6 +2440,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                             extra_data["group_value"] = group_value
                             extra_data["sobjects"] = sobjects
                             extra_data["group_level"] = group_level
+
+                            print "yeeeeee", extra_data
+
                             label = Common.create_from_class_path(group_label_class, {}, extra_data)
                         else:
                             label = Common.process_unicode_string(group_value)

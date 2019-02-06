@@ -7207,7 +7207,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             show_border="horizontal",
             height="auto",
             width="100%",
-            view="workflow",
+            view="table",
             #drag_action_script="spme/workflow_document_drag_action",
             config_xml='''<config>
                 <table>
@@ -7431,7 +7431,7 @@ class PipelineDocumentItem(BaseRefreshWdg):
 
 
     def get_display(self):
-        sobject = kwargs.get("sobject")
+        sobject = self.kwargs.get("sobject")
 
         label = ""
         pipeline_code = ""
@@ -7455,7 +7455,7 @@ class PipelineDocumentItem(BaseRefreshWdg):
         open_wdg.add(label_wdg)
         label_wdg.add_class("spt_document_label")
         label_wdg.add_class("document-group-label")
-        label.add(label)
+        label_wdg.add(label)
 
         input_wdg = HtmlElement.text("name")
         top.add(input_wdg)
@@ -7507,13 +7507,13 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
 
 
     def get_display(self):
-        label = kwargs.get("group_value")
+        label = self.kwargs.get("group_value")
 
         uncategorized = False
         if label == "Uncategorized":
             uncategorized = True
 
-        group_level = kwargs.get("group_level")
+        group_level = self.kwargs.get("group_level")
 
         add_btn_title = "Add New Category" if group_level == 0 else "Add New Workflow"
         add_btn_icon = "fa-plus" if group_level == 0 else "fa-file"
@@ -7545,7 +7545,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
         top.add_attr("spt_group_level", group_level)
         top.add_attr("spt_value", label)
 
-        label_wdg = self.get_label_wdg(uncategorized)
+        label_wdg = self.get_label_wdg(uncategorized, label)
         top.add(label_wdg)
 
         input_wdg = self.get_input_wdg()
@@ -7560,14 +7560,14 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
         return top
 
 
-    def get_label_wdg(self, uncategorized):
+    def get_label_wdg(self, uncategorized, label):
 
         label_wdg = DivWdg()
         label_wdg.add_class("spt_document_label spt_group_label")
         label_wdg.add_class("document-group-content")
-        label.add(label)
+        label_wdg.add(label)
 
-        label.add_behavior({
+        label_wdg.add_behavior({
             'type': 'click_up',
             'uncategorized': uncategorized,
             'cbjs_action': '''
@@ -7658,7 +7658,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
 
 
     def get_add_wdg(self, add_btn_title, add_btn_icon):
-        add_btn = self.get_button("spt_add_btn", add_btn_title, add_btn_icon)
+        add_btn = self.get_button_wdg("spt_add_btn", add_btn_title, add_btn_icon)
         add_btn.add_style("margin: 0 3px")
 
         add_btn.add_behavior({
@@ -7729,7 +7729,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
 
 
     def get_delete_wdg(self, delete_display):
-        delete_btn = self.get_button("spt_delete_btn", "Delete Category and Workflows", "fa-trash")
+        delete_btn = self.get_button_wdg("spt_delete_btn", "Delete Category and Workflows", "fa-trash")
         delete_btn.add_style("display", delete_display)
 
         delete_btn.add_behavior({
