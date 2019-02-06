@@ -410,6 +410,7 @@ class BaseAppServer(Base):
             access = True
 
 
+
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg

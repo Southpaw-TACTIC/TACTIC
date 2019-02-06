@@ -821,6 +821,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             column_widths = []
 
 
+
+        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['hidden']:
+            inner.set_style("display: none")
+
+
+
         self.element_names = self.config.get_element_names()  
        
         for i, widget in enumerate(self.widgets):
@@ -7848,42 +7854,152 @@ spt.table.load_search = function(search_view, kwargs) {
     } } );
 
     return;
+}
+
 
 /*
-    var top = layout.getParent(".spt_view_panel");
-    var search_top = top.getElement(".spt_search_top");
-    var simple_search_top = top.getElement(".spt_simple_search_top");
-    var simple_search_top = top.getElement(".spt_simple_search");
+ * Export to CSV tools
+ */
 
-    var class_name = "tactic.ui.app.SearchWdg";
-    var options = {
+spt.table.export = function(mode) {
+
+    var bvr = {};
+    bvr.mode = mode;
+
+    var layout = spt.table.get_layout();
+    var table = spt.table.get_table();
+
+    var search_type = table.get("spt_search_type");
+    var view = table.get("spt_view");
+    var search_values_dict;
+
+    spt.table.set_layout(layout);
+    var header = spt.table.get_header_row();
+    // include header input for widget specific settings
+    var header_inputs = spt.api.Utility.get_input_values(header, null, false);
+    search_values_dict = header_inputs;
+
+
+    var element_names = spt.table.get_element_names();
+
+    var search_class = table.get("spt_search_class") || "";
+
+    var tmp_bvr = {};
+
+    var search_view;
+    // init the args to be passed to CsvExportWdg
+    tmp_bvr.args = {
+        'table_id': table.get('id'),
         'search_type': search_type,
-        'display': 'block',
-        'view': search_view
+        'selected_search_keys': '',
+        'view': view,
+        'element_names': element_names,
+        'search_class': search_class,
+        'mode': bvr.mode,
+        'search_view': search_view
     };
 
-
-    // replace the search widget
-    spt.panel.load(search_top, class_name, options, {}, {
-        callback: function() {
-        }
-    });
-
-
-    // store the search view that was just loaded
-    search_top.setAttribute("spt_search_view", search_view);
-
-    if (simple_search_top) {
-        var class_name = "tactic.ui.app.SimpleSearchWdg";
-        var options = {
-            'search_type': search_type,
-            'filter_view': search_view,
-            'search_view': "order_filter"
-        };
-        spt.panel.load(simple_search_top, class_name, options);
+    var title = '';
+    var sel_search_keys = [];
+    if( bvr.mode=='export_all' ) {
+        tmp_bvr.args.is_export_all = true;
+        title = 'Export All items from "' + search_type + '" list ';
     }
-*/
+    else if (bvr.mode=='export_matched') {
+        title = 'Export Matched items from "' + search_type + '" list ';
+        var top = table.getParent(".spt_view_panel");
+
+        var search_wdg;
+        if (top) {
+            search_wdg = top.getElement(".spt_search");
+            var matched_search_type = search_type == top.getAttribute('spt_search_type');
+            var simple_search_view  = top.getAttribute('spt_simple_search_view');
+            search_view = search_wdg.getAttribute("spt_view");
+            tmp_bvr.args.search_view = search_view;
+            tmp_bvr.args.simple_search_view = simple_search_view;
+        }
+        if (!top || !search_wdg || !matched_search_type) {
+            spt.alert('The search box is not found. Please use "Export Selected, Export Displayed" instead')
+            return;
+        }
+
+        var search_values = spt.dg_table.get_search_values(search_wdg);
+        search_values_dict['json'] = search_values;
+
+    }
+    else if (bvr.mode=='export_displayed') {
+        title = 'Export displayed items from "' + search_type + '" list ';
+        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
+        var tbodies = table.getElements(css);
+        for (var k=0; k < tbodies.length; k++) {
+            if (tbodies[k].getStyle('display') == 'none'){
+                continue;
+            }
+            var sk = tbodies[k].getAttribute('spt_search_key');
+
+
+            sel_search_keys.push(sk);
+        }
+        if( sel_search_keys.length == 0 ) {
+            spt.alert('No rows displayed for exporting to CSV ... skipping "Export Displayed" action.');
+            return;
+        }
+    }
+
+    else {
+        title = 'Export Selected items from "' + search_type + '" list ';
+        if (version == 2)
+            var selected_rows = spt.table.get_selected_rows();
+        else
+            var selected_rows = spt.dg_table.get_selected(table,  {'include_embedded_tables': true} );
+        var sel_search_keys = [];
+
+        related_views = []
+        for (var c=0; c < selected_rows.length; c++) {
+            search_key = selected_rows[c].getAttribute("spt_search_key");
+            sel_search_keys.push(search_key);
+
+            var parent_table = selected_rows[c].getParent('.spt_table');
+            var parent_view = parent_table.getAttribute('spt_view');
+            if (! related_views.contains(parent_view))
+                related_views.push(parent_view);
+        }
+
+        //var sel_tr_list = spt.dg_table.get_selected( table.get('id') );
+        if( sel_search_keys.length == 0 ) {
+            spt.alert('No rows selected for exporting to CSV ... skipping "Export Selected" action.');
+            return;
+        }
+        if (related_views.length > 1) {
+            spt.alert('More than 1 type of item is selected ... skipping "Export Selected" action.');
+            return;
+        }
+        tmp_bvr.args.related_view = related_views[0];
+    }
+
+
+    var view_name = '';
+
+    title += "in [" + view + "] view";
+
+    tmp_bvr.options = {
+        'title': title + " to CSV",
+        'class_name': 'tactic.ui.widget.CsvExportWdg',
+        'popup_id' : 'Export CSV'
+    };
+    tmp_bvr.args.selected_search_keys = sel_search_keys;
+    tmp_bvr.values = search_values_dict;
+
+
+    var popup = spt.popup.get_widget( {}, tmp_bvr );
+
+    // add the search_values_dict to the popup
+    popup.values_dict = search_values_dict;
+
 }
+
+
+
 
 /*
  * Dynamically load data rows through javascript

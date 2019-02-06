@@ -664,7 +664,10 @@ class BaseSQLDatabaseImpl(DatabaseImpl):
     def is_column_sortable(self, db_resource, table, column):
 
         # support -> operator
-        if column.find("->"):
+        if column.find("->>"):
+            parts = column.split("->>")
+            column = parts[0]
+        elif column.find("->"):
             parts = column.split("->")
             column = parts[0]
 
@@ -3610,7 +3613,7 @@ class MySQLImpl(PostgresImpl):
             column = '"%s"' % column
 
         if column_type in ['integer','serial']:
-            column = "CAST(%s AS varchar(10))" %column
+            column = "CAST(%s AS CHAR(10))" %column
         else:
             # prefix matching
             value = '%s:*'%value
@@ -3629,7 +3632,7 @@ class MySQLImpl(PostgresImpl):
                   r."parent_keyword_code", p1."name",
                   r."child_keyword_code", p2."name",
                         p1."alias",
-                        CAST(r."child_keyword_code" AS varchar(256)),
+                        CAST(r."child_keyword_code" AS CHAR(256)),
                   1
                  FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
                  WHERE (%s)
@@ -3639,7 +3642,7 @@ class MySQLImpl(PostgresImpl):
                   r."parent_keyword_code", p1."name",
                   r."child_keyword_code", p2."name",
                         p2."alias",
-                        CAST ((path + ' > ' + r."child_keyword_code") AS varchar(256)),
+                        CAST ((path + ' > ' + r."child_keyword_code") AS CHAR(256)),
                   ng.depth + 1
                  FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
                   res AS ng
@@ -3660,7 +3663,7 @@ class MySQLImpl(PostgresImpl):
                   r."parent_keyword_code", p1."name",
                   r."child_keyword_code", p2."name",
                         p1."alias",
-                        CAST(r."parent_keyword_code" AS varchar(256)),
+                        CAST(r."parent_keyword_code" AS CHAR(256)),
                   1
                  FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
                  WHERE ( %s )
@@ -3671,7 +3674,7 @@ class MySQLImpl(PostgresImpl):
                   r."parent_keyword_code", p1."name",
                   r."child_keyword_code", p2."name",
                         p2."alias",
-                        CAST((path + ' > ' + r."parent_keyword_code") AS varchar(256)),
+                        CAST((path + ' > ' + r."parent_keyword_code") AS CHAR(256)),
                   ng.depth + 1
                  FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2,
                   res AS ng
@@ -3697,7 +3700,7 @@ class MySQLImpl(PostgresImpl):
             SELECT
             r."parent_code", p1."name",
             r."search_code", p2."name",
-                  CAST(r."parent_code" AS varchar(256)),
+                  CAST(r."parent_code" AS CHAR(256)),
              1
             FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2
             WHERE p1."code" IN ('%(parent_collection_code)s')
@@ -3706,7 +3709,7 @@ class MySQLImpl(PostgresImpl):
             SELECT
              r."parent_code", p1."name",
              r."search_code", p2."name",
-                   CAST((path + ' > ' + r."parent_code") AS varchar(256)),
+                   CAST((path + ' > ' + r."parent_code") AS CHAR(256)),
              ng.depth + 1
             FROM "%(collection_type)s" AS r, "%(search_type)s" AS p1, "%(search_type)s" AS p2,
              res AS ng

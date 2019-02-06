@@ -779,7 +779,6 @@ class ThumbWdg(BaseTableElementWdg):
             self.info = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot, self.show_versionless, protocol=protocol) 
             link_path = ThumbWdg.get_link_path(self.info, image_link_order=self.image_link_order)
 
-        print("link_path: ", link_path)
         return link_path
  
 
@@ -1267,7 +1266,6 @@ class ThumbWdg(BaseTableElementWdg):
         ''' get the link for the thumbnail '''
         image_link = None
 
-        #default_image_link_order = ['web', 'main', '.swf', 'maya', 'anim', 'houdini', \
         default_image_link_order = ['web', 'main', '.swf']
         
         if image_link_order:
@@ -1513,8 +1511,8 @@ class ThumbWdg(BaseTableElementWdg):
                 info.append((type, path))
 
         return info
-
     get_file_info = staticmethod(get_file_info)
+
 
     def get_refresh_script(sobject, icon_size=None, show_progress=True):
         print("DEPRECATED: Snapshot.get_refresh_script!")

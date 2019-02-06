@@ -665,6 +665,44 @@ class FormatElementWdg(SimpleTableElementWdg):
         elif format in ['wiki']:
             pass
 
+
+
+        # ------------------------------------------------
+        # File Size
+        elif format in ['KB']:
+            value = float(value)
+            ext = " B"
+            if not value:
+                value = 0
+                ext = "B"
+            elif value > 1024**5/2:
+                value = float(value)/1024**5
+                ext = "PB"
+            elif value > 1024**4/2:
+                value = float(value)/1024**4
+                ext = "TB"
+            elif value > 1024**3/2:
+                value = float(value)/1024**3
+                ext = "GB"
+            elif value > 1024**2/2:
+                value = float(value)/1024**2
+                ext = "MB"
+            elif value > 1024/2:
+                value = float(value)/1024
+                ext = "KB"
+            else:
+                value = int(value)
+                return "%s B" % value
+
+            value = self.currency_format(value, grouping=True)
+            # HACK: remove $ and last decimal
+            value = value[1:-1]
+            value = "%s %s" % (value, ext)
+
+
+
+
+
        
         return value
 
