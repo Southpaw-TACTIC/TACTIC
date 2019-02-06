@@ -2024,6 +2024,13 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
         top = self.top
         top.add_class(".spt_process_info_top")
+        top.add_behavior({
+            'type': 'unload',
+            'cbjs_action': '''
+                document.activeElement.blur();
+
+            '''
+            })
         self.set_as_panel(top)
 
         pipeline_code = self.kwargs.get("pipeline_code")
@@ -3297,25 +3304,20 @@ class ScriptSettingsWdg(BaseRefreshWdg):
                 if (script_path_folder) {
                     var server = TacticServerStub.get();
                     code = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].code)", {single: true});
+                    language = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].language)", {single: true});
                 }
 
                 var top = bvr.src_el.getParent(".spt_script_edit");
                 var script_path_title = top.getElement(".spt_script_path_title");
                 var is_read_only = script_path_title.getAttribute('readonly');
+                var script_language = top.getElement(".spt_script_language");
                 
                 //var bkgd = script_path_title.getStyle('background');
-                
-                /*if (code) {
-                    if (is_read_only) {
-                        buttons_div = top.getElement(".spt_script_edit_buttons");
-                        if (buttons_div.getAttribute('edit') != 'true' )
-                            script_path_title.removeAttribute('readonly');
-                    }
-                } else {
-                    script_path_title.setAttribute('readonly','readonly');
-                }*/
 
-                if (code) script_path_title.removeAttribute('readonly');
+                if (code) {
+                    script_path_title.removeAttribute('readonly');
+                    script_language.innerText = language;
+                }
 
                 var node = spt.pipeline.get_info_node();
                 spt.pipeline.set_node_multi_kwarg(node, "script_path_title", "");
@@ -3393,9 +3395,9 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         self.add_session_behavior(script_path_title_text, "text", "spt_action_info_top", "script_path_title")
 
         if language == "python":
-            div.add("Language: <b>Python</b>")
+            div.add("Language: <b class='spt_script_language'>Python</b>")
         else:
-            div.add("Language: <b>Server Javascript</b>")
+            div.add("Language: <b class='spt_script_language'>Server Javascript</b>")
 
         #if script_path:
 
@@ -3700,7 +3702,6 @@ class ActionInfoWdg(BaseInfoWdg):
                     
         select.set_option("labels", labels)
         select.set_option("values", options)
-
         if self.action:
             select.set_value(self.action)
         form_wdg.add("<br/>")
@@ -3783,75 +3784,6 @@ class ActionInfoWdg(BaseInfoWdg):
 
 
         form_wdg.add("<br clear='all'/>")
-
-        save = ActionButtonWdg(title="Save", color="primary")
-        save.add_style("float: right")
-        
-        # top.add(save)
-        # top.add(HtmlElement.br(2))
-        save.add_behavior( {
-            'type': 'click_up',
-            'pipeline_code': pipeline_code,
-            'process': process,
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_action_info_top");
-            var input = spt.api.get_input_values(top, null, false);
-            var action = input.action;
-            var script_new = input.script_new;
-            var script_path_folder = input.script_path_folder;
-            var script_path_title = input.script_path_title;
-            var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
-
-            var popup = false
-            var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
-            if (!test) {
-                spt.error('Invalid script path [' + script_path + '] is specified.');
-                return;
-            }
-
-            // either (script_path && script) or script_new
-            var script = input.script;
-            if (script_new) {
-                if (script_path) {
-                    spt.alert('You have both script path and New script specified. Please clear either one before saving.');
-                    return;
-                }
-                else {
-                    script = script_new;
-                }
-            }
-            if (script_path && !script) {
-                spt.error('You have most likely specified an invalid script path since the script content is empty.');
-                return;
-            }
-            var server = TacticServerStub.get();
-            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
-            var kwargs = {
-                node_type: 'action',
-                action: action,
-                pipeline_code: bvr.pipeline_code,
-                process: bvr.process,
-                script: script,
-                script_path: script_path,
-                on_action_class: input.on_action_class,
-                execute_mode: input.execute_mode,
-                script_path: script_path,
-                language: input.language,
-            }
-
-            var cbk = function() {
-                
-                spt.panel.refresh(top);
-
-            }
-            server.execute_cmd(class_name, kwargs, {}, {on_complete: cbk});
-
-
-            '''
-        } )
-
-
-
 
         return top
 
@@ -4129,8 +4061,6 @@ class ApprovalInfoWdg(BaseInfoWdg):
         )
         form_wdg.add(text)
         text.add_style("width: 100%")
-        if workflow.get("assigned"):
-            text.set_value(workflow.get("assigned"))
 
 
         form_wdg.add("<br/>")
@@ -4212,7 +4142,7 @@ class HierarchyInfoWdg(BaseInfoWdg):
 
 
 
-        top.add( self.get_description_wdg(pipeline) )
+        top.add( self.get_description_wdg() )
 
         settings_wdg = DivWdg()
         top.add(settings_wdg)
@@ -4232,8 +4162,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<b>Points to a sub Workflow:</b>")
         select = SelectWdg("subpipeline")
         settings_wdg.add(select)
-        if subpipeline_code:
-            select.set_value(subpipeline_code)
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
@@ -4256,8 +4184,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<b>Task Creation:</b>")
         select = SelectWdg("task_creation")
         settings_wdg.add(select)
-        if task_creation:
-            select.set_value(task_creation)
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
@@ -4280,13 +4206,13 @@ class HierarchyInfoWdg(BaseInfoWdg):
             return {}
 
         process_sobj = self.process_sobj
-        subpipeline_code = process_sobj.get_value("subpipeline_code")
+        subpipeline = process_sobj.get_value("subpipeline_code")
 
         workflow = self.workflow
         task_creation = workflow.get("task_creation") or "subtasks_only"
 
         return {
-            "subpipeline_code": subpipeline_code,
+            "subpipeline": subpipeline,
             "task_creation": task_creation
         }
 
@@ -4372,8 +4298,6 @@ class DependencyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<b>Notify Search Type</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
-        if related_search_type:
-            select.set_value(related_search_type)
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
@@ -4394,16 +4318,13 @@ class DependencyInfoWdg(BaseInfoWdg):
         radio = RadioWdg("related_scope")
         radio.add_attr("value", "local")
         scope_div.add(radio)
-        if related_scope == "local" or not related_scope:
-            radio.set_checked()
+        radio.set_checked()
         scope_div.add(" Only Related Items<br/>")
 
         self.add_session_behavior(radio, "radio", "spt_dependency_top", "related_scope")
 
         radio = RadioWdg("related_scope")
         radio.add_attr("value", "global")
-        if related_scope == "global":
-            radio.set_checked()
         scope_div.add(radio)
         scope_div.add(" All Items")
         scope_div.add("<br/>")
@@ -4426,8 +4347,6 @@ class DependencyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
         settings_wdg.add("<b>To Process</b>")
         select = SelectWdg("related_process")
-        if related_process:
-            select.set_value(related_process)
         settings_wdg.add(select)
         select.set_option("values", values)
         select.add_empty_option("-- Select --")
@@ -4444,8 +4363,6 @@ class DependencyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
         settings_wdg.add("<b>With Status</b>")
         select = SelectWdg("related_status")
-        if related_status:
-            select.set_value(related_status)
         settings_wdg.add(select)
         select.set_option("values", "Pending|Action|Complete")
         select.add_empty_option("-- Select --")
@@ -4462,8 +4379,6 @@ class DependencyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
         settings_wdg.add("<b>Wait</b>")
         select = SelectWdg("related_wait")
-        if related_wait:
-            select.set_value(related_wait)
         settings_wdg.add(select)
         select.set_option("labels", "No|Yes")
         select.set_option("values", "false|true")
@@ -4473,34 +4388,6 @@ class DependencyInfoWdg(BaseInfoWdg):
 
         settings_wdg.add("<span style='opacity: 0.6'>Determines if this process will wait until it receives a complete signal (from another dependency) or set to complete automatically")
         settings_wdg.add("<br/>")
-
-
-
-
-        # settings_wdg.add("<br/>")
-
-        # save_button = ActionButtonWdg(title="Save", color="primary")
-        # settings_wdg.add(save_button)
-        # save_button.add_style("float: right")
-        # save_button.add_style("padding-top: 3px")
-        # save_button.add_behavior( {
-        #     'type': 'click_up',
-        #     'process': process,
-        #     'pipeline_code': pipeline_code,
-        #     'cbjs_action': '''
-        #     var top = bvr.src_el.getParent(".spt_dependency_top");
-        #     var values = spt.api.get_input_values(top, null, false);
-        #     var class_name = 'tactic.ui.tools.ProcessInfoCmd';
-        #     var kwargs = values;
-        #     values['node_type'] = 'dependency';
-        #     values['process'] = bvr.process;
-        #     values['pipeline_code'] = bvr.pipeline_code;
-
-        #     var server = TacticServerStub.get();
-        #     server.execute_cmd( class_name, values);
-            
-        #     '''
-        # } )
 
 
 
@@ -4690,8 +4577,6 @@ class ProgressInfoWdg(BaseInfoWdg):
         settings_wdg.add("<b>Listen to events from:</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
-        if related_search_type:
-            select.set_value(related_search_type)
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
@@ -4735,16 +4620,13 @@ class ProgressInfoWdg(BaseInfoWdg):
         radio = RadioWdg("related_scope")
         radio.add_attr("value", "local")
         scope_div.add(radio)
-        if related_scope == "local" or not related_scope:
-            radio.set_checked()
+        radio.set_checked()
         scope_div.add(" Only Related Items<br/>")
 
         self.add_session_behavior(radio, "radio", "spt_progress_top", "related_scope")
 
         radio = RadioWdg("related_scope")
         radio.add_attr("value", "global")
-        if related_scope == "global":
-            radio.set_checked()
         scope_div.add(radio)
         scope_div.add(" All Items")
         scope_div.add("<br/>")
@@ -4769,8 +4651,6 @@ class ProgressInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
         settings_wdg.add("<b>Listen to Workflow</b>")
         select = SelectWdg("related_pipeline_code")
-        if related_pipeline_code:
-            select.set_value(related_pipeline_code)
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
@@ -4810,8 +4690,6 @@ class ProgressInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
         settings_wdg.add("<b>Listen to Process</b>")
         select = SelectWdg("related_process")
-        if related_process:
-            select.set_value(related_process)
         settings_wdg.add(select)
         select.set_option("values", values)
         select.add_empty_option("-- %s --" % process)
@@ -4820,35 +4698,6 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
         self.add_session_behavior(select, "select", "spt_progress_top", "related_process")
-
-
-
-        settings_wdg.add("<br/>")
-
-        save_button = ActionButtonWdg(title="Save", color="primary")
-        #settings_wdg.add(save_button)
-        save_button.add_style("float: right")
-        save_button.add_style("padding-top: 3px")
-        save_button.add_behavior( {
-            'type': 'click_up',
-            'process': process,
-            'pipeline_code': pipeline_code,
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_progress_top");
-            var values = spt.api.get_input_values(top, null, false);
-            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
-            var kwargs = values;
-            values['node_type'] = 'progress';
-            values['process'] = bvr.process;
-            values['pipeline_code'] = bvr.pipeline_code;
-
-            var server = TacticServerStub.get();
-            server.execute_cmd( class_name, values);
-            
-            '''
-        } )
-
-
 
         settings_wdg.add("<br clear='all'/>")
 
@@ -5705,7 +5554,13 @@ class PipelineEditorWdg(BaseRefreshWdg):
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
             
-            var xml = spt.pipeline.export_group(group_name);
+            try {
+                var xml = spt.pipeline.export_group(group_name);
+            } catch (err) {
+                spt.alert(err);
+                return;
+            }
+
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
                 var args = {
@@ -7059,6 +6914,8 @@ class PipelineSaveCbk(Command):
 
         pipeline.update_dependencies()
 
+
+        self.check_duplicates(process_nodes, xml)
         
         self.description = "Updated workflow [%s]" % pipeline_code
 
@@ -7120,8 +6977,15 @@ class PipelineSaveCbk(Command):
                     cmd.execute()
 
 
-            
-        print "finished cbk for loop"
+    def check_duplicates(self, nodes, xml):
+        process_set = set()
+
+        for node in nodes:
+            process_name = xml.get_attribute(node, "name")
+            if process_name in process_set:
+                raise ValueError('The workflow cannot have duplicate process names.')
+            else:
+                process_set.add(process_name)
 
         
 
