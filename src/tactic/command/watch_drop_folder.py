@@ -81,60 +81,7 @@ class WatchFolderFileActionThread(threading.Thread):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         super(WatchFolderFileActionThread, self).__init__()
-        self.email_alert = True
 
-    def handle_disconnect(self, base_dir):
-        import time
-
-        print "DISCONNECT HERE"
-
-        timeout = 0
-        timeout_limit =  ProdSetting.get_value_by_key("watch_folder/disconnect_timeout") or 10
-
-        while not os.path.exists(base_dir) and timeout < timeout_limit:
-            time.sleep(1)
-            timeout += 1
-            pass
-
-        if not os.path.exists(base_dir):
-            if self.email_alert:
-                subject = "Watch Folder Error"
-                message = "Timeout Error: Connection to Watch Drop Folder Timed Out In File Action Thread."
-                sender_name1 = Config.get_value("services", "mail_name")
-                sender_email1 = Config.get_value("services", "mail_user")
-
-                sender_name = "TACTIC Watch Folder"
-                sender_email = "watchfolder@southpawtech.com"
-                recipient_emails = ["hajoon.choi@southpawtech.com"]
-
-                email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                email_cmd.execute()
-                self.email_alert = False
-            return False
-        else:
-            return True
-
-
-    def handle_resumption(self):
-        subject = "Watch Folder Reconnected"
-        message = "Watch Folder is available and service is resumed."
-        sender_name1 = Config.get_value("services", "mail_name")
-        sender_email1 = Config.get_value("services", "mail_user")
-
-        sender_name = "TACTIC Watch Folder"
-        sender_email = "watchfolder@southpawtech.com"
-        recipient_emails = ["hajoon.choi@southpawtech.com"]
-
-        import time
-        timeout = 0
-        while timeout < 15:
-            time.sleep(1)
-            timeout += 1
-            pass
-
-        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-        email_cmd.execute()
-        return
 
     def run(self):
         print "CHECKIN START"
@@ -155,12 +102,38 @@ class WatchFolderFileActionThread(threading.Thread):
             task.set_clean(False)
 
 
+
+    def clean_up(self, paths):
+        task = self.kwargs.get("task")
+        for path in paths:
+
+            process_path = path
+            verify_path = path.replace(".tactic/process", ".tactic/verify")
+            error_path = path.replace(".tactic/process", ".tactic/error")
+
+            # remove the verify path
+            if os.path.exists(verify_path):
+                os.unlink(verify_path)
+
+            # move the process path back to the queue
+            queue_path = path.replace("/.tactic/process", "")
+            shutil.move(process_path, queue_path)
+
+        # this exaggerates the effect of not pausing check thread for cleaning
+        #time.sleep(10)
+        #Common.kill()
+        #task.set_restart(True)
+        return
+
+
     def _run(self):
 
         task = self.kwargs.get("task")
         paths = task.get_paths()
         count = 0
         restart = False
+
+        self.clean_up(paths)
 
         while True:
 
@@ -217,6 +190,7 @@ class WatchFolderFileActionThread(threading.Thread):
                     cmd = Common.create_from_class_path(handler, [], kwargs)
                 else:
                     # create a "custom" command that will act on the file
+                    #raise Exception
                     cmd = CheckinCmd(**kwargs)
 
                 #print "Process [%s] checking in [%s]" % (os.getpid(), path)
@@ -268,27 +242,9 @@ class WatchFolderFileActionThread(threading.Thread):
                     break
 
 
-
         # restart every 20 check-ins
         if restart:
-            print "Restart [%s] files" % len(paths)
-            for path in paths:
-
-                process_path = path
-                verify_path = path.replace(".tactic/process", ".tactic/verify")
-                error_path = path.replace(".tactic/process", ".tactic/error")
-
-                # remove the verify path
-                if os.path.exists(verify_path):
-                    os.unlink(verify_path)
-
-                # move the process path back to the queue
-                queue_path = path.replace("/.tactic/process", "")
-                shutil.move(proocess_path, queue_path)
-
-            # this exaggerates the effect of not pausing check thread for cleaning
-            #time.sleep(10)
-            #Common.kill()
+            self.clean_up(paths)
             task.set_restart(True)
 
 
@@ -527,12 +483,7 @@ class CheckinCmd(object):
             shutil.move('%s/%s'%(dest_dir, base_name), file_path)
             """
 
-            shutil.move("/spt/drop_folder", "/spt/drop_folder1")
-
-
             server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='move')
-            print "error here"
-            # raise ValueError("test123")
 
             if watch_script_path:
                 cmd = PythonCmd(script_path=watch_script_path,search_type=search_type,drop_path=file_path,search_key=search_key)
@@ -656,59 +607,49 @@ class WatchDropFolderTask(SchedulerTask):
         return self.in_restart_mode
 
     def handle_disconnect(self, base_dir):
-        import time
-
         print "watchfolder disconnected"
 
-        timeout = 0
-        timeout_limit =  ProdSetting.get_value_by_key("watch_folder/disconnect_timeout") or 10
-
-        while not os.path.exists(base_dir) and timeout < timeout_limit:
-            time.sleep(1)
-            timeout += 1
-            pass
-
-        if not os.path.exists(base_dir):
-            if self.email_alert:
-                subject = "Watch Folder Error"
-                message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
-                sender_name1 = Config.get_value("services", "mail_name")
-                sender_email1 = Config.get_value("services", "mail_user")
-
-                sender_name = "TACTIC Watch Folder"
-                sender_email = "watchfolder@southpawtech.com"
-                recipient_emails = ["hajoon.choi@southpawtech.com"]
-
-                email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                email_cmd.execute()
-                self.email_alert = False
-            return False
-        else:
-            return True
-
-    def handle_resumption(self):
-
-        subject = "Watch Folder Reconnected"
-        message = "Watch Folder is available and service is resumed."
-        sender_name1 = Config.get_value("services", "mail_name")
-        sender_email1 = Config.get_value("services", "mail_user")
-
-        sender_name = "TACTIC Watch Folder"
-        sender_email = "watchfolder@southpawtech.com"
-        recipient_emails = ["hajoon.choi@southpawtech.com"]
-
-        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-
         import time
         timeout = 0
-        while timeout < 15:
+        email_interval = ProdSetting.get_value_by_key("watch_folder/email_interval") or 60
+
+        while not os.path.exists(base_dir):
             time.sleep(1)
             timeout += 1
+            if (timeout % email_interval) == 0:
+                if self.email_alert:
+                    subject = "Watch Folder Error"
+                    message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
+                    sender_name1 = Config.get_value("services", "mail_name")
+                    sender_email1 = Config.get_value("services", "mail_user")
+
+                    sender_name = "TACTIC Watch Folder"
+                    sender_email = "watchfolder@southpawtech.com"
+                    recipient_emails = ["hajoon.choi@southpawtech.com"]
+
+                    # email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                    # email_cmd.execute()
+
+                    email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                    EmailTriggerThread
             pass
 
-        email_cmd.execute()
-        return
+        print "watchfolder reconnected"
+        # handle resumption
+        if self.email_alert:
+            subject = "Watch Folder Reconnected"
+            message = "Watch Folder is available and service is resumed."
+            sender_name1 = Config.get_value("services", "mail_name")
+            sender_email1 = Config.get_value("services", "mail_user")
 
+            sender_name = "TACTIC Watch Folder"
+            sender_email = "watchfolder@southpawtech.com"
+            recipient_emails = ["hajoon.choi@southpawtech.com"]
+
+            email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+            email_cmd.execute()
+
+        return
 
     def _execute(self):
 
@@ -809,7 +750,6 @@ class WatchDropFolderTask(SchedulerTask):
                 if self.in_restart():
                     break
                 try:
-
                     self._execute()
                     if not checkin.is_alive():
                         checkin = WatchFolderFileActionThread(
@@ -887,7 +827,10 @@ class WatchDropFolderTask(SchedulerTask):
             drop_path = "%s/drop" % tmp_dir
         print "    using [%s]" % drop_path
         if not os.path.exists(drop_path):
-            os.makedirs(drop_path)
+            try:
+                os.makedirs(drop_path)
+            except Exception as e:
+                raise
 
         if options.search_type!=None :
             search_type = options.search_type
