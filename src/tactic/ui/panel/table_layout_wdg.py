@@ -2388,6 +2388,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             for td in group_row.get_widgets():
 
                 group_label_view = self.kwargs.get("group_label_view")
+                group_label_class = self.kwargs.get("group_label_class")
+                # Common.create_from_class_path(group_label_class, args, kwargs)
+
+                print "meme", group_label_view, group_label_class
 
 
                 # this is set in handle_group
@@ -2424,6 +2428,22 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                                     **extra_data
 
                             )
+                        elif group_label_class:
+                            extra_data = self.kwargs.get("extra_data") or {}
+                            if isinstance(extra_data, basestring):
+                                try:
+                                    extra_data = jsonloads(extra_data)
+                                except:
+                                    extra_data = {}
+
+                            extra_data["search_type"] = self.search_type
+                            extra_data["group_value"] = group_value
+                            extra_data["sobjects"] = sobjects
+                            extra_data["group_level"] = group_level
+
+                            print "yeeeeee", extra_data
+
+                            label = Common.create_from_class_path(group_label_class, {}, extra_data)
                         else:
                             label = Common.process_unicode_string(group_value)
 

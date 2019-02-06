@@ -12,7 +12,8 @@
 
 __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 
 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 
-'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItemWdg', 'PipelineSaveCmd']
+'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 
+'PipelineSaveCmd']
 
 import re
 import os
@@ -7188,12 +7189,14 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             document = self.get_document()
 
         group_label_view = "workflow.manage.group_label"
+        group_label_class = "tactic.ui.tools.PipelineDocumentGroupLabel"
         element_names = ["document_item"]
 
         document_wdg = DocumentWdg(
             search_type=search_type,
-            element_names=element_names,
-            group_label_view = group_label_view,
+            #element_names=element_names,
+            #group_label_view = group_label_view,
+            group_label_class = group_label_class,
             show_header=False,
             show_shelf=False,
             show_select=False,
@@ -7204,8 +7207,17 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             show_border="horizontal",
             height="auto",
             width="100%",
-            view="workflow",
+            view="table",
             #drag_action_script="spme/workflow_document_drag_action",
+            config_xml='''<config>
+                <table>
+                    <element name="document_item" edit="false">
+                        <display class="tactic.ui.tools.PipelineDocumentItemWdg">
+                            <view>workflow.manage.document_item</view>
+                        </display>
+                    </element>
+                </table>
+            </config>''',
             extra_data={
                 "min_height": 14,
                 "single_line": "true",
@@ -7346,6 +7358,115 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
             })
 
+        el.add_relay_behavior({
+            'type': 'blur',
+            'bvr_match_class': 'spt_document_input',
+            'cbjs_action': '''
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+            var top = bvr.src_el.getParent(".spt_document_item");
+            var row = bvr.src_el.getParent(".spt_table_row_item");
+            var name = bvr.src_el.value;
+
+            if (name == "") {
+                spt.table.remove_rows([row]);
+                spt.notify.show_message("Workflows require a name");
+            } else {
+                var parent_group = spt.table.get_parent_groups(bvr.src_el, 1);
+                var category = parent_group.getAttribute("spt_group_name");
+
+                var server = TacticServerStub.get();
+                var cmd = "tactic.ui.tools.PipelineSaveCmd";
+                var kwargs = {
+                    name: name,
+                    category: category,
+                };
+
+                server.p_execute_cmd(cmd, kwargs)
+                .then(function(ret_val) {
+                    var search_key = ret_val.info.search_key;
+
+                    row.setAttribute("spt_search_key", search_key);
+                    row.setAttribute("spt_search_key_v2", search_key);
+
+                    spt.notify.show_message('Workflow created');
+
+                    var documentTop = top.getParent(".spt_pipeline_document");
+                    var projectCode = documentTop.getAttribute("spt_project_code");
+                    var searchType = documentTop.getAttribute("spt_search_type");
+
+                    var doc = spt.document.export();
+
+                    var document_cmd = "tactic.ui.panel.DocumentSaveCmd"
+                    var document_kwargs = {
+                        view: "document",
+                        document: doc,
+                        search_type: searchType,
+                        project_code: projectCode,
+                    }
+                    server.p_execute_cmd(document_cmd, document_kwargs)
+                    .then(function(ret_val){
+                        top.removeClass("spt_unsaved_item");
+                        var on_complete = function() {
+                            var refreshedRow = spt.table.get_row_by_search_key(search_key);
+                            refreshedRow.setAttribute("spt_group_level", 2);
+                            var documentItem = refreshedRow.getElement(".spt_document_item");
+                            documentItem.click();
+                        }
+                        spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
+                    });
+      
+                });
+            }
+
+
+            '''
+
+            })
+
+
+class PipelineDocumentItem(BaseRefreshWdg):
+
+
+    def get_display(self):
+        sobject = self.kwargs.get("sobject")
+
+        label = ""
+        pipeline_code = ""
+        if sobject:
+            label = sobject.get_value("name") or sobject.get_value("code")
+            pipeline_code = sobject.get_value("code")
+
+        top = self.top
+
+        top.add_class("spt_document_item")
+        top.add_class("vertical-centered")
+        top.add_attr("spt_pipeline_code", pipeline_code)
+        top.add_attr("spt_title", label)
+
+        open_wdg = DivWdg()
+        top.add(open_wdg)
+        open_wdg.add_class("spt_document_item_open")
+        open_wdg.add_class("document-item-open document-item-content vertical-centered hand")
+
+        label_wdg = DivWdg()
+        open_wdg.add(label_wdg)
+        label_wdg.add_class("spt_document_label")
+        label_wdg.add_class("document-group-label")
+        label_wdg.add(label)
+
+        input_wdg = HtmlElement.text("name")
+        top.add(input_wdg)
+        input_wdg.add_class("spt_document_input")
+        input_wdg.add_class("document-item-input document-item-content vertical-centered")
+        input_wdg.add_attr("placeholder", "Enter a name...")
+        input_wdg.add_style("display: none")
+
+        return top
+
+
 
 class PipelineDocumentItemWdg(DocumentItemWdg):
 
@@ -7381,13 +7502,390 @@ class PipelineDocumentItemWdg(DocumentItemWdg):
         return layout
 
 
-class DocumentInlineInputWdg(BaseRefreshWdg):
+
+class PipelineDocumentGroupLabel(BaseRefreshWdg):
+
 
     def get_display(self):
+        label = self.kwargs.get("group_value")
+
+        uncategorized = False
+        if label == "Uncategorized":
+            uncategorized = True
+
+        group_level = self.kwargs.get("group_level")
+
+        add_btn_title = "Add New Category" if group_level == 0 else "Add New Workflow"
+        add_btn_icon = "fa-plus" if group_level == 0 else "fa-file"
+        delete_display = "none" if group_level == 0 or uncategorized else ""
 
         top = self.top
+        top.add_behavior({
+            'type': 'load',
+            'uncategorized': uncategorized,
+            'cbjs_action': '''
+
+            if (bvr.uncategorized) {
+                var row = bvr.src_el.getParent(".spt_table_row_item");
+                row.setAttribute("spt_dynamic", true);
+
+                var tuple = spt.table.get_child_rows(row);
+                var children = spt.table.get_child_rows_tuple(tuple, true);
+
+                children.forEach(function(child) {
+                    child.setAttribute("spt_dynamic", true);
+                });
+            }
+
+            '''
+        })
+
+        top.add_class("spt_pipeline_group_label")
+        top.add_class("group-label full-gapped")
+        top.add_attr("spt_group_level", group_level)
+        top.add_attr("spt_value", label)
+
+        label_wdg = self.get_label_wdg(uncategorized, label)
+        top.add(label_wdg)
+
+        input_wdg = self.get_input_wdg()
+        top.add(input_wdg)
+
+        delete_btn = self.get_delete_wdg(delete_display)
+        top.add(delete_btn)
+
+        add_btn = self.get_add_wdg(add_btn_title, add_btn_icon)
+        top.add(add_btn)
 
         return top
+
+
+    def get_label_wdg(self, uncategorized, label):
+
+        label_wdg = DivWdg()
+        label_wdg.add_class("spt_document_label spt_group_label")
+        label_wdg.add_class("document-group-content")
+        label_wdg.add(label)
+
+        label_wdg.add_behavior({
+            'type': 'click_up',
+            'uncategorized': uncategorized,
+            'cbjs_action': '''
+
+            var group_el = bvr.src_el.getParent(".spt_group_row");
+            var group_level = group_el.getAttribute("spt_group_level");
+
+            if (group_level == 0 || bvr.uncategorized) return;
+
+            var top = bvr.src_el.getParent(".spt_pipeline_group_label");
+            spt.document.item.toggle_edit(top);
+
+            '''
+
+            })
+
+        return label_wdg
+
+
+    def get_input_wdg(self):
+
+        input_wdg = HtmlElement.text("name")
+        input_wdg.add_class("spt_document_input")
+        input_wdg.add_class("document-group-content vertical-centered")
+        input_wdg.add_attr("placeholder", "Enter a name...")
+        input_wdg.add_style("display: none")
+
+        input_wdg.add_behavior({
+            'type': 'blur',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_pipeline_group_label");
+            var input = top.getElement(".spt_document_input");
+
+            if (top.hasClass("spt_unsaved_group")) {
+                var label = top.getElement(".spt_document_label");
+                label.innerText = "";
+
+                if (input.value == "") input.value = spt.document.item.generate_name();
+            }
+
+            var changed = spt.document.item.close_edit(top);
+            // save document
+            if (changed) {
+                if (top.hasClass("spt_unsaved_group")) {
+                    top.removeClass("spt_unsaved_group");
+                    spt.document.item.new_group_count++;
+                }
+
+                var documentTop = top.getParent(".spt_pipeline_document");
+                var projectCode = documentTop.getAttribute("spt_project_code");
+                var searchType = documentTop.getAttribute("spt_search_type");
+                var doc = spt.document.export();
+                var view = "document";
+
+                var server = TacticServerStub.get();
+                var kwargs = {
+                    view: view,
+                    document: doc,
+                    search_type: searchType,
+                    project_code: projectCode,
+                }
+                var cmd = "tactic.ui.panel.DocumentSaveCmd";
+
+                server.p_execute_cmd(cmd, kwargs);
+            }
+
+            '''
+
+            })
+
+
+        input_wdg.add_behavior({
+            'type': 'keyup',
+            'cbjs_action': '''
+
+            var key = evt.key;
+            var top = bvr.src_el.getParent(".spt_pipeline_group_label");
+
+            spt.document.item.keyup_behavior(top, key);
+
+            '''
+
+            })
+
+        return input_wdg
+
+
+
+    def get_add_wdg(self, add_btn_title, add_btn_icon):
+        add_btn = self.get_button_wdg("spt_add_btn", add_btn_title, add_btn_icon)
+        add_btn.add_style("margin: 0 3px")
+
+        add_btn.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+            var group_el = bvr.src_el.getParent(".spt_group_row");
+            var group_level = group_el.getAttribute("spt_group_level");
+
+            if (group_level == 0) {
+                var new_row = spt.table.add_new_group({row: group_el, group_level: 1});
+
+                let focused = document.querySelector(":focus");
+                if (focused) focused.blur();
+                var group_name = spt.document.item.generate_name();
+
+                var server = TacticServerStub.get();
+                var group_key = server.build_search_key("sthpw/virtual", group_name);
+                new_row.setAttribute("spt_search_key_v2", group_key);
+
+                groupTop = new_row.getElement(".spt_pipeline_group_label");
+                groupTop.addClass("spt_unsaved_group");
+                groupLabel = groupTop.getElement(".spt_group_label").innerText = group_name;
+
+                addBtn = groupTop.getElement(".spt_add_btn");
+                addBtn.title = "Add New Workflow";
+
+                addIcon = addBtn.getElement("i");
+                addIcon.removeClass("fa-plus");
+                addIcon.addClass("fa-file");
+
+                deleteBtn = groupTop.getElement(".spt_delete_btn");
+                deleteBtn.setStyle("display", "");
+
+                spt.document.item.toggle_edit(groupTop);
+            } else {
+                var group_el = bvr.src_el.getParent(".spt_group_row");
+                var row = spt.table.add_new_item({row: group_el});
+                row.setAttribute("spt_group_level", 2);
+
+                rowTop = row.getElement(".spt_document_item");
+                rowTop.addClass("spt_unsaved_item");
+
+                var td = row.getElement("td");
+
+                td.setStyle("overflow", "hidden")
+                td.setStyle("text-overflow", "ellipsis")
+                td.setStyle("padding", "0")
+                td.setAttribute("data-toggle", "tooltip")
+
+                var open = row.getElement(".spt_document_item_open");
+                var input = row.getElement(".spt_document_input");
+
+                open.setStyle("display", "none");
+                input.setStyle("display", "");
+                input.focus();
+            }
+
+            '''
+
+        })
+
+        return add_btn
+
+
+
+    def get_delete_wdg(self, delete_display):
+        delete_btn = self.get_button_wdg("spt_delete_btn", "Delete Category and Workflows", "fa-trash")
+        delete_btn.add_style("display", delete_display)
+
+        delete_btn.add_behavior({
+            'type': 'mouseenter',
+            'cbjs_action': '''
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+            var row = bvr.src_el.getParent(".spt_table_row_item");
+            var tuple = spt.table.get_child_rows(row);
+            var children = spt.table.get_child_rows_tuple(tuple, true);
+
+            children.forEach(function(child) {
+            var item = child.getElement(".spt_document_item");
+                item.setStyle("background", "red");
+                item.setStyle("color", "white");
+            });
+
+            '''
+
+            })
+
+
+        delete_btn.add_behavior({
+            'type': 'mouseleave',
+            'cbjs_action': '''
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+            var row = bvr.src_el.getParent(".spt_table_row_item");
+            var tuple = spt.table.get_child_rows(row);
+            var children = spt.table.get_child_rows_tuple(tuple, true);
+
+            children.forEach(function(child) {
+            var item = child.getElement(".spt_document_item");
+                item.setStyle("background", "");
+                item.setStyle("color", "");
+            });
+
+            '''
+
+            })
+
+
+        delete_btn.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+            var documentTop = bvr.src_el.getParent(".spt_pipeline_document");
+            var projectCode = documentTop.getAttribute("spt_project_code");
+            var searchType = documentTop.getAttribute("spt_search_type");
+            var view = "document";
+
+            var kwargs = {
+                view: view,
+                search_type: searchType,
+                project_code: projectCode,
+            }
+
+            var row = bvr.src_el.getParent(".spt_table_row_item");
+            var tuple = spt.table.get_child_rows(row);
+            var children = spt.table.get_child_rows_tuple(tuple, true);
+
+            if (children.length == 0) {
+                spt.table.remove_rows([row], {no_animation: true});
+
+                var server = TacticServerStub.get();
+                var doc = spt.document.export();
+                kwargs.document = doc;
+                var cmd = "tactic.ui.panel.DocumentSaveCmd";
+
+                server.p_execute_cmd(cmd, kwargs);
+            } else {
+                var on_post_delete = function() {
+                    for (var i = 0; i < children.length; i++) {
+                        var child = children[i];
+                        child.addClass("spt_removed");
+                        if (layout.getAttribute("spt_version") == "2") {
+                            spt.table.remove_hidden_row(child);
+                        }
+                        spt.behavior.destroy_element(child);
+                    }
+                    spt.behavior.destroy_element(row);
+
+                    var server = TacticServerStub.get();
+                    var doc = spt.document.export();
+                    kwargs.document = doc;
+                    var cmd = "tactic.ui.panel.DocumentSaveCmd";
+
+                    server.p_execute_cmd(cmd, kwargs);
+                }
+
+                spt.table.delete_rows(children, {on_post_delete: on_post_delete});
+            }
+
+            '''
+
+            })
+
+        return delete_btn
+
+
+
+    def get_button_wdg(self, btn_class, title, fa_class):
+
+        button_wdg = DivWdg()
+        button_wdg.add_class(btn_class)
+        button_wdg.add_class("floating-icon hand")
+        button_wdg.add_attr("title", title)
+
+        fa_icon = HtmlElement.i()
+        button_wdg.add(fa_icon)
+        fa_icon.add_class("fa")
+        fa_icon.add_class(fa_class)
+        fa_icon.add_class("document-icon full-centered")
+
+        button_wdg.add_behavior({
+            'type': 'mouseenter',
+            'cbjs_action': '''
+
+            var icon = bvr.src_el.getElement("i");
+            var color = icon.getStyle("color")
+
+            if (color == "white") return;
+
+            icon.setStyle("background", color);
+            icon.setStyle("color", "white");
+
+            '''
+
+        })
+
+
+        button_wdg.add_behavior({
+            'type': 'mouseleave',
+            'cbjs_action': '''
+
+            var icon = bvr.src_el.getElement("i");
+            var color = icon.getStyle("background");
+
+            if (color == "white") return;
+
+            icon.setStyle("color", color);
+            icon.setStyle("background", "white");
+
+            '''
+
+        })
+
+        return button_wdg
+
 
 
 class PipelineSaveCmd(Command):
@@ -7402,8 +7900,6 @@ class PipelineSaveCmd(Command):
         pipeline.commit()
 
         self.info['search_key'] = pipeline.get_search_key()
-
-
 
 
 
