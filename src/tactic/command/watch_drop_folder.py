@@ -81,9 +81,63 @@ class WatchFolderFileActionThread(threading.Thread):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         super(WatchFolderFileActionThread, self).__init__()
+        self.email_alert = True
+
+    def handle_disconnect(self, base_dir):
+        import time
+
+        print "DISCONNECT HERE"
+
+        timeout = 0
+        timeout_limit =  ProdSetting.get_value_by_key("watch_folder/disconnect_timeout") or 10
+
+        while not os.path.exists(base_dir) and timeout < timeout_limit:
+            time.sleep(1)
+            timeout += 1
+            pass
+
+        if not os.path.exists(base_dir):
+            if self.email_alert:
+                subject = "Watch Folder Error"
+                message = "Timeout Error: Connection to Watch Drop Folder Timed Out In File Action Thread."
+                sender_name1 = Config.get_value("services", "mail_name")
+                sender_email1 = Config.get_value("services", "mail_user")
+
+                sender_name = "TACTIC Watch Folder"
+                sender_email = "watchfolder@southpawtech.com"
+                recipient_emails = ["hajoon.choi@southpawtech.com"]
+
+                email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                email_cmd.execute()
+                self.email_alert = False
+            return False
+        else:
+            return True
+
+
+    def handle_resumption(self):
+        subject = "Watch Folder Reconnected"
+        message = "Watch Folder is available and service is resumed."
+        sender_name1 = Config.get_value("services", "mail_name")
+        sender_email1 = Config.get_value("services", "mail_user")
+
+        sender_name = "TACTIC Watch Folder"
+        sender_email = "watchfolder@southpawtech.com"
+        recipient_emails = ["hajoon.choi@southpawtech.com"]
+
+        import time
+        timeout = 0
+        while timeout < 15:
+            time.sleep(1)
+            timeout += 1
+            pass
+
+        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+        email_cmd.execute()
+        return
 
     def run(self):
-
+        print "CHECKIN START"
         task = self.kwargs.get("task")
         site = task.site
         project_code = task.project_code
@@ -202,6 +256,8 @@ class WatchFolderFileActionThread(threading.Thread):
 
                 except Exception as e:
                     print("WARNING: %s" % e)
+
+                return
 
             finally:
 
@@ -470,7 +526,13 @@ class CheckinCmd(object):
             # move back the file in a few seconds 
             shutil.move('%s/%s'%(dest_dir, base_name), file_path)
             """
+
+            shutil.move("/spt/drop_folder", "/spt/drop_folder1")
+
+
             server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='move')
+            print "error here"
+            # raise ValueError("test123")
 
             if watch_script_path:
                 cmd = PythonCmd(script_path=watch_script_path,search_type=search_type,drop_path=file_path,search_key=search_key)
@@ -596,8 +658,10 @@ class WatchDropFolderTask(SchedulerTask):
     def handle_disconnect(self, base_dir):
         import time
 
+        print "watchfolder disconnected"
+
         timeout = 0
-        timeout_limit =  ProdSetting.get_value_by_key("watch_folder/disconnect_timeout") or 60
+        timeout_limit =  ProdSetting.get_value_by_key("watch_folder/disconnect_timeout") or 10
 
         while not os.path.exists(base_dir) and timeout < timeout_limit:
             time.sleep(1)
@@ -608,9 +672,12 @@ class WatchDropFolderTask(SchedulerTask):
             if self.email_alert:
                 subject = "Watch Folder Error"
                 message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
-                sender_name = Config.get_value("services", "mail_name")
-                sender_email = Config.get_value("services", "mail_user")
-                recipient_emails = [sender_email]
+                sender_name1 = Config.get_value("services", "mail_name")
+                sender_email1 = Config.get_value("services", "mail_user")
+
+                sender_name = "TACTIC Watch Folder"
+                sender_email = "watchfolder@southpawtech.com"
+                recipient_emails = ["hajoon.choi@southpawtech.com"]
 
                 email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
                 email_cmd.execute()
@@ -618,6 +685,30 @@ class WatchDropFolderTask(SchedulerTask):
             return False
         else:
             return True
+
+    def handle_resumption(self):
+
+        subject = "Watch Folder Reconnected"
+        message = "Watch Folder is available and service is resumed."
+        sender_name1 = Config.get_value("services", "mail_name")
+        sender_email1 = Config.get_value("services", "mail_user")
+
+        sender_name = "TACTIC Watch Folder"
+        sender_email = "watchfolder@southpawtech.com"
+        recipient_emails = ["hajoon.choi@southpawtech.com"]
+
+        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+
+        import time
+        timeout = 0
+        while timeout < 15:
+            time.sleep(1)
+            timeout += 1
+            pass
+
+        email_cmd.execute()
+        return
+
 
     def _execute(self):
 
@@ -627,11 +718,7 @@ class WatchDropFolderTask(SchedulerTask):
 
         base_dir = self.base_dir
         if not os.path.exists(base_dir):
-            #print "Watch drop folder disconnected, reconnection required to continue."
-            if not self.handle_disconnect(base_dir):
-                return
-
-        self.email_alert = True
+            os.makedirs(base_dir)
 
         hidden_paths = [
                 "%s/.tactic" % base_dir,
@@ -709,6 +796,7 @@ class WatchDropFolderTask(SchedulerTask):
             return
 
         # Start action thread
+
         checkin = WatchFolderFileActionThread(
                 task=self,
         )
@@ -720,7 +808,17 @@ class WatchDropFolderTask(SchedulerTask):
             while True:
                 if self.in_restart():
                     break
-                self._execute()
+                try:
+
+                    self._execute()
+                    if not checkin.is_alive():
+                        checkin = WatchFolderFileActionThread(
+                                task=self,
+                        )
+                        checkin.start()
+                        print "RESTART CHECKIN"
+                except:
+                    self.handle_disconnect(self.base_dir)
                 time.sleep(1)
 
 
