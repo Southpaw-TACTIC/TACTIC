@@ -23,9 +23,10 @@ import sys
 from pyasm.common import Environment, Config, Common
 from pyasm.security import Batch
 from pyasm.biz import Project
+from pyasm.prod.biz import ProdSetting
 from pyasm.search import DbContainer
 from pyasm.search import Search, Transaction, SearchType
-from pyasm.command import Command
+from pyasm.command import Command, SendEmail
 from tactic.command import SchedulerTask, Scheduler
 from time import gmtime, strftime
 from optparse import OptionParser
@@ -559,13 +560,14 @@ class WatchDropFolderTask(SchedulerTask):
         self.script_path = kwargs.get("script_path")
         self.watch_folder_code = kwargs.get("watch_folder_code")
 
+        self.email_alert = True
+
         super(WatchDropFolderTask, self).__init__()
 
         self.checkin_paths = []
 
         self.in_clean_mode = False
         self.in_restart_mode = False
-
         self.files_locked = 0
 
     def add_path(self, path):
@@ -591,7 +593,31 @@ class WatchDropFolderTask(SchedulerTask):
     def in_restart(self):
         return self.in_restart_mode
 
+    def handle_disconnect(self, base_dir):
+        import time
 
+        timeout = 0
+        timeout_limit =  ProdSetting.get_value_by_key("watch_folder/disconnect_timeout") or 60
+
+        while not os.path.exists(base_dir) and timeout < timeout_limit:
+            time.sleep(1)
+            timeout += 1
+            pass
+
+        if not os.path.exists(base_dir):
+            if self.email_alert:
+                subject = "Watch Folder Error"
+                message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
+                sender_name = Config.get_value("services", "mail_name")
+                sender_email = Config.get_value("services", "mail_user")
+                recipient_emails = [sender_email]
+
+                email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                email_cmd.execute()
+                self.email_alert = False
+            return False
+        else:
+            return True
 
     def _execute(self):
 
@@ -601,7 +627,11 @@ class WatchDropFolderTask(SchedulerTask):
 
         base_dir = self.base_dir
         if not os.path.exists(base_dir):
-            os.makedirs(base_dir)
+            #print "Watch drop folder disconnected, reconnection required to continue."
+            if not self.handle_disconnect(base_dir):
+                return
+
+        self.email_alert = True
 
         hidden_paths = [
                 "%s/.tactic" % base_dir,

@@ -5893,7 +5893,7 @@ spt.pipeline.export_group = function(group_name) {
         var name = spt.pipeline.get_full_node_name(node, group_name);
        
         if (name_dict[name]) {
-            throw("duplicated node name ' + name + ' found. Please clean up first and save again.")
+            throw("duplicated node name " + name + " found. Please clean up first and save again.")
             return;
         }
         else {

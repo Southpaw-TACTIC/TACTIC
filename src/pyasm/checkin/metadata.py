@@ -18,6 +18,14 @@ import os, sys, re, subprocess
 from pyasm.common import Common, Xml
 from pyasm.biz import File
 
+# OS-specific import checks
+convert_exe = "convert"
+ffprobe_exe = "ffprobe"
+
+if os.name == "nt":
+    convert_exe+= ".exe"
+    ffprobe_exe+= ".exe"
+
 try:
     from PIL import Image
     HAS_PIL = True
@@ -26,12 +34,12 @@ try:
 except:
     HAS_PIL = False
 
-if Common.which("convert"):
+if Common.which(convert_exe):
     HAS_IMAGEMAGICK = True
 else:
     HAS_IMAGEMAGICK = False
 
-if Common.which("ffprobe"):
+if Common.which(ffprobe_exe):
     HAS_FFMPEG = True
 else:
     HAS_FFMPEG = False
