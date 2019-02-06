@@ -620,18 +620,12 @@ class WatchDropFolderTask(SchedulerTask):
                 if self.email_alert:
                     subject = "Watch Folder Error"
                     message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
-                    sender_name1 = Config.get_value("services", "mail_name")
-                    sender_email1 = Config.get_value("services", "mail_user")
-
-                    sender_name = "TACTIC Watch Folder"
-                    sender_email = "watchfolder@southpawtech.com"
-                    recipient_emails = ["hajoon.choi@southpawtech.com"]
-
-                    # email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                    # email_cmd.execute()
+                    sender_name= Config.get_value("services", "mail_name")
+                    sender_email = Config.get_value("services", "mail_user")
+                    recipient_emails = [sender_email]
 
                     email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                    EmailTriggerThread
+                    email_cmd.execute()
             pass
 
         print "watchfolder reconnected"
@@ -639,12 +633,9 @@ class WatchDropFolderTask(SchedulerTask):
         if self.email_alert:
             subject = "Watch Folder Reconnected"
             message = "Watch Folder is available and service is resumed."
-            sender_name1 = Config.get_value("services", "mail_name")
-            sender_email1 = Config.get_value("services", "mail_user")
-
-            sender_name = "TACTIC Watch Folder"
-            sender_email = "watchfolder@southpawtech.com"
-            recipient_emails = ["hajoon.choi@southpawtech.com"]
+            sender_name = Config.get_value("services", "mail_name")
+            sender_email = Config.get_value("services", "mail_user")
+            recipient_emails = [sender_email]
 
             email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
             email_cmd.execute()
