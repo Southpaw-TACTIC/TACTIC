@@ -3406,7 +3406,10 @@ class CreateTable(Base):
         elif type == "int":
             expr = self.impl.get_int(not_null=not_null)
         elif type == "timestamp":
-            expr = self.impl.get_timestamp(not_null=not_null)
+            if self.impl.get_database_type() == "MySQL":
+            	expr = self.impl.get_timestamp(default="0", not_null=True)
+            else:
+                expr = self.impl.get_timestamp(not_null=not_null)
         elif type == "boolean":
             expr = self.impl.get_boolean(not_null=not_null)
         elif type == "serial":
