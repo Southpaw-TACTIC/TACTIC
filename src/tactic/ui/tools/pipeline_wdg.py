@@ -2252,7 +2252,6 @@ class BaseInfoWdg(BaseRefreshWdg):
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_name(node, bvr.src_el.value);
             spt.pipeline.set_node_property(node, "name", bvr.src_el.value);
-            //spt.pipeline.rename_node(node, bvr.src_el.value);
 
             // Add edited flag
             spt.named_events.fire_event('pipeline|change', {});
@@ -2446,6 +2445,8 @@ class BaseInfoWdg(BaseRefreshWdg):
 
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
+
+            spt.named_events.fire_event('pipeline|change', {});
             '''
         }
 
@@ -3324,6 +3325,8 @@ class ScriptSettingsWdg(BaseRefreshWdg):
                 spt.pipeline.set_node_multi_kwarg(node, "script_path_title", "");
                 spt.pipeline.set_input_value_from_kwargs(node, "script_path_title", script_path_title);
 
+                spt.named_events.fire_event('pipeline|change', {});
+
             }, 250);
 
             '''
@@ -3383,6 +3386,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
                         spt.pipeline.set_node_multi_kwarg(node, "script", "");
                         spt.pipeline.set_input_value_from_kwargs(node, "script", el);
                     }
+                    spt.named_events.fire_event('pipeline|change', {});
                 }
 
             
@@ -3547,6 +3551,8 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_multi_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
+
+            spt.named_events.fire_event('pipeline|change', {});
             '''
         }
 
@@ -3765,6 +3771,8 @@ class ActionInfoWdg(BaseInfoWdg):
             if (value == "script_path" || value == "create_new") {
                 var on_save = bvr.src_el.on_save;
                 spt.pipeline.set_node_multi_kwarg(node, "on_save", on_save);
+
+                spt.named_events.fire_event('pipeline|change', {});
             }
 
             spt.panel.refresh_element(script_el, {action: value});
@@ -6925,7 +6933,6 @@ class PipelineSaveCbk(Command):
         self.description = "Updated workflow [%s]" % pipeline_code
 
         node_kwargs = self.kwargs.get("node_kwargs") or {}
-        print node_kwargs
         for i in range(len(process_nodes)):
             node = process_nodes[i]
             process = None
@@ -6970,7 +6977,6 @@ class PipelineSaveCbk(Command):
             process.commit()
 
             node_type = xml.get_attribute(node, "type")
-            print node_type, "node_type"
             if node_type:
                 kwargs = node_kwargs.get(process_name) or {}
                 if len(kwargs) > 0:
