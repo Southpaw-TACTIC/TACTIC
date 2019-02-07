@@ -664,10 +664,7 @@ class BaseSQLDatabaseImpl(DatabaseImpl):
     def is_column_sortable(self, db_resource, table, column):
 
         # support -> operator
-        if column.find("->>"):
-            parts = column.split("->>")
-            column = parts[0]
-        elif column.find("->"):
+        if column.find("->"):
             parts = column.split("->")
             column = parts[0]
 
@@ -3396,7 +3393,7 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_timestamp(self, default=None, not_null=False, timezone=False):
+    def get_timestamp(self, default="0", not_null=True, timezone=False):
         parts = []
         if timezone:
             parts.append("timestamp with time zone")
