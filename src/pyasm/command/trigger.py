@@ -596,23 +596,18 @@ class Trigger(Command):
             except Exception as e:
                 #log = ExceptionLog.log(e)
 
+                # print the stacktrace
+                tb = sys.exc_info()[2]
+                stacktrace = traceback.format_tb(tb)
+                stacktrace_str = "".join(stacktrace)
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
 
-                reported = Container.get("Trigger:error_reported")
-                if not reported:
+                caller.errors.append("Trigger [%s] failed: %s" \
+                    %(trigger.get_title(), str(e)))
 
-                    # print the stacktrace
-                    tb = sys.exc_info()[2]
-                    stacktrace = traceback.format_tb(tb)
-                    stacktrace_str = "".join(stacktrace)
-                    print("-"*50)
-                    print(stacktrace_str)
-                    print(str(e))
-                    print("-"*50)
-
-                    caller.errors.append("Trigger [%s] failed: %s" \
-                            %(trigger.get_title(), str(e)))
-
-                    Container.put("Trigger:error_reported", True)
                 raise
            
 

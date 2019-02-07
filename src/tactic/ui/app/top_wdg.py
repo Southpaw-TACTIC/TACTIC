@@ -614,11 +614,6 @@ class TopWdg(Widget):
         # instantiated
         #content_div.add(button)
 
-        
-        from tactic.ui.widget import CalendarWdg
-        cal_wdg = CalendarWdg(css_class='spt_calendar_template_top')
-        cal_wdg.top.add_style('display: none')
-        top.add(cal_wdg)
 
 
         if self.widgets:
@@ -630,6 +625,11 @@ class TopWdg(Widget):
         content_div.add( content_wdg )
         
         # add a calendar wdg
+        
+        from tactic.ui.widget import CalendarWdg
+        cal_wdg = CalendarWdg(css_class='spt_calendar_template_top')
+        cal_wdg.top.add_style('display: none')
+        content_div.add(cal_wdg)
 
         if web.is_admin_page():
             from tactic_branding_wdg import TacticCopyrightNoticeWdg

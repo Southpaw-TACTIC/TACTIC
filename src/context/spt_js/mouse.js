@@ -1000,8 +1000,7 @@ spt.mouse.smart_click_action = function( evt, bvr, mouse_411 ) {
         'type': bvr.type,
         'cbjs_action': bvr.orig_cbjs_action,
         'src_el': target_el,
-        'firing_el': bvr.src_el,
-        'bvr_match_class': bvr.bvr_match_class
+        'firing_el': bvr.src_el
     }
 
     //console.log(new_bvr.type);

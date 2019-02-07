@@ -495,8 +495,6 @@ class BaseApiXMLRPC(XmlrpcServer):
 
     def __init__(self):
 
-        self.errors = []
-
         super(BaseApiXMLRPC,self).__init__()
 
 

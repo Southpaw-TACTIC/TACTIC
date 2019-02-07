@@ -746,7 +746,6 @@ class Sql(Base):
                     self.results = self.cursor.fetchall()
 
                 self.cursor.close()
-
                 #print(time.time() - start)
 
 
@@ -820,10 +819,6 @@ class Sql(Base):
             self.query = query
             self.cursor = self.conn.cursor()
 
-            #print "query: ", query
-            #import time
-            #start = time.time()
-
             #self.execute(query)
             from pyasm.security import Site
             self.cursor.execute(query)
@@ -839,8 +834,6 @@ class Sql(Base):
                 self.last_row_id = 0
 
             self.cursor.close()
-
-            #print time.time() - start
 
 
             # commit the transaction if there is no transaction
@@ -2075,14 +2068,6 @@ class Select(object):
 
     def add_op(self, op, idx=None):
         assert op in ['and', 'or', 'begin']
-
-        self.raw_filters.append( {
-            'op': op,
-        } )
-
-
-
-
         if idx == None:
             # TODO: determine if this is needed later
             #if self.wheres and op != "begin" and self.wheres[-1] == "begin":

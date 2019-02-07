@@ -1186,7 +1186,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog.add_style("height: auto")
                 note_dialog.add_style("display: none")
                 note_dialog.add_style("box-sizing: border-box")
-                note_dialog.add_style("margin: 0px 0px 10px 10px")
+                note_dialog.add_style("margin: 0px 30px 10px 20px")
                 note_dialog.add_style("padding: 0px 10px")
                 no_notes_msg.add_behavior( {
                     'type': 'click',
@@ -1397,13 +1397,12 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog = DivWdg()
                 note_dialog_div.add(note_dialog)
                 unique_id = note_dialog.set_unique_id()
-                #note_dialog.add_style("border: solid 1px #DDD")
+                note_dialog.add_style("border: solid 1px #DDD")
                 note_dialog.add_style("width: 100%")
                 note_dialog.add_style("height: auto")
                 note_dialog.add_style("display: none")
                 note_dialog.add_style("box-sizing: border-box")
-                #note_dialog.add_style("margin: 0px 30px 10px 20px")
-                note_dialog.add_style("margin-top: -20px")
+                note_dialog.add_style("margin: 0px 30px 10px 20px")
                 note_dialog.add_style("padding: 0px 10px")
                 """
                 process_wdg.add_behavior( {
@@ -2231,6 +2230,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
 
+
         # explicitly set the contexts
         self.contexts = self.kwargs.get("context")
         # need the process to predict the notification to and cc
@@ -2239,12 +2239,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
       
         content_div = self.top
         content_div.add_style("min-width: 300px")
-
-        is_standalone = self.kwargs.get("is_standalone")
-        if is_standalone in [True, 'true']:
-            content_div.add_class("spt_discussion_top")
-            DiscussionWdg.add_layout_behaviors(self.top, allow_email=False, show_task_process=False)
-
 
         self.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")
@@ -2494,7 +2488,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
       
 
-        browse_button = UploadButtonWdg(title="Attach File", mode="icon", tip='Browse for files to attach to this note', on_complete=on_complete,\
+        browse_button = UploadButtonWdg(title="Attach File", tip='Browse for files to attach to this note', on_complete=on_complete,\
                 upload_init=upload_init, multiple='true', upload_id=table_upload_id) 
         attachment_div.add(browse_button)
         #browse_button.add_style("float: left")
