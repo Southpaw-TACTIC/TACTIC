@@ -4925,6 +4925,10 @@ class ProcessInfoCmd(Command):
         if node_type == 'progress':
             return self.handle_progress()
 
+        # Get custom save cmd via node_type
+        from pyasm.command import CustomProcessConfig
+        cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+        return cmd.execute()
 
 
 

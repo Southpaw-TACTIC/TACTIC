@@ -2340,6 +2340,12 @@ class CustomProcessConfig(object):
     get_delete_handler = classmethod(get_delete_handler)
 
 
+    def get_save_handler(cls, node_type, extra_options={}):
+        config = cls.get_config(node_type)
+        extra_options['node_type'] = node_type
+        handler = config.get_display_widget("save", extra_options)
+        return handler
+    get_save_handler = classmethod(get_save_handler)
 
 
 
