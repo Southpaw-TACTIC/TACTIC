@@ -7213,7 +7213,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 <table>
                     <element name="document_item" edit="false">
                         <display class="tactic.ui.tools.PipelineDocumentItemWdg">
-                            <view>workflow.manage.document_item</view>
+                            
                         </display>
                     </element>
                 </table>
@@ -7457,7 +7457,7 @@ class PipelineDocumentItem(BaseRefreshWdg):
         label_wdg.add_class("document-group-label")
         label_wdg.add(label)
 
-        input_wdg = HtmlElement.text("name")
+        input_wdg = HtmlElement.text()
         top.add(input_wdg)
         input_wdg.add_class("spt_document_input")
         input_wdg.add_class("document-item-input document-item-content vertical-centered")
@@ -7485,19 +7485,14 @@ class PipelineDocumentItemWdg(DocumentItemWdg):
 
 
     def get_display(self):
-
-        view = self.kwargs.get("view")
-        if not view:
-            return super(PipelineDocumentItemWdg, self).get_display()
-
         sobject = self.get_current_sobject()
         search_key = sobject.get_search_key()
 
         from tactic.ui.panel import CustomLayoutWdg
         if sobject.is_insert():
-            layout = CustomLayoutWdg(view=view)
+            layout = PipelineDocumentItem()
         else:
-            layout = CustomLayoutWdg(view=view, sobject=sobject, search_key=search_key)
+            layout = PipelineDocumentItem(sobject=sobject, search_key=search_key)
 
         return layout
 
