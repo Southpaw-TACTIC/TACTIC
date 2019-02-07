@@ -864,6 +864,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 html = ''
                 style = ''
                 behavior_nodes = []
+                callback_nodes = []
                 htmls = []
                 mako = ''
                 kwargs = ''
@@ -885,6 +886,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 kwargs = xml.get_value("config/%s/kwargs" % view)
 
                 behavior_nodes = xml.get_nodes("config/%s/behavior" % view)
+                callback_nodes = xml.get_nodes("config/%s/callback" % view)
 
                 html_nodes = xml.get_nodes("config/%s/html/*" % view)
                 htmls = []
@@ -1163,6 +1165,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             #right_div.add("<br/>"*2)
 
+
+
             # behaviors
             behavior_div = DivWdg()
             tab.add(behavior_div)
@@ -1190,6 +1194,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             text.set_value(behavior_str)
 
+
             """
             # This breaks the beahviors into separate intefaces
             behavior_div.add_color("background", "background", -5)
@@ -1210,7 +1215,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     name = Xml.get_attribute(behavior_node, "class")
                     if not name:
                         name = Xml.get_attribute(behavior_node, "relay_class")
-                    value = xml.to_string(behavior_node)
+                    #value = xml.to_string(behavior_node)
+                    value = xml.get_node_value(behavior_node)
 
 
                 td = table.add_cell()
@@ -1221,6 +1227,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 bvr_name_text = TextInputWdg(name="behavior_name")
                 bvr_name_text.add_attr("spt_is_multiple", "true")
                 #td.add(bvr_name_text)
+                bvr_name_text.add_style("border: none")
+                bvr_name_text.add_style("height: 20px")
+                bvr_name_text.add_style("background: transparent")
+                bvr_name_text.add_style("box-shadow: none")
                 swap.set_title_wdg(bvr_name_text)
                 bvr_name_text.set_value(name)
 
@@ -1234,12 +1244,43 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 bvr_text = TextAreaWdg("behavior_content")
                 bvr_text.add_style("font-size: 12px")
                 bvr_text.add_style("font-family: courier")
+                bvr_text.add_style("padding: 5px")
                 bvr_text.add_attr("spt_is_multiple", "true")
                 content_div.add(bvr_text)
-                bvr_text.set_value( value )
                 bvr_text.add_style("width: 100%")
                 bvr_text.add_style("min-height: 400px")
+
+                bvr_text.set_value( value )
             """
+
+
+
+            # callbacks
+            callback_div = DivWdg()
+            tab.add(callback_div)
+            callback_div.set_name("Callbacks")
+
+            text = TextAreaWdg("callback")
+            text.add_class("spt_callback")
+            content_id = text.set_unique_id()
+            #text.add_style("display: none")
+
+            title_wdg = self.get_title_wdg("Callback", content_id, is_on=True)
+            callback_div.add(title_wdg)
+
+            callback_div.add(text)
+            text.add_style("width: 100%")
+            text.add_style("height: 450px")
+            text.add_style("min-height: 300px")
+            text.add_style("font-size: 12px")
+            text.add_style("font-family: courier")
+
+            value = []
+            for callback_node in callback_nodes:
+                value.append( xml.to_string(callback_node))
+            callback_str = "\n\n".join(value)
+
+            text.set_value(callback_str)
 
 
 
@@ -1404,6 +1445,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var kwargs = values.kwargs;
 
             var behavior = values.behavior;
+            var callback = values.callback;
 
             /*
             var behavior_names = values.behavior_name;
@@ -1432,6 +1474,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 html: html,
                 style: style,
                 behavior: behavior,
+                callback: callback,
                 mako: mako,
                 kwargs: kwargs
 
@@ -2604,6 +2647,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
         mako = self.kwargs.get("mako")
         behavior = self.kwargs.get("behavior")
+        callback = self.kwargs.get("callback")
         kwargs = self.kwargs.get("kwargs")
         is_test = self.kwargs.get("is_test")
 
@@ -2642,7 +2686,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
 
 
-        config_xml = CustomLayoutEditSaveCmd.build_xml(view, html, style, behavior, mako=mako, kwargs=kwargs)
+        config_xml = CustomLayoutEditSaveCmd.build_xml(view, html, style, behavior, callback, mako=mako, kwargs=kwargs)
         layout = CustomLayoutWdg(config_xml=config_xml, view=view, include_mako=True, is_test=is_test, kwargs=kwargs, plugin=plugin)
         top.add(layout)
 
@@ -2653,7 +2697,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
 class CustomLayoutEditSaveCmd(Command):
 
-    def build_xml(cls, view, html, style=None, behavior=None, mako=None, kwargs=None):
+    def build_xml(cls, view, html, style=None, behavior=None, callback=None, mako=None, kwargs=None):
 
         # build up the custom layout
         if not html:
@@ -2745,11 +2789,28 @@ class CustomLayoutEditSaveCmd(Command):
             layout.append(behavior)
 
 
+
+        if callback:
+            if callback.find('<![CDATA[') != -1:
+                raise TacticException("CDATA is automatically added when it is saved. Do not include any CDATA tag in callback.")
+            callback = callback.strip()
+            #callback = callback.replace("\\", "\\\\")
+
+            p = re.compile("(<callback.*?>)")
+            callback = p.sub("\\1<![CDATA[", callback)
+            callback = callback.replace("</callback>", "]]></callback>")
+
+            layout.append(callback)
+
+
+
         layout.append("</%s>" % view)
         layout.append("</config>")
 
-        config_xml = "\n".join(layout)
 
+
+
+        config_xml = "\n".join(layout)
 
 
         #f = open("/tmp/tt.xml", 'w')
@@ -2780,6 +2841,7 @@ class CustomLayoutEditSaveCmd(Command):
         code = self.kwargs.get("code")
 
         behavior = self.kwargs.get("behavior")
+        callback = self.kwargs.get("callback")
         mako = self.kwargs.get("mako")
 
         if html and html.find('<![CDATA[') != -1:
@@ -2788,7 +2850,7 @@ class CustomLayoutEditSaveCmd(Command):
         if style and style.find('<![CDATA[') != -1:
             raise TacticException("Do not include any CDATA tag in Styles section.")
 
-        config_xml = self.build_xml(view, html, style, behavior, mako, kwargs)
+        config_xml = self.build_xml(view, html, style, behavior, callback, mako, kwargs)
 
         xml = Xml()
         xml.read_string(config_xml)

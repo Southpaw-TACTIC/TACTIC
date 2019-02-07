@@ -86,7 +86,6 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
             print code
             print "---"
             raise
-            raise CommandExitException(e)
 
         return spt_mako_results['spt_ret_val']
 

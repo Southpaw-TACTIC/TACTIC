@@ -553,6 +553,7 @@ class HtmlElement(Widget):
 
             var func = function(evt, src_el) {
                 var bvr = orig_bvr;
+                bvr.bvr_match_class = match;
                 bvr.src_el = src_el;
                 eval( "var f = function() {\n"+bvr.cbjs_action+"\n};" )
                 f();
