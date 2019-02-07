@@ -84,7 +84,6 @@ class WatchFolderFileActionThread(threading.Thread):
 
 
     def run(self):
-        print "CHECKIN START"
         task = self.kwargs.get("task")
         site = task.site
         project_code = task.project_code
@@ -747,7 +746,6 @@ class WatchDropFolderTask(SchedulerTask):
                                 task=self,
                         )
                         checkin.start()
-                        print "RESTART CHECKIN"
                 except:
                     self.handle_disconnect(self.base_dir)
                 time.sleep(1)
