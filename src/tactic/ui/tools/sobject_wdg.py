@@ -15,7 +15,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment, SPTDate, Common, FormatValue, Xml, jsonloads
 from pyasm.biz import Snapshot, Pipeline
-from pyasm.web import DivWdg, WebContainer, Table, WebState
+from pyasm.web import DivWdg, WebContainer, Table, WebState, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey
 from tactic.ui.panel import TableLayoutWdg
 
@@ -427,7 +427,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         div.add(tab)
-        div.add_style("padding-top: 10px")
+        div.add_class("spt_tab_container")
+
+        tab_container_style = HtmlElement.style('''
+
+            .spt_tab_container {
+                padding-top: 10px;
+            }
+            
+            ''')
 
         return div
 

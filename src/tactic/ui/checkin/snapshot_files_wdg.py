@@ -1061,7 +1061,7 @@ class PathMetadataWdg(BaseRefreshWdg):
         use_tactic_tags = self.kwargs.get("use_tactic_tags")
 
 
-        from pyasm.checkin import BaseMetadataParser
+        from pyasm.checkin import BaseMetadataParser, ParserImportError
 
         #parser_str = "EXIF"
         if parser_str:
@@ -1070,10 +1070,32 @@ class PathMetadataWdg(BaseRefreshWdg):
             parser = BaseMetadataParser.get_parser_by_path(path)
 
         if parser:
-            if use_tactic_tags in ['true', True]:
-                metadata = parser.get_tactic_metadata()
-            else:
-                metadata = parser.get_metadata()
+            try:
+                if use_tactic_tags in ['true', True]:
+                    metadata = parser.get_tactic_metadata()
+                else:
+                    metadata = parser.get_metadata()
+            except ParserImportError as e:
+                div = DivWdg()
+                div.add_class("fa")
+                div.add_class("fa-times-circle")
+                div.add_style("font-size: 800%")
+                div.add_style("color: slategrey")
+                div.add_style("line-height: 100px")
+                
+                msg_div = DivWdg()
+                msg_div.add(e)
+                msg_div.add_style("font-size: 200%")
+                msg_div.add_style("color: grey")
+
+                top = DivWdg()
+                top.add(div)
+                top.add(msg_div)
+                top.add_style("display: flex")
+                top.add_style("flex-direction: column")
+                top.add_style("justify-content: center")
+                top.add_style("align-items: center")
+                return top
         else:
             metadata = {}
 

@@ -19,7 +19,7 @@ import re, datetime
 from threading import Lock
 
 from pyasm.common import Config, TacticException, Environment
-from dateutil.tz import * 
+from dateutil.tz import *
 
 # import database libraries
 DATABASE_DICT = {}
@@ -169,7 +169,7 @@ class Sql(Base):
         else:
             #assert type(database_name) in types.StringTypes
             # allow unicode
-            assert isinstance(database_name, basestring) 
+            assert isinstance(database_name, basestring)
         self.database_name = database_name
         #self.database_name = "schema_test"
 
@@ -185,7 +185,7 @@ class Sql(Base):
             self.user = Config.get_value("database", "user")
         if port: self.port = port
         else: self.port = Config.get_value("database", "port")
-       
+
         if password:
             self.password = password
         # get from encrypted file
@@ -214,6 +214,11 @@ class Sql(Base):
         self.transaction_count = 0
         self.description = None
 
+        self.sslmode = 'disable'
+        sslmode = Config.get_value("database", "sslmode")
+        if sslmode:
+            self.sslmode = sslmode
+
 
     def get_db_resource(self):
         db_resource = DbResource(self.database_name, host=self.host, port=self.port, vendor=self.vendor, user=self.user, password=self.password)
@@ -235,7 +240,7 @@ class Sql(Base):
         '''test if a table exists in a db'''
         impl = Sql.get_database_impl()
         return impl.database_exists(database)
-    default_database_exists = classmethod(default_database_exists) 
+    default_database_exists = classmethod(default_database_exists)
 
 
     def get_default_database_version(cls):
@@ -361,17 +366,17 @@ class Sql(Base):
 
         if use_cache:
             Container.put_dict("Sql:table_columns", key, columns)
- 
+
         return columns[:]
 
 
     def get_table_info(self):
         impl = self.get_database_impl()
-        info = impl.get_table_info(self.get_db_resource()) 
+        info = impl.get_table_info(self.get_db_resource())
         return info
 
 
- 
+
     def get_column_info(self, table, column=None, use_cache=True):
         impl = self.get_database_impl()
         info = impl.get_column_info(self.get_db_resource(), table)
@@ -380,14 +385,14 @@ class Sql(Base):
         else:
             return info.get(column)
 
-  
+
     def get_column_types(self, table):
         impl = self.get_database_impl()
-        return impl.get_column_types(self.get_db_resource(), table) 
+        return impl.get_column_types(self.get_db_resource(), table)
 
     def get_column_nullables(self, table):
         impl = self.get_database_impl()
-        return impl.get_column_nullables(self.get_db_resource(), table) 
+        return impl.get_column_nullables(self.get_db_resource(), table)
 
 
     def is_in_transaction(self):
@@ -409,8 +414,8 @@ class Sql(Base):
 
     def set_savepoint(self, name='save_pt'):
         '''set a savepoint'''
-        if self.conn.autocommit == True:
-            return
+        #if self.conn.autocommit == True:
+        #    return
         stmt = self.database_impl.set_savepoint(name)
         if stmt:
             cursor = self.conn.cursor()
@@ -418,8 +423,8 @@ class Sql(Base):
 
     def rollback_savepoint(self, name='save_pt', release=True):
         '''rollback to a savepoint'''
-        if self.conn.autocommit == True:
-            return
+        #if self.conn.autocommit == True:
+        #    return
         self.cursor = self.conn.cursor()
         stmt = self.database_impl.rollback_savepoint(name)
         if not stmt:
@@ -436,9 +441,9 @@ class Sql(Base):
             return
         if release_stmt:
             self.cursor.execute(release_stmt)
-        
 
-    
+
+
     def commit(self):
         '''commit the transaction'''
         self.transaction_count -= 1
@@ -458,14 +463,14 @@ class Sql(Base):
                     self.connect()
                 else:
                     self.conn.commit()
-                    
+
                 sql_dict = DbContainer._get_sql_dict()
                 database_name = self.get_database_name()
                 sql_dict[database_name] = self
 
             except self.pgdb.OperationalError, e:
                 raise SqlException(e.__str__())
-            
+
 
 
     def rollback(self, force=False):
@@ -485,9 +490,9 @@ class Sql(Base):
         try:
             import tzlocal_olson
             #tz_name = datetime.datetime.now(tzlocal()).tzname()
-            # get olson timezone name as opposed to abv. tz name 
+            # get olson timezone name as opposed to abv. tz name
             tz_name = tzlocal_olson.get_localzone().zone
-            
+
             if self.vendor == "PostgreSQL":
                 # psycopg connection code
                 if self.password == "" or self.password == "none":
@@ -496,10 +501,9 @@ class Sql(Base):
                     password_str = "password=%s" % self.password
                 if not self.port:
                     self.port = 5432
-                sslmode = "require"
-                sslmode = "disable"
+
                 auth = "host=%s port=%s dbname=%s sslmode=%s user=%s %s" % \
-                    (self.host, self.port, self.database_name, sslmode, self.user, password_str)
+                    (self.host, self.port, self.database_name, self.sslmode, self.user, password_str)
                 self.conn = self.pgdb.connect(auth)
 
                 #TODO: check other db impl on timezone impl
@@ -565,13 +569,13 @@ class Sql(Base):
                 else:
                     password_str = self.password
                 # >>> cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER=localhost,1433;DATABASE=my_db;UID=tactic;PWD=south123paw')
-# 
+#
                 auth = "DRIVER=%s; SERVER=%s,%s; DATABASE=%s; UID=%s; PWD=%s" % \
                     (sqlserver_driver, self.host, self.port, self.database_name, self.user, password_str)
                 self.conn = pyodbc.connect(auth)
                 # set isolation level to prevent excessive read lock on tables
                 self.do_update("SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
-                
+
             elif self.vendor == "MongoDb":
 
                 from mongodb import MongoDbConn
@@ -589,7 +593,7 @@ class Sql(Base):
                 from pyasm.search import TacticImpl
                 self.conn = TacticImpl()
                 #raise DatabaseException("Database TACTIC not yet implemented")
-                
+
             else:
                 raise DatabaseException("Unsupported Database [%s]" % self.vendor)
 
@@ -609,7 +613,7 @@ class Sql(Base):
     #
     def reset_sequence_for_table(self, table, database=None):
 
-        # FIXME: currently only available for the Oracle database 
+        # FIXME: currently only available for the Oracle database
 
         impl = self.get_database_impl()
         stmt = impl.get_reset_table_sequence_statement(table, database)
@@ -638,7 +642,7 @@ class Sql(Base):
         self.results = []
 
 
-    # FIXME: is there any reason to have this function.  This should be 
+    # FIXME: is there any reason to have this function.  This should be
     # incorporated into do_query.
     """
     def execute(self, query, num_attempts=0):
@@ -690,7 +694,7 @@ class Sql(Base):
         except pgdb.Error, e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
-            # don't include the error_msg in Exception to avoid decoding error 
+            # don't include the error_msg in Exception to avoid decoding error
             raise SqlException("%s: %s\n" % (self.DO_QUERY_ERR, query))
     """
 
@@ -780,7 +784,7 @@ class Sql(Base):
         except self.pgdb.Error, e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
-            # don't include the error_msg in Exception to avoid decoding error 
+            # don't include the error_msg in Exception to avoid decoding error
             raise SqlException("%s: %s\n" % (self.DO_QUERY_ERR, query))
 
 
@@ -899,7 +903,7 @@ class Sql(Base):
 
         if id > 0:
             return id
-            
+
         raise SqlException("Improper id return with statement [%s]" % statement)
 
 
@@ -922,7 +926,7 @@ class Sql(Base):
     def quote(value, has_outside_quotes=True, escape=False, unicode_escape=False):
         '''prepares a value so that it can be entered as a value in the
         database
-            @param: 
+            @param:
                 has_outside_quotes - refer to having single_quotes
                 escape - if escape=True, set has_outside_quotes=False
                 unicode_escape - N'some str' for SQLServer '''
@@ -1061,7 +1065,7 @@ class Sql(Base):
         #key = "Sql:%s:tables"% database
         #Container.remove(key)
         DatabaseImpl.clear_table_cache()
-    clear_table_cache = classmethod(clear_table_cache) 
+    clear_table_cache = classmethod(clear_table_cache)
 
 
     def table_exists(self, table):
@@ -1114,13 +1118,13 @@ class DbResource(Base):
         # Fill in the defaults
         if self.vendor == 'MySQL':
             if not self.user:
-                self.user = "root" 
+                self.user = "root"
         elif self.vendor == 'PostgreSQL':
             if not self.user:
-                self.user = "postgres" 
+                self.user = "postgres"
             if not self.port:
                 self.port = '5432'
-        
+
 
 
     def __str__(self):
@@ -1158,7 +1162,7 @@ class DbResource(Base):
         impl = DatabaseImpl.get(self.vendor)
         return impl
 
-    
+
     def exists(self):
         return self.get_database_impl().database_exists(self)
 
@@ -1293,7 +1297,7 @@ class DbContainer(Base):
     def get(cls, db_resource, connect=True):
         '''Get a connection the database.  This will reuse connections that
         are already open.
-        
+
         @params
         db_resource - data structure with information to connect
         connect - flag to determine whether the Sql object returned should
@@ -1316,7 +1320,7 @@ class DbContainer(Base):
         sql = cls.get_connection_pool_sql(db_resource)
 
         if sql and sql.get_connection():
-            DbContainer.register_connection(sql) 
+            DbContainer.register_connection(sql)
 
         # delete of Unittest environment requires this to be commented out
         #assert sql.get_connection()
@@ -1330,7 +1334,7 @@ class DbContainer(Base):
     #
     #session_sql_dict = {}
     #session_time_dict = {}
-    #session_max_lifespan = 60 
+    #session_max_lifespan = 60
 
     if Sql.get_default_database_type() == 'Sqlite':
         # Sqlite cannot share connections across threads
@@ -1344,7 +1348,7 @@ class DbContainer(Base):
 
 
     # global connection pool
-    connection_pool = {} 
+    connection_pool = {}
 
     def get_global_connection_pool(cls):
         '''gets the global connection pool. Do not use this data structure
@@ -1404,7 +1408,7 @@ class DbContainer(Base):
                 cls.connection_pool[database_key] = global_pool
 
             lock.release()
-        
+
         # if the pool is empty, then open a new database connection
         lock = thread.allocate_lock()
         #lock = Lock()
@@ -1445,7 +1449,7 @@ class DbContainer(Base):
 
         assert sql.get_connection()
         return sql
-        
+
     get_connection_pool_sql = classmethod(get_connection_pool_sql)
 
 
@@ -1463,7 +1467,7 @@ class DbContainer(Base):
 
 
     def commit_thread_sql(cls):
-        
+
         # commit all of the open connections in this thread
         thread_pool = Container.get("DbContainer::thread_pool")
         if not thread_pool:
@@ -1471,7 +1475,7 @@ class DbContainer(Base):
         for database_key, sql in thread_pool.items():
             try:
                 sql.commit()
-                
+
             except Exception as e:
                 print("WARNING: When trying to commit: ", e)
                 del(thread_pool[database_key])
@@ -1579,7 +1583,7 @@ class DbContainer(Base):
 
     close_all = staticmethod(close_all)
 
-    
+
     def _get_sql_dict():
         # get the connection from a container
         cache_name = "DbContainer:sql_dict"
@@ -1681,7 +1685,7 @@ class Select(object):
         self.impl = DatabaseImpl.get()
 
         self.statement = None
-        
+
         self.set_statement = None
 
         self.schema = ""
@@ -1813,7 +1817,7 @@ class Select(object):
         else:
 
             statement = self.get_statement()
-    
+
             # remember the cursor (needed for savepoints)
             self.cursor = conn.cursor()
             self.cursor.execute(statement)
@@ -1882,7 +1886,7 @@ class Select(object):
             self.sql = database
             database = self.sql.get_database_name()
             self.db_resource = DbResource.get_default(database)
-            
+
 
         self.database = database
         self.impl = self.sql.get_database_impl()
@@ -1903,17 +1907,17 @@ class Select(object):
         self.set_statement = statement
 
 
-    
+
     def add_table(self, table):
         if table == "": return
         self.tables.append(table)
 
     def get_tables(self):
         return self.tables
-        
+
     def get_table(self):
         return self.tables[0]
-    
+
     def set_id_col(self, id_col):
         self.id_col = id_col
 
@@ -1966,7 +1970,7 @@ class Select(object):
 
         if prefix1:
             prefix1 = "%s." % prefix1
- 
+
 
         # handle the database scoping
         if not database2:
@@ -1977,12 +1981,12 @@ class Select(object):
         if self.schema:
             parts.append('"%s"' % self.schema)
         prefix2 = ".".join(parts)
- 
+
         # add a trailing point.  this is needed so that implementations with
         # not prefix can be accomodated (ie: Sqlite)
         if prefix2:
             prefix2 = "%s." % prefix2
- 
+
 
         expr = '''%s JOIN %s"%s" ON "%s"."%s" = "%s"."%s"''' % (join, prefix2, table2, table1, column1, table2, column2)
 
@@ -2118,6 +2122,17 @@ class Select(object):
 
 
 
+        subcolumn = None
+        if column.find("->>") != -1:
+            parts = column.split("->>")
+            column = parts[0]
+            subcolumn = parts[1]
+        elif column.find("->") != -1:
+            parts = column.split("->")
+            column = parts[0]
+            subcolumn = parts[1]
+
+
 
         if not table:
             table = self.tables[0]
@@ -2175,9 +2190,15 @@ class Select(object):
             value = Sql.quote(value)
 
         if table:
-            where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
+            if subcolumn:
+                where = "\"%s\".\"%s\"->>'%s' %s %s" % (table, column, subcolumn, op, value)
+            else:
+                where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
         else:
-            where = "\"%s\" %s %s" % (column, op, value)
+            if subcolumn:
+                where = "\"%s\"->>'%s' %s %s" % (column, subcolumn, op, value)
+            else:
+                where = "\"%s\" %s %s" % (column, op, value)
         self.add_where(where)
 
 
@@ -2284,7 +2305,7 @@ class Select(object):
 
         wheres = []
         for group_col in group_cols:
-            
+
             if self.impl.get_database_type() == 'SQLServer':
                 #wheres.append( 'xxx."%s" = %s.[%s].[%s]' % (group_col, self.database, table, group_col))
                 wheres.append( 'xxx."%s" = [%s].[%s]' % (group_col, table, group_col))
@@ -2315,7 +2336,7 @@ class Select(object):
             table = self.tables[0]
         column_types = self.impl.get_column_types(self.db_resource, table)
         column_type = column_types.get(column)
-        
+
         where = self.impl.get_text_search_filter(column, keywords, column_type, table=table, op=op)
         self.add_where(where)
 
@@ -2341,7 +2362,7 @@ class Select(object):
     def add_having(self, having):
         if having == "": return
         self.havings.append(having)
-        
+
     def add_order_by(self, order_by, direction='', table=''):
         if order_by == "": return
 
@@ -2354,14 +2375,14 @@ class Select(object):
         elif table:
             order_by = '"%s"."%s"' % (table, order_by)
 
-        # we need to store the order_by_column name to maintain uniqueness so MS SQL doesn't error 
+        # we need to store the order_by_column name to maintain uniqueness so MS SQL doesn't error
         if direction and not order_by.endswith(' desc') and not order_by.endswith(' asc'):
             if order_by not in self.order_by_columns:
                 self.order_by_columns.append(order_by)
             else:
                 return
             order_by = '%s %s' % (order_by, direction)
-        
+
         elif order_by.endswith(' desc') or order_by.endswith(' asc'):
             tmps = order_by.split(' ')
             if tmps[0] not in self.order_by_columns:
@@ -2424,7 +2445,7 @@ class Select(object):
         # setup regex searches for direction (ascending or descending) of sort order (ignoring case)
         regex_asc = re.compile(' asc$', re.I)
         regex_desc = re.compile(' desc$', re.I)
-        
+
         statement = []
         statement.append("SELECT");
 
@@ -2573,16 +2594,16 @@ class Select(object):
                 else:
                     expr = '(%s)' % (' %s ' % self.filter_mode).join(filter)
                 expanded.append(expr)
-                
+
             self.wheres = expanded
 
-       
+
         if len(self.wheres) > 0:
             wheres_copy = self.wheres[:]
             new_expr = self.process_wheres(wheres_copy)
             if new_expr:
                 clauses.append("WHERE %s" % new_expr)
-       
+
         #order_bys = []
         if mode == "normal":
             if len(self.group_bys) > 0:
@@ -2590,19 +2611,19 @@ class Select(object):
                     if regex_asc.search(item) or regex_desc.search(item):
                         parts = order_by.split(" ")
                         item = parts[0]
-                        
+
                     if item not in self.group_bys:
                         self.group_bys.append(item)
 
                 group_by_stmt = ", ".join( ['"%s"' % x for x in self.group_bys] )
-                
+
                 clauses.append("GROUP BY %s" %group_by_stmt )
 
             if len(self.havings) > 0:
                 # these are having expressions, no double quotes
                 clauses.append("HAVING %s" % " AND ".join( self.havings ) )
                 #clauses.append("HAVING %s" % ", ".join( ['"%s"' % x for x in self.havings] ))
-               
+
             if not self.distinct and len(self.order_bys) > 0:
                 order_bys = []
                 for order_by in self.order_bys:
@@ -2624,16 +2645,16 @@ class Select(object):
                             order_bys.append('"%s"."%s"' % (self.tables[0],order_by))
                         else:
                             order_bys.append(order_by)
-                
+
                 clauses.append("ORDER BY %s" % ", ".join( order_bys ))
-            
+
             #if database_type == "PostgreSQL":
-            #   page = self.impl.get_page(self.limit, self.offset, self.tables[0]) 
+            #   page = self.impl.get_page(self.limit, self.offset, self.tables[0])
             #   if page:
             #       clauses.append(page)
 
             if database_type not in ["Oracle", "SQLServer"]:
-                page = self.impl.get_page(self.limit, self.offset) 
+                page = self.impl.get_page(self.limit, self.offset)
                 if page:
                     clauses.append(page)
 
@@ -2641,7 +2662,7 @@ class Select(object):
                 #    clauses.append("LIMIT %s" % self.limit )
                 #if self.offset != 0:
                 #    clauses.append("OFFSET %s" % self.offset )
- 
+
 
         clause = " ".join(clauses)
         statement.append(clause)
@@ -2659,6 +2680,7 @@ class Select(object):
 
 
     def process_wheres(self, wheres):
+
         if not wheres:
             return
 
@@ -2672,15 +2694,24 @@ class Select(object):
 
 
         # count the begins and ops .. they must match
+        # We also want to count the level and a counter for outside brackets stripping.
+        # If the num_paren_groups == 1, we want to strip the outside brackets.
         count_begin = 0
         count_op = 0
+        level = 0
+        num_paren_groups = 0
         for item in wheres:
             if item == 'begin':
                 count_begin += 1
+
+                if level == 0:
+                    num_paren_groups += 1
+                level += 1
+
             elif item in ['and','or']:
                 count_op += 1
+                level -= 1
 
-        
         if count_begin > count_op:
             wheres.append("and")
 
@@ -2697,7 +2728,7 @@ class Select(object):
         if not expr:
             return None
 
-        if expr.startswith("( ") and expr.endswith(" )"):
+        if num_paren_groups == 1 and expr.startswith("( ") and expr.endswith(" )"):
             expr = expr[2:-2]
 
         return expr
@@ -2709,7 +2740,7 @@ class Select(object):
 
         while 1:
             if self.stack_index >= len(wheres):
-                #op = " AND " 
+                #op = " AND "
                 #expr = "( %s )" % op.join(cur_stack)
                 #return expr
                 return " AND ".join(cur_stack)
@@ -2888,7 +2919,7 @@ class Insert(object):
             self.sql = database
             database = self.sql.get_database_name()
             self.db_resource = DbResource.get_default(database)
-            
+
 
         self.database = database
         self.impl = self.sql.get_database_impl()
@@ -2909,7 +2940,7 @@ class Insert(object):
     def set_value(self, column, value, quoted=True, column_type="", escape_quoted=False):
         '''@params:
             quoted - determines whether the value needs to be quoted
-        in the sql statement. 
+        in the sql statement.
             escape_quoted - more for PostgreSQL for now to do the E'' style quote'''
         if value == None:
             value = 'NULL'
@@ -2920,7 +2951,7 @@ class Insert(object):
             column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
 
-          
+
             info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
@@ -2928,7 +2959,7 @@ class Insert(object):
 
         self.data[column] = value;
 
-       
+
         if escape_quoted == True:
             self.escape_quoted_cols.append(column)
         elif not quoted:
@@ -2998,12 +3029,12 @@ class Insert(object):
 
         statement.append( "(%s)" % ", ".join(['"%s"'%x for x in cols]) )
         statement.append( "VALUES (%s)" % ", ".join(quoted_values) )
-        
-      
+
+
 
         encoded_statements = []
 
-                
+
         for x in statement:
             if isinstance(x, str):
                 x = x.decode('string_escape')
@@ -3013,13 +3044,13 @@ class Insert(object):
                     x = x.decode('utf-8')
                 except UnicodeDecodeError, e:
                     x = x.decode('iso-8859-1')
-                       
+
                 # this only works in Linux can causes error with windows xml parser down the road
                 #x = unicode(x, encoding='utf-8')
                 encoded_statements.append(x)
             else:
                 encoded_statements.append(x)
-                 
+
         statement = " ".join(encoded_statements)
 
         statement = self.impl.postprocess_sql(statement)
@@ -3033,9 +3064,9 @@ class Insert(object):
         sequence = self.impl.get_sequence_name(self.table)
         return self.impl.get_currval_select(sequence)
 
- 
 
-        
+
+
 class Update(object):
     '''class that non-linearly builds up an update statement'''
 
@@ -3101,7 +3132,7 @@ class Update(object):
             self.sql = database
             database = self.sql.get_database_name()
             self.db_resource = DbResource.get_default(database)
-            
+
 
         self.database = database
         self.impl = self.sql.get_database_impl()
@@ -3159,6 +3190,7 @@ class Update(object):
     def add_filter(self, column, value, column_type="", table="", quoted=None):
         assert self.table
 
+
         # store all the raw filter data
         self.raw_filters.append( {
                 'column': column,
@@ -3169,6 +3201,16 @@ class Update(object):
                 'quoted': quoted,
         } )
 
+
+        subcolumn = None
+        if column.find("->>") != -1:
+            parts = column.split("->>")
+            column = parts[0]
+            subcolumn = parts[1]
+        elif column.find("->") != -1:
+            parts = column.split("->")
+            column = parts[0]
+            subcolumn = parts[1]
 
         if not column_type and self.sql:
             # get column type from database
@@ -3186,9 +3228,15 @@ class Update(object):
             value = Sql.quote(value)
 
         if table:
-            where = "\"%s\".\"%s\" = %s" % (table, column, value)
+            if subcolumn:
+                where = "\"%s\".\"%s\"->>'%s' = %s" % (table, column, subcolumn, value)
+            else:
+                where = "\"%s\".\"%s\" = %s" % (table, column, value)
         else:
-            where = "\"%s\" = %s" % (column, value)
+            if subcolumn:
+                where = "\"%s\"->>'%s' = %s" % (column, subcolumn, value)
+            else:
+                where = "\"%s\" = %s" % (column, value)
 
         self.add_where(where)
 
@@ -3312,7 +3360,7 @@ class Delete(object):
             self.sql = database
             database = self.sql.get_database_name()
             self.db_resource = DbResource.get_default(database)
-            
+
 
         self.database = database
         self.impl = self.sql.get_database_impl()
@@ -3418,7 +3466,7 @@ class CreateTable(Base):
             expr = self.impl.get_json(not_null=not_null)
 
 
-            
+
         # SQL Server
         elif type == "uniqueidentifier":
             expr = self.impl.get_text(not_null=not_null)
@@ -3464,7 +3512,7 @@ class CreateTable(Base):
 
 
 
-    
+
     def get_statement(self):
         if self.impl.get_database_type() == 'SQLServer':
             statement = 'CREATE TABLE [%s] (\n' % self.table
@@ -3577,7 +3625,7 @@ class CreateTable(Base):
 
         # create a sequence for the id
         try:
-            if impl.__class__.__name__ == 'OracleImpl': 
+            if impl.__class__.__name__ == 'OracleImpl':
                 sequence = impl.get_sequence_name(self.table)
                 statement = self.impl.get_create_sequence(sequence)
                 sql.do_update(statement)
@@ -3589,33 +3637,33 @@ class CreateTable(Base):
 class DropTable(Base):
 
     def __init__(self, search_type=None):
-        
+
         self.search_type = search_type
         # derive db from search_type_obj
         from search import SearchType
         from pyasm.biz import Project
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
-        
+
         self.database = self.db_resource.get_database()
 
         search_type_obj = SearchType.get(search_type)
         assert self.database
         self.table = search_type_obj.get_table()
         self.statement = self.get_statement()
-        
+
 
     def get_statement(self):
         sql = DbContainer.get(self.db_resource)
         if sql.get_database_type() == 'SQLServer':
             statement = 'DROP TABLE [%s]' % self.table
-        else:        
+        else:
             statement = 'DROP TABLE "%s"' % self.table
 
         return statement
 
     def commit(self):
-   
-        
+
+
         sql = DbContainer.get(self.db_resource)
         if not sql.table_exists(self.table):
             print("WARNING: table [%s] does not exist in database [%s]" % (self.table, self.database))
@@ -3643,7 +3691,7 @@ class DropTable(Base):
         impl = sql.get_database_impl()
         if impl.commit_on_schema_change():
             DbContainer.commit_thread_sql()
-            
+
         sql.do_update(self.statement)
         sql.clear_table_cache()
 
@@ -3755,7 +3803,7 @@ class AlterTable(CreateTable):
         # check to see if autocommit should be on
         if impl.commit_on_schema_change():
             DbContainer.commit_thread_sql()
-        
+
         if exists:
             statements = self.get_statements()
             for statement in statements:
@@ -3822,14 +3870,14 @@ class CreateView(Base):
         statement.append( 'CREATE VIEW "%s"' % self.view )
 
         statement.append( 'AS' )
-        
+
         statement.append( self.query )
 
         statement = " ".join(statement)
 
         return statement
 
- 
+
     def commit(self, sql=None):
         '''Commit one or more alter table statements'''
 
@@ -3843,7 +3891,7 @@ class CreateView(Base):
 
         impl = sql.get_database_impl()
 
-        
+
         statement = self.get_statement()
         sql.do_update(statement)
 

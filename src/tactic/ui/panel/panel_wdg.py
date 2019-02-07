@@ -3138,9 +3138,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             custom_simple_search_view = self.kwargs.get("search_view")
 
         if search_class:
+            simple_search_mode = self.kwargs.get("simple_search_mode")
             kwargs = {
                 "search_type": search_type,
-                "search_view": custom_simple_search_view
+                "search_view": custom_simple_search_view,
+                "mode": simple_search_mode,
+                "show_saved_search": self.kwargs.get("show_shaved_search"),
             }
             if run_search_bvr:
                 kwargs['run_search_bvr'] = run_search_bvr
@@ -3208,6 +3211,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_shelf = self.kwargs.get("show_shelf")
         show_header = self.kwargs.get("show_header")
         show_help = self.kwargs.get("show_help")
+        show_row_highlight = self.kwargs.get("show_row_highlight")
+        show_group_highlight = self.kwargs.get("show_group_highlight")
         width = self.kwargs.get("width")
         height = self.kwargs.get("height")
         expression = self.kwargs.get("expression")
@@ -3328,6 +3333,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
             "show_collection_tool": show_collection_tool,
+            "show_row_highlight": show_row_highlight,
+            "show_group_highlight": show_group_highlight,
             "is_inner": is_inner,
             "settings": settings,
             "gear_settings": gear_settings,

@@ -330,8 +330,13 @@ class ProcessStatusTrigger(Trigger):
 
 class BaseWorkflowPackage(object):
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.sobject = kwargs.get("sobject")
+
     def get_package(self):
 
+        package = {}
         return {}
 
 
@@ -794,7 +799,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
     def retrieve_state(self):
 
-        print("Retrieving state")
+        #print("Retrieving state")
 
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
@@ -804,7 +809,13 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         message = server.get_message(key)
         state = message.get("message")
-        state = jsonloads(state)
+        if state:
+            state = jsonloads(state)
+        else:
+            state = {
+                'packages': {},
+                'data': {}
+            }
 
         return state
 
@@ -908,6 +919,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 package_type = package_name
             else:
                 package_type = "snapshot"
+
+            #package_type = "custom"
+
             package['type'] = package_type
 
 
@@ -915,14 +929,26 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             if package_type == "snapshot":
 
                 # This package type contains a list search code retrieved by the process
+                status = "Final"
 
                 from pyasm.biz import Snapshot
                 search = Search("sthpw/snapshot")
                 search.add_filter("process", self.process)
                 search.add_filter("is_latest", True)
-                search.add_filter("status", "Final")
+                search.add_filter("status", status)
                 search.add_parent_filter(self.sobject)
                 snapshots = search.get_sobjects()
+
+                if not snapshots:
+                    # then get all of the checked in files?
+                    search = Search("sthpw/snapshot")
+                    search.add_filter("process", self.process)
+                    search.add_filter("is_latest", True)
+                    search.add_parent_filter(self.sobject)
+                    snapshots = search.get_sobjects()
+
+
+
                 snapshot_codes = [x.get_code() for x in snapshots]
                 package['snapshot_codes'] = snapshot_codes
 
@@ -945,7 +971,16 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
             elif package_type == "custom":
                 # TEST
-                packager = BaseWorkflowPackage()
+
+                pipeline = self.input.get("pipeline")
+                process = self.input.get("process")
+                sobject = self.input.get("sobject")
+
+                packager = BaseWorkflowPackage(
+                    sobject=sobject,
+                    pipeline=pipeline,
+                    process=process
+                )
                 package = packager.get_package()
 
 
@@ -1128,7 +1163,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # check if tasks need to be autocreated
         autocreate_task = False
-        mapped_status = "pending"
+        mapped_status = "Pending"
 
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
@@ -1151,14 +1186,16 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # check to see if the tasks exist and if they don't then create one
         if autocreate_task:
-            mapped_status = self.get_mapped_status(process_obj)
 
             full_process_name = self.get_full_process_name(self.process)
             tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
             if not tasks:
+                # If we are creating new tasks here, then the status will be set to Assignment
+                mapped_status = self.get_mapped_status(process_obj, "Assignment")
                 tasks = Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status)
 
             else:
+                mapped_status = self.get_mapped_status(process_obj, "Pending")
                 tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
         else:
             tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
@@ -1172,9 +1209,9 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         Trigger.call(self, "process|action", output=self.input)
 
 
-    def get_mapped_status(self, process_obj):
+    def get_mapped_status(self, process_obj, status="Pending"):
         '''Get what status is mapped to Pending'''
-        mapped_status = 'pending'
+        mapped_status = status
 
         status_pipeline_code = process_obj.get_task_pipeline()
         search = Search("config/process")        

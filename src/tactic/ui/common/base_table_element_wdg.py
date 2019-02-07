@@ -653,6 +653,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
             else:
                 value = ''
+        elif isinstance(value, dict) and not value:
+            value = ""
         else:
             if isinstance(value, Widget):
                 return value

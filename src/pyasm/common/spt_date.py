@@ -211,7 +211,7 @@ class SPTDate(object):
         #NOTE: it errors out on time before epoch
         try:    
             local = date.astimezone(TZLOCAL)
-        except:
+        except Exception as e:
             local = date.replace(tzinfo=None)
 
         return local
