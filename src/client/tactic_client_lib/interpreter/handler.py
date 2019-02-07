@@ -37,6 +37,7 @@ class Handler(object):
         self.process_name = process_name
         self.next_processes = []
         self.description = ''
+        self.ret_val = None
 
     def get_title(self):
         return self.__class__.__name__
@@ -138,6 +139,12 @@ class Handler(object):
     def set_output(self, output):
         # copy the data structure
         self.output = output.copy()
+        
+    def get_ret_val(self):
+        return self.ret_val
+
+    def set_ret_val(self, value):
+        self.ret_val = value
 
 
     def get_option_value(self, name):
