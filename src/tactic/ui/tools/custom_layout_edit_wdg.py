@@ -228,15 +228,16 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_border()
 
 
-        table = Table()
+        table = DivWdg()
+        table.add_style("display: flex")
+        table.add_style("align-items: center")
         title_wdg.add(table)
-        table.add_row()
-        table.add_cell("<b>%s:</b>" % title)
+        table.add("<div style='font-size: 14px'>%s:</div>" % title)
 
         hint = None
 
         if title == "Behaviors":
-            hint = IconButtonWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
             data = '''<behavior class="custom_css_class">
                     { "type": "click_up", 
                     "cbjs_action": "spt.alert('clicked')"}
@@ -245,7 +246,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
     
           
         elif title == "Styles":
-            hint = ButtonNewWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
             data = '''
 .frame_container {
             border: 1px solid #000000;
@@ -257,7 +258,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 }
 '''
         elif title == "Options":
-            hint = ButtonNewWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
             data = '''
     This is where you can define options for your Custom Layout with Type set to column:
 
@@ -272,7 +273,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
            
             
         elif title == "HTML":
-            hint = IconButtonWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
 
             data = '''<div><div><b>Layout Title</b></div><br/>
 <%
@@ -306,8 +307,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     '''
         if hint:
-            td = table.add_cell(hint)
-            td.add_style("padding-left: 10px")
+            hint_div = DivWdg()
+            table.add(hint_div)
+            hint_div.add(hint)
+            hint_div.add_style("padding-left: 10px")
 
             hint.add_behavior({
                 'type': 'click_up',
@@ -1172,6 +1175,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             tab.add(behavior_div)
             behavior_div.set_name("Behaviors")
 
+            behavior_div.add_class("spt_behavior_top")
+
+
             text = TextAreaWdg("behavior")
             text.add_class("spt_behavior")
             content_id = text.set_unique_id()
@@ -1180,78 +1186,146 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             title_wdg = self.get_title_wdg("Behaviors", content_id, is_on=True)
             behavior_div.add(title_wdg)
 
-            behavior_div.add(text)
-            text.add_style("width: 100%")
-            text.add_style("height: 450px")
-            text.add_style("min-height: 300px")
-            text.add_style("font-size: 12px")
-            text.add_style("font-family: courier")
 
-            value = []
-            for behavior_node in behavior_nodes:
-                value.append( xml.to_string(behavior_node))
-            behavior_str = "\n\n".join(value)
+            use_textarea = True
+            if use_textarea:
+                behavior_div.add(text)
+                text.add_style("width: 100%")
+                text.add_style("height: 450px")
+                text.add_style("min-height: 300px")
+                text.add_style("font-size: 12px")
+                text.add_style("font-family: courier")
 
-            text.set_value(behavior_str)
+                value = []
+                for behavior_node in behavior_nodes:
+                    value.append( xml.to_string(behavior_node))
+                behavior_str = "\n\n".join(value)
 
+                text.set_value(behavior_str)
 
-            """
-            # This breaks the beahviors into separate intefaces
-            behavior_div.add_color("background", "background", -5)
-            table = Table()
-            table.add_style("width: 100%")
-            behavior_div.add(table)
-            if not behavior_nodes:
-                behavior_nodes.append("__new__")
+            else:
 
-            from tactic.ui.widget import SwapDisplayWdg
-            for behavior_node in behavior_nodes:
-                table.add_row()
+                add_button = ButtonNewWdg(title="", icon="FA_PLUS")
+                behavior_div.add(add_button)
+                add_button.add_behavior( {
+                    'type': 'click',
+                    'cbjs_action': '''
+                    // find the template and clone
+                    var top = bvr.src_el.getParent(".spt_behavior_top");
+                    var item = top.getElement(".spt_behavior_template");
+                    var clone = spt.behavior.clone(item);
+                    clone.inject(item, "after");
+                    clone.setStyle("display", "");
 
-                if behavior_node == "__new__":
-                    name = ""
-                    value = ""
+                    var swap = clone.getElement(".spt_swap_top");
+                    var content_id = spt.generate_key(6);
+                    var text = clone.getElement(".spt_behavior_text");
+
+                    swap.setAttribute("spt_content_id", content_id);
+                    text.setAttribute("id", content_id)
+
+                    '''
+                } )
+
+                # This breaks the beahviors into separate intefaces
+                behavior_div.add_color("background", "background", -5)
+                table = Table()
+                table.add_style("width: 100%")
+                behavior_div.add(table)
+                if not behavior_nodes:
+                    behavior_nodes.append("__new__")
+                    nodes = behavior_nodes
+
                 else:
-                    name = Xml.get_attribute(behavior_node, "class")
-                    if not name:
-                        name = Xml.get_attribute(behavior_node, "relay_class")
-                    #value = xml.to_string(behavior_node)
-                    value = xml.get_node_value(behavior_node)
+                    # create a template node
+                    template_node = "__new__"
+                    nodes = behavior_nodes[:]
+                    nodes.insert(0, template_node)
+
+                from tactic.ui.widget import SwapDisplayWdg
+
+                # go through each node and draw the interface
+                for i, behavior_node in enumerate(nodes):
+                    tr = table.add_row()
+                    if i == 0:
+                        tr.add_class("spt_behavior_template")
+                        tr.add_style("display: none")
+                    else:
+                        tr.add_class("spt_behavior_item")
 
 
-                td = table.add_cell()
-                td.add_style("vertical-align: top")
-                swap = SwapDisplayWdg()
-                td.add(swap)
-                
-                bvr_name_text = TextInputWdg(name="behavior_name")
-                bvr_name_text.add_attr("spt_is_multiple", "true")
-                #td.add(bvr_name_text)
-                bvr_name_text.add_style("border: none")
-                bvr_name_text.add_style("height: 20px")
-                bvr_name_text.add_style("background: transparent")
-                bvr_name_text.add_style("box-shadow: none")
-                swap.set_title_wdg(bvr_name_text)
-                bvr_name_text.set_value(name)
+                    placeholder = "(NEW)"
+                    if behavior_node == "__new__":
+                        name = ""
+                        value = ""
+                        event_name = ""
+                    else:
+                        name = Xml.get_attribute(behavior_node, "class")
+                        if not name:
+                            name = Xml.get_attribute(behavior_node, "relay_class")
+                        #value = xml.to_string(behavior_node)
+                        value = xml.get_node_value(behavior_node)
+                        event_name = xml.get_attribute(behavior_node, "event")
 
-                content_div = DivWdg()
-                content_div.add_style("width: 100%")
-                td.add(content_div)
-                unique_id = content_div.set_unique_id("behavior")
-                swap.set_content_id(unique_id)
-                content_div.add_style("display: none")
 
-                bvr_text = TextAreaWdg("behavior_content")
-                bvr_text.add_style("font-size: 12px")
-                bvr_text.add_style("font-family: courier")
-                bvr_text.add_style("padding: 5px")
-                bvr_text.add_attr("spt_is_multiple", "true")
-                content_div.add(bvr_text)
-                bvr_text.add_style("width: 100%")
-                bvr_text.add_style("min-height: 400px")
 
-                bvr_text.set_value( value )
-            """
+                    td = table.add_cell()
+                    td.add_style("vertical-align: top")
+
+                    header_div = DivWdg()
+                    td.add(header_div)
+                    header_div.add_style("display: flex")
+                    header_div.add_style("align-items: center")
+
+                    swap = SwapDisplayWdg()
+                    header_div.add(swap)
+
+
+                    event_div = DivWdg()
+                    header_div.add(event_div)
+                    event_div.add("<div style='margin-right: 5px;'>Event: </div>")
+                    event_div.add_style("display: flex")
+                    event_div.add_style("align-items: center")
+                    event_select = SelectWdg(name="event%s" % i)
+                    event_div.add(event_select)
+                    event_select.set_option("values", "click|load|unload|double_click|keyup|mouseenter|mouseleave|listen")
+                    event_select.add_empty_option("-- Select --")
+                    if event_name:
+                        event_select.set_option("default", event_name)
+                    event_select.add_style("width: 120px")
+                    event_select.add_style("height: 25px")
+
+
+                    
+                    bvr_name_text = TextInputWdg(name="behavior_name")
+                    bvr_name_text.add_attr("spt_is_multiple", "true")
+                    #td.add(bvr_name_text)
+                    bvr_name_text.add_style("border: none")
+                    bvr_name_text.add_style("height: 20px")
+                    bvr_name_text.add_style("background: transparent")
+                    bvr_name_text.add_style("box-shadow: none")
+                    bvr_name_text.add_attr("placeholder", placeholder)
+                    swap.set_title_wdg(bvr_name_text)
+                    bvr_name_text.set_value(name)
+
+                    content_div = DivWdg()
+                    content_div.add_style("width: 100%")
+                    td.add(content_div)
+                    unique_id = content_div.set_unique_id("behavior")
+                    swap.set_content_id(unique_id)
+                    content_div.add_style("display: none")
+                    content_div.add_class("spt_behavior_text")
+
+                    bvr_text = TextAreaWdg("behavior_content")
+                    bvr_text.add_style("font-size: 12px")
+                    bvr_text.add_style("font-family: courier")
+                    bvr_text.add_style("padding: 5px")
+                    bvr_text.add_attr("spt_is_multiple", "true")
+                    content_div.add(bvr_text)
+                    bvr_text.add_style("width: 100%")
+                    bvr_text.add_style("min-height: 400px")
+
+                    bvr_text.set_value( value )
 
 
 
@@ -1394,7 +1468,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row = ButtonRowWdg()
         shelf_wdg.add(button_row)
         button_row.add_style("float: left")
-        button = ButtonNewWdg(title="Refresh", icon="BS_REFRESH")
+        button = ButtonNewWdg(title="Refresh", icon="FA_REFRESH")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1409,7 +1483,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # Save button
-        button = ButtonNewWdg(title="Save", icon="BS_SAVE")
+        button = ButtonNewWdg(title="Save", icon="FA_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1452,7 +1526,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var behavior_contents = values.behavior_content;
             var behavior = "\n";
             for (var i = 0; i < behavior_names.length; i++) {
-                behavior += '<behavior class="'+behavior_names[i]+'">';
+                if (behavior_names[i] == "") {
+                    continue;
+                }
+
+                var event = values["event"+i];
+                behavior += '<behavior class="'+behavior_names[i]+'" event="'+event+'">';
                 behavior += behavior_contents[i];
                 behavior += '</behavior>';
                 behavior += '\n';
@@ -1499,7 +1578,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add new button
-        button = ButtonNewWdg(title="Add New", icon="BS_PLUS")
+        button = ButtonNewWdg(title="Add New", icon="FA_PLUS")
         button_row.add(button)
 
 
@@ -1514,7 +1593,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add new button
-        button = ButtonNewWdg(title="Add Elements", icon=IconWdg.G_SETTINGS_GRAY, show_arrow=True)
+        button = ButtonNewWdg(title="Add Elements", icon="FA_GEAR", show_arrow=True)
         button_row.add(button)
 
         # add in a context menu
@@ -1528,7 +1607,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         #button = ButtonNewWdg(title="Test", icon=IconWdg.ARROW_RIGHT)
-        button = ButtonNewWdg(title="Test", icon="BS_PLAY")
+        button = ButtonNewWdg(title="Test Widget", icon="FA_PLAY")
         button_row.add(button)
         button.add_behavior( {
             'type': 'click_up',
@@ -1577,7 +1656,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         #help_button.add_style("float: left")
 
         #button = ButtonNewWdg(title="Link Actions", icon=IconWdg.LINK, show_arrow=True)
-        button = ButtonNewWdg(title="Link Actions", icon="BS_LINK", show_arrow=True)
+        button = ButtonNewWdg(title="Link Actions", icon="FA_LINK", show_arrow=True)
         button_row.add(button)
 
         menu = self.get_link_menu()
@@ -1590,7 +1669,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         #help_button = ButtonNewWdg(title="Help", icon=IconWdg.HELP)
-        help_button = ButtonNewWdg(title="Help", icon="BS_QUESTION_SIGN")
+        help_button = ButtonNewWdg(title="Help", icon="FA_QUESTION_CIRCLE_O")
         button_row.add(help_button)
         help_button.add_behavior( {
             'type': 'click_up',
@@ -1599,6 +1678,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             spt.help.load_alias("custom-layout-editor|tactic-developer_developer_custom-layout-editor");
             '''
         } )
+        help_button.add_style("float: right")
 
 
 
