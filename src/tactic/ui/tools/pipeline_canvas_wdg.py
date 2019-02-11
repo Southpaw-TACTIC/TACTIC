@@ -2674,6 +2674,23 @@ spt.pipeline.get_node_type = function(node) {
 }
 
 
+spt.pipeline.get_node_types = function() {
+    var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+
+    var info_top = top.getElement(".spt_pipeline_tool_info");
+    if (!info_top) return [];
+
+    var sel = info_top.querySelector("select[name='node_type']");
+    if (!sel) return [];
+
+    node_types = [];
+    for (var i=0, n=sel.options.length; i<n; i++) {
+      if (sel.options[i].value) node_types.push(sel.options[i].value);
+    }
+
+    return node_types;
+}
+
 
 spt.pipeline.get_full_node_name = function(node, group_name) {
     name = node.getAttribute("spt_element_name");
@@ -3272,6 +3289,17 @@ spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
             value = spt.pipeline.get_node_multi_kwarg(node, name);
         }
         if (input_el.value == value) input_el.checked = true;
+    }
+}
+
+spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+        input_el.checked = value;
     }
 }
 
@@ -5922,7 +5950,7 @@ spt.pipeline.export_group = function(group_name) {
                 continue;
             }
 
-            if (['manual', 'action', 'condition', 'hierarchy', 'dependency', 'progress', 'client'].contains(key)) {
+            if (spt.pipeline.get_node_types().contains(key)) {
                 continue;
             }
 

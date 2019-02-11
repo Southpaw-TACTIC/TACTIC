@@ -1271,6 +1271,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             properties: properties
         }
         info.setStyle("display", "");
+        document.activeElement.blur();
         spt.pipeline.set_info_node(node);
         spt.panel.load(info, class_name, kwargs);
 
@@ -2029,7 +2030,6 @@ class ProcessInfoWdg(BaseRefreshWdg):
             'type': 'unload',
             'cbjs_action': '''
                 document.activeElement.blur();
-
             '''
             })
         self.set_as_panel(top)
@@ -4915,6 +4915,9 @@ class ProcessInfoCmd(Command):
 
         node_type = self.kwargs.get("node_type")
 
+        if node_type == "manual":
+            return self.handle_manual()
+
         if node_type in ["action", "condition"]:
             return self.handle_action()
 
@@ -4939,6 +4942,15 @@ class ProcessInfoCmd(Command):
         return cmd.execute()
 
 
+    def handle_manual(self):
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+        cbk_classes = self.kwargs.get("cbk_classes") or []
+
+        for cbk_class in cbk_classes:
+            cmd = Common.create_from_class_path(cbk_class, {}, self.kwargs)
+            cmd.execute()
 
 
     def handle_action(self):
