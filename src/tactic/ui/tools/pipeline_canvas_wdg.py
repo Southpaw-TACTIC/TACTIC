@@ -3269,6 +3269,14 @@ spt.pipeline.set_node_kwarg = function(node, name, value) {
     spt.pipeline.set_node_kwargs(node, kwargs);
 }
 
+spt.pipeline.add_node_on_save = function(node, name, value) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!kwargs) kwargs = {};
+    if (!kwargs.on_save) kwargs.on_save = {};
+    kwargs.on_save[name] = value;
+    spt.pipeline.set_node_kwargs(node, kwargs);
+}
+
 // Supports both kwargs and multi kwargs
 spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
