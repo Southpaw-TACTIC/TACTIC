@@ -115,7 +115,7 @@ CREATE TABLE "trigger" (
     "project_code" character varying(256),
     "s_status" character varying(256),
     "process" character varying(256),
-    "data" character varying(256),
+    "data" jsonb,
     CONSTRAINT "trigger_code_idx" UNIQUE ("code")
 );
 
