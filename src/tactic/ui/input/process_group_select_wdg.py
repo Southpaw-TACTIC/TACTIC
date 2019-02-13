@@ -15,7 +15,7 @@ __all__ = ['ProcessGroupSelectWdg', 'LoginTableElementWdg']
 
 from pyasm.search import Search, SearchKey, SearchException
 from pyasm.biz import Pipeline
-from pyasm.web import DivWdg, SpanWdg
+from pyasm.web import DivWdg, SpanWdg, HtmlElement
 from pyasm.widget import BaseInputWdg, SelectWdg
 from tactic.ui.common import SimpleTableElementWdg
 
@@ -260,7 +260,14 @@ class LoginTableElementWdg(SimpleTableElementWdg):
             name = self.get_name()
 
         div = DivWdg()
-        div.add_style("display: inline-block")
+        div.add(HtmlElement.style('''
+
+            .spt_login_table_element_value {
+                display: inline-block
+            }
+
+            '''))
+        div.add_class("spt_login_table_element_value")
 
         value = super(LoginTableElementWdg, self).get_value(name)
         if value:
