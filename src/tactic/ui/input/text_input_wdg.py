@@ -1360,7 +1360,6 @@ __all__.append("TextInputResultsWdg")
 class TextInputResultsWdg(BaseRefreshWdg):
 
     # search LIMIT, even if we display only 10, the right balance is to set a limit to 80 to get more diverse results back
-    LIMIT = 80
     DISPLAY_LENGTH = 35
 
     def is_number(self, value):
@@ -1369,10 +1368,14 @@ class TextInputResultsWdg(BaseRefreshWdg):
         else:
             return isinstance(value, int) or isinstance(value, long) or isinstance(value, float) 
 
+    def get_limit(self):
+        return 80
+
     def init(self):
         self.do_search = True
         if self.kwargs.get('do_search') == 'false':
             self.do_search = False
+        
 
     def draw_result(self, top, value):
         max = self.DISPLAY_LENGTH
@@ -1694,8 +1697,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
             if connected_col:
                 search.add_filters(connected_col, rel_values, op='in')
 
-
-            search.add_limit(self.LIMIT)
+            limit = self.get_limit()
+            if limit:
+                search.add_limit(limit)
 
             results = search.get_sobjects()
 
