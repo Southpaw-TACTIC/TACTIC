@@ -5044,6 +5044,11 @@ spt.table.show_edit = function(cell) {
     edit_wdg.on_complete = function() {
         spt.behavior.replace_inner_html( this.cell, this.html );
         spt.behavior.destroy_element(this);
+
+        // reset last table values
+        spt.table.last_cell = null;
+        spt.table.last_data_wdg = null;
+        spt.table.last_edit_wdg = null;
     }
 
     //cell.appendChild(edit_wdg);
