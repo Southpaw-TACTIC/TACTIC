@@ -13,7 +13,7 @@
 __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 
 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 
 'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 
-'PipelineSaveCmd']
+'PipelineSaveCmd', 'PipelinePropertyCbk']
 
 import re
 import os
@@ -1271,6 +1271,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             properties: properties
         }
         info.setStyle("display", "");
+        document.activeElement.blur();
         spt.pipeline.set_info_node(node);
         spt.panel.load(info, class_name, kwargs);
 
@@ -2029,7 +2030,6 @@ class ProcessInfoWdg(BaseRefreshWdg):
             'type': 'unload',
             'cbjs_action': '''
                 document.activeElement.blur();
-
             '''
             })
         self.set_as_panel(top)
@@ -2560,19 +2560,14 @@ class DefaultInfoWdg(BaseInfoWdg):
             button.add_class("btn-clock")
             button.add_behavior( {
                 'type': 'click_up',
-                'pipeline_code': pipeline_code,
-                'process': process,
+                'kwargs': self.kwargs,
                 #'search_key': process_sobj.get_search_key(),
                 'cbjs_action': '''
                 var class_name = "tactic.ui.tools.PipelinePropertyWdg";
-                var kwargs = {
-                    pipeline_code: bvr.pipeline_code,
-                    process: bvr.process
-                }
-                var popup = spt.panel.load_popup("Task Setup", class_name, kwargs);
+                var popup = spt.panel.load_popup("Task Setup", class_name, bvr.kwargs);
                 var nodes = spt.pipeline.get_selected_nodes();
                 var node = nodes[0];
-                spt.pipeline_properties.show_properties2(popup, node);
+                //spt.pipeline_properties.show_properties2(popup, node);
                 '''
             } )
 
@@ -3726,6 +3721,8 @@ class ActionInfoWdg(BaseInfoWdg):
 
             if (value == "script_path" || value == "create_new") {
                 var on_save = function(kwargs) {
+                    if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
+
                     var script_path_folder = kwargs.script_path_folder;
                     var script_path_title = kwargs.script_path_title;
                     var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
@@ -3751,7 +3748,7 @@ class ActionInfoWdg(BaseInfoWdg):
                 }
 
                 bvr.src_el.on_save = on_save;
-                spt.pipeline.set_node_multi_kwarg(node, "on_save", on_save);
+                spt.pipeline.add_node_on_save(node, "script", on_save);
             }
 
             spt.panel.refresh_element(script_el, {action: bvr.src_el.value});
@@ -3770,7 +3767,7 @@ class ActionInfoWdg(BaseInfoWdg):
 
             if (value == "script_path" || value == "create_new") {
                 var on_save = bvr.src_el.on_save;
-                spt.pipeline.set_node_multi_kwarg(node, "on_save", on_save);
+                spt.pipeline.add_node_on_save(node, "script", on_save);
 
                 spt.named_events.fire_event('pipeline|change', {});
             }
@@ -4915,6 +4912,9 @@ class ProcessInfoCmd(Command):
 
         node_type = self.kwargs.get("node_type")
 
+        if node_type == "manual":
+            return self.handle_manual()
+
         if node_type in ["action", "condition"]:
             return self.handle_action()
 
@@ -4939,6 +4939,15 @@ class ProcessInfoCmd(Command):
         return cmd.execute()
 
 
+    def handle_manual(self):
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+        cbk_classes = self.kwargs.get("cbk_classes") or []
+
+        for cbk_class in cbk_classes:
+            cmd = Common.create_from_class_path(cbk_class, {}, self.kwargs)
+            cmd.execute()
 
 
     def handle_action(self):
@@ -5492,7 +5501,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
     def get_canvas(self):
         is_editable = self.kwargs.get("is_editable")
-        canvas = PipelineToolCanvasWdg(height=self.height, width=self.width, is_editable=is_editable)
+        canvas = PipelineToolCanvasWdg(height=self.height, width=self.width, is_editable=is_editable, use_mouse_wheel=True)
         return canvas
 
 
@@ -5557,8 +5566,15 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 var node = nodes[i];
                 var name = spt.pipeline.get_node_name(node);
                 var kwargs = spt.pipeline.get_node_kwargs(node);
+                var on_saves = kwargs.on_save;
+
                 if (kwargs.multi) kwargs = spt.pipeline.get_node_multi_kwargs(node);
-                if (kwargs.on_save) kwargs = kwargs.on_save(kwargs);
+                if (on_saves) {
+                    for (var key in on_saves) {
+                        var on_save = on_saves[key];
+                        kwargs = on_save(kwargs);
+                    }
+                }
                 node_kwargs[name] = kwargs;
             }
 
@@ -5851,23 +5867,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
  
-
- 
-        button = ButtonNewWdg(title="Show Notifications", icon="BS_ENVELOPE")
-        button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-
-        spt.pipeline.load_triggers();
-
-        editor_top.addClass("spt_has_changes");
-        '''
-        } )
-
-
 
 
 
@@ -6406,12 +6405,63 @@ class PipelineTaskTriggerCommitCbk(Command):
 class PipelinePropertyWdg(BaseRefreshWdg):
 
     def get_display(self):
-        div = DivWdg()
-        div.add_class("spt_pipeline_properties_top")
-        div.add_style("min-width: 500px")
 
         process = self.kwargs.get("process")
         pipeline_code = self.kwargs.get("pipeline_code")
+        node_type = self.kwargs.get("node_type")
+        properties = self.kwargs.get("properties")
+
+        process_code = properties.get("process_code") or ""
+        search = Search("config/process")
+        search.add_filter("code", process_code)
+
+        self.process_sobj = search.get_sobject()
+        process_sobj = self.process_sobj
+
+        pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
+
+        workflow = {}
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+        self.workflow = workflow
+
+        div = DivWdg()
+        div.add_class("spt_pipeline_properties_top")
+        div.add_style("min-width: 500px")
+        self.initialize_session_behavior(div)
+
+        div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var values = spt.api.get_input_values(bvr.src_el, null, false);
+            var keys = Object.keys(values);
+
+            var on_save = function(kwargs) {
+                var new_kwargs = {};
+                var values = {};
+
+                for (var key in kwargs) {
+                    var value = kwargs[key];
+
+                    if (keys.contains(key)) values[key] = value;
+                    else new_kwargs[key] = value;
+                }
+                new_kwargs.pipeline_properties = values;
+
+                cbk_class = "tactic.ui.tools.PipelinePropertyCbk";
+                if (new_kwargs.cbk_classes) new_kwargs.cbk_classes.push(cbk_class);
+                else new_kwargs.cbk_classes = [cbk_class];
+
+                return new_kwargs;
+            }
+
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.add_node_on_save(node, "pipeline_property", on_save);
+            '''
+            } )
 
 
         from tactic.ui.app import HelpButtonWdg
@@ -6434,9 +6484,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         #div.set_id("properties_editor")
         #div.add_style("display", "none")
-
-
-        node_type = attrs.get("type")
 
 
         title_div = DivWdg()
@@ -6493,10 +6540,10 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
 
-        table.add_behavior( {
-        'type': 'load',
-        'cbjs_action': self.get_onload_js()
-        } )
+        # table.add_behavior( {
+        # 'type': 'load',
+        # 'cbjs_action': self.get_onload_js()
+        # } )
 
         
         # group
@@ -6510,6 +6557,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text_name = "spt_property_group"
         text = TextWdg(text_name)
         text.add_class(text_name)
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
 
         if "completion" in properties:
             th = table.add_cell(text)
@@ -6523,6 +6571,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             text_name = "spt_property_completion"
             text = TextInputWdg(name=text_name, type="number")
             text.add_class(text_name)
+            self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
 
             th = table.add_cell(text)
             th.add_style("height: 30px")
@@ -6555,6 +6604,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             
             select.add_empty_option('-- Select --')
             select.add_class(text_name)
+            self.add_session_behavior(select, "select", "spt_pipeline_properties_top", text_name)
 
             th = table.add_cell(select)
             th.add_style("height: 40px")
@@ -6574,6 +6624,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         select.set_search_for_options(login_group_search, 'login_group', 'login_group')
         select.add_empty_option('-- Select --')
         select.add_class(text_name)
+        self.add_session_behavior(select, "select", "spt_pipeline_properties_top", text_name)
 
         th = table.add_cell(select)
         th.add_style("height: 40px")
@@ -6588,6 +6639,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             select.set_search_for_options(login_group_search, 'login_group', 'login_group')
             select.add_empty_option('-- Select --')
             select.add_class(text_name)
+            self.add_session_behavior(select, "select", "spt_pipeline_properties_top", text_name)
 
             th = table.add_cell(select)
             th.add_style("height: 40px")
@@ -6602,6 +6654,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text.add_style("width: 40px")
         text.add_class(text_name)
         text.add_style("text-align: center")
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
 
         th = table.add_cell(text)
         th.add_style("height: 40px")
@@ -6617,6 +6670,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text.add_style("width: 40px")
         text.add_class(text_name)
         text.add_style("text-align: center")
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
 
         th = table.add_cell(text)
         th.add_style("height: 40px")
@@ -6635,6 +6689,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         color = ColorInputWdg(text_name)
         color.set_input(text)
         text.add_class(text_name)
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
 
         td = table.add_cell(color)
         th.add_style("height: 40px")
@@ -6646,216 +6701,175 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         text_name = "spt_property_label"
         text = TextWdg(text_name)
         text.add_class(text_name)
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
 
         td = table.add_cell(text)
         td.add_style("height: 40px")
 
         tr, td = table.add_row_cell()
 
-        button = ActionButtonWdg(title="Save", tip="Confirm properties change. Remember to save workflow at the end.", color="primary", width=200)
-        td.add("<hr/>")
-        td.add(button)
-        #button.add_style("float: right")
-        #button.add_style("margin-right: 20px")
-        button.add_style("margin: 15px auto")
-        td.add("<br clear='all'/>")
-        td.add("<br clear='all'/>")
-        button.add_behavior( {
-        'type': 'click_up',
-        'properties': properties,
-        'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_pipeline_properties_top");
-        var node = spt.pipeline.get_selected_node();
-        if (!node) {
-            alert("No node selected");
-            return;
-        }
-        spt.pipeline_properties.set_properties2(top, node, bvr.properties);
+        # button = ActionButtonWdg(title="Save", tip="Confirm properties change. Remember to save workflow at the end.", color="primary", width=200)
+        # td.add("<hr/>")
+        # td.add(button)
+        # #button.add_style("float: right")
+        # #button.add_style("margin-right: 20px")
+        # button.add_style("margin: 15px auto")
+        # td.add("<br clear='all'/>")
+        # td.add("<br clear='all'/>")
+        # button.add_behavior( {
+        # 'type': 'click_up',
+        # 'properties': properties,
+        # 'cbjs_action': '''
+        # var top = bvr.src_el.getParent(".spt_pipeline_properties_top");
+        # var node = spt.pipeline.get_selected_node();
+        # if (!node) {
+        #     alert("No node selected");
+        #     return;
+        # }
+        # spt.pipeline_properties.set_properties2(top, node, bvr.properties);
 
 
-        var top = bvr.src_el.getParent(".spt_popup");
-        spt.popup.close(top);
+        # var top = bvr.src_el.getParent(".spt_popup");
+        # spt.popup.close(top);
 
-        spt.named_events.fire_event('pipeline|change', {});
+        # spt.named_events.fire_event('pipeline|change', {});
 
-        spt.named_events.fire_event('pipeline|save_button', bvr );
-        '''
-        } )
+        # spt.named_events.fire_event('pipeline|save_button', bvr );
+        # '''
+        # } )
 
 
 
         return div
 
-    def get_onload_js(self):
-        return r'''
-
-spt.pipeline_properties = {};
-
-// DEPRECATED
-spt.pipeline_properties.set_properties = function(node) {
 
 
-    if (!node) {
-        // FIXME: not sure where it gets the bvr from ???
-        node = bvr.src_el;
-    }
-    var top = node.getParent(".spt_pipeline_editor_top");
-    var wrapper = top.getElement(".spt_pipeline_wrapper");
-    spt.pipeline.init_cbk(wrapper);
+    def initialize_session_behavior(self, info):
+        kwargs = self.get_default_kwargs()
 
-    var prop_top = spt.get_element(top, ".spt_pipeline_properties_top");
-    var connector_top = spt.get_element(top, ".spt_connector_properties_top");
+        info.add_behavior({
+            'type': 'load',
+            'kwargs': kwargs,
+            'cbjs_action': '''
+            var node = spt.pipeline.get_info_node();
 
-    var selected_nodes = spt.pipeline.get_selected_nodes();
-    var selected = spt.pipeline.get_selected();
-    if (selected_nodes.length > 1) {
-        spt.alert('Please select only 1 node to set property');
-        return;
-    }
-        
-    if (selected_nodes.length==1) {
-        var title_el = spt.get_element(top, ".spt_property_title");
-        var node_name = title_el.node_name;
+            var kwargs = spt.pipeline.get_node_kwargs(node);
+            Object.assign(bvr.kwargs, kwargs);
+            spt.pipeline.set_node_kwargs(node, bvr.kwargs);
 
-        var values = spt.api.get_input_values(top, null, false);
-        var group = spt.pipeline.get_current_group();
-        var server = TacticServerStub.get();
-        var kwargs = {
-            pipeline_code: group,
-            process: node_name,
-            data: JSON.stringify(values)
+            '''
+        })
+
+
+
+    def get_default_kwargs(self):
+
+        return {
+            "spt_property_group": self.workflow.get("spt_property_group"),
+            "spt_property_completion": self.workflow.get("spt_property_completion"),
+            "spt_property_task_status_pipeline": self.workflow.get("spt_property_task_status_pipeline"),
+            "spt_property_assigned_login_group": self.workflow.get("spt_property_assigned_login_group"),
+            "spt_property_supervisor_login_group": self.workflow.get("spt_property_supervisor_login_group"),
+            "spt_property_duration": self.workflow.get("spt_property_duration"),
+            "spt_property_bid_duration": self.workflow.get("spt_property_bid_duration"),
+            "spt_property_color": self.workflow.get("spt_property_color"),
+            "spt_property_label": self.workflow.get("spt_property_label")
         }
-        // server.update()
 
 
-        var node = spt.pipeline.get_node_by_name(node_name);
-        if (node)
-        {
-            var properties = ['group', 'completion', 'task_pipeline', 'assigned_login_group', 'supervisor_login_group','duration', 'bid_duration','color', 'label'];
 
-            for ( var i = 0; i < properties.length; i++ ) {
-                var el = prop_top.getElement(".spt_property_" + properties[i]);
-                spt.pipeline.set_node_property( node, properties[i], el.value );
-            }
+    def add_session_behavior(self, input_wdg, input_type, top_class, arg_name):
+
+        # On load behavior, displays sessional value
+        load_behavior = {
+            'type': 'load',
+            'arg_name': arg_name,
+            'cbjs_action': '''
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
         }
-    }
-    else if (selected.length==1 && selected[0].type == 'connector') {
-        var el = connector_top.getElement(".spt_connector_context");
-        selected[0].set_attr('context', el.value);
-        
-    }
+
+        if input_type == "radio":
+            load_behavior['cbjs_action'] = '''
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
+        elif input_type == "checkbox":
+            load_behavior['cbjs_action'] = '''
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
+
+        input_wdg.add_behavior(load_behavior)
+
+
+        # On change behavior, stores sessional value
+        change_behavior = {
+            'top_class': top_class,
+            'arg_name': arg_name,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent("."+bvr.top_class);
+            var input = spt.api.get_input_values(top, null, false);
+
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_node_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
+
+            spt.named_events.fire_event('pipeline|change', {});
+            '''
+        }
+
+        if input_type == "text":
+            change_behavior['type'] = 'blur'
+        elif input_type == "select":
+            change_behavior['type'] = 'change'
+        elif input_type == "radio":
+            change_behavior['type'] = 'change'
+        elif input_type == "checkbox":
+            change_behavior['type'] = 'change'
+            change_behavior['cbjs_action'] = '''
+            var top = bvr.src_el.getParent("."+bvr.top_class);
+            var input = spt.api.get_input_values(top, null, false);
+
+            var value = true;
+            if (input[bvr.arg_name] == "off") value = false;
+
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_node_kwarg(node, bvr.arg_name, value);
+
+            spt.named_events.fire_event('pipeline|change', {});
+            '''
             
-}
+        input_wdg.add_behavior(change_behavior)
 
 
 
-// DEPRECATED
-spt.pipeline_properties.show_node_properties = function(node) {
+class PipelinePropertyCbk(Command):
 
-    var top = node.getParent(".spt_pipeline_tool_top");
-    var prop_top = spt.get_element(top, ".spt_pipeline_properties_top");
-    var connect_top = spt.get_element(top, ".spt_connector_properties_top");
+    def execute(self):
 
-    var content = spt.get_element(prop_top, ".spt_pipeline_properties_content");
-    var no_process = spt.get_element(prop_top, ".spt_pipeline_properties_no_process");
-    var connector_prop = spt.get_element(connect_top, ".spt_connector_properties_content");
-    spt.show(prop_top);
-    spt.show(content);
-    spt.hide(no_process);
-    spt.hide(connector_prop);
+        process = self.kwargs.get("process")
+        pipeline_code = self.kwargs.get("pipeline_code")
+        pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
 
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
 
-    var node_name = spt.pipeline.get_node_name(node);
-    var group = spt.pipeline.get_group_by_node(node);
-    var group_name = group.get_name();
+        process_code = process_sobj.get_code()
 
-    // must set current group
-    spt.pipeline.set_current_group(group_name);
-    var stype = spt.pipeline.get_search_type(group_name);
-    var task_pipe_tr = spt.get_element(prop_top, ".spt_property_task_status_pipeline");
-    var status_completion_tr = spt.get_element(prop_top, ".spt_property_status_completion");
-    if (stype && stype =='sthpw/task') { 
-        spt.hide(task_pipe_tr);
-        spt.show(status_completion_tr);
+        workflow = process_sobj.get_json_value("workflow") or {}
 
-    }
-    else {
-        spt.show(task_pipe_tr);
-        spt.hide(status_completion_tr);
-    }
+        values = self.kwargs.get("pipeline_properties")
 
-    var title = prop_top.getElement(".spt_property_title");
-    title.innerHTML = "Node: " + node_name;
-    title.node_name = node_name;
-
-    var properties = ['group', 'completion', 'task_pipeline', 'assigned_login_group', 'supervisor_login_group','duration', 'bid_duration','color', 'label'];
-
-    for ( var i = 0; i < properties.length; i++ ) {
-        var el = prop_top.getElement(".spt_property_" + properties[i]);
-        var value = node.properties[properties[i]];
-        if (typeof(value) == 'undefined') {
-            el.value = '';
-        }
-        else {
-            el.value = node.properties[properties[i]];
-            if (properties[i] == 'color')
-                el.setStyle('background',el.value);
-        }
-    }
-    // set the current pipeline
-    /*
-    current = top.getElement(".spt_pipeline_editor_current");
-    current.value = group_name;
-    */
-
-    current = top.getElement(".spt_pipeline_editor_current2");
-    //current.value = group_name;
-    current.innerHTML = group_name;
+        for name, value in values.items():
+            workflow[name] = value
 
 
-}
+        process_sobj.set_json_value("workflow", workflow)
+        process_sobj.commit()
 
-
-spt.pipeline_properties.show_properties2 = function(prop_top, node) {
-
-    var properties = ['group', 'completion', 'task_pipeline', 'assigned_login_group', 'supervisor_login_group','duration', 'bid_duration','color', 'label'];
-
-    for ( var i = 0; i < properties.length; i++ ) {
-        // get the value from the node
-        var value = node.properties[properties[i]];
-
-        // set the value on the element
-        var el = prop_top.getElement(".spt_property_" + properties[i]);
-        if (!el) continue;
-
-        if (typeof(value) == 'undefined' || value == null) {
-            el.value = ""
-        }
-        else {
-            el.value = node.properties[properties[i]];
-        }
-
-        if (properties[i] == 'color') {
-            el.setStyle('background',el.value);
-        }
-    }
-
-}
-
-spt.pipeline_properties.set_properties2 = function(prop_top, node, properties) {
-
-    for ( var i = 0; i < properties.length; i++ ) {
-        // get the value from the element
-        var el = prop_top.getElement(".spt_property_" + properties[i]);
-        var value = el.value;
-
-        // set the value on the node
-        node.properties[properties[i]] = value;
-    
-    }
-}
-
-        '''
 
 
 
