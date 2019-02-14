@@ -6502,12 +6502,23 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var header_table = spt.table.get_header_table();
     var header_row = header_table.getElement(".spt_table_header_row");
 
+    // Add edit widgets to table layout template
+    var layout_edit_top = layout.getElement(".spt_edit_top");
+    var data_edit_top = data.getElement(".spt_edit_top");
+    var data_edit_wdgs;
+    if (data_edit_top){
+        data_edit_wdgs = data_edit_top.getElements(".spt_edit_widget");
+    }
+
     // add the headers
     var cells = data_header_row.getElements(".spt_table_header");
     for (var j = 0; j < cells.length; j++) {
 
          if (mode=='add') {
              header_row.appendChild(cells[j]);
+             if (data_edit_wdgs) {
+                layout_edit_top.appendChild(data_edit_wdgs[j]);
+             }
          }
          else if (mode=='refresh') {
              var idx = col_indices[j];
