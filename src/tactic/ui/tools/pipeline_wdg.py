@@ -3629,7 +3629,7 @@ class ActionInfoWdg(BaseInfoWdg):
 
     
                 if self.script_path:
-                    folder, title = os.path.split(script_path)
+                    folder, title = os.path.split(self.script_path)
 
                     search = Search("config/custom_script")
                     search.add_filter("folder", folder)
@@ -3877,7 +3877,7 @@ class ActionInfoWdg(BaseInfoWdg):
             script_path_title = ""
 
             if self.script_path:
-                script_path_folder, script_path_title = os.path.split(script_path)
+                script_path_folder, script_path_title = os.path.split(self.script_path)
             kwargs['script_path_folder'] = script_path_folder
             kwargs['script_path_title'] = script_path_title
 
