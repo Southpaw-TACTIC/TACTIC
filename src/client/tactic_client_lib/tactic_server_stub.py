@@ -2997,7 +2997,7 @@ class TacticServerStub(object):
         @return:
         dictionary of colors
         '''
-        return self.server.add_initial_tasks(self.ticket)
+        return self.server.get_task_status_colors(self.ticket)
 
 
 
