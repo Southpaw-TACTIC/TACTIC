@@ -1608,6 +1608,9 @@ class PipelineInfoWdg(BaseRefreshWdg):
         top.add( self.get_color_wdg(pipeline) )
 
 
+        #top.add( self.get_task_generation_wdg(pipeline) )
+
+
         # sobject count
         if search_type:
             search = Search(search_type)
