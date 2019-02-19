@@ -845,6 +845,24 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_notes_dialog {
+                border: solid 1px #DDD;
+                width: 100%;
+                height: auto;
+                box-sizing: border-box;
+                margin: 0px 30px 10px 20px;
+                padding: 0px 10px;
+            }
+
+
+            ''')
+
+        return styles
+
 
 
     def get_display(self):
@@ -990,6 +1008,7 @@ class DiscussionWdg(BaseRefreshWdg):
             gallery_div.add_class("spt_note_gallery")
             top.add( gallery_div )
 
+        top.add(self.get_styles())
 
         context_str = ",".join(contexts)
         update_div = DivWdg()
@@ -1181,13 +1200,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog = DivWdg()
                 no_notes_div.add(note_dialog)
                 unique_id = note_dialog.set_unique_id()
-                note_dialog.add_style("border: solid 1px #DDD")
-                note_dialog.add_style("width: 100%")
-                note_dialog.add_style("height: auto")
+                note_dialog.add_class("spt_notes_dialog")
                 note_dialog.add_style("display: none")
-                note_dialog.add_style("box-sizing: border-box")
-                note_dialog.add_style("margin: 0px 30px 10px 20px")
-                note_dialog.add_style("padding: 0px 10px")
                 no_notes_msg.add_behavior( {
                     'type': 'click',
                     'unique_id': unique_id,
@@ -1397,13 +1411,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog = DivWdg()
                 note_dialog_div.add(note_dialog)
                 unique_id = note_dialog.set_unique_id()
-                note_dialog.add_style("border: solid 1px #DDD")
-                note_dialog.add_style("width: 100%")
-                note_dialog.add_style("height: auto")
+                note_dialog.add_class("spt_notes_dialog")
                 note_dialog.add_style("display: none")
-                note_dialog.add_style("box-sizing: border-box")
-                note_dialog.add_style("margin: 0px 30px 10px 20px")
-                note_dialog.add_style("padding: 0px 10px")
                 """
                 process_wdg.add_behavior( {
                     'type': 'click',
@@ -1552,7 +1561,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 }
                 '''
             } )
-
 
 
         return top

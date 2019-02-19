@@ -1212,7 +1212,76 @@ spt.tab.close = function(src_el) {
 
             .spt_tab_content_body {
             }
+
+
             ''' % data)
+
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            /* NEW */
+
+            .spt_tab_header_top {
+                height: auto;
+                float: left;
+                position: relative;
+                z-index: 2;
+                margin-bottom: -1px;
+            }
+
+            .spt_tab_header {
+                vertical-align: top;
+                margin-right: 1px;
+                box-sizing: border-box;
+                overflow: hidden;
+                display: inline-block;
+            }
+
+            .spt_tab_header.rounded-top-corners {
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+            }
+
+            .spt_tab_header.drag-header {
+                position: relative;
+            }
+
+            .spt_tab_header_label {
+                text-align: left;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                z-index: 1;
+            }
+
+            .spt_add_tab {
+                margin-left: -2px;
+                display: inline-block;
+            }
+
+            .spt_add_tab_inner {
+                padding: 0 2px 0 2px;
+                border-top-right-radius: 12px;
+                opacity: 0.5;
+                background: linear-gradient(180deg, #f2f2f2, #FFFFFF);
+                float: left;
+                margin-top: 2px;
+                padding-top: 4px;
+                height: 21px;
+                width: 22px;
+                margin-left: 4px;
+                border-style: solid;
+                border-width: 1px 1px 0px 1px;
+                border-color: #BBB;
+                text-align: center;
+            }
+
+            ''')
+
+        return styles
 
  
 
@@ -1220,6 +1289,7 @@ spt.tab.close = function(src_el) {
 
         top = self.top
         top.add_class("spt_tab_top")
+        top.add(self.get_styles())
 
         self.search_type = None
 
@@ -1357,12 +1427,12 @@ spt.tab.close = function(src_el) {
 
         header_div.add_class("spt_tab_header_top")
         self.header_id = header_div.set_unique_id()
-        header_div.add_style("height: auto")
-        header_div.add_style("float: left")
-        header_div.add_style("position: relative")
-        header_div.add_style("z-index: 2")
+        # header_div.add_style("height: auto")
+        # header_div.add_style("float: left")
+        # header_div.add_style("position: relative")
+        # header_div.add_style("z-index: 2")
 
-        header_div.add_style("margin-bottom: -1px")
+        # header_div.add_style("margin-bottom: -1px")
 
 
         subheader_div = DivWdg()
@@ -1871,12 +1941,11 @@ spt.tab.close = function(src_el) {
     def get_add_wdg(self):
 
         div = DivWdg()
-        div.add_style("margin-left: -2px")
-        div.add_style("display: inline-block")
+        div.add_class("spt_add_tab")
 
         icon_div = DivWdg()
-        icon_div.add_style("padding: 0 2px 0 2px")
-        icon_div.set_round_corners(12, corners=['TR'])
+        icon_div.add_class("spt_add_tab_inner")
+        
         from tactic.ui.widget import IconButtonWdg
         icon = IconButtonWdg(title="New Tab", icon=IconWdg.PLUS)
         icon = IconWdg("New Tab", IconWdg.PLUS)
@@ -1885,7 +1954,6 @@ spt.tab.close = function(src_el) {
         #icon.add_style("position: absolute")
         icon.add_style("margin-left: 3px")
         icon_div.add_class("hand")
-        icon_div.add_style("opacity: 0.5")
 
         icon_div.add(icon)
 
@@ -1896,22 +1964,11 @@ spt.tab.close = function(src_el) {
                 spt.tab.add_new();
             """
          
-        icon.add_behavior( {
+        icon_div.add_behavior( {
             'type': 'click_up',
             'cbjs_action': add_bvr
         } )
 
-        icon_div.add_style("float: left")
-        icon_div.add_style("margin-top: 2px")
-        icon_div.add_style("padding-top: 4px")
-        icon_div.add_style("height: 21px")
-        icon_div.add_style("width: 22px")
-        icon_div.add_style("margin-left: 4px")
-        icon_div.add_gradient("background", "background", -5, 5)
-        icon_div.add_style("border-style: solid")
-        icon_div.add_style("border-width: 1px 1px 0px 1px")
-        icon_div.add_color("border-color", "border")
-        icon_div.add_style("text-align: center")
         div.add(icon_div);
 
         self.extra_menu = self.kwargs.get("extra_menu")
@@ -2383,11 +2440,11 @@ spt.tab.close = function(src_el) {
         header.add_attr("spt_tab_id", self.unique_id)
         header.add_class("hand")
 
-        header.add_style("overflow: hidden")
-        header.add_style("box-sizing: border-box")
+        # header.add_style("overflow: hidden")
+        # header.add_style("box-sizing: border-box")
 
         if self.use_default_style:
-            header.set_round_corners(5, corners=['TL','TR'])
+            header.add_class("rounded-top-corners")
 
 
         #header.add_style("border-style: solid")
@@ -2397,9 +2454,9 @@ spt.tab.close = function(src_el) {
         #header.add_color("color", "color")
 
         #header.add_style("float: left")
-        header.add_style("display: inline-block")
-        header.add_style("vertical-align: top")
-        header.add_style("margin-right: 1px")
+        # header.add_style("display: inline-block")
+        # header.add_style("vertical-align: top")
+        # header.add_style("margin-right: 1px")
 
         # TODO: this should be the default
         #header.add_style("box-sizing: border-box")
@@ -2419,12 +2476,16 @@ spt.tab.close = function(src_el) {
             'type': 'mouseenter',
             'color': hover_color,
             'cbjs_action': '''
+
+            if (bvr.src_el.hasClass("spt_tab_selected")) return;
+
             bvr.src_el.setStyle("background", bvr.color);
             '''
         } )
         header.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''
+
             bvr.src_el.setStyle("background", "");
             '''
         } )
@@ -2505,14 +2566,14 @@ spt.tab.close = function(src_el) {
 
 
         #if self.use_default_style:
-        if True:
-            title_div.add_style("text-align: left")
-            title_div.add_style("overflow: hidden")
-            title_div.add_style("text-overflow: ellipsis")
-            title_div.add_style("white-space", "nowrap");
-            #title_div.add_style("float: left")
-            title_div.add_style("z-index: 1")
-            #title_div.add_style("width: auto")
+        # if True:
+        #     title_div.add_style("text-align: left")
+        #     title_div.add_style("overflow: hidden")
+        #     title_div.add_style("text-overflow: ellipsis")
+        #     title_div.add_style("white-space", "nowrap");
+        #     #title_div.add_style("float: left")
+        #     title_div.add_style("z-index: 1")
+        #     #title_div.add_style("width: auto")
 
 
         title_div.add_class("spt_tab_header_label");
@@ -2582,7 +2643,7 @@ spt.tab.close = function(src_el) {
         # add a drag behavior
         allow_drag = self.kwargs.get("allow_drag")
         if allow_drag not in [False, 'false']:
-            header.add_style("position", "relative");
+            header.add_class("drag-header");
             header.add_behavior( {
             'type': 'drag',
             #"mouse_btn": 'LMB',
