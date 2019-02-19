@@ -1210,6 +1210,10 @@ spt.tab.close = function(src_el) {
             }
 
 
+            #%(header_id)s .spt_tab_back {
+                background: %(background)s;
+            }
+
             .spt_tab_content_body {
             }
             ''' % data)
@@ -1517,6 +1521,22 @@ spt.tab.close = function(src_el) {
         active.setStyle("opacity", 0.3);
         '''
         } )
+
+
+
+        use_header_back = self.kwargs.get("use_header_back")
+        if use_header_back in [True, 'true']:
+            header_back_wdg = DivWdg()
+            header_div.add(header_back_wdg)
+            header_back_wdg.add_class(".spt_tab_back")
+            header_back_wdg.add_style("width: 100%")
+            header_back_wdg.add_style("height: 30px")
+            header_back_wdg.add_style("position: absolute")
+            header_back_wdg.add_style("top: 0px")
+            header_back_wdg.add_style("left: 0px")
+            header_back_wdg.add_style("margin-top: -1px")
+
+
 
 
 

@@ -421,7 +421,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
             show_remove=show_remove, 
             tab_offset=10, 
             selected=selected, 
-            save_state=save_state 
+            save_state=save_state, 
+            use_header_back=True,
         )
         tab.add_style("margin: 0px -1px -1px -1px")
 

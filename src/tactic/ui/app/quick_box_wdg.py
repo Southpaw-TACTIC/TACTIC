@@ -119,13 +119,13 @@ class QuickBoxWdg(BaseRefreshWdg):
         top.add(div)
         div.add_style("width: 630px")
         div.add_style("height: 400px")
-        div.add_style("opacity: 0.8")
-        div.add_gradient("background", "background3", 10)
+        div.add_style("opacity: 1.0")
+        div.add_gradient("background", "background", 10)
         div.add_style("position: fixed")
         div.add_style("z-index: 1000")
         #div.set_box_shadow("2px 2px 4px 4px")
-        div.set_box_shadow(color="#000")
-        div.set_round_corners(25)
+        div.set_box_shadow(color="rgba(0,0,0,0.5)")
+        div.set_round_corners(5)
         div.add_border()
 
         content_top_wdg = DivWdg()
@@ -185,8 +185,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = "FLOW_CHART_02"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg('Configuration', 'FA_DATABASE', size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -197,14 +196,13 @@ class QuickBoxWdg(BaseRefreshWdg):
             spt.named_events.fire_event("hotbox|close");
             '''
         }
-        section = self.get_section_wdg("Configuration", "Lots of Config Goodies", image, behavior)
+        section = self.get_section_wdg("Configuration", "Search Type Configuration", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
 
 
 
-        image = "USER_32"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg("Users", "FA_USERS", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -222,8 +220,9 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = "LOCK_32_01"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        #image = "LOCK_32_01"
+        #image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg("Users", "FA_LOCK", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -238,7 +237,8 @@ class QuickBoxWdg(BaseRefreshWdg):
         content_wdg.add(section)
 
 
-	image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
+	#image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
+        image = IconWdg("Users", "FA_ADDRESS_CARD_O", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -260,8 +260,9 @@ class QuickBoxWdg(BaseRefreshWdg):
         content_wdg.add("<br clear='all'/>")
 
 
-        image = "FLOW_CHART_01"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        #image = "FLOW_CHART_01"
+        #image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg("Users", "FA_UNIVERSITY", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -298,8 +299,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = "FLOW_CHART_03"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = '''<img style="width: 32px; opacity: 0.6" src="/context/icons/glyphs/workflow-filled.png"/>'''
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -319,8 +319,9 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = "ADVANCED_32"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        #image = "ADVANCED_32"
+        #image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg("Users", "FA_GRADUATION_CAP", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -343,8 +344,9 @@ class QuickBoxWdg(BaseRefreshWdg):
         content_wdg.add("<br clear='all'/>")
         content_wdg.add("<br clear='all'/>")
 
-        image = "PLUGIN_32"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        #image = "PLUGIN_32"
+        #image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg("Users", "FA_PLUG", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -364,8 +366,9 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = "CONFIGURE_03"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        #image = "CONFIGURE_03"
+        #image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg("Users", "FA_NAVICON", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -388,6 +391,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
         #image = "CONFIGURE_03"
         #image = eval("IconWdg('', IconWdg.%s)" % image)
+        """
 	image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
         behavior = {
             'type': 'click_up',
@@ -406,6 +410,7 @@ class QuickBoxWdg(BaseRefreshWdg):
         section = self.get_section_wdg("File Browser", "Browser.", image, behavior)
         section.add_style("float: left")
         content_wdg.add(section)
+        """
 
 
 
