@@ -5587,7 +5587,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             try {
                 var xml = spt.pipeline.export_group(group_name);
             } catch (err) {
-                spt.alert(err);
+                spt.alert("Error while parsing xml:", err);
                 return;
             }
 

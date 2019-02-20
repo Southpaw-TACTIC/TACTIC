@@ -1279,6 +1279,31 @@ spt.tab.close = function(src_el) {
                 text-align: center;
             }
 
+            .spt_tab_remove {
+                position: absolute;
+                right: 2px;
+                top: 8px;
+                z-index: 2;
+                width: 16px;
+                height: 16px;
+                padding-left: 2px;
+
+                border-radius: 10px;
+                box-sizing: border-box;
+                color: #000;
+                background: #FFF;
+                border: solid 1px transparent;
+            }
+
+            .spt_icon_active {
+                margin: auto;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                max-height: 100%;
+                opacity: 0.3;
+            }
+
             ''')
 
         return styles
@@ -2597,8 +2622,15 @@ spt.tab.close = function(src_el) {
         } )
 
 
-
         show_remove = self.kwargs.get("show_remove")
+
+        show_remove_tabs = self.kwargs.get("show_remove_tabs")
+        if show_remove_tabs:
+            show_remove_tabs_list = show_remove_tabs.split("|")
+            if element_name in show_remove_tabs_list:
+                show_remove = False
+
+
         if is_template or show_remove not in [False, 'false']:
             header.add(remove_wdg)
 
@@ -2611,21 +2643,6 @@ spt.tab.close = function(src_el) {
         #remove_wdg.add_style("padding-right: 10px")
 
 
-        remove_wdg.add_style("position: absolute")
-        remove_wdg.add_style("right: 2px")
-        remove_wdg.add_style("top: 8px")
-        remove_wdg.add_style("z-index: 2")
-        remove_wdg.add_style("width: 16px")
-        remove_wdg.add_style("height: 16px")
-        remove_wdg.add_style("padding-left: 2px")
-
-        remove_wdg.add_style("border-radius: 10px")
-        remove_wdg.add_style("box-sizing: border-box")
-        remove_wdg.add_style("color: #000")
-        remove_wdg.add_style("background: #FFF")
-        remove_wdg.add_style("border: solid 1px transparent")
-
-
         remove_icon_path = self.kwargs.get("remove_icon_path")
         if (remove_icon_path):
             icon = HtmlElement.img(remove_icon_path)
@@ -2634,7 +2651,6 @@ spt.tab.close = function(src_el) {
         else:
             icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
         icon.add_class("spt_icon_active")
-        icon.add_styles("margin: auto;position: absolute;top: 0;bottom: 0; max-height: 100%; opacity: 0.3;")
         remove_wdg.add(icon)
         
 
