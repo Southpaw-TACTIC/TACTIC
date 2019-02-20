@@ -5568,6 +5568,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             for (var i=0; i<nodes.length; i++) {
                 var node = nodes[i];
                 var name = spt.pipeline.get_node_name(node);
+                name = name.replace(/&/g, "&amp;amp;");
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var on_saves = kwargs.on_save;
 

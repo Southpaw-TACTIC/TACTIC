@@ -5942,6 +5942,8 @@ spt.pipeline.export_group = function(group_name) {
         var pos = spt.pipeline.get_position(node);
         pos = { x: pos.x-left+100, y: pos.y-top+100 };
 
+        name = name.replace(/&/g, "&amp;amp;");
+
         if (node_type != "node") {
             xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
         }
@@ -5963,6 +5965,7 @@ spt.pipeline.export_group = function(group_name) {
             }
 
             var value = properties[key];
+            if (typeof value == "string") value = value.replace(/&/g, "&amp;amp;");
             if (key == "settings" && value) {
                 settings_str = JSON.stringify(value);
                 xml += " "+key+"='"+settings_str+"'";
