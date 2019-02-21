@@ -845,6 +845,8 @@ class BaseApiXMLRPC(XmlrpcServer):
 
 
             for column in columns:
+                value2 = None
+
                 if column.startswith("__"):
                     continue
 
