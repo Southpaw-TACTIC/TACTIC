@@ -1189,10 +1189,21 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
             full_process_name = self.get_full_process_name(self.process)
             tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
+            start_date = None
             if not tasks:
+                # find
+                input_processes = self.pipeline.get_input_process_names(self.process)
+                for input_process in input_processes:
+                    tasks = Task.get_by_sobject(self.sobject, process=input_process)
+                    for task in tasks:
+                        end_date = task.get_value("bid_end_date")
+                        if not start_date or end_date > start_date:
+                            start_date = end_date
+
+
                 # If we are creating new tasks here, then the status will be set to Assignment
                 mapped_status = self.get_mapped_status(process_obj, "Assignment")
-                tasks = Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status)
+                tasks = Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status, start_date=start_date)
 
             else:
                 mapped_status = self.get_mapped_status(process_obj, "Pending")
