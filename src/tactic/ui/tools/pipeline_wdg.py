@@ -4912,7 +4912,7 @@ class ProcessInfoCmd(Command):
 
         node_type = self.kwargs.get("node_type")
 
-        if node_type == "manual":
+        if node_type in ["manual", "node"]:
             return self.handle_manual()
 
         if node_type in ["action", "condition"]:
