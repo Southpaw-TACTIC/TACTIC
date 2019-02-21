@@ -5298,7 +5298,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             var settings = process.workflow;
             if (!settings) {
                 settings = {};
-            } else if (typeof settings == "string") {
+            } else if (typeof(settings) == "string") {
                 settings = JSON.parse(settings);
             }
 
