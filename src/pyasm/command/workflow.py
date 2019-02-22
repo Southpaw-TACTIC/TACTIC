@@ -1224,6 +1224,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         '''Get what status is mapped to Pending'''
         mapped_status = status
 
+        # NOTE: DISABLING this until better search mechanism is used
+        """
         status_pipeline_code = process_obj.get_task_pipeline()
         search = Search("config/process")        
         search.add_op_filters([("workflow", "like","%Pending%")])
@@ -1236,6 +1238,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             
             if mapping == 'Pending':
                 mapped_status = pending_process_sobj.get_value('process')
+        """
+
 
         return mapped_status
 
