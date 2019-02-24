@@ -5579,7 +5579,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 node_kwargs[name] = kwargs;
             }
 
-            console.log(nodes, node_kwargs);
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -5602,11 +5601,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     node_kwargs: node_kwargs
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
+                spt.named_events.fire_event('pipeline|save', {});
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
             }
 
-            spt.named_events.fire_event('pipeline|save', {});
         } 
 
 
@@ -6529,9 +6528,9 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         # get a list of known properties
         if node_type == "approval":
-            properties = ['group', "completion", 'task_pipeline', 'assigned_login_group', 'duration', 'bid_duration', 'color']
+            properties = ['group', "completion", 'task_pipeline', 'assigned_group', 'duration', 'bid_duration', 'color']
         else:
-            properties = ['group', "completion", "task_pipeline", 'assigned_login_group', 'supervisor_login_group', 'duration', 'bid_duration', 'color']
+            properties = ['group', "completion", "task_pipeline", 'assigned_group', 'supervisor_group', 'duration', 'bid_duration', 'color']
 
 
         # show other properties
@@ -6637,7 +6636,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         td = table.add_cell('Assigned Group:')
         td.add_attr("title", "Used for limiting the users displayed when this process is chosen in a task view.")
 
-        text_name = "spt_property_assigned_login_group"
+        text_name = "assigned_group"
         select = SelectWdg(text_name)
         select.set_search_for_options(login_group_search, 'login_group', 'login_group')
         select.add_empty_option('-- Select --')
@@ -6647,12 +6646,12 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         th = table.add_cell(select)
         th.add_style("height: 40px")
        
-        if "supervisor_login_group" in properties:
-            # supervisor_login_group
+        if "supervisor_group" in properties:
+            # supervisor_group
             table.add_row()
             td = table.add_cell('Supervisor Group:')
             td.add_attr("title", "Used for limiting the supervisors displayed when this process is chosen in a task view.")
-            text_name = "spt_property_supervisor_login_group"
+            text_name = "supervisor_group"
             select = SelectWdg(text_name)
             select.set_search_for_options(login_group_search, 'login_group', 'login_group')
             select.add_empty_option('-- Select --')
@@ -6786,8 +6785,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             "spt_property_group": self.workflow.get("spt_property_group"),
             "spt_property_completion": self.workflow.get("spt_property_completion"),
             "spt_property_task_status_pipeline": self.workflow.get("spt_property_task_status_pipeline"),
-            "spt_property_assigned_login_group": self.workflow.get("spt_property_assigned_login_group"),
-            "spt_property_supervisor_login_group": self.workflow.get("spt_property_supervisor_login_group"),
+            "assigned_group": self.workflow.get("assigned_group"),
+            "supervisor_group": self.workflow.get("supervisor_group"),
             "spt_property_duration": self.workflow.get("spt_property_duration"),
             "spt_property_bid_duration": self.workflow.get("spt_property_bid_duration"),
             "spt_property_color": self.workflow.get("spt_property_color"),
@@ -7003,12 +7002,22 @@ class PipelineSaveCbk(Command):
             if subpipeline_code or subpipeline_code == "":
                 process.set_value("subpipeline_code", subpipeline_code)
             
+            node_type = xml.get_attribute(node, "type")
+            
             if curr_settings:
-                process.set_value("workflow", curr_settings)
+                workflow = process.get_json_value("workflow", default={})
+                
+                # On change of node type, clear the workflow data
+                orig_node_type = workflow.get("node_type")
+                if orig_node_type and orig_node_type != node_type:
+                    workflow = curr_settings
+                else:
+                    workflow.update(curr_settings)
+                workflow['node_type'] = node_type
+                process.set_value("workflow", workflow)
             
             process.commit()
 
-            node_type = xml.get_attribute(node, "type")
             if node_type:
                 kwargs = node_kwargs.get(process_name) or {}
                 if len(kwargs) > 0:
@@ -7281,7 +7290,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             'type': 'listen',
             'event_name': 'reorderX|sthpw/pipeline',
             'cbjs_action': '''
-
+           
             var projectCode = bvr.src_el.getAttribute("spt_project_code");
             var searchType = bvr.src_el.getAttribute("spt_search_type");
 
@@ -7395,17 +7404,14 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 try {
                     var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
                     server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
+                    spt.named_events.fire_event('pipeline|save', {});
+                    editor_top.removeClass("spt_has_changes");
+                    spt.command.clear();
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
                 }
 
-                spt.named_events.fire_event('pipeline|save', {});
-
                 spt.app_busy.hide();
-
-                editor_top.removeClass("spt_has_changes");
-                
-                spt.command.clear();
 
             }
 
@@ -7478,8 +7484,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                         var on_complete = function() {
                             var refreshedRow = spt.table.get_row_by_search_key(search_key);
                             refreshedRow.setAttribute("spt_group_level", 2);
-                            var documentItem = refreshedRow.getElement(".spt_document_item");
-                            documentItem.click();
+                            spt.table.select_row(refreshedRow);
                         }
                         spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
                     });
@@ -7589,13 +7594,6 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             if (bvr.uncategorized) {
                 var row = bvr.src_el.getParent(".spt_table_row_item");
                 row.setAttribute("spt_dynamic", true);
-
-                var tuple = spt.table.get_child_rows(row);
-                var children = spt.table.get_child_rows_tuple(tuple, true);
-
-                children.forEach(function(child) {
-                    child.setAttribute("spt_dynamic", true);
-                });
             }
 
             '''
