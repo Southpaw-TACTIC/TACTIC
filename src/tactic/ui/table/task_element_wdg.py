@@ -1607,7 +1607,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             td.add_style("opacity: 0.5")
 
 
-                        if is_task_displayed or node_type in ['depndency', 'progress']:
+                        if is_task_displayed or node_type in ['dependency', 'progress']:
                         
                             task_wdg = self.get_task_wdg(task, parent_key, pipeline_code, process, last_one)
                         else:
