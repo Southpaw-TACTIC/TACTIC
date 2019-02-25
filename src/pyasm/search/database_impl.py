@@ -3364,30 +3364,36 @@ class MySQLImpl(PostgresImpl):
         parts.append("serial")
         return " ".join(parts)
 
-    def get_text(self, not_null=False):
+    def get_text(self, default=None, not_null=False):
         parts = []
         parts.append("longtext")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)
 
 
-    def get_boolean(self, not_null=False):
+    def get_boolean(self, default=None, not_null=False):
        parts = []
        parts.append("tinyint")
+       if default is not None:
+            parts.append("DEFAULT %s" % default)
        if not_null:
            parts.append("NOT NULL")
        return " ".join(parts)
 
 
 
-    def get_varchar(self, length=191, not_null=False):
+    def get_varchar(self, default=None, length=191, not_null=False):
         if not length:
             length = 191
 
         if length in [-1, 'max']:
             return self.get_text(not_null=not_null)
         parts = []
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         parts.append("varchar(%s)" % length)
         if not_null:
             parts.append("NOT NULL")
@@ -3425,13 +3431,14 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_json(self, not_null=False):
+    def get_json(self, default=None, not_null=False):
         parts = []
 
         # JSON not support untile MySQL 5.7 (need to check version) 
         #parts.append("JSON")
         parts.append("text")
-
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         if not_null:
             parts.append("NOT NULL")
         return " ".join(parts)
