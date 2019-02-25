@@ -91,6 +91,7 @@ class WatchFolderFileActionThread(threading.Thread):
         try:
             self._run()
         except Exception as e:
+            print("Error: %s" % e)
             return
         finally:
             task = self.kwargs.get("task")
