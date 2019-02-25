@@ -90,6 +90,9 @@ class WatchFolderFileActionThread(threading.Thread):
         Batch(site=site, project_code=project_code)
         try:
             self._run()
+        except Exception as e:
+            print("Error: %s" % e)
+            return
         finally:
             task = self.kwargs.get("task")
             paths = task.get_paths()
@@ -614,17 +617,18 @@ class WatchDropFolderTask(SchedulerTask):
 
         while not os.path.exists(base_dir):
             time.sleep(1)
-            timeout += 1
-            if (timeout % email_interval) == 0:
+            if ((timeout % email_interval) == 0 and timeout > 60) or (timeout == 60):
                 if self.email_alert:
                     subject = "Watch Folder Error"
                     message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
-                    sender_name= Config.get_value("services", "mail_name")
-                    sender_email = Config.get_value("services", "mail_user")
+                    sender_name= Config.get_value("services", "notify_user_name")
+                    sender_email = Config.get_value("services", "notify_user")
                     recipient_emails = [sender_email]
 
-                    email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                    email_cmd.execute()
+                    if sender_email:
+                        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                        email_cmd.execute()
+            timeout += 1
             pass
 
         print "watchfolder reconnected"
@@ -632,13 +636,13 @@ class WatchDropFolderTask(SchedulerTask):
         if self.email_alert:
             subject = "Watch Folder Reconnected"
             message = "Watch Folder is available and service is resumed."
-            sender_name = Config.get_value("services", "mail_name")
-            sender_email = Config.get_value("services", "mail_user")
+            sender_name = Config.get_value("services", "notify_user_name")
+            sender_email = Config.get_value("services", "notify_user")
             recipient_emails = [sender_email]
 
-            email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-            email_cmd.execute()
-
+            if sender_email:
+                email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                email_cmd.execute()
         return
 
     def _execute(self):
