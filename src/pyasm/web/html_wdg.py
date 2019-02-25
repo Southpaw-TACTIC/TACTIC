@@ -185,6 +185,14 @@ class HtmlElement(Widget):
         '''Set an attribute of the html element'''
         self.set_attr(name, value)
 
+    def add_attribute(self, name, value):
+        '''Set an attribute of the html element'''
+        self.set_attr(name, value)
+
+    def set_attribute(self, name, value):
+        '''Set an attribute of the html element'''
+        self.set_attr(name, value)
+
 
     def set_json_attr(self, name, value):
         value = jsondumps(value).replace('"', "&quot;")
@@ -311,6 +319,15 @@ class HtmlElement(Widget):
     def add_smart_styles(self, class_name, data):
         for name, value in data.items():
             self.add_smart_style(class_name, name, value)
+
+
+    def add_relay_style(self, class_name, name, value):
+        return self.add_relay_style(class_name, name, value)
+
+    def add_relay_styles(self, class_name, data):
+        for name, value in data.items():
+            self.add_smart_style(class_name, name, value)
+
 
 
 
@@ -1456,6 +1473,9 @@ class Table(HtmlElement):
         if self.is_dynamic_flag:
             self.dynamic_row = self.add_row()
 
+
+    def get_current_row(self):
+        return self.current_row
 
     def get_current_cell(self):
         return self.current_cell

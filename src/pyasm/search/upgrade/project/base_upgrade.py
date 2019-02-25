@@ -159,14 +159,25 @@ class BaseUpgrade(Command):
         db = DbContainer.get(db_resource)
         #if not self.quiet:
         #    print sql
+
+        # Warnings from MySQL.
+        from warnings import filterwarnings
+        #filterwarnings('ignore', ' *could not commit.*')
+        filterwarnings('ignore', 'Duplicate index .*')
+
         try:
             db.do_update(sql, quiet=self.quiet)
         except SqlException, e:
-            print "Error: ", e
+            #print "Error: ", e
             # TEST for Sqlite
             if str(e).startswith("duplicate column name:"):
                 pass
+
+
             elif str(e).startswith("table") and str(e).endswith("already exists"):
+                pass
+            # MySQL
+            elif str(e).startswith("Duplicate entry"):
                 pass
 
             elif not self.quiet:

@@ -10,13 +10,21 @@
 #
 #
 
-__all__ = ['CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser']
+__all__ = ['ParserImportError', 'CheckinMetadataHandler', 'BaseMetadataParser', 'PILMetadataParser', 'ExifMetadataParser', 'ImageMagickMetadataParser', 'FFProbeMetadataParser', 'IPTCMetadataParser','XMPMetadataParser', 'XMPKeywordsParser']
 
 
 import os, sys, re, subprocess
 
-from pyasm.common import Common
+from pyasm.common import Common, Xml
 from pyasm.biz import File
+
+# OS-specific import checks
+convert_exe = "convert"
+ffprobe_exe = "ffprobe"
+
+if os.name == "nt":
+    convert_exe+= ".exe"
+    ffprobe_exe+= ".exe"
 
 try:
     from PIL import Image
@@ -26,12 +34,12 @@ try:
 except:
     HAS_PIL = False
 
-if Common.which("convert"):
+if Common.which(convert_exe):
     HAS_IMAGEMAGICK = True
 else:
     HAS_IMAGEMAGICK = False
 
-if Common.which("ffprobe"):
+if Common.which(ffprobe_exe):
     HAS_FFMPEG = True
 else:
     HAS_FFMPEG = False
@@ -56,7 +64,9 @@ except:
     HAS_XMP = False
 
 
-
+class ParserImportError(ImportError):
+    def __init__(self,*args,**kwargs):
+        ImportError.__init__(self,*args,**kwargs)
 
 class CheckinMetadataHandler():
     def __init__(self, **kwargs):
@@ -306,6 +316,8 @@ class BaseMetadataParser(object):
             parser = PILMetadataParser(path=path)
         elif parser_str == "FFMPEG":
             parser = FFProbeMetadataParser(path=path)
+        elif parser_str == "XMP Keywords":
+            parser = XMPKeywordsParser(path=path)
         else:
             parser = None
 
@@ -330,8 +342,10 @@ class PILMetadataParser(BaseMetadataParser):
         }
 
     def get_metadata(self):
-        path = self.kwargs.get("path")
+        if not HAS_PIL:
+            raise ParserImportError("Unable to import PIL parser.")
 
+        path = self.kwargs.get("path")
         try:
             from PIL import Image
             im = Image.open(path)
@@ -389,6 +403,9 @@ class ExifMetadataParser(BaseMetadataParser):
 
 
     def get_metadata(self):
+        if not HAS_EXIF:
+            raise ParserImportError("Unable to import EXIF parser.")
+
         path = self.kwargs.get("path")
 
         from pyasm.checkin import exifread
@@ -419,6 +436,9 @@ class IPTCMetadataParser(BaseMetadataParser):
 
 
     def get_metadata(self):
+        if not HAS_IPTC:
+            raise ParserImportError("Unable to import IPTC parser.")
+
         path = self.kwargs.get("path")
 
         from pyasm.checkin.iptcinfo import IPTCInfo, c_datasets, c_datasets_r
@@ -462,6 +482,9 @@ class XMPMetadataParser(BaseMetadataParser):
 
 
     def get_metadata(self):
+        if not HAS_XMP:
+            raise ParserImportError("Unable to import XMP parser.")
+
         path = self.kwargs.get("path")
 
         from libxmp.utils import file_to_dict
@@ -508,6 +531,9 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         }
 
     def get_metadata(self):
+        if not HAS_IMAGEMAGICK:
+            raise ParserImportError("Unable to import IMAGEMAGICK parser.")
+
         path = self.kwargs.get("path")
 
         import subprocess, re
@@ -523,7 +549,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         p = re.compile(":\ +")
 
         level = 0
-        names = []
+        names = set()
         curr_ret = ret
         for line in ret_val.split("\n"):
             line = line.strip()
@@ -562,13 +588,13 @@ class ImageMagickMetadataParser(BaseMetadataParser):
                    value = unicode(value, errors='ignore').encode('utf-8')
 
                 ret[name] = value
-                names.append(name)
+                names.add(name)
             except Exception, e:
                 print "WARNING: Cannot handle line [%s] with error: " % line, e
 
 
         if names:
-            ret['__keys__'] = names
+            ret['__keys__'] = list(names)
 
 
         return ret
@@ -692,6 +718,102 @@ class FFProbeMetadataParser(BaseMetadataParser):
             'audio_bitrate': 'audio:bit_rate',
         }
 
+class XMPKeywordsParser(BaseMetadataParser):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def get_title(self):
+        return "XMP Keywords"
+
+
+    def get_initial_data(self):
+        return {
+            'media_type': 'image',
+            'parser': 'XMP Keywords'
+        }
+
+    def check_xmpmetadata(self):
+        '''Checking if the file has x:xmpmeta tag.
+        
+        We are reading the first 1000 lines of the file and 512 bytes of each line.
+        It will return True if there is x:xmpemeta tag in the file. False otherwise.
+        '''
+        path = self.kwargs.get("path")
+        cnt = 0
+        f = open(path, "rb")
+        while True:
+            line = f.readline(512)
+            if not line:
+                break
+            cnt += 1
+            if cnt > 1000:
+                return False
+            line = line.strip()
+            if line.startswith( "<x:xmpmeta"):
+                return True
+        f.close()
+        return False
+
+    def get_metadata(self):
+        '''Extract Adobe Lightroom XMP metadata.
+        
+        First, check if the xmpmeta tag is in the file.
+        If not, return None.
+        If there is, read the data, and extract the keywords.
+        Return an array of keywords in lower case.
+        '''
+
+        path = self.kwargs.get("path")
+
+        if not self.check_xmpmetadata():
+            return {"keywords": ""}
+
+        f = open(path, "rb")
+
+        lines = []
+        lines.append( '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>''')
+
+        start = False
+
+        while True:
+
+            line = f.readline()
+
+            # this is just in case
+            if not line:
+                break
+
+            line = line.strip()
+
+            if not start:
+                if line.startswith( "<x:xmpmeta"):
+                    start = True
+                    lines.append(line)
+                continue
+
+
+            if line.startswith("</x:xmpmeta>"):
+                lines.append(line)
+                break
+
+            lines.append(line)
+
+        if len(lines) > 1:
+            doc = " ".join(lines)
+            doc = doc.replace("dc:", "")
+            doc = doc.replace("rdf:", "")
+
+            xml = Xml()
+            xml.read_string(doc)
+
+            nodes = xml.get_nodes("//subject//li")
+
+            keywords = [x.text.lower() for x in nodes]
+
+            return {"keywords": " ".join(keywords)}
+        else:
+            return {"keywords": ""}
 
 
 # DEPRECATED: use python one

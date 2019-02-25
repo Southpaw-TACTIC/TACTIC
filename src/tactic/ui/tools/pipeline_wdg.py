@@ -10,7 +10,9 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 'ScriptSettingsWdg']
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 
+'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 
+'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItemWdg', 'PipelineSaveCmd']
 
 import re
 import os
@@ -18,7 +20,7 @@ import ast
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment, Common, jsonloads
-from pyasm.biz import Pipeline, Project
+from pyasm.biz import Pipeline, Project, ProjectSetting
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey, SObject
@@ -30,6 +32,7 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, CheckboxWdg, Hidde
 from tactic.ui.container import DialogWdg, TabWdg, SmartMenu, Menu, MenuItem, ResizableTableWdg
 from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
 from tactic.ui.input import TextInputWdg, ColorInputWdg, LookAheadTextInputWdg
+from tactic.ui.panel import DocumentWdg, DocumentItemWdg, DocumentSaveCmd
 from pipeline_canvas_wdg import PipelineCanvasWdg
 from client.tactic_client_lib import TacticServerStub
 
@@ -92,6 +95,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.add_style("width: 100%")
             container.add_style("height: 100%")
             container.add_color("background", "background")
+
+            container.add_class("spt_window_resize")
+            container.add_attr("spt_window_resize_offset", "80px")
 
 
             if show_pipelines not in [False, 'false']:
@@ -266,7 +272,11 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             expression = self.kwargs.get("expression")
 
-            pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression )
+            use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
+            if use_document_pipeline in [True, "true"]:
+                pipeline_list = PipelineDocumentWdg()
+            else:
+                pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression )
             left.add(pipeline_list)
 
 
@@ -290,6 +300,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         start_div.add_style("background: rgba(240,240,240,0.8)")
         start_div.add_border()
         start_div.add_style("z-index: 100")
+        start_div.add_style("box-sizing: border-box")
 
         msg_div = DivWdg()
 
@@ -642,6 +653,8 @@ class PipelineListWdg(BaseRefreshWdg):
                 if isinstance(result, Search):
                     search = result
                     search.add_filter("project_code", project_code)
+                    if search.column_exists("parent_code"):
+                        search.add_filter("parent_code", "NULL", quoted=False, op="is")
 
                     search.add_op("begin")
                     search.add_filter("search_type", "sthpw/task", op="!=")
@@ -667,6 +680,8 @@ class PipelineListWdg(BaseRefreshWdg):
             else:
                 search = Search("sthpw/pipeline")
                 search.add_filter("project_code", project_code)
+                if search.column_exists("parent_code"):
+                    search.add_filter("parent_code", "NULL", quoted=False, op="is")
 
                 search.add_op("begin")
                 search.add_filter("search_type", "sthpw/task", op="!=")
@@ -739,7 +754,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 content_div.add(no_items)
                 no_items.add("<i>-- No Items --</i>")
 
-        except Exception as  e:
+        except Exception as e:
             print("WARNING: ", e)
             none_wdg = DivWdg("<i>&nbsp;&nbsp;-- Error --</i>")
             none_wdg.add("<div>%s</div>" % str(e))
@@ -761,16 +776,23 @@ class PipelineListWdg(BaseRefreshWdg):
             #search.add_filter("search_type", "NULL", op='is', quoted=False)
             search.add_op("or")
             search.add_filter("code", "%s/__TEMPLATE__" % project_code, op="!=")
+            search.add_op("begin")
             search.add_filter("type", "template", op="!=")
+            search.add_filter("type", "NULL", op='is', quoted=False)
+            search.add_op("or")
             pipelines = search.get_sobjects()
 
             if pipelines:
 
-                swap = SwapDisplayWdg()
-                inner.add(swap)
-                swap.add_style("float: left")
+                title = DivWdg()
+                inner.add(title)
+                title.add_style("display: flex")
+                title.add_style("align-items: center")
 
-                title = DivWdg("<b>Task Status Workflows</b> <i>(%s)</i>" % len(pipelines))
+                swap = SwapDisplayWdg()
+                title.add(swap)
+
+                title.add("<div><b>Task Status Workflows</b> <i>(%s)</i></div>" % len(pipelines))
                 title.add_style("padding-bottom: 2px")
                 title.add_style("padding-top: 3px")
                 inner.add(title)
@@ -854,13 +876,16 @@ class PipelineListWdg(BaseRefreshWdg):
             if pipelines:
                 inner.add("<br clear='all'/>")
 
-                swap = SwapDisplayWdg()
-
                 title = DivWdg()
-                inner.add(swap)
-                swap.add_style("margin-top: -2px")
                 inner.add(title)
-                swap.add_style("float: left")
+
+                title.add_style("display: flex")
+                title.add_style("align-items: center")
+
+                swap = SwapDisplayWdg()
+                title.add(swap)
+
+
                 title.add("<b>Site Wide Workflows</b> <i>(%s)</i><br/>" % len(pipelines))
               
                 site_wide_div = DivWdg()
@@ -887,14 +912,18 @@ class PipelineListWdg(BaseRefreshWdg):
             if pipelines:
                 inner.add("<br clear='all'/>")
 
-                # misc status pipelines
-                swap = SwapDisplayWdg()
-                inner.add(swap)
-                swap.add_style("float: left")
+                title = DivWdg()
+                inner.add(title)
 
-                title = DivWdg("<b>Templates</b> <i>(%s)</i>" % len(pipelines))
-                title.add_style("padding-bottom: 2px")
-                title.add_style("padding-top: 3px")
+                title.add_style("display: flex")
+                title.add_style("align-items: center")
+
+                swap = SwapDisplayWdg()
+                title.add(swap)
+
+                title.add("<b>Templates</b> <i>(%s)</i><br/>" % len(pipelines))
+              
+ 
                 inner.add(title)
                 content_div = DivWdg()
                 content_div.add_styles('padding-top: 6px') 
@@ -2397,7 +2426,6 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-        from pyasm.biz import ProjectSetting
         setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
         if setting in ["true"]:
 
@@ -2948,10 +2976,12 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         return div
 
-# DEPRECATED
-"""
+
+
 class ScriptCreateWdg(BaseRefreshWdg):
     ''' Blank Text area for New Script Creation '''
+
+    '''This is still used in the trigger interface for process nodes '''
     def get_display(self):
 
         script_path = ''
@@ -2976,7 +3006,6 @@ class ScriptCreateWdg(BaseRefreshWdg):
         script_text.add_style("width: 100%")
 
         return div
-"""
 
 
 class ScriptSettingsWdg(BaseRefreshWdg):
@@ -4604,8 +4633,6 @@ class ProcessInfoCmd(Command):
             
             if script:
                 trigger.set_value("script_path", script_path)
-            else:
-                trigger.set_value("class_name", on_action_class)
 
             trigger.set_value("class_name", "NULL", quoted=False)
 
@@ -5102,7 +5129,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
-        button = ButtonNewWdg(title="Save Current Workflow", icon="BS_SAVE")
+        button = ButtonNewWdg(title="Save Current Workflow", icon="FA_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
@@ -5298,7 +5325,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Add Process", icon="BS_PLUS")
+        button = ButtonNewWdg(title="Add Process", icon="FA_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
@@ -5440,7 +5467,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Delete Selected", icon="BS_TRASH")
+        button = ButtonNewWdg(title="Delete Selected", icon="FA_TRASH")
         button_row.add(button)
 
         button.add_behavior( {
@@ -5510,7 +5537,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row.add_style("overflow: hidden")
 
 
-        button = SingleButtonWdg(title="Undo", icon="BS_arrow_left", show_out=False)
+        button = SingleButtonWdg(title="Undo", icon="FA_UNDO", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5521,7 +5548,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Redo", icon="BS_arrow_right", show_out=False)
+        button = SingleButtonWdg(title="Redo", icon="FA_REPEAT", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5531,7 +5558,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
         
-        button = SingleButtonWdg(title="Zoom In", icon="BS_ZOOM_IN", show_out=False)
+        button = SingleButtonWdg(title="Zoom In", icon="FA_SEARCH_PLUS", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
         button.add_behavior( {
@@ -5549,7 +5576,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Zoom Out", icon="BS_ZOOM_OUT", show_out=False)
+        button = SingleButtonWdg(title="Zoom Out", icon="FA_SEARCH_MINUS", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
 
@@ -6451,7 +6478,8 @@ class PipelineSaveCbk(Command):
 
         for node in process_nodes:
             settings_str = xml.get_attribute(node, "settings")
-            
+
+            settings = {}
             if settings_str:
                 try:
                     settings = jsonloads(settings_str)
@@ -6459,9 +6487,7 @@ class PipelineSaveCbk(Command):
                         settings = jsonloads(settings)
                 except:
                     process_name = xml.get_attribute(node, "name")
-                    print "WARNING: Setting for process %s not saved." % process_name 
-            else:
-                settings = {}
+                    print("WARNING: Setting for process %s not saved." % process_name )
 
             settings_list.append(settings)
 
@@ -6503,6 +6529,7 @@ class PipelineSaveCbk(Command):
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
+
             if process_code:
                 process = Search.get_by_code("config/process", process_code)
 
@@ -6515,7 +6542,6 @@ class PipelineSaveCbk(Command):
                 process = search.get_sobject()
 
 
-
             # else create a new one 
             if not process:
                 process = SearchType.create("config/process")
@@ -6526,14 +6552,16 @@ class PipelineSaveCbk(Command):
             # set the process code
             xml.set_attribute(node, "process_code", process.get_code())
 
+            curr_settings = settings_list[i]
 
-            settings = settings_list[i]
-
-            subpipeline_code = settings.pop("subpipeline_code", None)
+            subpipeline_code = None
+            if curr_settings:
+                subpipeline_code = curr_settings.pop("subpipeline_code", None)
             if subpipeline_code or subpipeline_code == "":
                 process.set_value("subpipeline_code", subpipeline_code)
             
-            process.set_value("workflow", settings)
+            if curr_settings:
+                process.set_value("workflow", curr_settings)
             
             process.commit()
             
@@ -6594,5 +6622,376 @@ class PipelineCopyCmd(Command):
 
     def execute(self):
         pass
+
+
+
+
+class PipelineDocumentWdg(BaseRefreshWdg):
+
+    def get_document(self):
+        content = [{
+            "type": "group",
+            "state": "on",
+            "group_level": 0,
+            "title": "Workflows",
+        }]
+        content += self.get_default_content()
+
+        document = {
+            'type': 'table',
+            'content': content
+        }
+
+        return document
+
+
+    def get_default_content(self):
+        project_code = self.kwargs.get("project_code") or Project.get_project_code()
+
+        return [{
+            "type": "group",
+            "state": "on",
+            "group_level": 1,
+            "title": "Uncategorized"
+        },
+        {   
+            "type": "sobject",
+            "group_level": 2,
+            "expression": "@SEARCH(sthpw/pipeline['category', 'is', 'NULL']['@ORDER_BY','timestamp desc']['project_code', '%s'])" % (project_code)
+        }]
+
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .vertical-centered, .full-centered, .full-gapped {
+                display: flex;
+                align-items: center;
+            }
+
+            .full-centered {
+                justify-content: center;
+            }
+
+            .full-gapped {
+                justify-content: space-between;
+            }
+
+            .spt_pipeline_document {
+                border: 1px solid #ccc;
+                overflow: auto;
+            }
+
+            .spt_pipeline_document .group-label {
+                padding-top: 1px;
+            }
+
+            .spt_pipeline_document .document-icon {
+                width: 18px;
+                height: 18px;
+                font-size: 11px;
+            }
+
+            .spt_pipeline_document .floating-icon {
+                background: white;
+                color: grey;
+                border-radius: 2px;
+                border: 1px solid #ccc;
+            }
+
+            .spt_pipeline_document .floating-icon .fa-file {
+                color: green;
+            }
+
+            .spt_pipeline_document .floating-icon .fa-trash {
+                color: red;
+            }
+
+            .spt_pipeline_document .document-group-content {
+                padding: 0px 3px;
+                width: 100%;
+            }
+
+            .spt_pipeline_document .document-group-label {
+                height: 14px;
+            }
+
+            .spt_pipeline_document .document-item-content {
+                height: 20px;
+                padding: 4px 10px;
+                width: 100%;
+            }
+
+            .spt_pipeline_document .document-item-input {
+                box-sizing: content-box;
+                border: none;
+            }
+
+            ''')
+
+        return styles
+
+
+    def get_display(self):
+
+        top = self.top
+        top.add_class("spt_pipeline_document")
+        top.add_class("spt_window_resize")
+        top.add_attr("spt_window_resize_offset", "200")
+
+        project_code = Project.get_project_code()
+        top.add_attr("spt_project_code", project_code)
+
+        search_type = "sthpw/pipeline"
+        top.add_attr("spt_search_type", search_type)
+
+        # find document
+        document = None
+
+        search = Search("config/widget_config")
+        search.add_filter("view", "document")
+        search.add_filter("search_type", search_type)
+        search.add_filter("category", "%s library" % project_code)
+        config = search.get_sobject()
+
+        if config:
+            document = config.get_json_value("config")
+            content = document.get("content")
+            content += self.get_default_content()
+            document['content'] = content
+
+        # if no document found, use default
+        if not document:
+            document = self.get_document()
+
+        group_label_view = "workflow.manage.group_label"
+        element_names = ["document_item"]
+
+        document_wdg = DocumentWdg(
+            search_type=search_type,
+            element_names=element_names,
+            group_label_view = group_label_view,
+            show_header=False,
+            show_shelf=False,
+            show_select=False,
+            show_context_menu=False,
+            show_search_limit=False,
+            #show_row_highlight=False,
+            show_group_highlight=False,
+            show_border="horizontal",
+            height="auto",
+            width="100%",
+            view="workflow",
+            #drag_action_script="spme/workflow_document_drag_action",
+            extra_data={
+                "min_height": 14,
+                "single_line": "true",
+            },
+        )
+        top.add(document_wdg)
+
+        document_wdg.set_document(document)
+
+        top.add(self.get_styles())
+        self.add_item_behaviors(top)
+
+        return top
+
+
+    def add_item_behaviors(self, el):
+
+        el.add_relay_behavior({
+            'type': 'click',
+            'bvr_match_class': 'spt_document_item',
+            'project_code': Project.get_project_code(),
+            'cbjs_action': '''
+
+            if (bvr.src_el.hasClass("spt_unsaved_item")) {
+                var input = bvr.src_el.getElement(".spt_document_input");
+                input.focus();
+                return;
+            }
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            spt.table.unselect_all_rows();
+            var row = bvr.src_el.getParent(".spt_table_row_item");
+            spt.table.select_row(row);
+
+            var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
+            var title = bvr.src_el.getAttribute("spt_title");
+
+            var top = null;
+            // they could be different when inserting or just clicked on
+            top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            if (!top) {
+                top = spt.get_element(document, '.spt_pipeline_tool_top');
+            }
+
+            // dont load again if pipeline already loaded
+            if (top.pipeline_code == pipeline_code) return;
+            top.pipeline_code = pipeline_code;
+
+            var editor_top = top.getElement(".spt_pipeline_editor_top");
+
+            var ok = function () {
+                editor_top.removeClass("spt_has_changes");
+
+                var wrapper = top.getElement(".spt_pipeline_wrapper");
+                spt.pipeline.init_cbk(wrapper);
+
+                var start_el = top.getElement(".spt_pipeline_editor_start")
+                start_el.setStyle("display", "none")
+
+                spt.pipeline.clear_canvas();
+
+                spt.pipeline.import_pipeline(pipeline_code);
+
+
+                // add to the current list
+                var value = pipeline_code;
+                var title = title;
+
+                spt.pipeline.set_current_group(value);
+
+
+
+                var info = top.getElement(".spt_pipeline_tool_info");
+                if (info) {
+                    var group_name = spt.pipeline.get_current_group();
+
+                    var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+                    var kwargs = {
+                        pipeline_code: group_name,
+                    }
+                    info.setStyle("dipslay", "");
+                    spt.panel.load(info, class_name, kwargs);
+                }
+
+
+                editor_top.removeClass("spt_has_changes");
+                
+                
+                spt.command.clear();
+
+
+            };
+
+            var save = function(){
+                editor_top.removeClass("spt_has_changes");
+                var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+                spt.pipeline.init_cbk(wrapper);
+
+                var group_name = spt.pipeline.get_current_group();
+                
+                var data = spt.pipeline.get_data();
+                var color = data.colors[group_name];
+
+                server = TacticServerStub.get();
+                spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
+                
+                var xml = spt.pipeline.export_group(group_name);
+                var search_key = server.build_search_key("sthpw/pipeline", group_name);
+                try {
+                    var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
+                    server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
+
+                spt.named_events.fire_event('pipeline|save', {});
+
+                spt.app_busy.hide();
+
+                editor_top.removeClass("spt_has_changes");
+                
+                spt.command.clear();
+
+            }
+
+
+            var current_group_name = spt.pipeline.get_current_group();
+            var group_name = pipeline_code;
+            if (editor_top && editor_top.hasClass("spt_has_changes")) {
+                spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
+            } else {
+                ok();
+            }
+
+
+            '''
+
+            })
+
+
+class PipelineDocumentItemWdg(DocumentItemWdg):
+
+
+    def handle_td(self, td):
+        sobject = self.get_current_sobject()
+        group_level = sobject.get_value("group_level", no_exception=True)
+        
+        name = sobject.get_value("name", no_exception=True) or "N/A"
+
+        td.add_style("overflow: hidden")
+        td.add_style("text-overflow: ellipsis")
+        td.add_style("padding: 0")
+        td.add_attr("data-toggle", "tooltip")
+        td.add_attr("title", name)
+
+
+    def get_display(self):
+
+        view = self.kwargs.get("view")
+        if not view:
+            return super(PipelineDocumentItemWdg, self).get_display()
+
+        sobject = self.get_current_sobject()
+        search_key = sobject.get_search_key()
+
+        from tactic.ui.panel import CustomLayoutWdg
+        if sobject.is_insert():
+            layout = CustomLayoutWdg(view=view)
+        else:
+            layout = CustomLayoutWdg(view=view, sobject=sobject, search_key=search_key)
+
+        return layout
+
+
+class DocumentInlineInputWdg(BaseRefreshWdg):
+
+    def get_display(self):
+
+        top = self.top
+
+        return top
+
+
+class PipelineSaveCmd(Command):
+
+    def execute(self):
+        category = self.kwargs.get("category")
+        name = self.kwargs.get("name")
+
+        pipeline = SearchType.create("sthpw/pipeline")
+        pipeline.set_value("name", name)
+        pipeline.set_value("category", category)
+        pipeline.commit()
+
+        self.info['search_key'] = pipeline.get_search_key()
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -379,6 +379,9 @@ class GlobalSearchTrigger(Trigger):
                 for child_code in child_codes:
                     child_nest_sobject = Search.get_by_code(search_type, child_code)
                     child_nest_collection_keywords_data = child_nest_sobject.get_json_value("keywords_data", {})
+                    if not child_nest_collection_keywords_data.get('collection'):
+                        child_nest_collection_keywords_data['collection'] = {}
+                    
                     child_nest_collection_keywords_data['collection'][sobj.get_code()] = user_keywords
 
                     child_nest_sobject.set_json_value("keywords_data", child_nest_collection_keywords_data)

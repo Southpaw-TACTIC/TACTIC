@@ -37,7 +37,7 @@ class MySQLConverter(BaseSQLConverter):
         if self.namespace:
             return []
         else:
-            return ["SET sql_mode='ANSI_QUOTES';\n"];
+            return ["SET sql_mode='PIPES_AS_CONCAT,ANSI_QUOTES';\n"];
 
 
 
@@ -52,8 +52,8 @@ class MySQLConverter(BaseSQLConverter):
         line = line.replace("now()", "CURRENT_TIMESTAMP")
         line = line.replace(" without time zone", "")
         line = line.replace(" with time zone", "")
-        line = line.replace("key ", "\"key\" ")
-        line = line.replace("(key)", "(\"key\")")
+        #line = line.replace("key ", "\"key\" ")
+        #line = line.replace("(key)", "(\"key\")")
         line = line.replace("timestamp,", "timestamp NULL,")
         
         line = line.replace(" text,", " longtext,")
@@ -62,7 +62,8 @@ class MySQLConverter(BaseSQLConverter):
         #    line = line.replace("timestamp", "timestamp NULL DEFAULT NULL")
 
         line = line.replace(" ALTER COLUMN ", " MODIFY ")
-        line = line.replace(" TYPE ", "")
+        line = line.replace(" DROP CONSTRAINT ", " DROP INDEX ")
+        line = line.replace(" TYPE ", " ")
 
         return line
 

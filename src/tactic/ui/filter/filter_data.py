@@ -106,7 +106,8 @@ class FilterData(object):
     def set_to_cgi(self):
         web = WebContainer.get_web()
         data = jsondumps(self.data)
-        web.set_form_value('json', data)
+        if web:
+            web.set_form_value('json', data)
         Container.put("FilterData", self)
 
 
@@ -186,7 +187,10 @@ class FilterData(object):
         filter_data = Container.get("FilterData")
         if filter_data == None:
             web = WebContainer.get_web()
-            data = web.get_form_value('json')
+            if web:
+                data = web.get_form_value('json')
+            else:
+                data = {}
             filter_data = FilterData(data)
             Container.put("FilterData", filter_data)
         return filter_data

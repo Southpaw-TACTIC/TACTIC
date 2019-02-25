@@ -142,7 +142,7 @@ class EmailTrigger(Trigger):
                 # match the rule to the value
                 p = re.compile(rule_value)
                 if not p.match(value):
-                    print "... skipping: '%s' != %s" % (value, rule_value)
+                    print("... skipping: '%s' != %s" % (value, rule_value))
                     break
             else:
                 is_skipped = False
@@ -209,7 +209,7 @@ class EmailTrigger(Trigger):
     def _process_sobject(self, sobject, rule_key, compare):
         # if the sobject does not have this value, then return
         if not sobject.has_value(rule_key):
-            print "... skipping: sobject has no attr: '%s'" % rule_key
+            print("... skipping: sobject has no attr: '%s'" % rule_key)
             return False
 
         # if the value hasn't changed ... don't bother
@@ -262,7 +262,6 @@ class EmailTrigger(Trigger):
             sender.add(user_email)
 
         for x in to_users:
-            print "ssssss: ", x
             if isinstance(x, Login):
                 email = x.get_full_email()
             elif isinstance(x, SObject):
@@ -277,7 +276,7 @@ class EmailTrigger(Trigger):
                     cls.add_email(to_emails, email)
             else:
                 if not email:
-                    print "WARNING: email for [%s] cannot be determined" % x
+                    print("WARNING: email for [%s] cannot be determined" % x)
                     continue
                 
                 cls.add_email(to_emails, email)
@@ -297,7 +296,7 @@ class EmailTrigger(Trigger):
                     cls.add_email(total_cc_emails, email)
             else:
                 if not email:
-                    print "WARNING: email for [%s] cannot be determined" % x
+                    print("WARNING: email for [%s] cannot be determined" % x)
                     continue
                 cls.add_email(total_cc_emails, email)
 
@@ -315,7 +314,7 @@ class EmailTrigger(Trigger):
                     cls.add_email(total_bcc_emails, email)
             else:
                 if not email:
-                    print "WARNING: email for [%s] cannot be determined" % x
+                    print("WARNING: email for [%s] cannot be determined" % x)
                     continue
                 cls.add_email(total_bcc_emails, email)
         total_cc_emails = total_cc_emails - to_emails
@@ -579,7 +578,7 @@ class EmailTrigger2(EmailTrigger):
             # match the rule to the value
             p = re.compile(rule_value)
             if not p.match(value):
-                print "... skipping: '%s' != %s" % (value, rule_value)
+                print("... skipping: '%s' != %s" % (value, rule_value))
                 break
 
         else:
@@ -610,15 +609,6 @@ class EmailTrigger2(EmailTrigger):
         if not to_users:
             return
 
-        #sobj_data = main_sobject.get_aux_data()
-        #email_info = sobj_data.get('__tactic_email_info__')
-        #extra_ccs = email_info.get('mail_cc')
-        #extra_bccs = email_info.get('mail_bcc')
-        # send the email
-        if handler.send_email():
-            self.send(to_users, cc_users, bcc_users, subject, message)
-            self.add_description('\nEmail sent to [%s]' %all_emails) 
-    
         if isinstance(to_users, set) and isinstance(cc_users, set) and \
                 isinstance(bcc_users, set):
             all_users = to_users.union(cc_users).union(bcc_users)
@@ -631,17 +621,30 @@ class EmailTrigger2(EmailTrigger):
         # filter out email addr as set does not work on SObjects
         email_list = []
         email_users = set()
-        for user in all_users:
-            if type(user) in types.StringTypes:
-                email = user
-            else:
-                email =  user.get_value('email')
-            if email not in email_list:
-                email_users.add(user)
-                email_list.append(email)
+        if handler.send_email():
+            for user in all_users:
+                if type(user) in types.StringTypes:
+                    email = user
+                else:
+                    email =  user.get_value('email')
+                if email not in email_list:
+                    email_users.add(user)
+                    email_list.append(email)
+        else:
+            email_users = all_users
         project_code = Project.get_project_code()
 
         all_emails = ", ".join(email_list)
+
+        #sobj_data = main_sobject.get_aux_data()
+        #email_info = sobj_data.get('__tactic_email_info__')
+        #extra_ccs = email_info.get('mail_cc')
+        #extra_bccs = email_info.get('mail_bcc')
+        # send the email
+        if handler.send_email():
+            self.send(to_users, cc_users, bcc_users, subject, message)
+            self.add_description('\nEmail sent to [%s]' %all_emails) 
+
         self.add_notification(email_users, subject, message, project_code, from_user='')
 
     def add_notification(all_users, subject, message, project_code, from_user=''):
@@ -735,15 +738,15 @@ class EmailTriggerThread(threading.Thread):
             s.quit()
 
         except Exception, e:
-            print "-"*20
-            print "WARNING: Error sending email:"
-            print str(e)
-            print
-            print "mailserver: ", self.mailserver
-            print "port: ", self.port
-            print "sender: ", self.sender_email
-            print "recipients: ", self.recipient_emails
-            print
+            print("-"*20)
+            print("WARNING: Error sending email:")
+            print(str(e))
+            print("\n")
+            print("mailserver: ", self.mailserver)
+            print("port: ", self.port)
+            print("sender: ", self.sender_email)
+            print("recipients: ", self.recipient_emails)
+            print("\n")
             #raise
 
 class EmailTriggerTestCmd(Command):
@@ -875,7 +878,7 @@ class EmailTriggerTest(EmailTrigger2):
                     cls.add_email(to_emails, email)
             else:
                 if not email:
-                    print "WARNING: email for [%s] cannot be determined" % x
+                    print("WARNING: email for [%s] cannot be determined" % x)
                     continue
                 
                 cls.add_email(to_emails, email)
@@ -895,7 +898,7 @@ class EmailTriggerTest(EmailTrigger2):
                     cls.add_email(total_cc_emails, email)
             else:
                 if not email:
-                    print "WARNING: email for [%s] cannot be determined" % x
+                    print("WARNING: email for [%s] cannot be determined" % x)
                     continue
                 cls.add_email(total_cc_emails, email)
 
@@ -913,7 +916,7 @@ class EmailTriggerTest(EmailTrigger2):
                     cls.add_email(total_bcc_emails, email)
             else:
                 if not email:
-                    print "WARNING: email for [%s] cannot be determined" % x
+                    print("WARNING: email for [%s] cannot be determined" % x)
                     continue
                 cls.add_email(total_bcc_emails, email)
         total_cc_emails = total_cc_emails - to_emails

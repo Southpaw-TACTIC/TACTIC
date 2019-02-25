@@ -129,16 +129,22 @@ def startup(port, server=""):
     startup.set_config('global', 'server.socket_host', server)
 
 
-
-
-
-    # send the stdout and stdin out to files
+    # set the stdout and stdin out ouput
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    sys.stdout = open('{}/{}_stdout.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")),'a')
-    sys.stderr = open('{}/{}_stderr.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")),'a')
 
-
+    log_type = Config.get_value("install", "log_type")
+    if log_type == "file_with_date":
+        # Prefix date to file
+        sys.stdout = open('{}/{}_stdout.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")), 'a')
+        sys.stderr = open('{}/{}_stderr.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")), 'a')
+    elif log_type == "stream":
+        # Leave output streams as they are, useful for systemd service and journalctl
+        pass
+    else:
+        # Default to simple files
+        sys.stdout = open('{}/stdout.log'.format(log_dir), 'a')
+        sys.stderr = open('{}/stderr.log'.format(log_dir), 'a')
 
     startup.execute()
 

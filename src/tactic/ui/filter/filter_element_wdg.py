@@ -1164,7 +1164,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         show_toggle = self.get_option("show_toggle")
         if show_toggle in ['true', True]:
-            icon = "BS_MENU_DOWN"
+            #icon = "BS_MENU_DOWN"
+            icon = "FA_FILTER"
             icon_pos = "left"
         else:
             icon = ""

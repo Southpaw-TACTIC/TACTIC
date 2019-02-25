@@ -343,7 +343,9 @@ class CsvImportWdg(BaseRefreshWdg):
                     file_name = "%s.csv" % ticket
 
                 self.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
-                f = open(self.file_path, "wb")
+                import codecs
+                f = codecs.open(self.file_path, 'wb', 'utf-8')
+                #f = open(self.file_path, "wb")
                 f.write(self.data)
                 f.close()
             elif file_name:
@@ -1337,6 +1339,9 @@ class PreviewDataWdg(BaseRefreshWdg):
             csv_parser.parse()
         # that can be all kinds of encoding/decoding exception
         except Exception as e:
+            widget = DivWdg()
+            widget.add_style("margin: 20px")
+            widget.add("<div>Error: %s</div><br/>" % str(e))
             # possibly incompatible encoder selected, use the default instead.
             # Let the user pick it.
             span = SpanWdg('WARNING: The selected encoder is not compatible with your csv file. Please choose the proper one. Refer to the documentation/tutorial on how to save your csv file with UTF-8 encoding if you have special characters in it.', css='warning')

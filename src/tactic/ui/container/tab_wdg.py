@@ -1227,6 +1227,10 @@ spt.tab.close = function(src_el) {
         config_xml = self.kwargs.get("config_xml")
         config = self.kwargs.get("config")
 
+
+
+        # save state overrides
+        saved_config_xml = None
         self.save_state = self.kwargs.get("save_state")
         if self.save_state in [True, 'true']:
             self.save_state = "save_state|main_tab"
@@ -1275,7 +1279,12 @@ spt.tab.close = function(src_el) {
                 config = WidgetConfig.get(view=self.view, xml=config_xml)
         else:
 
-            if config:
+            if saved_config_xml:
+                # this is for custom config_xml with a matching custom view
+                if not self.view:
+                    self.view = 'tab'
+                config = WidgetConfig.get(view=self.view, xml=saved_config_xml)
+            elif config:
                 pass
             elif config_xml:
                 # this is for custom config_xml with a matching custom view
@@ -1301,13 +1310,21 @@ spt.tab.close = function(src_el) {
                 config = WidgetConfig.get(view=self.view, xml=config_xml)
 
 
-        element_names = self.kwargs.get("element_names")
-        if element_names and isinstance(element_names, basestring):
-            element_names = element_names.split(",")
+
+        element_names = None
+        if self.save_state and config:
+            element_names = config.get_element_names()
 
         if not element_names:
-            if config:
-                element_names = config.get_element_names()
+            element_names = self.kwargs.get("element_names")
+            if element_names and isinstance(element_names, basestring):
+                element_names = element_names.split(",")
+
+
+        if not element_names and config:
+            element_names = config.get_element_names()
+
+
         
         if not element_names:
             element_names = []
@@ -1599,7 +1616,9 @@ spt.tab.close = function(src_el) {
         #    inner.add( self.get_edit_wdg() )
 
 
-        inner.add("<br clear='all'>")
+        if not self.mode == "hidden":
+            inner.add("<br clear='all'>")
+
 
 
         content_top = DivWdg()
@@ -1624,9 +1643,11 @@ spt.tab.close = function(src_el) {
 
 
         resize_offset = self.kwargs.get("resize_offset")
+        resize_attr = self.kwargs.get("resize_attr") or "height"
         if resize_offset != None:
             content_top.add_class("spt_window_resize")
             content_top.add_attr("spt_window_resize_offset", resize_offset)
+            content_top.add_attr("spt_window_resize_attr", resize_attr)
             #content_top.add_style("overflow: auto")
             content_top.add_style("overflow: none")
 
@@ -1867,12 +1888,17 @@ spt.tab.close = function(src_el) {
         icon_div.add_style("opacity: 0.5")
 
         icon_div.add(icon)
+
+        add_bvr = self.kwargs.get("add_bvr")
+        if not add_bvr:
+            add_bvr = """
+                spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
+                spt.tab.add_new();
+            """
+         
         icon.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
-        spt.tab.add_new();
-        '''
+            'type': 'click_up',
+            'cbjs_action': add_bvr
         } )
 
         icon_div.add_style("float: left")

@@ -575,7 +575,11 @@ class TopWdg(Widget):
         # add the body
         body = self.body
         html.add( body )
-        body.add_event('onload', 'spt.onload_startup(this)')
+
+        if web.is_admin_page():
+            body.add_event('onload', 'spt.onload_startup(admin=true)')
+        else:
+            body.add_event('onload', 'spt.onload_startup(admin=false)')
 
         body.add_style('overflow', 'hidden')
 
@@ -818,8 +822,21 @@ class TopWdg(Widget):
 
     
         from pyasm.security import Site
+        from pyasm.prod.biz import ProdSetting
         site = Site.get_site()
-       
+
+        master_enabled = Config.get_value("master", "enabled")
+        master_site = ProdSetting.get_value_by_key("master/site")
+        master_url = Config.get_value("master", "url")
+        master_url = "http://" + master_url + "/tactic/default/Api/"
+        security = Environment.get_security()
+        ticket = security.get_ticket()
+        if ticket:
+            master_login_ticket = ticket.get_value("ticket")
+        else:
+            master_login_ticket = ""
+        master_project_code = Config.get_value("master", "project_code")
+
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
             kiosk_mode = 'false'
@@ -835,8 +852,13 @@ class TopWdg(Widget):
         env.set_client_handoff_dir('%s');
         env.set_client_repo_dir('%s');
         env.set_kiosk_mode('%s');
-
-        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode))
+        env.set_master_enabled('%s');
+        env.set_master_url('%s');
+        env.set_master_login_ticket('%s');
+        env.set_master_project_code('%s');
+        env.set_master_site('%s');
+        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
+		master_enabled, master_url, master_login_ticket, master_project_code, master_site))
         top.add(script)
 
 
@@ -1009,6 +1031,8 @@ class JavascriptImportWdg(BaseRefreshWdg):
         security = Environment.get_security()
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
+        Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
+        Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
 
         if not web.is_admin_page():
             Container.append_seq("Page:js", "%s/require.js" % spt_js_url)

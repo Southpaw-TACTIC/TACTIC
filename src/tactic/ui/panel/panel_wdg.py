@@ -79,6 +79,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
         top = self.top
 
+
         # TEST: NEW LAYOUT
         if Config.get_value("install", "layout") == "fixed":
             top.add_style("position: fixed")
@@ -95,6 +96,12 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.set_attr('spt_class_name', Common.get_full_class_name(self))
+
+
+        div.add_class("spt_window_resize")
+        div.add_attr("spt_window_resize_offset", "35")
+        div.add_color("background", "background3")
+
 
         # remove the default round corners by making this div the same color
         div.add_color("background", "background3")
@@ -127,7 +134,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
         outer_div = DivWdg()
-        outer_div.add_style("overflow: hidden")
+        #outer_div.add_style("overflow: hidden")
         div.add(outer_div)
         inner_div = DivWdg()
         inner_div.set_id("side_bar_scroll")
@@ -1673,6 +1680,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         search_types.sort()
 
+        js_load ="false"
+
         config_xml.append( '''
         <%s>
         ''' % view)
@@ -1680,7 +1689,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             try:
                 search_type_obj = SearchType.get(search_type)
             except:
-                print "WARNING: search type [%s] does not exist" % search_type
+                print("WARNING: search type [%s] does not exist" % search_type)
                 continue
             if not search_type_obj:
                 continue
@@ -1693,10 +1702,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
               <display class='LinkWdg'>
                   <search_type>%s</search_type>
                   <view>table</view>
+                  <height>auto</height>
+                  <js_load>%s</js_load>
                   <schema_default_view>true</schema_default_view>
               </display>
             </element>
-            ''' % (search_type, title, search_type) )
+            ''' % (search_type, title, search_type, js_load) )
         config_xml.append( '''
         </%s>
         ''' % view)
@@ -1851,12 +1862,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         except XmlException as e:
             msg = "Error with view [%s]"% ' '.join(views)
-            print "Error: ", str(e)
+            print("Error: ", str(e))
             
             error_list = Container.get_seq(SideBarBookmarkMenuWdg.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(SideBarBookmarkMenuWdg.ERR_MSG, msg)
-                print e.__str__()
+                print(e.__str__())
 
 
     add_internal_config = staticmethod(add_internal_config)
@@ -1865,7 +1876,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
     def get_config(cls, config_search_type, view, default=False, personal=False):
 
-        #print "view: ", view
+        #print("view: ", view)
 
         config = None
         configs = []
@@ -2008,7 +2019,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         for element_name in element_names:
             if not element_name:
-                print "WARNING: element name is None in Sidebar config"
+                print("WARNING: element name is None in Sidebar config")
                 continue
 
             display_class = config.get_display_handler(element_name)
@@ -2956,7 +2967,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             try:
                 self.state = eval(self.state)
             except Exception as e:
-                print "WARNING: eval(state) error", e.__str__()
+                print("WARNING: eval(state) error", e.__str__())
                 self.state = {}
         Container.put("global_state", self.state)
 
@@ -3002,7 +3013,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         try:
             search_type_obj = SearchType.get(search_type)
         except SearchException as e:
-            print "Warning: can't find search type [%s]" % search_type
+            print("Warning: can't find search type [%s]" % search_type)
             return top
 
 
@@ -3127,9 +3138,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             custom_simple_search_view = self.kwargs.get("search_view")
 
         if search_class:
+            simple_search_mode = self.kwargs.get("simple_search_mode")
             kwargs = {
                 "search_type": search_type,
-                "search_view": custom_simple_search_view
+                "search_view": custom_simple_search_view,
+                "mode": simple_search_mode,
+                "show_saved_search": self.kwargs.get("show_shaved_search"),
             }
             if run_search_bvr:
                 kwargs['run_search_bvr'] = run_search_bvr
@@ -3197,6 +3211,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_shelf = self.kwargs.get("show_shelf")
         show_header = self.kwargs.get("show_header")
         show_help = self.kwargs.get("show_help")
+        show_row_highlight = self.kwargs.get("show_row_highlight")
+        show_group_highlight = self.kwargs.get("show_group_highlight")
         width = self.kwargs.get("width")
         height = self.kwargs.get("height")
         expression = self.kwargs.get("expression")
@@ -3218,6 +3234,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         settings = self.kwargs.get("settings")
         gear_settings = self.kwargs.get("gear_settings")
         shelf_view = self.kwargs.get("shelf_view")
+        badge_view = self.kwargs.get("badge_view")
         extra_data = self.kwargs.get("extra_data")
         if extra_data:
             if isinstance(extra_data, dict):
@@ -3226,11 +3243,16 @@ class ViewPanelWdg(BaseRefreshWdg):
         is_inner = self.kwargs.get("is_inner")
 
         document_mode = self.kwargs.get("document_mode")
+
+        js_load = self.kwargs.get("js_load") or False
        
 
         save_inputs = self.kwargs.get("save_inputs")
         no_results_mode = self.kwargs.get("no_results_mode")
         no_results_msg = self.kwargs.get("no_results_msg")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+
 
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
@@ -3267,6 +3289,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_insert": show_insert,
             "show_group_insert": show_group_insert,
             "shelf_view": shelf_view,
+            "badge_view": badge_view,
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
@@ -3310,19 +3333,41 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
             "show_collection_tool": show_collection_tool,
+            "show_row_highlight": show_row_highlight,
+            "show_group_highlight": show_group_highlight,
             "is_inner": is_inner,
             "settings": settings,
             "gear_settings": gear_settings,
             "extra_data": extra_data,
             #"search_wdg": search_wdg
             "document_mode": document_mode,
-            
+            "window_resize_offset": window_resize_offset,
         }
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 
 
         kwargs['config_xml'] = self.kwargs.get("config_xml")
+
+
+        # set up the extra keys (for all layouts)
+        if not layout or layout == "table":
+            layout_class_path = "tactic.ui.panel.TableLayoutWdg"
+        else:
+            layout_class_path = None
+
+        if layout_class_path:
+            (module_name, class_name) = Common.breakup_class_path(layout_class_path)
+            try:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                extra_keys = eval("%s.get_kwargs_keys()" % class_name )
+            except Exception as e:
+                extra_keys = []
+
+            for key in extra_keys:
+                kwargs[key] = self.kwargs.get(key)
+            kwargs['extra_keys'] = ",".join(extra_keys)
+
 
 
         if layout == 'tile':
@@ -3353,10 +3398,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'widget'
             layout_table = StaticTableLayoutWdg(**kwargs)
+
         elif layout == 'raw_table':
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
+
         elif layout in ['fast_table', 'table']:
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
@@ -3434,11 +3481,17 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
         else:
+            from table_layout_wdg import TableLayoutWdg
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['show_border'] = self.kwargs.get("show_border")
             kwargs['edit'] = self.kwargs.get("edit")
-            from table_layout_wdg import FastTableLayoutWdg
-            layout_table = FastTableLayoutWdg(**kwargs)
+            layout_table = TableLayoutWdg(**kwargs)
+
+
+
+
+
+
 
         layout_table.set_search_wdg(search_wdg)
 

@@ -164,7 +164,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
                     raise
 
             except Exception as e:
-                print "Exception: ", e
+                print("Exception: ", e)
 
 
 
@@ -244,6 +244,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
         # use color attribute from status (process)
         if pipeline_code:
             td.set_attr("spt_pipeline_code", pipeline_code)
+            td.set_attr("spt_input_key", pipeline_code)
 
             pipeline = Pipeline.get_by_code(pipeline_code)
             
@@ -356,7 +357,7 @@ class TaskStatusSelectWdg(SelectWdg):
         widget.add_class('spt_input_top')
 
         # add a callback to determine the input key
-        widget.add_attr('spt_cbjs_get_input_key', "return spt.dg_table.get_status_key(cell_to_edit, edit_cell)")
+        #widget.add_attr('spt_cbjs_get_input_key', "return spt.dg_table.get_status_key(cell_to_edit, edit_cell)")
 
         # add a data structure mapping, processes to task pipelines
         #data = {
@@ -376,7 +377,7 @@ class TaskStatusSelectWdg(SelectWdg):
 
             div.add_attr("spt_input_key", pipeline.get_code())
          
-            # if there is not task_pipeline_code, create a virtual one:
+            # if there is no task_pipeline_code, create a virtual one:
             if not pipeline:
                 status_names = ['Pending', 'In Progress', 'Complete']
             else:

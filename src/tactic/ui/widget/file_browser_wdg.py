@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['FileBrowserWdg', 'DirListWdg', 'DirInfoWdg', 'FileInfoWdg', 'IngestWdg']
+__all__ = ['DirListWdg', 'DirInfoWdg', 'FileInfoWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
@@ -527,6 +527,7 @@ class DirListWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_class("hand")
         div.add_class("SPT_DTS")
+        div.add_style("display: flex")
         div.add_style("margin-top: 2px")
         div.add_style("margin-bottom: 2px")
         div.add_style("height: 18px")
@@ -812,6 +813,8 @@ class DirListWdg(BaseRefreshWdg):
         item_div.add_attr("spt_padding_left", left_padding)
         item_div.add_class("hand")
 
+        item_div.add_style("display: flex")
+
 
         self.add_file_behaviors(item_div, dirname, basename)
 
@@ -1089,65 +1092,9 @@ class DirListWdg(BaseRefreshWdg):
         return IconWdg.DETAILS
 
 
-        # FIXME: this is for ingestion ... should be moved
-        path = "%s/%s" % (dir, item)
-        info = self.data.get(path)
-        if not info:
-            info = {}
-        if info.get("status") == 'scan':
-            return IconWdg.DOT_YELLOW
-        elif info.get("status") == 'checkin':
-            return IconWdg.DOT_GREEN
-        else:
-            return IconWdg.DOT_RED
-
-
 
     def get_dir_icon(self, dir, item):
         return IconWdg.LOAD
-
-        """
-        # FIXME: this is for ingestion ... should be moved
-        path = "%s/%s" % (dir, item)
-
-        if self.data.get("%s/" % path):
-            return IconWdg.DOT_YELLOW
-
-        paths = self.directory.find(path)
-        if len(paths) == 0:
-            return IconWdg.LOAD
-
-        status = None
-        for tmp_path in paths:
-            # if one path is not there, then it is unhandled
-            info = self.data.get(tmp_path)
-            if not info:
-                status = 'unhandled'
-                break
-
-        if not status: 
-            for tmp_path in paths:
-                info = self.data.get(tmp_path)
-                # if there is one status that is scan, then the whole
-                # status scane
-                sub_status = info.get("status")
-                if sub_status == 'scan':
-                    status = 'scan'
-                    break
-
-        if not status:
-            status = 'checkin'
-
-        if status == 'unhandled':
-            return IconWdg.DOT_RED
-        elif status == 'scan':
-            return IconWdg.DOT_YELLOW
-        #elif status == 'checkin':
-        elif status == 'checkin':
-            return IconWdg.DOT_GREEN
-        else:
-            return IconWdg.ERROR
-        """
 
 
 
@@ -1754,12 +1701,12 @@ class FileIngestCmd(DatabaseAction):
 
 
 
-        #print "tran_mode: ", transfer_mode
-        #print "checkin_mode: ", checkin_mode
-        #print "dir: ", dirs
-        #print "context: ", context
-        #print "subcontext_mode: ", subcontext_mode
-        #print "subcontext: ", subcontext
+        #print("tran_mode: ", transfer_mode)
+        #print("checkin_mode: ", checkin_mode)
+        #print("dir: ", dirs)
+        #print("context: ", context)
+        #print("subcontext_mode: ", subcontext_mode)
+        #print("subcontext: ", subcontext)
 
         # checkin all the files in the folder
         if checkin_mode == 'file':
@@ -1774,7 +1721,7 @@ class FileIngestCmd(DatabaseAction):
                     for file in files:
                         if not pattern:
                             pattern = file
-                            #print pattern, file
+                            #print(pattern, file)
                     
                     for file in files:
                         paths.append( "%s/%s" % (path, file))
@@ -1794,7 +1741,7 @@ class FileIngestCmd(DatabaseAction):
         '''having multiple files in one single check-in'''
         from pyasm.checkin import FileCheckin
         if subcontext_mode == '{leaf}':
-            print "WARNING: {leaf} mode is not supported in file group checkin!"
+            print("WARNING: {leaf} mode is not supported in file group checkin!")
         if subcontext_mode == '{folder}':
             tmp = path.replace("/", "_")
 	    checkin_context = "%s/%s" % (context, tmp)
@@ -1907,7 +1854,8 @@ class FileIngestCmd(DatabaseAction):
 
 
 
-
+# DEPRECATED
+__all__.append("IngestWdg")
 class IngestWdg(BaseRefreshWdg):
     def get_display(self):
         top = DivWdg()
@@ -1983,6 +1931,7 @@ from pyasm.biz import Project
 from pyasm.search import Search
 
 
+__all__.append("IngestCmd")
 class IngestCmd(Command):
 
     def execute(self):
@@ -1991,7 +1940,7 @@ class IngestCmd(Command):
 
         #dir = "/home/apache/tactic_plugin"
         #dir = "/home/apache/python"
-        print "dir: ", dir
+        print("dir: ", dir)
 
         items = os.listdir(dir)
         for item in items:
@@ -2007,7 +1956,7 @@ class IngestCmd(Command):
                 sub_path = "%s/%s" % (path, item)
                 self.handle_path(sub_path)
         else:
-            print "path: ", path
+            print("path: ", path)
             self.checkin_file(path)
 
 
@@ -2049,7 +1998,7 @@ class IngestCmd(Command):
         builder = SnapshotBuilder()
         builder.add_file(file, info={'file_type':file_type})
         xml_string = builder.to_string()
-        #print xml_string
+        #print(xml_string)
         snapshot.set_value("snapshot", xml_string)
         snapshot.commit()
 
@@ -2062,9 +2011,11 @@ class IngestCmd(Command):
 
 # DEPRECATED:
 # This is really the IngestionTool
+__all__.append("FileBrowserWdg")
 class FileBrowserWdg(BaseRefreshWdg):
 
     def get_display(self):
+
         self.level = 0 
         self.max_level = 4
 

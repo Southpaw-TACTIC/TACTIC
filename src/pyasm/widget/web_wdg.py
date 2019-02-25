@@ -1362,7 +1362,11 @@ class WebLoginWdg(Widget):
             if custom_projects == 0:
                 text_wdg.set_value('admin')
                 
-        
+       
+        login_placeholder = self.kwargs.get("login_placeholder")
+        if login_placeholder:
+            text_wdg.add_attr("placeholder", login_placeholder)
+
         #text_wdg.add_event("onLoad", "this.focus()")
         table.add_cell( text_wdg )
 
@@ -1391,6 +1395,11 @@ class WebLoginWdg(Widget):
             password_wdg.add_style("background: #EEE")
             password_wdg.add_style("padding: 2px")
             password_wdg.add_style("width: 130px")
+        
+        password_placeholder = self.kwargs.get("password_placeholder")
+        if password_placeholder:
+            password_wdg.add_attr("placeholder", password_placeholder)
+
         th = table.add_header( "<b> %s: </b>"%password_label )
         th.add_style("padding: 5px")
         table.add_cell( password_wdg )
@@ -1519,8 +1528,6 @@ class WebLoginWdg(Widget):
             table.add_style('position','absolute')
 
 
-        table.add_style("width: 100%")
-        table.add_style("height: 85%")
         table.add_row()
         td = table.add_cell()
         td.add_style("vertical-align: middle")
@@ -1528,8 +1535,23 @@ class WebLoginWdg(Widget):
         td.add_style("background: transparent")
         td.add(box)
         widget.add(table)
+
+        styles = self.get_styles()
+        widget.add(styles)
         
         return widget
+
+    def get_styles(self):
+
+        styles = HtmlElement.style()
+        styles.add(""" 
+            .spt_login_screen {
+                width: 100%;
+                height: 85%;
+            }
+        """)
+
+        return styles
 
 
 # DEPRECATED: moved lower to pyasm/web

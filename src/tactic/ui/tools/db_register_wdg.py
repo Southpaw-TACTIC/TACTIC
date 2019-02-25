@@ -139,8 +139,8 @@ class RegisterDbResourceCmd(Command):
 
 
 
-        print "Found the following tables: ", tables
-        print
+        print("Found the following tables: ", tables)
+        print("\n")
 
         # register all of the tables
         search_types = []
@@ -172,13 +172,13 @@ class RegisterDbResourceCmd(Command):
             # check to see if this is actually registered
             search_type = "%s/%s" % (project_code, table)
             search_types.append(search_type)
-            print "search_type: ", search_type
+            print("search_type: ", search_type)
             search_type_obj = Search.get_by_code("sthpw/search_type", search_type)
             if search_type_obj:
-                print 'REGISTERED'
+                print('REGISTERED')
                 continue
 
-            print "Registering [%s] ..." % search_type
+            print("Registering [%s] ..." % search_type)
             search_type_obj = SearchType.create("sthpw/search_type")
             search_type_obj.set_value("namespace", project_code)
             search_type_obj.set_value("code", search_type)
@@ -197,7 +197,7 @@ class RegisterDbResourceCmd(Command):
             schema_xml.append('''<search_type name="%s"/>''' % search_type)
         schema_xml.append("</schema>")
         schema_xml = "\n".join(schema_xml)
-        print "schema: ", schema_xml
+        print("schema: ", schema_xml)
 
         schema = Search.get_by_code("sthpw/schema", project_code)
         if not schema:

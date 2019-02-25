@@ -1305,7 +1305,7 @@ TacticServerStub = function() {
         
     }
 
-    this.update = function(search_type, data, kwargs, on_complete, on_error) {
+    this.update = function(search_key, data, kwargs, on_complete, on_error) {
         var newArgs = Array.prototype.slice.call(arguments).slice(0,3);
         if(on_complete){
           if(!on_error){
@@ -1701,8 +1701,19 @@ TacticServerStub = function() {
     //
     // Trigger methods
     //
-    this.call_trigger = function(search_key, event, kwargs) {
-        return this._delegate("call_trigger", arguments, kwargs);
+    this.call_trigger = function(search_key, event, kwargs, on_complete, on_error) {
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("call_trigger", arguments, kwargs, null, on_complete, on_error);
+        return ret_val
+    }
+
+    this.p_call_trigger = function(search_key, event, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {}
+            kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
+            this.call_trigger(search_key, event, kwargs);
+        }.bind(this) )
     }
 
 
@@ -2156,6 +2167,29 @@ TacticServerStub.get = function() {
         this.server.set_ticket(login_ticket);
         this.server.set_site(site);
         this.server.set_project(project_code);
+    }
+    return this.server;
+}
+
+TacticServerStub.get_master = function() {
+    var env = spt.Environment.get();
+    var master_slave_setup = env.get_master_enabled();
+
+    if (master_slave_setup) {
+        this.server = new TacticServerStub();
+        var master_slave_setup = env.get_master_enabled();
+        var url = env.get_master_url();
+        var login_ticket = env.get_master_login_ticket();
+        var site = env.get_master_site();
+        var project_code = env.get_master_project_code();
+
+        this.server.set_url(url);
+        this.server.set_ticket(login_ticket);
+        this.server.set_site(site);
+        this.server.set_project(project_code);
+        this.server.set_transaction_ticket(login_ticket);
+    } else {
+        this.server = this.get(); 
     }
     return this.server;
 }

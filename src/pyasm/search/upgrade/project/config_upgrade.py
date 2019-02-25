@@ -45,9 +45,9 @@ class ConfigUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_6_0_a01_001(self):
-        self.run_sql('''
-        ALTER TABLE prod_setting DROP CONSTRAINT "prod_setting_key_idx";
-        ''')
+         self.run_sql('''
+         ALTER TABLE prod_setting DROP CONSTRAINT "prod_setting_key_idx";
+         ''')
 
 
 

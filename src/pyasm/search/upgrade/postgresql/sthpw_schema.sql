@@ -202,6 +202,7 @@ CREATE TABLE "login_group" (
     "start_link" text,
     "access_level" character varying(32),
     "is_default" boolean,
+    "data" jsonb,
     CONSTRAINT "login_group_code_idx" UNIQUE ("code")
 );
 
@@ -354,7 +355,7 @@ CREATE TABLE "task" (
     "id" serial PRIMARY KEY,
     "assigned" character varying(100),
     "description" text,
-    "status" text,
+    "status" character varying(32),
     "discussion" text,
     "bid_start_date" timestamp,
     "bid_end_date" timestamp,

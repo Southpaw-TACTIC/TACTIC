@@ -281,13 +281,6 @@ class PageNavContainerWdg(BaseRefreshWdg):
         core_table.add_style("border-collapse: collapse")
         core_table.add_style("width: 100%")
 
-        # add a spacer row
-        #spacer_tr = core_table.add_row()
-        #spacer_tr.add_style("width: 100%")
-        #td = core_table.add_cell()
-        #td.set_style("min-height: 1px; height: 1px;")
-        #core_table.add_cell()
-        #core_table.add_cell()
 
         # determine if the side bar is visible
         if view_side_bar == None:
@@ -497,6 +490,61 @@ class PageNavContainerWdg(BaseRefreshWdg):
         container_div = DivWdg()
         container_div.set_style("width: 100%;")
 
+        container_div.add_behavior( {
+            "type": "load",
+            "cbjs_action": '''
+
+  // add a resize class to the tab widget
+  var tab_header = document.id(document.body).getElement(".spt_tab_header_top");
+  tab_header.addClass("spt_window_resize_anchor");
+
+  var onresize = function() {
+      var body = document.id(document.body);
+      var size = body.getSize();
+
+      //var content = body.getElement(".content");
+      //content.setStyle("height", size.y);
+
+      var offset_els = document.id(document.body).getElements(".spt_window_resize_anchor");
+      var offset = 0;
+      for (var i = 0; i < offset_els.length; i++) {
+          var offset_el = offset_els[i];
+          var offset_size = offset_el.getSize();
+          offset += offset_size.y;
+      }
+
+      //console.log("offset: " + offset);
+
+      var els = body.getElements(".spt_window_resize");
+      for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          var offset = el.getAttribute("spt_window_resize_offset");
+          
+          if (offset) {
+              offset = parseInt(offset);
+              el.setStyle("height", size.y - offset);
+              el.setAttribute("height", size.y - offset);
+          }
+
+
+          var offset = el.getAttribute("spt_window_resize_xoffset");
+          if (offset != null) {
+              offset = parseInt(offset);
+              el.setStyle("width", size.x - offset);
+              el.setAttribute("width", size.x - offset);
+          }
+
+
+      }
+  }
+
+  window.onresize = onresize;
+  window.onresize();
+
+
+        '''
+        } )
+
 
         # NOTE: the td should not be the sliding element! So we create a div inside the TD to be the sliding element
         main_body_div = DivWdg()
@@ -664,7 +712,7 @@ class MainBodyTabWdg(BaseRefreshWdg):
 
         top = DivWdg()
         #tab = TabWdg(width=1000, save_state="admin_tab_state")
-        tab = TabWdg(config=config, view=self.view, width=1000)
+        tab = TabWdg(config=config, view=self.view, width=1000, resize_offset="70")
         top.add(tab)
         for widget in self.widgets:
             tab.add(widget)

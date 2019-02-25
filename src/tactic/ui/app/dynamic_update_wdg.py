@@ -425,6 +425,8 @@ class DynamicUpdateCmd(Command):
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
+
+
         for id, values_list in updates.items():
             if isinstance(values_list, dict):
                 values_list = [values_list]
@@ -548,7 +550,7 @@ class DynamicUpdateCmd(Command):
 
 
 
-        #print "Dyn Cmd duration", time.time()  - start
+        #print("Dyn Cmd duration", time.time()  - start)
         return results
 
 
@@ -787,7 +789,7 @@ class UpdateTest(unittest.TestCase):
 
             diff = now - change_t_timestamp
             # should be roughly the same minute, not hours apart
-            print "Change timestamp diff is ", diff.seconds 
+            print("Change timestamp diff is ", diff.seconds )
 
 
 class DynamicUpdateHandler(object):

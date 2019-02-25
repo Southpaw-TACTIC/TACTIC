@@ -319,10 +319,16 @@ class Search(Base):
 
     def get_id_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = self.db_resource.get_database_impl()
         search_type = self.full_search_type
-        return database_impl.get_id_col(self.db_resource, search_type)
-        #return self.search_type_obj.get_id_col()
+        key = "SObject::%s::id_col" % search_type
+        id_col = Container.get(key)
+        if not id_col:
+            database_impl = self.db_resource.get_database_impl()
+            id_col =  database_impl.get_id_col(self.db_resource, search_type)
+            Container.put(key, id_col)
+
+        return id_col
+
 
 
     def get_code_col(self):
@@ -845,15 +851,6 @@ class Search(Base):
         project_code = self.project_code
         # should go by this search_type's project_code
 
-        # handle case where both search types are the same
-        if search_type == related_type:
-            has_code = SearchType.column_exists(search_type, "code")
-            if has_code:
-                self.add_filters("code", [x.get_value("code") for x in sobjects], op=op)
-            else:
-                self.add_filters(sobject.get_id_col(), [x.get_id() for x in sobjects], op=op)
-            return
-
 
         from pyasm.biz import Schema
         if project_code == 'sthpw':
@@ -863,6 +860,19 @@ class Search(Base):
             schema = Schema.get(project_code=project_code)
 
         attrs = schema.get_relationship_attrs(search_type, related_type, path=path, type=type)
+
+        # handle case where both search types are the same
+        if search_type == related_type and not attrs:
+            has_code = SearchType.column_exists(search_type, "code")
+            if has_code:
+                self.add_filters("code", [x.get_value("code") for x in sobjects], op=op)
+            else:
+                self.add_filters(sobject.get_id_col(), [x.get_id() for x in sobjects], op=op)
+            return
+
+
+
+
         if not attrs:
             raise SearchException("Search type [%s] is not related to search_type [%s]" % ( search_type, related_type) )
 
@@ -2170,9 +2180,6 @@ class Search(Base):
 
         search_type = sobject.get_base_search_type()
         project_code = sobject.get_project_code()
-        if related_type == search_type:
-            print("WARNING: source type is the same as related type [%s]" % search_type)
-            return {}
 
 
         search = Search(related_type)
@@ -2195,6 +2202,12 @@ class Search(Base):
         from pyasm.biz import Schema
         schema = Schema.get(project_code=project_code)
         attrs = schema.get_relationship_attrs(related_type, search_type, path=path )
+
+        # if not attrs and the search_types are the same, return nothing
+        if related_type == search_type and not attrs:
+            print("WARNING: source type is the same as related type [%s]" % search_type)
+            return {}
+
         relationship = attrs.get("relationship")
         is_from = related_type == attrs.get("from")
 
@@ -2707,9 +2720,18 @@ class SObject(object):
 
     def get_id_col(self):
         '''returns the column which stores the id of the sobject'''
-        database_impl = self.db_resource.get_database_impl()
         search_type = self.full_search_type
-        return database_impl.get_id_col(self.db_resource, search_type)
+        key = "SObject::%s::id_col" % search_type
+        id_col = Container.get(key)
+        if not id_col:
+            database_impl = self.db_resource.get_database_impl()
+            id_col =  database_impl.get_id_col(self.db_resource, search_type)
+            Container.put(key, id_col)
+
+        return id_col
+
+
+
 
     def get_id(self):
         '''returns the id of the sobject'''
@@ -2961,11 +2983,18 @@ class SObject(object):
             return None
 
         is_data = False
-        if name.find("->") != -1:
+        if name.find("->>") != -1:
+            parts = name.split("->>")
+            is_data = True
+            name = parts[0]
+            attr = parts[1]
+        elif name.find("->") != -1:
             parts = name.split("->")
             is_data = True
             name = parts[0]
             attr = parts[1]
+
+
 
         from pyasm.biz import Translation
         lang = Translation.get_language()
@@ -3026,9 +3055,13 @@ class SObject(object):
     def has_value(self, name):
         '''determines if the sobject contains a value with the given name'''
 
-        if name.find("->") != -1:
+        if name.find("->>") != -1:
+            parts = name.split("->>")
+            name = parts[0]
+        elif name.find("->") != -1:
             parts = name.split("->")
             name = parts[0]
+
 
         # first look at the update data
         if self.update_data.has_key(name):
@@ -3062,6 +3095,9 @@ class SObject(object):
 
     def get_datetime_value(self, name):
         value = self.get_value(name)
+        if isinstance(value, datetime.datetime):
+            return value
+
         if value:
             value = parser.parse(value)
         else:
@@ -3081,9 +3117,9 @@ class SObject(object):
 
 
 
-    def get_json_value(self, name, default=None):
+    def get_json_value(self, name, default=None, no_exception=False):
         '''get the value that is stored as a json data structure'''
-        value = self.get_value(name)
+        value = self.get_value(name, no_exception=no_exception)
         if isinstance(value, dict):
             value = value.copy()
             return value
@@ -3326,7 +3362,7 @@ class SObject(object):
 
 
     def set_data_value(self, column, name, value, quoted=True):
-        data = self.get_value(column) or {}
+        data = self.get_json_value(column, default={})
         data = data.copy()
 
         data[name] = value
@@ -4516,7 +4552,6 @@ class SObject(object):
             if related_sobjects:
                 print("Updating dependent search_type [%s]" % related_type)
             for related_sobject in related_sobjects:
-                print("... ", related_sobject.get_code())
                 related_sobject.set_value("search_code", new_code)
                 related_sobject.commit()
 
@@ -4833,7 +4868,6 @@ class SObject(object):
 
                 related_sobjects = self.get_related_sobjects(related_type)
 
-                #print("found: ", related_type, len(related_sobjects))
                 for related_sobject in related_sobjects:
                     related_sobject.clone(parent=clone)
 

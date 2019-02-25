@@ -30,6 +30,7 @@ app_server = "cherrypy"
 
 from pyasm.common import Environment, Common, Date, Config, jsonloads, jsondumps
 from pyasm.search import Search, DbContainer, SearchType
+from pyasm.command import Workflow
 
 python = Config.get_value("services", "python")
 if not python:
@@ -486,6 +487,13 @@ class TacticSchedulerThread(threading.Thread):
 
         #print("Starting Scheduler ....")
 
+        # set the site
+        from pyasm.security import Site
+        print "WARNING: hard codding site"
+        site = "workflow"
+        Site.set_site(site)
+        
+
         # NOTE: not sure why we have to do a batch here
         from pyasm.security import Batch
         Batch(login_code="admin")
@@ -569,6 +577,8 @@ class TacticSchedulerThread(threading.Thread):
             if has_triggers and self.dev_mode:
                 print("Found [%s] scheduled triggers in project [%s]..." % (project_triggers_count, project_code))
 
+
+
         from tactic.command import Scheduler, SchedulerTask
         scheduler = Scheduler.get()
 
@@ -586,6 +596,7 @@ class TacticSchedulerThread(threading.Thread):
                 try:
                     #Batch()
                     #Command.execute_cmd(timed_trigger)
+
                     Project.set_project(self.project_code)
                     timed_triggers[self.index].execute()
                 except Exception as e:

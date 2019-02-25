@@ -105,6 +105,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
         if (async) {
 
             var size = document.id(panel).getSize();
+            console.log(size);
 
             var env = spt.Environment.get();
             var colors = env.get_colors();
@@ -121,11 +122,22 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 shadow = colors.shadow;
             }
 
+
+            // the panel must have a position
+            had_position = true;
+            if (!panel.getStyle("position")) {
+                panel.setStyle("position", "relative");
+                had_position = false;
+            }
+
+
             var element = document.id(document.createElement("div"));
             element.innerHTML = '<div class="spt_spin" style="border: solid 1px '+border+';background: '+bgcolor+'; background: #EEE; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
             element.setStyle("z-index", "100");
-            element.setStyle("margin-top", -size.y);
-            element.setStyle("position", "relative");
+            //element.setStyle("margin-top", -size.y);
+            element.setStyle("position", "absolute");
+            element.setStyle("top", "10px");
+            element.setStyle("left", size.x/2-75);
 
 
             var xelement = document.id(document.createElement("div"));
@@ -142,6 +154,15 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
 
             wdg_kwargs.cbjs_action = function(widget_html) {
                 xelement.setStyle("opacity", "0.4");
+
+                if (had_position == false) {
+                    panel.setStyle("position", "");
+                }
+
+
+                xelement.destroy();
+                element.destroy();
+
                 spt.behavior.replace_inner_html(panel, widget_html);
                 new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
                 if (callback) callback(panel);

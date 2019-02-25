@@ -443,7 +443,10 @@ class TaskElementWdg(BaseTableElementWdg):
         self._get_display_options()
 
         web = WebContainer.get_web()
-        web_data = web.get_form_values("web_data")
+        if web:
+            web_data = web.get_form_values("web_data")
+        else:
+            web_data = None
         if web_data:
             try:
                 web_data = jsonloads(web_data[0])
@@ -1604,7 +1607,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             td.add_style("opacity: 0.5")
 
 
-                        if is_task_displayed or node_type in ['depndency', 'progress']:
+                        if is_task_displayed or node_type in ['dependency', 'progress']:
                         
                             task_wdg = self.get_task_wdg(task, parent_key, pipeline_code, process, last_one)
                         else:
@@ -2128,17 +2131,23 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         process = task.get_value("process")
         if self.show_process == 'true' and (len(self.tasks) >= 1 or process != 'publish'):
             process_div = DivWdg()
+            process_div.add_style("overflow: hidden")
+            process_div.add_style("text-overflow: ellipsis")
+            process_div.add_style("white-space: nowrap")
+            process_div.add_style("box-sizing: border-box")
+
             if self.layout in ['horizontal', 'vertical']:
                 #process_div.add_style("float: left")
                 # if the process is too long, it will cut off cleanly and
                 # not bleed
-                process_div.add_style("overflow: hidden")
                 process_div.add_style("margin-right: 5px")
                 td = table.add_cell(process_div)
                 if self.layout == 'vertical':
                     td.add_style("width: %spx"%self.LAYOUT_WIDTH)
+                    process_div.add_style("max-width: %spx"%self.LAYOUT_WIDTH)
                 else:
                     td.add_style("width: 75px")
+                    process_div.add_style("max-width: 75px")
             else:
                 div.add(process_div)
 
@@ -2181,6 +2190,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if self.show_dates != 'false':
             date_div = DivWdg()
+            date_div.add_style("opacity: 0.5")
+            date_div.add_style("margin: 2px")
+
             if self.layout in ['horizontal', 'vertical']:
                 #date_div.add_style("float: left")
                 td = table.add_cell(date_div)
@@ -2192,7 +2204,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 div.add(date_div)
 
-            date_div.add_style("font-size: %spx" % (self.font_size-1))
+            date_div.add_style("font-size: %spx" % (self.font_size-2))
             if self.text_color:
                 date_div.add_style("color", self.text_color)
             else:
@@ -2267,6 +2279,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.add_style("height: 18px")
                 select.add_style("padding: 0px")
                 select.add_style("margin: 2px 0px 2px 5px")
+
+                select.add_style("border: none")
+                select.add_style("box-shadow: none")
+
 
                 if node_type in ['auto', 'condition']:
                     select.add_attr("readonly","true")
@@ -2410,6 +2426,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.add_style("height: 18px")
                     select.add_style("padding: 0px")
                     select.add_style("margin: 2px 0px 2px 5px")
+
+
+                    select.add_style("border: none")
+                    select.add_style("box-shadow: none")
+
+
 
                     key = "%s|%s" % (pipeline_code, process)
                     if self.assigned_login_groups.get(key):
@@ -3088,21 +3110,9 @@ class TaskSummaryElementWdg(TaskElementWdg):
 
         for task in self.tasks:
             bgColor = ''
-            process = task.get_value("process").lower()
-            parts = re.split( re.compile("[ -_]"), process)
-            if len(parts) == 1:
-                #title = parts[0][:3]
-                title = parts[0]
-            else:
-                parts = [x[:1] for x in parts]
-                title = "".join(parts)
-            parts = re.split( re.compile("[ -_]"), process)
-            #if len(parts) == 1:
-            #    parts.append("")
-            #    parts.append("")
-            #else:
-            #    parts.append("")
-            title = "<br/>".join(parts)
+            process = task.get_value("process")
+            parts = re.split( re.compile(r"[-_]"), process)
+            title = " ".join(parts)
 
             status = task.get_value("status")
 
@@ -3135,7 +3145,8 @@ class TaskSummaryElementWdg(TaskElementWdg):
             title_div = DivWdg()
             title_div.add(title)
             title_div.add_style("max-height: 30px")
-            title_div.add_style("height: 25px")
+            title_div.add_style("margin-bottom: 3px")
+            #title_div.add_style("height: 25px")
             title_div.add_style("overflow: hidden")
 
             td.add(title_div)

@@ -124,6 +124,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.order_element = ""
         self.show_retired_element = ""
 
+        self.num_lock_columns = kwargs.get("num_lock_columns") or 0
+        if self.num_lock_columns:
+            self.num_lock_columns = int(self.num_lock_columns)
+
+        self.js_load = kwargs.get("js_load") or False
+        if self.js_load in ['true', True]:
+            self.js_load = True
+        else:
+            self.js_laod = False
+
+
 
         self.group_info = DivWdg()
         self.group_info.add_class("spt_table_group_info")
@@ -136,6 +147,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         config_xml = self.kwargs.get("config_xml")
         config_code = self.kwargs.get("config_code")
         self.config_xml = config_xml
+
         if config_xml:
             # get the base configs
             config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
@@ -439,8 +451,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # passed in filter overrides
         values = filter_data.get_values_by_prefix("group")
-        print
-        print "values: ", values
         if values:
 
             group_values = values[0]
@@ -535,8 +545,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.is_sobjects_explicitly_set():
             return
 
-        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
+        if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False, 'hidden']:
             return
+
+
+
+
 
 
         expr_search = None
@@ -586,18 +600,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
 
         
-        """
-        ###FIX ME 
-        table_search = self.search_wdg.get_search()
-        if expr_search:
-            #table_search.add_relationship_search_filter(expr_search)
-            expr_search.add_relationship_search_filter(table_search)
-            search = expr_search
-        else:
-            search = table_search
-       
-        self.search = search
-        """
         search = self.search_wdg.get_search()
         self.search = search
 
@@ -672,7 +674,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             kwargs = {
                 "search_type": self.search_type,
                 "search_view": simple_search_view,
-                "keywords": self.kwargs.get("keywords")
+                "keywords": self.kwargs.get("keywords"),
+                "show_saved_search": self.kwargs.get("show_saved_search"),
             }
 
             if simple_search_config:
@@ -741,7 +744,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             try:
                 sobjects = widget.process_sobjects(self.sobjects, search)
             except Exception as e:
-                #print str(e)
+                #print(str(e))
                 pass
             else:
                 if sobjects:
@@ -914,6 +917,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_action_wdg(self):
 
+        # add the ability to put in a custom shelf
+        shelf_view = self.kwargs.get("shelf_view")
+        """
+
+        if shelf_view:
+            from tactic.ui.panel import CustomLayoutWdg
+            kwargs = {
+                "view": shelf_view
+            }
+            shelf = CustomLayoutWdg(**kwargs)
+            return shelf
+        """
+
 
         # determine from the view if the insert button is visible
         show_insert = self.get_show_insert()
@@ -947,7 +963,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search.add_filter("search_type", self.search_type)
             config_sobj = search.get_sobject()
         except Exception as e:
-            print "WARNING: When trying to find config: ", e
+            print("WARNING: When trying to find config: ", e)
             config_sobj = None
 
         if config_sobj:
@@ -957,7 +973,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 exec stmt
             except:
                 custom_gear_menus = "CONFIG-ERROR"
-
 
 
         # add gear menu here
@@ -975,7 +990,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 script_s_key = "config/custom_script?project=%s&code=%s" % (prj_code, post_delete_script)
                 custom_script_sobj = Search.get_by_search_key( script_s_key )
                 if not custom_script_sobj:
-                    print 'Did NOT find a code="%s" custom_script entry for post DG table save' % (post_delete_script)
+                    print('Did NOT find a code="%s" custom_script entry for post DG table save' % (post_delete_script))
                 cbjs_post_delete = custom_script_sobj.get_value('script')
 
             if self.kwargs.get("post_delete_js"):
@@ -1231,7 +1246,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_expand:
             from tactic.ui.widget.button_new_wdg import ButtonNewWdg
 
-            button = ButtonNewWdg(title='Expand Table', icon='BS_FULLSCREEN', show_menu=False, is_disabled=False)
+            button = ButtonNewWdg(title='Expand Table', icon='FA_ARROWS_H', show_menu=False, is_disabled=False)
             
             expand_behavior = self.get_expand_behavior()
             if expand_behavior:
@@ -1241,6 +1256,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'type': 'click_up',
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
+
+                spt.table.set_layout(layout);
+                spt.table.expand_table();
+                return;
 
                 var version = layout.getAttribute("spt_version");
                 var headers;
@@ -1307,7 +1326,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
                 help_wdg.add_style("margin-top: -2px")
 
+        
+
         wdg_list = []
+        
+
+        badge_view = self.kwargs.get("badge_view")
+        if badge_view:
+            from tactic.ui.panel import CustomLayoutWdg
+            widget = CustomLayoutWdg(view=badge_view, panel_kwargs=self.kwargs)
+            if widget:
+                wdg_list.append( { 'wdg': widget } )
+            else:
+                print("WARNING: badge view '%s' not defined" % custom_shelf_view)
+ 
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
@@ -1320,6 +1352,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             search_label = 'Search'
             button = ActionButtonWdg(title=search_label)
+
+            #button = DivWdg("<button class='btn btn-default' style='height: 30px; margin-left: -1px'><i class='fa fa-search'> </i> </button>")
+
             self.run_search_bvr = self.kwargs.get('run_search_bvr')
             if self.run_search_bvr:
                 button.add_behavior(self.run_search_bvr)
@@ -1346,7 +1381,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if show_collection_tool not in ["false", False] and SearchType.column_exists(self.search_type, "_is_collection"):
             from collection_wdg import CollectionAddWdg
-            collection_div = CollectionAddWdg(search_type=self.search_type)
+            collection_div = CollectionAddWdg(search_type=self.search_type, parent_key=self.parent_key)
             wdg_list.append( {'wdg': collection_div} )
         
 
@@ -1415,11 +1450,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         custom_shelf_view = self.kwargs.get("shelf_view")
         if custom_shelf_view:
             from tactic.ui.panel import CustomLayoutWdg
-            widget = CustomLayoutWdg(view=custom_shelf_view)
+            widget = CustomLayoutWdg(view=custom_shelf_view, panel_kwargs=self.kwargs)
             if widget:
                 wdg_list.append( { 'wdg': widget } )
             else:
-                print "WARNING: shelf view '%s' not defined" % custom_shelf_view
+                print("WARNING: shelf view '%s' not defined" % custom_shelf_view)
 
         custom_shelf_view = "_layout_shelf"
         if custom_shelf_view:
@@ -1430,14 +1465,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     widget = config.get_display_widget(element_names[0])
                     wdg_list.append( { 'wdg': widget } )
                 else:
-                    print "WARNING: shelf view '%s' not defined" % custom_shelf_view
+                    print("WARNING: shelf view '%s' not defined" % custom_shelf_view)
  
 
 
 
         
         xx = DivWdg()
-
+        
         #horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         #xx.add(horiz_wdg)
 
@@ -1505,7 +1540,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-    def get_save_button(self):
+    def get_save_button(self, mode="icon"):
         show_save = self.get_setting("save")
 
         if self.edit_permission == False or not self.view_editable:
@@ -1519,15 +1554,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # Save button
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-        save_button = ButtonNewWdg(title='Save', icon="BS_SAVE", show_menu=False, show_arrow=False)
-        #save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
-        #save_button.add_style("padding: none")
+        if mode == "icon":
+            save_button = ButtonNewWdg(title='Save', icon="FA_SAVE", show_menu=False, show_arrow=False)
+        else:
+            save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
+            #save_button_top.add_class("btn-primary")
 
-        #save_button.add_style("display", "none")
         save_button.add_class("spt_save_button")
+
         # it needs to be called save_button_top for the button to re-appear after its dissapeared
 
-        #save_button_top.add_class("btn-primary")
         save_button.add_style("margin-left: 10px")
 
         
@@ -1594,7 +1630,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search_type_title = search_type_obj.get_value("title")
 
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
-            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
+            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="FA_PLUS")
 
             button_row_wdg.add(button)
             button.add_behavior( {
@@ -1793,7 +1829,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             # Save button
             #save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
-            save_button = ButtonNewWdg(title='Save Current Table', icon="BS_SAVE", is_disabled=False)
+            save_button = ButtonNewWdg(title='Save Current Table', icon="FA_SAVE", is_disabled=False)
             save_button_top = save_button.get_top()
             save_button_top.add_style("display", "none")
             save_button_top.add_class("spt_save_button")
@@ -1828,7 +1864,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if self.can_use_gear() and self.get_setting("gear"):
-            button = ButtonNewWdg(title='More Options', icon="G_SETTINGS_GRAY", show_arrow=True)
+            button = ButtonNewWdg(title='More Options', icon="FA_GEAR", show_arrow=True)
             button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
@@ -1851,7 +1887,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
             #button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
-            button = ButtonNewWdg(title='View Advanced Search', icon="BS_SEARCH", show_menu=False, show_arrow=False)
+            button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
             #button.add_style("float: left")
             div.add(button)
 
@@ -1949,7 +1985,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
-        layout = ButtonNewWdg(title='Switch Layout', icon="BS_TH", show_arrow=True)
+        layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
 
         SwitchLayoutMenu(search_type=self.search_type, view=self.view, activator=layout.get_button_wdg())
         return layout
@@ -2045,7 +2081,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
 
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
-        button = ButtonNewWdg(title='Column Manager', icon="BS_TH_LIST", show_arrow=False)
+        button = ButtonNewWdg(title='Column Manager', icon="FA_LIST", show_arrow=False)
 
         search_type_obj = SearchType.get(self.search_type)
 
@@ -2688,10 +2724,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         project_code = Project.get_project_code()
         spec_list = [ { "type": "title", "label": 'Item "{display_label}"' }]
         if self.view_editable:
-            edit_view = self.kwargs.get("edit_view")
             
             access_keys = self._get_access_keys("edit",  project_code)
             if security.check_access("builtin", access_keys, "edit"):
+
+                edit_view = self.kwargs.get("edit_view")
                 if not edit_view or edit_view == 'None':
                     edit_view = "edit"
             

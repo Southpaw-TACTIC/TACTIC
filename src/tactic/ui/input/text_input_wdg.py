@@ -795,7 +795,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         spt.text_input.run_client_trigger(bvr2, kwargs.event_name, display_value, kwargs.hidden_value);
         return;
     }
-
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
         var hidden_el = top.getElement(".spt_text_value");
@@ -1361,7 +1360,6 @@ __all__.append("TextInputResultsWdg")
 class TextInputResultsWdg(BaseRefreshWdg):
 
     # search LIMIT, even if we display only 10, the right balance is to set a limit to 80 to get more diverse results back
-    LIMIT = 80
     DISPLAY_LENGTH = 35
 
     def is_number(self, value):
@@ -1370,10 +1368,14 @@ class TextInputResultsWdg(BaseRefreshWdg):
         else:
             return isinstance(value, int) or isinstance(value, long) or isinstance(value, float) 
 
+    def get_limit(self):
+        return 80
+
     def init(self):
         self.do_search = True
         if self.kwargs.get('do_search') == 'false':
             self.do_search = False
+        
 
     def draw_result(self, top, value):
         max = self.DISPLAY_LENGTH
@@ -1647,8 +1649,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 search.add_filter("search_type", filter_search_type)
 
             if filters:
-                search.add_op_filters(filters)
-            
+                if isinstance(filters, basestring):
+                    import json
+                    search.add_op_filters(json.loads(filters))
+                else:
+                    search.add_op_filters(filters)
             search.add_op("begin")
 
             search_type_obj = SearchType.get(search_type)
@@ -1692,8 +1697,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
             if connected_col:
                 search.add_filters(connected_col, rel_values, op='in')
 
-
-            search.add_limit(self.LIMIT)
+            limit = self.get_limit()
+            if limit:
+                search.add_limit(limit)
 
             results = search.get_sobjects()
 
@@ -1827,7 +1833,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 first = " ".join(first)
 
                 # add the first word filtered
-                if first.startswith(orig_value) and first not in first_filtered:
+                if keyword_mode == "contains" and orig_value in first:
+                    first_filtered.append(first)
+                elif first.startswith(orig_value) and first not in first_filtered:
                     first_filtered.append(first)
                 
                 # get all the other keywords
@@ -1836,8 +1844,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
                         continue
                     
                     key = "%s %s" % (first, second)
-                    if not key.startswith(orig_value):
+                    if keyword_mode == "contains" and orig_value not in key:
                         continue
+                    elif not key.startswith(orig_value):
+                        continue
+
                     if key not in second_filtered:
                         second_filtered.append(key)
 

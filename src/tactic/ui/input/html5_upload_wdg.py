@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['Html5UploadWdg', 'UploadButtonWdg', 'CheckinButtonWdg', 'TestHtml5UploadWdg', 'HtmlUploadWdg']
+__all__ = ['Html5UploadWdg', 'UploadButtonWdg', 'CheckinButtonWdg', 'TestHtml5UploadWdg', 'HtmlUploadWdg', 'BaseUploadWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 

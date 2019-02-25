@@ -1136,7 +1136,7 @@ class TacticServerStub(object):
         #return self.server.query(self.ticket, search_type, filters, columns, order_bys, show_retired, limit, offset, single, return_sobjects)
         results = self.server.query(self.ticket, search_type, filters, columns,
                                   order_bys, show_retired, limit, offset,
-                                  single, distinct, return_sobjects)
+                                  single, distinct, return_sobjects, parent_key)
         if not return_sobjects and isinstance(results, basestring):
             results = eval(results)
         return results
@@ -2986,6 +2986,18 @@ class TacticServerStub(object):
         '''
         return self.server.add_initial_tasks(self.ticket, search_key, pipeline_code,
                                            processes, skip_duplicate, offset, start_date)
+
+
+
+    def get_task_status_colors(self, ticket):
+        '''Get all the colors for a task status
+
+        ticket - authentication ticket
+
+        @return:
+        dictionary of colors
+        '''
+        return self.server.get_task_status_colors(self.ticket)
 
 
 

@@ -20,6 +20,7 @@ import tacticenv
 from kronos import Scheduler as KronosScheduler
 from pyasm.common import Container, Environment
 from pyasm.biz import Project
+from pyasm.command import Workflow, Command
 from pyasm.security import Site
 
 import time, datetime, types
@@ -117,7 +118,7 @@ class Scheduler(object):
     def start_thread(self):
         if self.is_started:
             return
-            
+
         import threading
         self.thread = threading.Thread(None, self.start)
         #self.thread.daemon = True
@@ -148,13 +149,13 @@ class Scheduler(object):
             "interval": 10
         }
 
-        if type == "interval": 
+        if type == "interval":
             task = Common.create_from_class_path(class_name)
             scheduler.add_interval_task(task, **options)
-        elif type == "daily": 
+        elif type == "daily":
             task = Common.create_from_class_path(class_name)
             scheduler.add_daily_task(task, **options)
-        elif type == "weekly": 
+        elif type == "weekly":
             task = Common.create_from_class_path(class_name)
             scheduler.add_weekly_task(task, **options)
 
@@ -165,46 +166,81 @@ class Scheduler(object):
             scheduler = Scheduler()
             Container.put("Scheduler", scheduler)
         return scheduler
-    get = staticmethod(get)        
+    get = staticmethod(get)
 
 
+class SchedulerTaskCmd(Command):
+
+    def execute(self):
+        task = self.kwargs.get("task")
+        task.execute()
 
 
 class SchedulerTask(object):
     '''Base class for the scheduler'''
     def __init__(self, **kwargs):
         self.kwargs = kwargs
+
         user = self.kwargs.get('user')
+        if not user:
+            user = Environment.get_user_name()
+            self.kwargs["user"] = user
+
         project = self.kwargs.get('project')
+        if not project:
+            project = Project.get_project_code()
+            self.kwargs["project"] = project
+
 
         self.site = self.kwargs.get('site')
         if not self.site:
             # if not explicitly set, keep the site that is current
             self.site = Site.get_site()
+            self.kwargs["site"] = self.site
 
-        if user and project:
-            from pyasm.security import Batch
-            Batch(site=self.site, login_code=user, project_code=project)
-
-        self.security = Environment.get_security()
-
+        self.user = user
+        self.project = project
 
     def get_name(self):
         return self.kwargs.get("name")
 
     def _do_execute(self):
+
+        from pyasm.security import Batch
+        Batch(site=self.site, login_code=self.user, project_code=self.project)
+        self.security = Environment.get_security()
+
         # reestablish the site
         if self.site:
             try:
                 Site.set_site(self.site)
             except:
                 return
+
+
+        # execute the task
         try:
             Environment.set_security(self.security)
-            self.execute()
+
+            Workflow().init(quiet=True)
+
+            # set the project if passed in
+            project = self.kwargs.get("project")
+            if project:
+                Project.set_project(project)
+
+            cmd = SchedulerTaskCmd(task=self)
+            Command.execute_cmd(cmd)
+
         finally:
             if self.site:
                 Site.pop_site()
+            
+            from pyasm.search import DbContainer
+            DbContainer.close_thread_sql()
+            DbContainer.commit_thread_sql()
+            DbContainer.close_all()
+
 
     def execute(self):
         print self.kwargs
@@ -291,7 +327,7 @@ def main():
             break
         else:
             scheduler.stop()
-    
+
     scheduler.stop()
 
 if __name__ == '__main__':

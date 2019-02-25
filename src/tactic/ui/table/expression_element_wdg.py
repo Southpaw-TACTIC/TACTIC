@@ -191,6 +191,47 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         self.init_kwargs()
 
+
+
+    def get_data(self, sobject):
+
+        # use current sobject
+        if not self.expression:
+            self.init_kwargs()
+
+        try:
+            use_cache = self.get_option("use_cache") in ['true', True]
+
+            # TEST TESt TEST
+            #use_cache = True
+            use_cache = False
+
+            if use_cache:
+                result = sobject.get_value(self.get_name())
+            else:
+                result = self._get_result(sobject, self.expression)
+
+        except Exception, e:
+            result = ""
+
+        return result
+
+
+
+    def get_onload_js(self):
+        name = self.get_name()
+        value_class = "spt_%s_expr" % name
+        return '''
+        var value = sobject[element_name]
+        var value_el = cell.getElement(".%s");
+        value_el.setAttribute("search_key", sobject.__search_key__);
+        value_el.innerHTML = value;
+        ''' % value_class
+
+
+
+
+
     def get_required_columns(self):
         '''method to get the require columns for this'''
         return []
@@ -341,7 +382,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
             try:
                 return sobject.get_value(element_name)
             except Exception as e:
-                print "Error: ", e.message
+                print("Error: ", e.message)
 
 
         if type(sobject) != types.ListType:
@@ -401,7 +442,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
-        # FIXME: don't know how to do this any other way
+        # if the result has a get_display_value call, then use that.
         try:
             if not list:
                 result = result.get_display_value()
@@ -513,8 +554,12 @@ class ExpressionElementWdg(TypeTableElementWdg):
         #self.init_kwargs()
 
         self.sobject = self.get_current_sobject()
-        if not self.sobject or self.sobject.is_insert():
+        if not self.sobject:
             return ""
+
+        if self.sobject.is_insert():
+            pass
+
 
         name = self.get_name()
 
@@ -553,14 +598,16 @@ class ExpressionElementWdg(TypeTableElementWdg):
             else:
                 self.alt_result = result
         except Exception as e:
-            print "Expression error: ", e
-            print "    in column [%s] with [%s]" % (self.get_name(), self.expression)
+            print("Expression error: ", e)
+            print("    in column [%s] with [%s]" % (self.get_name(), self.expression))
             #from pyasm.widget import ExceptionWdg
             #widget = ExceptionWdg(e)
             #return widget
             widget = DivWdg()
             widget.add("Expression error: %s" % e)
             return widget
+
+
 
         if isinstance(result, list):
             delimiter = ', '
@@ -588,6 +635,18 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
         outer = DivWdg()
+
+
+        cbjs_action = self.kwargs.get("cbjs_action")
+        if cbjs_action:
+            outer.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': cbjs_action
+            })
+
+
+
+
         for i, result in enumerate(results):
             div = DivWdg()
             outer.add(div)
@@ -624,7 +683,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     try:
                         display_result = Search.eval(display_expr, self.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=self.show_retired)
                     except Exception as e:
-                        print "WARNING in display expression [%s]: " % display_expr, e
+                        print("WARNING in display expression [%s]: " % display_expr, e)
                         display_result = "ERROR: %s" % e
 
                 elif format_str:
@@ -639,7 +698,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                 return_type = self.kwargs.get("return")
                 if return_type in ['list']:
-                    div.add( "- " )
+                    #div.add( "- " )
                     div.add_style("max-width: 400px")
 
                 div.add( display_result )
@@ -689,7 +748,13 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
                     #div.add_attr("name", "%s: %s" % (sobj_title, name))
-                    div.add_attr("name", display_result)
+                    if display_result:
+                        name = display_result
+                        title = display_result
+
+                        div.add_attr("name", name)
+                        div.add_attr("title", title)
+
 
                     # click up blocks any other behavior
                     div.add_behavior( {
@@ -721,7 +786,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
                         spt.table.open_link(bvr);
                         '''
                     } )
-
 
 
 
@@ -1052,7 +1116,7 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
         try:
             value = Search.eval(value)
         except Exception as e:
-            print e.message
+            print(e.message)
             value = "Error [%s]" % value
 
         return "%s" % value

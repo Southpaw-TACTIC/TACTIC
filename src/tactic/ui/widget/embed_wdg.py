@@ -77,13 +77,14 @@ class EmbedWdg(BaseRefreshWdg):
         #height = "auto"
 
 
-        #div = DivWdg()
-        #top.add(div)
         div = top
         div.add_class("unselectable")
         div.add_style("opacity", opacity)
-        div.add_style("overflow-x: hidden")
-        div.add_style("overflow-y: hidden")
+
+        # Not sure what this is for??
+        #div.add_style("overflow-x: hidden")
+        #div.add_style("overflow-y: hidden")
+
         div.add_style("margin-left: auto")
         div.add_style("margin-right: auto")
         div.add_style("text-align: center")
@@ -117,6 +118,9 @@ class EmbedWdg(BaseRefreshWdg):
 
             if layout == "landscape":
                 embed.add_style("width: auto")
+                embed.add_style("height: 100%")
+            elif layout == "fit":
+                embed.add_style("width: 100%")
                 embed.add_style("height: 100%")
             else:
                 embed.add_style("width: 100%")
@@ -166,6 +170,10 @@ class EmbedWdg(BaseRefreshWdg):
                 if layout == "landscape":
                     img.add_style("width: auto")
                     img.add_style("height: 100%")
+                elif layout == "fit":
+                    img.add_style("width: 100%")
+                    img.add_style("height: 100%")
+                    img.add_style("object-fit: contain")
                 else:
                     img.add_style("width: 100%")
                     img.add_style("height: auto")

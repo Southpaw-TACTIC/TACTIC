@@ -139,7 +139,7 @@ class QueueTrigger(Command):
     def execute(self):
         # start workflow engine
         from pyasm.command import Workflow
-        Workflow().init()
+        Workflow().init(quiet=True)
 
         input_data = self.kwargs.get("input_data")
         data = self.kwargs.get("data")
@@ -266,7 +266,6 @@ class ScriptTrigger(Handler):
                 return
 
             server = TacticServerStub.get()
-            print "set_pipeline_event: ", search_key, process, status
             server.call_pipeline_event(search_key, process, status, data )
 
 
@@ -291,7 +290,7 @@ if __name__ == '__main__':
     Batch(project_code=project, site=site)
 
     from pyasm.command import Workflow
-    Workflow().init()
+    Workflow().init(quiet=True)
  
 
     input_data_str = args[1]

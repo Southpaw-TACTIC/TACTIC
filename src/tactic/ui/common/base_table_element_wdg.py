@@ -44,6 +44,8 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
     get_args_keys = classmethod(get_args_keys)
 
 
+
+
     def set_attributes(self, attrs):
         '''set attributes dict like access, width, or edit'''
         self.attributes = attrs
@@ -651,6 +653,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
             else:
                 value = ''
+        elif isinstance(value, dict) and not value:
+            value = ""
         else:
             if isinstance(value, Widget):
                 return value

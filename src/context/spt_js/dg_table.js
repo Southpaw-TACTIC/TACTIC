@@ -2262,7 +2262,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var gear_settings = target.getAttribute("spt_gear_settings") || "";
 
     var shelf_view = target.getAttribute("spt_shelf_view") || "";
-
+    var badge_view = target.getAttribute("spt_badge_view") || "";
     var extra_data = target.getAttribute("spt_extra_data") || "";
 
     var height = target.getAttribute("spt_height") || "";
@@ -2353,6 +2353,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'settings': settings,
         'gear_settings': gear_settings,
         'shelf_view': shelf_view,
+        'badge_view': badge_view,
         'extra_data': extra_data,
     }
 
@@ -3141,8 +3142,10 @@ spt.dg_table.set_process = function(bvr) {
 }
 
 
-// TEST!!! for a more complex key callback
+// DEPRECATED
 spt.dg_table.get_status_key = function(cell_to_edit, edit_cell) {
+
+    alert("spt_dg_table.set_status_key() is deprecated");
 
     var task_pipeline = null;
 
@@ -4126,6 +4129,8 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
                 continue;
             }
             var sk = tbodies[k].getAttribute('spt_search_key');
+  
+            
             sel_search_keys.push(sk);
         }
         if( sel_search_keys.length == 0 ) {
@@ -4607,7 +4612,7 @@ spt.dg_table.update_row = function(evt, bvr)
     
     var tr = null;
 
-    var server = TacticServerStub.get();
+    var server = TacticServerStub.get_master();
     server.start({title:"Inserting/Updating entries"});
     var is_insert = false;
     

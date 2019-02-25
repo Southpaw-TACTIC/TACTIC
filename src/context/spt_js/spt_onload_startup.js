@@ -10,12 +10,11 @@
 
 // Only to be called on "body" tag "onload" event ...
 //
-spt.onload_startup = function()
+spt.onload_startup = function(admin=false)
 {
     // Set-up keyboard handler to allow for trapping keyboard events on a per element basis ...
     //
-    spt.kbd.setup_handler();
-
+    if (admin) spt.kbd.setup_handler();
     spt.behavior.construct_behaviors_on_startup();
 
     var body_el = document.id(document.body);

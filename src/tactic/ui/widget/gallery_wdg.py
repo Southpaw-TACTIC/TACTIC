@@ -57,7 +57,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         width = self.kwargs.get("width")
         height = self.kwargs.get("height")
-        
+
         # default to top.
         align = self.kwargs.get("align")
         if not align:
@@ -71,9 +71,10 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         paths = self.get_paths(file_type='main')
+
         # icon type may be too small
         thumb_paths = self.get_paths(file_type='web')
-        
+
         descriptions = []
         for path in paths:
             sobject = self.sobject_data.get(path)
@@ -97,12 +98,12 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.portrait = window.innerWidth < 1250;
         spt.gallery.portrait = false
 
-        
+
         spt.gallery.top = bvr.src_el;
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
         spt.gallery.content.setStyle('opacity','0.1')
         spt.gallery.desc_el = spt.gallery.top.getElement(".spt_gallery_description");
-        
+
         //window.addEvent('domready', function() {
         setTimeout(function() {
 		// set the img h or w directly
@@ -123,7 +124,7 @@ class GalleryWdg(BaseRefreshWdg):
 			    //items[k].setStyle('width','auto');
 			    //items[k].setStyle('height','100%');
 		    }
-		    
+
 		}
         */
 
@@ -137,10 +138,10 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.left_arrow = bvr.src_el.getElement('.spt_left_arrow');
         spt.gallery.right_arrow = bvr.src_el.getElement('.spt_right_arrow');
         spt.gallery.videos = {};
-       
+
 
         spt.gallery.init = function() {
-            
+
         }
 
         spt.gallery.stack = [];
@@ -153,7 +154,7 @@ class GalleryWdg(BaseRefreshWdg):
         spt.gallery.show_next = function(src_el) {
             if (!src_el)
                 src_el = spt.gallery.right_arrow;
-           
+
             if (spt.gallery.index >= spt.gallery.total-2) {
                 spt.hide(src_el);
             }
@@ -169,12 +170,12 @@ class GalleryWdg(BaseRefreshWdg):
                 src_el = spt.gallery.left_arrow;
             if (spt.gallery.index <= 1) {
                 spt.hide(src_el);
-            
+
             }
             if (spt.gallery.index == 0) {
                 return;
             }
-            
+
             spt.gallery.index -= 1;
             spt.gallery.show_index(spt.gallery.index);
         }
@@ -182,7 +183,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         spt.gallery.show_index = function(index) {
 
-          
+
             // stop all videos
             var videos = spt.gallery.top.getElements(".video-js");
             for (var i = 0; i < videos.length; i++) {
@@ -204,13 +205,13 @@ class GalleryWdg(BaseRefreshWdg):
             var content = spt.gallery.content;
             //content.setStyle("margin-left", margin + "px");
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
- 
+
 
 
             spt.gallery.index = index;
             var total = spt.gallery.total;
-            
-           
+
+
             if (index == 0) {
                 spt.hide(spt.gallery.left_arrow);
                 spt.show(spt.gallery.right_arrow);
@@ -223,9 +224,9 @@ class GalleryWdg(BaseRefreshWdg):
                 spt.show(spt.gallery.left_arrow);
                 spt.show(spt.gallery.right_arrow);
             }
-                
 
-            
+
+
             var description = spt.gallery.descriptions[index];
             if (!description) {
                 description = (index+1)+" of "+total;
@@ -271,7 +272,7 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-        
+
 
         content = DivWdg()
         top.add_attr('tabindex','-1')
@@ -295,7 +296,7 @@ class GalleryWdg(BaseRefreshWdg):
             bvr.src_el.focus();
             '''
         } )
- 
+
         top.add_behavior( {
             'type': 'mouseenter',
             'cbjs_action': '''
@@ -320,7 +321,7 @@ class GalleryWdg(BaseRefreshWdg):
             'type': 'keydown',
             'cbjs_action': '''
             var key = evt.key;
-            
+
             if (key == "left") {
                 spt.gallery.push_stack(key);
                 spt.gallery.show_prev();
@@ -330,7 +331,7 @@ class GalleryWdg(BaseRefreshWdg):
                 spt.gallery.show_next();
             }
             else if (key == "esc" || key == "enter") {
-                
+
                 var top = bvr.src_el
                 spt.behavior.destroy_element(top);
             }
@@ -356,7 +357,7 @@ class GalleryWdg(BaseRefreshWdg):
             try:
                 thumb_path = thumb_paths[i]
             except IndexError:
-                print "Cannot find the thumb_path [%s] "%i 
+                print("Cannot find the thumb_path [%s] "%i )
                 thumb_path = ''
 
             #path_div.add_style("width: %s" % width)
@@ -368,7 +369,7 @@ class GalleryWdg(BaseRefreshWdg):
             path_div.add_style("overflow-y: hidden")
 
             from tactic.ui.widget import EmbedWdg
-            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i, controls="true")
+            embed = EmbedWdg(src=path, click=False, thumb_path=thumb_path, index=i, controls="true", layout="fit")
             path_div.add(embed)
 
 
@@ -416,7 +417,7 @@ class GalleryWdg(BaseRefreshWdg):
             'type': 'click_up' ,
             'cbjs_action': '''
             var arrow = bvr.src_el;
-            spt.gallery.show_prev(arrow); 
+            spt.gallery.show_prev(arrow);
             '''
         } )
         icon.add_style("background", "rgba(48,48,48,0.7)")
@@ -435,7 +436,7 @@ class GalleryWdg(BaseRefreshWdg):
             'type': 'click_up',
             'cbjs_action': '''
             var arrow = bvr.src_el;
-            spt.gallery.show_next(arrow); 
+            spt.gallery.show_next(arrow);
             '''
         } )
         icon.add_style("background", "rgba(48,48,48,0.7)")
@@ -475,7 +476,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         # this is the selected one
         search_key = self.kwargs.get("search_key")
-      
+
         search_keys = self.kwargs.get("search_keys")
         paths = self.kwargs.get("paths")
 
@@ -486,7 +487,7 @@ class GalleryWdg(BaseRefreshWdg):
         if search_keys:
             sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
 
-            # return_dict=True defaults to return the first of each snapshot list 
+            # return_dict=True defaults to return the first of each snapshot list
             # and so works well with is_latest=True
             if sobjects and sobjects[0].get_base_search_type() == "sthpw/snapshot":
                 sobj_snapshot_dict = {}
@@ -511,22 +512,36 @@ class GalleryWdg(BaseRefreshWdg):
                     continue
 
                 file_list = file_dict.get(snapshot.get_code())
-                if not file_list: 
+                if not file_list:
                     paths.append("")
                     continue
 
 
-               
+
                 # NOTE: there should only be one file
                 tmp_paths = []
                 for file_object in file_list:
                     path = file_object.get_web_path()
 
+                    # If the file type is not supported by web browsers, get the web version
+                    # as a fallback.
+                    # TODO: Note that this will disable
+                    # the retrieval of a sequence of files as in ####.tif case, where
+                    # the asset is a sequence of files. So it will only display the web
+                    # version of the first file in the asset list.
+                    extension = File.get_extension(path)
+                    accepted_exts = ['mp4', 'mov', 'jpg', 'png', 'ogg', 'webm']
+                    if file_type == 'main' and extension not in accepted_exts:
+                        path= snapshot.get_web_path_by_type(type="web")
+
+                    # If the asset is a sequence of files, retrieve all the file paths.
+                    # NOTE: In this case, web versions do not exist for all of the files.
+                    # The web version is generated only  for the first one in the sequence.
                     if path.find("#") != -1:
                         expanded_paths = snapshot.get_expanded_web_paths()
                         path = "|".join(expanded_paths)
 
-                    tmp_paths.append(path)  
+                    tmp_paths.append(path)
 
                 path = "|".join(tmp_paths)
                 self.sobject_data[path] = sobject
@@ -535,7 +550,7 @@ class GalleryWdg(BaseRefreshWdg):
 	            # set the current path the user clicks on
                 if not self.curr_path and sobject.get_search_key() == search_key and file_type=='main':
                     self.curr_path = path
-                        
+
 
         elif paths:
             return paths

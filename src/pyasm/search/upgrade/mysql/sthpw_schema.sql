@@ -1,4 +1,4 @@
-SET sql_mode='ANSI_QUOTES';
+SET sql_mode='PIPES_AS_CONCAT,ANSI_QUOTES';
 --
 --
 
@@ -203,6 +203,7 @@ CREATE TABLE "login_group" (
     "start_link" longtext,
     "access_level" character varying(32),
     "is_default" boolean,
+    "data" longtext,
     CONSTRAINT "login_group_code_idx" UNIQUE ("code")
 );
 
@@ -355,7 +356,7 @@ CREATE TABLE "task" (
     "id" serial PRIMARY KEY,
     "assigned" character varying(100),
     "description" longtext,
-    "status" longtext,
+    "status" character varying(32),
     "discussion" longtext,
     "bid_start_date" timestamp NULL,
     "bid_end_date" timestamp NULL,

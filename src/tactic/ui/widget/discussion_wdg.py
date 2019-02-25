@@ -352,7 +352,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     spt.toggle_show_hide(add_note);
 
                 // update dialog
-                
                 spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
                
                 // update note count
@@ -1031,7 +1030,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
                 
                 // update dialog and the count if dialog is visible 
-                if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
+                if (group_top && group_top.getAttribute("spt_is_loaded") == "true" && 
+                    group_top.getAttribute("spt_update_mode") == "load") {
                     var parent_key = dialog_content.getAttribute('spt_parent_key');
                     var class_name = 'tactic.ui.widget.NoteCollectionWdg';
                     var kwargs = {
@@ -1195,13 +1195,18 @@ class DiscussionWdg(BaseRefreshWdg):
                     spt.toggle_show_hide( document.id(bvr.unique_id) );
                     '''
                 } )
+
+
             else:
+                dialog_position = self.kwargs.get("dialog_position")
+                if not dialog_position:
+                    dialog_position = "right"
                 note_dialog = DialogWdg(display=False)
                 note_dialog.add_style("font-size: 12px")
                 note_dialog.add_title("Add Note")
                 note_dialog.add_style("overflow-y: auto")
                 no_notes_div.add(note_dialog)
-                note_dialog.set_as_activator(no_notes_msg, position="right")
+                note_dialog.set_as_activator(no_notes_msg, position=dialog_position)
 
 
             add_note_wdg = DivWdg()
@@ -1332,6 +1337,9 @@ class DiscussionWdg(BaseRefreshWdg):
             process_top.add_class("hand")
             process_top.add_attr("self_context", context.encode('utf-8'))
 
+            update_mode = self.kwargs.get("update_mode") or "load"
+            process_top.add_attr("spt_update_mode", update_mode)
+
             if context not in self.default_contexts_open:
                 process_top.add_attr("spt_state", 'closed')
 
@@ -1396,6 +1404,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog.add_style("box-sizing: border-box")
                 note_dialog.add_style("margin: 0px 30px 10px 20px")
                 note_dialog.add_style("padding: 0px 10px")
+                """
                 process_wdg.add_behavior( {
                     'type': 'click',
                     'unique_id': unique_id,
@@ -1403,13 +1412,20 @@ class DiscussionWdg(BaseRefreshWdg):
                     spt.toggle_show_hide( document.id(bvr.unique_id) );
                     '''
                 } )
+                """
+ 
+
             else:
                 note_dialog = DialogWdg(display=False)
                 note_dialog_div.add(note_dialog)
+                unique_id = None
                 note_dialog.add_title("Notes for: %s" % context)
                 note_dialog.add_style("overflow-y: auto")
                 #note_dialog.set_as_activator(process_wdg, offset={'x':0,'y':0})
-                note_dialog.set_as_activator(process_wdg, position="right")
+                dialog_position = self.kwargs.get("dialog_position")
+                if not dialog_position:
+                    dialog_position = "right"
+                note_dialog.set_as_activator(process_wdg, position=dialog_position)
 
 
             show_add = self.kwargs.get("show_add")
@@ -1461,10 +1477,11 @@ class DiscussionWdg(BaseRefreshWdg):
             content = DivWdg()
             note_dialog.add(content)
             content.add_style("min-width: 300px")
-            if (use_dialog):
-                content.add_style("width: 395px")
-            else:
-                content.add_style("width: 100%")
+            #if use_dialog:
+            #    content.add_style("width: 395px")
+            #else:
+            #    content.add_style("width: 100%")
+            content.add_style("width: 100%")
 
             content.add_style("min-height: 150px")
             content.add_class("spt_discussion_content")
@@ -1472,7 +1489,7 @@ class DiscussionWdg(BaseRefreshWdg):
             
             # context and parent_key are for dynamic update
             process_wdg.add_behavior( {
-                'type': 'click',
+                'type': 'load',
                 'note_keys': note_keys,
                 'default_num_notes': self.default_num_notes,
                 'note_expandable': self.note_expandable,
@@ -1480,28 +1497,63 @@ class DiscussionWdg(BaseRefreshWdg):
                 'context': context,
                 'parent_key': self.parent.get_search_key(),
                 'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_discussion_process_top");
-                if (top.getAttribute("spt_is_loaded") == "true") {
-                    return;
+
+                bvr.src_el.open_notes = function() {
+
+                    var top = bvr.src_el.getParent(".spt_discussion_process_top");
+                    if (top.getAttribute("spt_is_loaded") == "true") {
+                        return;
+                    }
+
+                    var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                    var kwargs = {
+                        note_keys: bvr.note_keys,
+                        default_num_notes: bvr.default_num_notes,
+                        note_expandable: bvr.note_expandable,
+                        note_format: bvr.note_format,
+                        context: bvr.context,
+                        parent_key: bvr.parent_key,
+                    }
+
+                    var el = top.getElement(".spt_discussion_content");
+                    spt.panel.load(el, class_name, kwargs);
+
+                    top.setAttribute("spt_is_loaded", "true");
                 }
 
-                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                var kwargs = {
-                    note_keys: bvr.note_keys,
-                    default_num_notes: bvr.default_num_notes,
-                    note_expandable: bvr.note_expandable,
-                    note_format: bvr.note_format,
-                    context: bvr.context,
-                    parent_key: bvr.parent_key,
-                }
-
-                var el = top.getElement(".spt_discussion_content");
-                spt.panel.load(el, class_name, kwargs);
-
-                top.setAttribute("spt_is_loaded", "true");
 
                 '''
             } )
+
+
+
+
+            if not use_dialog:
+                process_wdg.add_behavior( {
+                    'type': 'load',
+                    'unique_id': unique_id,
+                    'cbjs_action': '''
+                    setTimeout( function() {
+                        bvr.src_el.open_notes();
+                        spt.toggle_show_hide( document.id(bvr.unique_id) );
+                    }, 100 );
+                    '''
+                } )
+
+
+
+            process_wdg.add_behavior( {
+                'type': 'click',
+                'unique_id': unique_id,
+                'cbjs_action': '''
+                bvr.src_el.open_notes();
+                if (bvr.unique_id) {
+                    spt.toggle_show_hide( document.id(bvr.unique_id) );
+                }
+                '''
+            } )
+
+
 
         return top
 

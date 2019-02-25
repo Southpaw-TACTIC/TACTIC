@@ -1,4 +1,4 @@
-SET sql_mode='ANSI_QUOTES';
+SET sql_mode='PIPES_AS_CONCAT,ANSI_QUOTES';
 --
 --
 
@@ -83,6 +83,7 @@ CREATE TABLE "login" (
     "project_code" longtext,
     "license_type" character varying(256),
     "hourly_wage" float,
+    "data" longtext,
     CONSTRAINT "login_code_idx" UNIQUE ("code"),
     CONSTRAINT "login_upn_idx" UNIQUE ("upn")
 );
