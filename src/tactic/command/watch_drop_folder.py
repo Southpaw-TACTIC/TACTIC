@@ -620,12 +620,13 @@ class WatchDropFolderTask(SchedulerTask):
                 if self.email_alert:
                     subject = "Watch Folder Error"
                     message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
-                    sender_name= Config.get_value("services", "mail_name")
+                    sender_name= Config.get_value("services", "notify_user_name")
                     sender_email = Config.get_value("services", "notify_user")
                     recipient_emails = [sender_email]
 
-                    email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                    email_cmd.execute()
+                    if sender_email:
+                        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                        email_cmd.execute()
             timeout += 1
             pass
 
@@ -634,13 +635,13 @@ class WatchDropFolderTask(SchedulerTask):
         if self.email_alert:
             subject = "Watch Folder Reconnected"
             message = "Watch Folder is available and service is resumed."
-            sender_name = Config.get_value("services", "mail_name")
+            sender_name = Config.get_value("services", "notify_user_name")
             sender_email = Config.get_value("services", "notify_user")
             recipient_emails = [sender_email]
 
-            email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-            email_cmd.execute()
-
+            if sender_email:
+                email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                email_cmd.execute()
         return
 
     def _execute(self):
