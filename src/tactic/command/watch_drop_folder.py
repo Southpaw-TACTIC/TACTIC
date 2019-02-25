@@ -82,16 +82,14 @@ class WatchFolderFileActionThread(threading.Thread):
         self.kwargs = kwargs
         super(WatchFolderFileActionThread, self).__init__()
 
-
     def run(self):
+
         task = self.kwargs.get("task")
         site = task.site
         project_code = task.project_code
         Batch(site=site, project_code=project_code)
         try:
             self._run()
-        except Exception as e:
-            return
         finally:
             task = self.kwargs.get("task")
             paths = task.get_paths()
@@ -103,38 +101,12 @@ class WatchFolderFileActionThread(threading.Thread):
             task.set_clean(False)
 
 
-
-    def clean_up(self, paths):
-        task = self.kwargs.get("task")
-        for path in paths:
-
-            process_path = path
-            verify_path = path.replace(".tactic/process", ".tactic/verify")
-            error_path = path.replace(".tactic/process", ".tactic/error")
-
-            # remove the verify path
-            if os.path.exists(verify_path):
-                os.unlink(verify_path)
-
-            # move the process path back to the queue
-            queue_path = path.replace("/.tactic/process", "")
-            shutil.move(process_path, queue_path)
-
-        # this exaggerates the effect of not pausing check thread for cleaning
-        #time.sleep(10)
-        #Common.kill()
-        #task.set_restart(True)
-        return
-
-
     def _run(self):
 
         task = self.kwargs.get("task")
         paths = task.get_paths()
         count = 0
         restart = False
-
-        self.clean_up(paths)
 
         while True:
 
@@ -191,7 +163,6 @@ class WatchFolderFileActionThread(threading.Thread):
                     cmd = Common.create_from_class_path(handler, [], kwargs)
                 else:
                     # create a "custom" command that will act on the file
-                    #raise Exception
                     cmd = CheckinCmd(**kwargs)
 
                 #print "Process [%s] checking in [%s]" % (os.getpid(), path)
@@ -232,8 +203,6 @@ class WatchFolderFileActionThread(threading.Thread):
                 except Exception as e:
                     print("WARNING: %s" % e)
 
-                return
-
             finally:
 
                 count += 1
@@ -243,9 +212,27 @@ class WatchFolderFileActionThread(threading.Thread):
                     break
 
 
+
         # restart every 20 check-ins
         if restart:
-            self.clean_up(paths)
+            print "Restart [%s] files" % len(paths)
+            for path in paths:
+
+                process_path = path
+                verify_path = path.replace(".tactic/process", ".tactic/verify")
+                error_path = path.replace(".tactic/process", ".tactic/error")
+
+                # remove the verify path
+                if os.path.exists(verify_path):
+                    os.unlink(verify_path)
+
+                # move the process path back to the queue
+                queue_path = path.replace("/.tactic/process", "")
+                shutil.move(proocess_path, queue_path)
+
+            # this exaggerates the effect of not pausing check thread for cleaning
+            #time.sleep(10)
+            #Common.kill()
             task.set_restart(True)
 
 
@@ -483,7 +470,6 @@ class CheckinCmd(object):
             # move back the file in a few seconds 
             shutil.move('%s/%s'%(dest_dir, base_name), file_path)
             """
-
             server_return_value = server.simple_checkin(search_key,  context, file_path, description=description, mode='move')
 
             if watch_script_path:
@@ -608,41 +594,30 @@ class WatchDropFolderTask(SchedulerTask):
         return self.in_restart_mode
 
     def handle_disconnect(self, base_dir):
-        print "watchfolder disconnected"
-
         import time
+
         timeout = 0
-        email_interval = ProdSetting.get_value_by_key("watch_folder/email_interval") or 60
+        timeout_limit =  ProdSetting.get_value_by_key("watch_folder/disconnect_timeout") or 60
 
-        while not os.path.exists(base_dir):
+        while not os.path.exists(base_dir) and timeout < timeout_limit:
             time.sleep(1)
-            if ((timeout % email_interval) == 0 and timeout > 60) or (timeout == 60):
-                if self.email_alert:
-                    subject = "Watch Folder Error"
-                    message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
-                    sender_name= Config.get_value("services", "notify_user_name")
-                    sender_email = Config.get_value("services", "notify_user")
-                    recipient_emails = [sender_email]
-
-                    if sender_email:
-                        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                        email_cmd.execute()
             timeout += 1
             pass
 
-        print "watchfolder reconnected"
-        # handle resumption
-        if self.email_alert:
-            subject = "Watch Folder Reconnected"
-            message = "Watch Folder is available and service is resumed."
-            sender_name = Config.get_value("services", "notify_user_name")
-            sender_email = Config.get_value("services", "notify_user")
-            recipient_emails = [sender_email]
+        if not os.path.exists(base_dir):
+            if self.email_alert:
+                subject = "Watch Folder Error"
+                message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
+                sender_name = Config.get_value("services", "mail_name")
+                sender_email = Config.get_value("services", "mail_user")
+                recipient_emails = [sender_email]
 
-            if sender_email:
                 email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
                 email_cmd.execute()
-        return
+                self.email_alert = False
+            return False
+        else:
+            return True
 
     def _execute(self):
 
@@ -652,7 +627,11 @@ class WatchDropFolderTask(SchedulerTask):
 
         base_dir = self.base_dir
         if not os.path.exists(base_dir):
-            os.makedirs(base_dir)
+            #print "Watch drop folder disconnected, reconnection required to continue."
+            if not self.handle_disconnect(base_dir):
+                return
+
+        self.email_alert = True
 
         hidden_paths = [
                 "%s/.tactic" % base_dir,
@@ -730,7 +709,6 @@ class WatchDropFolderTask(SchedulerTask):
             return
 
         # Start action thread
-
         checkin = WatchFolderFileActionThread(
                 task=self,
         )
@@ -742,15 +720,7 @@ class WatchDropFolderTask(SchedulerTask):
             while True:
                 if self.in_restart():
                     break
-                try:
-                    self._execute()
-                    if not checkin.is_alive():
-                        checkin = WatchFolderFileActionThread(
-                                task=self,
-                        )
-                        checkin.start()
-                except:
-                    self.handle_disconnect(self.base_dir)
+                self._execute()
                 time.sleep(1)
 
 
@@ -795,8 +765,8 @@ class WatchDropFolderTask(SchedulerTask):
         parser.add_option("-P", "--process", dest="process", help="Define process.")
         parser.add_option("-S", "--script_path",dest="script_path", help="Define script_path.")
         parser.add_option("-w", "--watch_folder_code",dest="watch_folder_code", 
-                help="Define watch folder code. If no code is used, then it assumed that this process \
-                is managed in a standalone script.")
+				help="Define watch folder code. If no code is used, then it assumed that this process \
+				is managed in a standalone script.")
         parser.add_option("-x", "--site",dest="site", help="Define site.")
 
         parser.add_option("-c", "--handler",dest="handler", help="Define Custom Handler Class.")
@@ -819,10 +789,7 @@ class WatchDropFolderTask(SchedulerTask):
             drop_path = "%s/drop" % tmp_dir
         print "    using [%s]" % drop_path
         if not os.path.exists(drop_path):
-            try:
-                os.makedirs(drop_path)
-            except Exception as e:
-                raise
+            os.makedirs(drop_path)
 
         if options.search_type!=None :
             search_type = options.search_type

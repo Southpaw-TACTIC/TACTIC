@@ -343,7 +343,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.allow_cycle = False
         else:
             self.allow_cycle = True
-            
+
 
         top.add_style("position: relative")
 
@@ -358,7 +358,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         top.add(outer);
         outer.add_class("spt_pipeline_resize")
         outer.add_class("spt_resizable")
-       
+
 
         outer.add_style("overflow: hidden")
 
@@ -372,14 +372,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         process_menu = self.get_node_context_menu()
         menus = [process_menu.get_data()]
 
-        # Simple context menu is for renaming and 
-        # deleting approval, action and condition nodes..        
+        # Simple context menu is for renaming and
+        # deleting approval, action and condition nodes..
         simple_menu = self.get_simple_node_context_menu()
-        simple_menus = [simple_menu.get_data()]   
-    
+        simple_menus = [simple_menu.get_data()]
+
         menus_in = {
             'NODE_CTX': menus,
-            'SIMPLE_NODE_CTX': simple_menus 
+            'SIMPLE_NODE_CTX': simple_menus
         }
 
         from tactic.ui.container.smart_menu_wdg import SmartMenu
@@ -419,7 +419,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # create a canvas where all the nodes are drawn
         canvas = DivWdg()
         inner.add(canvas)
-        
+
         canvas.add_class("spt_pipeline_canvas")
         canvas.add_style("width: %s" % self.width)
         canvas.add_style("height: %s" % self.height)
@@ -484,11 +484,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         #paint.add_style("border: solid 1px blue");
         #paint.add_style("z-index: 1");
-                
-        
+
+
         outer.add(paint)
-        
-                
+
+
         paint.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -588,7 +588,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         endpoint = self.get_endpoint_node("input", node_type="input")
         template_div.add(endpoint)
-	
+
         """
 	Add template of connector panel
 
@@ -605,7 +605,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 	</my_pipeline_type>
 	</config>
 	"""
-        connector_panel_data = {} 
+        connector_panel_data = {}
         search = Search("config/widget_config")
         search.add_filter("category", "workflow_connector")
         configs = search.get_sobjects()
@@ -693,7 +693,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         } )
 
-       
+
         return top
 
 
@@ -720,10 +720,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         '''
         } )
 
-	
 
 
-     
+
+
         return canvas
 
 
@@ -754,7 +754,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         expand_div = DivWdg()
         div.add(expand_div)
         expand_div.add_style("display: none")
-        
+
 
         content_div = DivWdg()
         content_div.add_class("spt_content")
@@ -831,9 +831,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         if node_type == "action":
-            border_radius = 20 
+            border_radius = 20
         elif node_type == "hierarchy":
-            border_radius =  50 
+            border_radius =  50
             width = width
             height = height + 40
         elif node_type == "dependency":
@@ -1023,7 +1023,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var text = top.getElement(".spt_pipeline_editor_current2");
 
             if (text) {
-                var root_html = text.innerHTML; 
+                var root_html = text.innerHTML;
                 bvr.breadcrumb = root_html;
             }
             else {
@@ -1116,8 +1116,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         left_nob.add_style("z-index: 100")
         left_nob.add("")
-        
-         
+
+
         # add nobbies on the node
         right_nob = DivWdg()
         node.add(right_nob)
@@ -1167,7 +1167,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         left_nob.add_style("display", "none")
         right_nob.add_style("display", "none")
-       
+
 
         if self.is_editable:
 
@@ -1178,8 +1178,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             "drag_el": '@',
             "cb_set_prefix": 'spt.pipeline.drag_connector'
             } )
-            
-            
+
+
 
             right_nob.add_behavior( {
             "type": 'drag',
@@ -1249,11 +1249,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         }
 
         spt.pipeline.set_rename_mode(node);
-    
+
         '''
         } )
- 
-	 
+
+
         text.add_behavior( {
             'type': 'keyup',
             'cbjs_action': '''
@@ -1369,7 +1369,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
     def get_node_size(self):
         width = 100
-        height = 40 
+        height = 40
         return width, height
 
     def get_extra_node_content_wdg(self):
@@ -1488,14 +1488,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             from tactic.ui.container.smart_menu_wdg import SmartMenu
             SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
- 
+
         node_behaviors = self.get_node_behaviors()
         for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
 
 
- 
+
         # add custom node behaviors
         node_behaviors = custom_wdg.get_node_behaviors()
         for node_behavior in node_behaviors:
@@ -1712,7 +1712,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         from tactic.ui.container.smart_menu_wdg import SmartMenu
         SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
- 
+
         # add custom node behaviors
         node_behaviors = self.get_node_behaviors()
         for node_behavior in node_behaviors:
@@ -1896,7 +1896,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         connector.add_style("z-index: 0")
         #connector.add("<img width='100%' height='100%' src='/context/line.png'/>")
 
- 
+
         connector.add_behavior( {
         'type': 'load',
         'start': start,
@@ -2025,16 +2025,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         menu_item = MenuItem(type='action', label='Delete Node')
         menu_item.add_behavior( {
-            'cbjs_action': ''' 
+            'cbjs_action': '''
             var node = spt.smenu.get_activator(bvr);
             spt.pipeline.init( { src_el: node } );
             spt.pipeline.remove_node(node);
             '''
-        } ) 
+        } )
         menu.add(menu_item)
 
-        return menu 
-    
+        return menu
+
 
     def get_onload_js(self):
 
@@ -2065,7 +2065,7 @@ spt.pipeline.init = function(bvr) {
     }
     else {
         spt.pipeline.top = bvr.src_el.getParent(".spt_pipeline_top");
-    }    
+    }
     spt.pipeline._init();
 }
 
@@ -2171,6 +2171,12 @@ spt.pipeline.first_init = function(bvr) {
         data.colors[sobj[key]] = sobj.color;
     }
 
+    data.descriptions = {};
+    for (var i = 0; i < sobjs.length; i++) {
+        var sobj = sobjs[i];
+        data.descriptions[sobj[key]] = sobj.description;
+    }
+
 }
 
 
@@ -2250,7 +2256,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
         height = 2;
     }
 
-    
+
 
     var hit_connector = null;
 
@@ -2261,8 +2267,8 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
 
     var canvas = spt.pipeline.get_canvas();
     var connectors = canvas.connectors;
-    
-    
+
+
 
     for (var i=0; i<connectors.length; i++) {
         var connector = connectors[i];
@@ -2271,7 +2277,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
         var found = false;
         var imgd = ctx.getImageData(left, top, width, height);
         var pix = imgd.data;
-        
+
         for ( var j = 0; j < pix.length; j += 4) {
             var red = pix[j];
             var green = pix[j+1];
@@ -2317,7 +2323,7 @@ spt.pipeline.clear_canvas = function() {
         spt.behavior.destroy_element(folder);
     }
 
- 
+
 
     // clear the dat
     var data = spt.pipeline.get_data();
@@ -2343,7 +2349,7 @@ spt.pipeline.clear_canvas = function() {
         var panel = panels[i];
         spt.behavior.destroy_element(panels);
     }
-   
+
     spt.pipeline.redraw_canvas();
 }
 
@@ -2495,7 +2501,7 @@ spt.pipeline.select_node = function(node) {
     outer.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
     outer.setStyle("opacity", "0.8");
 
-    
+
     var group = spt.pipeline.get_group(node.spt_group);
     var group_type = group.get_group_type();
     if (group_type == 'schema') {
@@ -2558,7 +2564,18 @@ spt.pipeline.enable_node = function(node) {
 }
 
 
+// For info wdg, not sure if this should be here
+spt.pipeline = spt.pipeline || {};
+spt.pipeline.info_node;
 
+spt.pipeline.set_info_node = function(node) {
+    spt.pipeline.info_node = node;
+}
+
+
+spt.pipeline.get_info_node = function() {
+    return spt.pipeline.info_node;
+}
 
 
 
@@ -2603,10 +2620,10 @@ spt.pipeline.select_nodes_by_box = function(TL, BR) {
     spt.pipeline.unselect_all_nodes();
 
     var nodes = spt.pipeline.get_all_nodes();
-   
+
     for (var i=0; i<nodes.length; i++) {
         var node = nodes[i];
-        
+
         if ((TL.x <node.spt_xpos && node.spt_xpos < BR.x ) && (TL.y < node.spt_ypos && node.spt_ypos < BR.y)) {
             spt.pipeline.select_node(node);
         }
@@ -2639,6 +2656,13 @@ spt.pipeline.get_node_by_name = function(name) {
 }
 
 
+spt.pipeline.set_node_name = function(node, name) {
+    node.setAttribute("spt_element_name", name);
+    node.spt_name = name;
+    var label = node.getElement(".spt_label");
+    label.innerText = name;
+}
+
 
 spt.pipeline.get_node_name = function(node) {
     return node.getAttribute("spt_element_name");
@@ -2649,6 +2673,23 @@ spt.pipeline.get_node_type = function(node) {
     return node.getAttribute("spt_node_type");
 }
 
+
+spt.pipeline.get_node_types = function() {
+    var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+
+    var info_top = top.getElement(".spt_pipeline_tool_info");
+    if (!info_top) return [];
+
+    var sel = info_top.querySelector("select[name='node_type']");
+    if (!sel) return [];
+
+    node_types = [];
+    for (var i=0, n=sel.options.length; i<n; i++) {
+      if (sel.options[i].value) node_types.push(sel.options[i].value);
+    }
+
+    return node_types;
+}
 
 
 spt.pipeline.get_full_node_name = function(node, group_name) {
@@ -2753,7 +2794,7 @@ spt.pipeline.get_num_groups = function() {
     var element_count = 0;
     for(var e in groups)
         if(groups.hasOwnProperty(e))
-            element_count++; 
+            element_count++;
 
     return element_count;
 }
@@ -2776,7 +2817,7 @@ spt.pipeline.get_group_by_node = function(node) {
     var group = spt.pipeline.get_group(group_name);
     return group;
 }
-    
+
 
 
 // Set the current group for operation to take place
@@ -2800,9 +2841,9 @@ spt.pipeline.get_current_group = function() {
 
 
 spt.pipeline.set_search_type = function(pipeline_code, stype) {
-   
+
     var data = spt.pipeline.get_data();
-    
+
     data.stype_dict[pipeline_code] = stype;
 }
 
@@ -2829,7 +2870,7 @@ spt.pipeline.add_node_to_group = function(node, group_name) {
 
 
 
-// add a new node to the canvas 
+// add a new node to the canvas
 
 spt.pipeline.undo_add_nodes = []
 spt.pipeline.undo_remove_nodes = []
@@ -2846,7 +2887,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 	var node_type = null;
 	if (typeof(kwargs) != 'undefined') {
 		group = kwargs.group;
-		if (kwargs.select_node != 'undefined') 
+		if (kwargs.select_node != 'undefined')
 			select_node = kwargs.select_node;
 		node_type = kwargs.node_type;
 	}
@@ -2866,7 +2907,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 	if (typeof(group) == 'undefined' || group == null) {
 		group = spt.pipeline.get_current_group();
-	
+
 	}
 
 
@@ -2926,7 +2967,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 
 	// set any properties that might exist
-	new_node.properties = {};
+	new_node.properties = kwargs.properties || {};
 
 
 	// add to a group
@@ -2944,7 +2985,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 		color = "#FFF";
 	}
 	*/
-	if (group_info.get_node_type() == 'process') 
+	if (group_info.get_node_type() == 'process')
 		color = spt.pipeline.get_group_color(group);
 	else // for schema
 		color = spt.pipeline.get_group_color(name);
@@ -2964,9 +3005,9 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 		y = num_nodes * 0 + 50;
 	}
 
-	
+
 	spt.pipeline.move_to(new_node, x, y);
-	
+
 
 	// select the node
 	if (select_node)
@@ -2983,7 +3024,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 	if (editor_top) {
 		editor_top.addClass("spt_has_changes");
 	}
-	
+
 
 	return new_node;
 }
@@ -2993,7 +3034,7 @@ spt.pipeline.add_node = function(name, x, y, kwargs) {
 	var cmd = new spt.pipeline.AddNodeCmd(name, x, y, kwargs);
 
     spt.command.add_to_undo(cmd);
-    
+
     return cmd.execute();
 }
 
@@ -3005,16 +3046,16 @@ spt.pipeline.AddNodeCmd = function(name, x, y, kwargs){
         this.x = x;
         this.y = y;
         this.kwargs = kwargs;
-            	
-        this.node =  spt.pipeline._add_node(this.name, this.x, this.y, this.kwargs);        
+
+        this.node =  spt.pipeline._add_node(this.name, this.x, this.y, this.kwargs);
         return this.node;
     };
-    
+
     this.redo = function() {
     	var node = spt.pipeline.undo_add_nodes.pop();
 
 		this.node  = spt.pipeline._add_node(node.spt_name, node.style.left.split("px")[0], node.style.top.split("px")[0], this.kwargs);
-        
+
         var group = spt.pipeline.get_group_by_node(this.node)
        	var canvas = spt.pipeline.get_canvas();
 
@@ -3026,10 +3067,10 @@ spt.pipeline.AddNodeCmd = function(name, x, y, kwargs){
 			canvas.connectors.push(connector);
 			group.add_connector(connector)
 		    connector.draw()
-		}   
-    
+		}
+
     }
-    
+
     this.undo = function(){
     	this.node = spt.pipeline.reset_node(this.node)
         spt.pipeline.undo_add_nodes.push(this.node);
@@ -3046,7 +3087,7 @@ spt.pipeline.remove_nodes = function(nodes) {
 	var cmd = new spt.pipeline.RemoveNodeCmd(nodes);
 
     spt.command.add_to_undo(cmd);
-    
+
     cmd.execute();
 }
 
@@ -3055,24 +3096,24 @@ spt.pipeline.RemoveNodeCmd = function(nodes){
 
 	this.execute = function() {
 	    this.nodes = nodes;
-        spt.pipeline._remove_nodes(this.nodes);        
+        spt.pipeline._remove_nodes(this.nodes);
     };
-    
+
     this.redo = function() {
     	var nodes = spt.pipeline.undo_remove_nodes.pop();
     	for(var i = 0; i<nodes.length; i++){
     		nodes[i] = spt.pipeline.reset_node(nodes[i]);
     	}
     	spt.pipeline._remove_nodes(nodes);
-		
+
     }
-    
+
     this.undo = function(){
         spt.pipeline.undo_remove_nodes.push(this.nodes);
        	for(var i = 0; i < this.nodes.length; i++){
        		var node = nodes[i];
        		var new_node = spt.pipeline._add_node(node.spt_name, node.style.left.split("px")[0], node.style.top.split("px")[0]);
-       	    		
+
        	    var settings = node.getAttribute("spt_settings");
        	    new_node.setAttribute("spt_settings",settings);
             if(settings){
@@ -3092,8 +3133,8 @@ spt.pipeline.RemoveNodeCmd = function(nodes){
 			canvas.connectors.push(connector);
 			group.add_connector(connector)
 		    connector.draw()
-		}		
-		       	
+		}
+
     }
 }
 
@@ -3114,7 +3155,7 @@ spt.pipeline._remove_nodes = function(nodes) {
             var connector = connectors[i];
             var to_node = connector.get_to_node();
             var from_node = connector.get_from_node();
-            if (to_node == null || from_node == null 
+            if (to_node == null || from_node == null
                     || to_node.getAttribute("spt_element_name") == name
                     || from_node.getAttribute("spt_element_name") == name) {
                 indexes[i] = true;
@@ -3124,7 +3165,7 @@ spt.pipeline._remove_nodes = function(nodes) {
 
         }
     }
-    
+
     spt.pipeline.undo_remove_connectors.push(to_del);
 
     for (var i = 0; i < to_del.length; i++) {
@@ -3203,7 +3244,112 @@ spt.pipeline.get_node_properties = function(node) {
     return node.properties;
 }
 
+// Kwargs are ProcessInfoCmd inputs
+spt.pipeline.get_node_kwargs = function(node) {
+    var type = spt.pipeline.get_node_type(node);
+    var property = node.properties;
+    if (property) return property[type] || {};
+    return {};
+}
 
+spt.pipeline.get_node_kwarg = function(node, name) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    return kwargs[name];
+}
+
+spt.pipeline.set_node_kwargs = function(node, kwargs) {
+    var type = spt.pipeline.get_node_type(node);
+    spt.pipeline.set_node_property(node, type, kwargs);
+}
+
+spt.pipeline.set_node_kwarg = function(node, name, value) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!kwargs) kwargs = {};
+    kwargs[name] = value;
+    spt.pipeline.set_node_kwargs(node, kwargs);
+}
+
+spt.pipeline.add_node_on_save = function(node, name, value) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!kwargs) kwargs = {};
+    if (!kwargs.on_save) kwargs.on_save = {};
+    kwargs.on_save[name] = value;
+    spt.pipeline.set_node_kwargs(node, kwargs);
+}
+
+// Supports both kwargs and multi kwargs
+spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+        if (value || value === "") input_el.value = value;
+    }
+}
+
+spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+        if (input_el.value == value) input_el.checked = true;
+    }
+}
+
+spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+        input_el.checked = value;
+    }
+}
+
+// Used for InfoWdgs with dynamic forms
+spt.pipeline.get_node_multi_kwargs = function(node) {
+    var multi_kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!multi_kwargs) return {};
+    if (!multi_kwargs.multi) {
+        console.log("ERROR: not multi_kwargs");
+        return {};
+    }
+    var kwargs_name = multi_kwargs.selected;
+    return multi_kwargs[kwargs_name] || {};
+}
+
+spt.pipeline.get_node_multi_kwarg = function(node, name) {
+    var kwargs = spt.pipeline.get_node_multi_kwargs(node);
+    return kwargs[name];
+}
+
+spt.pipeline.set_node_multi_kwarg = function(node, name, value) {
+    var multi_kwargs = spt.pipeline.get_node_kwargs(node);
+    if (!multi_kwargs.multi) return;
+    var kwargs_name = multi_kwargs.selected;
+    var kwargs = multi_kwargs[kwargs_name];
+    kwargs[name] = value;
+    multi_kwargs[kwargs_name] = kwargs;
+    spt.pipeline.set_node_kwargs(node, multi_kwargs);
+}
+
+spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value) {
+    var type = spt.pipeline.get_node_type(node);
+    var multi_kwargs = spt.pipeline.get_node_property(node, type);
+    if (!multi_kwargs) multi_kwargs = {};
+    multi_kwargs.multi = true;
+    multi_kwargs.selected = kwargs_name;
+    var kwargs = multi_kwargs[kwargs_name];
+    if (!kwargs) kwargs = {};
+    kwargs[name] = value;
+    multi_kwargs[kwargs_name] = kwargs;
+    spt.pipeline.set_node_property(node, type, multi_kwargs);
+}
 
 
 spt.pipeline.set_color = function(node, color) {
@@ -3253,22 +3399,22 @@ spt.pipeline.rename_node = function(node, value, undo_flag) {
 }
 
 spt.pipeline.RenameNode = function(node, value){
-	
+
 	this.execute = function() {
 		this.node = node;
 	   	this.old_value = node.spt_name;
 	   	this.value = value;
-	   	this.redo();        
+	   	this.redo();
     };
 
 	this.redo = function() {
 		this.node = spt.pipeline.reset_node(this.node);
-        spt.pipeline._rename_node(this.node, this.value);        
+        spt.pipeline._rename_node(this.node, this.value);
     };
-    
+
     this.undo = function() {
 		this.node = spt.pipeline.reset_node(this.node);
-        spt.pipeline._rename_node(this.node, this.old_value);        
+        spt.pipeline._rename_node(this.node, this.old_value);
     };
 
 
@@ -3341,51 +3487,51 @@ spt.pipeline.get_position = function(node) {
     // find the relative pos on the canvas
     var canvas = spt.pipeline.get_canvas();
     var canvas_pos = spt.pipeline.get_el_position(canvas);
-  
+
     var node_pos = spt.pipeline.get_el_position(node);
-    
+
     var rel_pos = {x: node_pos.x-(canvas_pos.x), y: node_pos.y-(canvas_pos.y)};
-    
+
     return rel_pos;
 }
 
 spt.pipeline.get_el_last_position = function(el){
     var lastpos = el.getPosition();
-    
+
     // Webkit position is affected by scale
     // FIXME: this still causes some drift over time ... much reduced, but
     // still there
     if ( spt.browser.is_Webkit_based() ) {
         lastpos = {x: lastpos.x, y: lastpos.y};
-      
+
     }
     else {
         // TODO: this was fixed in Firefox v12: need to check for browser
         // version
         lastpos = {x: (lastpos.x), y: (lastpos.y)};
-        
+
     }
     return lastpos;
-    
+
 }
 
 
 spt.pipeline.get_el_position = function(el) {
     var pos = el.getPosition()
     var scale = spt.pipeline.get_scale();
-    
+
     // Webkit position is affected by scale
     // FIXME: this still causes some drift over time ... much reduced, but
     // still there
     if ( spt.browser.is_Webkit_based() ) {
         pos = {x: pos.x/scale, y: pos.y/scale};
-      
+
     }
     else {
         // TODO: this was fixed in Firefox v12: need to check for browser
         // version
         pos = {x: (pos.x/scale), y: (pos.y/scale)};
-        
+
     }
     return pos
 }
@@ -3450,7 +3596,7 @@ spt.pipeline.set_folder_color = function(folder, color) {
     var content = folder.getElement(".spt_content");
     if( spt.browser.is_Firefox() ) {
         content.setStyle("background", "-moz-linear-gradient(top, "+color1+" 30%, "+color2+" 98%)");
-    } 
+    }
     else {
         content.setStyle("background", "-webkit-gradient(linear, 0% 0%, 0% 100%, from("+color1+"), to("+color2+"))");
     }
@@ -3627,13 +3773,13 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
             var pos = spt.pipeline.get_position(nodes[i]);
             spt.pipeline.last_node_pos[name] = pos;
         }
-    } 
+    }
     else {
         spt.pipeline.move_by(node, dx, dy);
     }
-  
+
     spt.pipeline.redraw_canvas();
-    
+
 
 }
 
@@ -3655,11 +3801,11 @@ spt.pipeline.node_drag_action = function( evt, bvr, mouse_411) {
 	if (editor_top) {
 		editor_top.addClass("spt_has_changes");
 	}
-	
+
 	var cmd = new spt.pipeline.NodeDragActionCmd(node, spt.pipeline.last_node_pos, spt.pipeline.orig_node_pos);
-	
+
     spt.command.add_to_undo(cmd);
-    
+
 }
 
 
@@ -3670,12 +3816,12 @@ spt.pipeline.NodeDragActionCmd = function(node, last_node_pos, orig_node_pos) {
 
     	this.node = node;
 		this.node = spt.pipeline.reset_node(this.node)
-		
+
 		spt.pipeline.move_to(this.node, this.pos.x, this.pos.y);
 		spt.pipeline.redraw_canvas();
 
     };
-    
+
     this.undo = function() {
 		this.pos = orig_node_pos;
 
@@ -3726,32 +3872,32 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
     var data = spt.pipeline.get_data();
     var canvas = spt.pipeline.get_canvas();
     var canvas_pos = spt.pipeline.get_el_position(canvas);
-  
+
     var scale = spt.pipeline.get_scale();
     var node;
     var node_pos;
     var node_lastpos;
-    
+
     if (data.line_mode == 'bezier' || data.line_mode == 'curved_edge') {
         node = bvr.src_el.getParent(".spt_pipeline_node");
         node_pos = spt.pipeline.get_position(node);
         node_lastpos = spt.pipeline.get_el_last_position(node);
 
         var size = spt.pipeline.get_size(node);
-        
+
         node_pos = { x: (node_pos.x + size.x), y: (node_pos.y + size.y/2)};
-        
+
     }
     else {
         node = bvr.src_el.getParent(".spt_pipeline_node");
         node_pos = spt.pipeline.get_position(node);
         node_pos = { x: (node_pos.x + 50), y: (node_pos.y + 20)};
- 
+
     }
 
     var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
-    
-    
+
+
     // redraw canvas and add connector
     spt.pipeline.redraw_canvas();
 
@@ -3946,7 +4092,7 @@ spt.pipeline.connect_nodes = function(from_node, to_node) {
     connector.set_to_node(to_node);
 
     connector.draw();
-} 
+}
 
 
 
@@ -3971,7 +4117,7 @@ spt.pipeline.delete_connector = function(connector) {
     // remove custom panels
     panel = connector.panel;
     if (panel) {
-        spt.behavior.destroy_element(panel);    
+        spt.behavior.destroy_element(panel);
     }
 
     spt.pipeline.clear_selected();
@@ -3993,7 +4139,7 @@ spt.pipeline.draw_background = function() {
 
 
 spt.pipeline.draw_curve = function(start, end) {
-    
+
     var ctx = spt.pipeline.get_ctx();
     var width = (end.x - start.x)/2;
     ctx.bezierCurveTo(start.x+width, start.y, end.x-width, end.y, end.x, end.y);
@@ -4049,7 +4195,7 @@ spt.pipeline.draw_connector = function(start, end, color) {
     }
 
     var ctx = spt.pipeline.get_ctx();
-    ctx.strokeStyle = color; 
+    ctx.strokeStyle = color;
     ctx.lineWidth = 1;
 
     ctx.beginPath();
@@ -4068,7 +4214,7 @@ spt.pipeline.draw_connector = function(start, end, color) {
             x_diff = 50;
         }
         offset.x = x_diff/4;
-        
+
 
         var y_diff = end.y - start.y
         if (y_diff < 0) {
@@ -4157,7 +4303,7 @@ spt.pipeline.draw_connector = function(start, end, color) {
         //ctx.font = "bold 16px sans-serif";
         //ctx.fillText(">", start.x+width, center_y)
         ctx.bezierCurveTo(start.x+width, start.y, end.x-width, end.y, end.x, end.y);
-        
+
 
         // fudge factor to make angle of arrow look better (rather than finding the
         // the true derivative of a bezier curve (this looks good enough)
@@ -4187,7 +4333,7 @@ spt.pipeline.draw_curved_edge_line = function(start, end, color) {
     }
 
     var ctx = spt.pipeline.get_ctx();
-    ctx.strokeStyle = color; 
+    ctx.strokeStyle = color;
     ctx.lineWidth = 1;
 
     ctx.beginPath();
@@ -4205,7 +4351,7 @@ spt.pipeline.draw_curved_edge_line = function(start, end, color) {
             x_diff = 50;
         }
         offset.x = x_diff/4;
-        
+
 
         var y_diff = end.y - start.y
         if (y_diff < 0) {
@@ -4278,7 +4424,7 @@ spt.pipeline.draw_curved_edge_line = function(start, end, color) {
         }
 
     }
-    // front 
+    // front
     else {
         spt.pipeline.draw_curved_edge(start, end);
     }
@@ -4298,13 +4444,13 @@ spt.pipeline.draw_line = function(start, end, color) {
         color = '#111';
     }
     var ctx = spt.pipeline.get_ctx();
-    ctx.strokeStyle = color;  
+    ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
 
-  
+
     var halfway = { x:(end.x-start.x)/2+start.x, y:(end.y-start.y)/2+start.y };
     var len = Math.sqrt( (end.x-start.x)*(end.x-start.x)+(end.y-start.y)*(end.y-start.y) );
     var point0 = { x: (end.x-start.x)/len, y: (end.y-start.y)/len };
@@ -4455,20 +4601,20 @@ spt.pipeline.set_scale = function(scale) {
 
     var canvas = spt.pipeline.get_canvas();
     //canvas.setStyle("border", "solid 1px blue");
-    
+
     var scale_str = "scale("+scale+", "+scale+")"
- 
+
     scale_el = canvas.getParent(".spt_pipeline_scale");
     //canvas.setStyle("border", "solid 1px blue");
 
     scale_el.setStyle("-moz-transform", scale_str)
-    scale_el.setStyle("-webkit-transform", scale_str)  
+    scale_el.setStyle("-webkit-transform", scale_str)
     scale_el.setStyle("transform", scale_str)
 
     //TweenLite.to(scale_el, 0.2, {scale: scale});
-    
+
     spt.pipeline.redraw_canvas();
-    
+
 }
 
 spt.pipeline.get_scale = function() {
@@ -4488,7 +4634,7 @@ spt.pipeline.center_node = function(node) {
     var dd = { x: size.x/2 - pos.x - width/2, y: size.y/2 - pos.y - height/2};
 
     spt.pipeline.move_all_nodes( dd.x, dd.y );
-    
+
 }
 
 
@@ -4747,7 +4893,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var data = spt.pipeline.get_data();
         var pipeline_type = data.type;
         var connector_panel_data = data.connector_panel_data;
-        
+
         if (connector_panel_data[pipeline_type]) {
             if (!this.panel) {
                 var top = spt.pipeline.top;
@@ -4756,13 +4902,13 @@ spt.pipeline.Connector = function(from_node, to_node) {
                 var el = spt.behavior.clone(template);
                 el.removeClass("spt_connector_panel_template");
                 el.addClass("spt_connector_data");
-                
+
                 //var from_node = this.from_node.getAttribute("spt_element_name");
                 //var to_node = this.to_node.getAttribute("spt_element_name");
-                
+
                 var canvas = spt.pipeline.get_canvas();
                 canvas.appendChild(el);
-                
+
                 this.panel = el;
             }
             var y = (unscaled_from_pos.y + unscaled_to_pos.y)/2;
@@ -4775,7 +4921,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
             spt.pipeline.move_to(this.panel, unscaled_from_pos.x+dx, y+dy);
 
         }
-            
+
 
         if (show_attr) {
             var node = this.from_node;
@@ -4791,7 +4937,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
                 var to_dx = -30 * scale;
                 var to_dy = -15 * scale;
 
-                    
+
                 spt.pipeline.draw_text(from_attr, from_pos.x + from_dx, from_pos.y + from_dy);
                 spt.pipeline.draw_text(to_attr, to_pos.x + to_dx, to_pos.y + to_dy);
             }
@@ -4846,10 +4992,10 @@ spt.pipeline.Connector = function(from_node, to_node) {
                 var delta_x =  (from_pos.x > to_pos.x) ? -10 : 10;
                 delta_x *= scale;
                 var delta_y = -35;
-                delta_y *= scale; 
+                delta_y *= scale;
                 var from_col = attrs['from_col'] ? attrs['from_col'] : '- default -';
                 var to_col = attrs['to_col'] ? attrs['to_col'] : '- default -';
-                    
+
                 spt.pipeline.draw_text(from_col, from_pos.x + delta_x, from_pos.y + delta_y);
                 spt.pipeline.draw_text(to_col, to_pos.x - delta_x, to_pos.y +delta_y);
             }
@@ -5007,6 +5153,7 @@ spt.pipeline.Group = function(name) {
             spt.pipeline.set_color(this.nodes[i], color);
         }
     }
+
     this.get_color = function() {
         return this.color;
     }
@@ -5026,10 +5173,20 @@ spt.pipeline.Group = function(name) {
         this.node_type = node_type;
     }
 
+    this.set_description = function(description) {
+        this.description = description;
+
+        var data = spt.pipeline.get_data();
+        data.descriptions[this.get_name()] = description;
+    }
+
+    this.get_description = function() {
+        return this.description;
+    }
 
 
 }
- 
+
 
 // Importer
 spt.pipeline.set_has_prefix = function(flag) {
@@ -5086,7 +5243,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         processes[name] = process_sobj;
     }
 
-    
+
     var pipeline_xml = pipeline.pipeline;
     var pipeline_stype = pipeline.search_type;
     var xml_doc = spt.parse_xml(pipeline_xml);
@@ -5141,7 +5298,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             var settings = process.workflow;
             if (!settings) {
                 settings = {};
-            } else {
+            } else if (typeof(settings) == "string") {
                 settings = JSON.parse(settings);
             }
 
@@ -5150,7 +5307,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             if (process.process) settings['process'] = process.process;
             process_nodes[i].setAttribute("settings", JSON.stringify(settings));
         }
-        
+
         xml_nodes.push(process_nodes[i]);
 
     }
@@ -5234,13 +5391,13 @@ spt.pipeline.import_schema = function(schema_code, color) {
 
 //if undo_flag is true, add to undo cmd
 spt.pipeline.set_node_value = function(node, values, undo_flag) {
-	
+
 	var workflow = node.workflow;
     if (!node.workflow) {
         workflow = node.workflow = {};
     }
     orig_values = []
-    
+
 	for(var i = 0; i < values.length; i++){
 		var name = values[i].name
 		var value = values[i].value
@@ -5250,8 +5407,8 @@ spt.pipeline.set_node_value = function(node, values, undo_flag) {
 	    	name: name,
             value: orig_value,
             kwargs: kwargs
-	    }) 
-	    
+	    })
+
 	}
 
 	var cmd = new spt.pipeline.SetNodeValueCmd(node, values, orig_values);
@@ -5268,14 +5425,14 @@ spt.pipeline.SetNodeValueCmd = function(node, values, orig_values) {
 	this.execute = function(){
 		return this.redo();
 	}
-	
+
 	this.redo = function(){
 		var workflow = node.workflow;
 		if (!node.workflow) {
 			workflow = node.workflow = {};
 		}
-		
-		
+
+
 		for(var i = 0; i < values.length; i++){
 			var name = values[i].name
 			var value = values[i].value
@@ -5297,26 +5454,26 @@ spt.pipeline.SetNodeValueCmd = function(node, values, orig_values) {
 					}
 				}
 			}
-		
+
 		}
-		
+
 		return node;
 
 	}
-	
-	
+
+
 	this.undo = function(){
 		var workflow = node.workflow;
 		if (!node.workflow) {
 			workflow = node.workflow = {};
 		}
-		
-		
+
+
 		for(var i = 0; i < orig_values.length; i++){
 			var name = orig_values[i].name
 			var value = orig_values[i].value
 			var kwargs = orig_values[i].kwargs
-		
+
 			workflow[name] = value;
 
 			// node.properties goes into xml, code is redundant but it works for now
@@ -5334,9 +5491,9 @@ spt.pipeline.SetNodeValueCmd = function(node, values, orig_values) {
 					}
 				}
 			}
-		
+
 		}
-		
+
 		return node;
 
 	}
@@ -5374,7 +5531,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         if (top == null || ypos < top) {
             top = ypos;
         }
-    } 
+    }
 
     // randomize somewhat so that user can see that a new pipeline was loaded
     if (!top) {
@@ -5442,7 +5599,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
             settings_json = JSON.parse(settings);
             if (node.update_node_settings) {
                 node.update_node_settings(settings_json);
-				node.setAttribute("spt_settings", settings)                
+				node.setAttribute("spt_settings", settings)
             }
         }
 
@@ -5485,7 +5642,7 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
         var from_node = group.get_node(from);
         var is_dangling = false;
 
-       
+
         if (!from_node || !to_node) {
             // dangling one
             var connector = new spt.pipeline.Connector();
@@ -5501,7 +5658,7 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
             connector.set_to_node(to_node);
 
             connector.draw();
-            
+
         }
 
         // add the attributes
@@ -5513,7 +5670,7 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
             connector.set_attr( name, value );
         }
 
-        if (is_dangling) 
+        if (is_dangling)
             group.add_dangling_connector(connector);
         else
             group.add_connector(connector);
@@ -5530,9 +5687,9 @@ spt.pipeline.load_connects = function(group_name, xml_connects) {
 	        if (connector_panel_data[pipeline_type]) {
                     var class_name = connector_panel_data[pipeline_type];
                     var kwargs = {
-                        'from_node': from, 
-                        'to_node': to, 
-                        'pipeline_code': group_name, 
+                        'from_node': from,
+                        'to_node': to,
+                        'pipeline_code': group_name,
                         'overlap': connector.get_attr("overlap")
                     };
                     spt.panel.load(el, class_name, kwargs, {}, {show_loading: false});
@@ -5562,7 +5719,7 @@ spt.pipeline.load_triggers = function() {
     // get all of the triggers with this pipeline_code
     var node_names = [];
     for (var i = 0; i < length; i++) {
-        var node = nodes[i]; 
+        var node = nodes[i];
         var node_name = node.getAttribute("spt_element_name");
 
         var trigger = server.eval("@SOBJECT(config/trigger['process','"+node_name+"'])", {single: true});
@@ -5630,7 +5787,7 @@ spt.pipeline.set_status_color = function(search_key) {
     var length = nodes.length;
     // get all of the triggers with this pipeline_code
     for (var i = 0; i < length; i++) {
-        var node = nodes[i]; 
+        var node = nodes[i];
         var process = spt.pipeline.get_node_name(node);
 
         var task = tasks_dict[process];
@@ -5670,7 +5827,7 @@ spt.pipeline.set_task_color = function(group_name) {
 
     var nodes = spt.pipeline.get_nodes_by_group(group_name);
     for (var i = 0; i < nodes.length; i++) {
-        var node = nodes[i]; 
+        var node = nodes[i];
         var process = spt.pipeline.get_node_name(node);
 
         var color = group_colors[process];
@@ -5724,7 +5881,7 @@ spt.pipeline.export_group = function(group_name) {
         return a < b ? -1 : a > b ? 1 : 0;
     }
     var sortfunc = null;
-    
+
     if (group_type == 'schema') {
         sortfunc = function(a,b) {
         var a = spt.pipeline.get_full_node_name(a, group_name);
@@ -5739,7 +5896,7 @@ spt.pipeline.export_group = function(group_name) {
         return pos_a.x - pos_b.x;
         }
     }
-    
+
     dangling_connectors.sort(sort_connector_func);
     connectors.sort(sort_connector_func);
     nodes_array.sort(sortfunc);
@@ -5770,9 +5927,9 @@ spt.pipeline.export_group = function(group_name) {
     for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i];
         var name = spt.pipeline.get_full_node_name(node, group_name);
-       
+
         if (name_dict[name]) {
-            throw("duplicated node name ' + name + ' found. Please clean up first and save again.")
+            throw("duplicated node name " + name + " found. Please clean up first and save again.")
             return;
         }
         else {
@@ -5785,6 +5942,8 @@ spt.pipeline.export_group = function(group_name) {
         var pos = spt.pipeline.get_position(node);
         pos = { x: pos.x-left+100, y: pos.y-top+100 };
 
+        name = name.replace(/&/g, "&amp;amp;");
+
         if (node_type != "node") {
             xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
         }
@@ -5794,14 +5953,19 @@ spt.pipeline.export_group = function(group_name) {
 
         var properties = node.properties;
         for (var key in properties) {
-           
+
             if (!properties.hasOwnProperty(key))
                 continue;
-            if (['name','xpos','ypos','type','names','namedItem','item'].contains(key)) {
+            if (['name', 'xpos', 'ypos', 'type', 'names', 'namedItem', 'item', 'kwargs'].contains(key)) {
+                continue;
+            }
+
+            if (spt.pipeline.get_node_types().contains(key)) {
                 continue;
             }
 
             var value = properties[key];
+            if (typeof value == "string") value = value.replace(/&/g, "&amp;amp;");
             if (key == "settings" && value) {
                 settings_str = JSON.stringify(value);
                 xml += " "+key+"='"+settings_str+"'";
@@ -5818,11 +5982,11 @@ spt.pipeline.export_group = function(group_name) {
         xml += '/>\n';
     }
 
-   
+
     // export the connectors
     for (var i = 0; i < connectors.length; i++) {
         var connector = connectors[i];
-       
+
         var from_node_name = connector.get_from_node().spt_name;
         var to_node_name = connector.get_to_node().spt_name;
 
@@ -5849,7 +6013,7 @@ spt.pipeline.export_group = function(group_name) {
             throw(msg);
         }
         for (var key in attrs) {
-            if (['from','to'].contains(key)) 
+            if (['from','to'].contains(key))
                 continue;
             xml += ' '+key+'="'+attrs[key]+'"';
         }
@@ -5878,7 +6042,7 @@ spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
     var pipeline_code = spt.pipeline.get_current_group();
     var group = spt.pipeline.get_group(pipeline_code);
     var connectors = group.get_connectors();
-    
+
     var connector = null;
 
     for (var i = 0; i < connectors.length; i++) {

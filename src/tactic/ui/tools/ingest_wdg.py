@@ -1376,11 +1376,17 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         };
 
+        on_error = function(error) {
+            spt.alert(error);
+            progress_el.setStyle("background", "#F00");
+            spt.message.stop_interval(message_key);
+        }
+
 
         var class_name = bvr.action_handler;
         // TODO: make the async_callback return throw an e so we can run
         // server.abort
-        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete});
+        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete, on_error: on_error});
 
         on_progress = function(message) {
 

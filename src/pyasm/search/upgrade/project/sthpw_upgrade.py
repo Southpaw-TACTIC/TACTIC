@@ -21,16 +21,6 @@ class SthpwUpgrade(BaseUpgrade):
     #
     # 4.6.0.a03
     #
-    def upgrade_v4_6_0_a03_013(self):
-        if self.get_database_type() == "PostgreSQL":
-            self.run_sql('''
-            ALTER TABLE "trigger" ADD COLUMN data jsonb;
-            ''')
-        else:
-            self.run_sql('''
-            ALTER TABLE "trigger" ADD COLUMN data json;
-            ''')
-    
     def upgrade_v4_6_0_a03_012(self):
         self.run_sql('''
         ALTER TABLE "pipeline" ADD COLUMN use_workflow boolean default TRUE;
@@ -64,13 +54,13 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_6_0_a03_007(self):
-        if self.get_database_type() == 'PostgreSQL':
+        if self.get_database_type() == 'MySQL':
             self.run_sql('''
-            ALTER TABLE "login_group" ADD COLUMN data jsonb;
+            ALTER TABLE "login_group" ADD COLUMN data json;
             ''')
         else:
             self.run_sql('''
-            ALTER TABLE "login_group" ADD COLUMN data json;
+            ALTER TABLE "login_group" ADD COLUMN data jsonb;
             ''')
 
 

@@ -370,7 +370,7 @@ class SPTDate(object):
 
 
 
-    def get_time_ago(cls, date, convert=False, start=None):
+    def get_time_ago(cls, date, convert=False, start=None, show_date=True):
 
         if isinstance(date, basestring):
             date = parser.parse(date)
@@ -392,7 +392,11 @@ class SPTDate(object):
         else:
             txt = "ago"
 
-        if diff.days >= 7:
+
+        if show_date in ['false', False]:
+            value = "%s days %s" % (diff.days, txt)
+
+        elif diff.days >= 7:
             value = date.strftime("%b %d at %I:%M %p")
 
         elif diff.days == 1:

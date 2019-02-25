@@ -1634,12 +1634,42 @@ TacticServerStub = function() {
     }
 
 
+    this.execute_cbk = function(bvr, callback, args, kwargs) {
+        var cbk = "tactic.ui.panel.CustomLayoutCbk";
+        var top = bvr.src_el.getParent(".spt_custom_top");
+        var view = top.getAttribute("spt_view");
+
+        var cbk_kwargs = {
+            view: view,
+            kwargs: args
+        }
+
+        return this.execute_cmd(cbk, cbk_kwargs)
+    }
+
+
+    this.p_execute_cbk = function(bvr, callback, args, kwargs) {
+        var cbk = "tactic.ui.panel.CustomLayoutCbk";
+        var top = bvr.src_el.getParent(".spt_custom_top");
+        var view = top.getAttribute("spt_view");
+
+        var cbk_kwargs = {
+            view: view,
+            kwargs: args
+        }
+
+        return this.p_execute_cmd(cbk, cbk_kwargs)
+    }
+ 
+
 
     
 
     this.execute = function(code) {
         return this._delegate("execute", arguments, null);
     }
+
+
 
     this.check_access = function(access_group, key, access, kwargs) {
         return this._delegate("check_access", arguments, kwargs);

@@ -3396,7 +3396,7 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_timestamp(self, default="0", not_null=True, timezone=False):
+    def get_timestamp(self, default=None, not_null=False, timezone=False):
         parts = []
         if timezone:
             parts.append("timestamp with time zone")
