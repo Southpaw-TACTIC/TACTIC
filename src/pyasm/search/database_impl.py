@@ -3364,7 +3364,7 @@ class MySQLImpl(PostgresImpl):
         parts.append("serial")
         return " ".join(parts)
 
-    def get_text(self, default=None, not_null=False):
+    def get_text(self, not_null=False, default=None):
         parts = []
         parts.append("longtext")
         if default is not None:
@@ -3374,7 +3374,7 @@ class MySQLImpl(PostgresImpl):
         return " ".join(parts)
 
 
-    def get_boolean(self, default=None, not_null=False):
+    def get_boolean(self, not_null=False, default=None):
        parts = []
        parts.append("tinyint")
        if default is not None:
@@ -3385,7 +3385,7 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_varchar(self, default=None, length=191, not_null=False):
+    def get_varchar(self, length=191, not_null=False, default=None):
         if not length:
             length = 191
 
@@ -3431,7 +3431,7 @@ class MySQLImpl(PostgresImpl):
 
 
 
-    def get_json(self, default=None, not_null=False):
+    def get_json(self, not_null=False, default=None):
         parts = []
 
         # JSON not support untile MySQL 5.7 (need to check version) 
