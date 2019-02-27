@@ -700,6 +700,9 @@ INSERT INTO "search_object" ("code", "search_type", "namespace", "description", 
 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/pipeline', 'config/pipeline', 'config', 'Pipelines', '{project}', 'spt_pipeline', 'pyasm.search.SObject', 'Pipelines', 'public');
 
+INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/process_state', 'config/process_state', 'config', 'Process State', '{project}', 'spt_process_state', 'pyasm.search.SObject', 'Process State', 'public');
+
+
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('prod/session_contents', 'prod/session_contents', 'prod', 'Introspection Contents of a users session', '{project}', 'session_contents', 'pyasm.prod.biz.SessionContents', 'Session Contents', 'public');
 
 INSERT INTO "pref_list" ("key", "description", "options", "type", "category", "title") VALUES ('skin', 'These skins determine the look and feel of  TACTIC.', 'classic|dark|light|lightdark', 'sequence', 'general', 'Tactic Skins');
