@@ -7277,6 +7277,29 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
     def add_item_behaviors(self, el):
 
+        el.add_behavior({
+            'type': 'listen',
+            'event_name': 'reorderX|sthpw/pipeline',
+            'cbjs_action': '''
+
+            var projectCode = bvr.src_el.getAttribute("spt_project_code");
+            var searchType = bvr.src_el.getAttribute("spt_search_type");
+
+            var doc = spt.document.export();
+
+            var document_cmd = "tactic.ui.panel.DocumentSaveCmd"
+            var document_kwargs = {
+                view: "document",
+                document: doc,
+                search_type: searchType,
+                project_code: projectCode,
+            }
+            var server = TacticServerStub.get_master();
+            server.p_execute_cmd(document_cmd, document_kwargs);
+
+            '''
+        })
+
         el.add_relay_behavior({
             'type': 'click',
             'bvr_match_class': 'spt_document_item',
@@ -7448,6 +7471,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                         search_type: searchType,
                         project_code: projectCode,
                     }
+
                     server.p_execute_cmd(document_cmd, document_kwargs)
                     .then(function(ret_val){
                         top.removeClass("spt_unsaved_item");
