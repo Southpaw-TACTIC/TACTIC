@@ -609,33 +609,49 @@ class WatchDropFolderTask(SchedulerTask):
         return self.in_restart_mode
 
     def handle_disconnect(self, base_dir):
-        print "watchfolder disconnected"
+        print "Watch Folder disconnected (%s)" % base_dir
 
         import time
         timeout = 0
         email_interval = ProdSetting.get_value_by_key("watch_folder/email_interval") or 60
 
+        self.email_alert = False
+
         while not os.path.exists(base_dir):
             time.sleep(1)
             if ((timeout % email_interval) == 0 and timeout > 60) or (timeout == 60):
-                if self.email_alert:
-                    subject = "Watch Folder Error"
-                    message = "Timeout Error: Connection to Watch Drop Folder Timed Out."
-                    sender_name= Config.get_value("services", "notify_user_name")
-                    sender_email = Config.get_value("services", "notify_user")
-                    recipient_emails = [sender_email]
+                self.email_alert = True
 
-                    if sender_email:
-                        email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
-                        email_cmd.execute()
+                subject = "Watch Folder Error (%s)" % base_dir
+                message = """
+Timeout Error: Connection to Watch Folder Timed Out.
+Watch folder code: %s
+Base directory: %s
+                """ % (self.watch_folder_code, base_dir)
+                sender_name= Config.get_value("services", "notify_user_name")
+                sender_email = Config.get_value("services", "notify_user")
+                recipient_emails = [sender_email]
+
+                if sender_email:
+                    email_cmd = SendEmail(
+                        sender_email=sender_email, 
+                        recipient_emails=recipient_emails, 
+                        msg=message, 
+                        subject=subject, 
+                        sender_name=sender_name
+                    )
+                    email_cmd.execute()
             timeout += 1
-            pass
 
-        print "watchfolder reconnected"
+        print "Watch Folder reconnected (%s)" % base_dir
         # handle resumption
         if self.email_alert:
-            subject = "Watch Folder Reconnected"
-            message = "Watch Folder is available and service is resumed."
+            subject = "Watch Folder Reconnected (%s)" % base_dir
+            message = """
+Watch Folder is available and service is resumed.
+Watch Folder code: %s
+Base directory: %s
+            """ % (self.watch_folder_code, base_dir)
             sender_name = Config.get_value("services", "notify_user_name")
             sender_email = Config.get_value("services", "notify_user")
             recipient_emails = [sender_email]
@@ -643,6 +659,10 @@ class WatchDropFolderTask(SchedulerTask):
             if sender_email:
                 email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
                 email_cmd.execute()
+        
+        
+        self.email_alert = True
+
         return
 
     def _execute(self):
