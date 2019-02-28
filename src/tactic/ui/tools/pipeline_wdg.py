@@ -1608,9 +1608,6 @@ class PipelineInfoWdg(BaseRefreshWdg):
         top.add( self.get_color_wdg(pipeline) )
 
 
-        #top.add( self.get_task_generation_wdg(pipeline) )
-
-
         # sobject count
         if search_type:
             search = Search(search_type)
@@ -4915,7 +4912,7 @@ class ProcessInfoCmd(Command):
 
         node_type = self.kwargs.get("node_type")
 
-        if node_type == "manual":
+        if node_type in ["manual", "node"]:
             return self.handle_manual()
 
         if node_type in ["action", "condition"]:
@@ -5504,7 +5501,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
     def get_canvas(self):
         is_editable = self.kwargs.get("is_editable")
-        canvas = PipelineToolCanvasWdg(height=self.height, width=self.width, is_editable=is_editable, use_mouse_wheel=True)
+        canvas = PipelineToolCanvasWdg(height=self.height, width=self.width, is_editable=is_editable)
         return canvas
 
 
@@ -5590,7 +5587,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             try {
                 var xml = spt.pipeline.export_group(group_name);
             } catch (err) {
-                spt.alert(err);
+                spt.alert("Error while parsing xml:", err);
                 return;
             }
 
@@ -5871,6 +5868,23 @@ class PipelineEditorWdg(BaseRefreshWdg):
         SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
  
+
+ 
+        button = ButtonNewWdg(title="Show Notifications", icon="BS_ENVELOPE")
+        button_row.add(button)
+
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+
+        spt.pipeline.load_triggers();
+
+        editor_top.addClass("spt_has_changes");
+        '''
+        } )
+
+
 
 
 
