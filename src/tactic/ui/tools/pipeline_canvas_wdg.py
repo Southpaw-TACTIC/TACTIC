@@ -361,6 +361,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         outer.add_style("overflow: hidden")
+        outer.add_style("box-sizing: border-box")
 
         if self.kwargs.get("show_border") not in [False, 'false']:
             outer.add_border()
@@ -1318,8 +1319,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
         if (node.spt_is_selected) {
-            spt.pipeline.unselect_all_nodes();
-            spt.pipeline.select_single_node(node);
+            //spt.pipeline.unselect_all_nodes();
+            //spt.pipeline.select_single_node(node);
         }
         else {
             spt.pipeline.select_single_node(node);
@@ -2369,6 +2370,7 @@ spt.pipeline.select_drag_motion = function(evt, bvr, mouse_411) {
     var last_pos = spt.pipeline.select_last_position;
     var ctx = spt.pipeline.get_ctx();
     ctx.strokeRect(last_pos.x, last_pos.y, mouse_pos.x-last_pos.x, mouse_pos.y-last_pos.y);
+
 }
 
 spt.pipeline.select_drag_action = function(evt, bvr, mouse_411) {
@@ -3780,7 +3782,6 @@ spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
 
     spt.pipeline.redraw_canvas();
 
-
 }
 
 
@@ -4532,7 +4533,6 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
     spt.pipeline.last_mouse_position = mouse_pos;
     spt.pipeline.redraw_canvas();
 
-
 }
 
 spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
@@ -4587,6 +4587,7 @@ spt.pipeline.zoom_drag_motion = function(evt, bvr, mouse_411) {
 
     spt.pipeline.last_mouse_position = mouse_pos;
     spt.pipeline.redraw_canvas();
+
 }
 
 
@@ -5588,6 +5589,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var attributes = xml_nodes[i].attributes;
         for (var j = 0; j < attributes.length; j++) {
             var name = attributes[j].name;
+            if (name == "node") continue;
             var value = attributes[j].value;
             node.properties[name] = value;
         }
