@@ -127,11 +127,13 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.last_size = {};
             var canvas = top.getElement("canvas");
             var resize = function() {
-                spt.pipeline.init_cbk(wrapper);
+                //spt.pipeline.init_cbk(wrapper);
 
                 if (! top.isVisible() ) {
                     return;
                 }
+
+
                 var size = container.getSize();
                 var lastSize = container.last_size;
 
