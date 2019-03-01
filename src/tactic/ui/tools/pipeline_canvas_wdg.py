@@ -4749,6 +4749,56 @@ spt.pipeline.fit_to_canvas = function(group_name) {
 
 
 
+/* scales the view to fit the entire group */
+spt.pipeline.fit_to_node = function(node) {
+    if (!node) return;
+
+    var nodes = null;
+    if (typeof(group_name) == 'undefined') {
+        nodes = spt.pipeline.get_all_nodes();
+    }
+    else {
+        nodes = spt.pipeline.get_nodes_by_group(group_name);
+    }
+
+    var top = null;
+    var left = null;
+    var bottom = null;
+    var right = null;
+    for (var i = 0; i < nodes.length; i++) {
+        var pos = spt.pipeline.get_position(nodes[i]);
+        if (left == null || pos.x < left) {
+            left = pos.x;
+        }
+        if (top == null || pos.y < top) {
+            top = pos.y;
+        }
+        if (right == null || pos.x > right) {
+            right = pos.x
+        }
+        if (bottom == null || pos.y > bottom) {
+            bottom = pos.y
+        }
+    }
+
+    var canvas = spt.pipeline.get_canvas();
+    var size = canvas.getSize();
+    var positions = spt.pipeline.get_position(node);
+
+    var hcenter = size.x/2;
+    var vcenter = size.y/2;
+
+    var dx = hcenter - positions.x - 50;
+    var dy = vcenter - positions.y - 20;
+
+    spt.pipeline.move_all_nodes(dx, dy);
+    spt.pipeline.move_all_folders(dx, dy);
+
+
+}
+
+
+
 spt.pipeline.last_mouse_pos = null;
 spt.pipeline.resize_drag_setup = function(evt, bvr, mouse_411) {
     spt.pipeline.init(bvr);

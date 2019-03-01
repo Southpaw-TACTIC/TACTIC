@@ -5333,6 +5333,56 @@ class PipelineEditorWdg(BaseRefreshWdg):
     '''This is the pipeline on its own, with various buttons and interface
     to help in building the pipelines.  It contains the PipelineCanvasWdg'''
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_pipeline_editor_top .spt_pipeline_editor_shelf .search-box {
+                float: right;
+                height: 33px;
+                padding: 2px 6px;
+                width: 164px;
+                box-sizing: border-box;
+                border: 1px solid #ccc;
+            }
+            
+            .spt_pipeline_editor_top .search-results {
+                position: absolute;
+                right: 4;
+                height: 200px;
+                width: 163px;
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: 0px 2px 4px 0px #ccc;
+                z-index: 1000;
+                top: 40;
+                overflow-y: auto;
+            }
+
+            .spt_pipeline_editor_top .search-result {
+                width: 100%;
+                height: 32px;
+                border-bottom: 1px solid #ccc;
+                display: flex;
+                align-items: center;
+                padding: 7px 6px;
+                box-sizing: border-box;
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: block;
+            }
+
+            .spt_pipeline_editor_top .search-result.search-result-template {
+                display: none;
+            }
+
+
+            ''')
+
+        return styles
+
+
     def get_display(self):
         top = self.top
         self.set_as_panel(top)
@@ -5349,9 +5399,98 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
+        inner.add_class("spt_pipeline_editor_inner_top")
+
+        inner.add(self.get_styles())
+
+        shelf_wdg = self.get_shelf_wdg()
+        inner.add(shelf_wdg)
+
+        node_search = HtmlElement.text()
+        shelf_wdg.add(node_search)
+        node_search.add_class("search-box")
+        node_search.add_attr("placeholder", "Find node by name")
+
+        node_results = DivWdg()
+        inner.add(node_results)
+        node_results.add_class("spt_node_search_results")
+        node_results.add_class("search-results")
+        node_results.add_style("display: none")
+
+        node_result_template = DivWdg()
+        node_results.add(node_result_template)
+        node_result_template.add_class("spt_node_search_result")
+        node_result_template.add_class("search-result-template")
+        node_result_template.add_class("search-result")
+        node_result_template.add_class("tactic_hover hand")
 
 
-        inner.add(self.get_shelf_wdg() )
+        node_search.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_pipeline_editor_inner_top");
+            var results = top.getElement(".spt_node_search_results");
+
+            results.setStyle("display", "");
+            spt.body.add_focus_element(results);
+
+            '''
+            })
+
+
+        node_search.add_behavior({
+            'type': 'keyup',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_pipeline_editor_inner_top");
+            var results = top.getElement(".spt_node_search_results");
+            var template = results.getElement(".search-result-template");
+
+            var oldItems = results.getElements(".spt_node_search_result");
+            oldItems.forEach(function(oldItem){
+                if (oldItem.hasClass("search-result-template")) return;
+                oldItem.remove();
+            });
+
+            var nodes = spt.pipeline.get_all_nodes();
+
+            nodes.forEach(function(node){
+                var title = node.getAttribute("title");
+                if (!title.toLowerCase().contains(bvr.src_el.value.toLowerCase())) return;
+
+                var item = spt.behavior.clone(template);
+                item.removeClass("search-result-template");
+                item.innerText = title;
+                results.appendChild(item);
+            });
+
+            '''
+            })
+
+
+        node_results.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            bvr.src_el.on_complete = function(el) {
+                el.setStyle("display", "none");
+            }
+
+            '''
+            })
+
+        inner.add_relay_behavior({
+            'type': 'click',
+            'bvr_match_class': 'spt_node_search_result',
+            'cbjs_action': '''
+
+            var node = spt.pipeline.get_node_by_name(bvr.src_el.innerText);
+            spt.pipeline.fit_to_node(node);
+
+            '''
+            })
+
 
         self.width = self.kwargs.get("width")
         if not self.width:
@@ -5492,8 +5631,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
     def get_shelf_wdg(self):
  
         shelf_wdg = DivWdg()
+        shelf_wdg.add_class("spt_pipeline_editor_shelf")
         shelf_wdg.add_style("padding: 5px")
-        shelf_wdg.add_style("margin-bottom: 5px")
         shelf_wdg.add_style("overflow-x: hidden")
         shelf_wdg.add_style("min-width: 400px")
 
@@ -5562,7 +5701,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 spt.help.load_alias("project-workflow|project-workflow-introduction|pipeline-process-options");
                 '''
             } )
-
 
 
         return shelf_wdg
