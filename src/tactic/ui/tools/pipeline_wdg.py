@@ -7549,8 +7549,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                         var on_complete = function() {
                             var refreshedRow = spt.table.get_row_by_search_key(search_key);
                             refreshedRow.setAttribute("spt_group_level", 2);
-                            var documentItem = refreshedRow.getElement(".spt_document_item");
-                            documentItem.click();
+                            spt.table.select_row(refreshedRow);
                         }
                         spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
                     });
