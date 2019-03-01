@@ -7109,7 +7109,6 @@ class PipelineSaveCbk(Command):
             
             process.commit()
 
-            node_type = xml.get_attribute(node, "type")
             if node_type:
                 kwargs = node_kwargs.get(process_name) or {}
                 if len(kwargs) > 0:
