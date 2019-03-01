@@ -282,6 +282,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
         if self.is_editable() and not value:
             empty = SpanWdg()
             div.add(empty)
+            div.add_class("spt_process_group_select_empty")
             div.add_style("text-align: center")
             div.add_style("width: 100%")
             div.add_style("white-space: nowrap" )
