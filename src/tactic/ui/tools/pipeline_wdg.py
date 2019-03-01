@@ -5349,7 +5349,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             .spt_pipeline_editor_top .search-results {
                 position: absolute;
                 right: 4;
-                height: 200px;
+                height: 144px;
                 width: 163px;
                 background: white;
                 border: 1px solid #ccc;
@@ -5485,8 +5485,44 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'bvr_match_class': 'spt_node_search_result',
             'cbjs_action': '''
 
+            var editorTop = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            spt.pipeline.set_top(editorTop.getElement(".spt_pipeline_top"));
+
             var node = spt.pipeline.get_node_by_name(bvr.src_el.innerText);
             spt.pipeline.fit_to_node(node);
+
+            // reuse code instead?
+            spt.pipeline.select_single_node(node);
+
+            var properties = spt.pipeline.get_node_properties(node);
+
+            var node_name = spt.pipeline.get_node_name(node);
+            var group_name = spt.pipeline.get_current_group();
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var info = top.getElement(".spt_pipeline_tool_info");
+            if (!info) {
+                return;
+            }
+
+            var node_type = spt.pipeline.get_node_type(node);
+            if (node.hasClass("spt_pipeline_unknown")) {
+                node_type = "unknown";
+            }
+
+            var class_name = 'tactic.ui.tools.ProcessInfoWdg';
+            var kwargs = {
+                pipeline_code: group_name,
+                process: node_name,
+                node_type: node_type,
+                properties: properties
+            }
+            info.setStyle("display", "");
+            document.activeElement.blur();
+            spt.pipeline.set_info_node(node);
+            spt.panel.load(info, class_name, kwargs);
+
+            var results = bvr.src_el.getParent(".spt_node_search_results");
+            results.on_complete(results);
 
             '''
             })
