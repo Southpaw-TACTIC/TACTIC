@@ -5944,12 +5944,7 @@ spt.pipeline.export_group = function(group_name) {
 
         name = name.replace(/&/g, "&amp;amp;");
 
-        if (node_type != "node") {
-            xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
-        }
-        else {
-            xml += '  <'+tag_type+' name="'+name+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
-        }
+        xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
 
         var properties = node.properties;
         for (var key in properties) {
