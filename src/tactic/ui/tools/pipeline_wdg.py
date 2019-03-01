@@ -95,8 +95,8 @@ class PipelineToolWdg(BaseRefreshWdg):
         show_pipelines = self.kwargs.get("show_pipeline_list")
 
 
-        use_table = False
-        if use_table:
+        use_table = ProjectSetting.get_value_by_key("use_table")
+        if use_table in [True, "true"]:
             #table = Table()
             table = ResizableTableWdg()
             inner.add(table)
