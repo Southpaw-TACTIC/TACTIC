@@ -400,7 +400,7 @@ spt.document.export = function(kwargs) {
         }
 
         // Check for dynamic row
-        if (row.getAttribute("spt_dynamic") == "true") continue;
+        if (row.getAttribute("spt_dynamic") == "true") break;
         if (row.getAttribute("spt_deleted") == "true") continue;
 
         var group_level = row.getAttribute("spt_group_level");
