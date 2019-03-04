@@ -11,7 +11,7 @@
 #
 __all__ = ["WizardWdg", "TestWizardWdg"]
 
-from pyasm.common import Common
+from pyasm.common import Common, jsonloads
 from pyasm.web import *
 from pyasm.widget import IconWdg, IconButtonWdg, SelectWdg, ProdIconButtonWdg, TextWdg
 
@@ -90,6 +90,11 @@ class WizardWdg(BaseRefreshWdg):
             self.titles = []
 
 
+        extra_data = self.kwargs.get("extra_data") or {}
+        if isinstance(extra_data, basestring):
+            extra_data = jsonloads(extra_data)
+
+
 
 
         views = self.kwargs.get("views")
@@ -107,7 +112,7 @@ class WizardWdg(BaseRefreshWdg):
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
 
-                widget = CustomLayoutWdg(view=view)
+                widget = CustomLayoutWdg(view=view, **extra_data)
                 self.add(widget, title)
 
 
@@ -396,7 +401,7 @@ class WizardWdg(BaseRefreshWdg):
 
             if not submit_title:
                 submit_title = "Submit"
-            submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title)
+            submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title, color="primary")
             submit.add_class("spt_wizard_submit")
             submit.add_behavior( {
             'type': 'click_up',

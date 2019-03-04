@@ -127,11 +127,13 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.last_size = {};
             var canvas = top.getElement("canvas");
             var resize = function() {
-                spt.pipeline.init_cbk(wrapper);
+                //spt.pipeline.init_cbk(wrapper);
 
                 if (! top.isVisible() ) {
                     return;
                 }
+
+
                 var size = container.getSize();
                 var lastSize = container.last_size;
 
@@ -1325,6 +1327,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         if (!info) {
             return;
         }
+
 
         var node_type = spt.pipeline.get_node_type(node);
         if (node.hasClass("spt_pipeline_unknown")) {
@@ -5628,6 +5631,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             var info = top.getElement(".spt_pipeline_tool_info");
             if (info) {
+
+                // prevent reloading pipeline info on every drag
+                var process = info.getAttribute("spt_process");
+                if (!process) {
+                    return;
+                }
+
+
                 var group_name = spt.pipeline.get_current_group();
 
                 var class_name = 'tactic.ui.tools.PipelineInfoWdg';
