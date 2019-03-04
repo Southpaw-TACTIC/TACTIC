@@ -336,10 +336,10 @@ class SPTDate(object):
     has_timezone = classmethod(has_timezone)
  
 
-    def get_display_date(cls, date, date_format=None, timezone=None):
+    def get_display_date(cls, date, date_format=None, timezone=None, include_time=False):
         '''Given a datetime value, convert to timezone, and convert to date format.'''
         from pyasm.biz import PrefSetting, ProjectSetting
-        
+
         if not timezone:
             timezone = PrefSetting.get_value_by_key('timezone')
             if not timezone:
@@ -350,13 +350,20 @@ class SPTDate(object):
         else:
             value = SPTDate.convert_to_timezone(date, timezone)
         
+        setting = "date_format"
+        if include_time:
+            setting = "datetime_format"
+        
+        
         if not date_format:
-            date_format = PrefSetting.get_value_by_key('date_format')
+            date_format = PrefSetting.get_value_by_key(setting)
             if not date_format:
-                date_format = ProjectSetting.get_value_by_key("date_format")
+                date_format = ProjectSetting.get_value_by_key(setting)
 
         if not date_format:
-            date_format = "%Y %m %d %H:%M"
+            date_format = "%Y %m %d"
+            if include_time:
+                date_format = "%Y %m %d %H:%M"
 
         try:
             encoding = locale.getlocale()[1]		

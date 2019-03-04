@@ -1305,7 +1305,7 @@ TacticServerStub = function() {
         
     }
 
-    this.update = function(search_type, data, kwargs, on_complete, on_error) {
+    this.update = function(search_key, data, kwargs, on_complete, on_error) {
         var newArgs = Array.prototype.slice.call(arguments).slice(0,3);
         if(on_complete){
           if(!on_error){
