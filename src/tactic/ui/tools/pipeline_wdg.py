@@ -54,7 +54,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             .spt_pipeline_tool_left {
                 position: absolute;
                 left: 0px;
-                transition: margin-left .25s;
+                transition: .25s;
             }
 
             .spt_pipeline_tool_right {
@@ -64,7 +64,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 overflow: hidden;
                 position: relative;
                 margin-left: 250px;
-                transition: margin-left .25s;
+                transition: .25s;
             }
 
             ''')
@@ -2859,6 +2859,14 @@ class DefaultInfoWdg(BaseInfoWdg):
         return top
 
 
+    def get_default_kwargs(self):
+        kwargs = super(DefaultInfoWdg, self).get_default_kwargs()
+        kwargs["task_creation"] = True
+        kwargs["autocreate_task"] = False
+
+        return kwargs
+
+
     def get_default_properties(self):
         if not self.process_sobj:
             return {}
@@ -3930,9 +3938,9 @@ class ActionInfoWdg(BaseInfoWdg):
 
 
     def get_default_kwargs(self):
-        kwargs = {
-            "execute_mode": self.execute_mode
-        }
+        kwargs = super(ActionInfoWdg, self).get_default_kwargs()
+
+        kwargs["execute_mode"] = self.execute_mode
         if self.action == "create_new":
             kwargs['language'] = self.language
             kwargs['script'] = self.script
@@ -4150,9 +4158,12 @@ class ApprovalInfoWdg(BaseInfoWdg):
         workflow = self.workflow
         assigned = workflow.get("assigned")
 
-        return {
-            "assigned": assigned
-        }
+        kwargs = super(ApprovalInfoWdg, self).get_default_kwargs()
+        kwargs["assigned"] = assigned
+        kwargs["task_creation"] = True
+        kwargs["autocreate_task"] = False
+
+        return kwargs
 
 
     def get_default_properties(self):
@@ -4185,15 +4196,12 @@ class HierarchyInfoWdg(BaseInfoWdg):
         search.add_filter("code", process_code)
 
         self.process_sobj = search.get_sobject()
-        process_sobj = self.process_sobj
 
-        
-        workflow = {}
-        if process_sobj:
-            workflow = process_sobj.get_json_value("workflow")
+        self.workflow = {}
+        if self.process_sobj:
+            self.workflow = self.process_sobj.get_json_value("workflow")
         if not workflow:
-            workflow = {}
-        self.workflow = workflow
+            self.workflow = {}
 
         top = self.top
         top.add_style("padding: 20px 0px")
@@ -4232,8 +4240,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
         values = [x.get("code") for x in subpipelines]
         labels = [x.get("name") for x in subpipelines]
 
-        subpipeline_code = process_sobj.get_value("subpipeline_code")
-
         settings_wdg.add("<b>Points to a sub Workflow:</b>")
         select = SelectWdg("subpipeline")
         settings_wdg.add(select)
@@ -4253,8 +4259,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
         # auto create sb tasks
         values = ["subtasks_only", "top_only", "all", "none"]
         labels = ["Create SubTasks Only", "Top Task Only", "Both Top and SubTasks", "No Tasks"]
-
-        task_creation = workflow.get("task_creation") or "subtasks_only"
 
         settings_wdg.add("<b>Task Creation:</b>")
         select = SelectWdg("task_creation")
@@ -4277,8 +4281,9 @@ class HierarchyInfoWdg(BaseInfoWdg):
 
 
     def get_default_kwargs(self):
+        kwargs = super(HierarchyInfoWdg, self).get_default_kwargs()
         if not self.process_sobj:
-            return {}
+            return kwargs
 
         process_sobj = self.process_sobj
         subpipeline = process_sobj.get_value("subpipeline_code")
@@ -4286,10 +4291,10 @@ class HierarchyInfoWdg(BaseInfoWdg):
         workflow = self.workflow
         task_creation = workflow.get("task_creation") or "subtasks_only"
 
-        return {
-            "subpipeline": subpipeline,
-            "task_creation": task_creation
-        }
+        kwargs["subpipeline"] = subpipeline
+        kwargs["task_creation"] = task_creation
+
+        return kwargs
 
 
     def get_default_properties(self):
@@ -4318,15 +4323,12 @@ class DependencyInfoWdg(BaseInfoWdg):
         search.add_filter("code", process_code)
 
         self.process_sobj = search.get_sobject()
-        process_sobj = self.process_sobj
 
-        
-        workflow = {}
-        if process_sobj:
-            workflow = process_sobj.get_json_value("workflow")
+        self.workflow = {}
+        if self.process_sobj:
+            self.workflow = self.process_sobj.get_json_value("workflow")
         if not workflow:
-            workflow = {}
-        self.workflow = workflow
+            self.workflow = {}
 
 
         top = self.top
@@ -4342,12 +4344,6 @@ class DependencyInfoWdg(BaseInfoWdg):
         settings_wdg = DivWdg()
         top.add(settings_wdg)
         settings_wdg.add_style("padding: 10px")
-
-        related_search_type = workflow.get("search_type")
-        related_process = workflow.get("process")
-        related_status = workflow.get("status")
-        related_scope = workflow.get("scope")
-        related_wait = workflow.get("wait")
 
 
         # FIXME: HARD CODED
@@ -4473,20 +4469,16 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
     def get_default_kwargs(self):
-        workflow = self.workflow
-        related_search_type = workflow.get("search_type")
-        related_process = workflow.get("process")
-        related_status = workflow.get("status")
-        related_scope = workflow.get("scope")
-        related_wait = workflow.get("wait")
+        kwargs = super(DependencyInfoWdg, self).get_default_kwargs()
 
-        return {
-            "related_search_type": related_search_type,
-            "related_process": related_process,
-            "related_status": related_status,
-            "related_scope": related_scope,
-            "related_wait": related_wait
-        }
+        workflow = self.workflow
+        kwargs["related_search_type"] = workflow.get("search_type")
+        kwargs["related_process"] = workflow.get("process")
+        kwargs["related_status"] = workflow.get("status")
+        kwargs["related_scope"] = workflow.get("scope")
+        kwargs["related_wait"] = workflow.get("wait")
+
+        return kwargs
 
 
 
@@ -4781,22 +4773,17 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
     def get_default_kwargs(self):
-        workflow = self.workflow
-        related_search_type = workflow.get("search_type")
-        related_pipeline_code = workflow.get("pipeline_code")
-        related_process = workflow.get("process")
-        related_status = workflow.get("status")
-        related_scope = workflow.get("scope")
-        related_wait = workflow.get("wait")
+        kwargs = super(ProgressInfoWdg, self).get_default_kwargs()
 
-        return {
-            "related_search_type": related_search_type,
-            "related_pipeline_code": related_pipeline_code,
-            "related_process": related_process,
-            "related_status": related_status,
-            "related_scope": related_scope,
-            "related_wait": related_wait
-        }
+        workflow = self.workflow
+        kwargs["related_search_type"] = workflow.get("search_type")
+        kwargs["related_pipeline_code"] = workflow.get("pipeline_code")
+        kwargs["related_process"] = workflow.get("process")
+        kwargs["related_status"] = workflow.get("status")
+        kwargs["related_scope"] = workflow.get("scope")
+        kwargs["related_wait"] = workflow.get("wait")
+
+        return kwargs
 
 
 
@@ -5349,7 +5336,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             .spt_pipeline_editor_top .search-results {
                 position: absolute;
                 right: 4;
-                height: 200px;
+                height: 144px;
                 width: 163px;
                 background: white;
                 border: 1px solid #ccc;
@@ -5485,8 +5472,44 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'bvr_match_class': 'spt_node_search_result',
             'cbjs_action': '''
 
+            var editorTop = bvr.src_el.getParent(".spt_pipeline_editor_top");
+            spt.pipeline.set_top(editorTop.getElement(".spt_pipeline_top"));
+
             var node = spt.pipeline.get_node_by_name(bvr.src_el.innerText);
             spt.pipeline.fit_to_node(node);
+
+            // reuse code instead?
+            spt.pipeline.select_single_node(node);
+
+            var properties = spt.pipeline.get_node_properties(node);
+
+            var node_name = spt.pipeline.get_node_name(node);
+            var group_name = spt.pipeline.get_current_group();
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var info = top.getElement(".spt_pipeline_tool_info");
+            if (!info) {
+                return;
+            }
+
+            var node_type = spt.pipeline.get_node_type(node);
+            if (node.hasClass("spt_pipeline_unknown")) {
+                node_type = "unknown";
+            }
+
+            var class_name = 'tactic.ui.tools.ProcessInfoWdg';
+            var kwargs = {
+                pipeline_code: group_name,
+                process: node_name,
+                node_type: node_type,
+                properties: properties
+            }
+            info.setStyle("display", "");
+            document.activeElement.blur();
+            spt.pipeline.set_info_node(node);
+            spt.panel.load(info, class_name, kwargs);
+
+            var results = bvr.src_el.getParent(".spt_node_search_results");
+            results.on_complete(results);
 
             '''
             })
@@ -5733,12 +5756,20 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
             if (left.gone) {
                 left.setStyle("margin-left", "0px");
+                left.setStyle("opacity", "1");
                 right.setStyle("margin-left", "250px");
                 left.gone = false;
+                setTimeout(function(){
+                    left.setStyle("z-index", "");
+                }, 250);
             } else {
                 left.setStyle("margin-left", "-250px");
+                left.setStyle("opacity", "0");
                 right.setStyle("margin-left", "0px");
                 left.gone = true;
+                setTimeout(function(){
+                    left.setStyle("z-index", "-1");
+                }, 250);
             }
 
             '''
@@ -6922,6 +6953,31 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         th.add_style("height: 40px")
         th.add(" hours")
 
+        # task creation
+        table.add_row()
+        td = table.add_cell('Task Creation:')
+        td.add_attr("title", "Determines if node creates a task.")
+
+        text_name = "task_creation"
+        check = CheckboxWdg(text_name)
+        self.add_session_behavior(check, "checkbox", "spt_pipeline_properties_top", text_name)
+
+        th = table.add_cell(check)
+        th.add_style("height: 40px")
+
+        # autocreate task
+        table.add_row()
+        td = table.add_cell('Autocreate task:')
+        td.add_attr("title", "Creates task when message sent to node.")
+
+        text_name = "autocreate_task"
+        check = CheckboxWdg(text_name)
+        self.add_session_behavior(check, "checkbox", "spt_pipeline_properties_top", text_name)
+
+        th = table.add_cell(check)
+        th.add_style("height: 40px")
+
+        # ---- Divider -----
         tr, td = table.add_row_cell()
         td.add("<hr/>")
         
@@ -7000,7 +7056,10 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var node = spt.pipeline.get_info_node();
 
             var kwargs = spt.pipeline.get_node_kwargs(node);
+            kwargs.task_creation = bvr.kwargs.task_creation;
+            kwargs.autocreate_task = bvr.kwargs.autocreate_task;
             Object.assign(bvr.kwargs, kwargs);
+
             spt.pipeline.set_node_kwargs(node, bvr.kwargs);
 
             '''
@@ -7009,6 +7068,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
     def get_default_kwargs(self):
+        task_creation = False if self.workflow.get("task_creation") == False else True
+        autocreate_task = True if self.workflow.get("autocreate_task") == True else False
 
         return {
             "spt_property_group": self.workflow.get("spt_property_group"),
@@ -7019,7 +7080,9 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             "spt_property_duration": self.workflow.get("spt_property_duration"),
             "spt_property_bid_duration": self.workflow.get("spt_property_bid_duration"),
             "spt_property_color": self.workflow.get("spt_property_color"),
-            "spt_property_label": self.workflow.get("spt_property_label")
+            "spt_property_label": self.workflow.get("spt_property_label"),
+            "task_creation": task_creation,
+            "autocreate_task": autocreate_task
         }
 
 
@@ -7078,7 +7141,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var input = spt.api.get_input_values(top, null, false);
 
             var value = true;
-            if (input[bvr.arg_name] == "off") value = false;
+            if (input[bvr.arg_name] != "on") value = false;
 
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, value);
