@@ -96,7 +96,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         use_table = ProjectSetting.get_value_by_key("use_table")
-        if use_table not in [False, "false"]:
+        if use_table in [True, "true"]:
             #table = Table()
             table = ResizableTableWdg()
             inner.add(table)
@@ -7480,7 +7480,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 border: 1px solid #ccc;
             }
 
-            .spt_pipeline_document .floating-icon .fa-file {
+            .spt_pipeline_document .floating-icon .fa-file,  .spt_pipeline_document .floating-icon .fa-copy{
                 color: green;
             }
 
@@ -7750,6 +7750,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 spt.notify.show_message("Workflows require a name");
             } else {
                 var parent_group = spt.table.get_parent_groups(bvr.src_el, 1);
+                if (!parent_group) return;
                 var category = parent_group.getAttribute("spt_group_name");
 
                 var server = TacticServerStub.get();
@@ -7787,7 +7788,8 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                         var on_complete = function() {
                             var refreshedRow = spt.table.get_row_by_search_key(search_key);
                             refreshedRow.setAttribute("spt_group_level", 2);
-                            spt.table.select_row(refreshedRow);
+                            var documentItem = refreshedRow.getElement(".spt_document_item");
+                            documentItem.click();
                         }
                         spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
                     });
@@ -8023,68 +8025,200 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
         add_btn = self.get_button_wdg("spt_add_btn", add_btn_title, add_btn_icon)
         add_btn.add_style("margin: 0 3px")
 
-        add_btn.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
 
-            var layout = bvr.src_el.getParent(".spt_layout");
+        add_mode = "form"
+
+        if add_mode == "form":
+            cbjs_insert = '''
+
+            var info = spt.edit.edit_form_cbk(evt, bvr);
+            spt.notify.show_message("Insert item complete.");
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var src_el = popup.activator;
+
+            console.log(info);
+
+            // Add row to table
+            var layout = src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
 
-            var group_el = bvr.src_el.getParent(".spt_group_row");
-            var group_level = group_el.getAttribute("spt_group_level");
+            var group_el = src_el.getParent(".spt_group_row");
+            var row = spt.table.add_new_item({row: group_el});
+            row.setAttribute("spt_group_level", 2);
 
-            if (group_level == 0) {
-                var new_row = spt.table.add_new_group({row: group_el, group_level: 1});
+            var rowTop = row.getElement(".spt_document_item");
+            rowTop.addClass("spt_unsaved_item");
 
-                let focused = document.querySelector(":focus");
-                if (focused) focused.blur();
-                var group_name = spt.document.item.generate_name();
+            var td = row.getElement("td");
 
-                var server = TacticServerStub.get();
-                var group_key = server.build_search_key("sthpw/virtual", group_name);
-                new_row.setAttribute("spt_search_key_v2", group_key);
+            td.setStyle("overflow", "hidden");
+            td.setStyle("text-overflow", "ellipsis");
+            td.setStyle("padding", "0");
+            td.setAttribute("data-toggle", "tooltip");
 
-                groupTop = new_row.getElement(".spt_pipeline_group_label");
-                groupTop.addClass("spt_unsaved_group");
-                groupLabel = groupTop.getElement(".spt_group_label").innerText = group_name;
+            // Save document
+            var server = TacticServerStub.get();
+            var search_key = info.sobject.__search_key__;
 
-                addBtn = groupTop.getElement(".spt_add_btn");
-                addBtn.title = "Add New Workflow";
+            row.setAttribute("spt_search_key", search_key);
+            row.setAttribute("spt_search_key_v2", search_key);
 
-                addIcon = addBtn.getElement("i");
-                addIcon.removeClass("fa-plus");
-                addIcon.addClass("fa-file");
+            spt.notify.show_message('Workflow created');
 
-                deleteBtn = groupTop.getElement(".spt_delete_btn");
-                deleteBtn.setStyle("display", "");
+            var documentTop = rowTop.getParent(".spt_pipeline_document");
+            var projectCode = documentTop.getAttribute("spt_project_code");
+            var searchType = documentTop.getAttribute("spt_search_type");
 
-                spt.document.item.toggle_edit(groupTop);
-            } else {
-                var group_el = bvr.src_el.getParent(".spt_group_row");
-                var row = spt.table.add_new_item({row: group_el});
-                row.setAttribute("spt_group_level", 2);
+            var doc = spt.document.export();
 
-                rowTop = row.getElement(".spt_document_item");
-                rowTop.addClass("spt_unsaved_item");
-
-                var td = row.getElement("td");
-
-                td.setStyle("overflow", "hidden")
-                td.setStyle("text-overflow", "ellipsis")
-                td.setStyle("padding", "0")
-                td.setAttribute("data-toggle", "tooltip")
-
-                var open = row.getElement(".spt_document_item_open");
-                var input = row.getElement(".spt_document_input");
-
-                open.setStyle("display", "none");
-                input.setStyle("display", "");
-                input.focus();
+            var document_cmd = "tactic.ui.panel.DocumentSaveCmd"
+            var document_kwargs = {
+                view: "document",
+                document: doc,
+                search_type: searchType,
+                project_code: projectCode,
             }
+            server.p_execute_cmd(document_cmd, document_kwargs)
+            .then(function(ret_val){
+                rowTop.removeClass("spt_unsaved_item");
+                var on_complete = function() {
+                    var refreshedRow = spt.table.get_row_by_search_key(search_key);
+                    console.log("refreshed", refreshedRow, search_key);
+                    refreshedRow.setAttribute("spt_group_level", 2);
+                    var documentItem = refreshedRow.getElement(".spt_document_item");
+                    documentItem.click();
+                }
+                spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
+            });
+  
+
 
             '''
 
-        })
+            add_btn.add_behavior({
+                'type': 'click',
+                'cbjs_insert': cbjs_insert,
+                'cbjs_action': '''
+
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+
+                var group_el = bvr.src_el.getParent(".spt_group_row");
+                var group_level = group_el.getAttribute("spt_group_level");
+
+                if (group_level == 0) {
+                    var new_row = spt.table.add_new_group({row: group_el, group_level: 1});
+
+                    let focused = document.querySelector(":focus");
+                    if (focused) focused.blur();
+                    var group_name = spt.document.item.generate_name();
+
+                    var server = TacticServerStub.get();
+                    var group_key = server.build_search_key("sthpw/virtual", group_name);
+                    new_row.setAttribute("spt_search_key_v2", group_key);
+
+                    groupTop = new_row.getElement(".spt_pipeline_group_label");
+                    groupTop.addClass("spt_unsaved_group");
+                    groupLabel = groupTop.getElement(".spt_group_label").innerText = group_name;
+
+                    addBtn = groupTop.getElement(".spt_add_btn");
+                    addBtn.title = "Add New Workflow";
+
+                    addIcon = addBtn.getElement("i");
+                    addIcon.removeClass("fa-plus");
+                    addIcon.addClass("fa-file");
+
+                    deleteBtn = groupTop.getElement(".spt_delete_btn");
+                    deleteBtn.setStyle("display", "");
+
+                    spt.document.item.toggle_edit(groupTop);
+                } else {
+                    var row = bvr.src_el.getParent(".spt_group_row");
+                    var category = row.getAttribute("spt_group_name");
+
+                    cbjs_insert = bvr.cbjs_insert;
+
+                    var class_name = 'tactic.ui.panel.EditWdg';
+                    var kwargs = {
+                        search_type: 'sthpw/pipeline',
+                        view: 'insert',
+                        show_header: false,
+                        single: true,
+                        cbjs_insert: cbjs_insert,
+                        extra_data: {
+                            category: category
+                        }
+                    }
+                    var popup = spt.panel.load_popup("Add New Workflow", class_name, kwargs);
+                    popup.activator = bvr.src_el;
+                }
+
+                '''
+                })
+        else:
+            add_btn.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+
+                var group_el = bvr.src_el.getParent(".spt_group_row");
+                var group_level = group_el.getAttribute("spt_group_level");
+
+                if (group_level == 0) {
+                    var new_row = spt.table.add_new_group({row: group_el, group_level: 1});
+
+                    let focused = document.querySelector(":focus");
+                    if (focused) focused.blur();
+                    var group_name = spt.document.item.generate_name();
+
+                    var server = TacticServerStub.get();
+                    var group_key = server.build_search_key("sthpw/virtual", group_name);
+                    new_row.setAttribute("spt_search_key_v2", group_key);
+
+                    groupTop = new_row.getElement(".spt_pipeline_group_label");
+                    groupTop.addClass("spt_unsaved_group");
+                    groupLabel = groupTop.getElement(".spt_group_label").innerText = group_name;
+
+                    addBtn = groupTop.getElement(".spt_add_btn");
+                    addBtn.title = "Add New Workflow";
+
+                    addIcon = addBtn.getElement("i");
+                    addIcon.removeClass("fa-plus");
+                    addIcon.addClass("fa-file");
+
+                    deleteBtn = groupTop.getElement(".spt_delete_btn");
+                    deleteBtn.setStyle("display", "");
+
+                    spt.document.item.toggle_edit(groupTop);
+                } else {
+                    var group_el = bvr.src_el.getParent(".spt_group_row");
+                    var row = spt.table.add_new_item({row: group_el});
+                    row.setAttribute("spt_group_level", 2);
+
+                    rowTop = row.getElement(".spt_document_item");
+                    rowTop.addClass("spt_unsaved_item");
+
+                    var td = row.getElement("td");
+
+                    td.setStyle("overflow", "hidden")
+                    td.setStyle("text-overflow", "ellipsis")
+                    td.setStyle("padding", "0")
+                    td.setAttribute("data-toggle", "tooltip")
+
+                    var open = row.getElement(".spt_document_item_open");
+                    var input = row.getElement(".spt_document_input");
+
+                    open.setStyle("display", "none");
+                    input.setStyle("display", "");
+                    input.focus();
+                }
+
+                '''
+
+            })
 
         return add_btn
 
