@@ -416,7 +416,7 @@ class WizardWdg(BaseRefreshWdg):
                 }
                 else if (bvr.jsscript) {
                     var values = spt.api.get_input_values(top, null, false);
-                    spt.CustomProject.run_script_by_path(bvr.jsscript, values);
+                    spt.CustomProject.run_script_by_path(bvr.jsscript, values, bvr);
                 }
                 else if (bvr.script) {
                     var values = spt.api.get_input_values(top, null, false);

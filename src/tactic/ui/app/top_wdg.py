@@ -1032,7 +1032,11 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
+
         Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
+        # viewer.js from pdfjs may not be needed in the future. For now,
+        # it was added for KYC, which requires this. (added 2019-02)
+        Container.append_seq("Page:js", "/plugins/pdfjs/web/viewer.js")
 
         if not web.is_admin_page():
             Container.append_seq("Page:js", "%s/require.js" % spt_js_url)
