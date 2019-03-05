@@ -67,6 +67,54 @@ class PipelineToolWdg(BaseRefreshWdg):
                 transition: .25s;
             }
 
+            .spt_pipeline_tool_info {
+                max-width: 400px;
+                width: 400px;
+                min-width: 400px;
+                position: absolute;
+                right: -400px;
+                transition: 0.25s;
+                top: 43px;
+                border: 1px solid #ccc;
+                height: 600;
+                box-sizing: border-box;
+                padding-top: 20px;
+                border-width: 1px 0px 1px 1px;
+                background: white;
+                overflow-y: auto;
+            }
+
+            .spt_pipeline_tool_top .search-results {
+                position: absolute;
+                right: 4;
+                height: 144px;
+                width: 163px;
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: 0px 2px 4px 0px #ccc;
+                z-index: 1000;
+                top: 40;
+                overflow-y: auto;
+            }
+
+            .spt_pipeline_tool_top .search-result {
+                width: 100%;
+                height: 32px;
+                border-bottom: 1px solid #ccc;
+                display: flex;
+                align-items: center;
+                padding: 7px 6px;
+                box-sizing: border-box;
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: block;
+            }
+
+            .spt_pipeline_tool_top .search-result.search-result-template {
+                display: none;
+            }
+
             ''')
 
         return styles
@@ -89,6 +137,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             if (window.onresize) {
                 window.onresize();
             }
+
+            var tabTop = bvr.src_el.getParent(".spt_tab_content");
+            if (tabTop) tabTop.setStyle("overflow-x", "hidden");
             '''
         } )
 
@@ -170,6 +221,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.add_style("width: 100%")
             container.add_style("height: 100%")
             container.add_color("background", "background")
+            container.add_style("position: relative")
 
 
             if show_pipelines not in [False, 'false']:
@@ -185,9 +237,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             right.add_class("spt_pipeline_tool_right")
 
             container.add(right)
+
             info = DivWdg()
             container.add(info)
-            info.add_style("width: 250px")
 
             right.add_behavior( {
             'type': 'load',
@@ -230,6 +282,81 @@ class PipelineToolWdg(BaseRefreshWdg):
             clearInterval( top.interval_id );
             '''
             } )
+
+            node_results = DivWdg()
+            container.add(node_results)
+            node_results.add_class("spt_node_search_results")
+            node_results.add_class("search-results")
+            node_results.add_style("display: none")
+
+            node_result_template = DivWdg()
+            node_results.add(node_result_template)
+            node_result_template.add_class("spt_node_search_result")
+            node_result_template.add_class("search-result-template")
+            node_result_template.add_class("search-result")
+            node_result_template.add_class("tactic_hover hand")
+
+            node_results.add_behavior({
+                'type': 'load',
+                'cbjs_action': '''
+
+                bvr.src_el.on_complete = function(el) {
+                    el.setStyle("display", "none");
+                    var top = el.getParent(".spt_pipeline_tool_top");
+
+                    top.getElement(".spt_node_search").blur();
+                }
+
+                '''
+                })
+
+            container.add_relay_behavior({
+                'type': 'click',
+                'bvr_match_class': 'spt_node_search_result',
+                'cbjs_action': '''
+
+                var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                spt.pipeline.set_top(top.getElement(".spt_pipeline_top"));
+
+                var node = spt.pipeline.get_node_by_name(bvr.src_el.innerText);
+                spt.pipeline.fit_to_node(node);
+
+                // reuse code instead?
+                spt.pipeline.select_single_node(node);
+
+                var properties = spt.pipeline.get_node_properties(node);
+
+                var node_name = spt.pipeline.get_node_name(node);
+                var group_name = spt.pipeline.get_current_group();
+                var info = top.getElement(".spt_pipeline_tool_info");
+                if (!info) return;
+
+                var node_type = spt.pipeline.get_node_type(node);
+                if (node.hasClass("spt_pipeline_unknown")) {
+                    node_type = "unknown";
+                }
+
+                var class_name = 'tactic.ui.tools.ProcessInfoWdg';
+                var kwargs = {
+                    pipeline_code: group_name,
+                    process: node_name,
+                    node_type: node_type,
+                    properties: properties
+                }
+                info.setStyle("display", "");
+                document.activeElement.blur();
+                spt.pipeline.set_info_node(node);
+
+                var callback = function() {
+                    info.setStyle("right", "0px");
+                }
+                spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
+
+                var results = bvr.src_el.getParent(".spt_node_search_results");
+                results.on_complete(results);
+
+                '''
+                })
 
 
 
@@ -276,7 +403,8 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
                 var info = top.getElement(".spt_pipeline_tool_info");
-                if (info) {
+                info.setStyle("right", "-400px");
+                /*if (info) {
                     var group_name = spt.pipeline.get_current_group();
 
                     var class_name = 'tactic.ui.tools.PipelineInfoWdg';
@@ -285,7 +413,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                     }
 
                     spt.panel.load(info, class_name, kwargs);
-                }
+                }*/
 
 
                 var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
@@ -398,10 +526,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         #info.add_style("display: none")
         info.add_class("spt_pipeline_tool_info")
-        info.add_class("spt_panel") 
-        info.add_style("width: 400px")
-        info.add_style("min-width: 400px")
-        info.add_style("max-width: 400px")
+        info.add_class("spt_panel")
 
         info_wdg = DivWdg()
         info.add(info_wdg)
@@ -1123,7 +1248,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
             var info = top.getElement(".spt_pipeline_tool_info");
-            if (info) {
+            /*if (info) {
                 var group_name = spt.pipeline.get_current_group();
 
                 var class_name = 'tactic.ui.tools.PipelineInfoWdg';
@@ -1132,7 +1257,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 }
                 info.setStyle("dipslay", "");
                 spt.panel.load(info, class_name, kwargs);
-            }
+            }*/
 
 
             editor_top.removeClass("spt_has_changes");
@@ -1344,7 +1469,11 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         info.setStyle("display", "");
         document.activeElement.blur();
         spt.pipeline.set_info_node(node);
-        spt.panel.load(info, class_name, kwargs);
+
+        var callback = function() {
+            info.setStyle("right", "0px");
+        }
+        spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
 
         '''
         }
@@ -3522,7 +3651,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             script_editor.add_style("display: none")
 
         script_text.add_style("height: 300px")
-        script_text.add_style("width: auto")
+        script_text.add_style("width: 100%")
 
         self.add_session_behavior(script_text, "text", "spt_action_info_top", "script")
         script_editor.add_behavior({
@@ -3586,7 +3715,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_text.add_class("spt_python_script_text")
  
         script_text.add_style("height: 300px")
-        script_text.add_style("width: auto")
+        script_text.add_style("width: 100%")
 
         self.add_session_behavior(script_text, "text", "spt_action_info_top", "script")
 
@@ -5335,37 +5464,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 box-sizing: border-box;
                 border: 1px solid #ccc;
             }
-            
-            .spt_pipeline_editor_top .search-results {
-                position: absolute;
-                right: 4;
-                height: 144px;
-                width: 163px;
-                background: white;
-                border: 1px solid #ccc;
-                box-shadow: 0px 2px 4px 0px #ccc;
-                z-index: 1000;
-                top: 40;
-                overflow-y: auto;
-            }
-
-            .spt_pipeline_editor_top .search-result {
-                width: 100%;
-                height: 32px;
-                border-bottom: 1px solid #ccc;
-                display: flex;
-                align-items: center;
-                padding: 7px 6px;
-                box-sizing: border-box;
-                overflow-x: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                display: block;
-            }
-
-            .spt_pipeline_editor_top .search-result.search-result-template {
-                display: none;
-            }
 
 
             ''')
@@ -5398,32 +5496,20 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         node_search = HtmlElement.text()
         shelf_wdg.add(node_search)
+        node_search.add_class("spt_node_search")
         node_search.add_class("search-box")
         node_search.add_attr("placeholder", "Find node by name")
-
-        node_results = DivWdg()
-        inner.add(node_results)
-        node_results.add_class("spt_node_search_results")
-        node_results.add_class("search-results")
-        node_results.add_style("display: none")
-
-        node_result_template = DivWdg()
-        node_results.add(node_result_template)
-        node_result_template.add_class("spt_node_search_result")
-        node_result_template.add_class("search-result-template")
-        node_result_template.add_class("search-result")
-        node_result_template.add_class("tactic_hover hand")
 
 
         node_search.add_behavior({
             'type': 'click_up',
             'cbjs_action': '''
 
-            var top = bvr.src_el.getParent(".spt_pipeline_editor_inner_top");
+            /*var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             var results = top.getElement(".spt_node_search_results");
 
             results.setStyle("display", "");
-            spt.body.add_focus_element(results);
+            spt.body.add_focus_element(results);*/
 
             '''
             })
@@ -5433,9 +5519,12 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'type': 'keyup',
             'cbjs_action': '''
 
-            var top = bvr.src_el.getParent(".spt_pipeline_editor_inner_top");
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             var results = top.getElement(".spt_node_search_results");
             var template = results.getElement(".search-result-template");
+
+            results.setStyle("display", "");
+            spt.body.add_focus_element(results);
 
             var oldItems = results.getElements(".spt_node_search_result");
             oldItems.forEach(function(oldItem){
@@ -5454,65 +5543,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 item.innerText = title;
                 results.appendChild(item);
             });
-
-            '''
-            })
-
-
-        node_results.add_behavior({
-            'type': 'load',
-            'cbjs_action': '''
-
-            bvr.src_el.on_complete = function(el) {
-                el.setStyle("display", "none");
-            }
-
-            '''
-            })
-
-        inner.add_relay_behavior({
-            'type': 'click',
-            'bvr_match_class': 'spt_node_search_result',
-            'cbjs_action': '''
-
-            var editorTop = bvr.src_el.getParent(".spt_pipeline_editor_top");
-            spt.pipeline.set_top(editorTop.getElement(".spt_pipeline_top"));
-
-            var node = spt.pipeline.get_node_by_name(bvr.src_el.innerText);
-            spt.pipeline.fit_to_node(node);
-
-            // reuse code instead?
-            spt.pipeline.select_single_node(node);
-
-            var properties = spt.pipeline.get_node_properties(node);
-
-            var node_name = spt.pipeline.get_node_name(node);
-            var group_name = spt.pipeline.get_current_group();
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var info = top.getElement(".spt_pipeline_tool_info");
-            if (!info) {
-                return;
-            }
-
-            var node_type = spt.pipeline.get_node_type(node);
-            if (node.hasClass("spt_pipeline_unknown")) {
-                node_type = "unknown";
-            }
-
-            var class_name = 'tactic.ui.tools.ProcessInfoWdg';
-            var kwargs = {
-                pipeline_code: group_name,
-                process: node_name,
-                node_type: node_type,
-                properties: properties
-            }
-            info.setStyle("display", "");
-            document.activeElement.blur();
-            spt.pipeline.set_info_node(node);
-            spt.panel.load(info, class_name, kwargs);
-
-            var results = bvr.src_el.getParent(".spt_node_search_results");
-            results.on_complete(results);
 
             '''
             })
@@ -5630,7 +5660,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             var info = top.getElement(".spt_pipeline_tool_info");
-            if (info) {
+            info.setStyle("right", "-400px");
+            /*if (info) {
 
                 // prevent reloading pipeline info on every drag
                 var process = info.getAttribute("spt_process");
@@ -5647,7 +5678,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 }
 
                 spt.panel.load(info, class_name, kwargs);
-            }
+            }*/
 
 
 
@@ -5723,6 +5754,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_div.add_style("float: left")
         shelf_wdg.add(button_div)
         """
+
 
         if self.kwargs.get("show_help") not in ['false', False]:
             help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
@@ -6209,8 +6241,41 @@ class PipelineEditorWdg(BaseRefreshWdg):
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
  
 
+        button = ButtonNewWdg(title="Show workflow info", icon="FA_INFO")
+        button_row.add(button)
+        button.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            var info = toolTop.getElement(".spt_pipeline_tool_info");
+
+            if (!info) return;
+
+            var nodes = spt.pipeline.get_all_nodes();
+            for (var i=0; i<nodes.length; i++) {
+                var node = nodes[i];
+                spt.pipeline.unselect_node(node);
+            }
+
+            var group_name = spt.pipeline.get_current_group();
+
+            var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+            var kwargs = {
+                pipeline_code: group_name,
+            }
+            info.setStyle("dipslay", "");
+
+            var callback = function() {
+                info.setStyle("right", "0px");
+            }
+            spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
 
 
+            '''
+
+            })
 
 
 
@@ -7670,7 +7735,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
 
                 var info = top.getElement(".spt_pipeline_tool_info");
-                if (info) {
+                /*if (info) {
                     var group_name = spt.pipeline.get_current_group();
 
                     var class_name = 'tactic.ui.tools.PipelineInfoWdg';
@@ -7679,7 +7744,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                     }
                     info.setStyle("dipslay", "");
                     spt.panel.load(info, class_name, kwargs);
-                }
+                }*/
 
 
                 editor_top.removeClass("spt_has_changes");
