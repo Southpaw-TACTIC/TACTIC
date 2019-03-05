@@ -1558,11 +1558,13 @@ class TaskGenerator(object):
                 start_processes.append(process_name)
 
 
-
+        self.last_end_dates = {}
         for start_process in start_processes:
 
             # reset the start date for each start process
             self.start_date = self.first_start_date
+
+            self.last_end_dates[start_process] = self.first_start_date
 
             self.handle_process(start_process)
 
@@ -1608,11 +1610,17 @@ class TaskGenerator(object):
                 last_end_date = self.first_start_date
                 for input_process in input_processes:
                     last_task = self.process_tasks.get(input_process)
-                    if last_task and last_task.get_datetime_value("bid_end_date") > last_end_date:
-                        last_end_date = last_task.get_datetime_value("bid_end_date")
+                    if last_task:
+                        last_end_date_temp = last_task.get_datetime_value("bid_end_date")
+                    else:
+                        last_end_date_temp = self.last_end_dates[input_process]
+                    if last_end_date_temp and last_end_date_temp > last_end_date:
+                        last_end_date = last_end_date_temp
+                self.last_end_dates[output_process] = last_end_date
                 self.start_date = last_end_date + timedelta(days=1)
             else:
                 self.start_date = self.first_start_date
+                self.last_end_dates[output_process] = self.first_start_date
 
             self.end_date = None
 
