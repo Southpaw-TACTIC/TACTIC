@@ -303,7 +303,6 @@ class PipelineToolWdg(BaseRefreshWdg):
                 bvr.src_el.on_complete = function(el) {
                     el.setStyle("display", "none");
                     var top = el.getParent(".spt_pipeline_tool_top");
-
                     top.getElement(".spt_node_search").blur();
                 }
 
@@ -317,6 +316,9 @@ class PipelineToolWdg(BaseRefreshWdg):
 
                 var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 spt.pipeline.set_top(top.getElement(".spt_pipeline_top"));
+
+                var inp = top.getElement(".spt_node_search");
+                inp.value = bvr.src_el.innerText;
 
                 var node = spt.pipeline.get_node_by_name(bvr.src_el.innerText);
                 spt.pipeline.fit_to_node(node);
@@ -5757,9 +5759,10 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
         if self.kwargs.get("show_help") not in ['false', False]:
-            help_button = ActionButtonWdg(title="?", tip="Show Workflow Editor Help", size='s')
+            help_button = HtmlElement.button("?")
+            help_button.add_class("btn-default btn spt_label hand btn-sm")
             shelf_wdg.add(help_button)
-            help_button.add_style("padding-top: 3px")
+            help_button.add_styles("padding-top: 4px;height: 33px;width: 40px;")
             help_button.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
@@ -8101,8 +8104,6 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
 
             var popup = bvr.src_el.getParent(".spt_popup");
             var src_el = popup.activator;
-
-            console.log(info);
 
             // Add row to table
             var layout = src_el.getParent(".spt_layout");
