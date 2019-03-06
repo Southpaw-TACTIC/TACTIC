@@ -6505,7 +6505,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
 
          if (mode=='add') {
              header_row.appendChild(cells[j]);
-             if (data_edit_wdgs) {
+             if (data_edit_wdgs && data_edit_wdgs[j]) {
                 layout_edit_top.appendChild(data_edit_wdgs[j]);
              }
          }
