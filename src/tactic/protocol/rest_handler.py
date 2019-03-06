@@ -143,7 +143,7 @@ class APIRestHandler(BaseRestHandler):
 
         for key in keys:
 
-            if key in ["method", "login_ticket", "password"]:
+            if key in ["method", "login_ticket", "password", "domain"]:
                 continue
 
             if key == 'kwargs':
