@@ -2970,6 +2970,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 	// set any properties that might exist
 	new_node.properties = kwargs.properties || {};
+    new_node[node_type] = { description: kwargs.description || "" };
 
 
 	// add to a group

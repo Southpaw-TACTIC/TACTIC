@@ -2317,7 +2317,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
             var node = spt.pipeline.get_info_node();
             if (node) {
-                var desc = spt.pipeline.get_node_property(node, "description");
+                var desc = spt.pipeline.get_node_kwarg(node, "description");
                 if (desc) bvr.src_el.value = desc;
             }
 
@@ -2331,7 +2331,7 @@ class BaseInfoWdg(BaseRefreshWdg):
             var node = spt.pipeline.get_info_node();
             if (node) {
                 var desc = bvr.src_el.value;
-                spt.pipeline.set_node_property(node, "description", desc);
+                spt.pipeline.set_node_kwarg(node, "description", desc);
 
                 spt.named_events.fire_event('pipeline|change', {});
             }
@@ -2589,9 +2589,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
     def get_default_properties(self):
-        return {
-            "description": ""
-        }
+        return {}
 
 
     def initialize_session_behavior(self, info):
@@ -2998,19 +2996,14 @@ class DefaultInfoWdg(BaseInfoWdg):
         kwargs["task_creation"] = True
         kwargs["autocreate_task"] = False
 
-        return kwargs
-
-
-    def get_default_properties(self):
         if not self.process_sobj:
-            return {}
+            return kwargs
 
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
+        kwargs["description"] = description
 
-        return {
-            "description": description
-        }
+        return kwargs
 
 
 
@@ -4089,22 +4082,16 @@ class ActionInfoWdg(BaseInfoWdg):
             kwargs['script_path_folder'] = script_path_folder
             kwargs['script_path_title'] = script_path_title
 
+        description = ""
+        if self.process_sobj:
+            process_sobj = self.process_sobj
+            description = process_sobj.get_value("description")
+
         return {
             "multi": "true",
             "selected": self.action,
+            "description": description,
             self.action: kwargs
-        }
-
-
-    def get_default_properties(self):
-        if not self.process_sobj:
-            return {}
-
-        process_sobj = self.process_sobj
-        description = process_sobj.get_value("description")
-
-        return {
-            "description": description
         }
 
 
@@ -4297,19 +4284,14 @@ class ApprovalInfoWdg(BaseInfoWdg):
         kwargs["task_creation"] = True
         kwargs["autocreate_task"] = False
 
-        return kwargs
-
-
-    def get_default_properties(self):
         if not self.process_sobj:
-            return {}
+            return kwargs
 
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
+        kwargs["description"] = description
 
-        return {
-            "description": description
-        }
+        return kwargs
 
 
 class ConditionInfoWdg(ActionInfoWdg):
@@ -4428,19 +4410,15 @@ class HierarchyInfoWdg(BaseInfoWdg):
         kwargs["subpipeline"] = subpipeline
         kwargs["task_creation"] = task_creation
 
-        return kwargs
-
-
-    def get_default_properties(self):
         if not self.process_sobj:
-            return {}
+            return kwargs
 
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
+        kwargs["description"] = description
 
-        return {
-            "description": description
-        }
+        return kwargs
+
 
 
 class DependencyInfoWdg(BaseInfoWdg):
@@ -4611,6 +4589,13 @@ class DependencyInfoWdg(BaseInfoWdg):
         kwargs["related_status"] = workflow.get("status")
         kwargs["related_scope"] = workflow.get("scope")
         kwargs["related_wait"] = workflow.get("wait")
+
+        if not self.process_sobj:
+            return kwargs
+
+        process_sobj = self.process_sobj
+        description = process_sobj.get_value("description")
+        kwargs["description"] = description
 
         return kwargs
 
@@ -4917,6 +4902,13 @@ class ProgressInfoWdg(BaseInfoWdg):
         kwargs["related_scope"] = workflow.get("scope")
         kwargs["related_wait"] = workflow.get("wait")
 
+        if not self.process_sobj:
+            return kwargs
+
+        process_sobj = self.process_sobj
+        description = process_sobj.get_value("description")
+        kwargs["description"] = description
+
         return kwargs
 
 
@@ -5099,6 +5091,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 class ProcessInfoCmd(Command):
 
     def execute(self):
+        self.set_description()
 
         node_type = self.kwargs.get("node_type")
 
@@ -5238,6 +5231,7 @@ class ProcessInfoCmd(Command):
 
             finally:
                 sudo.exit()
+
 
 
     def handle_dependency(self):
@@ -5445,6 +5439,20 @@ class ProcessInfoCmd(Command):
         process_sobj.set_json_value("workflow", workflow)
         process_sobj.commit()
 
+
+
+    def set_description(self):
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+        description = self.kwargs.get("description")
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+        process_sobj.set_value("description", description)
+        process_sobj.commit()
 
 
 
@@ -5874,6 +5882,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 var name = spt.pipeline.get_node_name(node);
                 name = name.replace(/&/g, "&amp;amp;");
                 var kwargs = spt.pipeline.get_node_kwargs(node);
+                var description = kwargs.description;
                 var on_saves = kwargs.on_save;
 
                 if (kwargs.multi) kwargs = spt.pipeline.get_node_multi_kwargs(node);
@@ -5883,6 +5892,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                         kwargs = on_save(kwargs);
                     }
                 }
+
+                kwargs.description = description;
                 node_kwargs[name] = kwargs;
             }
 
@@ -7716,6 +7727,10 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             var editor_top = top.getElement(".spt_pipeline_editor_top");
 
             var ok = function () {
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var info = toolTop.getElement(".spt_pipeline_tool_info");
+                info.setStyle("right", "-400px");
+
                 editor_top.removeClass("spt_has_changes");
 
                 var wrapper = top.getElement(".spt_pipeline_wrapper");
@@ -8150,7 +8165,6 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                 rowTop.removeClass("spt_unsaved_item");
                 var on_complete = function() {
                     var refreshedRow = spt.table.get_row_by_search_key(search_key);
-                    console.log("refreshed", refreshedRow, search_key);
                     refreshedRow.setAttribute("spt_group_level", 2);
                     var documentItem = refreshedRow.getElement(".spt_document_item");
                     documentItem.click();
