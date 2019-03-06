@@ -5091,8 +5091,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 class ProcessInfoCmd(Command):
 
     def execute(self):
-        self.set_description()
-
         node_type = self.kwargs.get("node_type")
 
         if node_type in ["manual", "node"]:
@@ -5122,15 +5120,30 @@ class ProcessInfoCmd(Command):
         return cmd.execute()
 
 
+    def set_description(self, process_sobj):
+        description = self.kwargs.get("description")
+        if description:
+            process_sobj.set_value("description", description)
+
+
     def handle_manual(self):
 
         pipeline_code = self.kwargs.get("pipeline_code")
         process = self.kwargs.get("process")
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
         cbk_classes = self.kwargs.get("cbk_classes") or []
 
         for cbk_class in cbk_classes:
             cmd = Common.create_from_class_path(cbk_class, {}, self.kwargs)
             cmd.execute()
+
+        self.set_description(process_sobj)
+        process_sobj.commit()
 
 
     def handle_action(self):
@@ -5232,6 +5245,9 @@ class ProcessInfoCmd(Command):
             finally:
                 sudo.exit()
 
+        self.set_description(process_sobj)
+        process_sobj.commit()
+
 
 
     def handle_dependency(self):
@@ -5269,6 +5285,7 @@ class ProcessInfoCmd(Command):
             workflow['wait'] = related_wait
 
         process_sobj.set_json_value("workflow", workflow)
+        self.set_description(process_sobj)
         process_sobj.commit()
 
 
@@ -5290,7 +5307,9 @@ class ProcessInfoCmd(Command):
         if assigned:
             workflow['assigned'] = assigned
         process_sobj.set_json_value("workflow", workflow)
+        self.set_description(process_sobj)
         process_sobj.commit()
+
 
     def handle_status(self):
 
@@ -5331,6 +5350,7 @@ class ProcessInfoCmd(Command):
             workflow['assigned'] = assigned
 
         process_sobj.set_json_value("workflow", workflow)
+        self.set_description(process_sobj)
         process_sobj.commit()
 
 
@@ -5359,8 +5379,7 @@ class ProcessInfoCmd(Command):
         data['task_creation'] = task_creation
 
         process_sobj.set_value("workflow", data)
-
-
+        self.set_description(process_sobj)
         process_sobj.commit()
  
 
@@ -5437,21 +5456,7 @@ class ProcessInfoCmd(Command):
 
 
         process_sobj.set_json_value("workflow", workflow)
-        process_sobj.commit()
-
-
-
-    def set_description(self):
-
-        pipeline_code = self.kwargs.get("pipeline_code")
-        process = self.kwargs.get("process")
-        description = self.kwargs.get("description")
-
-        search = Search("config/process")
-        search.add_filter("pipeline_code", pipeline_code)
-        search.add_filter("process", process)
-        process_sobj = search.get_sobject()
-        process_sobj.set_value("description", description)
+        self.set_description(process_sobj)
         process_sobj.commit()
 
 
@@ -5668,6 +5673,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'type': 'listen',
         'event_name': event_name,
         'cbjs_action': '''
+            let focused = document.querySelector(":focus");
+            if (focused) focused.blur();
+
             var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             var info = top.getElement(".spt_pipeline_tool_info");
             info.setStyle("right", "-400px");
@@ -7351,7 +7359,6 @@ class PipelineSaveCbk(Command):
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
-            description = xml.get_attribute(node, "description") or ""
 
             if process_code:
                 process = Search.get_by_code("config/process", process_code)
@@ -7370,8 +7377,6 @@ class PipelineSaveCbk(Command):
                 process = SearchType.create("config/process")
                 process.set_value("process", process_name)
                 process.set_value("pipeline_code", pipeline_code)
-
-            process.set_value("description", description)
 
             # set the process code
             xml.set_attribute(node, "process_code", process.get_code())
