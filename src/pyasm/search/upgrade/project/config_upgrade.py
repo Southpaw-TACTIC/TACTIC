@@ -20,6 +20,27 @@ class ConfigUpgrade(BaseUpgrade):
 
 
     #
+    # 4.7.0.a01
+    #
+    def upgrade_v4_7_0_a01_001(self):
+        self.run_sql('''
+        CREATE TABLE "spt_process_state" (
+            "id" serial PRIMARY KEY,
+            "code" character varying(256),
+            "pipeline_code" character varying(256),
+            "process" character varying(256),
+            "search_type" character varying(256),
+            "search_code" character varying(256),
+            "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
+            "status" jsonb,
+            "state" character varying(256),
+            "data" jsonb,
+            "s_status" character varying(32),
+            CONSTRAINT "spt_pipeline_info_code_idx" UNIQUE ("code")
+        );
+        ''')
+
+    #
     #
     #
     def upgrade_v4_6_0_a02_001(self):
@@ -135,7 +156,7 @@ class ConfigUpgrade(BaseUpgrade):
         ''')
 
 
- 
+
 
 
 
@@ -185,7 +206,7 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         UPDATE "naming" SET "checkin_type" = "checkin_mode";
         ''')
-    
+
     def upgrade_v4_0_0_b08_001(self):
         self.run_sql('''
         ALTER TABLE "naming" ADD "checkin_type" varchar(256);
@@ -244,7 +265,7 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE widget_config ADD COLUMN folder text;
         ''')
- 
+
 
 
     #
@@ -254,7 +275,7 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN transfer_mode varchar(256);
         ''')
- 
+
 
 
     #
@@ -264,11 +285,11 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE custom_script ADD COLUMN language varchar(256);
         ''')
- 
-  
-        
-    
-    
+
+
+
+
+
     #
     # 3.8.0.b02
     #
@@ -277,12 +298,12 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE spt_process ADD COLUMN context_options text;
         ''')
-        
-    
+
+
     def upgrade_v3_8_0_b02_001(self):
         self.run_sql('''ALTER TABLE spt_process ADD COLUMN repo_type varchar(256)''')
-    
-    
+
+
     #
     # 3.8.0.b01
     #
@@ -314,7 +335,7 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''UPDATE spt_process SET subcontext_options='(main)' where subcontext_options='(none)';''')
 
 
-       
+
 
     def upgrade_v3_7_0_v01_001(self):
         self.run_sql('''UPDATE spt_process SET subcontext_options='(main)' where subcontext_options='(none)';''')
@@ -326,8 +347,8 @@ class ConfigUpgrade(BaseUpgrade):
     #
     def upgrade_v3_7_0_rc04_001(self):
         self.run_sql('''ALTER TABLE spt_process ADD COLUMN sandbox_create_script_path text''');
- 
-  
+
+
     #
     # 3.7.0.rc02
     #
@@ -386,7 +407,7 @@ class ConfigUpgrade(BaseUpgrade):
         ''')
 
 
-    
+
     #
     # 3.6.0.b01
     #
@@ -455,7 +476,7 @@ class ConfigUpgrade(BaseUpgrade):
     # 3.1.0.b04
     #
 
-   
+
     def upgrade_v3_1_0_b04_001(self):
         self.run_sql('''
         ALTER TABLE naming ADD COLUMN snapshot_type varchar(256);
@@ -635,7 +656,7 @@ class ConfigUpgrade(BaseUpgrade):
 
     #
     # 2.6.0.b02
-    # 
+    #
     def upgrade_v2_6_0_b02_001(self):
         self.run_sql('''
         CREATE TABLE spt_client_trigger (
@@ -652,7 +673,7 @@ class ConfigUpgrade(BaseUpgrade):
 
     #
     # 2.6.0.a01
-    # 
+    #
     def upgrade_v2_6_0_a01_001(self):
         self.run_sql('''
         CREATE TABLE spt_url (
@@ -668,14 +689,14 @@ class ConfigUpgrade(BaseUpgrade):
 
     #
     # 2.5.0.rc10
-    # 
+    #
     def upgrade_v2_5_0_rc10_001(self):
         self.run_sql('''
         ALTER TABLE naming ADD COLUMN context varchar(256);
         ''')
     #
     # 2.5.0.rc06
-    # 
+    #
     def upgrade_v2_5_0_rc08_001(self):
         self.run_sql('''
         alter table naming add column sandbox_dir_naming text;
@@ -684,7 +705,7 @@ class ConfigUpgrade(BaseUpgrade):
 
     #
     # 2.5.0.a01
-    # 
+    #
     def upgrade_v2_5_0_a01_006(self):
         self.run_sql('''
         CREATE TABLE custom_script (
