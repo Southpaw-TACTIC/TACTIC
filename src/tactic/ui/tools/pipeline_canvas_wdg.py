@@ -2970,6 +2970,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 	// set any properties that might exist
 	new_node.properties = kwargs.properties || {};
+    new_node[node_type] = { description: kwargs.description || "" };
 
 
 	// add to a group
@@ -4785,7 +4786,8 @@ spt.pipeline.fit_to_node = function(node) {
     var size = canvas.getSize();
     var positions = spt.pipeline.get_position(node);
 
-    var hcenter = size.x/2;
+    // hard coded info width (400)
+    var hcenter = (size.x-400)/2;
     var vcenter = size.y/2;
 
     var dx = hcenter - positions.x - 50;
