@@ -469,7 +469,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             update_mode_option = self.kwargs.get("update_mode")
             if not update_mode_option:
-                update_mode_option = "true"
+                update_mode_option = "false"
             update_mode = SelectWdg(name="update mode")
             update_mode.add_class("spt_update_mode_select")
             update_mode.set_option("values", ["false", "true", "sequence"])

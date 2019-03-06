@@ -6250,6 +6250,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
+    if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
 
     if (table_top) {
         var show_select = table_top.getAttribute("spt_show_select");
@@ -6964,7 +6965,7 @@ spt.table.get_parent_groups = function(src_el, level) {
         lowest_group_level = group.getAttribute("spt_group_level");
         if (level && level == group.getAttribute("spt_group_level")) {
             return group;
-        } else {
+        } else if (!level) {
             group_parents.push(group);
         }
         row = group;
