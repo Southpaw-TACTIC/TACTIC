@@ -111,6 +111,14 @@ class PipelineToolWdg(BaseRefreshWdg):
                 display: block;
             }
 
+            .spt_pipeline_tool_top .search-result.hovered {
+                background: #eee;
+            }
+
+            .spt_pipeline_tool_top .search-result.selected {
+                background: #eee;
+            }
+
             .spt_pipeline_tool_top .search-result.search-result-template {
                 display: none;
             }
@@ -291,10 +299,29 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             node_result_template = DivWdg()
             node_results.add(node_result_template)
-            node_result_template.add_class("spt_node_search_result")
+            node_result_template.add_class("spt_node_search_item")
             node_result_template.add_class("search-result-template")
             node_result_template.add_class("search-result")
-            node_result_template.add_class("tactic_hover hand")
+            node_result_template.add_class("hand")
+
+            node_result_template.add_behavior({
+                'type': 'mouseenter',
+                'cbjs_action': '''
+
+                bvr.src_el.addClass("hovered");
+
+                '''
+                })
+
+            node_result_template.add_behavior({
+                'type': 'mouseleave',
+                'cbjs_action': '''
+
+                bvr.src_el.removeClass("hovered");
+
+                '''
+                })
+
 
             node_results.add_behavior({
                 'type': 'load',
@@ -345,12 +372,11 @@ class PipelineToolWdg(BaseRefreshWdg):
                     node_type: node_type,
                     properties: properties
                 }
-                info.setStyle("display", "");
                 document.activeElement.blur();
                 spt.pipeline.set_info_node(node);
 
                 var callback = function() {
-                    info.setStyle("right", "0px");
+                    spt.named_events.fire_event('pipeline|show_info', {});
                 }
                 spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
 
@@ -403,20 +429,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
                 spt.pipeline.set_current_group(value);
 
-
-                var info = top.getElement(".spt_pipeline_tool_info");
-                info.setStyle("right", "-400px");
-                /*if (info) {
-                    var group_name = spt.pipeline.get_current_group();
-
-                    var class_name = 'tactic.ui.tools.PipelineInfoWdg';
-                    var kwargs = {
-                        pipeline_code: group_name,
-                    }
-
-                    spt.panel.load(info, class_name, kwargs);
-                }*/
-
+                // used to show sidebar here? doesnt seem like it affect anything
 
                 var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
                 if (editor_top) {
@@ -543,6 +556,34 @@ class PipelineToolWdg(BaseRefreshWdg):
             show_info_tab = False
         else:
             show_info_tab = True
+
+
+        inner.add_behavior( {
+        'type': 'listen',
+        'event_name': 'pipeline|show_info',
+        'cbjs_action': '''
+
+        var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        var info = top.getElement(".spt_pipeline_tool_info");
+        info.setStyle("right", "0px");
+
+        '''
+
+        } )
+
+
+        inner.add_behavior( {
+        'type': 'listen',
+        'event_name': 'pipeline|hide_info',
+        'cbjs_action': '''
+
+        var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        var info = top.getElement(".spt_pipeline_tool_info");
+        info.setStyle("right", "-400px");
+
+        '''
+
+        } )
 
 
 
@@ -1247,20 +1288,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
             spt.pipeline.set_current_group(value);
 
-
-
-            var info = top.getElement(".spt_pipeline_tool_info");
-            /*if (info) {
-                var group_name = spt.pipeline.get_current_group();
-
-                var class_name = 'tactic.ui.tools.PipelineInfoWdg';
-                var kwargs = {
-                    pipeline_code: group_name,
-                }
-                info.setStyle("dipslay", "");
-                spt.panel.load(info, class_name, kwargs);
-            }*/
-
+            //spt.named_events.fire_event('pipeline|hide_info', {});
 
             editor_top.removeClass("spt_has_changes");
             
@@ -1468,12 +1496,11 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             node_type: node_type,
             properties: properties
         }
-        info.setStyle("display", "");
         document.activeElement.blur();
         spt.pipeline.set_info_node(node);
 
         var callback = function() {
-            info.setStyle("right", "0px");
+            spt.named_events.fire_event('pipeline|show_info', {});
         }
         spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
 
@@ -1522,7 +1549,10 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 to_node: to_node.spt_name,
                 to_attr: to_attr,
             }
-            spt.panel.load(info, class_name, kwargs);
+            var callback = function() {
+                spt.named_events.fire_event('pipeline|show_info', {});
+            }
+            spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
             return;
         }
 
@@ -5520,11 +5550,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'type': 'click_up',
             'cbjs_action': '''
 
-            /*var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             var results = top.getElement(".spt_node_search_results");
 
             results.setStyle("display", "");
-            spt.body.add_focus_element(results);*/
+            spt.body.add_focus_element(results);
 
             '''
             })
@@ -5534,6 +5564,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'type': 'keyup',
             'cbjs_action': '''
 
+            var key = evt.key;
+
             var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             var results = top.getElement(".spt_node_search_results");
             var template = results.getElement(".search-result-template");
@@ -5542,22 +5574,71 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.body.add_focus_element(results);
 
             var oldItems = results.getElements(".spt_node_search_result");
-            oldItems.forEach(function(oldItem){
-                if (oldItem.hasClass("search-result-template")) return;
-                oldItem.remove();
-            });
 
-            var nodes = spt.pipeline.get_all_nodes();
+            if (key == "down") {
+                // down selection
 
-            nodes.forEach(function(node){
-                var title = node.getAttribute("title");
-                if (!title.toLowerCase().contains(bvr.src_el.value.toLowerCase())) return;
+                var selectedItem = results.getElement(".selected");
+                if (selectedItem) {
+                    var nextItem = selectedItem.nextSibling;
+                    if (nextItem) if (nextItem.hasClass("search-result-template")) nextItem = nextItem.nextSibling;
+                    selectedItem.removeClass("selected");
+                }
 
-                var item = spt.behavior.clone(template);
-                item.removeClass("search-result-template");
-                item.innerText = title;
-                results.appendChild(item);
-            });
+                if (!nextItem) nextItem = oldItems[0];
+                if (!nextItem) return;
+
+                nextItem.addClass("selected");
+                nextItem.scrollIntoView(false);
+
+            } else if (key == "up") {
+                // up selection
+
+                var selectedItem = results.getElement(".selected");
+                if (selectedItem) {
+                    var nextItem = selectedItem.previousSibling;
+                    if (nextItem) if (nextItem.hasClass("search-result-template")) nextItem = nextItem.previousSibling;
+                    selectedItem.removeClass("selected");
+                }
+
+                if (!nextItem) nextItem = oldItems[oldItems.length-1];
+                if (!nextItem) return;
+
+                nextItem.addClass("selected");
+                nextItem.scrollIntoView(false);
+
+            } else if (key == "enter") {
+                // check if theres a selected item, if so click
+
+                var selectedItem = results.getElement(".selected");
+                if (selectedItem) selectedItem.click();
+
+            } else if (key == "esc") {
+                // blur search
+
+                bvr.src_el.blur();
+                results.on_complete(results);
+
+            } else { 
+                // Load in new search results
+
+                oldItems.forEach(function(oldItem){
+                    oldItem.remove();
+                });
+
+                var nodes = spt.pipeline.get_all_nodes();
+
+                nodes.forEach(function(node){
+                    var title = node.getAttribute("title");
+                    if (!title.toLowerCase().contains(bvr.src_el.value.toLowerCase())) return;
+
+                    var item = spt.behavior.clone(template);
+                    item.removeClass("search-result-template");
+                    item.addClass("spt_node_search_result");
+                    item.innerText = title;
+                    results.appendChild(item);
+                });
+            }
 
             '''
             })
@@ -5676,29 +5757,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             let focused = document.querySelector(":focus");
             if (focused) focused.blur();
 
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var info = top.getElement(".spt_pipeline_tool_info");
-            info.setStyle("right", "-400px");
-            /*if (info) {
-
-                // prevent reloading pipeline info on every drag
-                var process = info.getAttribute("spt_process");
-                if (!process) {
-                    return;
-                }
-
-
-                var group_name = spt.pipeline.get_current_group();
-
-                var class_name = 'tactic.ui.tools.PipelineInfoWdg';
-                var kwargs = {
-                    pipeline_code: group_name,
-                }
-
-                spt.panel.load(info, class_name, kwargs);
-            }*/
-
-
+            spt.named_events.fire_event('pipeline|hide_info', {});
 
         ''' } )
 
@@ -6287,10 +6346,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var kwargs = {
                 pipeline_code: group_name,
             }
-            info.setStyle("dipslay", "");
 
             var callback = function() {
-                info.setStyle("right", "0px");
+                spt.named_events.fire_event('pipeline|show_info', {});
             }
             spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
 
@@ -7732,9 +7790,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             var editor_top = top.getElement(".spt_pipeline_editor_top");
 
             var ok = function () {
-                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-                var info = toolTop.getElement(".spt_pipeline_tool_info");
-                info.setStyle("right", "-400px");
+                spt.named_events.fire_event('pipeline|hide_info', {});
 
                 editor_top.removeClass("spt_has_changes");
 
@@ -7754,21 +7810,6 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 var title = title;
 
                 spt.pipeline.set_current_group(value);
-
-
-
-                var info = top.getElement(".spt_pipeline_tool_info");
-                /*if (info) {
-                    var group_name = spt.pipeline.get_current_group();
-
-                    var class_name = 'tactic.ui.tools.PipelineInfoWdg';
-                    var kwargs = {
-                        pipeline_code: group_name,
-                    }
-                    info.setStyle("dipslay", "");
-                    spt.panel.load(info, class_name, kwargs);
-                }*/
-
 
                 editor_top.removeClass("spt_has_changes");
                 
