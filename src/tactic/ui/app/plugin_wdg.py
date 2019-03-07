@@ -183,7 +183,21 @@ class PluginWdg(BaseRefreshWdg):
         button_row.add_style("margin-top: -8px")
 
 
-       
+
+        show_active_only = self.kwargs.get("show_active_only") 
+
+        from pyasm.web import WidgetSettings
+        x = WidgetSettings.get_value_by_key("PluginWdg:show_active_only")
+
+
+
+
+        if show_active_only in [True, 'true']: 
+            show_active_only = True
+        else:
+            show_active_only = False
+
+   
 
         if is_editable:
             new_button = ButtonNewWdg(title="Create a New Plugin", icon="FA_PLUS")
@@ -221,7 +235,30 @@ class PluginWdg(BaseRefreshWdg):
             } )
 
 
-           # add in a context menu
+            if show_active_only:
+                icon = "FA_LIST_UL"
+                title = "Show Folders"
+            else:
+                icon = "FA_FOLDER_O"
+                title = "Show Only Active Plugins"
+            add_button = ButtonNewWdg(title=title, icon=icon)
+            button_row.add(add_button)
+
+            add_button.add_behavior( {
+            'type': 'click_up',
+            'show_active_only': show_active_only,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_plugin_top");
+            top.setAttribute("spt_show_active_only", !bvr.show_active_only);
+            spt.panel.refresh_element(top, { show_active_only: !bvr.show_active_only } );
+            '''
+            } )
+
+
+
+
+
+            # add in a context menu
             menu = self.get_context_menu()
             menus = [menu.get_data()]
             menus_in = {
@@ -268,11 +305,13 @@ class PluginWdg(BaseRefreshWdg):
             content_div.add_style("padding: 5px 5px 5px 10px")
             content_div.add_style("font-style: italic")
 
-        show_active_only = self.kwargs.get("show_active_only") 
-        if show_active_only in [True, 'true']: 
-            show_active_only = True 
-        else: 
-            show_active_only = False 
+
+
+        if show_active_only:
+            # These two variables are needed to for some of the logic below, even though they
+            # may ultimately not be used
+            folder_header = DivWdg()
+            swap = None
       
         for dirname in plugin_dirnames:
 
@@ -282,7 +321,13 @@ class PluginWdg(BaseRefreshWdg):
             if not folder:
                 folder = "/"
 
-            folder_wdg = folder_wdgs.get(folder)
+
+            if show_active_only:
+                folder_wdg = folder_wdgs.get("/")
+            else:
+                folder_wdg = folder_wdgs.get(folder)
+
+
             if folder_wdg:
                 folder_content = folder_wdg.get_widget("content")
             else:
@@ -436,7 +481,8 @@ class PluginWdg(BaseRefreshWdg):
                 icon = IconWdg("Active in project", "FA_CHECK")
 
                 if show_active_only: 
-                    swap.set_on(True) 
+                    if swap:
+                        swap.set_on(True) 
                     folder_content.add_style("display", "") 
                     #folder_header.add_style("display: none") 
                     folder_header.add_style("opacity: 0.3") 
@@ -942,8 +988,6 @@ class PluginEditWdg(BaseRefreshWdg):
 
                 '''
             } )
-
-
 
 
             button = ButtonNewWdg(title="New File", icon="FA_PLUS")
@@ -1535,7 +1579,7 @@ class PluginEditWdg(BaseRefreshWdg):
             'type': 'click_up', 
             'plugin_dir': self.plugin_dir,
             'cbjs_action': '''
-            spt.api.app_busy_show("Activating Plugin");
+            spt.notify.show_message("Activating Plugin");
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
             var search_key = top.getAttribute("spt_search_key");
@@ -1548,22 +1592,18 @@ class PluginEditWdg(BaseRefreshWdg):
             };
 
             var server = TacticServerStub.get();
-            try {
-                server.execute_cmd( class_name, kwargs );
-            }
-            catch(e) {
+            server.p_execute_cmd( class_name, kwargs )
+            .then( function(ret_val) {
+                var top = bvr.src_el.getParent(".spt_plugin_top");
+                top.setAttribute("spt_plugin_dir", bvr.plugin_dir);
+                top.setAttribute("spt_selected", "info")
+                spt.panel.refresh(top);
+            } )
+            .catch( function(e) {
                 spt.alert(spt.exception.handler(e));
                 spt.api.app_busy_hide();
                 return;
-            } 
-
-            var top = bvr.src_el.getParent(".spt_plugin_top");
-            top.setAttribute("spt_plugin_dir", bvr.plugin_dir);
-            top.setAttribute("spt_selected", "info")
-            spt.panel.refresh(top);
-
-            spt.api.app_busy_hide();
-            spt.notify.show_message('plugin "'+ bvr.plugin_dir +'" activated');
+            } );
 
             '''
             })
@@ -1586,7 +1626,7 @@ class PluginEditWdg(BaseRefreshWdg):
             'type': 'click_up', 
             'plugin_code': self.code,
             'cbjs_action': '''
-            spt.api.app_busy_show("Removing Plugin");
+            spt.notify.show_message("Removing Plugin");
 
             if (!confirm("WARNING: Remove plugin ["+bvr.plugin_code+"]?")) {
                 spt.api.app_busy_hide();
@@ -1602,20 +1642,16 @@ class PluginEditWdg(BaseRefreshWdg):
             };
 
             var server = TacticServerStub.get();
-            try {
-                server.execute_cmd( class_name, kwargs );
-            }
-            catch(e) {
+            server.p_execute_cmd( class_name, kwargs )
+            .then( function(ret_val) {
+                var top = bvr.src_el.getParent(".spt_plugin_top");
+                spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully removed')
+                spt.panel.refresh_element(top);
+            } )
+            .catch( function(e) {
                 spt.alert(spt.exception.handler(e));
-                spt.api.app_busy_hide();
                 return;
-            } 
-
-            var top = bvr.src_el.getParent(".spt_plugin_top");
-            spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully removed')
-            spt.panel.refresh(top);
-
-            spt.api.app_busy_hide();
+            } )
 
             '''
             })
@@ -1624,7 +1660,7 @@ class PluginEditWdg(BaseRefreshWdg):
             'type': 'click_up', 
             'plugin_code': self.code,
             'cbjs_action': '''
-            spt.api.app_busy_show("Reloading Plugin");
+            spt.notify.show_message("Reloading Plugin");
 
             if (!confirm("WARNING: Reload plugin ["+bvr.plugin_code+"]?")) {
                 spt.api.app_busy_hide();
@@ -1640,20 +1676,18 @@ class PluginEditWdg(BaseRefreshWdg):
             };
 
             var server = TacticServerStub.get();
-            try {
-                server.execute_cmd( class_name, kwargs );
-            }
-            catch(e) {
+
+            server.p_execute_cmd( class_name, kwargs )
+            .then( function(ret_val) {
+                var top = bvr.src_el.getParent(".spt_plugin_top");
+                spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully reloaded');
+                spt.panel.refresh_element(top);
+            } )
+            .catch( function(e) {
                 spt.alert(spt.exception.handler(e));
-                spt.api.app_busy_hide();
                 return;
-            } 
+            } );
 
-            var top = bvr.src_el.getParent(".spt_plugin_top");
-            spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully reloaded')
-            spt.panel.refresh(top);
-
-            spt.api.app_busy_hide();
 
             '''
             })

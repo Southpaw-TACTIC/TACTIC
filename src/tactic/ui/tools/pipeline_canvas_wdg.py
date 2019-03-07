@@ -2677,7 +2677,8 @@ spt.pipeline.get_node_type = function(node) {
 
 
 spt.pipeline.get_node_types = function() {
-    var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+    //var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+    var top = spt.pipeline.top;
 
     var info_top = top.getElement(".spt_pipeline_tool_info");
     if (!info_top) return [];
