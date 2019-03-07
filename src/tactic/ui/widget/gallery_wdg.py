@@ -240,8 +240,18 @@ class GalleryWdg(BaseRefreshWdg):
 
         spt.gallery.close = function() {
             var content = spt.gallery.content;
-            var top = content.getParent(".spt_gallery_top");
-            spt.behavior.destroy_element(top);
+            var gallery_top = content.getParent(".spt_gallery_top");
+            var top = gallery_top.getParent(".spt_top");
+            spt.behavior.destroy_element(gallery_top);
+
+            // header is sometimes not in view after closing, if a header exists
+            // make sure it is scrolled into view
+            if (top) {
+                var index_header = top.getElement(".spt_index_header");
+                if (index_header) {
+                    index_header.scrollIntoView();
+                }
+            }
         }
 
 
@@ -331,9 +341,7 @@ class GalleryWdg(BaseRefreshWdg):
                 spt.gallery.show_next();
             }
             else if (key == "esc" || key == "enter") {
-
-                var top = bvr.src_el
-                spt.behavior.destroy_element(top);
+                spt.gallery.close();
             }
 
 
@@ -397,8 +405,7 @@ class GalleryWdg(BaseRefreshWdg):
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_gallery_top");
-            spt.behavior.destroy_element(top);
+            spt.gallery.close();
             '''
         } )
         icon.add_style("background", "rgba(48,48,48,0.7)")
