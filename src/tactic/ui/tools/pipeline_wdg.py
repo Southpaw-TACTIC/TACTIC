@@ -7737,21 +7737,45 @@ class PipelineDocumentWdg(BaseRefreshWdg):
         el.add_behavior({   
             'type': 'listen',   
             'event_name': 'reorderX|sthpw/pipeline',    
-            'cbjs_action': '''  
-            
-            var projectCode = bvr.src_el.getAttribute("spt_project_code");  
-            var searchType = bvr.src_el.getAttribute("spt_search_type");   
-            var doc = spt.document.export();   
-            var document_cmd = "tactic.ui.panel.DocumentSaveCmd"   
-            var document_kwargs = { 
-                view: "document",   
-                document: doc,  
-                search_type: searchType,    
-                project_code: projectCode,  
-            }   
+            'cbjs_action': '''
+
             var server = TacticServerStub.get_master(); 
-            server.p_execute_cmd(document_cmd, document_kwargs);    
-             '''    
+
+            var on_complete = function() {
+                var projectCode = bvr.src_el.getAttribute("spt_project_code");  
+                var searchType = bvr.src_el.getAttribute("spt_search_type");   
+                var doc = spt.document.export();   
+                var document_cmd = "tactic.ui.panel.DocumentSaveCmd"   
+                var document_kwargs = { 
+                    view: "document",   
+                    document: doc,  
+                    search_type: searchType,    
+                    project_code: projectCode,  
+                }   
+                
+                server.p_execute_cmd(document_cmd, document_kwargs);
+            }
+
+            var src_el = bvr.firing_element;
+            if (src_el.hasClass("spt_table_group_row")) {
+                on_complete();
+                return;
+            } else {
+                var search_key = src_el.getAttribute("spt_search_key_v2");
+
+                var categoryGroup = spt.table.get_parent_groups(src_el, 1);
+                var category = categoryGroup.getAttribute("spt_group_name");
+                
+                var kwargs = {
+                    category: category
+                }
+
+                server.update(search_key, kwargs, {}, on_complete);
+
+            }  
+            
+                
+            '''    
         })  
 
 
@@ -7781,6 +7805,12 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             top = bvr.src_el.getParent(".spt_pipeline_tool_top");
             if (!top) {
                 top = spt.get_element(document, '.spt_pipeline_tool_top');
+            }
+
+            // clear search
+            if (top) {
+                var info = top.getElement(".spt_node_search");
+                if (info) info.value = "";
             }
 
             // dont load again if pipeline already loaded
@@ -8028,6 +8058,12 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             if (bvr.uncategorized) {
                 var row = bvr.src_el.getParent(".spt_table_row_item");
                 row.setAttribute("spt_dynamic", true);
+
+                var tuple = spt.table.get_child_rows(row);
+                var children = spt.table.get_child_rows_tuple(tuple, true);
+                 children.forEach(function(child) {
+                    child.setAttribute("spt_dynamic", true);
+                });
             }
 
             '''
