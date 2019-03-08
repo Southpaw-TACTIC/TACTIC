@@ -500,7 +500,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         start_div.add_style("top: 0px")
         start_div.add_style("background: rgba(240,240,240,0.8)")
         start_div.add_border()
-        start_div.add_style("z-index: 100")
+        start_div.add_style("z-index: 0")
         start_div.add_style("box-sizing: border-box")
 
         msg_div = DivWdg()
@@ -512,7 +512,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         msg_div.add_style("margin-top: 20%")
         msg_div.add_style("margin: 20% auto")
         msg_div.add_border()
-        msg_div.add_color("background", "background3")
+        msg_div.add_color("background", "background")
         msg_div.add_style("padding-top: 40px")
         msg_div.add_style("text-align: center")
         msg_div.add_style("font-size: 1.2em")
