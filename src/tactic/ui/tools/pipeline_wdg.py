@@ -255,7 +255,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.last_size = {};
             var canvas = top.getElement("canvas");
             var resize = function() {
-                spt.pipeline.init_cbk(wrapper);
+                //spt.pipeline.init_cbk(wrapper);
 
                 if (! top.isVisible() ) {
                     return;
@@ -6784,7 +6784,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         process = self.kwargs.get("process")
         pipeline_code = self.kwargs.get("pipeline_code")
         node_type = self.kwargs.get("node_type")
-        properties = self.kwargs.get("properties")
+        properties = self.kwargs.get("properties") or {}
 
         process_code = properties.get("process_code") or ""
         search = Search("config/process")

@@ -279,7 +279,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         self.sobject = self.get_current_sobject()
 
-        if self.is_editable() and not value:
+        if self.sobject and self.is_editable() and not value:
             empty = SpanWdg()
             div.add(empty)
             div.add_class("spt_process_group_select_empty")
