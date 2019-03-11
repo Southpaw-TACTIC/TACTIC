@@ -2710,6 +2710,12 @@ class DefaultInfoWdg(BaseInfoWdg):
         self.process_sobj = search.get_sobject()
         process_sobj = self.process_sobj
 
+        self.workflow  = {}
+        if process_sobj:
+            self.workflow  = process_sobj.get_json_value("workflow")
+        if not self.workflow:
+            self.workflow  = {}
+
         top = self.top
         self.initialize_session_behavior(top)
 
@@ -3023,8 +3029,11 @@ class DefaultInfoWdg(BaseInfoWdg):
 
     def get_default_kwargs(self):
         kwargs = super(DefaultInfoWdg, self).get_default_kwargs()
-        kwargs["task_creation"] = True
-        kwargs["autocreate_task"] = False
+
+        task_creation = False if self.workflow.get("task_creation") == False else True
+        autocreate_task = True if self.workflow.get("autocreate_task") == True else False
+        kwargs["task_creation"] = task_creation
+        kwargs["autocreate_task"] = autocreate_task
 
         if not self.process_sobj:
             return kwargs
@@ -4311,8 +4320,11 @@ class ApprovalInfoWdg(BaseInfoWdg):
 
         kwargs = super(ApprovalInfoWdg, self).get_default_kwargs()
         kwargs["assigned"] = assigned
-        kwargs["task_creation"] = True
-        kwargs["autocreate_task"] = False
+
+        task_creation = False if self.workflow.get("task_creation") == False else True
+        autocreate_task = True if self.workflow.get("autocreate_task") == True else False
+        kwargs["task_creation"] = task_creation
+        kwargs["autocreate_task"] = autocreate_task
 
         if not self.process_sobj:
             return kwargs
@@ -7212,8 +7224,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var node = spt.pipeline.get_info_node();
 
             var kwargs = spt.pipeline.get_node_kwargs(node);
-            kwargs.task_creation = bvr.kwargs.task_creation;
-            kwargs.autocreate_task = bvr.kwargs.autocreate_task;
+            //kwargs.task_creation = bvr.kwargs.task_creation;
+            //kwargs.autocreate_task = bvr.kwargs.autocreate_task;
             Object.assign(bvr.kwargs, kwargs);
 
             spt.pipeline.set_node_kwargs(node, bvr.kwargs);
