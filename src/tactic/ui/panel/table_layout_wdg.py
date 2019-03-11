@@ -632,6 +632,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_attr("has_extra_header", "true")
 
 
+        # add some basic styles
         style_div = HtmlElement("style")
         top.add(style_div)
         style_div.add('''
@@ -1095,6 +1096,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         document_mode = self.kwargs.get("document_mode") or False
 
         # TEST javascript loading of rows
+        #self.js_load = True
         if self.js_load == True:
 
             data_div = DivWdg()
@@ -1270,6 +1272,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         spt.table.expand_table("full");
                     }
 
+                    spt.table.apply_undo_queue();
+
                     return;
                 }
 
@@ -1293,6 +1297,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 if (bvr.expand_on_load) {
                     spt.table.expand_table("full");
                 }
+                spt.table.apply_undo_queue();
             '''
             } )
  
@@ -5016,6 +5021,7 @@ spt.table.show_edit = function(cell) {
     // clear the cell and remember it
     var html = cell.innerHTML;
     cell.innerHTML = '';
+    cell.html = html;
 
 
     // code to find the edit_wdg internally
@@ -5667,20 +5673,26 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
         for (var i = 0; i < selected_rows.length; i++) {
             var cell = selected_rows[i].getElements(".spt_cell_edit")[index];
+            var old_html = cell.innerHTML;
            
-            spt.table._accept_single_edit(cell, new_value);
+            var undo = spt.table._accept_single_edit(cell, new_value);
 
             if (set_display) {
                 cell.innerHTML = "";
                 cell.setStyle("overflow", "hidden");
                 spt.table.set_display(cell, display_value, input_type);
             }
+
+            if (undo) {
+                undo.old_html = old_html;
+                undo.new_html = edited_cell.innerHTML;
+            }
             
         }
 
     }
     else {
-        spt.table._accept_single_edit(edited_cell, new_value);
+        var undo = spt.table._accept_single_edit(edited_cell, new_value);
 
         if (set_display) {
             edited_cell.innerHTML = "";
@@ -5692,6 +5704,11 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
             else {
                 spt.table.set_display(edited_cell, display_value, input_type);
             }
+        }
+
+        if (undo) {
+            undo.old_html = edited_cell.html;
+            undo.new_html = edited_cell.innerHTML;
         }
 
     }
@@ -5806,10 +5823,37 @@ spt.table._accept_single_edit = function(cell, new_value) {
             cell.setAttribute("spt_orig_input_value", old_value);
         }
 
-        //new_value = new_value.replace(/"/g, String.fromCharCode(38) +"quot;");
 
         // set the new_value
         cell.setAttribute("spt_input_value", new_value);
+
+        // store updates globally as an undo queue
+        var layout = spt.table.get_layout();
+        var layout_top = layout.getParent(".spt_layout_top");
+        var undo_queue  = layout_top.undo_queue;
+        if (!undo_queue) {
+            undo_queue = [];
+            layout_top.undo_queue = undo_queue;
+        }
+
+        var row = spt.table.get_row_by_cell(cell);
+        var search_key = row.getAttribute("spt_search_key_v2");
+        var element_name = spt.table.get_element_name_by_cell(cell);
+        var undo = {
+            cell: cell,
+            old_value: old_value,
+            new_value: new_value,
+            search_key: search_key,
+            element_name: element_name,
+            cbjs_action: null,
+        }
+        undo_queue.push(undo);
+
+        // empty the redo queue
+        layout_top.redo_queue = [];
+        
+
+
 
         var row = cell.getParent(".spt_table_row");
         if (!row)
@@ -5874,8 +5918,158 @@ spt.table._accept_single_edit = function(cell, new_value) {
                 labels[element_name] = cell.getAttribute("spt_input_value");
             }*/
         }
+
+
+        return undo;
     }
 }
+
+
+spt.table.undo_last = function() {
+    var layout = spt.table.get_layout();
+    var layout_top = layout.getParent(".spt_layout_top");
+
+    var undo_queue = layout_top.undo_queue;
+    var last_undo = undo_queue.pop();
+    if (!last_undo) {
+        spt.alert("No more changes to undo");
+        return;
+    }
+
+    // push this undo into the redo queue
+    var redo_queue = layout_top.redo_queue;
+    redo_queue.push(last_undo);
+
+    var cell = last_undo.cell;
+
+    // FIXME: orig_value should be the value before any changes
+    var orig_value = cell.getAttribute("spt_orig_input_value");
+
+    var new_value = last_undo.old_value;
+
+    cell.innerHTML = last_undo.old_html;
+    cell.setAttribute("spt_input_value", new_value);
+
+    var row = cell.getParent(".spt_table_row");
+    if (!row)
+        row = cell.getParent(".spt_table_insert_row");
+
+    if (new_value == orig_value) {
+        cell.removeClass("spt_cell_changed");
+        row.removeClass("spt_row_changed");
+
+        cell.setStyle("background-color", cell.getAttribute("spt_orig_background"));
+        row.setStyle("background-color", row.getAttribute("spt_orig_background"));
+        row.setAttribute("spt_background", row.getAttribute("spt_orig_background"));
+    }
+    else {
+        cell.addClass("spt_cell_changed");
+        row.addClass("spt_row_changed");
+        spt.table.set_changed_color(row, cell);
+    }
+
+}
+
+
+
+spt.table.redo_last = function() {
+    var layout = spt.table.get_layout();
+    var layout_top = layout.getParent(".spt_layout_top");
+
+    var redo_queue = layout_top.redo_queue;
+    var last_redo = redo_queue.pop();
+    if (!last_redo) {
+        spt.alert("No more changes to redo");
+        return;
+    }
+
+    // push this redo into the undo queue
+    var undo_queue = layout_top.undo_queue;
+    undo_queue.push(last_redo);
+
+
+    var cell = last_redo.cell;
+
+    // FIXME: orig_value should be the value before any changes
+    var orig_value = cell.getAttribute("spt_orig_input_value");
+
+    var new_value = last_redo.new_value;
+    cell.innerHTML = last_redo.new_html;
+    cell.setAttribute("spt_input_value", new_value);
+
+    var row = cell.getParent(".spt_table_row");
+    if (!row)
+        row = cell.getParent(".spt_table_insert_row");
+
+    if (new_value == orig_value) {
+        cell.removeClass("spt_cell_changed");
+        row.removeClass("spt_row_changed");
+
+        cell.setStyle("background-color", cell.getAttribute("spt_orig_background"));
+        row.setStyle("background-color", row.getAttribute("spt_orig_background"));
+        row.setAttribute("spt_background", row.getAttribute("spt_orig_background"));
+    }
+    else {
+        cell.addClass("spt_cell_changed");
+        row.addClass("spt_row_changed");
+        spt.table.set_changed_color(row, cell);
+    }
+}
+
+
+spt.table.apply_undo_queue = function(undo_queue) {
+    var layout = spt.table.get_layout();
+    var layout_top = layout.getParent(".spt_layout_top");
+
+    var undo_queue = layout_top.undo_queue;
+
+    if (!undo_queue) {
+        return;
+    }
+
+    for (var i = 0; i < undo_queue.length; i ++) {
+        var undo = undo_queue[i];
+        var search_key = undo.search_key;
+        var element_name = undo.element_name;
+        var orig_cell = undo.cell;
+
+        var row = spt.table.get_row_by_search_key(search_key);
+        if (!row) {
+            continue;
+        }
+
+        var cell = spt.table.get_cell(element_name, row);
+        if (!cell) {
+            continue;
+        }
+
+        cell.innerHTML = undo.new_html;
+        var new_value = undo.new_value;
+
+        // remap to the new cell
+        undo.cell = cell;
+
+
+
+        var orig_value = cell.getAttribute("spt_orig_input_value");
+
+        if (new_value == orig_value) {
+            cell.removeClass("spt_cell_changed");
+            row.removeClass("spt_row_changed");
+
+            cell.setStyle("background-color", cell.getAttribute("spt_orig_background"));
+            row.setStyle("background-color", row.getAttribute("spt_orig_background"));
+            row.setAttribute("spt_background", row.getAttribute("spt_orig_background"));
+        }
+        else {
+            cell.addClass("spt_cell_changed");
+            row.addClass("spt_row_changed");
+            spt.table.set_changed_color(row, cell);
+        }
+
+    }
+}
+
 
 
 

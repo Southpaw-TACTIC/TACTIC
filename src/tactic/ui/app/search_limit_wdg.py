@@ -645,8 +645,31 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             page_el.value = value;
 
             bvr.src_el = bvr.src_el.getParent('.spt_table_top');
-            //bvr.panel = bvr.src_el.getParent('.spt_view_panel');
-            spt.dg_table.search_cbk(evt, bvr);
+
+            //spt.dg_table.search_cbk(evt, bvr);
+            //return;
+
+
+
+            var view_panel = bvr.src_el.getParent(".spt_view_panel_top");
+
+            var pages = view_panel.pages;
+            if (!pages) {
+                pages = {};
+                view_panel.pages = pages;
+            }
+
+
+            var html = pages[value];
+            view_panel.pages[bvr.current_page] = bvr.src_el.innerHTML;
+            if (!html) {
+                spt.dg_table.search_cbk(evt, bvr);
+            }
+            else {
+                spt.behavior.replace_inner_html(bvr.src_el, html);
+            }
+
+
             '''
         } )
 

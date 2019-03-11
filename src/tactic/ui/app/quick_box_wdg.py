@@ -185,7 +185,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = IconWdg('Configuration', 'FA_DATABASE', size=32)
+        image = IconWdg('Configuration', 'FA_GEARS', size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -278,8 +278,9 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = "FLOW_CHART_01"
-        image = eval("IconWdg('', IconWdg.%s)" % image)
+        #image = "FLOW_CHART_01"
+        #image = eval("IconWdg('', IconWdg.%s)" % image)
+        image = IconWdg('Configuration', 'FA_DATABASE', size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
