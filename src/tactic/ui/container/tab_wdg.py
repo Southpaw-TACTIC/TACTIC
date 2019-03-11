@@ -1322,8 +1322,6 @@ spt.tab.close = function(src_el) {
         config_xml = self.kwargs.get("config_xml")
         config = self.kwargs.get("config")
 
-
-
         # save state overrides
         saved_config_xml = None
         self.save_state = self.kwargs.get("save_state")
@@ -1333,10 +1331,31 @@ spt.tab.close = function(src_el) {
         if self.save_state:
             saved_config_xml = WidgetSettings.get_value_by_key(self.save_state)
             if saved_config_xml:
-                config_xml = saved_config_xml
+
+                if not config_xml:
+                    config_xml = saved_config_xml
+                else:
+                    saved_xml_data = Xml()
+                    saved_xml_data.read_string(saved_config_xml)
+                    saved_xml_root = saved_xml_data.get_root_node()
+                    saved_xml_tab = Xml.get_first_child(saved_xml_root)
+
+                    xml_data = Xml()
+                    xml_data.read_string(config_xml)
+                    xml_root = xml_data.get_root_node()
+                    xml_tab = Xml.get_first_child(xml_root)
+
+                    nodes = Xml.get_children(saved_xml_tab)
+
+                    for node in nodes:
+                        Xml.append_child(xml_tab, node)
+
+                    config_xml = xml_data.get_xml()
+                    saved_config_xml = None
 
             top.add_class("spt_tab_save_state")
             top.add_attr("spt_tab_save_state", self.save_state)
+
 
 
         self.mode = self.kwargs.get('mode')

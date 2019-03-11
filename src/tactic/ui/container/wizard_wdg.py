@@ -321,7 +321,7 @@ class WizardWdg(BaseRefreshWdg):
     def get_bottom_wdg(self):
         from tactic.ui.widget import ActionButtonWdg
         div = DivWdg()
-        div.add_style("margin-top: 10px")
+        div.add_style("margin: 10px 10px 0px 0px")
 
 
         back = ActionButtonWdg(title="< Back", tip="Go back to last page")
