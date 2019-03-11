@@ -1973,7 +1973,6 @@ spt.dg_table.RemoveColumnCmd = new Class({
 // bvr.search_el - child element of the search_top. If unspecified, it equals bvr.src_el
 // bvr.src_el - child element of the table_top
 spt.dg_table.search_cbk = function(evt, bvr){
-   
     var panel = null;
     if (bvr.panel != null) {
         panel = bvr.panel;
@@ -1991,26 +1990,25 @@ spt.dg_table.search_cbk = function(evt, bvr){
         el_name = panel.getAttribute('spt_title');
     if (el_name == null)
         el_name = '';
-    //spt.app_busy.show( 'Search', 'Searching for matching items' );
 
     if (bvr.return_html) { 
-        //spt.app_busy.hide();
-        return spt.dg_table._search_cbk(evt, bvr);
+        var ret_val = spt.dg_table._search_cbk(evt, bvr);
+        return ret_val;
     } 
     setTimeout( function() {
-            spt.dg_table._search_cbk(evt, bvr);
-            //spt.app_busy.hide();
-            }, 10 );
+        spt.dg_table._search_cbk(evt, bvr);
+    }, 10 );
 }
+
 
 spt.dg_table._search_cbk = function(evt, bvr)
 {
-    //if (!element)
     var element = bvr.src_el;
     var new_search = bvr.new_search == true;
 
     var panel = bvr.panel;
-    // If there is an "spt_view_panel", VERIFY if it is for the given table or if we are in an embedded table
+    // If there is an "spt_view_panel", VERIFY if it is for the given table or if we are in an
+    // embedded table
     if( panel ) {
         var pnode = document.id(element.parentNode);
         var table_top_count = 0;
@@ -2050,9 +2048,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
 
     if (spt.table.has_changes()) {
+        /*
         if (!confirm("Changes made. Continue without saving?")) {
             return;
         }
+        */
     }
     // if panel doesn't exist, then likely this is a table on its own
     if (panel == null) {
@@ -2358,7 +2358,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
-    //if (pat.test(class_name)) { }
     var attr_list = ['expand_mode','show_name_hover','scale','sticky_scale','top_view', 'bottom_view','aspect_ratio','show_drop_shadow', 'title_expr', 'overlay_expr', 'overlay_color', 'allow_drag', 'upload_mode','process','gallery_align','detail_element_names','hide_checkbox'];
     for (var k=0; k < attr_list.length; k++) {
         var attr_val = target.getAttribute('spt_'+ attr_list[k]);
@@ -2371,6 +2370,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
             args[k] = bvr.extra_args[k];
     }
 
+
+    // This is ow the method for adding extra args
     var extra_keys = target.getAttribute("spt_extra_keys") || "";
     if (extra_keys) {
         args['extra_keys'] = extra_keys;
@@ -2614,50 +2615,6 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
  
 }
 
-
-// retrieve the parameters of the search
-// DEPRECATD: use spt.table.load_search
-/*
-spt.dg_table.retrieve_search_cbk = function() {
-
-    var panel_id = 'main_body';
-
-    var element_id = panel_id + "_search";
-    var element = document.getElementById(element_id);
-
-    var search_type = element.getAttribute("spt_search_type");
-
-    var save_search_element = document.getElementById("saved_search");
-    var view = save_search_element.value;
-    if (view == "") {
-        spt.alert("No saved search selected");
-        return;
-    }
-
-
-    class_name = "tactic.ui.app.SearchWdg";
-    var options = {
-        'search_type': search_type,
-        'display': 'block',
-        'view': view
-    };
-
-    // replace the search widget
-    var server = TacticServerStub.get();
-    var kwargs = {'args': options};
-    var widget_html = server.get_widget(class_name, kwargs);
-
-    spt.behavior.replace_inner_html( element, widget_html );
-
-
-    // store the search view that was just loaded
-    element.setAttribute("spt_search_view", view);
-
-
-    document.id('retrieve_search_wdg').style.display = 'none';
-
-}
-*/
 
 
 spt.dg_table.add_filter = function(element) {
@@ -4407,51 +4364,6 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
 
     return;
 
-/* Commenting out.  The above implementation should replace it, but might still
- * nee this for reference.
- 
-    var display_label = tbody.get("spt_display_value");
-    if( ! display_label ) {
-        spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_delete_cbk] could not find 'spt_display_value' for item to " +
-                        "delete ... using 'search_key' as display_label." );
-        display_label = search_key;
-    }
-
-    var title = 'Delete Item:';
-    var msg = 'Deleting "' + search_key_info.search_type + '" item labeled "' + display_label + '" ...';
-    spt.app_busy.show( title, msg );
-
-    var confirm_str = 'Are you sure you wish to delete the "' + search_key_info.search_type + '" item labeled "' +
-                        display_label + '"?';
-
-
-    var ok = function() {
-
-        var server = TacticServerStub.get();
-        try {
-            var ret = server.delete_sobject(search_key);
-        }
-        catch(err) {
-            var error_str = spt.exception.handler(err);
-            spt.alert( '"Delete Item" aborted due to DELETE error: "' + error_str + '"' );
-            spt.app_busy.hide();
-            return;
-        }
-
-        var refresh = tbody.getAttribute('spt_refresh');
-        if (refresh == 'table') {
-            var table = tbody.getParent(".spt_table");
-            spt.panel.refresh(table, {}, false);
-        }
-        else {
-            on_complete = "document.id(id).setStyle('display', 'none')";
-            Effects.fade_out(tbody, 500, on_complete);
-        }
-        spt.app_busy.hide();
-    }
-    spt.confirm(confirm_str, ok, spt.app_busy.hide);
-*/
-
 }
 
 
@@ -4569,25 +4481,14 @@ spt.dg_table._toggle_commit_btn = function(el, hide)
         } );
     }
 
-    /*
-    // these work the opposite
-    var save_buttons = panel.getElements(".spt_save_button_disabled");
-    if (hide) {
-        save_buttons.each( function(button) {
-            spt.show( button );
-        } );
-    }
-    else {
-        save_buttons.each( function(button) {
-            spt.hide( button );
-        } );
-    }
-    */
 }
 
 
 spt.dg_table.update_row = function(evt, bvr)
 {
+    spt.alert("DEPRECATED: spt.dg_table.update_row()")
+
+/*
     var src_el = bvr.src_el;
     if( bvr.src_activator_el ) {
         src_el = bvr.src_activator_el;
@@ -4927,10 +4828,11 @@ spt.dg_table.update_row = function(evt, bvr)
             spt.dg_table.search_cbk( {}, {'src_el': table} );
         }
     }
-    
+*/    
 }
 
 spt.dg_table.update_uber_notes = function(table, search_type, element_names, values, info) {
+
     var server = TacticServerStub.get();
 
     // get the search type from tbody above the tbody.
@@ -4985,6 +4887,7 @@ spt.dg_table.update_uber_notes = function(table, search_type, element_names, val
 
 spt.dg_table.find_adjacent_cell = function( start_cell_el, direction )
 {
+    spt.table.alert("DEPRECATED: spt.dg_table.find_adjacent_cell");
     // direction is 'left', 'right', 'up', 'down' ...
 
     var direction_map = { 'left': 'previous', 'right': 'next' };
@@ -5020,6 +4923,8 @@ spt.dg_table.find_adjacent_cell = function( start_cell_el, direction )
 
 
 spt.dg_table.order_table = function(element_name, order) {
+    spt.table.alert("DEPRECATED: spt.dg_table.order_table");
+
     var panel_id = "main_body";
     var table = document.id(panel_id+"_table");
 
@@ -5108,22 +5013,4 @@ spt.dg_table.order_table = function(element_name, order) {
 
 
 
-//
-//
-//
-// NOT USED
-/*
-spt.dg_table.add_tasks_cbk = function(evt, bvr) {
-
-    var parent_key = bvr.src_el.getParent(".spt_table_tbody").getAttribute("spt_search_key");
-
-    var popup_id = "Insert [sthpw/task]";
-    var class_name = "pyasm.widget.ParallelStatusEditLoadWdg";
-    var options = {
-        parent_key: parent_key
-    }
-    spt.panel.load_popup(popup_id, class_name, options);
-}
-
-*/
 
