@@ -23,7 +23,7 @@ class ConfigUpgrade(BaseUpgrade):
     # 4.7.0.a01
     #
     def upgrade_v4_7_0_a01_001(self):
-        if self.get_database_type() == 'MySQL':
+        if self.get_database_type() == 'PostgreSQL':
             self.run_sql('''
             CREATE TABLE "spt_process_state" (
                 "id" serial PRIMARY KEY,
@@ -32,10 +32,10 @@ class ConfigUpgrade(BaseUpgrade):
                 "process" character varying(256),
                 "search_type" character varying(256),
                 "search_code" character varying(256),
-                "timestamp" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                "status" json,
+                "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
+                "status" jsonb,
                 "state" character varying(256),
-                "data" json,
+                "data" jsonb,
                 "s_status" character varying(32),
                 CONSTRAINT "spt_pipeline_info_code_idx" UNIQUE ("code")
             );
@@ -49,10 +49,10 @@ class ConfigUpgrade(BaseUpgrade):
                 "process" character varying(256),
                 "search_type" character varying(256),
                 "search_code" character varying(256),
-                "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
-                "status" jsonb,
+                "timestamp" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                "status" json,
                 "state" character varying(256),
-                "data" jsonb,
+                "data" json,
                 "s_status" character varying(32),
                 CONSTRAINT "spt_pipeline_info_code_idx" UNIQUE ("code")
             );
