@@ -3364,9 +3364,28 @@ class MySQLImpl(PostgresImpl):
         parts.append("serial")
         return " ".join(parts)
 
+    def get_char(self, length=256, not_null=False, default=None):
+        assert length
+        parts = []
+        parts.append("char(%s)" % length)
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
     def get_text(self, not_null=False, default=None):
         parts = []
         parts.append("longtext")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
+        if not_null:
+            parts.append("NOT NULL")
+        return " ".join(parts)
+
+    def get_int(self, length=4, not_null=False, default=None):
+        parts = []
+        parts.append("int%s" % length)
         if default is not None:
             parts.append("DEFAULT %s" % default)
         if not_null:

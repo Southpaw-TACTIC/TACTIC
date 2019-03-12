@@ -3444,29 +3444,29 @@ class CreateTable(Base):
         return self.db_resource.get_database()
 
 
-    def add(self, name, type, length=None, not_null=False, primary_key=False):
+    def add(self, name, type, length=None, not_null=False, primary_key=False, default=None):
         if type == "text":
-            expr = self.impl.get_text(not_null=not_null)
+            expr = self.impl.get_text(not_null=not_null, default=default)
         elif type == "char":
-            expr = self.impl.get_char(length=length, not_null=not_null)
+            expr = self.impl.get_char(length=length, not_null=not_null, default=default)
         elif type == "varchar":
-            expr = self.impl.get_varchar(length=length, not_null=not_null)
+            expr = self.impl.get_varchar(length=length, not_null=not_null, default=default)
         elif type == "int":
-            expr = self.impl.get_int(not_null=not_null)
+            expr = self.impl.get_int(not_null=not_null, default=default)
         elif type == "timestamp":
             expr = self.impl.get_timestamp(not_null=not_null)
         elif type == "boolean":
-            expr = self.impl.get_boolean(not_null=not_null)
+            expr = self.impl.get_boolean(not_null=not_null, default=default)
         elif type == "serial":
             expr = self.impl.get_serial(not_null=not_null)
         elif type in ["json", "jsonb"]:
-            expr = self.impl.get_json(not_null=not_null)
+            expr = self.impl.get_json(not_null=not_null, default=default)
 
 
 
         # SQL Server
         elif type == "uniqueidentifier":
-            expr = self.impl.get_text(not_null=not_null)
+            expr = self.impl.get_text(not_null=not_null, default=default)
         elif type in ["datetime", "datetime2"]:
             expr = self.impl.get_timestamp(not_null=not_null)
         elif type.startswith("datetimeoffset"):
@@ -3481,7 +3481,8 @@ class CreateTable(Base):
             'type': expr,
             'length': length,
             'not_null': not_null,
-            'primary_key': primary_key
+            'primary_key': primary_key,
+            'default': default
         }
         self.data[name] = col_data
         if primary_key:
@@ -3523,19 +3524,20 @@ class CreateTable(Base):
             length = col_data.get('length')
             not_null = col_data.get('not_null')
             primary_key = col_data.get('primary_key')
+            default = col_data.get('default')
 
             if type == "text":
-                expr = self.impl.get_text(not_null=not_null)
+                expr = self.impl.get_text(not_null=not_null, default=default)
             elif type == "varchar":
-                expr = self.impl.get_varchar(length=length, not_null=not_null)
+                expr = self.impl.get_varchar(length=length, not_null=not_null, default=default)
             elif type == "nvarchar":
                 expr = self.impl.get_nvarchar(length=length, not_null=not_null)
             elif type == "int":
-                expr = self.impl.get_int(not_null=not_null)
+                expr = self.impl.get_int(not_null=not_null, default=default)
             elif type == "timestamp":
                 expr = self.impl.get_timestamp(not_null=not_null,default='now')
             elif type == "boolean":
-                expr = self.impl.get_boolean(not_null=not_null)
+                expr = self.impl.get_boolean(not_null=not_null, default=default)
             elif type == "serial":
                 expr = self.impl.get_serial()
             else:
@@ -3720,15 +3722,15 @@ class AlterTable(CreateTable):
             search_type_obj = SearchType.get(self.search_type)
             self.table = search_type_obj.get_table()
 
-    def modify(self, name, type, length=256, not_null=False):
+    def modify(self, name, type, length=256, not_null=False, default=None):
         # must store not_null separately,
         is_not_null = not_null
         if type == "text":
-            expr = self.impl.get_text(not_null=False)
+            expr = self.impl.get_text(not_null=False, default=default)
         elif type == "varchar":
-            expr = self.impl.get_varchar(length=length, not_null=False)
+            expr = self.impl.get_varchar(length=length, not_null=False, default=default)
         elif type == "int":
-            expr = self.impl.get_int(not_null=False)
+            expr = self.impl.get_int(not_null=False, default=default)
         elif type == "float":
             expr = self.impl.get_float(not_null=False)
         elif type == "timestamp":
@@ -3737,7 +3739,7 @@ class AlterTable(CreateTable):
             else:
                 expr = self.impl.get_timestamp(not_null=False)
         elif type == "boolean":
-            expr = self.impl.get_boolean(not_null=False)
+            expr = self.impl.get_boolean(not_null=False, default=default)
         else:
             expr = type
 
