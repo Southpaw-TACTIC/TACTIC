@@ -139,6 +139,7 @@ class WatchFolderFileActionThread(threading.Thread):
 
         while True:
 
+            print "------------", paths, task
             if task.in_restart():
                 break
             
@@ -160,7 +161,10 @@ class WatchFolderFileActionThread(threading.Thread):
 
             if not os.path.exists(path):
                 print "ERROR: path [%s] does not exist"
-                continue
+                #self.clean_up(paths)
+                paths = []
+                task.set_restart(True)
+                break
 
 
             print "Processing [%s]" % path
@@ -210,6 +214,8 @@ class WatchFolderFileActionThread(threading.Thread):
 
             except Exception as e:
                 print("Error: %s" % e)
+                # self.clean_up(paths)
+                # task.set_restart(True)
 
                 # These operation cannot fail as is should not further
                 # processing
@@ -613,7 +619,11 @@ class WatchDropFolderTask(SchedulerTask):
 
         import time
         timeout = 0
-        email_interval = ProdSetting.get_value_by_key("watch_folder/email_interval") or 60
+
+        try:
+            email_interval = int(ProdSetting.get_value_by_key("watch_folder/email_interval"))
+        except ValueError:        
+            email_interval = 60
 
         self.email_alert = False
 
@@ -667,11 +677,14 @@ Base directory: %s
 
     def _execute(self):
 
+
         if self.files_locked >= self.max_jobs:
             #print "Max found ... done"
             return
 
         base_dir = self.base_dir
+
+        print "-------", base_dir
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
 
@@ -684,7 +697,6 @@ Base directory: %s
         for path in hidden_paths:
             if not os.path.exists(path):
                 os.makedirs(path)
-
 
 
 
