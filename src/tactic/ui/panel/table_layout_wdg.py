@@ -610,6 +610,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         top.add_class("spt_sobject_top")
         top.add_class("spt_layout_top")
 
+
         # NOTE: still need to set an id for Column Manager
         top.set_id("%s_layout" % self.table_id)
 
@@ -622,6 +623,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if self.kwargs.get("is_inner") not in ['true', True]:
             inner.add_class("spt_layout")
         inner.add_class("spt_table")
+        inner.add_class("spt_layout_inner")
 
         inner.add_style("postion: relative")
         inner.add_style("border-style", "solid")
@@ -1644,7 +1646,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     if (width == -1) {
                         continue;
                     }
-                    console.log(name, width);
+                    //console.log(name, width);
                     spt.table.set_column_width(name, width);
                 }
 
@@ -5936,9 +5938,19 @@ spt.table.undo_last = function() {
         return;
     }
 
+
     // push this undo into the redo queue
     var redo_queue = layout_top.redo_queue;
     redo_queue.push(last_undo);
+
+
+
+    var undo_type = last_undo.type;
+    if (undo_type) {
+        last_undo.undo();
+        return;
+    }
+
 
     var cell = last_undo.cell;
 
@@ -5986,6 +5998,15 @@ spt.table.redo_last = function() {
     // push this redo into the undo queue
     var undo_queue = layout_top.undo_queue;
     undo_queue.push(last_redo);
+
+
+
+    var undo_type = last_redo.type;
+    if (undo_type) {
+        last_redo.redo();
+        return;
+    }
+
 
 
     var cell = last_redo.cell;
@@ -6043,7 +6064,20 @@ spt.table.apply_undo_queue = function(undo_queue) {
             continue;
         }
 
+
+
+        var undo_type = undo.type;
+        if (undo_type) {
+            undo.redo();
+            return;
+        }
+
+
+
+
         cell.innerHTML = undo.new_html;
+        cell.setAttribute("spt_input_value", undo.new_value);
+
         var new_value = undo.new_value;
 
         // remap to the new cell
@@ -6083,7 +6117,6 @@ spt.table.save_changes = function(kwargs) {
         do_refresh = false;
     }
 
-    spt.app_busy.show("Saving Changes ...");
     var rows = spt.table.get_changed_rows();
 
     // insert rows appear to be included now
@@ -6104,74 +6137,144 @@ spt.table.save_changes = function(kwargs) {
     var parent_key = null;    
     var connect_key = null;    
 
-    for (var i = 0; i < rows.length; i++) {
-
-        if (!parent_key)
-            parent_key = rows[i].getAttribute("spt_parent_key");
-
-        if (!connect_key)
-            connect_key = rows[i].getAttribute("spt_connect_key");
-
-        // get extra data
-        var extra_data_row = rows[i].extra_data
-        if (extra_data_row) {
-            extra_data.push(extra_data_row);
-        }
-        else {
-            extra_data.push(null);
-        }
-
-        // get extra action
-        var extra_action_row = rows[i].extra_action
-        if (extra_action_row) {
-            extra_action.push(extra_action_row);
-        }
-        else {
-            extra_action.push(null);
-        }
 
 
+    var search_keys = []
 
-        var search_key = rows[i].getAttribute("spt_search_key");
-        search_keys.push(search_key);
-        var cells = rows[i].getElements(".spt_cell_changed");
-        var data = {};
-        var single_web_data = {};
-        update_data.push(data);
-        web_data.push(single_web_data);
-        for (var j = 0; j < cells.length; j++) {
-            var cell = cells[j];
-            var element_name = spt.table.get_element_name_by_cell(cell);
-            var value = cell.getAttribute("spt_input_value");
-            data[element_name] = value;
 
-            var header = spt.table.get_header_by_cell(cell);
-            if (header.getAttribute("spt_input_type") == 'inline') {
-                if (cell.getAttribute("spt_input_type") =='gantt') {
-                    var gantt_values = spt.api.Utility.get_input_values(cell, '.spt_gantt_data', false);
-                    single_web_data['gantt_data'] = gantt_values['gantt_data'];
+    // collapse updates from undo_queue for be classified by search_type
+    var use_undo_queue = true;
+    //var use_undo_queue = false;
+
+    if (use_undo_queue) {
+
+        var layout = spt.table.get_layout();
+        var layout_top = layout.getParent(".spt_layout_top")
+        var undo_queue = layout_top.undo_queue;
+
+        var updates = {};
+        var extra_updates = {};
+
+        for (var i = 0; i < undo_queue.length; i++) {
+            var action = undo_queue[i];
+            var search_key = action.search_key;
+            var element_name = action.element_name;
+
+            var action_type = action.type;
+
+            if (!action_type) {
+                var item_data = updates[search_key];
+                if (!item_data) {
+                    item_data = {};
+                    updates[search_key] = item_data;
                 }
-                else if (cell.getAttribute("spt_input_type") =='work_hour') {
-                    var web_values = spt.api.Utility.get_input_values(cell, '.spt_workhour_data', false);
-                    single_web_data['workhour_data'] = web_values['workhour_data'];
-                }
-                else if (cell.getAttribute("spt_input_type") =='tasks') {
-                    var web_values = spt.api.Utility.get_input_values(header, '.spt_process_data', false);
-                    single_web_data['process_data'] = web_values['process_data'];
-                }
-                else { // generic inline-type widget
-                    var web_values = spt.api.Utility.get_input_values(cell, null, false);
-                    single_web_data['inline_data'] = web_values;
-                }
+
+                var value = action.new_value;
+                item_data[element_name] = value;
+                extra_item_data = [null];
             }
-      
-                
+            else {
+                updates[search_key] = action.get_data();
+                extra_updates[search_key] = action.get_extra_data();
+            }
+
+
+        }
+        console.log("---");
+        console.log(updates);
+        console.log(extra_updates);
+        console.log("---");
+
+        // break into two lists as required by save command
+        var update_data = [];
+        for (var search_key in updates) {
+
+            search_keys.push(search_key);
+
+            extra_action.push(null);
+
+            update_data.push( updates[search_key] );
+            extra_data.push(extra_updates[search_key]);
+
+        };
+
+    }
+
+
+
+    else {
+
+
+        for (var i = 0; i < rows.length; i++) {
+
+            if (!parent_key)
+                parent_key = rows[i].getAttribute("spt_parent_key");
+
+            if (!connect_key)
+                connect_key = rows[i].getAttribute("spt_connect_key");
+
+            // get extra data
+            var extra_data_row = rows[i].extra_data
+            if (extra_data_row) {
+                extra_data.push(extra_data_row);
+            }
+            else {
+                extra_data.push(null);
+            }
+
+            // get extra action
+            var extra_action_row = rows[i].extra_action
+            if (extra_action_row) {
+                extra_action.push(extra_action_row);
+            }
+            else {
+                extra_action.push(null);
+            }
+
+
+
+            var search_key = rows[i].getAttribute("spt_search_key");
+            search_keys.push(search_key);
+            var cells = rows[i].getElements(".spt_cell_changed");
+            var data = {};
+            var single_web_data = {};
+            update_data.push(data);
+            web_data.push(single_web_data);
+            for (var j = 0; j < cells.length; j++) {
+                var cell = cells[j];
+                var element_name = spt.table.get_element_name_by_cell(cell);
+                var value = cell.getAttribute("spt_input_value");
+                data[element_name] = value;
+
+                var header = spt.table.get_header_by_cell(cell);
+                if (header.getAttribute("spt_input_type") == 'inline') {
+                    if (cell.getAttribute("spt_input_type") =='gantt') {
+                        var gantt_values = spt.api.Utility.get_input_values(cell, '.spt_gantt_data', false);
+                        single_web_data['gantt_data'] = gantt_values['gantt_data'];
+                    }
+                    else if (cell.getAttribute("spt_input_type") =='work_hour') {
+                        var web_values = spt.api.Utility.get_input_values(cell, '.spt_workhour_data', false);
+                        single_web_data['workhour_data'] = web_values['workhour_data'];
+                    }
+                    else if (cell.getAttribute("spt_input_type") =='tasks') {
+                        var web_values = spt.api.Utility.get_input_values(header, '.spt_process_data', false);
+                        single_web_data['process_data'] = web_values['process_data'];
+                    }
+                    else { // generic inline-type widget
+                        var web_values = spt.api.Utility.get_input_values(cell, null, false);
+                        single_web_data['inline_data'] = web_values;
+                    }
+                }
+          
+                    
+            }
         }
     }
 
+
+
     if (search_keys.length == 0) {
         spt.alert("No changes have been made");
-        spt.app_busy.hide();
         return;
     }
 
@@ -6217,7 +6320,7 @@ spt.table.save_changes = function(kwargs) {
     }
    
 
-    //add to the values here for gantt and inline elements
+    // add to the values here for gantt and inline elements
     web_data = JSON.stringify(web_data);
     
     var search_top = null;
@@ -6260,7 +6363,6 @@ spt.table.save_changes = function(kwargs) {
     } catch(e) {
         spt.error(spt.exception.handler(e));
     }
-    spt.app_busy.hide();
 
     // fire an event
     if (search_keys) {
@@ -6439,9 +6541,19 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     var view = layout_el.getAttribute("spt_view");
     var search_type = layout_el.getAttribute("spt_search_type");
     var config_xml = layout_el.getAttribute("spt_config_xml");
+
     var layout = layout_el.getAttribute("spt_layout");
-    var extra_data = layout_el.getAttribute("spt_extra_data");
-    
+
+    //var extra_data = layout_el.getAttribute("spt_extra_data");
+    var inner = layout_el.getElement(".spt_layout_inner");
+    if (inner) {
+        var extra_data = inner.getAttribute("spt_extra_data");
+    }
+    else {
+        var extra_data = layout_el.getAttribute("spt_extra_data");
+    }
+
+
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
     if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");

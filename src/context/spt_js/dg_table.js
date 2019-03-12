@@ -4833,6 +4833,8 @@ spt.dg_table.update_row = function(evt, bvr)
 
 spt.dg_table.update_uber_notes = function(table, search_type, element_names, values, info) {
 
+    spt.table.alert("DEPRECATED: spt.dg_table.update_uber_notes");
+
     var server = TacticServerStub.get();
 
     // get the search type from tbody above the tbody.
