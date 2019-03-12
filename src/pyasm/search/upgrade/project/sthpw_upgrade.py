@@ -17,6 +17,13 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    #
+    # 4.7.0.a01
+    #
+    def upgrade_v4_7_0_a01_001(self):
+        self.run_sql('''
+        INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/process_state','config/process_state','config','Process States','{project}','spt_process_state','pyasm.search.SObject','Process States','public');
+        ''')
 
     #
     # 4.6.0.a03

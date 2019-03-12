@@ -400,7 +400,7 @@ spt.document.export = function(kwargs) {
         }
 
         // Check for dynamic row
-        if (row.getAttribute("spt_dynamic") == "true") break;
+        if (row.getAttribute("spt_dynamic") == "true") continue;
         if (row.getAttribute("spt_deleted") == "true") continue;
 
         var group_level = row.getAttribute("spt_group_level");
@@ -711,6 +711,16 @@ spt.document.drag_row_action = function(evt, drag_bvr, mouse_411) {
         for (var i = 0; i < rows_to_move.length; i++) {
             rows_to_move[i].inject(inject_el, "after");
         }
+
+        // change spt_dynamic based on parent group
+        if (!drag_bvr.src_el.hasClass("spt_table_group_row")) {
+            var drop_on_group = drop_on_el.hasClass("spt_table_group_row") 
+                ? drop_on_el 
+                : spt.table.get_parent_groups(drop_on_el, dest_group_level-1);
+            
+            var spt_dynamic = drop_on_group.getAttribute("spt_dynamic");
+            drag_bvr.src_el.setAttribute("spt_dynamic", spt_dynamic);
+        }
             
         var index = drag_bvr.src_el.rowIndex;
 
@@ -724,7 +734,7 @@ spt.document.drag_row_action = function(evt, drag_bvr, mouse_411) {
             options: {
                 prev_index: prev_index,
                 index: index,
-                inject_el_index: inject_el_index 
+                inject_el_index: inject_el_index,
             },
 
         });

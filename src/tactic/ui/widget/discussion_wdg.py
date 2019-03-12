@@ -2228,6 +2228,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        #TODO: find a better fix?
+        self.kwargs["bvr_list"] = None
+        self.kwargs["bvr_type_list"] = None
+
         parent = self.kwargs.get("parent")
         if not parent:
             search_key = self.kwargs.get("search_key")
