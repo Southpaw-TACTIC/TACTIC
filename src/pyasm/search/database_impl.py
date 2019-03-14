@@ -163,11 +163,13 @@ class DatabaseImpl(DatabaseImplInterface):
     #
     # Column type functions
     #
-    def get_text(self, not_null=False):
+    def get_text(self, not_null=False, default=None):
         parts = []
         parts.append("text")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
@@ -785,11 +787,13 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     #
     # Column methods
     #
-    def get_boolean(self, not_null=False):
+    def get_boolean(self, not_null=False, default=None):
         parts = []
         parts.append("bit")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)        
         return " ".join(parts)
 
     def get_serial(self, not_null=False):
@@ -801,7 +805,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_int(self, length=4, not_null=False):
+    def get_int(self, length=4, not_null=False, default=None):
         """
         http://technet.microsoft.com/en-us/library/cc917573.aspx
 
@@ -816,17 +820,21 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         parts.append("int")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
-    def get_text(self, not_null=False):
+    def get_text(self, not_null=False, default=None):
         parts = []
         parts.append("varchar(max)")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
-    def get_varchar(self, length=256, not_null=False):
+    def get_varchar(self, length=256, not_null=False, default=None):
         if not length:
             length = 256
 
@@ -836,6 +844,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         parts.append("varchar(%s)" % length)
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
     def get_nvarchar(self, length=256, not_null=False):
@@ -885,7 +895,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
 
-    def get_json(self, not_null=False):
+    def get_json(self, not_null=False, default=None):
         raise Exception("JSON Type not supported yet")
 
     
@@ -1632,11 +1642,13 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     #
     # Column methods
     #
-    def get_boolean(self, not_null=False):
+    def get_boolean(self, not_null=False, default=None):
         parts = []
         parts.append("boolean")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
     def get_serial(self, length=4, not_null=False):
@@ -1645,49 +1657,59 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-    def get_int(self, length=4, not_null=False):
+    def get_int(self, length=4, not_null=False, default=None):
         parts = []
         parts.append("int%s" % length)
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
-    def get_float(self, not_null=False):
+    def get_float(self, not_null=False, default=None):
         parts = []
         parts.append("float")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
-    def get_text(self, not_null=False):
+    def get_text(self, not_null=False, default=None):
         parts = []
         parts.append("text")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
-    def get_char(self, length=256, not_null=False):
+    def get_char(self, length=256, not_null=False, default=None):
         assert length
         parts = []
         parts.append("char(%s)" % length)
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
-    def get_varchar(self, length=256, not_null=False):
+    def get_varchar(self, length=256, not_null=False, default=None):
         if not length:
             length = 256
 
         if length in [-1, 'max']:
-            return self.get_text(not_null=not_null)
+            return self.get_text(not_null=not_null, default=default)
         parts = []
         parts.append("varchar(%s)" % length)
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
@@ -1723,11 +1745,13 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
 
 
-    def get_json(self, not_null=False):
+    def get_json(self, not_null=False, default=None):
        parts = []
        parts.append("jsonb")
        if not_null:
            parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
        return " ".join(parts)
 
 
@@ -2332,12 +2356,14 @@ class OracleImpl(PostgresImpl):
     #
     # Column methods
     #
-    def get_boolean(self, not_null=False):
+    def get_boolean(self, not_null=False, default=None):
         parts = []
         # No boolean in Oracle??!??
         parts.append("CHAR(1)")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
     def get_serial(self, length=4, not_null=False):
@@ -2348,31 +2374,37 @@ class OracleImpl(PostgresImpl):
             parts.append("NOT NULL")
         return " ".join(parts)
 
-    def get_int(self, length=4, not_null=False):
+    def get_int(self, length=4, not_null=False, default=None):
         parts = []
         parts.append("NUMBER")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
-    def get_text(self, not_null=False):
+    def get_text(self, not_null=False, default=None):
         parts = []
         parts.append("CLOB")
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
-    def get_varchar(self, length=256, not_null=False):
+    def get_varchar(self, length=256, not_null=False, default=None):
         if not length:
             length = 256
 
         if length in [-1, 'max']:
-            return self.get_text(not_null=not_null)
+            return self.get_text(not_null=not_null, default=default)
         parts = []
         parts.append("VARCHAR2(%s)" % length)
         if not_null:
             parts.append("NOT NULL")
+        if default is not None:
+            parts.append("DEFAULT %s" % default)
         return " ".join(parts)
 
 
@@ -3364,28 +3396,10 @@ class MySQLImpl(PostgresImpl):
         parts.append("serial")
         return " ".join(parts)
 
-    def get_char(self, length=256, not_null=False, default=None):
-        assert length
-        parts = []
-        parts.append("char(%s)" % length)
-        if default is not None:
-            parts.append("DEFAULT %s" % default)
-        if not_null:
-            parts.append("NOT NULL")
-        return " ".join(parts)
 
     def get_text(self, not_null=False, default=None):
         parts = []
         parts.append("longtext")
-        if default is not None:
-            parts.append("DEFAULT %s" % default)
-        if not_null:
-            parts.append("NOT NULL")
-        return " ".join(parts)
-
-    def get_int(self, length=4, not_null=False, default=None):
-        parts = []
-        parts.append("int%s" % length)
         if default is not None:
             parts.append("DEFAULT %s" % default)
         if not_null:
@@ -3401,23 +3415,6 @@ class MySQLImpl(PostgresImpl):
        if not_null:
            parts.append("NOT NULL")
        return " ".join(parts)
-
-
-
-    def get_varchar(self, length=191, not_null=False, default=None):
-        if not length:
-            length = 191
-
-        if length in [-1, 'max']:
-            return self.get_text(not_null=not_null)
-        parts = []
-        if default is not None:
-            parts.append("DEFAULT %s" % default)
-        parts.append("varchar(%s)" % length)
-        if not_null:
-            parts.append("NOT NULL")
-        return " ".join(parts)
-
 
 
 
