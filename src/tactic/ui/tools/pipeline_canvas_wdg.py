@@ -417,6 +417,18 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
         inner.add(script)
 
+        node_types = self.kwargs.get("node_types")
+        if node_types:
+            script.add_behavior( {
+                'type': 'load',
+                'node_types': node_types,
+                'cbjs_action': '''
+
+                spt.pipeline.set_node_types(bvr.node_types);
+
+                '''
+            } )
+
         # create a canvas where all the nodes are drawn
         canvas = DivWdg()
         inner.add(canvas)
@@ -2676,9 +2688,13 @@ spt.pipeline.get_node_type = function(node) {
 }
 
 
+spt.pipeline.set_node_types = function(node_types) {
+    spt.pipeline.node_types = node_types;
+}
+
+
 spt.pipeline.get_node_types = function() {
-    //var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-    var top = spt.pipeline.top;
+    /*var top = spt.pipeline.top.getParent(".spt_pipeline_tool_top");
 
     var info_top = top.getElement(".spt_pipeline_tool_info");
     if (!info_top) return [];
@@ -2691,7 +2707,10 @@ spt.pipeline.get_node_types = function() {
       if (sel.options[i].value) node_types.push(sel.options[i].value);
     }
 
-    return node_types;
+    return node_types;*/
+
+
+    return spt.pipeline.node_types || [];
 }
 
 
@@ -6006,7 +6025,7 @@ spt.pipeline.export_group = function(group_name) {
 
             if (!properties.hasOwnProperty(key))
                 continue;
-            if (['name', 'xpos', 'ypos', 'type', 'names', 'namedItem', 'item', 'kwargs'].contains(key)) {
+            if (['name', 'xpos', 'ypos', 'type', 'names', 'namedItem', 'item', 'kwargs', 'node'].contains(key)) {
                 continue;
             }
 
