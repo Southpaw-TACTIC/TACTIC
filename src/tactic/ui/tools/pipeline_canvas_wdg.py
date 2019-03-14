@@ -3054,7 +3054,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 spt.pipeline.add_node = function(name, x, y, kwargs) {
 
-	var cmd = new spt.pipeline.AddNodeCmd(name, x, y, kwargs);
+    var cmd = new spt.pipeline.AddNodeCmd(name, x, y, kwargs);
 
     spt.command.add_to_undo(cmd);
 
