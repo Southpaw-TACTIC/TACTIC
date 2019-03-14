@@ -85,10 +85,12 @@ class WatchFolderFileActionThread(threading.Thread):
 
     def run(self):
         task = self.kwargs.get("task")
+        paths = task.get_paths()
         site = task.site
         project_code = task.project_code
         Batch(site=site, project_code=project_code)
         try:
+            self.clean_up(paths)
             self._run()
         except Exception as e:
             print("Error: %s" % e)
@@ -105,8 +107,9 @@ class WatchFolderFileActionThread(threading.Thread):
 
 
 
-    def clean_up(self, paths):
+    def clean_up(self, paths, where="default"):
         task = self.kwargs.get("task")
+        print "-----CLEANUP PATHS---", len(paths), where
         for path in paths:
 
             process_path = path
@@ -120,33 +123,58 @@ class WatchFolderFileActionThread(threading.Thread):
             # move the process path back to the queue
             queue_path = path.replace("/.tactic/process", "")
             shutil.move(process_path, queue_path)
+            # while not os.path.exists(queue_path):
+            #     try:
+            #         shutil.move(process_path, queue_path)
+            #     except Exception as e:
+            #         print("Error: %s moving from process to queue" % e)
+
+            print "---CLEANUP_COMPLETE---", path
 
         # this exaggerates the effect of not pausing check thread for cleaning
         #time.sleep(10)
         #Common.kill()
         #task.set_restart(True)
+        print "---------CLEANUP_DONE-----"
         return
 
 
     def _run(self):
+
 
         task = self.kwargs.get("task")
         paths = task.get_paths()
         count = 0
         restart = False
 
-        self.clean_up(paths)
-
         while True:
 
-            print "------------", paths, task
+            print "------------WatchFolderFileActionThread: ", paths
+
             if task.in_restart():
                 break
             
             if not paths:
                 time.sleep(1)
+
+                #print task.is_alive():
+
+                # filtered = []
+                # for item in os.listdir(task.base_dir):
+                #     if item.startswith("TACTIC_log"):
+                #         continue
+                #     if item.startswith(".tactic"):
+                #         continue
+                #     base, ext = os.path.splitext(item)
+                #     if ext in ['.lock', '.error', '.checkin']:
+                #         continue
+                #     filtered.append(item)
+                # if filtered:
+                #     time.sleep(20)
+                #     if not paths:
+                #         task.set_restart(True)
                 continue
-            
+
             path = paths.pop(0)
             dirname = os.path.dirname(path)
             basename = os.path.basename(path)
@@ -160,9 +188,9 @@ class WatchFolderFileActionThread(threading.Thread):
             error_path = path.replace(".tactic/process", ".tactic/error")
 
             if not os.path.exists(path):
-                print "ERROR: path [%s] does not exist"
-                #self.clean_up(paths)
-                paths = []
+                print "ERROR: path [%s] does not exist 123"
+                #self.clean_up([path], "here")
+                #paths.remove(path)
                 task.set_restart(True)
                 break
 
@@ -214,7 +242,7 @@ class WatchFolderFileActionThread(threading.Thread):
 
             except Exception as e:
                 print("Error: %s" % e)
-                # self.clean_up(paths)
+                # self.clean_up([path])
                 # task.set_restart(True)
 
                 # These operation cannot fail as is should not further
@@ -249,11 +277,11 @@ class WatchFolderFileActionThread(threading.Thread):
                     restart = True
                     break
 
-
         # restart every 20 check-ins
         if restart:
-            self.clean_up(paths)
+            self.clean_up(paths, "reset")
             task.set_restart(True)
+
 
 
 
@@ -684,7 +712,7 @@ Base directory: %s
 
         base_dir = self.base_dir
 
-        print "-------", base_dir
+        print "-------WatchDropFolderTask: ", base_dir
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
 
