@@ -2044,18 +2044,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         from_type = self.kwargs.get("from_type")
         to_type = self.kwargs.get("to_type")
 
-        
-        # deprecated by sessional changes
-
-        # # If either the left process or right process do not exist,
-        # # display empty pane.
-        # if not left_process or not right_process:
-        #     info_wdg = DivWdg()
-        #     info_wdg.add_style("margin: 10px")
-        #     info_wdg.add("Save your workflow to edit connector properties.") 
-        #     top.add(info_wdg)
-        #     return top
-
         info_wdg = DivWdg()
         top.add(info_wdg)
         info_wdg.add("From <b>%s</b> to <b>%s</b>" % (from_node, to_node))
