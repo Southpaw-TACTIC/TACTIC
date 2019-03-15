@@ -2616,7 +2616,7 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
 }
 
 
-
+// DEPRECATED: moved to spt.table
 spt.dg_table.add_filter = function(element) {
 
     var element = document.id(element);
@@ -2677,6 +2677,7 @@ spt.dg_table.add_filter = function(element) {
 }
 
 
+// DEPRECATED: moved to spt.table
 spt.dg_table.remove_filter = function(element) {
 
     var element = document.id(element);
@@ -4832,6 +4833,8 @@ spt.dg_table.update_row = function(evt, bvr)
 }
 
 spt.dg_table.update_uber_notes = function(table, search_type, element_names, values, info) {
+
+    spt.table.alert("DEPRECATED: spt.dg_table.update_uber_notes");
 
     var server = TacticServerStub.get();
 

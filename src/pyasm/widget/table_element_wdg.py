@@ -49,7 +49,7 @@ import re, time, types
 from dateutil import parser
 from datetime import datetime
 
-from pyasm.common import Container, Xml, XmlException, SecurityException, Environment, Date, UserException, Common, SPTDate
+from pyasm.common import Container, Xml, XmlException, SecurityException, Environment, Date, UserException, Common, SPTDate, jsondumps, jsonloads
 from pyasm.biz import Snapshot
 from pyasm.command import Command
 from pyasm.search import SearchType, Search, SObject, SearchException, SearchKey
@@ -1117,7 +1117,10 @@ class XmlWdg(BaseTableElementWdg):
         value = sobject.get_value( self.get_name() )
         value = self.get_value()
 
-        if value.startswith("zlib:"):
+        if not isinstance(value, basestring):
+            value = jsondumps(value)
+
+        elif value.startswith("zlib:"):
             import zlib, binascii
             value = zlib.decompress( binascii.unhexlify(value[5:]) )
 

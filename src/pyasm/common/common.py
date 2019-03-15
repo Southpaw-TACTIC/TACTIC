@@ -851,7 +851,9 @@ class Common(Base):
             # camelcase
             p = re.compile("([A-Z])")
             replace = " \\1"
-            return p.sub(replace, title).strip().title()
+            title = p.sub(replace, title).strip().title()
+            title = re.sub(' +', ' ', title)
+            return title.title()
             
         else:
             title = title.replace("_", " ")

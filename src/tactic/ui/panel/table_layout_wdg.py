@@ -254,6 +254,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+    def has_config(self):
+        return True
+
+
 
 
     def get_layout_version(self):
@@ -385,7 +389,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 if not self.group_columns.startswith('['):
                     self.group_columns = self.group_columns.split(',')
                 else:
-
                     eval(self.group_columns)
 
 
@@ -610,6 +613,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         top.add_class("spt_sobject_top")
         top.add_class("spt_layout_top")
 
+
         # NOTE: still need to set an id for Column Manager
         top.set_id("%s_layout" % self.table_id)
 
@@ -622,6 +626,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if self.kwargs.get("is_inner") not in ['true', True]:
             inner.add_class("spt_layout")
         inner.add_class("spt_table")
+        inner.add_class("spt_layout_inner")
 
         inner.add_style("postion: relative")
         inner.add_style("border-style", "solid")
@@ -1644,7 +1649,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     if (width == -1) {
                         continue;
                     }
-                    console.log(name, width);
+                    //console.log(name, width);
                     spt.table.set_column_width(name, width);
                 }
 
@@ -3857,6 +3862,111 @@ spt.table.do_search = function(kwargs) {
 }
 
 
+
+// filter methods
+
+spt.table.add_filter = function(element, filter_type) {
+
+    var element = document.id(element);
+    var container = element.getParent(".spt_filter_container");
+    var filter = element.getParent(".spt_filter_container_with_op");
+    var op = filter.getElement(".spt_op");
+
+    var op_value;
+    if (op == null) {
+        op_value = 'and';
+    } else {
+        op_value = op.getAttribute("spt_op");
+    }
+
+    // get template
+    var filter_top = element.getParent(".spt_filter_top");
+    var filter_template = filter_top.getElement(".spt_filter_template_with_op");
+    
+    var filter_templates = filter_top.getElements(".spt_filter_template_with_op");
+    for (var i = 0; i < filter_templates.length; i++) {
+        console.log(filter_templates[i]);
+        var filter_template_type = filter_templates[i].getAttribute("spt_filter_type")
+        if (filter_template_type == filter_type) {
+            filter_template = filter_templates[i];
+            break;
+        }
+
+    }
+
+    var filter_options = filter_top.getElement(".spt_filter_options");
+    var filters = filter_options.getElements(".spt_filter_type_wdg");
+    // clear the value in the textbox if any
+    for (var k=0; k< filters.length; k++){
+        input = filters[k].getElement("input");
+        // hidden used for expression
+        if (input && input.getAttribute('type') !='hidden' ) input.value ='';
+    }
+     
+   
+
+    // clone the filter
+    var new_filter = spt.behavior.clone(filter_template);
+    new_filter.addClass("spt_filter_container_with_op");
+    new_filter.inject(filter, "after");
+    var display = new_filter.getElement(".spt_op_display");
+
+    var top = element.getParent(".spt_search");
+    var filter_mode = top.getElement(".spt_search_filter_mode").value;
+    if (filter_mode == 'custom') {
+        display.innerHTML = op_value;
+    }
+
+    // make this into a new search filter
+    var children = new_filter.getElements(".spt_filter_template");
+    for (var i=0; i<children.length; i++) {
+        var child = children[i];    
+        child.addClass("spt_search_filter");
+    }
+    var children = new_filter.getElements(".spt_op_template");
+    for (var i=0; i<children.length; i++) {
+        var child = children[i];
+        child.addClass("spt_op");
+        
+        child.setAttribute("spt_op", op_value);
+    }
+}
+
+
+
+
+spt.table.remove_filter = function(element) {
+
+    var element = document.id(element);
+    var container = element.getParent(".spt_filter_container");
+    //var search_filter = element.getParent(".spt_search_filter")
+    var search_filter = element.getParent(".spt_filter_container_with_op")
+
+    var all_filters = container.getElements(".spt_filter_container_with_op");
+    if (all_filters.length == 1) {
+        return;
+    }
+
+    if (all_filters[0] == search_filter) {
+        // have to destoy the spacing and op for the first filter
+        var second_filter = all_filters[1];
+        var op = second_filter.getElement(".spt_op");
+        op.destroy();
+        var spacing = second_filter.getElement(".spt_spacing");
+        spacing.destroy();
+    }
+
+    container.removeChild( search_filter );
+
+}
+
+
+
+
+
+
+
+
 // Preview methods
 
 
@@ -5667,6 +5777,23 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     
     var changed = old_value != new_value;
 
+
+
+    // store updates globally as an undo queue
+    var layout = spt.table.get_layout();
+    var layout_top = layout.getParent(".spt_layout_top");
+    var undo_queue  = layout_top.undo_queue;
+    if (!undo_queue) {
+        undo_queue = [];
+        layout_top.undo_queue = undo_queue;
+    }
+
+    // empty the redo queue
+    layout_top.redo_queue = [];
+    
+
+
+
     if (!ignore_multi && selected_rows.length > 0 && changed && in_selected_row) {
         // get all of the cells with the same element_name
         var index = spt.table.get_column_index_by_cell(edited_cell);
@@ -5676,6 +5803,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
             var old_html = cell.innerHTML;
            
             var undo = spt.table._accept_single_edit(cell, new_value);
+            undo_queue.push(undo);
 
             if (set_display) {
                 cell.innerHTML = "";
@@ -5692,7 +5820,16 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
     }
     else {
-        var undo = spt.table._accept_single_edit(edited_cell, new_value);
+        var undo = kwargs.undo;
+        if (!undo) {
+            undo = {};
+        }
+
+        var undo = spt.table._accept_single_edit(edited_cell, new_value, undo);
+        if (undo) {
+            undo_queue.push(undo);
+        }
+
 
         if (set_display) {
             edited_cell.innerHTML = "";
@@ -5707,6 +5844,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         }
 
         if (undo) {
+            undo.cell = edited_cell;
             undo.old_html = edited_cell.html;
             undo.new_html = edited_cell.innerHTML;
         }
@@ -5812,7 +5950,7 @@ spt.table.set_changed_color = function(row, cell) {
     }
 }
 
-spt.table._accept_single_edit = function(cell, new_value) {
+spt.table._accept_single_edit = function(cell, new_value, undo) {
     var old_value = cell.getAttribute("spt_input_value");
 
     if (old_value != new_value) {
@@ -5827,32 +5965,22 @@ spt.table._accept_single_edit = function(cell, new_value) {
         // set the new_value
         cell.setAttribute("spt_input_value", new_value);
 
-        // store updates globally as an undo queue
-        var layout = spt.table.get_layout();
-        var layout_top = layout.getParent(".spt_layout_top");
-        var undo_queue  = layout_top.undo_queue;
-        if (!undo_queue) {
-            undo_queue = [];
-            layout_top.undo_queue = undo_queue;
-        }
 
         var row = spt.table.get_row_by_cell(cell);
         var search_key = row.getAttribute("spt_search_key_v2");
         var element_name = spt.table.get_element_name_by_cell(cell);
-        var undo = {
-            cell: cell,
-            old_value: old_value,
-            new_value: new_value,
-            search_key: search_key,
-            element_name: element_name,
-            cbjs_action: null,
+
+        if (!undo) {
+            undo = {};
         }
-        undo_queue.push(undo);
 
-        // empty the redo queue
-        layout_top.redo_queue = [];
-        
-
+         
+        undo.cell = cell;
+        undo.old_value = old_value;
+        undo.new_value = new_value;
+        undo.search_key = search_key;
+        undo.element_name = element_name;
+        undo.cbjs_action = null;
 
 
         var row = cell.getParent(".spt_table_row");
@@ -5936,9 +6064,18 @@ spt.table.undo_last = function() {
         return;
     }
 
+
     // push this undo into the redo queue
     var redo_queue = layout_top.redo_queue;
     redo_queue.push(last_undo);
+
+
+    var undo_type = last_undo.type;
+    if (undo_type && last_undo.undo) {
+        last_undo.undo();
+        return;
+    }
+
 
     var cell = last_undo.cell;
 
@@ -5986,6 +6123,15 @@ spt.table.redo_last = function() {
     // push this redo into the undo queue
     var undo_queue = layout_top.undo_queue;
     undo_queue.push(last_redo);
+
+
+
+    var undo_type = last_redo.type;
+    if (undo_type) {
+        last_redo.redo();
+        return;
+    }
+
 
 
     var cell = last_redo.cell;
@@ -6043,15 +6189,26 @@ spt.table.apply_undo_queue = function(undo_queue) {
             continue;
         }
 
+
+
+        var undo_type = undo.type;
+        if (undo_type) {
+            undo.redo();
+            return;
+        }
+
+
+        var orig_value = cell.getAttribute("spt_input_value");
+
+
         cell.innerHTML = undo.new_html;
+        cell.setAttribute("spt_input_value", undo.new_value);
+
         var new_value = undo.new_value;
 
         // remap to the new cell
         undo.cell = cell;
 
-
-
-        var orig_value = cell.getAttribute("spt_orig_input_value");
 
         if (new_value == orig_value) {
             cell.removeClass("spt_cell_changed");
@@ -6083,7 +6240,6 @@ spt.table.save_changes = function(kwargs) {
         do_refresh = false;
     }
 
-    spt.app_busy.show("Saving Changes ...");
     var rows = spt.table.get_changed_rows();
 
     // insert rows appear to be included now
@@ -6104,74 +6260,140 @@ spt.table.save_changes = function(kwargs) {
     var parent_key = null;    
     var connect_key = null;    
 
-    for (var i = 0; i < rows.length; i++) {
-
-        if (!parent_key)
-            parent_key = rows[i].getAttribute("spt_parent_key");
-
-        if (!connect_key)
-            connect_key = rows[i].getAttribute("spt_connect_key");
-
-        // get extra data
-        var extra_data_row = rows[i].extra_data
-        if (extra_data_row) {
-            extra_data.push(extra_data_row);
-        }
-        else {
-            extra_data.push(null);
-        }
-
-        // get extra action
-        var extra_action_row = rows[i].extra_action
-        if (extra_action_row) {
-            extra_action.push(extra_action_row);
-        }
-        else {
-            extra_action.push(null);
-        }
 
 
+    var search_keys = []
 
-        var search_key = rows[i].getAttribute("spt_search_key");
-        search_keys.push(search_key);
-        var cells = rows[i].getElements(".spt_cell_changed");
-        var data = {};
-        var single_web_data = {};
-        update_data.push(data);
-        web_data.push(single_web_data);
-        for (var j = 0; j < cells.length; j++) {
-            var cell = cells[j];
-            var element_name = spt.table.get_element_name_by_cell(cell);
-            var value = cell.getAttribute("spt_input_value");
-            data[element_name] = value;
 
-            var header = spt.table.get_header_by_cell(cell);
-            if (header.getAttribute("spt_input_type") == 'inline') {
-                if (cell.getAttribute("spt_input_type") =='gantt') {
-                    var gantt_values = spt.api.Utility.get_input_values(cell, '.spt_gantt_data', false);
-                    single_web_data['gantt_data'] = gantt_values['gantt_data'];
+    // collapse updates from undo_queue for be classified by search_type
+    //var use_undo_queue = true;
+    var use_undo_queue = false;
+
+    if (use_undo_queue) {
+
+        var layout = spt.table.get_layout();
+        var layout_top = layout.getParent(".spt_layout_top")
+        var undo_queue = layout_top.undo_queue;
+
+        var updates = {};
+        var extra_updates = {};
+
+        for (var i = 0; i < undo_queue.length; i++) {
+            var action = undo_queue[i];
+            var search_key = action.search_key;
+            var element_name = action.element_name;
+
+            var action_type = action.type;
+
+            if (!action_type) {
+                var item_data = updates[search_key];
+                if (!item_data) {
+                    item_data = {};
+                    updates[search_key] = item_data;
                 }
-                else if (cell.getAttribute("spt_input_type") =='work_hour') {
-                    var web_values = spt.api.Utility.get_input_values(cell, '.spt_workhour_data', false);
-                    single_web_data['workhour_data'] = web_values['workhour_data'];
-                }
-                else if (cell.getAttribute("spt_input_type") =='tasks') {
-                    var web_values = spt.api.Utility.get_input_values(header, '.spt_process_data', false);
-                    single_web_data['process_data'] = web_values['process_data'];
-                }
-                else { // generic inline-type widget
-                    var web_values = spt.api.Utility.get_input_values(cell, null, false);
-                    single_web_data['inline_data'] = web_values;
-                }
+
+                var value = action.new_value;
+                item_data[element_name] = value;
+                extra_item_data = [null];
             }
-      
-                
+            else {
+                updates[search_key] = action.get_data();
+                extra_updates[search_key] = action.get_extra_data();
+            }
+
+
+        }
+
+        // break into two lists as required by save command
+        var update_data = [];
+        for (var search_key in updates) {
+
+            search_keys.push(search_key);
+
+            extra_action.push(null);
+
+            update_data.push( updates[search_key] );
+            extra_data.push(extra_updates[search_key]);
+
+        };
+
+    }
+
+
+
+    else {
+
+
+        for (var i = 0; i < rows.length; i++) {
+
+            if (!parent_key)
+                parent_key = rows[i].getAttribute("spt_parent_key");
+
+            if (!connect_key)
+                connect_key = rows[i].getAttribute("spt_connect_key");
+
+            // get extra data
+            var extra_data_row = rows[i].extra_data
+            if (extra_data_row) {
+                extra_data.push(extra_data_row);
+            }
+            else {
+                extra_data.push(null);
+            }
+
+            // get extra action
+            var extra_action_row = rows[i].extra_action
+            if (extra_action_row) {
+                extra_action.push(extra_action_row);
+            }
+            else {
+                extra_action.push(null);
+            }
+
+
+
+            var search_key = rows[i].getAttribute("spt_search_key");
+            search_keys.push(search_key);
+            var cells = rows[i].getElements(".spt_cell_changed");
+            var data = {};
+            var single_web_data = {};
+            update_data.push(data);
+            web_data.push(single_web_data);
+            for (var j = 0; j < cells.length; j++) {
+                var cell = cells[j];
+                var element_name = spt.table.get_element_name_by_cell(cell);
+                var value = cell.getAttribute("spt_input_value");
+                data[element_name] = value;
+
+                var header = spt.table.get_header_by_cell(cell);
+                if (header.getAttribute("spt_input_type") == 'inline') {
+                    if (cell.getAttribute("spt_input_type") =='gantt') {
+                        var gantt_values = spt.api.Utility.get_input_values(cell, '.spt_gantt_data', false);
+                        single_web_data['gantt_data'] = gantt_values['gantt_data'];
+                    }
+                    else if (cell.getAttribute("spt_input_type") =='work_hour') {
+                        var web_values = spt.api.Utility.get_input_values(cell, '.spt_workhour_data', false);
+                        single_web_data['workhour_data'] = web_values['workhour_data'];
+                    }
+                    else if (cell.getAttribute("spt_input_type") =='tasks') {
+                        var web_values = spt.api.Utility.get_input_values(header, '.spt_process_data', false);
+                        single_web_data['process_data'] = web_values['process_data'];
+                    }
+                    else { // generic inline-type widget
+                        var web_values = spt.api.Utility.get_input_values(cell, null, false);
+                        single_web_data['inline_data'] = web_values;
+                    }
+                }
+          
+                    
+            }
         }
     }
 
+
+
     if (search_keys.length == 0) {
         spt.alert("No changes have been made");
-        spt.app_busy.hide();
         return;
     }
 
@@ -6217,7 +6439,7 @@ spt.table.save_changes = function(kwargs) {
     }
    
 
-    //add to the values here for gantt and inline elements
+    // add to the values here for gantt and inline elements
     web_data = JSON.stringify(web_data);
     
     var search_top = null;
@@ -6260,7 +6482,6 @@ spt.table.save_changes = function(kwargs) {
     } catch(e) {
         spt.error(spt.exception.handler(e));
     }
-    spt.app_busy.hide();
 
     // fire an event
     if (search_keys) {
@@ -6439,9 +6660,19 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     var view = layout_el.getAttribute("spt_view");
     var search_type = layout_el.getAttribute("spt_search_type");
     var config_xml = layout_el.getAttribute("spt_config_xml");
+
     var layout = layout_el.getAttribute("spt_layout");
-    var extra_data = layout_el.getAttribute("spt_extra_data");
-    
+
+    //var extra_data = layout_el.getAttribute("spt_extra_data");
+    var inner = layout_el.getElement(".spt_layout_inner");
+    if (inner) {
+        var extra_data = inner.getAttribute("spt_extra_data");
+    }
+    else {
+        var extra_data = layout_el.getAttribute("spt_extra_data");
+    }
+
+
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
     if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
@@ -6507,7 +6738,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
           'args': kwargs,
           'cbjs_action': function(widget_html) {
             //spt.behavior.replace_inner_html(hidden_row, widget_html);
-            //spt.app_busy.show("Replacing changed rows ...");
 
             var dummy = document.createElement("div");
             // behaviors are only process when in the actual dom
@@ -6517,6 +6747,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
             }
+
+
 
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
@@ -6539,6 +6771,22 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
  
             }
+
+
+            var header_table = spt.table.get_header_table();
+            var header_row = header_table.getElement(".spt_table_header_row");
+            var headers = header_row.getElements(".spt_table_header");
+
+            var row = spt.table.get_first_row();
+            var cells = row.getElements(".spt_cell_edit");
+
+            // set the row widths to that of the header
+            for (var i = 0; i < cells.length; i++) {
+                var width = headers[i].getStyle("width");
+                cells[i].setStyle("width", width);
+            }
+
+
             
             // for efficiency, we do not redraw the whole table to calculate the
             // bottom so just change the bg color
@@ -6556,7 +6804,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 on_complete();
             }
             
-            spt.app_busy.hide();
 
             
           }
@@ -7299,6 +7546,22 @@ spt.table.get_column_widths = function() {
 
 
 
+// aligne the column widths between the header and the first row
+spt.table.align_column_widths = function() {
+    var header_table = spt.table.get_header_table();
+    var header_row = header_table.getElement(".spt_table_header_row");
+    var headers = header_row.getElements(".spt_table_header");
+
+    var row = spt.table.get_first_row();
+    var cells = row.getElements(".spt_cell_edit");
+
+    // set the row widths to that of the header
+    for (var i = 0; i < cells.length; i++) {
+        var width = headers[i].getStyle("width");
+        cells[i].setStyle("width", width);
+    }
+}
+
 spt.table.expand_table = function(mode) {
 
     if (!mode) {
@@ -7869,6 +8132,7 @@ spt.table.delete_rows = function(rows, args) {
         on_post_delete = function() {
             var on_complete = function(id) {
                 spt.behavior.destroy_element(document.id(id));
+                spt.table.align_column_widths();
             }
             for (var i = 0; i < rows.length; i++) {
                 var row = rows[i];
@@ -7878,6 +8142,9 @@ spt.table.delete_rows = function(rows, args) {
                 }
                 Effects.fade_out(row, 500, on_complete);
             }
+
+            spt.table.align_column_widths();
+
         }
     }
 
@@ -7984,6 +8251,8 @@ spt.table.operate_selected = function(action)
         }
 
         server.finish()
+
+        spt.table.align_column_widths();
 
         if( ! aborted ) {
             if( show_retired ) {

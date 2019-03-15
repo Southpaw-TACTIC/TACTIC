@@ -272,7 +272,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             self.summary_ot[idx] = {}
 
     def get_default_cbk(self):
-        return "tactic.ui.element.work_hours_element_wdg.WorkHoursElementCbk"
+        return "tactic.ui.table.WorkHoursElementAction"
 
     def handle_th(self, th, wdg_idx=None):
         th.add_attr('spt_input_type', 'inline')
@@ -484,6 +484,17 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         table = Table()
         top.add(table)
 
+
+        table.add_behavior( {
+            "type": 'mouseenter',
+            'cbjs_action': '''
+            var td = bvr.src_el.getParent(".spt_cell_edit");
+            if (td) {
+                td.html = td.innerHTML;
+            }
+            '''
+        } )
+
         
 
         if self.use_straight_time:
@@ -674,7 +685,18 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
                         var version = layout.getAttribute("spt_version");
                         if (version == "2") {
                             spt.table.set_layout(layout);
-                            spt.table.accept_edit(all_top_el, value, false);
+                            var undo = {
+                                new_value: value,
+                                type: 'work_hour',
+                                get_data: function() {
+                                    return
+                                },
+                                get_extra_data: function() {
+                                    alert("get_extra_data on work hours");
+
+                                },
+                            }
+                            spt.table.accept_edit(all_top_el, value, false, {undo: undo});
                         }
                         else {
                             var cached_data = {};

@@ -31,10 +31,24 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
     def set_as_activator(self):
         pass
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_switcher_top .dropdown-toggle {
+                width: 160px;
+            }
+
+            ''')
+
+        return styles
+
+
     def get_display(self):
 
         top = self.top
         top.add_class("spt_switcher_top")
+        top.add(self.get_styles())
         
         '''
         This supports supports two menu definitions:
@@ -95,11 +109,11 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         mode = self.kwargs.get("mode")
         if mode == "button":
             color = self.kwargs.get("color") or "default"
-            activator = DivWdg("<button class='btn btn-%s dropdown-toggle' style='width: 160px'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
+            activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
         elif mode == "div":
             color = self.kwargs.get("color") or ""
             background = self.kwargs.get("background") or "transparent"
-            activator = DivWdg("<button class='btn dropdown-toggle' style='width: 160px; background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (background, color, title))
+            activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (background, color, title))
 
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")

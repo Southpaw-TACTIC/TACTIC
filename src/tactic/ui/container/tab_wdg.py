@@ -1339,16 +1339,20 @@ spt.tab.close = function(src_el) {
                     saved_xml_data.read_string(saved_config_xml)
                     saved_xml_root = saved_xml_data.get_root_node()
                     saved_xml_tab = Xml.get_first_child(saved_xml_root)
+                    nodes = Xml.get_children(saved_xml_tab)
 
                     xml_data = Xml()
                     xml_data.read_string(config_xml)
                     xml_root = xml_data.get_root_node()
                     xml_tab = Xml.get_first_child(xml_root)
+                    curr_nodes = Xml.get_children(xml_tab)
 
-                    nodes = Xml.get_children(saved_xml_tab)
+                    curr_node_names = [Xml.get_attribute(node, "name") for node in curr_nodes]
 
                     for node in nodes:
-                        Xml.append_child(xml_tab, node)
+                        node_name = Xml.get_attribute(node, "name")
+                        if node_name not in curr_node_names:
+                            Xml.append_child(xml_tab, node)
 
                     config_xml = xml_data.get_xml()
                     saved_config_xml = None

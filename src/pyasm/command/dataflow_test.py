@@ -143,9 +143,12 @@ class WorkflowCmd(Command):
             #self._test_file()
             #self._test_checkin()
             #self._test_context_output()
+            self._test_status_message()
+            """
             self._test_snapshot_package()
             self._test_approval_state()
             self._test_manual_state()
+            """
         except Exception, e:
             print("Error: ", e)
             raise
@@ -835,6 +838,100 @@ class WorkflowCmd(Command):
             return
         else:
             raise Exception("%s != %s" % (a,b))
+
+
+
+    def _test_status_message(self):
+        '''test for messaging information from node to another'''
+
+        # create a dummy sobject
+        sobject = self.setup()
+
+        # create a pipeline
+        pipeline_xml = '''
+        <pipeline>
+          <process type="auto" name="start"/>
+          <process type="auto" name="test"/>
+          <process type="manual" name="a"/>
+          <process type="manual" name="b"/>
+          <process type="manual" name="c"/>
+          <process type="manual" name="d"/>
+          <process type="manual" name="e"/>
+          <process type="manual" name="f"/>
+          <connect from="start" to="a"/>
+          <connect from="start" to="test"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="e"/>
+          <connect from="c" to="d"/>
+          <connect from="d" to="e"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+        task_a = Task.create(sobject, process="a")
+        task_b = Task.create(sobject, process="b")
+        task_c = Task.create(sobject, process="c")
+        task_d = Task.create(sobject, process="d")
+        task_e = Task.create(sobject, process="e")
+
+
+        # second process checks the package
+        process = processes.get("test")
+        process.set_json_value("workflow", {
+            'on_action': r'''
+
+            # receive the packages
+            packages = input.get("packages")
+            print "packages: ", packages
+
+            '''
+        } )
+        process.commit()
+
+
+
+        packages = {
+            "status": { "type": "status", "status": "Not Required", "scope": "stream" },
+        }
+
+        # Run the pipeline
+        a_process = "start"
+        input = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": a_process,
+            "packages": packages,
+        }
+        Trigger.call(self, "process|complete", input)
+
+        #task_a.set_value("status", "Not Required")
+        #task_a.commit()
+
+        #task_b.set_value("status", "Not Required")
+        #task_b.commit()
+
+        tasks = Task.get_by_sobject(sobject)
+        for task in tasks:
+            print("task: ", task.get("process"), task.get("status"))
+            if task.get("process") == "a":
+                self.assertEquals( task.get("status"), "Not Required")
+            if task.get("process") == "b":
+                self.assertEquals( task.get("status"), "Not Required")
+
+
+
+    def assertEquals(self, a, b):
+        if a == b:
+            return
+        else:
+            raise Exception("%s != %s" % (a,b))
+
+
+
+
 
 
 def main():

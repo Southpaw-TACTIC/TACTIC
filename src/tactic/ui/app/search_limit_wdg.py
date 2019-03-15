@@ -633,6 +633,9 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_search_limit_top");
             var page_el = top.getElement(".spt_page");
 
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
             var value = bvr.src_el.getAttribute("spt_page");
             if (value == 'next') {
                 value = bvr.current_page + 1;
@@ -644,31 +647,45 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             }
             page_el.value = value;
 
+
+            // remap the bvr.src_el
             bvr.src_el = bvr.src_el.getParent('.spt_table_top');
 
             //spt.dg_table.search_cbk(evt, bvr);
             //return;
 
 
+            var layout_top = layout.getParent(".spt_layout_top");
 
-            var view_panel = bvr.src_el.getParent(".spt_view_panel_top");
-
-            var pages = view_panel.pages;
+            var pages = layout_top.pages;
             if (!pages) {
                 pages = {};
-                view_panel.pages = pages;
+                layout_top.pages = pages;
             }
 
 
+
+            // replace all of the PUW Stub
+            var puw_stubs = bvr.src_el.getElements(".SPT_PUW_STUB");
+            for (var i = 0; i < puw_stubs.length; i++) {
+                var puw_stub = puw_stubs[i];
+                var puw_el = puw_stub.spt_puw_el;
+                puw_el.replaces(puw_stub);
+                puw_el.removeClass("SPT_PUW_LOADED");
+                puw_el.addClass("SPT_PUW");
+            }
+            var puws = bvr.src_el.getElements(".SPT_PUW");
+
+            layout_top.pages[bvr.current_page] = bvr.src_el.innerHTML;
+
+
             var html = pages[value];
-            view_panel.pages[bvr.current_page] = bvr.src_el.innerHTML;
             if (!html) {
                 spt.dg_table.search_cbk(evt, bvr);
             }
             else {
-                spt.behavior.replace_inner_html(bvr.src_el, html);
+               spt.behavior.replace_inner_html(bvr.src_el, html);
             }
-
 
             '''
         } )

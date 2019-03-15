@@ -1641,7 +1641,8 @@ TacticServerStub = function() {
 
         var cbk_kwargs = {
             view: view,
-            kwargs: args
+            callback: callback,
+            kwargs: args,
         }
 
         return this.execute_cmd(cbk, cbk_kwargs)
@@ -1655,6 +1656,7 @@ TacticServerStub = function() {
 
         var cbk_kwargs = {
             view: view,
+            callback: callback,
             kwargs: args
         }
 

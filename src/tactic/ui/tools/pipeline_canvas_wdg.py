@@ -48,6 +48,11 @@ class BaseNodeWdg(BaseRefreshWdg):
     def get_height(self):
         return 40
 
+
+    def style_label(self, label):
+        return
+
+
     def get_label_width(self):
         return
 
@@ -416,6 +421,18 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
         } )
         inner.add(script)
+
+        node_types = self.kwargs.get("node_types")
+        if node_types:
+            script.add_behavior( {
+                'type': 'load',
+                'node_types': node_types,
+                'cbjs_action': '''
+
+                spt.pipeline.set_node_types(bvr.node_types);
+
+                '''
+            } )
 
         # create a canvas where all the nodes are drawn
         canvas = DivWdg()
@@ -1571,6 +1588,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         td.add_style("text-align: center")
         label.add_style("overflow: hidden")
 
+        custom_wdg.style_label(label)
+
 
         text = TextWdg()
         node.add(text)
@@ -2103,6 +2122,7 @@ spt.pipeline._init = function() {
         top.spt_data = {};
         data = top.spt_data;
         data.scale = 1.0;
+        data.translate = {x: 0, y: 0};
     }
     data.canvas = canvas;
     data.paint = paint;
@@ -2147,6 +2167,7 @@ spt.pipeline.first_init = function(bvr) {
     data.selected = [];
 
     data.scale = 1.0;
+    data.translate = {x: 0, y: 0};
     data.line_mode = 'bezier';
     data.has_prefix = false;
 
@@ -2571,12 +2592,12 @@ spt.pipeline = spt.pipeline || {};
 spt.pipeline.info_node;
 
 spt.pipeline.set_info_node = function(node) {
-    spt.pipeline.info_node = node;
+    spt.pipeline.top.info_node = node;
 }
 
 
 spt.pipeline.get_info_node = function() {
-    return spt.pipeline.info_node;
+    return spt.pipeline.top.info_node;
 }
 
 
@@ -2600,8 +2621,7 @@ spt.pipeline.unselect_all_nodes = function() {
         spt.pipeline.unselect_node(node);
     }
 
-    var top = bvr.src_el.getParent(".spt_pipeline_top");
-    var event_name = top.getAttribute("id") + "|unselect_all";
+    var event_name = spt.pipeline.top.getAttribute("id") + "|unselect_all";
     spt.named_events.fire_event(event_name);
 }
 
@@ -2676,22 +2696,13 @@ spt.pipeline.get_node_type = function(node) {
 }
 
 
+spt.pipeline.set_node_types = function(node_types) {
+    spt.pipeline.top.node_types = node_types;
+}
+
+
 spt.pipeline.get_node_types = function() {
-    //var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-    var top = spt.pipeline.top;
-
-    var info_top = top.getElement(".spt_pipeline_tool_info");
-    if (!info_top) return [];
-
-    var sel = info_top.querySelector("select[name='node_type']");
-    if (!sel) return [];
-
-    node_types = [];
-    for (var i=0, n=sel.options.length; i<n; i++) {
-      if (sel.options[i].value) node_types.push(sel.options[i].value);
-    }
-
-    return node_types;
+    return spt.pipeline.top.node_types || [];
 }
 
 
@@ -2882,160 +2893,160 @@ spt.pipeline.undo_remove_connectors = []
 
 spt.pipeline._add_node = function(name,x, y, kwargs){
 
-	var top = spt.pipeline.top;
-	var canvas = spt.pipeline.get_canvas();
+    var top = spt.pipeline.top;
+    var canvas = spt.pipeline.get_canvas();
 
-	var group = null;
-	var select_node = true;
-	var node_type = null;
-	if (typeof(kwargs) != 'undefined') {
-		group = kwargs.group;
-		if (kwargs.select_node != 'undefined')
-			select_node = kwargs.select_node;
-		node_type = kwargs.node_type;
-	}
-	else {
-		kwargs = {};
-	}
+    var group = null;
+    var select_node = true;
+    var node_type = null;
+    if (typeof(kwargs) != 'undefined') {
+            group = kwargs.group;
+            if (kwargs.select_node != 'undefined')
+                    select_node = kwargs.select_node;
+            node_type = kwargs.node_type;
+    }
+    else {
+            kwargs = {};
+    }
 
-	if (!node_type) {
-		var default_node_type = top.getAttribute("spt_default_node_type");
-		if (default_node_type) {
-			node_type = default_node_type;
-		}
-		else {
-			node_type = "node";
-		}
-	}
+    if (!node_type) {
+            var default_node_type = top.getAttribute("spt_default_node_type");
+            if (default_node_type) {
+                    node_type = default_node_type;
+            }
+            else {
+                    node_type = "node";
+            }
+    }
 
-	if (typeof(group) == 'undefined' || group == null) {
-		group = spt.pipeline.get_current_group();
+    if (typeof(group) == 'undefined' || group == null) {
+            group = spt.pipeline.get_current_group();
 
-	}
-
-
-	var group_info = spt.pipeline.get_group(group);
-	if (group_info == null) {
-		group_info = spt.pipeline.add_group(group);
-	}
-
-	var nodes = spt.pipeline.get_all_nodes();
-	if (typeof(name) == 'undefined' || name == null) {
-		name = "node"+nodes.length;
-	}
-
-	if (typeof(x) == 'undefined' || x == null) {
-		var size = canvas.getSize();
-		x = size.x/3 + nodes.length*15;
-		y = size.y/3 + nodes.length*10;
-	}
-
-	var template_container = top.getElement(".spt_pipeline_template");
-
-	var template_class = "spt_pipeline_" + node_type;
-	var template = template_container.getElement("."+template_class);
-	var is_unknown = false;
-	if (!template) {
-		var template_class = "spt_pipeline_unknown";
-		template = template_container.getElement("."+template_class);
-		is_unknown = true;
-	}
+    }
 
 
-	var new_node = spt.behavior.clone(template);
-	if (is_unknown) {
-		// change it from "unknown"
-		new_node.setAttribute("spt_node_type", node_type);
-	}
-	new_node.spt_node_type = node_type;
+    var group_info = spt.pipeline.get_group(group);
+    if (group_info == null) {
+            group_info = spt.pipeline.add_group(group);
+    }
+
+    var nodes = spt.pipeline.get_all_nodes();
+    if (typeof(name) == 'undefined' || name == null) {
+            name = "node"+nodes.length;
+    }
+
+    if (typeof(x) == 'undefined' || x == null) {
+            var size = canvas.getSize();
+            x = size.x/3 + nodes.length*15;
+            y = size.y/3 + nodes.length*10;
+    }
+
+    var template_container = top.getElement(".spt_pipeline_template");
+
+    var template_class = "spt_pipeline_" + node_type;
+    var template = template_container.getElement("."+template_class);
+    var is_unknown = false;
+    if (!template) {
+            var template_class = "spt_pipeline_unknown";
+            template = template_container.getElement("."+template_class);
+            is_unknown = true;
+    }
 
 
-	canvas.appendChild(new_node);
-
-	// make the label the last part
-	var label_parts = name.split("/");
-	var label_str = label_parts[label_parts.length-1];
-
-	var label = new_node.getElement(".spt_label");
-	var input = new_node.getElement(".spt_input");
-	if (label) {
-		label.innerHTML = label_str;
-	}
-	if (input) {
-		input.value = label_str;
-	}
-	new_node.setAttribute("spt_element_name", name);
-	new_node.spt_name = name;
-	new_node.setAttribute("title", name);
+    var new_node = spt.behavior.clone(template);
+    if (is_unknown) {
+            // change it from "unknown"
+            new_node.setAttribute("spt_node_type", node_type);
+    }
+    new_node.spt_node_type = node_type;
 
 
-	// set any properties that might exist
-	new_node.properties = kwargs.properties || {};
+    canvas.appendChild(new_node);
+
+    // make the label the last part
+    var label_parts = name.split("/");
+    var label_str = label_parts[label_parts.length-1];
+
+    var label = new_node.getElement(".spt_label");
+    var input = new_node.getElement(".spt_input");
+    if (label) {
+            label.innerHTML = label_str;
+    }
+    if (input) {
+            input.value = label_str;
+    }
+    new_node.setAttribute("spt_element_name", name);
+    new_node.spt_name = name;
+    new_node.setAttribute("title", name);
+
+
+    // set any properties that might exist
+    new_node.properties = kwargs.properties || {};
     new_node[node_type] = { description: kwargs.description || "" };
 
 
-	// add to a group
-	group_info.add_node(new_node);
+    // add to a group
+    group_info.add_node(new_node);
 
 
-	// switch the color
-	//var color = group_info.get_color();
-	var color = '';
-	/*
-	if (node_type == "trigger") {
-		color = "#FFF";
-	}
-	else if (node_type == "approval") {
-		color = "#FFF";
-	}
-	*/
-	if (group_info.get_node_type() == 'process')
-		color = spt.pipeline.get_group_color(group);
-	else // for schema
-		color = spt.pipeline.get_group_color(name);
+    // switch the color
+    //var color = group_info.get_color();
+    var color = '';
+    /*
+    if (node_type == "trigger") {
+            color = "#FFF";
+    }
+    else if (node_type == "approval") {
+            color = "#FFF";
+    }
+    */
+    if (group_info.get_node_type() == 'process')
+            color = spt.pipeline.get_group_color(group);
+    else // for schema
+            color = spt.pipeline.get_group_color(name);
 
-	if (is_unknown) {
-		color = "#C00";
-	}
+    if (is_unknown) {
+            color = "#C00";
+    }
 
-	spt.pipeline.set_color(new_node, color)
-	new_node.color = color;
+    spt.pipeline.set_color(new_node, color)
+    new_node.color = color;
 
-	// position the node on the canvas
-	if (x == 0 && y == 0) {
-		var nodes = spt.pipeline.get_all_nodes();
-		var num_nodes = nodes.length;
-		x = num_nodes * 120 + 50;
-		y = num_nodes * 0 + 50;
-	}
-
-
-	spt.pipeline.move_to(new_node, x, y);
+    // position the node on the canvas
+    if (x == 0 && y == 0) {
+            var nodes = spt.pipeline.get_all_nodes();
+            var num_nodes = nodes.length;
+            x = num_nodes * 120 + 50;
+            y = num_nodes * 0 + 50;
+    }
 
 
-	// select the node
-	if (select_node)
-		spt.pipeline.select_single_node(new_node);
-
-	// fire an event
-	if (kwargs.new != false) {
-		var top = bvr.src_el.getParent(".spt_pipeline_top");
-		var event_name = top.getAttribute("id") + "|node_create";
-		spt.named_events.fire_event(event_name, { src_el: new_node } );
-	}
-
-	var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-	if (editor_top) {
-		editor_top.addClass("spt_has_changes");
-	}
+    spt.pipeline.move_to(new_node, x, y);
 
 
-	return new_node;
+    // select the node
+    if (select_node)
+            spt.pipeline.select_single_node(new_node);
+
+    // fire an event
+    if (kwargs.new != false) {
+            var top = bvr.src_el.getParent(".spt_pipeline_top");
+            var event_name = top.getAttribute("id") + "|node_create";
+            spt.named_events.fire_event(event_name, { src_el: new_node } );
+    }
+
+    var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+    if (editor_top) {
+            editor_top.addClass("spt_has_changes");
+    }
+
+
+    return new_node;
 }
 
 spt.pipeline.add_node = function(name, x, y, kwargs) {
 
-	var cmd = new spt.pipeline.AddNodeCmd(name, x, y, kwargs);
+    var cmd = new spt.pipeline.AddNodeCmd(name, x, y, kwargs);
 
     spt.command.add_to_undo(cmd);
 
@@ -3293,6 +3304,31 @@ spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
+spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+
+        var options = input_el.options;
+        var values = []
+
+        for (var i=0; i<options.length; i++) {
+            var option = options[i];
+            values.push(option.value);
+        }
+
+        // maybe this should be done in python?
+        if (values.includes(value)) input_el.value = value;
+        else {
+            if (kwargs.multi) spt.pipeline.set_node_multi_kwarg(node, name, options[0].value);
+            else spt.pipeline.set_node_kwarg(node, name, options[0].value);
+        }
+    }
+}
+
 spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
     if (kwargs) {
@@ -3387,7 +3423,7 @@ spt.pipeline.get_group_color = function(group_name) {
     var data = spt.pipeline.get_data();
     var color = data.colors[group_name];
     if (typeof(color) == 'undefined') {
-        color = '#999';
+        color = '#BBB';
     }
     return color;
 }
@@ -3747,9 +3783,20 @@ spt.pipeline.node_drag_setup = function( evt, bvr, mouse_411) {
         //spt.pipeline.select_single_node(node);
     }
     spt.pipeline.changed = false;
+
+    spt.pipeline.draw_skip = 0;
 }
 
 spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
+
+    
+    // slow ddown the drawwing a bit (seems to slow down on big workflows);
+    if (spt.pipeline.draw_skip != 5) {
+        spt.pipeline.draw_skip += 1;
+        return;
+    }
+    spt.pipeline.draw_skip = 0;
+
 
     var node = bvr.drag_el;
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
@@ -4511,8 +4558,11 @@ spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
     spt.pipeline.init(bvr);
     spt.pipeline.last_mouse_position = pos;
     spt.pipeline.orig_mouse_position = pos;
+    spt.pipeline.orig_translate = spt.pipeline.get_translate();
 
     spt.body.hide_focus_elements(evt);
+
+    spt.pipeline.draw_skip = 0;
 }
 
 spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
@@ -4521,20 +4571,41 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
         return;
     }
 
+    // slow ddown the drawwing a bit (seems to slow down on big workflows);
+    if (spt.pipeline.draw_skip != 5) {
+        spt.pipeline.draw_skip += 1;
+        return;
+    }
+
+
+
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
+    /*
     var dx = mouse_pos.x - spt.pipeline.last_mouse_position.x;
     var dy = mouse_pos.y - spt.pipeline.last_mouse_position.y;
     var scale = spt.pipeline.get_scale();
     dx = dx/scale;
     dy = dy/scale;
 
-
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
-
-    spt.pipeline.last_mouse_position = mouse_pos;
     spt.pipeline.redraw_canvas();
+    spt.pipeline.last_mouse_position = mouse_pos;
+    */
 
+
+    var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
+    var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
+
+    var scale = spt.pipeline.get_scale();
+    dx = dx/scale;
+    dy = dy/scale;
+
+    var orig_translate = spt.pipeline.orig_translate;
+    spt.pipeline.set_translate(orig_translate.x+dx, orig_translate.y+dy);
+
+
+    spt.pipeline.draw_skip = 0;
 }
 
 spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
@@ -4545,11 +4616,21 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
     var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
     var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
+
+    var scale = spt.pipeline.get_scale();
+    dx = dx/scale;
+    dy = dy/scale;
+
+
     if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
         spt.pipeline.unselect_all_nodes();
     }
 
 
+    // reset the translation and move all the nodes
+    spt.pipeline.set_translate(0, 0);
+    spt.pipeline.move_all_nodes(dx, dy);
+    spt.pipeline.move_all_folders(dx, dy);
 
     bvr.src_el.setStyle("cursor", "");
     var nodes = spt.pipeline.get_all_nodes();
@@ -4587,8 +4668,8 @@ spt.pipeline.zoom_drag_motion = function(evt, bvr, mouse_411) {
 
     spt.pipeline.set_scale( scale );
 
+
     spt.pipeline.last_mouse_position = mouse_pos;
-    spt.pipeline.redraw_canvas();
 
 }
 
@@ -4599,20 +4680,26 @@ spt.pipeline.zoom_drag_action = function(evt, bvr, mouse_411) {
 
 spt.pipeline.set_scale = function(scale) {
 
+    // set an arbitrary max scale so drawing optimizations don't start showing up
+    if (scale > 3) return;
+
+    var canvas = spt.pipeline.get_canvas();
+    scale_el = canvas.getParent(".spt_pipeline_scale");
+
     var data = spt.pipeline.get_data();
     data.scale = scale;
 
-    var canvas = spt.pipeline.get_canvas();
-    //canvas.setStyle("border", "solid 1px blue");
+    var translate = data.translate;
+    var x = translate.x;
+    var y = translate.y;
 
-    var scale_str = "scale("+scale+", "+scale+")"
 
-    scale_el = canvas.getParent(".spt_pipeline_scale");
-    //canvas.setStyle("border", "solid 1px blue");
+    //var transform_str = "translate("+x+"px, "+y+"px) scale("+scale+", "+scale+")";
+    var transform_str = "scale("+scale+", "+scale+") translate("+x+"px, "+y+"px)";
 
-    scale_el.setStyle("-moz-transform", scale_str)
-    scale_el.setStyle("-webkit-transform", scale_str)
-    scale_el.setStyle("transform", scale_str)
+    scale_el.setStyle("-moz-transform", transform_str)
+    scale_el.setStyle("-webkit-transform", transform_str)
+    scale_el.setStyle("transform", transform_str)
 
     //TweenLite.to(scale_el, 0.2, {scale: scale});
 
@@ -4624,6 +4711,40 @@ spt.pipeline.get_scale = function() {
     var data = spt.pipeline.get_data();
     return data.scale;
 }
+
+
+spt.pipeline.set_translate = function(x, y) {
+
+    var canvas = spt.pipeline.get_canvas();
+    scale_el = canvas.getParent(".spt_pipeline_scale");
+
+    var data = spt.pipeline.get_data();
+    data.translate = {x: x, y: y};
+
+    var scale = data.scale;
+
+
+    //var transform_str = "translate("+x+"px, "+y+"px) scale("+scale+", "+scale+")";
+    var transform_str = "scale("+scale+", "+scale+") translate("+x+"px, "+y+"px)";
+
+
+    scale_el.setStyle("-moz-transform", transform_str)
+    scale_el.setStyle("-webkit-transform", transform_str)
+    scale_el.setStyle("transform", transform_str)
+
+    spt.pipeline.redraw_canvas();
+
+}
+
+
+spt.pipeline.get_translate = function() {
+    var data = spt.pipeline.get_data();
+    return data.translate;
+}
+
+
+
+
 
 
 spt.pipeline.center_node = function(node) {
@@ -4751,7 +4872,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
 
 
 
-/* scales the view to fit the entire group */
+/* scales the view to fit the node */
 spt.pipeline.fit_to_node = function(node) {
     if (!node) return;
 
@@ -4866,6 +4987,55 @@ spt.pipeline.redraw_canvas = function() {
 }
 
 
+spt.pipeline.get_point_region = function(pos, rect) {
+
+    // 3 4 5
+    // 2 0 6
+    // 1 8 7
+
+    var width = rect.x;
+    var height = rect.y;
+
+    var x = pos.x;
+    var y = pos.y;
+
+    var region = null;
+
+    if (x < 0) {
+        region = 2;
+        if (y < 0) {
+            region = 1;
+        }
+        else if (y > height ) {
+            region = 3;
+        }
+
+    }
+    else if (x > width) {
+        region = 6;
+        if (y < 0) {
+            region = 7;
+        }
+        else if (y > height ) {
+            region = 5;
+        }
+
+    }
+    else {
+        region = 0
+        if (y < 0) {
+            region = 8
+        }
+        else if (y > height) {
+            region = 4;
+        }
+    }
+
+    return region;
+
+}
+
+
 
 
 // Connector class
@@ -4876,6 +5046,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
     this.color = '#111';
     this.attrs = {};
     this.type = "connector";
+    this.line_mode = null;
     this.panel;
 
     this.draw = function() {
@@ -4898,6 +5069,8 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
+        var translate = spt.pipeline.get_translate();
+
         var from_width = from_size.x;
         var from_height = from_size.y;
         var to_width = to_size.x;
@@ -4914,30 +5087,86 @@ spt.pipeline.Connector = function(from_node, to_node) {
 
 
         // offset by the size
-        unscaled_from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
-        unscaled_to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
+        var unscaled_from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
+        var unscaled_to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
+
+        // offset translate
+        unscaled_from_pos.x += translate.x;
+        unscaled_from_pos.y += translate.y;
+        unscaled_to_pos.x += translate.x
+        unscaled_to_pos.y += translate.y
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
         // the curves back
         var size = canvas.getSize();
-        width = size.x;
-        height = size.y;
+        var width = size.x;
+        var height = size.y;
 
-        from_pos = {
+        var from_pos = {
             x: (unscaled_from_pos.x - width/2) * scale + width/2,
             y: (unscaled_from_pos.y - height/2) * scale + height/2,
         }
 
 
 
-        to_pos = {
+        var to_pos = {
             x: (unscaled_to_pos.x - width/2) * scale + width/2,
             y: (unscaled_to_pos.y - height/2) * scale + height/2,
         }
 
+
+        // don't bother drawing if it is outside the drawing site
+        var from_region = spt.pipeline.get_point_region(from_pos, size);
+        var to_region = spt.pipeline.get_point_region(to_pos, size);
+
+        var draw = false;
+        if (from_region == 0 || to_region == 0) {
+            draw = true;
+        }
+        else if (from_region == 4 && to_region == 8) {
+            draw = true;
+        }
+        else if (from_region == 8 && to_region == 4) {
+            draw = true;
+        }
+        else if (from_region == 2 && to_region == 6) {
+            draw = true;
+        }
+        else if (from_region == 6 && to_region == 2) {
+            draw = true;
+        }
+
+
+        if (!draw) return;
+
+
+/*
+        // Use more sophisticated algorithm above
+        from_pos_inside = false;
+        to_pos_inside = false;
+        if (from_pos.x > 0 && from_pos.y > 0 && from_pos.x < width && from_pos.y < height) {
+            from_pos_inside = true;
+        }
+        if (to_pos.x > 0 && to_pos.y > 0 && to_pos.x < width && to_pos.y < height) {
+            to_pos_inside = true;
+        }
+
+        if (! from_pos_inside &&  ! to_pos_inside) {
+            return;
+        }
+*/
+
+
         var data = spt.pipeline.get_data();
-        if (data.line_mode == 'curved_edge') {
+
+        var line_mode = this.line_mode;
+        if (!line_mode) {
+            line_mode = data.line_mode;
+        }
+
+
+        if (line_mode == 'curved_edge') {
             spt.pipeline.draw_curved_edge_line(from_pos, to_pos, this.color);
         } else {
             spt.pipeline.draw_connector(from_pos, to_pos, this.color);
@@ -5010,7 +5239,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
-        //var scale = 1;
+        var translate = spt.pipeline.get_translate();
         var from_width = from_size.x;
         var from_height = from_size.y;
         var to_width = to_size.x;
@@ -5019,6 +5248,11 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // offset by the midpoint
         from_pos = {x: from_pos.x + from_width/2, y: from_pos.y + from_height/2 };
         to_pos = {x: to_pos.x + to_width/2, y: to_pos.y + to_height/2 };
+
+        from_pos.x += translate.x;
+        from_pos.y += translate.y;
+        to_pos.x += translate.x;
+        to_pos.y += translate.y;
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -5285,6 +5519,10 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         log.warning('Pipeline [' + pipeline_code + ']  does not exist');
         return;
     }
+
+    // reset the scale
+    spt.pipeline.set_scale(1);
+    spt.pipeline.set_translate(0,0);
 
 
     // get all of the processes associated with this pipeline
@@ -5609,6 +5847,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var name = xml_nodes[i].getAttribute("name");
         var xpos = xml_nodes[i].getAttribute("xpos");
         var ypos = xml_nodes[i].getAttribute("ypos");
+        var color = xml_nodes[i].getAttribute("color");
         if (!xpos || xpos == "0") {
             xpos = offset_left + 150*i;
         }
@@ -5637,6 +5876,11 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         //name = name_parts[name_parts.length-1];
 
         var node = spt.pipeline.add_node(name, xpos, ypos, options);
+
+        if (color) {
+            spt.pipeline.set_color(node, color);
+        }
+
 
         // add the attributes
         var attributes = xml_nodes[i].attributes;
@@ -5827,15 +6071,6 @@ spt.pipeline.set_status_color = function(search_key) {
 
     var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
-    /*
-    //var colors = server.get_task_status_colors();
-    var colors = {
-        'In Progress': 'rgb(0,0,255)',
-        Pending: 'rgb(255,255,0)',
-        Complete: 'rgb(0,255,0)',
-    }
-    */
-
     var colors = server.get_task_status_colors();
     var default_color = 'rgb(128,128,128)';
 
@@ -6006,7 +6241,7 @@ spt.pipeline.export_group = function(group_name) {
 
             if (!properties.hasOwnProperty(key))
                 continue;
-            if (['name', 'xpos', 'ypos', 'type', 'names', 'namedItem', 'item', 'kwargs'].contains(key)) {
+            if (['name', 'xpos', 'ypos', 'type', 'names', 'namedItem', 'item', 'kwargs', 'node'].contains(key)) {
                 continue;
             }
 
