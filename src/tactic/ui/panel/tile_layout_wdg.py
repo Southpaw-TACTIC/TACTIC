@@ -932,7 +932,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             format_context = True
         else:
             format_context = True
-        print format_context
 
         if self.upload_mode in ['drop','both']:
             layout_wdg.add_behavior( {
