@@ -7184,7 +7184,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             td = table.add_cell('Task Status Workflow')
             td.add_attr("title", "The task status workflow determines all of the statuses that occur within this process")
 
-            text_name = "spt_property_task_pipeline"
+            text_name = "task_pipeline"
             select = SelectWdg(text_name)
 
             
@@ -7387,7 +7387,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         return {
             "spt_property_group": self.workflow.get("spt_property_group"),
             "spt_property_completion": self.workflow.get("spt_property_completion"),
-            "spt_property_task_status_pipeline": self.workflow.get("spt_property_task_status_pipeline"),
+            "task_pipeline": self.workflow.get("task_pipeline"),
             "assigned_group": self.workflow.get("assigned_group"),
             "supervisor_group": self.workflow.get("supervisor_group"),
             "spt_property_duration": self.workflow.get("spt_property_duration"),
@@ -7731,7 +7731,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
         {   
             "type": "sobject",
             "group_level": 2,
-            "expression": "@SEARCH(sthpw/pipeline['category', 'in', 'NULL|Uncategorized']['@ORDER_BY','timestamp desc']['project_code', '%s'])" % (project_code)
+            "expression": "@SEARCH(sthpw/pipeline['begin']['category', 'is', 'NULL']['category', 'Uncategorized']['or']['@ORDER_BY','timestamp desc']['project_code', '%s'])" % (project_code)
         }]
 
 
