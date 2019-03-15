@@ -2583,12 +2583,12 @@ spt.pipeline = spt.pipeline || {};
 spt.pipeline.info_node;
 
 spt.pipeline.set_info_node = function(node) {
-    spt.pipeline.info_node = node;
+    spt.pipeline.top.info_node = node;
 }
 
 
 spt.pipeline.get_info_node = function() {
-    return spt.pipeline.info_node;
+    return spt.pipeline.top.info_node;
 }
 
 
