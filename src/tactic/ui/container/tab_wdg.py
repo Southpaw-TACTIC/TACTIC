@@ -1351,7 +1351,6 @@ spt.tab.close = function(src_el) {
 
                     for node in nodes:
                         node_name = Xml.get_attribute(node, "name")
-                        print node_name, "AY!"
                         if node_name not in curr_node_names:
                             Xml.append_child(xml_tab, node)
 

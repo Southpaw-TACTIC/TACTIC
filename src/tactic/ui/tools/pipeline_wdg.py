@@ -5309,9 +5309,7 @@ class ProcessInfoCmd(Command):
 
     def set_description(self, process_sobj):
         description = self.kwargs.get("description")
-        print "description: {", description, "}"
         if description or description == "":
-            print "ooook"
             process_sobj.set_value("description", description)
 
 
