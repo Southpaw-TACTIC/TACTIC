@@ -114,8 +114,14 @@ class SearchWdg(BaseRefreshWdg):
 
 
     def get_default_filter_config(self):
-        custom_filter_view = self.kwargs.get('custom_filter_view')
+        default_filter_view = self.kwargs.get("default_filter_view")
+        if default_filter_view:
+            config_view = WidgetConfigView.get_by_search_type(self.search_type, view=default_filter_view)
+            return config_view 
 
+        
+        
+        custom_filter_view = self.kwargs.get('custom_filter_view')
         if not custom_filter_view:
             custom_filter_view=''
 
@@ -219,6 +225,8 @@ class SearchWdg(BaseRefreshWdg):
 
         config = ''.join(config)
 
+        
+        
         config_xml = Xml()
         config_xml.read_string(config)
         config = WidgetConfig.get(xml=config_xml, view='filter')
@@ -272,6 +280,8 @@ class SearchWdg(BaseRefreshWdg):
 
         # see if a filter is explicitly passed in
         filter = self.kwargs.get('filter')
+        print "FILTER: ", filter
+        
         self.limit = self.kwargs.get('limit')
         self.run_search_bvr = self.kwargs.get('run_search_bvr')
 
@@ -368,6 +378,7 @@ class SearchWdg(BaseRefreshWdg):
             else:
                 if self.use_last_search: 
                     self.set_filter_data(self.search_type, self.view)
+        
         if not self.config:
             # get the approprate filter definition
             self.config = self.get_default_filter_config()
