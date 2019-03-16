@@ -254,6 +254,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+    def has_config(self):
+        return True
+
+
 
 
     def get_layout_version(self):
@@ -5669,6 +5673,23 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     
     var changed = old_value != new_value;
 
+
+
+    // store updates globally as an undo queue
+    var layout = spt.table.get_layout();
+    var layout_top = layout.getParent(".spt_layout_top");
+    var undo_queue  = layout_top.undo_queue;
+    if (!undo_queue) {
+        undo_queue = [];
+        layout_top.undo_queue = undo_queue;
+    }
+
+    // empty the redo queue
+    layout_top.redo_queue = [];
+    
+
+
+
     if (!ignore_multi && selected_rows.length > 0 && changed && in_selected_row) {
         // get all of the cells with the same element_name
         var index = spt.table.get_column_index_by_cell(edited_cell);
@@ -5678,6 +5699,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
             var old_html = cell.innerHTML;
            
             var undo = spt.table._accept_single_edit(cell, new_value);
+            undo_queue.push(undo);
 
             if (set_display) {
                 cell.innerHTML = "";
@@ -5694,7 +5716,16 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
     }
     else {
-        var undo = spt.table._accept_single_edit(edited_cell, new_value);
+        var undo = kwargs.undo;
+        if (!undo) {
+            undo = {};
+        }
+
+        var undo = spt.table._accept_single_edit(edited_cell, new_value, undo);
+        if (undo) {
+            undo_queue.push(undo);
+        }
+
 
         if (set_display) {
             edited_cell.innerHTML = "";
@@ -5709,6 +5740,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         }
 
         if (undo) {
+            undo.cell = edited_cell;
             undo.old_html = edited_cell.html;
             undo.new_html = edited_cell.innerHTML;
         }
@@ -5814,7 +5846,7 @@ spt.table.set_changed_color = function(row, cell) {
     }
 }
 
-spt.table._accept_single_edit = function(cell, new_value) {
+spt.table._accept_single_edit = function(cell, new_value, undo) {
     var old_value = cell.getAttribute("spt_input_value");
 
     if (old_value != new_value) {
@@ -5829,32 +5861,22 @@ spt.table._accept_single_edit = function(cell, new_value) {
         // set the new_value
         cell.setAttribute("spt_input_value", new_value);
 
-        // store updates globally as an undo queue
-        var layout = spt.table.get_layout();
-        var layout_top = layout.getParent(".spt_layout_top");
-        var undo_queue  = layout_top.undo_queue;
-        if (!undo_queue) {
-            undo_queue = [];
-            layout_top.undo_queue = undo_queue;
-        }
 
         var row = spt.table.get_row_by_cell(cell);
         var search_key = row.getAttribute("spt_search_key_v2");
         var element_name = spt.table.get_element_name_by_cell(cell);
-        var undo = {
-            cell: cell,
-            old_value: old_value,
-            new_value: new_value,
-            search_key: search_key,
-            element_name: element_name,
-            cbjs_action: null,
+
+        if (!undo) {
+            undo = {};
         }
-        undo_queue.push(undo);
 
-        // empty the redo queue
-        layout_top.redo_queue = [];
-        
-
+         
+        undo.cell = cell;
+        undo.old_value = old_value;
+        undo.new_value = new_value;
+        undo.search_key = search_key;
+        undo.element_name = element_name;
+        undo.cbjs_action = null;
 
 
         var row = cell.getParent(".spt_table_row");
@@ -5944,9 +5966,8 @@ spt.table.undo_last = function() {
     redo_queue.push(last_undo);
 
 
-
     var undo_type = last_undo.type;
-    if (undo_type) {
+    if (undo_type && last_undo.undo) {
         last_undo.undo();
         return;
     }
@@ -6143,8 +6164,8 @@ spt.table.save_changes = function(kwargs) {
 
 
     // collapse updates from undo_queue for be classified by search_type
-    var use_undo_queue = true;
-    //var use_undo_queue = false;
+    //var use_undo_queue = true;
+    var use_undo_queue = false;
 
     if (use_undo_queue) {
 
@@ -6180,10 +6201,6 @@ spt.table.save_changes = function(kwargs) {
 
 
         }
-        console.log("---");
-        console.log(updates);
-        console.log(extra_updates);
-        console.log("---");
 
         // break into two lists as required by save command
         var update_data = [];
@@ -6619,7 +6636,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
           'args': kwargs,
           'cbjs_action': function(widget_html) {
             //spt.behavior.replace_inner_html(hidden_row, widget_html);
-            //spt.app_busy.show("Replacing changed rows ...");
 
             var dummy = document.createElement("div");
             // behaviors are only process when in the actual dom
@@ -6629,6 +6645,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
             }
+
+
 
             var new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
@@ -6651,6 +6669,22 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
  
             }
+
+
+            var header_table = spt.table.get_header_table();
+            var header_row = header_table.getElement(".spt_table_header_row");
+            var headers = header_row.getElements(".spt_table_header");
+
+            var row = spt.table.get_first_row();
+            var cells = row.getElements(".spt_cell_edit");
+
+            // set the row widths to that of the header
+            for (var i = 0; i < cells.length; i++) {
+                var width = headers[i].getStyle("width");
+                cells[i].setStyle("width", width);
+            }
+
+
             
             // for efficiency, we do not redraw the whole table to calculate the
             // bottom so just change the bg color
@@ -6668,7 +6702,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 on_complete();
             }
             
-            spt.app_busy.hide();
 
             
           }
@@ -7411,6 +7444,22 @@ spt.table.get_column_widths = function() {
 
 
 
+// aligne the column widths between the header and the first row
+spt.table.align_column_widths = function() {
+    var header_table = spt.table.get_header_table();
+    var header_row = header_table.getElement(".spt_table_header_row");
+    var headers = header_row.getElements(".spt_table_header");
+
+    var row = spt.table.get_first_row();
+    var cells = row.getElements(".spt_cell_edit");
+
+    // set the row widths to that of the header
+    for (var i = 0; i < cells.length; i++) {
+        var width = headers[i].getStyle("width");
+        cells[i].setStyle("width", width);
+    }
+}
+
 spt.table.expand_table = function(mode) {
 
     if (!mode) {
@@ -7981,6 +8030,7 @@ spt.table.delete_rows = function(rows, args) {
         on_post_delete = function() {
             var on_complete = function(id) {
                 spt.behavior.destroy_element(document.id(id));
+                spt.table.align_column_widths();
             }
             for (var i = 0; i < rows.length; i++) {
                 var row = rows[i];
@@ -7990,6 +8040,9 @@ spt.table.delete_rows = function(rows, args) {
                 }
                 Effects.fade_out(row, 500, on_complete);
             }
+
+            spt.table.align_column_widths();
+
         }
     }
 
@@ -8096,6 +8149,8 @@ spt.table.operate_selected = function(action)
         }
 
         server.finish()
+
+        spt.table.align_column_widths();
 
         if( ! aborted ) {
             if( show_retired ) {

@@ -400,13 +400,63 @@ class Pipeline(SObject):
             if not version:
                 version = 0
 
+
         # clone the latest
         extra_data = {
             "version": version+1,
             "parent_code": pipeline_code
         }
-        pipeline2 = self.clone(related_types=["config/process"], extra_data=extra_data)
-        return pipeline2
+
+
+        # clone the pipeline
+        new_pipeline = self.clone(related_types=["config/process"], extra_data=extra_data)
+
+
+        process_sobjs = self.get_related_sobjects("config/process")
+        process_codes = [x.get_code() for x in process_sobjs]
+        process_sobjs = sorted(process_sobjs, key=lambda k: k.get("sort_order"))
+
+        new_process_sobjs = new_pipeline.get_related_sobjects("config/process")
+        new_process_codes = [x.get_code() for x in new_process_sobjs]
+        new_process_sobjs = sorted(new_process_sobjs, key=lambda k: k.get("sort_order"))
+
+        process_dict = {}
+        for process_sobj in process_sobjs:
+            code = process_sobj.get_value("code")
+            process_dict[code] = process_sobj
+
+        new_process_dict = {}
+        for new_process_sobj in new_process_sobjs:
+            code = new_process_sobj.get_value("code")
+            new_process_dict[code] = new_process_sobj
+
+
+        # bulk get and copy the triggers
+        search = Search("config/trigger")
+        search.add_filters("process", process_codes)
+        triggers = search.get_sobjects()
+
+        for trigger in triggers:
+            new_trigger = trigger.clone()
+
+            # find the process for this trigger
+            process_code = trigger.get_value("process")
+            process_sobj = process_dict.get(process_code)
+
+            process_index = process_sobjs.index(process_sobj)
+
+            # find the correspondig new process
+            new_process_sobj = new_process_sobjs[process_index]
+
+            new_trigger.set_value("process", new_process_sobj.get_code() )
+            new_trigger.commit()
+
+            # TODO: add custom scripts here as well
+
+
+
+
+        return new_pipeline
 
 
 

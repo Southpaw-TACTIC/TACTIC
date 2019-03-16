@@ -5609,6 +5609,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         var name = xml_nodes[i].getAttribute("name");
         var xpos = xml_nodes[i].getAttribute("xpos");
         var ypos = xml_nodes[i].getAttribute("ypos");
+        var color = xml_nodes[i].getAttribute("color");
         if (!xpos || xpos == "0") {
             xpos = offset_left + 150*i;
         }
@@ -5637,6 +5638,11 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         //name = name_parts[name_parts.length-1];
 
         var node = spt.pipeline.add_node(name, xpos, ypos, options);
+
+        if (color) {
+            spt.pipeline.set_color(node, color);
+        }
+
 
         // add the attributes
         var attributes = xml_nodes[i].attributes;

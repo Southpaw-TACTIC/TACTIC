@@ -1106,6 +1106,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             tasks = []
 
 
+        processes = self.kwargs.get("processes")
+        if isinstance(processes, basestring):
+            processes = processes.split(",")
+
+
         # get the pipeline
         if not pipeline_code:
             pipeline_code = self.get_pipeline_code()
@@ -1115,8 +1120,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         else:
             pipeline = None
 
-        if pipeline:
-            processes = pipeline.get_process_names()
+        if pipeline or processes:
+            if not processes:
+                processes = pipeline.get_process_names()
 
             supprocess = self.kwargs.get("parent_process")
             if supprocess:
@@ -3145,9 +3151,13 @@ class TaskSummaryElementWdg(TaskElementWdg):
             title_div = DivWdg()
             title_div.add(title)
             title_div.add_style("max-height: 30px")
+            title_div.add_style("max-width: 50px")
+            title_div.add_style("min-width: 50px")
             title_div.add_style("margin-bottom: 3px")
             #title_div.add_style("height: 25px")
             title_div.add_style("overflow: hidden")
+            title_div.add_style("white-space: nowrap")
+            title_div.add_style("text-overflow: ellipsis")
 
             td.add(title_div)
             td.add_style("text-align: center")
