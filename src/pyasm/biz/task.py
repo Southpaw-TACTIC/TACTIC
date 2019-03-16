@@ -113,7 +113,7 @@ OTHER_COLORS = {
     "Canceled": "#DDDDDD",
     "On Hold":  "#a96ccf",
     "Archived": "#DDDDDD",
-    "Not Required": "#DDDDDD",
+    "Not Required": "#DDDDDD"
 }
 
 
