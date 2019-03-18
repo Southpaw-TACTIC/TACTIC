@@ -107,9 +107,8 @@ class WatchFolderFileActionThread(threading.Thread):
 
 
 
-    def clean_up(self, paths, where="default"):
+    def clean_up(self, paths):
         task = self.kwargs.get("task")
-        print "-----CLEANUP PATHS---", len(paths), where
         for path in paths:
 
             process_path = path
@@ -117,25 +116,27 @@ class WatchFolderFileActionThread(threading.Thread):
             error_path = path.replace(".tactic/process", ".tactic/error")
 
             # remove the verify path
-            if os.path.exists(verify_path):
-                os.unlink(verify_path)
+            while os.path.exists(verify_path):
+                try:
+                    os.unlink(verify_path)
+                except Exception as e:
+                    time.sleep(1)
+                    print("Error: %s removing from verify" % e)
 
             # move the process path back to the queue
             queue_path = path.replace("/.tactic/process", "")
-            shutil.move(process_path, queue_path)
-            # while not os.path.exists(queue_path):
-            #     try:
-            #         shutil.move(process_path, queue_path)
-            #     except Exception as e:
-            #         print("Error: %s moving from process to queue" % e)
 
-            print "---CLEANUP_COMPLETE---", path
+            while not os.path.exists(queue_path):
+                try:
+                    shutil.move(process_path, queue_path)
+                except Exception as e:
+                    time.sleep(1)
+                    print("Error: %s moving from process to queue" % e)
 
         # this exaggerates the effect of not pausing check thread for cleaning
         #time.sleep(10)
         #Common.kill()
         #task.set_restart(True)
-        print "---------CLEANUP_DONE-----"
         return
 
 
@@ -149,30 +150,11 @@ class WatchFolderFileActionThread(threading.Thread):
 
         while True:
 
-            print "------------WatchFolderFileActionThread: ", paths
-
             if task.in_restart():
                 break
             
             if not paths:
                 time.sleep(1)
-
-                #print task.is_alive():
-
-                # filtered = []
-                # for item in os.listdir(task.base_dir):
-                #     if item.startswith("TACTIC_log"):
-                #         continue
-                #     if item.startswith(".tactic"):
-                #         continue
-                #     base, ext = os.path.splitext(item)
-                #     if ext in ['.lock', '.error', '.checkin']:
-                #         continue
-                #     filtered.append(item)
-                # if filtered:
-                #     time.sleep(20)
-                #     if not paths:
-                #         task.set_restart(True)
                 continue
 
             path = paths.pop(0)
@@ -188,9 +170,7 @@ class WatchFolderFileActionThread(threading.Thread):
             error_path = path.replace(".tactic/process", ".tactic/error")
 
             if not os.path.exists(path):
-                print "ERROR: path [%s] does not exist 123"
-                #self.clean_up([path], "here")
-                #paths.remove(path)
+                print "ERROR: path [%s] does not exist"
                 task.set_restart(True)
                 break
 
@@ -236,14 +216,16 @@ class WatchFolderFileActionThread(threading.Thread):
                 if os.path.exists(process_path):
                     os.unlink(process_path)
 
-                if os.path.exists(verify_path):
-                    os.unlink(verify_path)
+                while os.path.exists(verify_path):
+                    try:
+                        os.unlink(verify_path)
+                    except Exception as e:
+                        time.sleep(1)
+                        print("Error: %s removing from verify" % e)
 
 
             except Exception as e:
                 print("Error: %s" % e)
-                # self.clean_up([path])
-                # task.set_restart(True)
 
                 # These operation cannot fail as is should not further
                 # processing
@@ -260,9 +242,12 @@ class WatchFolderFileActionThread(threading.Thread):
                         f.write("ERROR: %s" % e)
                         f.close()
 
-
-                    if os.path.exists(verify_path):
-                        os.unlink(verify_path)
+                    while os.path.exists(verify_path):
+                        try:
+                            os.unlink(verify_path)
+                        except Exception as e:
+                            time.sleep(1)
+                            print("Error: %s removing from verify" % e)
 
                 except Exception as e:
                     print("WARNING: %s" % e)
@@ -279,7 +264,7 @@ class WatchFolderFileActionThread(threading.Thread):
 
         # restart every 20 check-ins
         if restart:
-            self.clean_up(paths, "reset")
+            self.clean_up(paths)
             task.set_restart(True)
 
 
@@ -323,9 +308,12 @@ class WatchFolderCheckFileThread(threading.Thread):
         # add the path to the queue
         task.add_path(self.process_path)
 
-        if os.path.exists(self.verify_path):
-            os.unlink(self.verify_path)
-
+        while os.path.exists(self.verify_path):
+            try:
+                os.unlink(self.verify_path)
+            except Exception as e:
+                time.sleep(1)
+                print("Error: %s removing from verify" % e)
 
 
     def verify_file_size(self, file_path):
@@ -712,7 +700,6 @@ Base directory: %s
 
         base_dir = self.base_dir
 
-        print "-------WatchDropFolderTask: ", base_dir
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
 
