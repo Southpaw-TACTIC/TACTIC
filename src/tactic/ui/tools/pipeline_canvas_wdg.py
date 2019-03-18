@@ -48,6 +48,11 @@ class BaseNodeWdg(BaseRefreshWdg):
     def get_height(self):
         return 40
 
+
+    def style_label(self, label):
+        return
+
+
     def get_label_width(self):
         return
 
@@ -1583,6 +1588,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         td.add_style("text-align: center")
         label.add_style("overflow: hidden")
 
+        custom_wdg.style_label(label)
+
 
         text = TextWdg()
         node.add(text)
@@ -2901,155 +2908,155 @@ spt.pipeline.undo_remove_connectors = []
 
 spt.pipeline._add_node = function(name,x, y, kwargs){
 
-	var top = spt.pipeline.top;
-	var canvas = spt.pipeline.get_canvas();
+    var top = spt.pipeline.top;
+    var canvas = spt.pipeline.get_canvas();
 
-	var group = null;
-	var select_node = true;
-	var node_type = null;
-	if (typeof(kwargs) != 'undefined') {
-		group = kwargs.group;
-		if (kwargs.select_node != 'undefined')
-			select_node = kwargs.select_node;
-		node_type = kwargs.node_type;
-	}
-	else {
-		kwargs = {};
-	}
+    var group = null;
+    var select_node = true;
+    var node_type = null;
+    if (typeof(kwargs) != 'undefined') {
+            group = kwargs.group;
+            if (kwargs.select_node != 'undefined')
+                    select_node = kwargs.select_node;
+            node_type = kwargs.node_type;
+    }
+    else {
+            kwargs = {};
+    }
 
-	if (!node_type) {
-		var default_node_type = top.getAttribute("spt_default_node_type");
-		if (default_node_type) {
-			node_type = default_node_type;
-		}
-		else {
-			node_type = "node";
-		}
-	}
+    if (!node_type) {
+            var default_node_type = top.getAttribute("spt_default_node_type");
+            if (default_node_type) {
+                    node_type = default_node_type;
+            }
+            else {
+                    node_type = "node";
+            }
+    }
 
-	if (typeof(group) == 'undefined' || group == null) {
-		group = spt.pipeline.get_current_group();
+    if (typeof(group) == 'undefined' || group == null) {
+            group = spt.pipeline.get_current_group();
 
-	}
-
-
-	var group_info = spt.pipeline.get_group(group);
-	if (group_info == null) {
-		group_info = spt.pipeline.add_group(group);
-	}
-
-	var nodes = spt.pipeline.get_all_nodes();
-	if (typeof(name) == 'undefined' || name == null) {
-		name = "node"+nodes.length;
-	}
-
-	if (typeof(x) == 'undefined' || x == null) {
-		var size = canvas.getSize();
-		x = size.x/3 + nodes.length*15;
-		y = size.y/3 + nodes.length*10;
-	}
-
-	var template_container = top.getElement(".spt_pipeline_template");
-
-	var template_class = "spt_pipeline_" + node_type;
-	var template = template_container.getElement("."+template_class);
-	var is_unknown = false;
-	if (!template) {
-		var template_class = "spt_pipeline_unknown";
-		template = template_container.getElement("."+template_class);
-		is_unknown = true;
-	}
+    }
 
 
-	var new_node = spt.behavior.clone(template);
-	if (is_unknown) {
-		// change it from "unknown"
-		new_node.setAttribute("spt_node_type", node_type);
-	}
-	new_node.spt_node_type = node_type;
+    var group_info = spt.pipeline.get_group(group);
+    if (group_info == null) {
+            group_info = spt.pipeline.add_group(group);
+    }
+
+    var nodes = spt.pipeline.get_all_nodes();
+    if (typeof(name) == 'undefined' || name == null) {
+            name = "node"+nodes.length;
+    }
+
+    if (typeof(x) == 'undefined' || x == null) {
+            var size = canvas.getSize();
+            x = size.x/3 + nodes.length*15;
+            y = size.y/3 + nodes.length*10;
+    }
+
+    var template_container = top.getElement(".spt_pipeline_template");
+
+    var template_class = "spt_pipeline_" + node_type;
+    var template = template_container.getElement("."+template_class);
+    var is_unknown = false;
+    if (!template) {
+            var template_class = "spt_pipeline_unknown";
+            template = template_container.getElement("."+template_class);
+            is_unknown = true;
+    }
 
 
-	canvas.appendChild(new_node);
-
-	// make the label the last part
-	var label_parts = name.split("/");
-	var label_str = label_parts[label_parts.length-1];
-
-	var label = new_node.getElement(".spt_label");
-	var input = new_node.getElement(".spt_input");
-	if (label) {
-		label.innerHTML = label_str;
-	}
-	if (input) {
-		input.value = label_str;
-	}
-	new_node.setAttribute("spt_element_name", name);
-	new_node.spt_name = name;
-	new_node.setAttribute("title", name);
+    var new_node = spt.behavior.clone(template);
+    if (is_unknown) {
+            // change it from "unknown"
+            new_node.setAttribute("spt_node_type", node_type);
+    }
+    new_node.spt_node_type = node_type;
 
 
-	// set any properties that might exist
-	new_node.properties = kwargs.properties || {};
+    canvas.appendChild(new_node);
+
+    // make the label the last part
+    var label_parts = name.split("/");
+    var label_str = label_parts[label_parts.length-1];
+
+    var label = new_node.getElement(".spt_label");
+    var input = new_node.getElement(".spt_input");
+    if (label) {
+            label.innerHTML = label_str;
+    }
+    if (input) {
+            input.value = label_str;
+    }
+    new_node.setAttribute("spt_element_name", name);
+    new_node.spt_name = name;
+    new_node.setAttribute("title", name);
+
+
+    // set any properties that might exist
+    new_node.properties = kwargs.properties || {};
     new_node[node_type] = { description: kwargs.description || "" };
 
 
-	// add to a group
-	group_info.add_node(new_node);
+    // add to a group
+    group_info.add_node(new_node);
 
 
-	// switch the color
-	//var color = group_info.get_color();
-	var color = '';
-	/*
-	if (node_type == "trigger") {
-		color = "#FFF";
-	}
-	else if (node_type == "approval") {
-		color = "#FFF";
-	}
-	*/
-	if (group_info.get_node_type() == 'process')
-		color = spt.pipeline.get_group_color(group);
-	else // for schema
-		color = spt.pipeline.get_group_color(name);
+    // switch the color
+    //var color = group_info.get_color();
+    var color = '';
+    /*
+    if (node_type == "trigger") {
+            color = "#FFF";
+    }
+    else if (node_type == "approval") {
+            color = "#FFF";
+    }
+    */
+    if (group_info.get_node_type() == 'process')
+            color = spt.pipeline.get_group_color(group);
+    else // for schema
+            color = spt.pipeline.get_group_color(name);
 
-	if (is_unknown) {
-		color = "#C00";
-	}
+    if (is_unknown) {
+            color = "#C00";
+    }
 
-	spt.pipeline.set_color(new_node, color)
-	new_node.color = color;
+    spt.pipeline.set_color(new_node, color)
+    new_node.color = color;
 
-	// position the node on the canvas
-	if (x == 0 && y == 0) {
-		var nodes = spt.pipeline.get_all_nodes();
-		var num_nodes = nodes.length;
-		x = num_nodes * 120 + 50;
-		y = num_nodes * 0 + 50;
-	}
-
-
-	spt.pipeline.move_to(new_node, x, y);
+    // position the node on the canvas
+    if (x == 0 && y == 0) {
+            var nodes = spt.pipeline.get_all_nodes();
+            var num_nodes = nodes.length;
+            x = num_nodes * 120 + 50;
+            y = num_nodes * 0 + 50;
+    }
 
 
-	// select the node
-	if (select_node)
-		spt.pipeline.select_single_node(new_node);
-
-	// fire an event
-	if (kwargs.new != false) {
-		var top = bvr.src_el.getParent(".spt_pipeline_top");
-		var event_name = top.getAttribute("id") + "|node_create";
-		spt.named_events.fire_event(event_name, { src_el: new_node } );
-	}
-
-	var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-	if (editor_top) {
-		editor_top.addClass("spt_has_changes");
-	}
+    spt.pipeline.move_to(new_node, x, y);
 
 
-	return new_node;
+    // select the node
+    if (select_node)
+            spt.pipeline.select_single_node(new_node);
+
+    // fire an event
+    if (kwargs.new != false) {
+            var top = bvr.src_el.getParent(".spt_pipeline_top");
+            var event_name = top.getAttribute("id") + "|node_create";
+            spt.named_events.fire_event(event_name, { src_el: new_node } );
+    }
+
+    var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+    if (editor_top) {
+            editor_top.addClass("spt_has_changes");
+    }
+
+
+    return new_node;
 }
 
 spt.pipeline.add_node = function(name, x, y, kwargs) {
@@ -3406,7 +3413,7 @@ spt.pipeline.get_group_color = function(group_name) {
     var data = spt.pipeline.get_data();
     var color = data.colors[group_name];
     if (typeof(color) == 'undefined') {
-        color = '#999';
+        color = '#BBB';
     }
     return color;
 }

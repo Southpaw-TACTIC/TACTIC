@@ -852,13 +852,18 @@ class Pipeline(SObject):
             return {}
 
 
-    def get_process_names(self,recurse=False, type=None):
+    def get_process_names(self, recurse=False, type=None, exclude=[]):
         '''returns all the Process names in this pipeline'''
 
         if type and isinstance(type, basestring):
-            types = [type]
+            types = type.split(",")
         else:
             types = type
+
+
+        if exclude and isinstance(exclude, basestring):
+            exclude = exclude.split(",")
+
 
         processes = self.get_processes(recurse, type=types)
         if recurse:
@@ -866,6 +871,10 @@ class Pipeline(SObject):
             for process in processes:
                 if types and process.get_type() not in types:
                     continue
+
+                if exclude and process.get_type() in exclude:
+                    continue
+
 
                 if process.is_from_sub_pipeline():
                     process_names.append(process.get_full_name()) 
