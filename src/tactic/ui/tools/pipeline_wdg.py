@@ -2856,8 +2856,13 @@ class DefaultInfoWdg(BaseInfoWdg):
                 'kwargs': self.kwargs,
                 #'search_key': process_sobj.get_search_key(),
                 'cbjs_action': '''
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
                 var class_name = "tactic.ui.tools.PipelinePropertyWdg";
                 var popup = spt.panel.load_popup("Task Setup", class_name, bvr.kwargs);
+                popup.activator = bvr.src_el;
+
                 var nodes = spt.pipeline.get_selected_nodes();
                 var node = nodes[0];
                 //spt.pipeline_properties.show_properties2(popup, node);
@@ -4350,15 +4355,16 @@ class ApprovalInfoWdg(BaseInfoWdg):
                 'process': process,
                 'search_key': process_key,
                 'cbjs_action': '''
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
                 var class_name = "tactic.ui.tools.PipelinePropertyWdg";
                 var kwargs = {
                     pipeline_code: bvr.pipeline_code,
                     process: bvr.process
                 }
                 var popup = spt.panel.load_popup("Task Setup", class_name, kwargs);
-
-                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+                popup.activator = bvr.src_el;
 
                 var nodes = spt.pipeline.get_selected_nodes();
                 var node = nodes[0];
@@ -7072,9 +7078,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
                 return new_kwargs;
             }
 
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
             var node = spt.pipeline.get_info_node();
             spt.pipeline.add_node_on_save(node, "pipeline_property", on_save);
             '''
@@ -7434,9 +7437,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             'type': 'load',
             'arg_name': arg_name,
             'cbjs_action': '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
@@ -7444,17 +7444,11 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         if input_type == "radio":
             load_behavior['cbjs_action'] = '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         elif input_type == "checkbox":
             load_behavior['cbjs_action'] = '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
@@ -7467,7 +7461,9 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             'top_class': top_class,
             'arg_name': arg_name,
             'cbjs_action': '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var activator = popup.activator;
+            var toolTop = activator.getParent(".spt_pipeline_tool_top");
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
             var top = bvr.src_el.getParent("."+bvr.top_class);
@@ -7489,7 +7485,9 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         elif input_type == "checkbox":
             change_behavior['type'] = 'change'
             change_behavior['cbjs_action'] = '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var activator = popup.activator;
+            var toolTop = activator.getParent(".spt_pipeline_tool_top");
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
             var top = bvr.src_el.getParent("."+bvr.top_class);
