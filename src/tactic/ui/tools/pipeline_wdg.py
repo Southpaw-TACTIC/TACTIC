@@ -2388,10 +2388,16 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
     def get_description_wdg(self):
+
+        process_sobj = self.process_sobj
+        description = process_sobj.get_value("description")
+
         desc_div = DivWdg()
         desc_div.add_style("margin: 20px 10px")
         desc_div.add("<div><b>Details:</b></div>")
         text = TextAreaWdg()
+        if description:
+            text.set_value(description)
         desc_div.add(text)
         text.add_style("width: 100%")
         text.add_style("height: 60px")
@@ -5309,14 +5315,39 @@ class ProcessInfoCmd(Command):
 
         # Get custom save cmd via node_type
         from pyasm.command import CustomProcessConfig
-        cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
-        return cmd.execute()
+        try:
+            cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+            return cmd.execute()
+        except Exception as e:
+            return self.handle_default()
 
 
     def set_description(self, process_sobj):
         description = self.kwargs.get("description")
         if description or description == "":
             process_sobj.set_value("description", description)
+
+
+    def handle_default(self):
+
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+        description = self.kwargs.get("description")
+        if not description:
+            return
+
+        process_sobj.set_value("description", description)
+
+        process_sobj.commit()
+
+
 
 
     def handle_manual(self):

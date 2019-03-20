@@ -381,18 +381,23 @@ class WidgetConfig(Base):
                     value = value.replace("&amp;", "&")
                 values[name] = value
                  
-        elif has_config or handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg', 'tactic.ui.container.ContentBoxWdg']:
+        elif has_config or handler in ['tactic.ui.container.TabWdg', 'tactic.ui.panel.EditWdg', 'tactic.ui.container.ContentBoxWdg', 'tactic.ui.panel.TableLayoutWdg']:
             children = self.xml.get_children(node)
             values = {}
+            if handler == 'tactic.ui.panel.TableLayoutWdg':
+                view = 'table'
+            else:
+                view = 'tab'
+
             for child in children:
                 name = self.xml.get_node_name(child)
                 if name == 'config':
                     value = self.xml.to_string(child)
                     if handler.endswith(".EditWdg"):
-                        value = value.replace("<config>", "<config><tab layout='%s'>" % handler)
+                        value = value.replace("<config>", "<config><%s layout='%s'>" % (view,handler))
                     else:
-                        value = value.replace("<config>", "<config><tab>")
-                    value = value.replace("</config>", "</tab></config>")
+                        value = value.replace("<config>", "<config><%s>" % view)
+                    value = value.replace("</config>", "</%s></config>" % view)
                     value = value.strip()
                     name = 'config_xml'
 
@@ -456,7 +461,6 @@ class WidgetConfig(Base):
         display_options = self.get_display_options(element_name)
         for name, value in extra_options.items():
             display_options[name] = value
-
 
         widget = Common.create_from_class_path(display_handler, [], display_options)
         from input_wdg import BaseInputWdg

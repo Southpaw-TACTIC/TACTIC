@@ -2882,6 +2882,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
     }
 
+
+
     def get_display(self):
         target_id = self.kwargs.get("target_id")
         if not target_id:

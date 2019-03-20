@@ -1655,6 +1655,7 @@ class TaskGenerator(object):
         task_creation = workflow.get("task_creation")
 
 
+
         # if this process has hierarchy, then create the subtasks
         if process_type in ['hierarchy']:
             subpipeline_code = process_sobject.get("subpipeline_code")
@@ -1764,7 +1765,7 @@ class TaskGenerator(object):
 
 
 
-            task_type = None
+            task_type = workflow.get("task_type")
             if process_type in ['approval']:
                 task_type = "approval"
 
