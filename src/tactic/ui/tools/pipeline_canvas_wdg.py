@@ -2696,7 +2696,7 @@ spt.pipeline.get_node_type = function(node) {
 
 
 spt.pipeline.set_node_types = function(node_types) {
-    spt.pipeline.node_types = node_types;
+    spt.pipeline.top.node_types = node_types;
 }
 
 
@@ -2717,7 +2717,7 @@ spt.pipeline.get_node_types = function() {
     return node_types;*/
 
 
-    return spt.pipeline.node_types || [];
+    return spt.pipeline.top.node_types || [];
 }
 
 
