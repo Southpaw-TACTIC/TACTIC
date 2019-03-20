@@ -1912,12 +1912,20 @@ class Search(Base):
 
 
 
-    def eval(expression, sobjects=None, mode=None, single=False, list=False, vars={}, dictionary=False, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None):
+    def eval(cls, expression, sobjects=None, mode=None, single=False, list=False, vars={}, dictionary=False, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None):
         from pyasm.biz import ExpressionParser
         parser = ExpressionParser()
         return parser.eval(expression, sobjects=sobjects, single=single, list=list, dictionary=dictionary, vars=vars, env_sobjects=env_sobjects, show_retired=show_retired, state=state, extra_filters=extra_filters, search=search)
-    eval = staticmethod(eval)
+    eval = classmethod(eval)
 
+
+
+    def get_eval_cache(cls, expression, sobjects=None, mode=None, single=False, list=False, vars={}, dictionary=False, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None):
+        from pyasm.biz import ExpressionParser
+        parser = ExpressionParser()
+        parser.eval(expression, sobjects=sobjects, single=single, list=list, dictionary=dictionary, vars=vars, env_sobjects=env_sobjects, show_retired=show_retired, state=state, extra_filters=extra_filters, search=search)
+        return parser.get_cache_sobjects()
+    get_eval_cache = classmethod(get_eval_cache)
 
 
     def skip_retired(self, columns):
