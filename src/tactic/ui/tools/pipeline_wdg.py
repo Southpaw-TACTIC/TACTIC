@@ -2388,16 +2388,10 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
     def get_description_wdg(self):
-
-        process_sobj = self.process_sobj
-        description = process_sobj.get_value("description")
-
         desc_div = DivWdg()
         desc_div.add_style("margin: 20px 10px")
         desc_div.add("<div><b>Details:</b></div>")
         text = TextAreaWdg()
-        if description:
-            text.set_value(description)
         desc_div.add(text)
         text.add_style("width: 100%")
         text.add_style("height: 60px")
