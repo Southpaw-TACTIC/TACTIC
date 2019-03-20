@@ -2701,22 +2701,6 @@ spt.pipeline.set_node_types = function(node_types) {
 
 
 spt.pipeline.get_node_types = function() {
-    /*var top = spt.pipeline.top.getParent(".spt_pipeline_tool_top");
-
-    var info_top = top.getElement(".spt_pipeline_tool_info");
-    if (!info_top) return [];
-
-    var sel = info_top.querySelector("select[name='node_type']");
-    if (!sel) return [];
-
-    node_types = [];
-    for (var i=0, n=sel.options.length; i<n; i++) {
-      if (sel.options[i].value) node_types.push(sel.options[i].value);
-    }
-
-    return node_types;*/
-
-
     return spt.pipeline.top.node_types || [];
 }
 
