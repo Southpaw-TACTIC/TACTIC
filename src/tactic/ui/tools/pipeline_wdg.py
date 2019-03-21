@@ -563,6 +563,8 @@ class PipelineToolWdg(BaseRefreshWdg):
         'event_name': 'pipeline|show_info',
         'cbjs_action': '''
 
+        console.log("showing info panel...");
+
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
         var info = top.getElement(".spt_pipeline_tool_info");
         info.setStyle("right", "0px");
@@ -576,6 +578,8 @@ class PipelineToolWdg(BaseRefreshWdg):
         'type': 'listen',
         'event_name': 'pipeline|hide_info',
         'cbjs_action': '''
+
+        console.log("hiding info panel...");
 
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
         var info = top.getElement(".spt_pipeline_tool_info");
@@ -2708,15 +2712,37 @@ class BaseInfoWdg(BaseRefreshWdg):
             'type': 'load',
             'arg_name': arg_name,
             'cbjs_action': '''
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         }
 
-        if input_type == "radio":
+        if input_type == "select":
             load_behavior['cbjs_action'] = '''
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
+        elif input_type == "radio":
+            load_behavior['cbjs_action'] = '''
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
+        elif input_type == "checkbox":
+            load_behavior['cbjs_action'] = '''
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
 
         input_wdg.add_behavior(load_behavior)
@@ -3220,7 +3246,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         if script_obj:
             script_path_folder_text.set_value(script_path_folder)
         
-        script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='240')
+        script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='190')
         script_path_title_text.add_class("spt_script_path_title")
 
         script_path_div.add(script_path_title_text)
@@ -3572,7 +3598,6 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_path_div = DivWdg()
         div.add(script_path_div)
         script_path_div.add_style("width: 100%")
-        script_path_div.add_style("min-width: 400px")
         script_path_div.add_style("margin-top: 20px")
         script_path_div.add_style("margin-bottom: 20px")
 
@@ -3644,7 +3669,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         if script_obj:
             script_path_folder_text.set_value(script_path_folder)
         
-        script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='240')
+        script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='190')
         script_path_title_text.add_class("spt_script_path_title")
 
         script_path_div.add(script_path_title_text)
@@ -3842,13 +3867,29 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             '''
         }
 
-        if input_type == "radio":
+        if input_type == "select":
+            load_behavior['cbjs_action'] = '''
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
+        elif input_type == "radio":
             load_behavior['cbjs_action'] = '''
             var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
+        elif input_type == "checkbox":
+            load_behavior['cbjs_action'] = '''
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
 
         input_wdg.add_behavior(load_behavior)
@@ -5946,6 +5987,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             let focused = document.querySelector(":focus");
             if (focused) focused.blur();
 
+            console.log("unselecting..");
+
             spt.named_events.fire_event('pipeline|hide_info', {});
 
         ''' } )
@@ -7467,7 +7510,12 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             '''
         }
 
-        if input_type == "radio":
+        if input_type == "select":
+            load_behavior['cbjs_action'] = '''
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            '''
+        elif input_type == "radio":
             load_behavior['cbjs_action'] = '''
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
