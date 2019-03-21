@@ -1204,7 +1204,7 @@ class Task(SObject):
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-            pipe_code = process_obj.get_task_pipeline()
+            pipe_code = workflow.get("task_pipeline") or process_obj.get_task_pipeline()
 
             #start_date_str = start_date.get_db_date()
             #end_date_str = end_date.get_db_date()
@@ -1559,6 +1559,7 @@ class TaskGenerator(object):
 
 
         self.last_end_dates = {}
+
         for start_process in start_processes:
 
             # reset the start date for each start process
@@ -1580,13 +1581,12 @@ class TaskGenerator(object):
         handled_processes = self.handled_processes
         process_sobjects = self.process_sobjects
 
-
         output_processes = pipeline.get_output_process_names(process)
 
         for output_process in output_processes:
 
             # check that all inputs have been handled
-            input_processes = pipeline.get_input_process_names(output_process)
+            input_processes = pipeline.get_input_process_names(output_process, to_attr="input")
             if len(input_processes) > 1:
                 # find out if all the input processes have been handled
                 inputs_handled = True
@@ -1602,7 +1602,6 @@ class TaskGenerator(object):
 
             if output_process in handled_processes:
                 continue
-
 
 
             # remap the start date from the inputs and reset the end date
