@@ -6091,6 +6091,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'hierarchy',
             'dependency',
             'progress',
+            'status'
         ]
 
 
