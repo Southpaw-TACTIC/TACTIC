@@ -1492,9 +1492,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
             info_div.add_style("max-width: 225px")
 
 
+            second_value = result.get_value("title", no_exception=True)
+            if not second_value:
+                second_value = result.get_value(second_column)
 
-            second_value = result.get_value(second_column)
-            second_value = result.get_value("title")
+            #second_value = result.get_value(second_column)
             if second_value == display:
                 pass
             elif second_value:

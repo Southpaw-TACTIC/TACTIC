@@ -1805,7 +1805,10 @@ class TaskGenerator(object):
                 end_date = self.start_date + timedelta(days=1)
 
             # get from XML data
-            assigned_login_group = attrs.get("assigned_login_group") or None
+            assigned_login_group = workflow.get("assigned_login_group")
+            if not assigned_login_group: # backwards compatibility
+                assigned_login_group = attrs.get("assigned_login_group") or None
+
 
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
