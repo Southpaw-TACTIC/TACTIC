@@ -1473,6 +1473,7 @@ class CustomLayoutCbk(Command):
     def execute(self):
 
         view = self.kwargs.get("view")
+        callback = self.kwargs.get("callback")
 
         search = Search("config/widget_config")
         search.add_filter("view", view)
@@ -1481,14 +1482,16 @@ class CustomLayoutCbk(Command):
 
         config = sobject.get_xml_value("config")
 
-        callback = config.get_value("config//callback")
+        callback_code = config.get_value("config//callback[@class='%s']" % callback)
 
         callback_kwargs = self.kwargs.get("kwargs") or {}
 
         from tactic.command import PythonCmd
-        cmd = PythonCmd(code=callback, **callback_kwargs)
+        cmd = PythonCmd(code=callback_code, **callback_kwargs)
 
-        cmd.execute()
+        results = cmd.execute()
+
+        self.info['results'] =  results
 
 
 

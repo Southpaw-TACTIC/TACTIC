@@ -958,6 +958,7 @@ class Pipeline(SObject):
                 if connect_to_attr != to_attr:
                     continue
 
+
             from_connect = connect.get_from()
             process = self.get_process(from_connect)
             if process:

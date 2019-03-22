@@ -3181,7 +3181,9 @@ class ViewPanelWdg(BaseRefreshWdg):
                 simple_search_wdg.add_style("top: 40px")
                 #simple_search_wdg.add_style("top: 10px")
                 simple_search_wdg.add_style("left: 10px")
-                simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
+                simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
+                border_color = inner.get_color("border")
+                simple_search_wdg.add_style("border: solid 1px %s" % border_color)
 
 
 

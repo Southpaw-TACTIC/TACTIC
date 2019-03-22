@@ -389,7 +389,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 if not self.group_columns.startswith('['):
                     self.group_columns = self.group_columns.split(',')
                 else:
-
                     eval(self.group_columns)
 
 
