@@ -955,8 +955,9 @@ class Pipeline(SObject):
 
             if to_attr:
                 connect_to_attr = connect.get_attr("to_attr")
-                if connect_to_attr != to_attr:
-                    continue
+                if not (to_attr == "input" and not connect_to_attr):
+                    if connect_to_attr != to_attr:
+                        continue
 
 
             from_connect = connect.get_from()
@@ -969,8 +970,8 @@ class Pipeline(SObject):
         return processes
 
 
-    def get_input_process_names(self, process, type=None, from_attr=None):
-        input_processes = self.get_input_processes(process, type, from_attr)
+    def get_input_process_names(self, process, type=None, to_attr=None):
+        input_processes = self.get_input_processes(process, type, to_attr)
         process_names = [x.get_name() for x in input_processes]
         return process_names
  
