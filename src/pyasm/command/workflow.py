@@ -1270,9 +1270,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         process = self.input.get("process")
         sobject = self.input.get("sobject")
 
-        # Get remapped status.
-        mapping = ""
-
+        # Handle remapped status.
         process_sobj = self.get_process_sobj(pipeline, process)
         workflow = process_sobj.get_json_value("workflow", {})
         status_pipeline_code = workflow.get("task_pipeline")
