@@ -128,24 +128,18 @@ class Process(Base):
     def get_task_pipeline(self, default=True):
         ''' assuming the child pipeline is task related '''
 
-        #FIXME: Remove once debugging is done.
-        print("GETTING TASK_PIPELINE_CODE .... ")
-
         task_pipeline_code = None
 
         # getting the task_pipeline_code and node_type from JSON
 
         process_name = self.get_name()
+        process = self.parent_pipeline.get_process_sobject(process_name)
 
-        search = Search("config/process")
-        search.add_filter("process", process_name)
-        search.add_filter("pipeline_code", self.parent_pipeline_code)
-
-        process = search.get_sobject()
         if process:
             workflow_data = process.get_json_value("workflow", {})
             task_pipeline_code = workflow_data.get("task_pipeline")
             node_type = workflow_data.get("node_type")
+
 
         # as a fallback, get it from XML.
         if not task_pipeline_code:
@@ -780,6 +774,9 @@ class Pipeline(SObject):
             node_name = self.xml.get_node_name(node)
             process = Process(node)
             process.set_parent_pipeline_code(self.get_code())
+
+            process.set_parent_pipeline(self)
+
             self.processes.append(process)
 
             if node_name == "pipeline":
