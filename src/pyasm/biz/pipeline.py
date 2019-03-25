@@ -106,7 +106,7 @@ class Process(Base):
     '''DEPRECATED'''
     def set_child_pipeline(self, pipeline):
         self.child_pipeline = pipeline
-   
+
     '''DEPRECATED'''
     def is_pipeline(self):
         return self.child_pipeline != None
@@ -124,11 +124,36 @@ class Process(Base):
         return self.child_pipeline
 
 
-        
+
     def get_task_pipeline(self, default=True):
         ''' assuming the child pipeline is task related '''
-        task_pipeline_code = Xml.get_attribute( self.node, "task_pipeline" )
-        node_type = Xml.get_attribute(self.node, "type")
+
+        task_pipeline_code = None
+
+        # getting the task_pipeline_code and node_type from JSON
+
+        process_name = self.get_name()
+
+        #TODO:
+        #cache this to improve performance?
+        search = Search("config/process")
+        search.add_filter("process", process_name)
+        search.add_filter("pipeline_code", self.parent_pipeline_code)
+        process = search.get_sobject()
+
+        if process:
+            workflow_data = process.get_json_value("workflow", {})
+            task_pipeline_code = workflow_data.get("task_pipeline")
+            node_type = workflow_data.get("node_type")
+
+
+        # as a fallback, get it from XML.
+        if not task_pipeline_code:
+            task_pipeline_code = Xml.get_attribute( self.node, "task_pipeline" )
+            node_type = Xml.get_attribute(self.node, "type")
+
+        #print("node_type: %s" % node_type)
+
         if node_type == "approval":
             return "approval"
         elif node_type == "dependency":
@@ -179,7 +204,7 @@ class Process(Base):
                     continue
 
                 return node
-        
+
     def get_action_handler(self, event_name, scope="dependent"):
         action_node = self.get_action_node(event_name, scope=scope)
         if action_node is None:
@@ -256,7 +281,7 @@ class ProcessConnect(Base):
 
         if from_xml:
             return context
-        
+
         if not context:
             process = Xml.get_attribute(self.node, "from")
 
@@ -265,7 +290,7 @@ class ProcessConnect(Base):
                 parts = process.split("/")
                 process = parts[1]
             context = process
-                
+
         return context
 
 
@@ -463,7 +488,7 @@ class Pipeline(SObject):
     def set_to_latest(cls, sobject):
 
         pipeline = Pipeline.get_by_sobject(sobject)
- 
+
         parent_code = pipeline.get_value("parent_code")
         if parent_code:
             pipeline_code = parent_code
@@ -481,10 +506,10 @@ class Pipeline(SObject):
             sobject.commit()
 
     set_to_latest = classmethod(set_to_latest)
- 
+
 
     def set_to_versionless(cls, sobject):
- 
+
         pipeline_code = sobject.get_value("pipeline_code")
 
         search = Search("sthpw/pipeline")
@@ -497,7 +522,7 @@ class Pipeline(SObject):
             sobject.commit()
 
     set_to_versionless = classmethod(set_to_versionless)
-        
+
 
 
 
@@ -551,7 +576,7 @@ class Pipeline(SObject):
         On update, the caller needs to call this explicitly. It checks the search type
         this pipeline is associated with and if there is no pipeline code
         column, then update it.  It updates the process table also.'''
-        
+
         search_type = self.get_value('search_type')
         self.update_process_table(search_type=search_type)
 
@@ -583,7 +608,7 @@ class Pipeline(SObject):
             search.add_filter("pipeline_code", "")
             search.add_op("or")
             sobject_ids = search.get_sobject_ids()
-            
+
             if sobject_ids:
                 # this is much faster and memory efficient
                 db_resource = SearchType.get_db_resource_by_search_type(search_type)
@@ -593,7 +618,7 @@ class Pipeline(SObject):
                 pipeline_code =  self.get_value("code")
                 sql.do_update('''UPDATE "%s" SET "pipeline_code" = '%s' WHERE id in (%s) ''' %(tbl, pipeline_code, ','.join(sobject_ids)))
             """
-            for sobject in sobjects:    
+            for sobject in sobjects:
                 if not sobject.get_value("pipeline_code"):
                     sobject.set_value("pipeline_code", self.get_value("code") )
                     sobject.commit(triggers=False)
@@ -669,7 +694,7 @@ class Pipeline(SObject):
                         process_sobj.set_value(name, value)
 
 
-            
+
             attrs = self.get_process_attrs(process_name)
             color = attrs.get('color')
             if color:
@@ -725,13 +750,13 @@ class Pipeline(SObject):
         search_key = self.get_search_key()
 
         xml_dict = Container.get("Pipeline:xml")
-            
+
         if xml_dict == None:
             xml_dict = {}
             Container.put("Pipeline:xml", xml_dict)
 
         self.xml = xml_dict.get(search_key)
-        
+
         if self.xml == None:
             self.xml = Xml()
             if cache:
@@ -755,15 +780,18 @@ class Pipeline(SObject):
             node_name = self.xml.get_node_name(node)
             process = Process(node)
             process.set_parent_pipeline_code(self.get_code())
+
+            process.set_parent_pipeline(self)
+
             self.processes.append(process)
 
             if node_name == "pipeline":
                 name = Xml.get_attribute(node, "name")
-                
+
                 # prevent infinite loop
                 if name == self.get_code():
                     continue
-                    
+
                 child = Pipeline.get_by_code(name)
                 if not child:
                     continue
@@ -771,7 +799,7 @@ class Pipeline(SObject):
                 process.set_child_pipeline(child)
 
 
-    
+
 
     def get_pipeline_xml(self):
         return self.xml
@@ -844,7 +872,7 @@ class Pipeline(SObject):
 
 
 
-    def get_process_attrs(self, name):    
+    def get_process_attrs(self, name):
         process = self.get_process(name)
         if process:
             return process.get_attributes()
@@ -877,7 +905,7 @@ class Pipeline(SObject):
 
 
                 if process.is_from_sub_pipeline():
-                    process_names.append(process.get_full_name()) 
+                    process_names.append(process.get_full_name())
                 else:
                     process_names.append(process.get_name())
             return process_names
@@ -889,7 +917,7 @@ class Pipeline(SObject):
         # search all processes and cache all of the sobject locally
         if self.process_sobjects == None:
 
-            search = Search("config/process")        
+            search = Search("config/process")
             search.add_filter("pipeline_code", self.get_code())
             sobjects = search.get_sobjects()
 
@@ -925,10 +953,10 @@ class Pipeline(SObject):
 
 
 
-   
+
     def _get_connects(self, process="", direction='from'):
 
-        if direction == "from": 
+        if direction == "from":
             opposite = "to"
         else:
             opposite = "from"
@@ -974,7 +1002,7 @@ class Pipeline(SObject):
         input_processes = self.get_input_processes(process, type, to_attr)
         process_names = [x.get_name() for x in input_processes]
         return process_names
- 
+
 
 
 
@@ -1010,7 +1038,7 @@ class Pipeline(SObject):
                 process = self.get_process(to)
                 if process:
                     processes.append(process)
-            
+
         return processes
 
 
@@ -1019,7 +1047,7 @@ class Pipeline(SObject):
         output_processes = self.get_output_processes(process, type, from_attr)
         process_names = [x.get_name() for x in output_processes]
         return process_names
- 
+
 
 
     def get_output_contexts(self, process, show_process=False):
@@ -1037,16 +1065,16 @@ class Pipeline(SObject):
             context = connect.get_context()
             if not context:
                 context = connect.get_to()
-            
+
             if show_process:
                 data = (connect.get_to(), context)
             else:
                 data = context
             contexts.append(data)
 
-        
+
         return contexts
- 
+
     def get_input_contexts(self, process, show_process=False):
         connects = self._get_connects(process, direction='to')
         contexts = []
@@ -1062,7 +1090,7 @@ class Pipeline(SObject):
             contexts.append(data)
 
         return contexts
- 
+
     def get_group(self, process_name):
         process = self.get_process(process_name)
         return process.get_group()
@@ -1150,7 +1178,7 @@ class Pipeline(SObject):
         for sobject in sobjects:
             filter = "(\"search_type\" = '%s' and \"search_id\" = %s)" % (sobject.get_search_type(), sobject.get_id() )
             filters.append(filter)
-        
+
         search.add_where( "( %s )" % " or ".join(filters) )
 
         snapshots = search.get_sobjects()
@@ -1216,7 +1244,7 @@ class Pipeline(SObject):
         return sobject
 
     create = staticmethod(create)
-    
+
     def get_by_code(cls, code, allow_default=False):
         '''it is fatal not to have a pipeline, so put a default'''
         if not code:
@@ -1244,7 +1272,7 @@ class Pipeline(SObject):
                 pipeline.set_value("pipeline", xml)
                 pipeline.set_pipeline(xml)
                 pipeline.set_value("search_type", "sthpw/task")
-                
+
 
 
             elif code == 'approval':
@@ -1266,7 +1294,7 @@ class Pipeline(SObject):
                 pipeline.set_value("pipeline", xml)
                 pipeline.set_pipeline(xml)
                 pipeline.set_value("search_type", "sthpw/task")
-            
+
             elif code == 'progress':
                 pipeline = SearchType.create("sthpw/pipeline")
                 pipeline.set_value("code", "progress")
@@ -1303,7 +1331,7 @@ class Pipeline(SObject):
             search.add_filter('code', 'default')
             pipeline = search.get_sobject()
             if not pipeline:
-                
+
                 pipeline = cls.create('default',  \
                     'default pipeline', '')
 
@@ -1317,7 +1345,7 @@ class Pipeline(SObject):
 
                 pipeline.set_value('pipeline', xml.get_xml())
                 pipeline.commit()
-                
+
                 # set the pipeline
                 pipeline.set_pipeline(pipeline.get_value('pipeline'))
                 Environment.add_warning("pipeline autogenerated", \
@@ -1328,7 +1356,7 @@ class Pipeline(SObject):
             pipeline.set_pipeline(pipeline.get_value('pipeline'))
         return pipeline
     get_by_code = classmethod(get_by_code)
-    
+
 
     # DEPRECATED
     def get_by_name(name):
@@ -1357,7 +1385,7 @@ class Pipeline(SObject):
         pipelines = cls.get_by_search(search, cache_key, is_multi=True)
         """
 
-        
+
         search = Search("sthpw/pipeline")
         if search_type:
             search.add_filter("search_type", search_type)
@@ -1381,10 +1409,10 @@ class Pipeline(SObject):
                 if pipe:
                     pipes = [pipe]
 
-        if not pipes: 
+        if not pipes:
             pipes = Pipeline.get_by_search_type(search_type, project_code)
-        
-            
+
+
         process_name_dict = {}
 
         my_group_names = LoginGroup.get_group_names()
@@ -1393,7 +1421,7 @@ class Pipeline(SObject):
 
                 visible_process_names = []
                 process_names = pipe.get_process_names(recurse=True)
-                if is_group_restricted: 
+                if is_group_restricted:
                     for process_name in process_names:
                         group_name = pipe.get_group(process_name)
                         if group_name and group_name not in my_group_names:
@@ -1401,7 +1429,7 @@ class Pipeline(SObject):
                         else:
                             visible_process_names.append(process_name)
                 else:
-                    visible_process_names.extend(process_names)   
+                    visible_process_names.extend(process_names)
 
                 process_name_dict[pipe.get_code()] = visible_process_names
 
@@ -1430,10 +1458,10 @@ class Pipeline(SObject):
                 values.append(','.join(value))
             else:
                 values.append('')
-            # extra process may not be needed   
+            # extra process may not be needed
             if extra_process:
                 value.extend(extra_process)
-            
+
             if len(context_dict) > 1 and idx < len(context_dict)-1 :
                 value.append('')
 
@@ -1477,7 +1505,7 @@ class Pipeline(SObject):
         xml = []
 
         xml.append('''<pipeline>''')
-        
+
         if process_types:
 
             for i, status in enumerate(statuses):
@@ -1506,7 +1534,7 @@ class Pipeline(SObject):
                     continue
                 xml.append('''  <process name="%s"/>''' % status)
 
-        
+
 
         last_status = None
         for i, status in enumerate(statuses):
