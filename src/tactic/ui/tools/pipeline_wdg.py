@@ -563,8 +563,6 @@ class PipelineToolWdg(BaseRefreshWdg):
         'event_name': 'pipeline|show_info',
         'cbjs_action': '''
 
-        console.log("showing info panel...");
-
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
         var info = top.getElement(".spt_pipeline_tool_info");
         info.setStyle("right", "0px");
@@ -578,8 +576,6 @@ class PipelineToolWdg(BaseRefreshWdg):
         'type': 'listen',
         'event_name': 'pipeline|hide_info',
         'cbjs_action': '''
-
-        console.log("hiding info panel...");
 
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
         var info = top.getElement(".spt_pipeline_tool_info");
@@ -5986,8 +5982,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'cbjs_action': '''
             let focused = document.querySelector(":focus");
             if (focused) focused.blur();
-
-            console.log("unselecting..");
 
             spt.named_events.fire_event('pipeline|hide_info', {});
 
