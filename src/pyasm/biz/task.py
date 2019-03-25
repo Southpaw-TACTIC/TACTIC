@@ -40,6 +40,7 @@ TASK_PIPELINE = '''
   <process completion="80" color="#e84a4d" name="Review"/>
   <process completion="100" color="#a3d991" name="Complete"/>
   <process completion="100" color="#a3d991" name="Approved"/>
+  <process completion="100" color="#DDDDDD" name="Not Required"/>
 </pipeline>
 '''
 

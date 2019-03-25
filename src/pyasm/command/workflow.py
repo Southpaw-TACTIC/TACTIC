@@ -86,6 +86,15 @@ class Workflow(object):
         Trigger.append_static_trigger(trigger, startup=startup)
 
 
+        event = "process|note_required"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", ProcessNotRequiredTrigger)
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=startup)
+
+
+
         event = "process|reject"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
@@ -853,7 +862,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 task = search.get_sobject()
                 if task:
                     task_status = task.get("status")
-                    if task_status.lower() != "complete":
+                    task_status = task_status.lower().replace(" ", "_")
+                    if task_status not in ["complete", 'not_required']:
                         complete = False
                         break
 
@@ -1883,7 +1893,6 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
         else:
 
-            event = "process|pending"
             if isinstance(ret_val, basestring): 
                 ret_val = [ret_val]
 
@@ -1897,11 +1906,19 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
             if not output_processes:
                 outputs = pipeline.get_output_processes(process)
                 for output in outputs:
+                    output_process_name = output_process.get_name()
                     if output.get_name() in ret_val:
                         output_processes.append(output)
 
+            called = set()
             for output_process in output_processes:
                 output_process_name = output_process.get_name()
+
+                # skipped alreayd processed
+                if output_process_name in called:
+                    continue
+
+                event = "process|pending"
                 output = {
                     'sobject': sobject,
                     'pipeline': pipeline,
@@ -1909,8 +1926,11 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     'data': self.data
                 }
                 Trigger.call(self, event, output)
+                called.add(output_process_name)
 
             return
+
+
 
 
         # by default, go back to incoming or outcoming
@@ -2150,6 +2170,12 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 class ProcessApproveTrigger(ProcessCompleteTrigger):
     def get_status(self):
         return "approved"
+
+
+class ProcessNotRequiredTrigger(ProcessCompleteTrigger):
+    def get_status(self):
+        return "not_required"
+
 
 
 

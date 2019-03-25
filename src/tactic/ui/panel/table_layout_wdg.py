@@ -6093,6 +6093,7 @@ spt.table.apply_undo_queue = function(undo_queue) {
         }
 
 
+        var orig_value = cell.getAttribute("spt_input_value");
 
 
         cell.innerHTML = undo.new_html;
@@ -6103,9 +6104,6 @@ spt.table.apply_undo_queue = function(undo_queue) {
         // remap to the new cell
         undo.cell = cell;
 
-
-
-        var orig_value = cell.getAttribute("spt_orig_input_value");
 
         if (new_value == orig_value) {
             cell.removeClass("spt_cell_changed");
