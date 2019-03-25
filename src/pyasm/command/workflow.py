@@ -1926,7 +1926,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
             if not output_processes:
                 outputs = pipeline.get_output_processes(process)
                 for output in outputs:
-                    output_process_name = output_process.get_name()
+                    output_process_name = output.get_name()
                     if output.get_name() in ret_val:
                         output_processes.append(output)
 
