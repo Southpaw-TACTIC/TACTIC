@@ -839,7 +839,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # first check the inputs.  If there is only one input, then
         # skip this check
-        input_processes = pipeline.get_input_processes(process)
+        input_processes = pipeline.get_input_processes(process, to_attr="input")
         if len(input_processes) <= 1:
             return True
 
