@@ -133,7 +133,13 @@ class Process(Base):
         # getting the task_pipeline_code and node_type from JSON
 
         process_name = self.get_name()
-        process = self.parent_pipeline.get_process_sobject(process_name)
+
+        #TODO:
+        #cache this to improve performance?
+        search = Search("config/process")
+        search.add_filter("process", process_name)
+        search.add_filter("pipeline_code", self.parent_pipeline_code)
+        process = search.get_sobject()
 
         if process:
             workflow_data = process.get_json_value("workflow", {})
