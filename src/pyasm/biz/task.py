@@ -987,6 +987,7 @@ class Task(SObject):
 
         # this is the explicit mode for creating task for a specific process:context combo
         if mode == 'context':
+            # DEPRECATED: leave for backwards compatibility
 
             start_date= SPTDate.today()
             start_date = SPTDate.add_business_days(start_date, start_offset)
@@ -1034,10 +1035,10 @@ class Task(SObject):
                 start_date_str = start_date.strftime("%Y-%m-%d")
                 end_date_str = end_date.strftime("%Y-%m-%d")
 
-                assigned_login_group = attrs.get("assigned_login_group") or None
+                assigned_group = attrs.get("assigned_group") or None
 
                 # Create the task
-                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned, status=status, assigned_group=assigned_login_group)
+                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned, status=status, assigned_group=assigned_group)
 
                 # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -1804,9 +1805,9 @@ class TaskGenerator(object):
                 end_date = self.start_date + timedelta(days=1)
 
             # get from XML data
-            assigned_login_group = workflow.get("assigned_login_group")
-            if not assigned_login_group: # backwards compatibility
-                assigned_login_group = attrs.get("assigned_login_group") or None
+            assigned_group = workflow.get("assigned_group")
+            if not assigned_group: # backwards compatibility
+                assigned_group = attrs.get("assigned_group") or None
 
 
             # output contexts could be duplicated from 2 different outout processes
@@ -1845,7 +1846,7 @@ class TaskGenerator(object):
                 #import time
                 #start = time.time()
                 triggers = "none"
-                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_login_group)
+                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_group)
                 #print "process: ", full_process_name
                 #print "time: ", time.time() - start
 

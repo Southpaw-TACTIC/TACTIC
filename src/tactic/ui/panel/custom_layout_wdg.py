@@ -1473,6 +1473,8 @@ class CustomLayoutCbk(Command):
     def execute(self):
 
         view = self.kwargs.get("view")
+        view = view.replace("/", ".") # in case we / in the view name
+
         callback = self.kwargs.get("callback")
 
         search = Search("config/widget_config")
