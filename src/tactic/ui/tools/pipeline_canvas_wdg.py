@@ -3303,6 +3303,31 @@ spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
+spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
+    var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (kwargs) {
+        var value = kwargs[name];
+        if (!value && kwargs.multi) {
+            value = spt.pipeline.get_node_multi_kwarg(node, name);
+        }
+
+        var options = input_el.options;
+        var values = []
+
+        for (var i=0; i<options.length; i++) {
+            var option = options[i];
+            values.push(option.value);
+        }
+
+        // maybe this should be done in python?
+        if (values.includes(value)) input_el.value = value;
+        else {
+            if (kwargs.multi) spt.pipeline.set_node_multi_kwarg(node, name, options[0].value);
+            else spt.pipeline.set_node_kwarg(node, name, options[0].value);
+        }
+    }
+}
+
 spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
     if (kwargs) {
