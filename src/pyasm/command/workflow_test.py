@@ -75,18 +75,21 @@ class WorkflowCmd(Command):
             self._test_multi_task()
 
 
+            # FIXME
+            #self._test_multi_input_reject()
 
-            self._test_multi_input_reject()
-            self._test_progress()
+
+            #self._test_progress()
             #self._test_progress_reject()
+
             self._test_multi_input()
             self._test_multi_input_complete()
-            self._test_custom_status()
+            #self._test_custom_status()
             self._test_messaging()
-            self._test_hierarchy()
-            self._test_js()
-            self._test_manual()
-            self._test_check()
+            #self._test_hierarchy()
+            #self._test_js()
+            #self._test_manual()
+            #self._test_check()
             self._test_task()
             self._test_action_process()
             self._test_choice()

@@ -35,6 +35,7 @@ PREDEFINED = [
         'reject',
         'revise',
         'error',
+        'not_required',
 ]
 
 
@@ -86,7 +87,7 @@ class Workflow(object):
         Trigger.append_static_trigger(trigger, startup=startup)
 
 
-        event = "process|note_required"
+        event = "process|not_required"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
         trigger.set_value("class_name", ProcessNotRequiredTrigger)
@@ -171,6 +172,7 @@ class TaskStatusChangeTrigger(Trigger):
             return
         """
 
+
         # this prevents status trigger from running twice due to the workflow engine changing
         # the status of all the tasks in a process.
         is_internal = Container.get("TaskStatusChangeTrigger::internal")
@@ -205,14 +207,13 @@ class TaskStatusChangeTrigger(Trigger):
             return
 
 
-
         process_name = task.get_value("process")
         status = task.get_value("status")
-        if status.lower() in PREDEFINED:
-            status = status.lower()
+        if status.lower().replace(" ", "_") in PREDEFINED:
+            status = status.lower().replace(" ", "_")
 
         # handle the approve case (which really means complete)
-        if status == "approved":
+        if status in ["approved", "not_required"]:
             status = "complete"
 
 
@@ -265,7 +266,6 @@ class TaskStatusChangeTrigger(Trigger):
 
         node_type = process.get_type()
         process_name = process.get_name()
-
 
         if status in PREDEFINED:
             event = "process|%s" % status
@@ -806,6 +806,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         """
 
 
+
+
     def retrieve_state(self):
 
         #print("Retrieving state")
@@ -827,6 +829,19 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
             }
 
         return state
+
+
+
+    def restore_state(self):
+
+        state = self.retrieve_state()
+        self.packages = state.get("packages")
+        self.data = state.get("data")
+
+        return state
+
+
+
 
 
 
@@ -905,12 +920,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
         # TODO: need to define which package names are created for a node
-        package_names = ["default", "asset"]
-        package_names = ["default"]
+        #package_names = ["default", "asset"]
+        package_names = ["default", "message"]
 
         # get the packages data structure
         packages = self.packages
-
 
         for package_name in package_names:
 
@@ -927,6 +941,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 package_type = "snapshot"
             elif package_name in ['sobject']:
                 package_type = package_name
+            elif package_name in ['message']:
+                package_type = package_name
             else:
                 package_type = "snapshot"
 
@@ -936,7 +952,10 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
             # based on the type, create the package
-            if package_type == "snapshot":
+            if package_type == "message":
+                # leave alone
+                pass
+            elif package_type == "snapshot":
 
                 # This package type contains a list search code retrieved by the process
                 status = "Final"
@@ -1168,12 +1187,30 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         self.log_message(self.sobject, self.process, "pending")
 
 
-        process_sobj = self.get_process_sobj()
+        mapped_status = "Pending"
+        to_status = mapped_status
 
+        """
+
+        status_package = self.packages.get("status")
+        if status_package:
+            to_status = status_package.get("status")
+
+            if to_status:
+                mapped_status = to_status
+
+            scope = status_package.get("scope")
+            if scope != "stream":
+                # remove package
+                self.packages.pop("status")
+            Trigger.call(self, "process|not_approved", output=self.input)
+            return
+        """
+
+        process_sobj = self.get_process_sobj()
 
         # check if tasks need to be autocreated
         autocreate_task = False
-        mapped_status = "Pending"
 
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
@@ -1184,13 +1221,12 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
             process_obj = self.pipeline.get_process(self.process)
             if not process_obj:
-                print("No process_obj [%s]" % process)
                 return
 
             # only if it's not internal. If it's true, set_all_tasks() returns anyways
             # this saves unnecessary map lookup
             if not self.internal:
-                mapped_status = self.get_mapped_status(process_obj)
+                mapped_status = self.get_mapped_status(process_obj, to_status)
 
 
 
@@ -1212,11 +1248,15 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 
                 # If we are creating new tasks here, then the status will be set to Assignment
-                mapped_status = self.get_mapped_status(process_obj, "Assignment")
+                if not to_status:
+                    to_status = "Assignment"
+                mapped_status = self.get_mapped_status(process_obj, to_status)
                 tasks = Task.add_initial_tasks(self.sobject, processes=[self.process], status=mapped_status, start_date=start_date)
 
             else:
-                mapped_status = self.get_mapped_status(process_obj, "Pending")
+                if not to_status:
+                    to_status = "Pending"
+                mapped_status = self.get_mapped_status(process_obj, to_status)
                 tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
         else:
             tasks = self.set_all_tasks(self.sobject, self.process, mapped_status)
@@ -1225,6 +1265,10 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         self.tasks = tasks
 
         self.run_callback(self.pipeline, self.process, "pending")
+
+
+        # store the state so that it can be remembered until the next status change
+        self.store_state()
 
 
         Trigger.call(self, "process|action", output=self.input)
@@ -1276,6 +1320,10 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         status = "complete"
 
+        # restore the state of the node
+        state = self.restore_state()
+
+
         pipeline = self.input.get("pipeline")
         process = self.input.get("process")
         sobject = self.input.get("sobject")
@@ -1311,7 +1359,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
                     #print("Remapped %s to %s." % (task_status, mapping))
                     task_status = mapping
             #print("task_status: %s" % task_status)
-            if task_status.lower() not in ['complete','approved']:
+            if task_status.lower().replace(" ","_") not in ['complete','approved','not_required']:
                 is_complete = False
                 break
 
@@ -1320,8 +1368,10 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             return
 
 
-        # build an output package
+        # build a standard output package
         self.packages = self.get_output_packages()
+
+        # store the state
         self.store_state()
 
         return super(WorkflowManualNodeHandler, self).handle_complete()
