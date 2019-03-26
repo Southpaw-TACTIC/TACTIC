@@ -83,6 +83,68 @@ class WatchFolderFileActionThread(threading.Thread):
         super(WatchFolderFileActionThread, self).__init__()
 
 
+    def handle_disconnect(self, base_dir):
+        print "Watch Folder disconnected (%s)" % base_dir
+
+        import time
+        timeout = 0
+
+        try:
+            email_interval = int(ProdSetting.get_value_by_key("watch_folder/email_interval"))
+        except ValueError:        
+            email_interval = 60
+
+        self.email_alert = False
+
+        while not os.path.exists(base_dir):
+            time.sleep(1)
+            print timeout
+            if ((timeout % email_interval) == 0 and timeout > 60) or (timeout == 60):
+                self.email_alert = True
+
+                subject = "Watch Folder Error (%s)" % base_dir
+                message = """
+Timeout Error: Connection to Watch Folder Timed Out.
+Watch folder code: %s
+Base directory: %s
+                """ % (self.watch_folder_code, base_dir)
+                sender_name= Config.get_value("services", "notify_user_name")
+                sender_email = Config.get_value("services", "notify_user")
+                recipient_emails = [sender_email]
+
+                if sender_email:
+                    email_cmd = SendEmail(
+                        sender_email=sender_email, 
+                        recipient_emails=recipient_emails, 
+                        msg=message, 
+                        subject=subject, 
+                        sender_name=sender_name
+                    )
+                    email_cmd.execute()
+            timeout += 1
+
+        print "Watch Folder reconnected (%s)" % base_dir
+        # handle resumption
+        if self.email_alert:
+            subject = "Watch Folder Reconnected (%s)" % base_dir
+            message = """
+Watch Folder is available and service is resumed.
+Watch Folder code: %s
+Base directory: %s
+            """ % (self.watch_folder_code, base_dir)
+            sender_name = Config.get_value("services", "notify_user_name")
+            sender_email = Config.get_value("services", "notify_user")
+            recipient_emails = [sender_email]
+
+            if sender_email:
+                email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+                email_cmd.execute()
+        
+        
+        self.email_alert = True
+
+        return
+
     def run(self):
         task = self.kwargs.get("task")
         paths = task.get_paths()
@@ -120,8 +182,8 @@ class WatchFolderFileActionThread(threading.Thread):
                 try:
                     os.unlink(verify_path)
                 except Exception as e:
-                    time.sleep(1)
                     print("Error: %s removing from verify" % e)
+                    self.handle_disconnect(process_path)
 
             # move the process path back to the queue
             queue_path = path.replace("/.tactic/process", "")
@@ -130,8 +192,8 @@ class WatchFolderFileActionThread(threading.Thread):
                 try:
                     shutil.move(process_path, queue_path)
                 except Exception as e:
-                    time.sleep(1)
                     print("Error: %s moving from process to queue" % e)
+                    self.handle_disconnect(process_path)
 
         # this exaggerates the effect of not pausing check thread for cleaning
         #time.sleep(10)
@@ -220,8 +282,8 @@ class WatchFolderFileActionThread(threading.Thread):
                     try:
                         os.unlink(verify_path)
                     except Exception as e:
-                        time.sleep(1)
                         print("Error: %s removing from verify" % e)
+                        self.handle_disconnect(verify_path)
 
 
             except Exception as e:
@@ -246,8 +308,8 @@ class WatchFolderFileActionThread(threading.Thread):
                         try:
                             os.unlink(verify_path)
                         except Exception as e:
-                            time.sleep(1)
                             print("Error: %s removing from verify" % e)
+                            self.handle_disconnect(verify_path)
 
                 except Exception as e:
                     print("WARNING: %s" % e)
@@ -645,6 +707,7 @@ class WatchDropFolderTask(SchedulerTask):
 
         while not os.path.exists(base_dir):
             time.sleep(1)
+            print timeout
             if ((timeout % email_interval) == 0 and timeout > 60) or (timeout == 60):
                 self.email_alert = True
 
