@@ -98,7 +98,6 @@ class WatchFolderFileActionThread(threading.Thread):
 
         while not os.path.exists(base_dir):
             time.sleep(1)
-            print timeout
             if ((timeout % email_interval) == 0 and timeout > 60) or (timeout == 60):
                 self.email_alert = True
 
@@ -707,7 +706,6 @@ class WatchDropFolderTask(SchedulerTask):
 
         while not os.path.exists(base_dir):
             time.sleep(1)
-            print timeout
             if ((timeout % email_interval) == 0 and timeout > 60) or (timeout == 60):
                 self.email_alert = True
 
