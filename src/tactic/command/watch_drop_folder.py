@@ -182,7 +182,7 @@ Base directory: %s
                     os.unlink(verify_path)
                 except Exception as e:
                     print("Error: %s removing from verify" % e)
-                    self.handle_disconnect(process_path)
+                    self.handle_disconnect(verify_path)
 
             # move the process path back to the queue
             queue_path = path.replace("/.tactic/process", "")
