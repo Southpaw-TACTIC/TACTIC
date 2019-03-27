@@ -1108,10 +1108,15 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         process_obj = self.pipeline.get_process(self.process)
 
+        reject_processes = self.input.get("reject_process") or []
+
         # send revise single to previous processes
         input_processes = self.pipeline.get_input_processes(self.process)
         for input_process in input_processes:
             input_process = input_process.get_name()
+
+            if reject_processes and input_process not in reject_processes:
+                continue
 
             if self.process_parts:
                 input_process = "%s.%s" % (self.process_parts[0], input_process)
@@ -1633,23 +1638,12 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
             first_process = child_processes[0]
             first_name = first_process.get_name()
 
-            input = {
-                    'pipeline': subpipeline,
-                    'sobject': self.sobject,
-                    'process': first_name,
-                    'parent_pipelines': [self.pipeline],
-                    'parent_processes': [self.process],
-            }
-
-            event = "process|pending"
-            Trigger.call(self, event, input)
-
             full_name = "%s/%s" % (self.process, first_name)
             input = {
                     'pipeline': subpipeline,
                     'sobject': self.sobject,
                     'process': first_name,
-                    'parent_pipeline': [self.pipeline],
+                    'parent_pipelines': [self.pipeline],
                     'parent_processes': [self.process],
             }
 

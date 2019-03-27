@@ -4911,6 +4911,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
     this.color = '#111';
     this.attrs = {};
     this.type = "connector";
+    this.line_mode = null;
     this.panel;
 
     this.draw = function() {
@@ -4972,7 +4973,14 @@ spt.pipeline.Connector = function(from_node, to_node) {
         }
 
         var data = spt.pipeline.get_data();
-        if (data.line_mode == 'curved_edge') {
+
+        var line_mode = this.line_mode;
+        if (!line_mode) {
+            line_mode = data.line_mode;
+        }
+
+
+        if (line_mode == 'curved_edge') {
             spt.pipeline.draw_curved_edge_line(from_pos, to_pos, this.color);
         } else {
             spt.pipeline.draw_connector(from_pos, to_pos, this.color);
