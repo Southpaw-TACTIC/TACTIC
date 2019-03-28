@@ -52,6 +52,11 @@ class SearchBoxPopupWdg(BaseRefreshWdg):
         self.parent_key  = self.kwargs.get('parent_key')
         self.filter  = self.kwargs.get('filter')
         self.state  = self.kwargs.get('state')
+
+        # 
+        filter_view = slef.kwargs.get("filter_view")
+        filter_view = "job_filter"
+
         
         self.state = BaseRefreshWdg.process_state(self.state)
 
@@ -113,10 +118,10 @@ class SearchWdg(BaseRefreshWdg):
 
 
     def get_default_filter_config(self):
-        custom_filter_view = self.kwargs.get('custom_filter_view')
+        custom_filter_view = self.kwargs.get('custom_filter_view') or ""
 
-        if not custom_filter_view:
-            custom_filter_view=''
+        filter_view = self.kwargs.get('filter_view') or ""
+
 
         config = []
         config.append("<config>\n")
@@ -134,6 +139,7 @@ class SearchWdg(BaseRefreshWdg):
         """
 
 
+        """
         simple_search_view = "task_filter"
         config.append('''
         <element name='Simple'>
@@ -147,6 +153,7 @@ class SearchWdg(BaseRefreshWdg):
           </display>
         </element>
         ''' % (self.search_type, simple_search_view) )
+        """
 
 
 
@@ -175,16 +182,16 @@ class SearchWdg(BaseRefreshWdg):
         ''' % self.search_type)
         """
 
-
         config.append('''
         <element name='Advanced'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
             <prefix>children</prefix>
             <search_type>%s</search_type>
             <mode>child</mode>
+            <filter_view>%s</filter_view>
           </display>
         </element>
-        ''' % self.search_type)
+        ''' % (self.search_type, filter_view))
 
 
 

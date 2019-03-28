@@ -247,12 +247,12 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-        # simple_search config
-        simple_search_view = "job_filter"
+        # filter view (same config as simple search view)
+        filter_view = self.kwargs.get("filter_view")
         self.filter_template_config = None
-        if simple_search_view:
+        if filter_view:
             search = Search("config/widget_config")
-            search.add_filter("view", simple_search_view)
+            search.add_filter("view", filter_view)
             self.filter_template_config = search.get_sobject()
  
 
@@ -337,17 +337,20 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         # add the hidden template filter
         dummy_div = DivWdg()
-        dummy_div.add("Dummy<hr/>")
+        top_wdg.add(dummy_div)
+        dummy_div.add("Templates<hr/>")
         dummy_div.add_style('display: none')
         dummy_div.add_style("border: solid 1px blue")
         op = 'and'
         level = 0
         i = -1
-        filter_template = self._get_filter_wdg_with_op(i, op, level)
+        filter_template = self._get_filter_wdg_with_op(i, op, level, mode="")
         dummy_div.add(filter_template)
-        top_wdg.add(dummy_div)
+        filter_template = self._get_filter_wdg_with_op(i, op, level, mode="child")
+        dummy_div.add(filter_template)
 
 
+        # add in the simple search configs
         if self.filter_template_config:
             element_names = self.filter_template_config.get_element_names()
             for element_name in element_names:
@@ -554,18 +557,21 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-    def _get_filter_wdg_with_op(self, i, op, level, widget=None):
+    def _get_filter_wdg_with_op(self, i, op, level, widget=None, mode=None):
 
         incr = 20
 
         filter_container = DivWdg()
-        if i == -1:
+
+        if i == -1: # template
             filter_container.add_class("spt_filter_template_with_op")
 
             if widget:
                 widget_name = widget.get_name()
                 if widget_name:
                     filter_container.add_attr("spt_filter_type", widget_name)
+            else:
+                filter_container.add_attr("spt_filter_type", mode)
 
 
         else:
@@ -686,7 +692,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             '''
             } )
 
-            # what is this DTS for?
+
             value_div.add_class("SPT_DTS")
             palette = value_div.get_palette()
             bg_color = palette.color("background")
@@ -735,7 +741,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_container.add(spacing)
 
         filter_name = "filter_%s" % i
-        filter = self.get_filter_wdg(filter_name, i, widget=widget)
+        filter = self.get_filter_wdg(filter_name, i, widget=widget, mode=mode)
         filter_container.add(filter)
 
 
@@ -743,7 +749,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-    def get_filter_wdg(self, filter_name, filter_index, widget=None):
+    def get_filter_wdg(self, filter_name, filter_index, widget=None, mode=None):
         '''gets the filter widget.  There are 2 parts to a filter.  A selection
         of the filter name (which often corresponds to the attribute of an
         sobject and the actual filter'''
@@ -848,7 +854,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             # 1. add a search type filter
             columns = None
             related_search_type = None
-            if self.mode in ['parent', 'child']:
+            if mode in ['parent', 'child']:
                 search_type_wdg = self.get_search_type_selector(filter_name, filter_index)
                 #search_type = search_type_wdg.get_widget("selector").get_value()
                 search_type = search_type_wdg.get_widget("selector").value
@@ -982,6 +988,9 @@ class GeneralFilterWdg(BaseFilterWdg):
         action_div.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
         action_div.add_style("background: #FFF")
         action_div.add_style("z-index: 100")
+        action_div.add_style("padding: 5px 0px")
+        action_div.add_style("max-height: 150px")
+        action_div.add_style("overflow: auto")
 
         action_div.add_relay_behavior( {
             'type': 'click',
@@ -1003,51 +1012,37 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
+        element_names = []
+        element_names.insert(0, "Column Filter")
+        element_names.insert(2, "Related Filter")
         if self.filter_template_config:
-            element_names = self.filter_template_config.get_element_names()
-            element_names.insert(0, "Column Filter")
-            element_names.insert(1, "Keyword Filter")
-            element_names.insert(2, "Related Filter")
-            for element_name in element_names:
-                title = Common.get_display_title(element_name)
-                element_div = DivWdg()
-                element_div.add_class("spt_new_filter_item")
-                action_div.add(element_div)
-                element_div.add_class("tactic_hover")
-                element_div.add_class("hand")
-                element_div.add(title)
-                element_div.add_style("text-align: center")
-                element_div.add_style("padding: 5px 5px")
+            config_element_names = self.filter_template_config.get_element_names()
+            element_names.extend(config_element_names)
 
+
+        for element_name in element_names:
+            title = Common.get_display_title(element_name)
+            element_div = DivWdg()
+            element_div.add_class("spt_new_filter_item")
+            action_div.add(element_div)
+            element_div.add_class("tactic_hover")
+            element_div.add_class("hand")
+            element_div.add(title)
+            element_div.add_style("text-align: center")
+            element_div.add_style("padding: 5px 5px")
+
+            if element_name == "Related Filter":
+                element_div.add_attr("spt_filter_type", "child")
+            else:
                 element_div.add_attr("spt_filter_type", element_name)
 
-                if element_name == "Related Filter":
-                    action_div.add("<hr/>")
+            if self.filter_template_config and element_name == "Related Filter":
+                action_div.add("<hr/>")
 
 
 
 
         """
-        up_button = ActionButtonWdg(title="S", tip='Status', size='small')
-        button_div.add(up_button)
-        up_button.add_style("display: inline-block")
-        up_button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''spt.table.add_filter(bvr.src_el, "status");'''
-        } )
-
-
-        up_button = ActionButtonWdg(title="B", tip='Bid Start Date', size='small')
-        button_div.add(up_button)
-        up_button.add_style("display: inline-block")
-        up_button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''spt.table.add_filter(bvr.src_el, "bid_start_date");'''
-        } )
-        """
-
-
-
         up_button = ActionButtonWdg(title="U", tip='Move Up', size='small')
         button_div.add(up_button)
         up_button.add_style("display: inline-block")
@@ -1067,6 +1062,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         'type': 'click_up',
         'cbjs_action': 'spt.table.remove_filter(bvr.src_el)'
         } )
+        """
 
 
         if filter_index != -1:
@@ -2641,6 +2637,8 @@ class WorkHourFilterWdg(BaseFilterWdg):
         search.add_project_filter()
 
 
+
+
 class NotificationLogFilterWdg(BaseFilterWdg):
     '''used in My Notifications'''
     def init(self):
@@ -2675,6 +2673,8 @@ class NotificationLogFilterWdg(BaseFilterWdg):
         project_code = Project.get_project_code()
         search.add_filter("project_code", project_code)
         search.add_filters("id", notification_ids)
+
+
 
 class ShotFilterWdg(BaseFilterWdg):
     '''used in Shot Loader page'''

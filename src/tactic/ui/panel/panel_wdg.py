@@ -3089,15 +3089,14 @@ class ViewPanelWdg(BaseRefreshWdg):
                 can_search = False
 
 
-        # FIXME: this doesn't work yet because the filter information
-        # is not passed through
-        #if show_shelf not in [False, 'false']:
-        #if True:
+
+        simple_search_view = self.kwargs.get('simple_search_view')
+
         if can_search:
             search = self.kwargs.get("search")
             try:
                 from tactic.ui.app import SearchWdg
-                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=self.state, run_search_bvr=run_search_bvr, limit=search_limit)
+                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=self.state, run_search_bvr=run_search_bvr, limit=search_limit, filter_view=simple_search_view)
             except SearchException as e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
@@ -3122,7 +3121,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # add an exposed search
-        simple_search_view = self.kwargs.get('simple_search_view')
         simple_search_config = self.kwargs.get('simple_search_config')
         
         custom_simple_search_view = None
