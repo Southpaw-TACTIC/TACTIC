@@ -4785,7 +4785,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
 
 
 
-/* scales the view to fit the entire group */
+/* scales the view to fit the node */
 spt.pipeline.fit_to_node = function(node) {
     if (!node) return;
 

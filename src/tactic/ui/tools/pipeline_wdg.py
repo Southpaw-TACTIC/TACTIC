@@ -1498,6 +1498,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         }
         document.activeElement.blur();
         spt.pipeline.set_info_node(node);
+        spt.pipeline.fit_to_node(node);
 
         var callback = function() {
             spt.named_events.fire_event('pipeline|show_info', {});
@@ -2631,8 +2632,7 @@ class BaseInfoWdg(BaseRefreshWdg):
                 spt.pipeline.set_info_node(new_node);
                 properties.type = node_type;
 
-                var new_node = spt.pipeline.add_node(process, null, null, {node_type: node_type, properties: properties});
-                new_node.position(pos)
+                var new_node = spt.pipeline.add_node(process, pos.x, pos.y, {node_type: node_type, properties: properties});
 
 
                 var canvas = spt.pipeline.get_canvas();
@@ -4607,7 +4607,7 @@ class DependencyInfoWdg(BaseInfoWdg):
         self.workflow = {}
         if self.process_sobj:
             self.workflow = self.process_sobj.get_json_value("workflow")
-        if not workflow:
+        if not self.workflow:
             self.workflow = {}
 
 
