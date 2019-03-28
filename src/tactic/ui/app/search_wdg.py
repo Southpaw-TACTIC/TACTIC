@@ -122,6 +122,7 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<config>\n")
         config.append("<filter>\n")
 
+        """
         config.append('''
         <element name='Keywords'>
           <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
@@ -130,6 +131,25 @@ class SearchWdg(BaseRefreshWdg):
           </display>
         </element>
         ''' % self.search_type)
+        """
+
+
+
+        config.append('''
+        <element name='Simple'>
+          <display class='tactic.ui.app.SimpleSearchWdg'>
+            <prefix>custom</prefix>
+            <search_type>%s</search_type>
+            <mode>custom</mode>
+            <show_title>false</show_title>
+            <show_search>false</show_search>
+            <search_view>%s</search_view>
+          </display>
+        </element>
+        ''' % (self.search_type, "task_filter") )
+
+
+
 
         config.append('''
         <element name='Custom'>
@@ -143,6 +163,7 @@ class SearchWdg(BaseRefreshWdg):
         ''' % (self.search_type, custom_filter_view) )
 
 
+        """
         config.append('''
         <element name='Filter'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
@@ -152,6 +173,20 @@ class SearchWdg(BaseRefreshWdg):
            </display>
         </element>
         ''' % self.search_type)
+        """
+
+
+        config.append('''
+        <element name='Advanced'>
+          <display class='tactic.ui.filter.GeneralFilterWdg'>
+            <prefix>children</prefix>
+            <search_type>%s</search_type>
+            <mode>child</mode>
+          </display>
+        </element>
+        ''' % self.search_type)
+
+
 
         """
         config.append('''
@@ -176,17 +211,6 @@ class SearchWdg(BaseRefreshWdg):
         </element>
         ''' % self.search_type)
         """
-
-
-        config.append('''
-        <element name='Related'>
-          <display class='tactic.ui.filter.GeneralFilterWdg'>
-            <prefix>children</prefix>
-            <search_type>%s</search_type>
-            <mode>child</mode>
-          </display>
-        </element>
-        ''' % self.search_type)
 
 
         """
