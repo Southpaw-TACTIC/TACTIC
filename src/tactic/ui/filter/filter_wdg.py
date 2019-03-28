@@ -248,7 +248,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         # simple_search config
-        simple_search_view = "task_filter"
+        simple_search_view = "job_filter"
         self.filter_template_config = None
         if simple_search_view:
             search = Search("config/widget_config")
@@ -356,10 +356,21 @@ class GeneralFilterWdg(BaseFilterWdg):
                 template_div.add_style("align-items: center")
 
                 name = Common.get_display_title(element_name)
-                template_div.add("<div style='margin: 0px 5px'>%s</div>" % name)
+                name_div = DivWdg()
+                name_div.add(name)
+                name_div.add_style("margin: 0px 10px")
+                name_div.add_style("text-align: center")
+                name_div.add_style("width: 100px")
+                name_div.add_style("width: 120px")
+                template_div.add(name_div)
+
+
 
                 # FIMXE: maybe should move this down into get_filter_wdg
-                widget = self.filter_template_config.get_display_widget(element_name)
+                try:
+                    widget = self.filter_template_config.get_display_widget(element_name)
+                except:
+                    continue
                 template_div.set_name(element_name)
                 template_div.add(widget)
 

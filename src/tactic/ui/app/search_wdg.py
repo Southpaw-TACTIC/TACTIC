@@ -134,7 +134,7 @@ class SearchWdg(BaseRefreshWdg):
         """
 
 
-
+        simple_search_view = "task_filter"
         config.append('''
         <element name='Simple'>
           <display class='tactic.ui.app.SimpleSearchWdg'>
@@ -146,7 +146,7 @@ class SearchWdg(BaseRefreshWdg):
             <search_view>%s</search_view>
           </display>
         </element>
-        ''' % (self.search_type, "task_filter") )
+        ''' % (self.search_type, simple_search_view) )
 
 
 
