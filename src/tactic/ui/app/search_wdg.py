@@ -139,6 +139,7 @@ class SearchWdg(BaseRefreshWdg):
         """
 
 
+        # Simple search
         """
         simple_search_view = "task_filter"
         config.append('''
@@ -170,20 +171,22 @@ class SearchWdg(BaseRefreshWdg):
         ''' % (self.search_type, custom_filter_view) )
 
 
-        """
         config.append('''
-        <element name='Filter'>
+        <element name='Advanced'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
              <prefix>main_body</prefix>
              <search_type>%s</search_type>
-             <mode>sobject</mode>
+             <modeX>sobject</modeX>
+             <mode>child</mode>
+            <filter_view>%s</filter_view>
            </display>
         </element>
-        ''' % self.search_type)
-        """
+        ''' % (self.search_type, filter_view) )
 
+
+        """
         config.append('''
-        <element name='Advanced'>
+        <element name='Advanced2'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
             <prefix>children</prefix>
             <search_type>%s</search_type>
@@ -192,44 +195,6 @@ class SearchWdg(BaseRefreshWdg):
           </display>
         </element>
         ''' % (self.search_type, filter_view))
-
-
-
-        """
-        config.append('''
-        <element name='Filter2'>
-          <display class='tactic.ui.filter.GeneralFilterWdg'>
-             <prefix>filter2</prefix>
-             <search_type>%s</search_type>
-             <mode>sobject</mode>
-           </display>
-        </element>
-        ''' % self.search_type)
-        """
-
-        """
-        config.append('''
-        <element name='Parent'>
-          <display class='tactic.ui.filter.GeneralFilterWdg'>
-            <prefix>parent</prefix>
-            <search_type>%s</search_type>
-            <mode>parent</mode>
-          </display>
-        </element>
-        ''' % self.search_type)
-        """
-
-
-        """
-        config.append('''
-        <element name='Related'>
-          <display class='tactic.ui.filter.GeneralFilterWdg'>
-            <prefix>related</prefix>
-            <search_type>%s</search_type>
-            <mode>child</mode>
-          </display>
-        </element>
-        ''' % self.search_type)
         """
 
 

@@ -169,10 +169,6 @@ class GeneralFilterWdg(BaseFilterWdg):
                 self.related_types.remove(parent_type)
 
 
-
-
-
-
             self.related_types.insert(0, self.search_type)
 
 
