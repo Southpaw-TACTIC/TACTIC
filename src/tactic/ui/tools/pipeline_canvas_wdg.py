@@ -2619,8 +2619,7 @@ spt.pipeline.unselect_all_nodes = function() {
         spt.pipeline.unselect_node(node);
     }
 
-    var top = bvr.src_el.getParent(".spt_pipeline_top");
-    var event_name = top.getAttribute("id") + "|unselect_all";
+    var event_name = spt.pipeline.top.getAttribute("id") + "|unselect_all";
     spt.named_events.fire_event(event_name);
 }
 
@@ -4786,7 +4785,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
 
 
 
-/* scales the view to fit the entire group */
+/* scales the view to fit the node */
 spt.pipeline.fit_to_node = function(node) {
     if (!node) return;
 
