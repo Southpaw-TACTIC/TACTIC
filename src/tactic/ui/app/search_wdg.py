@@ -172,7 +172,7 @@ class SearchWdg(BaseRefreshWdg):
 
 
         config.append('''
-        <element name='Advanced'>
+        <element name='Search Parameters'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
              <prefix>main_body</prefix>
              <search_type>%s</search_type>
@@ -515,8 +515,9 @@ class SearchWdg(BaseRefreshWdg):
         top.add(filter_top)
         filter_top.add_color("color", "color")
         filter_top.add_color("background", "background", -5)
-        filter_top.add_style("padding: 5px")
+        #filter_top.add_style("padding: 5px")
         filter_top.add_style("min-width: 800px")
+        filter_top.add_style("margin: 0px -1px")
         filter_top.add_border()
         self.set_as_panel(filter_top)
 
@@ -567,6 +568,8 @@ class SearchWdg(BaseRefreshWdg):
         filter_div = DivWdg()
         filter_div.set_id("search_filters")
         filter_div.add_class("spt_search_filters")
+
+
 
 
         # TODO: disabling for now
@@ -641,27 +644,29 @@ class SearchWdg(BaseRefreshWdg):
 
         match_div.add(select)
         match_div.add_color("color", "color2")
-        #match_div.add(" on the following")
-        #hint = HintWdg( "An 'AND' operation is always applied to each category below. " \
-        #                "This controls only the filters within each category." )
-        #match_div.add(hint)
-        #match_div.add('<br/>')
-        #match_div.add_style("padding-top: 5px")
+
+        search_wdg.add_style("margin-left: 5px")
 
         filter_div.add( search_wdg)
         search_wdg.add_style("float: left")
         filter_div.add( match_div)
 
+        filter_div.add_style("padding-top: 5px")
+
 
         filter_div.add(HtmlElement.br())
 
+
+
+
         filters_div = DivWdg()
-        filters_div.add_style("margin: 0 -6 0 -6")
+        filters_div.add_style("margin: -1px")
 
         security = Environment.get_security()
 
         # add all the filters
-        for filter in self.filters:
+        num_filters = len(self.filters)
+        for i, filter in enumerate(self.filters):
             element_name = filter.get_name()
 
             if not security.check_access("search", element_name, "view"):
@@ -670,37 +675,46 @@ class SearchWdg(BaseRefreshWdg):
             # no need to create it again    
             #filter = self.config.get_display_widget(element_name)
             div = DivWdg()
+            div.add_color("background", "background")
             filters_div.add(div)
 
-            div.add_class("hand")
-            class_suffix = element_name.replace(' ', '_')
-            cbjs_action = 'var el=spt.get_cousin(bvr.src_el,".spt_search",".spt_filter_%s");spt.simple_display_toggle(el);' % class_suffix
-            div.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': cbjs_action
-            } )
+
             div.add_color("color", "color", +5)
-            #div.add_gradient("background", "background", -5, -5)
-            div.add_style("margin-top: -1px")
+            if i == 0:
+                div.add_style("margin-top: -10px -1px -1px -1px")
+            else:
+                div.add_style("margin-top: -1px -1px -1px -1px")
             div.add_style("height: 18px")
 
             div.add_border()
             div.add_style("padding: 8px 5px")
             div.add_style("white-space: nowrap")
 
-            
-            if element_name in ["Parent", 'Children']:
-                swap = SwapDisplayWdg.get_triangle_wdg()
+            class_suffix = element_name.replace(' ', '_')
+
+            if num_filters > 1: 
+                div.add_class("hand")
+                cbjs_action = 'var el=spt.get_cousin(bvr.src_el,".spt_search",".spt_filter_%s");spt.simple_display_toggle(el);' % class_suffix
+                div.add_behavior( {
+                    'type': 'click_up',
+                    'cbjs_action': cbjs_action
+                } )
+                if element_name in ["Parent", 'Children']:
+                    swap = SwapDisplayWdg.get_triangle_wdg()
+                else:
+                    swap = SwapDisplayWdg.get_triangle_wdg()
+                    swap.set_off()
+                swap.add_action_script(cbjs_action)
+
+
+                div.add_event("onclick", swap.get_swap_script() )
+                div.add(swap)
             else:
-                swap = SwapDisplayWdg.get_triangle_wdg()
-                swap.set_off()
-            swap.add_action_script(cbjs_action)
+                div.add_style("padding: 8px 10px")
 
-
-            div.add_event("onclick", swap.get_swap_script() )
-            div.add(swap)
             div.add_class("SPT_DTS")
             div.add(element_name)
+
 
             div = DivWdg()
             div.add_class("spt_filter_%s" % class_suffix)
@@ -722,16 +736,27 @@ class SearchWdg(BaseRefreshWdg):
 
         filter_div.add(filters_div)
 
-        buttons_div = DivWdg()
-        buttons_div.add_style("margin-top: 7px")
-        buttons_div.add_style("margin-bottom: 7px")
-        search_wdg = self.get_search_wdg()
-        search_wdg.add_style("margin: 15px auto")
-        buttons_div.add(search_wdg)
-        filter_div.add(buttons_div)
+        show_action = self.kwargs.get("show_action")
+        if show_action in ['bottom_only', 'top_bottom']:
 
+            buttons_div = DivWdg()
+
+            buttons_div.add_style("margin-top: 7px")
+            buttons_div.add_style("margin-bottom: 7px")
+            search_wdg = self.get_search_wdg()
+            search_wdg.add_style("margin: 15px auto")
+            buttons_div.add(search_wdg)
+            filter_div.add(buttons_div)
+
+        else:
+            spacing_div = DivWdg()
+            spacing_div.add_style("height: 8px")
+            spacing_div.add_color("background", "background")
+            spacing_div.add_style("margin: -1px")
+            filters_div.add(spacing_div)
 
         filter_top.add(filter_div)
+
 
         if self.kwargs.get("is_refresh"):
             return filter_top

@@ -774,26 +774,50 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         # add the enable/disable checkbox
         checkbox = CheckboxWdg('%s_enabled' % self.prefix)
+        checkbox.add_attr("title", "Toggle Filter On/Off")
 
 
   
         filter_data = FilterData.get()
         filter_data_map = filter_data.get_values_by_index(self.prefix, filter_index)
 
-
+        is_checked = False
         if filter_index == -1:
             checkbox.set_checked()
+            is_checked = True
         elif not filter_data_map:
             checkbox.set_checked()
+            is_checked = True
         elif filter_data_map.get("prefix") == self.prefix:
             if filter_data_map.get( "%s_enabled" % self.prefix ) != "":
                 checkbox.set_checked()
+                is_checked = True
+
+        if not is_checked:
+            div.add_style("opacity: 0.5")
+
 
 
         #checkbox.set_persist_on_submit()
 
-        checkbox.add_behavior({"type": "click_up", "cbjs_action" : "var top = bvr.src_el.getParent('.spt_search'); var el = top.getElement('.spt_search_num_filters'); el.innerHTML = '';",
-        "propagate_evt": True})
+        checkbox.add_behavior( {
+            "type": "click_up",
+            "cbjs_action" : '''
+                var top = bvr.src_el.getParent('.spt_search');
+                var el = top.getElement('.spt_search_num_filters');
+                el.innerHTML = '';
+
+                var filter_top = bvr.src_el.getParent(".spt_filter_wdg");
+                if (bvr.src_el.checked) {
+                    filter_top.setStyle("opacity", 1.0);
+                }
+                else {
+                    filter_top.setStyle("opacity", 0.5);
+                }
+            ''',
+            "propagate_evt": True
+        })
+
         """
         checkbox.add_behavior( {
             'type': 'click_up',

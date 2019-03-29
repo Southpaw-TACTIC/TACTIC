@@ -634,12 +634,13 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 
 
 
-            icon = IconWdg("Filter Set", "BS_ASTERISK")
+            icon = IconWdg("Filter Set", "FA_CHECK_SQUARE_O")
             #icon.add_style("color", "#393")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
             icon.add_class("hand")
             icon.add_attr("spt_element_name", element_name)
+            icon.add_style("margin-top: 2px")
 
             icon.add_behavior( {
                 'type': 'click',
@@ -654,7 +655,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 icon.add_style("display: none")
 
             else:
-                color = icon_div.get_color("background", -10)
+                color = icon_div.get_color("background", -3)
                 icon_td.add_style("background-color", color)
                 title_td.add_style("background-color", color)
                 element_td.add_style("background-color", color)
