@@ -793,9 +793,8 @@ class GeneralFilterWdg(BaseFilterWdg):
                 checkbox.set_checked()
                 is_checked = True
 
-        if not is_checked:
-            div.add_style("opacity: 0.5")
-
+        #if not is_checked:
+        #    div.add_style("opacity: 0.5")
 
 
         #checkbox.set_persist_on_submit()
@@ -812,7 +811,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                     filter_top.setStyle("opacity", 1.0);
                 }
                 else {
-                    filter_top.setStyle("opacity", 0.5);
+                    //filter_top.setStyle("opacity", 0.5);
                 }
             ''',
             "propagate_evt": True
