@@ -597,7 +597,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
+            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=self.simple_search_view)
 
         
         search = self.search_wdg.get_search()
@@ -945,6 +945,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-top: 3px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
+
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
         
         border_color = div.get_color("table_border",  default="border")
         if self.get_setting("header_background"):
@@ -1193,7 +1196,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
             num_div.add_class("hand")
-            color = num_div.get_color("background3", -5)
+            color = num_div.get_color("background", -5)
             num_div.add_behavior( {
                 'type': 'mouseover',
                 'color': color,
@@ -1886,9 +1889,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_search and search_dialog_id:
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
-            #button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
             button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
-            #button.add_style("float: left")
             div.add(button)
 
 
