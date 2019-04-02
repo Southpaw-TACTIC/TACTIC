@@ -8207,6 +8207,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                         search_type: searchType,
                         project_code: projectCode,
                     }
+
                     server.p_execute_cmd(document_cmd, document_kwargs)
                     .then(function(ret_val){
                         top.removeClass("spt_unsaved_item");
@@ -8475,6 +8476,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var group_el = src_el.getParent(".spt_group_row");
             var row = spt.table.add_new_item({row: group_el});
             row.setAttribute("spt_group_level", 2);
+            row.setAttribute("spt_dynamic", "true");
 
             var rowTop = row.getElement(".spt_document_item");
             rowTop.addClass("spt_unsaved_item");
