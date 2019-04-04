@@ -2573,12 +2573,30 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         if snapshot:
+
             file_type = "web"
-            icon_path = snapshot.get_web_path_by_type(file_type)
+
+            file_object = snapshot.get_file_by_type(file_type)
+            if file_object:
+                file_name = file_object.get_full_file_name()
+                web_dir = sobject.get_web_dir(snapshot, file_object=file_object)
+
+                icon_path = "%s/%s" % (web_dir, file_name)
+            else:
+                icon_path = snapshot.get_web_path_by_type(file_type)
 
             file_type = "main"
-            main_path = snapshot.get_web_path_by_type(file_type)
+
             lib_path = snapshot.get_lib_path_by_type(file_type)
+
+            file_object = snapshot.get_file_by_type(file_type)
+            if file_object:
+                file_name = file_object.get_full_file_name()
+                web_dir = sobject.get_web_dir(snapshot, file_object=file_object)
+
+                main_path = "%s/%s" % (web_dir, file_name)
+            else:
+                main_path = snapshot.get_web_path_by_type(file_type)
 
         if icon_path:
             path = icon_path
