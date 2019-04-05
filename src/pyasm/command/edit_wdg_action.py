@@ -246,6 +246,20 @@ class DatabaseAction(Command):
                 self.sobject.commit()
 
 
+        # the default way to handle data is:
+        # { search_key: { name: value, name2: value2 } }
+        if self.data:
+
+            for s_key, item_data in self.data.items():
+                s = Search.get_by_search_key(s_key)
+                if not s:
+                    continue
+
+                for name, value in item_data.items():
+                    s.set_value(name, value)
+                s.commit()
+
+
     def post_execute(self):
         return
 
