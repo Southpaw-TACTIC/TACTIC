@@ -328,7 +328,7 @@ class EmailTrigger(Trigger):
             charset = 'utf-8'
             is_uni = True
         
-        if "<html>" in message:
+        if "</html>" in message:
             st = 'html'
         else:
             st = 'plain'
@@ -401,7 +401,7 @@ class SendEmail(Command):
         message = self.kwargs.get('msg')
 
         is_unicode = False
-        if "<html>" in message or paths:
+        if "</html>" in message or paths:
             st = 'html'
         else:
             st = 'plain'
@@ -927,7 +927,7 @@ class EmailTriggerTest(EmailTrigger2):
             message = Common.process_unicode_string(message) 
             charset = 'utf-8'
 
-        if "<html>" in message:
+        if "</html>" in message:
             st = 'html'
         else:
             st = 'plain'
