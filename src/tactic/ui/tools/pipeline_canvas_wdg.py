@@ -4596,6 +4596,11 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 
     var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
     var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
+
+    var scale = spt.pipeline.get_scale();
+    dx = dx/scale;
+    dy = dy/scale;
+
     var orig_translate = spt.pipeline.orig_translate;
     spt.pipeline.set_translate(orig_translate.x+dx, orig_translate.y+dy);
 
@@ -4611,6 +4616,11 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
     var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
     var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
+
+    var scale = spt.pipeline.get_scale();
+    dx = dx/scale;
+    dy = dy/scale;
+
 
     if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
         spt.pipeline.unselect_all_nodes();
@@ -5414,6 +5424,10 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         log.warning('Pipeline [' + pipeline_code + ']  does not exist');
         return;
     }
+
+    // reset the scale
+    spt.pipeline.set_scale(1);
+    spt.pipeline.set_translate(0,0);
 
 
     // get all of the processes associated with this pipeline
