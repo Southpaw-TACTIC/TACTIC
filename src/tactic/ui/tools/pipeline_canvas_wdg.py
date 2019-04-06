@@ -4680,6 +4680,9 @@ spt.pipeline.zoom_drag_action = function(evt, bvr, mouse_411) {
 
 spt.pipeline.set_scale = function(scale) {
 
+    // set an arbitrary max scale so drawing optimizations don't start showing up
+    if (scale > 3) return;
+
     var canvas = spt.pipeline.get_canvas();
     scale_el = canvas.getParent(".spt_pipeline_scale");
 
@@ -4984,6 +4987,55 @@ spt.pipeline.redraw_canvas = function() {
 }
 
 
+spt.pipeline.get_point_region = function(pos, rect) {
+
+    // 3 4 5
+    // 2 0 6
+    // 1 8 7
+
+    var width = rect.x;
+    var height = rect.y;
+
+    var x = pos.x;
+    var y = pos.y;
+
+    var region = null;
+
+    if (x < 0) {
+        region = 2;
+        if (y < 0) {
+            region = 1;
+        }
+        else if (y > height ) {
+            region = 3;
+        }
+
+    }
+    else if (x > width) {
+        region = 6;
+        if (y < 0) {
+            region = 7;
+        }
+        else if (y > height ) {
+            region = 5;
+        }
+
+    }
+    else {
+        region = 0
+        if (y < 0) {
+            region = 8
+        }
+        else if (y > height) {
+            region = 4;
+        }
+    }
+
+    return region;
+
+}
+
+
 
 
 // Connector class
@@ -5035,8 +5087,8 @@ spt.pipeline.Connector = function(from_node, to_node) {
 
 
         // offset by the size
-        unscaled_from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
-        unscaled_to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
+        var unscaled_from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
+        var unscaled_to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
 
         // offset translate
         unscaled_from_pos.x += translate.x;
@@ -5048,20 +5100,63 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // moz transform scales from the center, so have to move
         // the curves back
         var size = canvas.getSize();
-        width = size.x;
-        height = size.y;
+        var width = size.x;
+        var height = size.y;
 
-        from_pos = {
+        var from_pos = {
             x: (unscaled_from_pos.x - width/2) * scale + width/2,
             y: (unscaled_from_pos.y - height/2) * scale + height/2,
         }
 
 
 
-        to_pos = {
+        var to_pos = {
             x: (unscaled_to_pos.x - width/2) * scale + width/2,
             y: (unscaled_to_pos.y - height/2) * scale + height/2,
         }
+
+
+        // don't bother drawing if it is outside the drawing site
+        var from_region = spt.pipeline.get_point_region(from_pos, size);
+        var to_region = spt.pipeline.get_point_region(to_pos, size);
+
+        var draw = false;
+        if (from_region == 0 || to_region == 0) {
+            draw = true;
+        }
+        else if (from_region == 4 && to_region == 8) {
+            draw = true;
+        }
+        else if (from_region == 8 && to_region == 4) {
+            draw = true;
+        }
+        else if (from_region == 2 && to_region == 6) {
+            draw = true;
+        }
+        else if (from_region == 6 && to_region == 2) {
+            draw = true;
+        }
+
+
+        if (!draw) return;
+
+
+/*
+        // Use more sophisticated algorithm above
+        from_pos_inside = false;
+        to_pos_inside = false;
+        if (from_pos.x > 0 && from_pos.y > 0 && from_pos.x < width && from_pos.y < height) {
+            from_pos_inside = true;
+        }
+        if (to_pos.x > 0 && to_pos.y > 0 && to_pos.x < width && to_pos.y < height) {
+            to_pos_inside = true;
+        }
+
+        if (! from_pos_inside &&  ! to_pos_inside) {
+            return;
+        }
+*/
+
 
         var data = spt.pipeline.get_data();
 
