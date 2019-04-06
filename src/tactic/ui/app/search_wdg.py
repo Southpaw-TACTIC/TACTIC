@@ -822,7 +822,6 @@ class SearchWdg(BaseRefreshWdg):
         if self.run_search_bvr:
             run_search_bvr = self.run_search_bvr
         else:
-            # cbjs works better than cbfn here
             run_search_bvr = {
                 'type':         'click_up',
                 'new_search':   True,
@@ -919,6 +918,57 @@ class SearchWdg(BaseRefreshWdg):
         key = SearchWdg._get_key(search_type, view)
         WidgetSettings.set_value_by_key(key, '')
     clear_search_data = staticmethod(clear_search_data)   
+
+
+
+    def get_onload_js(self):
+        return '''
+spt.search = {};
+
+
+spt.search.get_filter_values(search_top) {
+    // get all of the search input values
+    var new_values = [];
+
+    var search_containers = search_top.getElements('.spt_search_filter')
+    for (var i = 0; i < search_containers.length; i++) {
+	var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+	new_values.push(values);
+    }
+    var ops = search_top.getElements(".spt_op");
+
+    // special code for ops
+    var results = [];
+    var levels = [];
+    var modes = [];
+    var op_values = [];
+    for (var i = 0; i < ops.length; i++) {
+	var op = ops[i];
+	var level = op.getAttribute("spt_level");
+	level = parseInt(level);
+	var op_value = op.getAttribute("spt_op");
+	results.push( [level, op_value] );
+	var op_mode = op.getAttribute("spt_mode");
+	levels.push(level);
+	op_values.push(op_value);
+	modes.push(op_mode);
+
+    }
+    var values = {
+	prefix: 'search_ops',
+	levels: levels,
+	ops: op_values,
+	modes: modes
+    };
+    new_values.push(values);
+
+    return new_values;
+
+}
+
+	'''
+
+
 
 
 

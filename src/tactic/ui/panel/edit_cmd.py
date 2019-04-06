@@ -227,8 +227,9 @@ class EditCmd(Command):
 
             if self.data != None:
                 element_data = self.data.get(element_name)
-                if isinstance( element_data, basestring):
-                    element_data = jsonloads(element_data)
+                #if isinstance( element_data, basestring):
+                #    element_data = jsonloads(element_data)
+
                 action_handler.set_data(element_data)
 
             for key, value in action_options.items():

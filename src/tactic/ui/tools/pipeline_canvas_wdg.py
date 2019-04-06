@@ -2122,6 +2122,7 @@ spt.pipeline._init = function() {
         top.spt_data = {};
         data = top.spt_data;
         data.scale = 1.0;
+        data.translate = {x: 0, y: 0};
     }
     data.canvas = canvas;
     data.paint = paint;
@@ -2166,6 +2167,7 @@ spt.pipeline.first_init = function(bvr) {
     data.selected = [];
 
     data.scale = 1.0;
+    data.translate = {x: 0, y: 0};
     data.line_mode = 'bezier';
     data.has_prefix = false;
 
@@ -3781,9 +3783,20 @@ spt.pipeline.node_drag_setup = function( evt, bvr, mouse_411) {
         //spt.pipeline.select_single_node(node);
     }
     spt.pipeline.changed = false;
+
+    spt.pipeline.draw_skip = 0;
 }
 
 spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
+
+    
+    // slow ddown the drawwing a bit (seems to slow down on big workflows);
+    if (spt.pipeline.draw_skip != 5) {
+        spt.pipeline.draw_skip += 1;
+        return;
+    }
+    spt.pipeline.draw_skip = 0;
+
 
     var node = bvr.drag_el;
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
@@ -4545,8 +4558,11 @@ spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
     spt.pipeline.init(bvr);
     spt.pipeline.last_mouse_position = pos;
     spt.pipeline.orig_mouse_position = pos;
+    spt.pipeline.orig_translate = spt.pipeline.get_translate();
 
     spt.body.hide_focus_elements(evt);
+
+    spt.pipeline.draw_skip = 0;
 }
 
 spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
@@ -4555,20 +4571,36 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
         return;
     }
 
+    // slow ddown the drawwing a bit (seems to slow down on big workflows);
+    if (spt.pipeline.draw_skip != 5) {
+        spt.pipeline.draw_skip += 1;
+        return;
+    }
+
+
+
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
+    /*
     var dx = mouse_pos.x - spt.pipeline.last_mouse_position.x;
     var dy = mouse_pos.y - spt.pipeline.last_mouse_position.y;
     var scale = spt.pipeline.get_scale();
     dx = dx/scale;
     dy = dy/scale;
 
-
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
-
-    spt.pipeline.last_mouse_position = mouse_pos;
     spt.pipeline.redraw_canvas();
+    spt.pipeline.last_mouse_position = mouse_pos;
+    */
 
+
+    var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
+    var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
+    var orig_translate = spt.pipeline.orig_translate;
+    spt.pipeline.set_translate(orig_translate.x+dx, orig_translate.y+dy);
+
+
+    spt.pipeline.draw_skip = 0;
 }
 
 spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
@@ -4579,11 +4611,16 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
     var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
     var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
+
     if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
         spt.pipeline.unselect_all_nodes();
     }
 
 
+    // reset the translation and move all the nodes
+    spt.pipeline.set_translate(0, 0);
+    spt.pipeline.move_all_nodes(dx, dy);
+    spt.pipeline.move_all_folders(dx, dy);
 
     bvr.src_el.setStyle("cursor", "");
     var nodes = spt.pipeline.get_all_nodes();
@@ -4621,8 +4658,8 @@ spt.pipeline.zoom_drag_motion = function(evt, bvr, mouse_411) {
 
     spt.pipeline.set_scale( scale );
 
+
     spt.pipeline.last_mouse_position = mouse_pos;
-    spt.pipeline.redraw_canvas();
 
 }
 
@@ -4633,20 +4670,23 @@ spt.pipeline.zoom_drag_action = function(evt, bvr, mouse_411) {
 
 spt.pipeline.set_scale = function(scale) {
 
+    var canvas = spt.pipeline.get_canvas();
+    scale_el = canvas.getParent(".spt_pipeline_scale");
+
     var data = spt.pipeline.get_data();
     data.scale = scale;
 
-    var canvas = spt.pipeline.get_canvas();
-    //canvas.setStyle("border", "solid 1px blue");
+    var translate = data.translate;
+    var x = translate.x;
+    var y = translate.y;
 
-    var scale_str = "scale("+scale+", "+scale+")"
 
-    scale_el = canvas.getParent(".spt_pipeline_scale");
-    //canvas.setStyle("border", "solid 1px blue");
+    //var transform_str = "translate("+x+"px, "+y+"px) scale("+scale+", "+scale+")";
+    var transform_str = "scale("+scale+", "+scale+") translate("+x+"px, "+y+"px)";
 
-    scale_el.setStyle("-moz-transform", scale_str)
-    scale_el.setStyle("-webkit-transform", scale_str)
-    scale_el.setStyle("transform", scale_str)
+    scale_el.setStyle("-moz-transform", transform_str)
+    scale_el.setStyle("-webkit-transform", transform_str)
+    scale_el.setStyle("transform", transform_str)
 
     //TweenLite.to(scale_el, 0.2, {scale: scale});
 
@@ -4658,6 +4698,40 @@ spt.pipeline.get_scale = function() {
     var data = spt.pipeline.get_data();
     return data.scale;
 }
+
+
+spt.pipeline.set_translate = function(x, y) {
+
+    var canvas = spt.pipeline.get_canvas();
+    scale_el = canvas.getParent(".spt_pipeline_scale");
+
+    var data = spt.pipeline.get_data();
+    data.translate = {x: x, y: y};
+
+    var scale = data.scale;
+
+
+    //var transform_str = "translate("+x+"px, "+y+"px) scale("+scale+", "+scale+")";
+    var transform_str = "scale("+scale+", "+scale+") translate("+x+"px, "+y+"px)";
+
+
+    scale_el.setStyle("-moz-transform", transform_str)
+    scale_el.setStyle("-webkit-transform", transform_str)
+    scale_el.setStyle("transform", transform_str)
+
+    spt.pipeline.redraw_canvas();
+
+}
+
+
+spt.pipeline.get_translate = function() {
+    var data = spt.pipeline.get_data();
+    return data.translate;
+}
+
+
+
+
 
 
 spt.pipeline.center_node = function(node) {
@@ -4933,6 +5007,8 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
+        var translate = spt.pipeline.get_translate();
+
         var from_width = from_size.x;
         var from_height = from_size.y;
         var to_width = to_size.x;
@@ -4951,6 +5027,12 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // offset by the size
         unscaled_from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
         unscaled_to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
+
+        // offset translate
+        unscaled_from_pos.x += translate.x;
+        unscaled_from_pos.y += translate.y;
+        unscaled_to_pos.x += translate.x
+        unscaled_to_pos.y += translate.y
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -5052,7 +5134,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var to_size = spt.pipeline.get_size(this.to_node);
 
         var scale = spt.pipeline.get_scale();
-        //var scale = 1;
+        var translate = spt.pipeline.get_translate();
         var from_width = from_size.x;
         var from_height = from_size.y;
         var to_width = to_size.x;
@@ -5061,6 +5143,11 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // offset by the midpoint
         from_pos = {x: from_pos.x + from_width/2, y: from_pos.y + from_height/2 };
         to_pos = {x: to_pos.x + to_width/2, y: to_pos.y + to_height/2 };
+
+        from_pos.x += translate.x;
+        from_pos.y += translate.y;
+        to_pos.x += translate.x;
+        to_pos.y += translate.y;
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -5874,15 +5961,6 @@ spt.pipeline.set_status_color = function(search_key) {
     }
 
     var nodes = spt.pipeline.get_nodes_by_group(group_name);
-
-    /*
-    //var colors = server.get_task_status_colors();
-    var colors = {
-        'In Progress': 'rgb(0,0,255)',
-        Pending: 'rgb(255,255,0)',
-        Complete: 'rgb(0,255,0)',
-    }
-    */
 
     var colors = server.get_task_status_colors();
     var default_color = 'rgb(128,128,128)';

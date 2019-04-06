@@ -248,6 +248,7 @@ class DatabaseAction(Command):
 
         # the default way to handle data is:
         # { search_key: { name: value, name2: value2 } }
+        """
         if self.data:
 
             for s_key, item_data in self.data.items():
@@ -258,7 +259,7 @@ class DatabaseAction(Command):
                 for name, value in item_data.items():
                     s.set_value(name, value)
                 s.commit()
-
+        """
 
     def post_execute(self):
         return
