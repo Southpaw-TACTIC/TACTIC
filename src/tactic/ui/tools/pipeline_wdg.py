@@ -353,6 +353,9 @@ class PipelineToolWdg(BaseRefreshWdg):
                 // reuse code instead?
                 spt.pipeline.select_single_node(node);
 
+                // zoome up
+                spt.pipeline.set_scale(1.25);
+
                 var properties = spt.pipeline.get_node_properties(node);
 
                 var node_name = spt.pipeline.get_node_name(node);
@@ -1498,7 +1501,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         }
         document.activeElement.blur();
         spt.pipeline.set_info_node(node);
-        spt.pipeline.fit_to_node(node);
+        //spt.pipeline.fit_to_node(node);
 
         var callback = function() {
             spt.named_events.fire_event('pipeline|show_info', {});
@@ -1516,7 +1519,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
 
         behavior = {
-        'type': 'click_up',
+        'type': 'click',
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
