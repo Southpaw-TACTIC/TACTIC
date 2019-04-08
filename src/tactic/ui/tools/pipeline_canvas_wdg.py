@@ -6047,7 +6047,7 @@ spt.pipeline.export_group = function(group_name) {
 
         name = name.replace(/&/g, "&amp;amp;");
 
-        xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+pos.x+'" ypos="'+pos.y+'"';
+        xml += '  <'+tag_type+' name="'+name+'" type="'+node_type+'" xpos="'+Math.round(pos.x)+'" ypos="'+Math.round(pos.y)+'"';
 
         var properties = node.properties;
         for (var key in properties) {
