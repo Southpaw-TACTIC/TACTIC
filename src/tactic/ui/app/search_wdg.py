@@ -25,6 +25,7 @@ from tactic.ui.filter import FilterData
 from tactic.ui.widget import TextBtnSetWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
+from advanced_search import AdvancedSearchSaveWdg, AdvancedSearchSavedSearchesWdg, CustomSaveButtonsWdg
 #from search_limit_wdg import SearchLimitWdg
 
 
@@ -122,9 +123,18 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<config>\n")
         config.append("<filter>\n")
 
+        # config.append('''
+        # <element name='Keywords'>
+        #   <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
+        #     <search_type>%s</search_type>
+        #     <prefix>quick</prefix>
+        #   </display>
+        # </element>
+        # ''' % self.search_type)
+
         config.append('''
         <element name='Keywords'>
-          <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
+          <display class='tactic.ui.app.AdvancedSearchKeywordWdg'>
             <search_type>%s</search_type>
             <prefix>quick</prefix>
           </display>
@@ -379,6 +389,7 @@ class SearchWdg(BaseRefreshWdg):
             if filter and filter.is_visible():
                 self.filters.append(filter)
 
+
         # make sure there is at least one filter defined
         #assert self.filters
 
@@ -507,6 +518,63 @@ class SearchWdg(BaseRefreshWdg):
             widget.add_attr("spt_%s" % name, value)
 
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_search_top {
+                position: relative;
+                overflow-x: hidden;
+            }
+
+            .spt_search_top .spt_search_container {
+                display: flex;
+            }
+
+            .spt_search_top .spt_saved_searches_top {
+                width: 191px;
+            }
+
+            .spt_search_top .overlay {
+                position: absolute;
+                top: 0;
+
+                width: 100%;
+                height: 100%;
+
+                background-color: transparent;
+                transition: 0.5s;
+            }
+
+            .spt_search_top .overlay.visible {
+                background-color: rgba(0,0,0,0.4);
+            }
+
+            .spt_search_top .spt_save_top {
+                position: absolute;
+                top: 0px;
+                right: -1003px;
+
+                width: 100%;
+                height: 100%;
+                transition: 0.25s;
+            }
+
+            .spt_search_top .spt_save_top.visible {
+                right: 0px;
+            }
+
+            .spt_search_top .spt_search_num_filters,
+            .spt_search_top .spt_search_filter_mode {
+                display: none
+            }
+
+
+            ''')
+
+        return styles
+
+
     def get_display(self):
         # if no filters are defined, then display nothing
         if not self.filters:
@@ -515,19 +583,39 @@ class SearchWdg(BaseRefreshWdg):
         top = self.top
         top.add_class("spt_search_top")
 
+        container = DivWdg()
+        top.add(container)
+        container.add_class("spt_search_container")
+
         filter_top = DivWdg()
-        top.add(filter_top)
+        container.add(filter_top)
         filter_top.add_color("color", "color")
-        filter_top.add_color("background", "background", -5)
-        filter_top.add_style("padding: 5px")
+        #filter_top.add_color("background", "background", -5)
+        #filter_top.add_style("padding: 5px")
         filter_top.add_style("min-width: 800px")
-        filter_top.add_border()
+        #filter_top.add_border()
         self.set_as_panel(filter_top)
+
+        # Saved Searches
+        saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type)
+        container.add(saved_searches)
+
+        # Save widget
+        overlay = DivWdg()
+        top.add(overlay)
+        overlay.add_class("overlay")
+        overlay.add_style("display: none")
+
+        save_top = AdvancedSearchSaveWdg()
+        top.add(save_top)
+
+        # Styles
+        top.add(self.get_styles())
 
 
         # TEST link to help for search widget
         help_button = ActionButtonWdg(title="?", tip="Search Documentation", size='small')
-        filter_top.add(help_button)
+        #filter_top.add(help_button)
         help_button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -593,7 +681,7 @@ class SearchWdg(BaseRefreshWdg):
 
         match_div = DivWdg()
         match_div.add(hidden)
-        match_div.add_class('spt_search_filter') 
+        match_div.add_class('spt_search_filter')
 
         palette =  match_div.get_palette()
         bg_color = palette.color('background')
@@ -652,15 +740,15 @@ class SearchWdg(BaseRefreshWdg):
         #match_div.add('<br/>')
         #match_div.add_style("padding-top: 5px")
 
-        filter_div.add( search_wdg)
+        #filter_div.add( search_wdg)
         search_wdg.add_style("float: left")
         filter_div.add( match_div)
 
 
-        filter_div.add(HtmlElement.br())
+        #filter_div.add(HtmlElement.br())
 
         filters_div = DivWdg()
-        filters_div.add_style("margin: 0 -6 0 -6")
+        #filters_div.add_style("margin: 0 -6 0 -6")
 
         security = Environment.get_security()
 
@@ -688,7 +776,7 @@ class SearchWdg(BaseRefreshWdg):
             div.add_style("margin-top: -1px")
             div.add_style("height: 18px")
 
-            div.add_border()
+            #div.add_border()
             div.add_style("padding: 8px 5px")
             div.add_style("white-space: nowrap")
 
@@ -716,7 +804,7 @@ class SearchWdg(BaseRefreshWdg):
 
             #div.add_style("background-color: #333")
             div.add_color("background", "background")
-            div.add_border()
+            #div.add_border()
             div.add_style("padding: 10px 8px")
             div.add_style("margin-top: -1px")
             #div.add_style("margin-left: 20px")
@@ -727,10 +815,12 @@ class SearchWdg(BaseRefreshWdg):
         filter_div.add(filters_div)
 
         buttons_div = DivWdg()
-        buttons_div.add_style("margin-top: 7px")
-        buttons_div.add_style("margin-bottom: 7px")
-        search_wdg = self.get_search_wdg()
-        search_wdg.add_style("margin: 15px auto")
+        # buttons_div.add_style("margin-top: 7px")
+        # buttons_div.add_style("margin-bottom: 7px")
+        #search_wdg = self.get_search_wdg()
+        search_action = self.kwargs.get("search_action")
+        search_wdg = CustomSaveButtonsWdg(prefix=self.prefix, search_action=search_action)
+        # search_wdg.add_style("margin: 15px auto")
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
@@ -852,6 +942,22 @@ class SearchWdg(BaseRefreshWdg):
             '''
         } )
 
+        save_button = ActionButtonWdg(title='Save')
+        save_button.add_behavior( {
+            'search_type': self.search_type,
+            'cbjs_action': '''
+            
+            let top = bvr.src_el.getParent(".spt_search_top");
+            let overlay = top.getElement(".overlay");
+            let saveTop = top.getElement(".spt_save_top");
+
+            overlay.setStyle("display", "");
+            overlay.addClass("visible");
+            saveTop.addClass("visible");
+            saveTop.getElement(".spt_save_title").innerText = bvr.src_el.innerText;
+            
+            '''
+        } )
 
 
         filter_div.add(search_button)
@@ -860,7 +966,9 @@ class SearchWdg(BaseRefreshWdg):
         clear_button.add_style("float: left")
         filter_div.add(saved_button)
         saved_button.add_style("float: left")
-        filter_div.add("<br clear='all'/>")
+        filter_div.add(save_button)
+        #save_button.add_style("float: left")
+        #filter_div.add("<br clear='all'/>")
 
         return filter_div
 
@@ -897,7 +1005,7 @@ class SearchWdg(BaseRefreshWdg):
         DbContainer.abort_thread_sql(force=True)
         key = SearchWdg._get_key(search_type, view)
         WidgetSettings.set_value_by_key(key, '')
-    clear_search_data = staticmethod(clear_search_data)   
+    clear_search_data = staticmethod(clear_search_data) 
 
 
 
