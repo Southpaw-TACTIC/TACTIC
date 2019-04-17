@@ -611,8 +611,14 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        search_type = self.kwargs.get("search_type")
+
         save_top = self.top
         save_top.add_class("spt_save_top")
+        save_top.add_behavior({
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+            })
 
         ## header
         save_header = DivWdg()
@@ -666,6 +672,7 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
         search_button.add_class("search-button")
         search_button.add_class("hand")
         search_button.add_behavior( {
+            'search_type': search_type,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_save_top");
             var input = top.getElement(".spt_search_name_input");
@@ -674,8 +681,30 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
                 spt.alert("No view name specified");
                 return;
             }
-            spt.table.save_search(value, {personal: true});
+
+            //spt.table.save_search(value);
+
+            var json_values = spt.advanced_search.generate_json();
+
+            var options = {
+                'search_type': bvr.search_type,
+                'display': 'block',
+                'view': value
+            };
+
+            // replace the search widget
+            var server = TacticServerStub.get();
+
+            console.log(options, json_values);
+
+            var class_name = "tactic.ui.app.SaveSearchCbk";
+            server.execute_cmd(class_name, options, json_values);
             spt.notify.show_message("Search saved");
+
+            /*server.p_execute_cmd(class_name, options, json_values)
+            .then(function(ret_val){
+                spt.notify.show_message("Search saved");
+            });*/
             '''
         } )
 
@@ -697,6 +726,53 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
         save_top.add(self.get_styles())
 
         return save_top
+
+
+    def get_onload_js(self):
+
+        return '''
+
+spt.advanced_search = spt.advanced_search || {};
+
+spt.advanced_search.generate_json = function() {
+    var search_top = bvr.src_el.getParent(".spt_search_top");
+    var new_values = [];
+    if (search_top) {
+        var search_containers = search_top.getElements('.spt_search_filter')
+        for (var i = 0; i < search_containers.length; i++) {
+            var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+            new_values.push(values);
+        }
+        var ops = search_top.getElements(".spt_op");       // special code for ops
+        var results = [];
+        var levels = [];
+        var modes = [];
+        var op_values = [];
+        for (var i = 0; i < ops.length; i++) {
+            var op = ops[i];
+            var level = op.getAttribute("spt_level");
+            level = parseInt(level);
+            var op_value = op.getAttribute("spt_op");
+            results.push( [level, op_value] );
+            var op_mode = op.getAttribute("spt_mode");
+            levels.push(level);
+            op_values.push(op_value);
+            modes.push(op_mode);        }
+        var values = {
+            prefix: 'search_ops',
+            levels: levels,
+            ops: op_values,
+            modes: modes
+        };
+        new_values.push(values);    
+    }    // convert to json
+    
+    var search_values_dict = JSON.stringify(new_values);
+    return search_values_dict;
+
+}
+
+        '''
 
 
 

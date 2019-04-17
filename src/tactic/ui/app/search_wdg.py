@@ -606,7 +606,7 @@ class SearchWdg(BaseRefreshWdg):
         overlay.add_class("overlay")
         overlay.add_style("display: none")
 
-        save_top = AdvancedSearchSaveWdg()
+        save_top = AdvancedSearchSaveWdg(search_type=self.search_type)
         top.add(save_top)
 
         # Styles
