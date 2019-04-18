@@ -353,7 +353,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 // reuse code instead?
                 spt.pipeline.select_single_node(node);
 
-                // zoome up
+                // zoom up
                 spt.pipeline.set_scale(1.25);
 
                 var properties = spt.pipeline.get_node_properties(node);
