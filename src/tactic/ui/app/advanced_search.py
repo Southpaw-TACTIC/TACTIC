@@ -9,8 +9,10 @@
 #
 #
 #
-__all__ = ["AdvancedSearchWdg", "AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg"]
+__all__ = ["AdvancedSearchWdg", "AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg",
+"DeleteSavedSearchCmd", "SaveSearchCmd"]
 
+from pyasm.command import Command
 from pyasm.search import Search, SearchType
 from pyasm.web import DivWdg, HtmlElement
 from pyasm.widget import CheckboxWdg
@@ -570,14 +572,11 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
             }
 
             .spt_save_top .spt_save_content {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
+                margin: auto;
             }
 
             .spt_save_top .save-row {
                 display: flex;
-                justify-content: center;
                 padding: 5px 0;
             }
 
@@ -586,6 +585,14 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
                 height: 35px;
                 border-radius: 20px;
                 border: 1px solid #ccc;
+                padding: 0 12px;
+                background: #f4f4f4;
+
+                -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+                box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+                -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+                -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+                transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
             }
 
             .spt_save_top .search-button {
@@ -601,6 +608,11 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
 
             .spt_save_top input[type='checkbox'] {
                 margin: 0px !important;
+            }
+
+            .spt_save_top .spt_error_message {
+                color: red;
+                height: 14px;
             }
 
 
@@ -658,6 +670,8 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
 
         save_first_row = DivWdg()
         save_content.add(save_first_row)
+        save_first_row.add_class("spt_error_message")
+        save_first_row.add_class("save-row")
 
         save_second_row = DivWdg()
         save_content.add(save_second_row)
@@ -666,6 +680,16 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
         look_ahead_wdg = HtmlElement.text()
         save_second_row.add(look_ahead_wdg)
         look_ahead_wdg.add_class("spt_search_name_input")
+        look_ahead_wdg.add_behavior({
+            'type': 'keyup',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_save_top");
+            var errorDiv = top.getElement(".spt_error_message");
+            errorDiv.innerText = "";
+
+            '''
+            })
 
         search_button = DivWdg("Save")
         save_second_row.add(search_button)
@@ -676,6 +700,7 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_save_top");
             var input = top.getElement(".spt_search_name_input");
+            var errorDiv = top.getElement(".spt_error_message");
             var value = input.value;
             if (!value) {
                 spt.alert("No view name specified");
@@ -684,7 +709,8 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
 
             //spt.table.save_search(value);
 
-            var json_values = spt.advanced_search.generate_json();
+            var new_values = spt.advanced_search.generate_json();
+            var search_values_dict = JSON.stringify(new_values);
 
             var options = {
                 'search_type': bvr.search_type,
@@ -695,23 +721,28 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
             // replace the search widget
             var server = TacticServerStub.get();
 
-            console.log(options, json_values);
+            console.log(options, search_values_dict);
 
-            var class_name = "tactic.ui.app.SaveSearchCbk";
-            server.execute_cmd(class_name, options, json_values);
-            spt.notify.show_message("Search saved");
-
-            /*server.p_execute_cmd(class_name, options, json_values)
-            .then(function(ret_val){
+            let on_complete = function(ret_val) {
                 spt.notify.show_message("Search saved");
-            });*/
+
+                // DEPENDENCY?
+                spt.advanced_search.saved.add_item(value, value);
+            }
+
+            let on_error = function(err) {
+                errorDiv.innerText = err;
+            }
+
+            var class_name = "tactic.ui.app.SaveSearchCmd";
+            server.execute_cmd(class_name, options, search_values_dict, {on_complete: on_complete, on_error: on_error});
+
             '''
         } )
 
         save_third_row = DivWdg()
         save_content.add(save_third_row)
         save_third_row.add_class("save-row")
-        save_third_row.add_style("margin-left: -110px;")
 
         my_searches_checkbox = CheckboxWdg("my_searches")
         save_third_row.add(my_searches_checkbox)
@@ -767,12 +798,101 @@ spt.advanced_search.generate_json = function() {
         new_values.push(values);    
     }    // convert to json
     
-    var search_values_dict = JSON.stringify(new_values);
-    return search_values_dict;
+    return new_values;
 
 }
 
         '''
+
+
+
+class SaveSearchCmd(Command):
+
+    def get_args_keys(self):
+        return {
+        'search_type': 'search_type',
+        'view': 'view',
+        'unique': 'make sure this is unique'
+        }
+
+
+    def check_unique(self):
+        search = Search('config/widget_config')
+        search.add_filter("view", self.view)
+        search.add_filter("search_type", self.search_type)
+        search.add_user_filter()
+        config_sobj = search.get_sobject()
+        if config_sobj and self.unique:
+            view = self.view.replace('link_search:', '')
+            raise UserException('This view [%s] already exists' %view)
+        return True
+    
+    def init(self):
+        # handle the default
+        config = self.kwargs.get('config')
+        self.search_type = self.kwargs.get("search_type")
+        self.view = self.kwargs.get("view")
+        self.unique = self.kwargs.get('unique') == True
+        assert(self.search_type)
+        if self.unique:
+            self.check_unique()
+        self.personal = self.kwargs.get('personal')
+
+
+    def execute(self):
+        self.init()
+
+        # create the filters
+        self.filters = []
+
+        config = "<config>\n"
+        config += "<filter>\n"
+
+        # get all of the serialized versions of the filters
+        filter_data = FilterData.get()
+        json = filter_data.serialize()
+        value_type = "json"
+        config += "<values type='%s'>%s</values>\n" % (value_type, json)
+        config += "</filter>\n"
+        config += "</config>\n"
+        
+
+        # format the xml
+        xml = Xml()
+        xml.read_string(config)
+
+
+        if not self.view:
+            saved_view = "saved_search:%s" % self.search_type
+        else:
+            saved_view = self.view
+        #    if self.view.startswith("saved_search:"):
+        #        saved_view = self.view
+        #    else:
+        #        saved_view = "saved_search:%s" % self.view
+
+        # use widget config instead
+        search = Search('config/widget_config')
+        search.add_filter("view", saved_view)
+        search.add_filter("search_type", self.search_type)
+        if self.personal:
+            search.add_user_filter()
+        config = search.get_sobject()
+
+        if config:
+            raise Exception("View with name '%s' already exists." % saved_view)
+
+        if not config:
+            config = SearchType.create('config/widget_config')
+            config.set_value("view", saved_view)
+            config.set_value("search_type", self.search_type)
+            if self.personal:
+                config.set_user()
+
+        config.set_value("category", "search_filter")
+        config.set_value("config", xml.to_string())
+        config.commit()
+
 
 
 
@@ -838,7 +958,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
             }
 
             .spt_saved_searches_top .spt_saved_searches_container {
-                padding: 5px 20px 20px 20px;
+                padding: 5px 0px 20px 0px;
                 font-size: 11px;
             }
 
@@ -849,7 +969,13 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                 width: 100%;
 
                 color: #bbb;
-                padding: 5px 0;
+                padding: 5px 20;
+                box-sizing: border-box;
+            }
+
+            .spt_saved_searches_top .spt_saved_search_item:hover,
+            .spt_saved_searches_top .spt_saved_search_item.selected {
+                background: #eee
             }
 
             .spt_saved_searches_top .spt_saved_search_label {
@@ -858,6 +984,18 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+            }
+
+            .spt_saved_searches_top .spt_saved_search_item:hover .spt_saved_search_delete {
+                display: block;
+            }
+
+            .spt_saved_searches_top .spt_saved_search_delete {
+                display: none;
+            }
+
+            .spt_saved_searches_top .spt_saved_search_delete:hover {
+                color: red;
             }
 
 
@@ -889,6 +1027,10 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
         saved_top = self.top
         saved_top.add_class("spt_saved_searches_top")
+        saved_top.add_behavior({
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+            })
 
         ### saved searches header
         saved_header = DivWdg()
@@ -899,13 +1041,22 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         my_searches_wdg = DivWdg()
         saved_header.add(my_searches_wdg)
         my_searches_wdg.add_class("spt_my_searches")
-        my_searches_wdg.add_class("hand")
+        # my_searches_wdg.add_class("hand")
+
+        # searches_dropdown = DivWdg()
+        # saved_header.add(searches_dropdown)
+        # searches_dropdown.add_class("spt_search_categories_dropdown")
+
+        # searches_dropdown_item = DivWdg()
+        # searches_dropdown.add(searches_dropdown)
+        # searches_dropdown_item.add_class("searches")
+        # searches_dropdown_item.add_class("spt_template hand")
 
         my_searches_title = DivWdg("My Searches")
         my_searches_wdg.add(my_searches_title)
         my_searches_title.add_class("spt_my_searches_title")
 
-        my_searches_wdg.add("<i class='fa fa-angle-down'></i>")
+        # my_searches_wdg.add("<i class='fa fa-angle-down'></i>")
 
         #### my searches (input)
         my_searches_search = DivWdg("<i class='fa fa-search'></i>")
@@ -998,29 +1149,51 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
             'labels': labels,
             'cbjs_action': '''
 
-            let container = bvr.src_el.getElement(".spt_saved_searches_container");
-            let template = bvr.src_el.getElement(".spt_template");
-
             for (let i=0; i<bvr.values.length; i++) {
-                let clone = spt.behavior.clone(template);
-                let label = clone.getElement(".spt_saved_search_label");
-                label.innerText = bvr.labels[i];
-                clone.setAttribute("spt_value", bvr.values[i]);
-
-                clone.removeClass("spt_template");
-
-                container.appendChild(clone);
+                let label = bvr.labels[i];
+                let value = bvr.values[i];
+                
+                spt.advanced_search.saved.add_item(label, value);
             }
 
             '''
             })
 
-        saved_search_item.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
+        saved_item_action = self.kwargs.get("saved_item_action") or '''
+
+            bvr.src_el.addClass("selected");
 
             let value = bvr.src_el.getAttribute("spt_value");
             spt.table.load_search(value);
+
+            '''
+        saved_search_item.add_behavior({
+            'type': 'click',
+            'cbjs_action': saved_item_action
+            })
+
+        saved_search_delete.add_behavior({
+            'type': 'click',
+            'search_type': search_type,
+            'cbjs_action': '''
+
+            let item = bvr.src_el.getParent(".spt_saved_search_item");
+
+            let server = TacticServerStub.get();
+            let kwargs = {
+                view: item.getAttribute("spt_value"),
+                search_type: bvr.search_type
+            }
+            let classname = "tactic.ui.app.DeleteSavedSearchCmd";
+            server.p_execute_cmd(classname, kwargs)
+            .then(function(ret_val) {
+                if (ret_val.info.deleted)
+                    console.log("yes, deleted", item.getAttribute("spt_value"));
+                else
+                    console.log("nope, not deleted", item.getAttribute("spt_value"));
+
+                item.remove();
+            });
 
             '''
             })
@@ -1028,6 +1201,57 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         saved_top.add(self.get_styles())
 
         return saved_top
+
+
+    def get_onload_js(self):
+
+        return '''
+
+spt.advanced_search = spt.advanced_search || {};
+spt.advanced_search.saved = spt.advanced_search.saved || {};
+
+spt.advanced_search.saved.add_item = function(label, value) {
+    let container = bvr.src_el.getElement(".spt_saved_searches_container");
+    let template = bvr.src_el.getElement(".spt_template");
+
+    let clone = spt.behavior.clone(template);
+    let labelDiv = clone.getElement(".spt_saved_search_label");
+    labelDiv.innerText = label;
+
+    clone.setAttribute("spt_value", value);
+    clone.removeClass("spt_template");
+    container.appendChild(clone);
+}
+
+        '''
+
+
+
+
+class DeleteSavedSearchCmd(Command):
+
+    def execute(self):
+
+        view = self.kwargs.get("view")
+        search_type = self.kwargs.get("search_type")
+
+        search = Search("config/widget_config")
+        # search.add_op("begin")
+        search.add_filter("view", view)
+        search.add_filter("category", 'search_filter')
+        # search.add_op("or")
+        # search.add_op("begin")
+        # search.add_user_filter()
+        # search.add_filter("login", "NULL", op="is", quoted=False)
+        # search.add_op("or")
+        search.add_filter("search_type", search_type)
+        config = search.get_sobject()
+
+        self.info['deleted'] = False
+        if config:
+            config.delete()
+            self.info['deleted'] = True
+
 
 
 class CustomSaveButtonsWdg(BaseRefreshWdg):
@@ -1130,7 +1354,6 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
 
             '''
             })
-
 
 
 

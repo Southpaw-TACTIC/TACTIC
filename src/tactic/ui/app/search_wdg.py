@@ -13,7 +13,7 @@ __all__ = ["SearchWdg","SearchBoxPopupWdg", "LocalSearchWdg", "SaveSearchCbk","L
 
 import os, types
 
-from pyasm.common import Xml, Common, Environment, XmlException, UserException, Container, SetupException
+from pyasm.common import Xml, Common, Environment, XmlException, UserException, Container, SetupException, jsonloads
 from pyasm.command import Command
 from pyasm.prod.biz import ProdSetting
 from pyasm.search import Search, SearchType, SObject, SearchInputException, DbContainer, SearchException
@@ -280,6 +280,9 @@ class SearchWdg(BaseRefreshWdg):
         # filter can be either dict(data) or a list or
         # xml(filter wdg definition)
         if filter:
+            if isinstance(filter, str):
+                filter = jsonloads(filter)
+
             if type(filter) == types.DictType:
                 self.config = self.get_default_filter_config()
                 filter_data = FilterData([filter])
@@ -308,6 +311,7 @@ class SearchWdg(BaseRefreshWdg):
 
                 except XmlException as e:
                     print("WARNING: non-xml filter detected!!")
+
 
         
         # NOTE: this is only used to maintain backwards compatibility
@@ -597,7 +601,8 @@ class SearchWdg(BaseRefreshWdg):
         self.set_as_panel(filter_top)
 
         # Saved Searches
-        saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type)
+        saved_item_action = self.kwargs.get("saved_item_action")
+        saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action)
         container.add(saved_searches)
 
         # Save widget
