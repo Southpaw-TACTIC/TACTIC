@@ -863,16 +863,24 @@ class SaveSearchCmd(Command):
         search = Search('config/widget_config')
         search.add_filter("view", saved_view)
         search.add_filter("search_type", self.search_type)
+        search.add_filter("login", "NULL", op="is", quoted=False)
         shared_config = search.get_sobject()
         
+        search = Search('config/widget_config')
+        search.add_filter("view", saved_view)
+        search.add_filter("search_type", self.search_type)
         search.add_user_filter()
         personal_config = search.get_sobject()
 
-
         if save_overwrite:
-            config = shared_config if save_shared else personal_config
-            config.set_value("config", xml.to_string())
-            config.commit()
+
+            if save_shared:
+                shared_config.set_value("config", xml.to_string())
+                shared_config.commit()
+            else:
+                personal_config.set_value("config", xml.to_string())
+                personal_config.commit()
+
             return
 
 
