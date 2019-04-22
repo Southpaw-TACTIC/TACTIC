@@ -946,9 +946,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
 
-        div.add_style("display: flex")
-        div.add_style("align-items: center")
-        
         border_color = div.get_color("table_border",  default="border")
         if self.get_setting("header_background"):
             div.add_color("background", "background",-1)
