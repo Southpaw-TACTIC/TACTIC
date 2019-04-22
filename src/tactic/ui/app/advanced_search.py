@@ -321,7 +321,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
 
             '''
         }
-        look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk)
+        look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, search_type=self.search_type)
         look_ahead_header.add(look_ahead_wdg)
 
         info_wdg = DivWdg("<i class='fa fa-info'></i>")
