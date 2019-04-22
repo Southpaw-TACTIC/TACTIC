@@ -238,7 +238,6 @@ class SearchWdg(BaseRefreshWdg):
 
 
     def init(self):
-
         self.user_override = self.kwargs.get('user_override') in ['true', True]
 
         custom_search_view = self.kwargs.get('custom_search_view')
@@ -280,7 +279,7 @@ class SearchWdg(BaseRefreshWdg):
 
         # see if a filter is explicitly passed in
         filter = self.kwargs.get('filter')
-        print "FILTER: ", filter
+        self.filter = filter
         
         self.limit = self.kwargs.get('limit')
         self.run_search_bvr = self.kwargs.get('run_search_bvr')
@@ -835,7 +834,8 @@ class SearchWdg(BaseRefreshWdg):
         # buttons_div.add_style("margin-bottom: 7px")
         #search_wdg = self.get_search_wdg()
         search_action = self.kwargs.get("search_action")
-        search_wdg = CustomSaveButtonsWdg(prefix=self.prefix, search_action=search_action)
+        save_mode = "save_as" if self.filter else "save"
+        search_wdg = CustomSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type)
         # search_wdg.add_style("margin: 15px auto")
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
