@@ -578,9 +578,19 @@ class SearchWdg(BaseRefreshWdg):
                 right: 0px;
             }
 
-            .spt_search_top .spt_search_num_filters,
-            .spt_search_top .spt_search_filter_mode {
+            .spt_search_top .spt_search_num_filters {
                 display: none
+            }
+
+            .spt_search_top .spt_match_filter {
+                display: flex;
+                align-items: center;
+
+                padding: 5px 20px;
+            }
+
+            .spt_search_top .spt_match_filter select{
+                margin: 0 5px;
             }
 
 
@@ -604,10 +614,7 @@ class SearchWdg(BaseRefreshWdg):
         filter_top = DivWdg()
         container.add(filter_top)
         filter_top.add_color("color", "color")
-        #filter_top.add_color("background", "background", -5)
-        #filter_top.add_style("padding: 5px")
         filter_top.add_style("min-width: 800px")
-        #filter_top.add_border()
         self.set_as_panel(filter_top)
 
         # Saved Searches
@@ -626,20 +633,6 @@ class SearchWdg(BaseRefreshWdg):
 
         # Styles
         top.add(self.get_styles())
-
-
-        # TEST link to help for search widget
-        help_button = ActionButtonWdg(title="?", tip="Search Documentation", size='small')
-        #filter_top.add(help_button)
-        help_button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.help.set_top();
-            spt.help.load_alias("search-quickstart|what-is-searching|search-interface|search-compound|search-expressions");
-            '''
-        } )
-        help_button.add_style("float: right")
-
 
         # this id should be removed
         filter_top.set_id("%s_search" % self.prefix)
@@ -687,8 +680,6 @@ class SearchWdg(BaseRefreshWdg):
             display_str = 'none'
         filter_div.add_style("display: %s" % display_str)
 
-        search_wdg = self.get_search_wdg()
-
         prefix = "filter_mode"
         if self.prefix_namespace:
             prefix = '%s_%s' %(self.prefix_namespace, prefix)
@@ -697,11 +688,13 @@ class SearchWdg(BaseRefreshWdg):
         match_div = DivWdg()
         match_div.add(hidden)
         match_div.add_class('spt_search_filter')
+        match_div.add_class("spt_match_filter")
 
         palette =  match_div.get_palette()
         bg_color = palette.color('background')
         light_bg_color =  palette.color('background', modifier=+10)
-        
+
+        match_div.add("Match")
 
         select = SelectWdg("filter_mode")
         select.add_style("width: 110px")
@@ -711,10 +704,10 @@ class SearchWdg(BaseRefreshWdg):
         select.remove_empty_option() 
         # for Local search, leave out compound search for now
         if self.kwargs.get('prefix_namespace'):
-            select.set_option("labels", "Match all|Match any")
+            select.set_option("labels", "all|any")
             select.set_option("values", "and|or")
         else:
-            select.set_option("labels", "Match all|Match any|Compound")
+            select.set_option("labels", "all|any|Compound")
             select.set_option("values", "and|or|custom")
         #select.set_option("labels", "all|any")
         #select.set_option("values", "and|or")
@@ -747,6 +740,9 @@ class SearchWdg(BaseRefreshWdg):
         } )
 
         match_div.add(select)
+
+        match_div.add("of the following rules")
+
         match_div.add_color("color", "color2")
         #match_div.add(" on the following")
         #hint = HintWdg( "An 'AND' operation is always applied to each category below. " \
@@ -754,16 +750,10 @@ class SearchWdg(BaseRefreshWdg):
         #match_div.add(hint)
         #match_div.add('<br/>')
         #match_div.add_style("padding-top: 5px")
-
-        #filter_div.add( search_wdg)
-        search_wdg.add_style("float: left")
         filter_div.add( match_div)
 
 
-        #filter_div.add(HtmlElement.br())
-
         filters_div = DivWdg()
-        #filters_div.add_style("margin: 0 -6 0 -6")
 
         security = Environment.get_security()
 
@@ -791,7 +781,6 @@ class SearchWdg(BaseRefreshWdg):
             div.add_style("margin-top: -1px")
             div.add_style("height: 18px")
 
-            #div.add_border()
             div.add_style("padding: 8px 5px")
             div.add_style("white-space: nowrap")
 
@@ -819,7 +808,6 @@ class SearchWdg(BaseRefreshWdg):
 
             #div.add_style("background-color: #333")
             div.add_color("background", "background")
-            #div.add_border()
             div.add_style("padding: 10px 8px")
             div.add_style("margin-top: -1px")
             #div.add_style("margin-left: 20px")
@@ -830,13 +818,9 @@ class SearchWdg(BaseRefreshWdg):
         filter_div.add(filters_div)
 
         buttons_div = DivWdg()
-        # buttons_div.add_style("margin-top: 7px")
-        # buttons_div.add_style("margin-bottom: 7px")
-        #search_wdg = self.get_search_wdg()
         search_action = self.kwargs.get("search_action")
         save_mode = "save_as" if self.filter else "save"
         search_wdg = CustomSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type)
-        # search_wdg.add_style("margin: 15px auto")
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
@@ -983,8 +967,6 @@ class SearchWdg(BaseRefreshWdg):
         filter_div.add(saved_button)
         saved_button.add_style("float: left")
         filter_div.add(save_button)
-        #save_button.add_style("float: left")
-        #filter_div.add("<br clear='all'/>")
 
         return filter_div
 
