@@ -117,22 +117,20 @@ class BaseCalendarDayWdg(BaseRefreshWdg):
 
         
     def get_color(self, sobject, index):
-
-        #color_mode = "custom"
         color_mode = self.kwargs.get("color_mode")
         if color_mode == "custom":
-            column = "assigned"
+            color_column = self.kwargs.get("color_column") or "assigned"
+            colors = self.kwargs.get("custom_colors")
 
-            color_column = self.kwargs.get("color_column")
-            color = self.kwargs.get("custom_colors")
-
-            colors = {
-                    'admin': '#ACC',
-                    'librarian': '#CAA',
-                    'NULL': '#CCC'
-            }
-
-            value = sobject.get(column)
+            if not colors:
+                colors = {
+                        'admin': '#ACC',
+                        'librarian': '#CAA',
+                        'NULL': '#CCC'
+                }
+            else:
+                colors = eval(colors)
+            value = sobject.get(color_column)
             color = colors.get(value)
 
             if not color:
