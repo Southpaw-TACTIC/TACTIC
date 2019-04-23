@@ -126,7 +126,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         if not self.mode:
             self.mode = 'sobject'
 
-        assert self.mode in ['sobject', 'parent', 'child','custom','related']
+        assert self.mode in ['sobject', 'parent', 'child','custom','related', 'custom_related']
 
         schema = Schema.get()
         if self.mode in ['child','related']:
@@ -188,6 +188,11 @@ class GeneralFilterWdg(BaseFilterWdg):
                 self.related_types = [x.get_value("search_type") for x in project_search_types]
             else:
                 self.related_types = [parent_type]
+        elif self.mode == 'custom_related':
+            custom_related_types = self.kwargs.get("custom_related_search_types") or []
+            if isinstance(custom_related_types, basestring):
+                custom_related_types = custom_related_types.split(",")
+            self.related_types = custom_related_types
         else:
             self.related_types = []
 
@@ -196,7 +201,10 @@ class GeneralFilterWdg(BaseFilterWdg):
         # the column names for the column selector
         valid_related_types = []
 
+        custom_related_stype_views = self.kwargs.get("custom_related_stype_views")
+
         for related_type in self.related_types:
+
             search_type_obj = SearchType.get(related_type, no_exception=True)
             if not search_type_obj:
                 continue
@@ -211,6 +219,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 continue
             self.related_types_column_dict[related_type] = columns
             valid_related_types.append(related_type)
+            
 
         self.related_types = valid_related_types
 
@@ -429,7 +438,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         #
         # provide a bunch alternatives of alternative column filters based on
         # the search type
-        if self.mode in ["child","parent","related"]:
+        if self.mode in ["child","parent","related", "custom_related"]:
             column_types = SpanWdg()
             column_types.add_class("%s_filter_columns" % self.prefix)
             column_types.add_style("display: none")
@@ -753,7 +762,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         # 1. add a search type filter
         columns = None
         related_search_type = None
-        if self.mode in ['parent', 'child']:
+        if self.mode in ['parent', 'child', 'custom_related']:
             search_type_wdg = self.get_search_type_selector(filter_name, filter_index)
             #search_type = search_type_wdg.get_widget("selector").get_value()
             search_type = search_type_wdg.get_widget("selector").value
@@ -897,7 +906,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         #schema = Schema.get()
-        if self.mode in ['child', 'parent','related']:
+        if self.mode in ['child', 'parent','related', 'custom_related']:
             self.labels = [x.split("/")[1].title() for x in self.related_types]
             search_type_select.set_option("values", self.related_types)
             search_type_select.set_option("labels", self.labels)
@@ -1247,7 +1256,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         if self.filter_mode != 'custom':
             search.add_op("begin")
 
-        if self.mode in ["child", "parent"]:
+        if self.mode in ["child", "parent", 'custom_related']:
             self.alter_child_search(search, relevant_values_list)
         elif self.mode == "custom":
             self._alter_custom_search(search, relevant_values_list)
@@ -1262,7 +1271,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
     def alter_child_search(self, search, values_list):
-
+       
         if not values_list:
             return
         # NOTE: this assumes all search_types are the same
@@ -1440,15 +1449,17 @@ class GeneralFilterWdg(BaseFilterWdg):
         begin_idx = len(search.get_select().get_wheres())
         
         for i, child_search in enumerate(child_searches):
-
-            search.add_relationship_search_filter(child_search)
+          
+            self.add_child_search_filter(search, child_search)
 
             # apply upper level op on custom mode
             if self.filter_mode == 'custom' and i > 0:
                 search.add_op( upper_ops[i-1] )
                 search.add_op('begin', begin_idx)
+
         
-                    
+    def add_child_search_filter(search, child_search):
+        search.add_relationship_search_filter(child_search)
 
 
     def _alter_custom_search(self, search, values_list):
