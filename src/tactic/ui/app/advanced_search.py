@@ -10,7 +10,7 @@
 #
 #
 __all__ = ["AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg",
-"DeleteSavedSearchCmd", "SaveSearchCmd"]
+"DeleteSavedSearchCmd", "SaveSearchCmd", "GetSavedSearchCmd"]
 
 from pyasm.common import Environment, Xml
 from pyasm.command import Command
@@ -165,7 +165,12 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
 
             '''
         }
-        look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, search_type=self.search_type)
+
+        columns = SearchType.get_columns(self.search_type)
+        if 'keywords' in columns:
+            look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, search_type=self.search_type)
+        else:
+            look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk)
         look_ahead_header.add(look_ahead_wdg)
 
         info_wdg = DivWdg("<i class='fa fa-info'></i>")
@@ -553,8 +558,6 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
                 spt.alert("Please select a save location");
                 return;
             }
-
-            //spt.table.save_search(value);
 
             var new_values = spt.advanced_search.generate_json();
             var search_values_dict = JSON.stringify(new_values);
@@ -1011,14 +1014,41 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
         saved_item_action = self.kwargs.get("saved_item_action") or '''
 
-            bvr.src_el.addClass("selected");
+            /*bvr.src_el.addClass("selected");
 
             let value = bvr.src_el.getAttribute("spt_value");
-            spt.table.load_search(value);
+            spt.table.load_search(value);*/
+
+            let currSelected = bvr.src_el.getParent(".spt_saved_searches_container").getElement(".spt_saved_search_item.selected");
+            if (currSelected) {
+              currSelected.removeClass("selected");
+            }
+            bvr.src_el.addClass("selected");
+
+            let value = bvr.src_el.getAttribute('spt_value');
+            let category = bvr.src_el.getAttribute('spt_category');
+            
+            let server = TacticServerStub.get();
+            let classname = 'tactic.ui.app.GetSavedSearchCmd';
+            let kwargs = {
+                view: value,
+                search_type: bvr.search_type,
+                category: category
+            };
+            
+            server.p_execute_cmd(classname, kwargs)
+            .then(function(ret_val) {
+                let search_values_dict = ret_val.info.search_values_dict;
+                let top = bvr.src_el.getParent('.spt_search_top');
+                let refreshPanel = top.getElement('.spt_search');
+
+                spt.panel.refresh_element(refreshPanel, {filter: search_values_dict, search_view: value});
+            });
 
             '''
         saved_search_item.add_behavior({
             'type': 'click',
+            'search_type': search_type,
             'cbjs_action': saved_item_action
             })
 
@@ -1028,24 +1058,28 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
             'cbjs_action': '''
 
             let item = bvr.src_el.getParent(".spt_saved_search_item");
-
             let label = item.innerText;
             let value = item.getAttribute("spt_value");
-            let key = item.getAttribute("spt_category");
 
-            let server = TacticServerStub.get();
-            let kwargs = {
-                view: value,
-                search_type: bvr.search_type,
-                personal: key == "my_searches"
+            let confirm = function() {
+                let key = item.getAttribute("spt_category");
+
+                let server = TacticServerStub.get();
+                let kwargs = {
+                    view: value,
+                    search_type: bvr.search_type,
+                    personal: key == "my_searches"
+                }
+                let classname = "tactic.ui.app.DeleteSavedSearchCmd";
+                server.p_execute_cmd(classname, kwargs)
+                .then(function(ret_val) {
+                    item.remove();
+                    spt.notify.show_message("Deleted");
+                    spt.advanced_search.saved.delete_item(key, label);
+                });
             }
-            let classname = "tactic.ui.app.DeleteSavedSearchCmd";
-            server.p_execute_cmd(classname, kwargs)
-            .then(function(ret_val) {
-                item.remove();
-                spt.notify.show_message("Deleted");
-                spt.advanced_search.saved.delete_item(key, label);
-            });
+
+            spt.confirm("Are you sure you want to delete '"+label+"'?", confirm); 
 
             '''
             })
@@ -1380,6 +1414,42 @@ spt.advanced_search.saved.get_selected = function() {
 
 
 
+class GetSavedSearchCmd(Command):
+
+    def execute(self):
+        view = self.kwargs.get("view")
+        search_type = self.kwargs.get("search_type")
+        category = self.kwargs.get("category")
+
+        search = Search("config/widget_config")
+        # search.add_op("begin")
+        search.add_filter("view", view)
+        search.add_filter("category", 'search_filter')
+
+        if category:
+
+            if category == "my_searches":
+                search.add_user_filter()
+            elif category == "shared_searches":
+                search.add_filter("login", "NULL", op="is", quoted=False)
+
+        # search.add_op("or")
+        # search.add_op("begin")
+        # search.add_user_filter()
+        # search.add_filter("login", "NULL", op="is", quoted=False)
+        # search.add_op("or")
+        search.add_filter("search_type", search_type)
+        config_sobj = search.get_sobject()
+
+        data = {}
+        if config_sobj:
+            config_xml = config_sobj.get_xml_value("config")
+            from pyasm.widget import WidgetConfig, WidgetConfigView
+            config = WidgetConfig.get(view=view, xml=config_xml)
+
+            data = config_xml.get_value("config/filter/values")
+
+        self.info['search_values_dict'] = data
 
 
 

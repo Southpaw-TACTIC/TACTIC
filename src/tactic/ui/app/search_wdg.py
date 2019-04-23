@@ -248,7 +248,7 @@ class SearchWdg(BaseRefreshWdg):
         self.search_type = self.kwargs.get('search_type')
 
         self.search = self.kwargs.get("search")
-        if not self.search:
+        if not self.search or self.search in ['None']:
             self.search = Search(self.search_type)
         self.config = None
 
@@ -256,6 +256,8 @@ class SearchWdg(BaseRefreshWdg):
         # state has been set, then ignore the last_search
         self.use_last_search = True
         parent_key = self.kwargs.get('parent_key')
+        if parent_key in ['None']:
+            parent_key = None
         state = self.kwargs.get('state')
         if parent_key or state or self.kwargs.get('use_last_search') in [False, 'false']:
             self.use_last_search = False
@@ -482,6 +484,8 @@ class SearchWdg(BaseRefreshWdg):
 
         # if a parent key was added
         parent_key = self.kwargs.get('parent_key')
+        if parent_key in ['None']:
+            parent_key = None
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search.add_parent_filter(parent)
