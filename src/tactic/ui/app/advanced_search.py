@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["AdvancedSearchWdg", "AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg",
+__all__ = ["AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg",
 "DeleteSavedSearchCmd", "SaveSearchCmd"]
 
 from pyasm.common import Environment, Xml
@@ -21,162 +21,6 @@ from pyasm.widget import CheckboxWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.filter import BaseFilterWdg, FilterData
 from tactic.ui.input import LookAheadTextInputWdg, TextInputWdg
-
-
-class AdvancedSearchWdg(BaseRefreshWdg):
-
-    def get_styles(self):
-
-        styles = HtmlElement.style('''
-
-            .spt_advanced_search_top {
-                position: relative;
-
-                min-height: 300px;
-
-                border-radius: 5px;
-                overflow: hidden;
-                box-shadow: 0px 2px 4px 0px #bbb;
-                color: grey;
-            }
-
-            .spt_advanced_search_top .spt_template {
-                display: none !important;
-            }
-
-            .spt_advanced_search_top .spt_search_top {
-                display: flex;
-                height: 300px;
-            }
-
-            .spt_advanced_search_top .overlay {
-                position: absolute;
-                top: 0;
-
-                width: 100%;
-                height: 100%;
-
-                background-color: transparent;
-                transition: 0.5s;
-            }
-
-            .spt_advanced_search_top .overlay.visible {
-                background-color: rgba(0,0,0,0.4);
-            }
-
-            .spt_advanced_search_top .spt_save_top {
-                position: absolute;
-                top: 0px;
-                right: -700px;
-
-                width: 100%;
-                height: 300px;
-
-                background: #cecece;
-                transition: 0.25s;
-            }
-
-            .spt_advanced_search_top .spt_save_top.visible {
-                right: 0px;
-            }
-
-            .spt_advanced_search_top .spt_search_filters_top {
-                position: relative;
-
-                width: 500px;
-                height: 100%;
-
-                background: #cecece;
-            }
-
-            .spt_advanced_search_top .spt_saved_searches_top {
-                width: 200px;
-                height: 100%;
-
-                background: #dbdbdb;
-            }
-
-
-            /* Seperator */
-            .spt_advanced_search_top .seperator {
-                height: 2px;
-                margin: 0 15px;
-                background: #f4f4f4;
-            }
-
-            ''')
-
-        return styles
-
-
-    def get_display(self):
-
-        top = self.top
-        top.add_behavior({
-            'type': 'load',
-            'cbjs_action': self.get_onload_js()
-            })
-
-        top.add_class("spt_advanced_search_top")
-
-        # search and filters and saved searches
-        search_top = DivWdg()
-        top.add(search_top)
-        search_top.add_class("spt_search_top")
-
-        ## search and filters
-        search_filter_top = DivWdg()
-        search_top.add(search_filter_top)
-        search_filter_top.add_class("spt_search_filters_top")
-
-        ### look ahead
-        look_ahead_top = AdvancedSearchKeywordWdg()
-        search_filter_top.add(look_ahead_top)
-
-        ### seperator
-        seperator = DivWdg()
-        search_filter_top.add(seperator)
-        seperator.add_class("seperator")
-
-        ### filters
-
-
-        ### buttons
-        buttons_container = CustomSaveButtonsWdg()
-        search_filter_top.add(buttons_container)
-
-        ## saved searches
-        saved_top = AdvancedSearchSavedSearchesWdg()
-        search_top.add(saved_top)
-
-        #############################################
-
-        # overlay
-        overlay = DivWdg()
-        top.add(overlay)
-        overlay.add_class("overlay")
-        overlay.add_style("display", "none")
-
-        #############################################
-
-        # save/save as
-        save_top = AdvancedSearchSaveWdg()
-        top.add(save_top)
-
-        top.add(self.get_styles())
-
-        return top
-
-
-    def get_onload_js(self):
-
-        return '''
-
-spt.advanced_search = spt.advanced_search || {};
-
-
-        '''
-
 
 
 class AdvancedSearchKeywordWdg(BaseFilterWdg):
@@ -705,6 +549,11 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
             var save_personal = inputs.my_searches[0] == "on";
             var save_shared = inputs.shared_searches[0] == "on";
 
+            if (!save_personal && !save_shared) {
+                spt.alert("Please select a save location");
+                return;
+            }
+
             //spt.table.save_search(value);
 
             var new_values = spt.advanced_search.generate_json();
@@ -722,8 +571,7 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
 
             let on_complete = function(ret_val) {
-                spt.notify.show_message("Search saved");
-
+                
                 // DEPENDENCY?
                 if (save_personal) {
                     let key = "my_searches";
@@ -734,6 +582,19 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
                     let key = "shared_searches";
                     spt.advanced_search.saved.create_item(key, value, value);
                     spt.advanced_search.saved.add_item(key, value, value);
+                }
+
+                if (save_personal || save_shared) {
+                    spt.notify.show_message("Search saved");
+                    let top = bvr.src_el.getParent(".spt_search_top");
+                    let overlay = top.getElement(".overlay");
+                    let saveTop = top.getElement(".spt_save_top");
+
+                    overlay.removeClass("visible");
+                    saveTop.removeClass("visible");
+                    setTimeout(function(){
+                        overlay.setStyle("display", "none");
+                    }, 250);
                 }
             }
 
@@ -753,6 +614,7 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
 
         my_searches_checkbox = CheckboxWdg(name="my_searches")
         save_third_row.add(my_searches_checkbox)
+        my_searches_checkbox.set_checked()
 
         save_third_row.add("<div style='margin: 0 20px 0 8px; display: flex; align-items: center;'>Save to <b style='margin-left: 5px'>My Searches</b></div>")
 
