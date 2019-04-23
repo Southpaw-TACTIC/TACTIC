@@ -69,9 +69,10 @@ class EditTitleWdg(BaseInputWdg):
         div = DivWdg()
         if not self.no_text:
             font_size = str(16-int(self.level)*2)
+            margin_top = str(20-int(self.level)*2)
             div.add_style("font-size: %spx" % font_size)
             div.add_style("font-weight: bold")
-            div.add_style("margin-top: 20px")
+            div.add_style("margin-top: %spx" % margin_top)
             div.add(self.title)
         div.add("<hr/>")
 
