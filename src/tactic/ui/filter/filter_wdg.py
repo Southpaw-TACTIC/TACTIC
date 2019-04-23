@@ -858,23 +858,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             widget.set_name(filter_type)
 
 
-        # 1. add a search type filter
-        columns = None
-        related_search_type = None
-        if self.mode in ['parent', 'child', 'custom_related']:
-            search_type_wdg = self.get_search_type_selector(filter_name, filter_index)
-            #search_type = search_type_wdg.get_widget("selector").get_value()
-            search_type = search_type_wdg.get_widget("selector").value
-            if search_type and search_type != "*":
-                #columns = self.get_columns_from_search_type(search_type)
-                columns = SearchType.get_columns(search_type)
-                columns = self.remove_columns(columns)
-                related_search_type = search_type
-            div.add( search_type_wdg )
-
         div.add("<input class='spt_input' type='hidden' name='filter_type' value='%s'/>" % filter_type)
-
-
 
 
         if filter_data_map.get("handler"):

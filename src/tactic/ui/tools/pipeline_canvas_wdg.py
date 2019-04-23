@@ -6494,6 +6494,7 @@ spt.pipeline.export_group = function(group_name) {
                 value = value.replace(/&/g, "&amp;amp;");
                 value = value.replace(/</g, "&amp;lt;");
                 value = value.replace(/>/g, "&amp;gt;");
+                value = value.replace(/'/g, "&amp;apos;");
             }
             if (key == "settings" && value) {
                 settings_str = JSON.stringify(value);
