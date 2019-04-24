@@ -2309,7 +2309,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'do_search': 'true',
         'state': state,
         'view_attrs': view_attrs,
-        'filter': filter_json,
+        //'filter': filter_json,
         'expression': expr,
         'search_limit': search_limit,
         'parent_key': parent_key,
