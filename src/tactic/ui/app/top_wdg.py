@@ -28,7 +28,7 @@ from pyasm.security import Site
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg
-from tactic.ui.app import TacticCopyrightNoticeWdg
+from tactic.ui.app import TacticCopyrightNoticeWdg, GoogleAnalyticsWdg
 from tactic.ui.widget import IconButtonWdg
 
 
@@ -570,6 +570,8 @@ class TopWdg(Widget):
         # add the javascript libraries
         head.add( JavascriptImportWdg() )
 
+        # add google analytics
+        head.add(GoogleAnalyticsWdg())
 
 
         # add the body
@@ -1170,6 +1172,9 @@ class TitleTopWdg(TopWdg):
             head.add("<title>TACTIC</title>\n" )
         else:
             head.add("<title>%s</title>\n" % project_title )
+
+        # add google analytics
+        head.add(GoogleAnalyticsWdg())
 
         # add the body
         body = self.body

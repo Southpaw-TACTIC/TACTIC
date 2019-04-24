@@ -141,7 +141,7 @@ class TextInputWdg(BaseInputWdg):
             bgcolor = self.text.add_color("background", "background", [-10, -10, -10])
         else:
             self.readonly = False
-            bgcolor = self.text.get_color("background")
+            bgcolor = self.kwargs.get("background") or self.text.get_color("background")
             self.text.add_style("background", bgcolor)
 
         self.icon_wdg = SpanWdg()
@@ -490,6 +490,7 @@ class TextInputWdg(BaseInputWdg):
 
 
         input_group.add(self.text)
+        self.text.add_class("spt_text_input_wdg")
         self.text.add_class("form-control")
         self.text.add_style('color', div.get_color('color')) 
         text_class = self.kwargs.get("text_class")
