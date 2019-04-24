@@ -297,6 +297,20 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+            .spt_filter_top .spt_filter_column_select {
+            }
+
+            .spt_filter_top input {
+                width: 250px;
+            }
+        ''' )
+
+        return styles
+
+
 
     def get_display(self):
 
@@ -353,6 +367,13 @@ class GeneralFilterWdg(BaseFilterWdg):
         dummy_div.add(filter_template)
         filter_template = self._get_filter_wdg_with_op(i, op, level, mode="child", filter_type="_related")
         dummy_div.add(filter_template)
+
+
+
+        # add a styles widget
+        top_wdg.add( self.get_styles() )
+
+
 
 
         # add in the simple search configs
@@ -806,8 +827,6 @@ class GeneralFilterWdg(BaseFilterWdg):
         #    div.add_style("opacity: 0.5")
 
 
-        #checkbox.set_persist_on_submit()
-
         checkbox.add_behavior( {
             "type": "click_up",
             "cbjs_action" : '''
@@ -826,17 +845,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             "propagate_evt": True
         })
 
-        """
-        checkbox.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent('.spt_search');
-            var el = top.getElement('.spt_search_num_filters');
-            el.innerHTML = 'cow';
-            bvr.src_el.checked = false;
-            '''
-        })
-        """
         span = DivWdg()
         span.add(checkbox)
         span.add('&nbsp;&nbsp;')
@@ -1219,11 +1227,13 @@ class GeneralFilterWdg(BaseFilterWdg):
     def get_column_selector(self, filter_name, filter_index, columns=[]):
         '''Get a select of the columns for a search type'''
         filter_selector = DivWdg(css='spt_filter_columns')
-        filter_selector.add_style("float: left")
+        filter_selector.add_style("display: flex")
 
         filter_id = "%s_column" % (self.prefix)
         column_select = SelectWdg(filter_id)
         column_select.add_empty_option()
+
+        column_select.add_class("spt_filter_column_select")
 
         if not columns:
             columns = self.columns
@@ -1305,7 +1315,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_text.add_class('spt_filter_text')
             value_text.add_style("float", "left")
             value_text.add_style("height", "30")
-            value_text.add_style("width", "250")
+            #value_text.add_style("width", "250")
             value_text.add_style("margin", "0px 5px")
             self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text);
@@ -1346,14 +1356,9 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             value_text = TextWdg("%s_value" % self.prefix)
             value_text.add_class("form-control")
-            value_text.add_styles("float: left; width: 250; margin: 0px 5px")
+            value_text.add_style("float: left")
+            value_text.add_style("margin: 0px 5px")
             value_text.set_persist_on_submit()
-
-            #behavior = {
-            #    'type': 'keyboard',
-            #    'kbd_handler_name': 'TextSearch'
-            #}
-            #value_text.add_behavior(behavior)
 
             value_text.add_behavior( {
                 'type': 'keyup',

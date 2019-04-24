@@ -1393,8 +1393,26 @@ class SelectWdg(BaseInputWdg):
 
 
     def init(self):
-        self.add_color("background", "background", 10)
-        self.add_color("color", "color")
+        #self.add_color("background", "background", 10)
+        #self.add_color("color", "color")
+        pass
+
+
+
+    def get_styles(self):
+
+        bgcolor = self.get_color("background", 10)
+        fgcolor = self.get_color("foreground")
+        styles = HtmlElement.style('''
+            select {
+                background: %s;
+                color: %s;
+            }
+
+        ''' % (bgcolor, fgcolor)
+        )
+        return styles
+
 
 
     def get_display(self):
@@ -1419,6 +1437,7 @@ class SelectWdg(BaseInputWdg):
             self.add_border()
         else:
             self.add_style("border", "none")
+
 
         #self.add_style("margin: 0px 5px")
 
