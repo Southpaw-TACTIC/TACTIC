@@ -1536,6 +1536,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             display = labels[i]
             div = self.get_result_wdg(display)
             div.add_attr("spt_value", values[i])
+            div.add_attr("spt_display", labels[i])
             top.add(div)
         if not results:
             div = DivWdg()
