@@ -336,7 +336,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         top.add(inner)
         inner.add_style("margin: -1px")
         inner.add_class("spt_custom_layout_inner")
-
+            
+        self.separate_behaviors = ProjectSetting.get_value_by_key("custom_layout_editor/behavior_separation") \
+            in ['true', 'True', True]
+    
 
         self.plugin = None
 
@@ -1187,9 +1190,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             behavior_div.add(title_wdg)
 
 
-            seperate_behaviors = ProjectSetting.get_value_by_key("custom_layout_editor/behavior_seperation")
-            seperate_behaviors = False
-            if seperate_behaviors:
+            if not self.separate_behaviors:
                 behavior_div.add(text)
                 text.add_style("width: 100%")
                 text.add_style("height: 450px")
@@ -1364,6 +1365,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
                         bvr_text.set_value( value )
                     else:
+                        # New lines added on save
+                        if value.startswith('\n'):
+                            value = value[1:]
+                        if value.endswith('\n'):
+                            value = value[:-1]
                         editor = AceEditorWdg(width="100%", language="javascript", code=value, show_options=False, editor_id='custom_layout_behavior')
                         content_div.add(editor)
 
@@ -1498,7 +1504,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     var behavior = '\\n';
                     for (var i = 0; i < behavior_elements.length; i++) {
                         
-                        console.log(inputs)
                         var item = behavior_elements[i];
                         var inputs = spt.api.get_input_values(item);
                         var behavior_name = inputs.behavior_name[0];
@@ -1523,7 +1528,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         behavior = behavior.trim()
                         
                         behavior += '>';
+                        behavior += '\\n';
                         behavior += content;
+                        behavior += '\\n';
                         behavior += '</behavior>';
                         behavior += '\\n';
                         behavior += '\\n';
@@ -1579,6 +1586,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         button.add_behavior( {
             'type': 'click_up',
+            'separate_behaviors': self.separate_behaviors,
             'editor_id': self.editor_id,
             'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
@@ -1609,7 +1617,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var style = values.style;
             var kwargs = values.kwargs;
 
-            var behavior = spt.custom_layout_editor.compile_behaviors(values);
+            if (bvr.separate_behaviors) var behavior = spt.custom_layout_editor.compile_behaviors(values);
+            else behavior = values.behavior;
+            
             var callback = values.callback;
 
             if (!view) {
@@ -1684,6 +1694,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row.add(button)
         button.add_behavior( {
             'type': 'click_up',
+            'separate_behaviors': self.separate_behaviors,
             'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
@@ -1711,9 +1722,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             if (!values.view) {
                 values.view = "__test__"
             }
-        
-            values.behavior = spt.custom_layout_editor.compile_behaviors(values);
-
+            
+            if (bvr.separate_behaviors) values.behavior = spt.custom_layout_editor.compile_behaviors(values);
 
             var class_name = 'tactic.ui.tools.CustomLayoutEditTestWdg';
             try {
