@@ -13,25 +13,24 @@
 
 __all__ = ['FormatValue']
 
-import re
+
+import datetime
+import locale
 import os
 from dateutil import parser
-import datetime
 from timecode import TimeCode
 
 
-import locale
-locale.setlocale(locale.LC_ALL, '') 
 try:
+    locale.setlocale(locale.LC_ALL, '')
     locale.currency(1234.56, True)
-except ValueError:
+except (ValueError, locale.Error):
     # if auto setting of locale fails, then set the locale to en_US
     # Windows only understands alias language name like English
     if os.name == 'posix':
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8') 
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     elif os.name == 'nt':
-        locale.setlocale(locale.LC_ALL, 'English') 
-
+        locale.setlocale(locale.LC_ALL, 'English')
 
 
 class FormatValue(object):
