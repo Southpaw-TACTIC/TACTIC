@@ -1538,6 +1538,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             from_attr = connector.get_attr("from_attr");
             draw_attr = true;
 
+            connector.is_selected = true;
             connector.draw_spline(draw_attr);
 
             var from_node = connector.get_from_node();

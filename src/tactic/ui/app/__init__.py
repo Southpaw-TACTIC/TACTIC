@@ -15,6 +15,7 @@ from tactic_branding_wdg import *
 from search_type_element_wdg import *
 from custom_property_wdg import *
 from search_limit_wdg import *
+from analytics_wdg import *
 
 from top_wdg import *
 
@@ -52,6 +53,7 @@ from message_wdg import *
 from db_resource_wdg import *
 
 from simple_search_wdg import *
+from advanced_search import *
 
 
 

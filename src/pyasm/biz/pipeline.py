@@ -1114,6 +1114,28 @@ class Pipeline(SObject):
 
 
 
+
+    def get_input_streams(self, process):
+        connects = self._get_connects(process, direction="to")
+        if not connects:
+            return []
+        else:
+            return [x.get_to_attr() for x in connects]
+
+
+
+    def get_output_streams(self, process):
+        connects = self._get_connects(process, direction="from")
+        if not connects:
+            return []
+        else:
+            return [x.get_from_attr() for x in connects]
+
+
+
+
+
+
     # DEPRECATED
     def get_forward_connects(self, process):
         connects = self._get_connects(process)

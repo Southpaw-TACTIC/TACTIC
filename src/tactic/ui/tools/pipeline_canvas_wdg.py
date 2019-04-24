@@ -446,7 +446,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
             else if (key == "f") {
                 var selected = spt.pipeline.get_selected_nodes();
-                console.log(selected)
                 if (!selected.length) {
                     spt.pipeline.fit_to_canvas();
                 }
@@ -2621,6 +2620,7 @@ spt.pipeline.delete_selected = function() {
 spt.pipeline.clear_selected = function(item) {
     var data = spt.pipeline.get_data();
     spt.pipeline.unselect_all_nodes();
+    spt.pipeline.unselect_all_connectors();
     data.selected = [];
 }
 
@@ -2773,6 +2773,18 @@ spt.pipeline.select_nodes_by_box = function(TL, BR) {
         }
     }
 }
+
+
+
+spt.pipeline.unselect_all_connectors = function() {
+    var canvas = spt.pipeline.get_canvas();
+    var connectors = canvas.connectors;
+
+    connectors.forEach( function(connector) {
+        connector.unselect();
+    } );
+}
+
 
 
 
@@ -4694,21 +4706,25 @@ spt.pipeline.canvas_drag_mode = "canvas";
 
 spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
 
-    spt.pipeline.init(bvr);
-
     var pos = spt.pipeline.get_mouse_position(mouse_411);
     spt.pipeline.last_mouse_position = pos;
     spt.pipeline.orig_mouse_position = pos;
 
+
     // do a hit test first
     var connector = spt.pipeline.hit_test(pos.x-2, pos.y-2, pos.x+2, pos.y+2);
     if (connector != null) {
-        return;
+        //return;
         spt.pipeline.canvas_drag_disable = true;
         spt.pipeline.canvas_drag_mode = "connector";
-        spt.pipeline._existing_connector_drag_setup(evt, bvr, mouse_411);
+        spt.pipeline.canvas_drag_connector = connector;
+        // This is done only after we have dragged for 5 pixels
+        //spt.pipeline._existing_connector_drag_setup(evt, bvr, mouse_411);
         return;
     }
+
+
+    spt.pipeline.init(bvr);
 
     spt.pipeline.canvas_drag_mode = "canvas";
     spt.pipeline.canvas_drag_disable = false;
@@ -4764,6 +4780,11 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
 
 
+    // reset the setting
+    spt.pipeline.canvas_drag_disable = false;
+    bvr.src_el.setStyle("cursor", "");
+
+
     var mouse_pos = spt.pipeline.get_mouse_position(mouse_411);
     var dx = mouse_pos.x - spt.pipeline.orig_mouse_position.x;
     var dy = mouse_pos.y - spt.pipeline.orig_mouse_position.y;
@@ -4774,20 +4795,22 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
+        spt.pipeline.canvas_drag_init = false;
+
+        spt.pipeline.canvas_drag_mode = "canvas";
+
         if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
-            //spt.pipeline.canvas_drag_connector.select()
             return;
         }
         spt.pipeline._existing_connector_drag_action(evt, bvr, mouse_411);
         return;
     }
 
-    spt.pipeline.canvas_drag_disable = false;
-
 
 
     if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
         spt.pipeline.unselect_all_nodes();
+        spt.pipeline.unselect_all_connectors();
         return;
     }
 
@@ -4797,29 +4820,25 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
 
-    bvr.src_el.setStyle("cursor", "");
     var nodes = spt.pipeline.get_all_nodes();
     for (var i = 0; i < nodes.length; i++) {
         spt.pipeline.set_current_position(nodes[i]);
     }
     spt.pipeline.redraw_canvas();
 
-    // reset the setting
-    spt.pipeline.last_mouse_position = null;
-    spt.pipeline.canvas_drag_disable = false;
 }
 
 
 // connector drag
 spt.pipeline.canvas_drag_src_el;
 spt.pipeline.canvas_drag_connector;
+spt.pipeline.canvas_drag_init = false;
 
 spt.pipeline._existing_connector_drag_setup = function(evt, bvr, mouse_411) {
     var pos = spt.pipeline.get_mouse_position(mouse_411);
-    var connector = spt.pipeline.hit_test(pos.x-2, pos.y-2, pos.x+2, pos.y+2);
 
+    var connector = spt.pipeline.canvas_drag_connector;
     spt.pipeline.canvas_drag_src_el = connector.from_node.getElement(".spt_content");
-    spt.pipeline.canvas_drag_connector = connector
 
     bvr.src_el = spt.pipeline.canvas_drag_src_el;
     bvr.connector = connector;
@@ -4828,16 +4847,29 @@ spt.pipeline._existing_connector_drag_setup = function(evt, bvr, mouse_411) {
 
 spt.pipeline._existing_connector_drag_motion = function(evt, bvr, mouse_411) {
 
+    // only set up if the connector has moved
+    if (spt.pipeline.canvas_drag_init == false) {
+        spt.pipeline._existing_connector_drag_setup(evt, bvr, mouse_411);
+        spt.pipeline.canvas_drag_init = true;
+    }
+
     bvr.src_el = spt.pipeline.canvas_drag_src_el;
     bvr.connector = spt.pipeline.canvas_drag_connector;
+
     spt.pipeline.drag_connector_motion(evt, bvr, mouse_411);
 }
 
 spt.pipeline._existing_connector_drag_action = function(evt, bvr, mouse_411) {
+    spt.pipeline.canvas_drag_init = false;
 
     bvr.src_el = spt.pipeline.canvas_drag_src_el;
     bvr.connector = spt.pipeline.canvas_drag_connector;
     spt.pipeline.drag_connector_action(evt, bvr, mouse_411);
+
+    // It looks like the bvr object is actually reused by the behvior.  We set the 
+    // src el back to the original canvas after the drag operation
+    var canvas = spt.pipeline.get_canvas();
+    bvr.src_el = canvas;
 }
 
 
@@ -5248,12 +5280,14 @@ spt.pipeline.Connector = function(from_node, to_node) {
     this.draw = function() {
         if (this.from_node == null || this.to_node == null) return;
 
+        var draw_attr = this.is_selected;
+
         var data = spt.pipeline.get_data();
         if (data.line_mode == 'line') {
-            this.draw_line();
+            this.draw_line(draw_attr);
         }
         else {
-            this.draw_spline();
+            this.draw_spline(draw_attr);
         }
     }
 
@@ -5498,6 +5532,13 @@ spt.pipeline.Connector = function(from_node, to_node) {
         this.set_color(color);
         this.is_selected = true;
     }
+
+    this.unselect = function() {
+        //spt.pipeline.add_to_selected(this);
+        this.is_selected = false;
+    }
+
+ 
 
     this.set_from_node = function(from_node) {
         this.from_node = from_node;
@@ -6453,6 +6494,7 @@ spt.pipeline.export_group = function(group_name) {
                 value = value.replace(/&/g, "&amp;amp;");
                 value = value.replace(/</g, "&amp;lt;");
                 value = value.replace(/>/g, "&amp;gt;");
+                value = value.replace(/'/g, "&amp;apos;");
             }
             if (key == "settings" && value) {
                 settings_str = JSON.stringify(value);
