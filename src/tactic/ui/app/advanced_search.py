@@ -465,7 +465,6 @@ spt.advanced_search.keywords.add_recent = function(value) {
 
     server.p_execute_cmd(classname, kwargs)
     .then(function(ret_val){
-        console.log('refonasda');
         spt.advanced_search.keywords.recent_searches.push(value);
 
         let recents = bvr.src_el.getElement(".spt_recent_searches");
