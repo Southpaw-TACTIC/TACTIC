@@ -22,7 +22,7 @@ __all__ = [
 ]
 
 
-import os, shutil, string, types
+import os, shutil, string, types, random
 
 from pyasm.common import Common, Marshaller, Date, SPTDate, TacticException
 from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser, PrefSetting
@@ -1067,6 +1067,9 @@ class SelectWdg(BaseInputWdg):
         css = kwargs.get('css')
         label = kwargs.get('label')
         bs = kwargs.get('bs')
+
+        if not name:
+            name = "select%s" % random.randint(0, 1000000)
 
         self.sobjects_for_options = None
         self.empty_option_flag = False

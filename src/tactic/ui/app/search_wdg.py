@@ -120,8 +120,6 @@ class SearchWdg(BaseRefreshWdg):
 
     def get_default_filter_config(self):
 
-        print self.kwargs, "yup"
-
         filter_view = self.kwargs.get('filter_view') or ""
 
         default_filter_view = self.kwargs.get("default_filter_view")

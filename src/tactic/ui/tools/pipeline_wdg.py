@@ -2459,7 +2459,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
 
-    def get_title_wdg(self, node_type, show_node_type_select=True):
+    def get_title_wdg(self, process, node_type, show_node_type_select=True):
 
         div = DivWdg()
         div.add_style("margin-top: -15px")
@@ -2820,7 +2820,7 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add( title_wdg )
 
         # if not process_sobj:
@@ -4005,7 +4005,7 @@ class ActionInfoWdg(BaseInfoWdg):
         self.initialize_session_behavior(top)
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4297,7 +4297,7 @@ class UnknownInfoWdg(BaseInfoWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
         msg_div = DivWdg()
@@ -4349,7 +4349,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4501,7 +4501,7 @@ class HierarchyInfoWdg(BaseInfoWdg):
         search_type = pipeline.get_value("search_type")
 
  
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4621,7 +4621,7 @@ class DependencyInfoWdg(BaseInfoWdg):
         self.initialize_session_behavior(top)
 
  
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4899,7 +4899,7 @@ class ProgressInfoWdg(BaseInfoWdg):
             })
 
  
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -5129,7 +5129,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 
             })
  
-        title_wdg = self.get_title_wdg(node_type, show_node_type_select=False)
+        title_wdg = self.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
 
         color = Task.get_default_color(process)

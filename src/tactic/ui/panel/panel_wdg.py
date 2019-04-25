@@ -3242,6 +3242,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         if extra_data:
             if isinstance(extra_data, dict):
                 extra_data = jsondumps(extra_data)
+        default_data = self.kwargs.get("default_data")
+        if default_data:
+            if isinstance(default_data, dict):
+                default_data = jsondumps(default_data)
+
 
         is_inner = self.kwargs.get("is_inner")
 
@@ -3343,6 +3348,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "settings": settings,
             "gear_settings": gear_settings,
             "extra_data": extra_data,
+            "default_data": default_data,
             #"search_wdg": search_wdg
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,

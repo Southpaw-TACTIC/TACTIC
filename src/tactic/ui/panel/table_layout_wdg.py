@@ -660,6 +660,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             else:
                 inner.add_attr("spt_extra_data", self.extra_data)
 
+        if self.default_data:
+            if not isinstance(self.default_data, basestring):
+                inner.set_json_attr("spt_default_data", self.default_data)
+            else:
+                inner.add_attr("spt_default_data", self.default_data)
+
+
 
         save_class_name = self.kwargs.get("save_class_name")
         if save_class_name:
@@ -3360,8 +3367,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 # provide an opportunity for the widget to affect the td and tr
                 widget.handle_tr(tr)
                 widget.handle_td(td)
-
-
+        
             is_editable = True
             # Check if view is editable first, if not, skip checking each column
             if self.view_editable:
@@ -4855,6 +4861,20 @@ spt.table.add_new_item = function(kwargs) {
 
     var clone = spt.behavior.clone(insert_row);
 
+    // add extra data
+    var inner = layout.getElement(".spt_layout_inner");
+    if (inner) {
+        var default_data = inner.getAttribute("spt_default_data");
+    }
+    else {
+        var default_data = layout.getAttribute("spt_default_data");
+    }
+    if (default_data) {
+        clone.extra_data = JSON.parse(default_data);
+    }
+
+
+
     if (!row) {
         var first = table.getElement("tr");
         if (first) {
@@ -5246,10 +5266,11 @@ spt.table.recolor_rows = function() {
 spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     var edit_wdg = null;
-   
+
     // create one from scratch using a script
     var edit_script = edit_wdg_template.getAttribute("edit_script");
     if (edit_script != null) {
+        alert(edit_script);
 
         var get_edit_wdg_code = edit_script;
         var get_edit_wdg_script = spt.CustomProject.get_script_by_path(get_edit_wdg_code);
@@ -5268,9 +5289,6 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     var edit_wdg_options = edit_wdg_template.getElements('.spt_input_option');
     if (edit_wdg_options.length == 0) {
-        //var type = cell_to_edit.getAttribute("spt_input_type");
-        //if (type == 'inline')
-        //    return null;
         edit_wdg = edit_wdg_template;
     }
     else {
