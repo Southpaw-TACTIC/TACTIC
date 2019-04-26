@@ -1409,6 +1409,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
             .then(function(ret_val) {
                 let search_values_dict = ret_val.info.search_values_dict;
                 let top = bvr.src_el.getParent('.spt_search_top');
+                top.removeClass("spt_has_changes");
                 let refreshPanel = top.getElement('.spt_search');
 
                 spt.panel.refresh_element(refreshPanel, {filter: search_values_dict, search_view: value});
@@ -1887,6 +1888,10 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 padding: 6px 14px;
             }
 
+            .spt_search_top:not(.spt_has_changes) .spt_advanced_search_buttons .save-button[spt_action='save'] {
+                color: #ccc;
+            }
+
 
             ''')
 
@@ -1961,6 +1966,9 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 saveTop.addClass("visible");
                 saveTop.getElement(".spt_save_title").innerText = bvr.src_el.innerText;
             } else if (action == "save") {
+                let top = bvr.src_el.getParent(".spt_search_top");
+                if (top.hasClass("spt_has_changes")) return;
+
                 var selected = spt.advanced_search.saved.get_selected();
                 if (!selected) {
                     spt.alert("No search item selected");

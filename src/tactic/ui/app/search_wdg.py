@@ -641,6 +641,16 @@ class SearchWdg(BaseRefreshWdg):
         # this id should be removed
         filter_top.set_id("%s_search" % self.prefix)
         filter_top.add_class("spt_search")
+        # TODO: expand on this
+        filter_top.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+            
+            let top = bvr.src_el.getParent(".spt_search_top");
+            top.addClass("spt_has_changes");
+
+            '''
+            })
 
 
         for name, value in self.kwargs.items():
