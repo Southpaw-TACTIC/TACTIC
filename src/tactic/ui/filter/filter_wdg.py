@@ -126,7 +126,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         if not self.mode:
             self.mode = 'sobject'
 
-        assert self.mode in ['sobject', 'parent', 'child','custom','related']
+        assert self.mode in ['sobject', 'parent', 'child','custom','related', 'custom_related']
 
         schema = Schema.get()
         if self.mode in ['child','related']:
@@ -188,6 +188,11 @@ class GeneralFilterWdg(BaseFilterWdg):
                 self.related_types = [x.get_value("search_type") for x in project_search_types]
             else:
                 self.related_types = [parent_type]
+        elif self.mode == 'custom_related':
+            custom_related_types = self.kwargs.get("custom_related_search_types") or []
+            if isinstance(custom_related_types, basestring):
+                custom_related_types = custom_related_types.split(",")
+            self.related_types = custom_related_types
         else:
             self.related_types = []
 
@@ -196,7 +201,10 @@ class GeneralFilterWdg(BaseFilterWdg):
         # the column names for the column selector
         valid_related_types = []
 
+        custom_related_stype_views = self.kwargs.get("custom_related_stype_views")
+
         for related_type in self.related_types:
+
             search_type_obj = SearchType.get(related_type, no_exception=True)
             if not search_type_obj:
                 continue
@@ -211,6 +219,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 continue
             self.related_types_column_dict[related_type] = columns
             valid_related_types.append(related_type)
+            
 
         self.related_types = valid_related_types
 
@@ -429,7 +438,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         #
         # provide a bunch alternatives of alternative column filters based on
         # the search type
-        if self.mode in ["child","parent","related"]:
+        if self.mode in ["child","parent","related", "custom_related"]:
             column_types = SpanWdg()
             column_types.add_class("%s_filter_columns" % self.prefix)
             column_types.add_style("display: none")
@@ -753,7 +762,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         # 1. add a search type filter
         columns = None
         related_search_type = None
-        if self.mode in ['parent', 'child']:
+        if self.mode in ['parent', 'child', 'custom_related']:
             search_type_wdg = self.get_search_type_selector(filter_name, filter_index)
             #search_type = search_type_wdg.get_widget("selector").get_value()
             search_type = search_type_wdg.get_widget("selector").value
@@ -843,7 +852,63 @@ class GeneralFilterWdg(BaseFilterWdg):
         #add_button.add_style("margin-top: -2px")
         add_button.add_behavior( {
         'type': 'click_up',
-        'cbjs_action': 'spt.dg_table.add_filter(bvr.src_el)'
+        'cbjs_action': '''
+
+        var element = bvr.src_el;
+        var container = element.getParent(".spt_filter_container");
+        var filter = element.getParent(".spt_filter_container_with_op");
+        var op = filter.getElement(".spt_op");
+
+        var op_value;
+        if (op == null) {
+            op_value = 'and';
+        } else {
+            op_value = op.getAttribute("spt_op");
+        }
+
+        // get template
+        var filter_top = element.getParent(".spt_filter_top");
+        var filter_template = filter_top.getElement(".spt_filter_template_with_op");
+        
+        var filter_options = filter_top.getElement(".spt_filter_options");
+        var filters = filter_options.getElements(".spt_filter_type_wdg");
+        // clear the value in the textbox if any
+        for (var k=0; k< filters.length; k++){
+            input = filters[k].getElement("input");
+            // hidden used for expression
+            if (input && input.getAttribute('type') !='hidden' ) input.value ='';
+        }
+         
+       
+
+        // clone the filter
+        var new_filter = spt.behavior.clone(filter_template);
+        new_filter.addClass("spt_filter_container_with_op");
+        new_filter.inject(filter, "after");
+        var display = new_filter.getElement(".spt_op_display");
+
+        var top = element.getParent(".spt_search");
+        var filter_mode = top.getElement(".spt_search_filter_mode").value;
+        if (filter_mode == 'custom') {
+            display.innerHTML = op_value;
+        }
+
+        // make this into a new search filter
+        var children = new_filter.getElements(".spt_filter_template");
+        for (var i=0; i<children.length; i++) {
+            var child = children[i];    
+            child.addClass("spt_search_filter");
+        }
+        var children = new_filter.getElements(".spt_op_template");
+        for (var i=0; i<children.length; i++) {
+            var child = children[i];
+            child.addClass("spt_op");
+            
+            child.setAttribute("spt_op", op_value);
+        }
+
+
+        '''
         } )
 
         sub_button = ActionButtonWdg(title='-', tip='Remove Filter', size='small')
@@ -851,7 +916,31 @@ class GeneralFilterWdg(BaseFilterWdg):
         #sub_button.add_style("margin-top: -2px")
         sub_button.add_behavior( {
         'type': 'click_up',
-        'cbjs_action': 'spt.dg_table.remove_filter(bvr.src_el)'
+        'cbjs_action': '''
+
+        var element = bvr.src_el;
+        var container = element.getParent(".spt_filter_container");
+        //var search_filter = element.getParent(".spt_search_filter")
+        var search_filter = element.getParent(".spt_filter_container_with_op")
+
+        var all_filters = container.getElements(".spt_filter_container_with_op");
+        if (all_filters.length == 1) {
+            return;
+        }
+
+        if (all_filters[0] == search_filter) {
+            // have to destoy the spacing and op for the first filter
+            var second_filter = all_filters[1];
+            var op = second_filter.getElement(".spt_op");
+            op.destroy();
+            var spacing = second_filter.getElement(".spt_spacing");
+            spacing.destroy();
+        }
+
+        container.removeChild( search_filter );
+
+
+        '''
         } )
 
         top_div = DivWdg()
@@ -897,7 +986,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         #schema = Schema.get()
-        if self.mode in ['child', 'parent','related']:
+        if self.mode in ['child', 'parent','related', 'custom_related']:
             self.labels = [x.split("/")[1].title() for x in self.related_types]
             search_type_select.set_option("values", self.related_types)
             search_type_select.set_option("labels", self.labels)
@@ -1247,7 +1336,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         if self.filter_mode != 'custom':
             search.add_op("begin")
 
-        if self.mode in ["child", "parent"]:
+        if self.mode in ["child", "parent", 'custom_related']:
             self.alter_child_search(search, relevant_values_list)
         elif self.mode == "custom":
             self._alter_custom_search(search, relevant_values_list)
@@ -1262,7 +1351,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
     def alter_child_search(self, search, values_list):
-
+       
         if not values_list:
             return
         # NOTE: this assumes all search_types are the same
@@ -1440,15 +1529,17 @@ class GeneralFilterWdg(BaseFilterWdg):
         begin_idx = len(search.get_select().get_wheres())
         
         for i, child_search in enumerate(child_searches):
-
-            search.add_relationship_search_filter(child_search)
+          
+            self.add_child_search_filter(search, child_search)
 
             # apply upper level op on custom mode
             if self.filter_mode == 'custom' and i > 0:
                 search.add_op( upper_ops[i-1] )
                 search.add_op('begin', begin_idx)
+
         
-                    
+    def add_child_search_filter(search, child_search):
+        search.add_relationship_search_filter(child_search)
 
 
     def _alter_custom_search(self, search, values_list):
