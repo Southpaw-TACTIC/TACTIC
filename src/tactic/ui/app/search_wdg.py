@@ -613,7 +613,7 @@ class SearchWdg(BaseRefreshWdg):
         # TODO: expand on this
         top.add_relay_behavior({
             'type': 'click',
-            'bvr_match_class': 'spt_search',
+            'bvr_match_class': 'spt_search_filter',
             'cbjs_action': '''
             
             let top = bvr.src_el.getParent('.spt_search_top');

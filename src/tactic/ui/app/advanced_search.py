@@ -265,10 +265,10 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
 
         if 'keywords' in columns:
             look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, highlight=True, 
-                on_search_complete=on_search_complete, search_type=self.search_type)
+                on_search_complete=on_search_complete, keyword_mode="contains", search_type=self.search_type)
         else:
             look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, highlight=True,
-                on_search_complete=on_search_complete)
+                on_search_complete=on_search_complete, keyword_mode="contains")
         look_ahead_header.add(look_ahead_wdg)
 
         info_wdg = DivWdg("<i class='fa fa-info'></i>")
@@ -426,9 +426,8 @@ spt.advanced_search.keywords.add_keyword = function(display) {
 
     tagsContainer.removeClass("empty");
 
-    let top = bvr.src_el.getElement(".spt_look_ahead_top");
-    let textInput = top.getElement(".spt_text_input");
-    let validator = top.getElement(".spt_validation_indicator");
+    let textInput = bvr.src_el.getElement(".spt_text_input");
+    let validator = bvr.src_el.getElement(".spt_validation_indicator");
     textInput.value = "";
     validator.setStyle("display", "none");
 
@@ -673,7 +672,7 @@ class SaveCurrentSearchCmd(Command):
         search_type = self.kwargs.get("search_type")
         # values = self.kwargs.get("values")
         value = self.kwargs.get("value")
-        if not values:
+        if not value:
             return
 
         search = Search("config/widget_config")
