@@ -610,6 +610,17 @@ class SearchWdg(BaseRefreshWdg):
 
         top = self.top
         top.add_class("spt_search_top")
+        # TODO: expand on this
+        top.add_relay_behavior({
+            'type': 'click',
+            'bvr_match_class': 'spt_search',
+            'cbjs_action': '''
+            
+            let top = bvr.src_el.getParent('.spt_search_top');
+            top.addClass('spt_has_changes');
+
+            '''
+            })
 
         container = DivWdg()
         top.add(container)
@@ -642,15 +653,6 @@ class SearchWdg(BaseRefreshWdg):
         filter_top.set_id("%s_search" % self.prefix)
         filter_top.add_class("spt_search")
         # TODO: expand on this
-        filter_top.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
-            
-            let top = bvr.src_el.getParent(".spt_search_top");
-            top.addClass("spt_has_changes");
-
-            '''
-            })
 
 
         for name, value in self.kwargs.items():

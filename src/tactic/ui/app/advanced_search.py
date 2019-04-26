@@ -1890,6 +1890,7 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
 
             .spt_search_top:not(.spt_has_changes) .spt_advanced_search_buttons .save-button[spt_action='save'] {
                 color: #ccc;
+                cursor: default;
             }
 
 
@@ -1967,7 +1968,7 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 saveTop.getElement(".spt_save_title").innerText = bvr.src_el.innerText;
             } else if (action == "save") {
                 let top = bvr.src_el.getParent(".spt_search_top");
-                if (top.hasClass("spt_has_changes")) return;
+                if (!top.hasClass("spt_has_changes")) return;
 
                 var selected = spt.advanced_search.saved.get_selected();
                 if (!selected) {
