@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project, FileGroup, FileRange, Snapshot
+from pyasm.biz import File, Project, FileGroup, FileRange, Snapshot, ProjectSetting
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -2252,7 +2252,9 @@ class IngestUploadCmd(Command):
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (context, filename)
+                format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
+                if format_context not in ['false', "False", False]:
+                    context = "%s/%s" % (context, filename)
 
             if context_mode == "case_insensitive":
                 context = context.lower()
