@@ -998,11 +998,11 @@ class SearchWdg(BaseRefreshWdg):
 spt.advanced_search = spt.advanced_search || {};
 spt.advanced_search.top = bvr.src_el;
 
-spt.advanced_search.get_top = (top) {
+spt.advanced_search.get_top = function() {
     return spt.advanced_search.top;
 }
 
-spt.advanced_search.set_top = (top) {
+spt.advanced_search.set_top = function(top) {
     spt.advanced_search.top = top;
 }
 
