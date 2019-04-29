@@ -22,6 +22,17 @@ class ConfigUpgrade(BaseUpgrade):
     #
     # 4.7.0.a01
     #
+    def upgrade_v4_7_0_a01_002(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "spt_process" ALTER COLUMN "workflow" TYPE jsonb USING workflow::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "spt_process" ALTER COLUMN "workflow" TYPE json;
+            ''')
+
+
     def upgrade_v4_7_0_a01_001(self):
         if self.get_database_type() == 'PostgreSQL':
             self.run_sql('''
