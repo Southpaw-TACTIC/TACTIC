@@ -30,7 +30,8 @@ class ExceptionLog(SObject):
         # replace crazy windows paths with normal paths
         stacktrace_str = stacktrace_str.replace("\\", "/")
 
-
+        print "-"*50
+        print "From ExceptionLog.log"
         print "-"*50
         print stacktrace_str
         print str(exception)

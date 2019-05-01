@@ -306,7 +306,10 @@ class Command(Base):
                 cmd.errors.append("%s: %s" %(e.get_title(), error_msg))
             else:
                 cmd.errors.append(str(e))
+ 
 
+            from pyasm.search import ExceptionLog
+            ExceptionLog.log(e)
             raise
 
 
