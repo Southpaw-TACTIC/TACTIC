@@ -12,6 +12,8 @@
 __all__ = ['CustomViewWdg', 'CustomViewAction','CustomAddPropertyWdg', 'CustomAddPropertyCbk', 'CustomCreateViewCbk', 'CsvDownloadWdg', 'CsvGenerator', 'CustomAddPropertyLinkWdg', 'CustomEditViewPopupWdg', 'CustomAddElementWdg']
 
 import os
+import shutil
+
 from pyasm.common import *
 from pyasm.command import *
 from pyasm.biz import Project
@@ -800,6 +802,15 @@ class CsvDownloadWdg(BaseRefreshWdg):
         column_names = [ x for x in column_names if x ]
         # create the file path
         tmp_dir = web.get_upload_dir()
+
+        env = Environment.get()
+        asset_dir = env.get_asset_dir()
+        web_dir = env.get_web_dir()
+        tmp_dir = env.get_tmp_dir()
+
+        ticket = Environment.get_ticket()
+        link = "%s/temp/%s/%s" % (web_dir, ticket, self.filename)
+
         file_path = "%s/%s" % (tmp_dir, self.filename)
 
         from pyasm.command import CsvExportCmd
@@ -812,8 +823,16 @@ class CsvDownloadWdg(BaseRefreshWdg):
             cmd.execute()
         except Exception, e:
             raise
+
+        asset_download_dir = "%s/temp/%s" % (asset_dir, ticket)
+        if os.path.exists(asset_download_dir):
+            shutil.rmtree(asset_download_dir)
+        if not os.path.exists(asset_download_dir):
+            os.makedirs(asset_download_dir)
+        download_path = "%s/%s" % (asset_download_dir, self.filename)
+        shutil.move(file_path, asset_download_dir)
         
-        return file_path
+        return link
 
 
 class CsvGenerator(Widget):
