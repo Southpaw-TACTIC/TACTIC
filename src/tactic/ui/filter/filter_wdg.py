@@ -1275,6 +1275,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_span = DivWdg()
         filter_span.add_style("float: left")
         filter_span.add_class("spt_filter_type_wdg")
+        filter_span.add_style("display: flex")
         filter_span.add_color("color", "color")
         
         web = WebContainer.get_web()

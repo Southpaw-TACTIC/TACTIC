@@ -6590,6 +6590,45 @@ spt.pipeline.get_connector_by_nodes = function(from_name, to_name) {
     return connector;
 }
 
+
+spt.pipeline.get_connectors_from_node = function(from_name) {
+    var pipeline_code = spt.pipeline.get_current_group();
+    var group = spt.pipeline.get_group(pipeline_code);
+    var connectors = group.get_connectors();
+
+    var connector = null;
+
+    for (var i = 0; i < connectors.length; i++) {
+        from_node = connectors[i].get_from_node();
+
+        if (from_node.spt_name == from_name) {
+            connector = connectors[i];
+            break;
+       }
+    }
+
+    return connector;
+}
+
+spt.pipeline.get_connectors_to_node = function(to_name) {
+    var pipeline_code = spt.pipeline.get_current_group();
+    var group = spt.pipeline.get_group(pipeline_code);
+    var connectors = group.get_connectors();
+
+    var connector = null;
+
+    for (var i = 0; i < connectors.length; i++) {
+        to_node = connectors[i].get_to_node();
+
+        if (to_node.spt_name == to_name) {
+            connector = connectors[i];
+            break;
+       }
+    }
+
+    return connector;
+}
+
     '''
 
 
