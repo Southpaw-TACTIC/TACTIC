@@ -978,7 +978,43 @@ class GeneralFilterWdg(BaseFilterWdg):
         search_type_select.add_empty_option('-- Related Type --')
         behavior = {
             'type': 'change',
-            'cbjs_action': 'spt.dg_table.set_filter2(evt, bvr)',
+            #'cbjs_action': 'spt.dg_table.set_filter2(evt, bvr)',
+            'cbjs_action': '''
+
+            var prefix = bvr.prefix;
+            var selector = bvr.src_el;
+
+            // get the column type mapping
+            //var value = document.id(prefix+"_search_type_indexes").value;
+            //value = value.replace(/'/g, '"')
+            //var column_indexes = JSON.parse(value);
+            var column_indexes = bvr.search_type_indexes;
+            
+            //var filter_types = document.id(prefix + '_filter_columns');
+            var filter_types = spt.get_cousin(selector, '.spt_filter_top', '.' + prefix + '_filter_columns');
+
+            // get a handle on all of the alternative filters
+            var filters = filter_types.getChildren();
+          
+            // get the value of the column selector
+            var value = selector.value;
+
+            // WARNING: MAGIC!!
+
+            // get the target and the column index
+            var filter = selector.getParent('.spt_filter_wdg');
+            var column_index = column_indexes[value];
+            if (column_index == undefined) {
+                column_index = 0;
+            }
+            // clone and replace
+            var clone = filters[column_index].clone();
+            var replacee = filter.getElement('.spt_filter_columns');
+            filter.replaceChild( clone, replacee );
+            spt.show(clone);
+            //clone.style.display = "inline";
+
+            ''',
             'prefix': self.prefix,
             'search_type_indexes': self.search_type_indexes
         }
@@ -1023,7 +1059,48 @@ class GeneralFilterWdg(BaseFilterWdg):
         column_select.set_option("labels", labels)
         column_select.add_empty_option("-- Attribute --")
         column_select.set_persist_on_submit()
-        column_select.add_event("onchange", "spt.dg_table.set_filter(this, '%s')" % self.prefix)
+        #column_select.add_event("onchange", "spt.dg_table.set_filter(this, '%s')" % self.prefix)
+        column_select.add_behavior({
+            'type': 'change',
+            'cbjs_action': '''
+
+            selector = bvr.src_el;
+            prefix = "%s"
+
+            // get the column type mapping
+            var filter_top = selector.getParent(".spt_filter_top");
+            var hidden = filter_top.getElement(".spt_filter_indexes");
+            var value = hidden.value;
+
+            value = value.replace(/'/g, '"')
+            var column_indexes = JSON.parse(value);
+
+            // get a handle on all of the alternative filters
+            var filter_options = filter_top.getElement(".spt_filter_options");
+            var filters = filter_options.getElements(".spt_filter_type_wdg");
+
+            // get the value of the column selector
+            var value = selector.value;
+
+            // get the target and the column index
+            //var filter = document.id(selector.parentNode.parentNode);
+            var filter = document.id(selector).getParent(".spt_filter_wdg")
+            var column_index = column_indexes[value];
+            if (typeof(column_index) == "undefined") {
+                column_index = 0;
+            }
+
+            // clone and replace
+            var clone = spt.behavior.clone( filters[column_index] )
+            //var children = filter.getChildren();
+            //filter.replaceChild( clone, children[4] );
+            var filter_type_wdg = filter.getElement(".spt_filter_type_wdg");
+            filter.replaceChild( clone, filter.getElement(".spt_filter_type_wdg") );
+
+            clone.style.display = "inline";
+
+            ''' % self.prefix
+            })
         self.set_filter_value(column_select, filter_index)
         filter_selector.add(column_select, "selector"  )
         
