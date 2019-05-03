@@ -331,6 +331,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 let labelDiv = clone.getElement(".spt_recent_search_label");
                 clone.setAttribute("spt_value", value)
                 labelDiv.innerText = value;
+                labelDiv.setAttribute("spt_value", value)
                 clone.removeClass("spt_template");
 
                 bvr.src_el.appendChild(clone);
@@ -1787,6 +1788,9 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
 
                 let on_complete = function(ret_val) {
                     spt.notify.show_message("Search saved");
+
+                    let top = bvr.src_el.getParent('.spt_search_top');
+                    top.removeClass("spt_has_changes");
                 }
 
                 var class_name = "tactic.ui.app.SaveSearchCmd";

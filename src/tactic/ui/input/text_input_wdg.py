@@ -1917,6 +1917,15 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_attr("spt_display", keywords)
 
 
+        if len(filtered) == 0:
+            div = DivWdg()
+            div.add("-- no results --")
+            div.add_style("opacity: 0.5")
+            div.add_style("font-style: italic")
+            div.add_style("text-align: center")
+            top.add(div)
+
+
         return top
 
 
