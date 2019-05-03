@@ -1538,7 +1538,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 search.add_op('begin', begin_idx)
 
         
-    def add_child_search_filter(search, child_search):
+    def add_child_search_filter(self, search, child_search):
         search.add_relationship_search_filter(child_search)
 
 
