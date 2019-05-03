@@ -1275,6 +1275,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_span = DivWdg()
         filter_span.add_style("float: left")
         filter_span.add_class("spt_filter_type_wdg")
+        filter_span.add_style("display: flex")
         filter_span.add_color("color", "color")
         
         web = WebContainer.get_web()
@@ -1346,7 +1347,8 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             value_text = TextWdg("%s_value" % self.prefix)
             value_text.add_class("form-control")
-            value_text.add_styles("float: left; width: 250; margin: 0px 5px")
+            value_text.add_class("spt_filter_input");
+            value_text.add_styles("float: left; margin: 0px 5px")
             value_text.set_persist_on_submit()
 
             #behavior = {
@@ -1367,6 +1369,13 @@ class GeneralFilterWdg(BaseFilterWdg):
             })
             self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text)
+            filter_span.add(HtmlElement.style('''
+
+                .spt_filter_input {
+                    width: 250;
+                }
+
+                '''))
 
         elif type in  ['time','timestamp','datetime2']:
             relations = ["is newer than", "is older than", "is on", "is empty", "is not empty"]
