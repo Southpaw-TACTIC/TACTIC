@@ -5561,6 +5561,39 @@ spt.pipeline.Connector = function(from_node, to_node) {
     }
 
     this.set_attr = function(name, value) {
+        spt.named_events.fire_event('pipeline|connector|'+name, {
+            src_el: this,
+            options: {
+                name: name,
+                oldValue: this.attrs[name],
+                value: value
+            }
+        });
+
+        if (this.from_node) {
+            let from_name = spt.pipeline.get_node_name(this.from_node);
+            spt.named_events.fire_event('pipeline|connector|from|'+from_name+'|'+name, {
+                src_el: this,
+                options: {
+                    name: name,
+                    oldValue: this.attrs[name],
+                    value: value
+                }
+            });
+        }
+
+        if (this.to_node) {
+            let to_name = spt.pipeline.get_node_name(this.to_node);
+            spt.named_events.fire_event('pipeline|connector|to|'+to_name+'|'+name, {
+                src_el: this,
+                options: {
+                    name: name,
+                    oldValue: this.attrs[name],
+                    value: value
+                }
+            });
+        }
+
         this.attrs[name] = value;
     }
 
@@ -6596,18 +6629,17 @@ spt.pipeline.get_connectors_from_node = function(from_name) {
     var group = spt.pipeline.get_group(pipeline_code);
     var connectors = group.get_connectors();
 
-    var connector = null;
+    var result = [];
 
     for (var i = 0; i < connectors.length; i++) {
         from_node = connectors[i].get_from_node();
 
         if (from_node.spt_name == from_name) {
-            connector = connectors[i];
-            break;
+            result.push(connectors[i]);
        }
     }
 
-    return connector;
+    return result;
 }
 
 spt.pipeline.get_connectors_to_node = function(to_name) {
@@ -6615,18 +6647,17 @@ spt.pipeline.get_connectors_to_node = function(to_name) {
     var group = spt.pipeline.get_group(pipeline_code);
     var connectors = group.get_connectors();
 
-    var connector = null;
+    var result = [];
 
     for (var i = 0; i < connectors.length; i++) {
         to_node = connectors[i].get_to_node();
 
         if (to_node.spt_name == to_name) {
-            connector = connectors[i];
-            break;
+            result.push(connectors[i]);
        }
     }
 
-    return connector;
+    return result;
 }
 
     '''
