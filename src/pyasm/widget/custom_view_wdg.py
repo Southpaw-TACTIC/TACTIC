@@ -825,11 +825,11 @@ class CsvDownloadWdg(BaseRefreshWdg):
             raise
 
         asset_download_dir = "%s/temp/%s" % (asset_dir, ticket)
-        if os.path.exists(asset_download_dir):
-            shutil.rmtree(asset_download_dir)
         if not os.path.exists(asset_download_dir):
             os.makedirs(asset_download_dir)
         download_path = "%s/%s" % (asset_download_dir, self.filename)
+        if os.path.exists(download_path):
+            os.remove(download_path)
         shutil.move(file_path, asset_download_dir)
         
         return link
