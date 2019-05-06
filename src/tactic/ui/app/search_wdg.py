@@ -1007,7 +1007,7 @@ spt.advanced_search.set_top = function(top) {
 }
 
 spt.advanced_search.generate_json = function() {
-    var search_top = bvr.src_el.getParent(".spt_search_top");
+    var search_top = bvr.src_el;
     var new_values = [];
     if (search_top) {
         var search_containers = search_top.getElements('.spt_search_filter')
@@ -1054,7 +1054,9 @@ spt.advanced_search.keywords.add_keyword = function(display) {
     let tagTemplate = tagsContainer.getElement(".spt_template");
 
     let clone = spt.behavior.clone(tagTemplate);
-    clone.getElement(".spt_search_tag_label").innerText = "#"+display;
+    let textDiv = clone.getElement(".spt_search_tag_label");
+    textDiv.innerText = "#"+display;
+    textDiv.setAttribute("spt_value", display);
     clone.setAttribute("spt_value", display);
     clone.removeClass("spt_template");
     tagsContainer.appendChild(clone);
