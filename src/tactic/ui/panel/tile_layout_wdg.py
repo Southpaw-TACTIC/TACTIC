@@ -403,14 +403,16 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         if self.sobjects:
             
-            project_setting = True
+            project_setting = False
             if project_setting:
                 content_wdg = self.get_js_content_wdg()
                 inner.add(content_wdg)
                 return inner
                 
-            # self.preprocess_sobjects()
+            self.sobject_data = self.get_sobject_data(self.sobjects)
 
+            style = self.get_styles()
+            inner.add(style)
 
             inner.add( self.get_scale_wdg())
             if self.upload_mode in ['button','both']:
@@ -1646,8 +1648,94 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
+    def get_sobject_data(cls, sobjects):
+        
+        sobject_data = {}
+        for sobject in sobjects:
+
+            tile_data = {}
+            tile_data["spt_search_key"] = sobject.get_search_key(use_id=True)
+            tile_data["spt_search_key_v2"] = sobject.get_search_key()
+            tile_data["spt_name"] = sobject.get_name()
+            tile_data["spt_search_code"] = sobject.get_code()
+            tile_data["spt_is_collection"] = sobject.get_value('_is_collection', no_exception=True)
+            tile_data["spt_display_value"] = sobject.get_display_value(long=True)
+
+            sobject_data[sobject.get_search_key()] = tile_data
+
+            kwargs = {}
+            kwargs['show_name_hover'] = cls.show_name_hover
+            kwargs['aspect_ratio'] = cls.aspect_ratio
+            thumb = ThumbWdg2(**kwargs)
+            
+            use_parent = self.kwargs.get("use_parent")
+            if use_parent in [True, 'true']:
+                parent = sobject.get_parent()
+                thumb.set_sobject(parent)
+            else:
+                thumb.set_sobject(sobject)
+        
+            lib_path = thumb.get_lib_path()
+            if lib_path:
+                size = Common.get_dir_info(lib_path).get("size")
+                from pyasm.common import FormatValue
+                size = FormatValue().get_format_value(size, "KB")
+            else:
+                size = 0
+            tile_data['size'] = size
+        
+            try:
+                path = thumb.snapshot.get_web_path_by_type("main")
+            except:
+                path = path
+            tile_data['path'] = path
+
+        return sobject_data
+    get_sobject_data = classmethod(get_sobject_data)
+
+
+    def get_styles(self):
+        style = HtmlElement.style()
+        css = """
+
+            .spt_tile_drag {
+                width: auto;
+                height: auto;
+            }
+        
+        """
+        
+        css += """
+            .spt_tile_content {
+                overflow: hidden;
+                width: %s;
+                height: %s;
+            }
+        
+        """ % (self.aspect_ratio[0], self.aspect_ratio[1])
+        
+        css += """
+            .spt_tile_tool_top {
+                position: relative;
+                background: #FFF;
+                color: #000;
+                height: 21px;
+                padding: 2px 5px;
+                margin-top: -26px;
+                
+            }
+       
+        """
+
+
+        path = thumb.get_path()
+
+        style.add(css)
+        return style
 
     def get_tile_wdg(self, sobject):
+        
+        tile_data = self.sobject_data.get(sobject.get_search_key())
 
         div = DivWdg()
         div.add_class("spt_tile_top")
@@ -1657,7 +1745,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         div.add(" ")
 
- 
         if self.kwargs.get("show_title") not in ['false', False]:
 
             if self.title_wdg:
@@ -1673,17 +1760,14 @@ class TileLayoutWdg(ToolLayoutWdg):
             title_wdg.add_style("top: 0")
             title_wdg.add_style("left: 0")
             title_wdg.add_style("width: 100%")
-            #title_wdg.add_style("opacity: 0.5")
 
-
-        div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
-        div.add_attr("spt_search_key_v2", sobject.get_search_key())
-        div.add_attr("spt_name", sobject.get_name())
-        div.add_attr("spt_search_code", sobject.get_code())
-        div.add_attr("spt_is_collection", sobject.get_value('_is_collection', no_exception=True))
-        display_value = sobject.get_display_value(long=True)
-        div.add_attr("spt_display_value", display_value)
-
+        div.add_attr("spt_search_key", tile_data.get("spt_search_key"))
+        div.add_attr("spt_search_key_v2", tile_data.get("spt_search_key_v2"))
+        div.add_attr("spt_name", tile_data.get("spt_name"))
+        div.add_attr("spt_search_code", tile_data.get("spt_search_code"))
+        div.add_attr("spt_is_collection", tile_data.get("spt_is_collection"))
+        div.add_attr("spt_display_value", tile_data.get("spt_display_value"))
+     
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
         
@@ -1698,8 +1782,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div = DivWdg()
         div.add(thumb_drag_div)
         thumb_drag_div.add_class("spt_tile_drag")
-        thumb_drag_div.add_style("width: auto")
-        thumb_drag_div.add_style("height: auto")
         thumb_drag_div.add_behavior( {
             "type": "drag",
             "drag_el": '@',
@@ -1712,12 +1794,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div = DivWdg()
         thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
-
-        thumb_div.add_style("overflow: hidden")
-        thumb_div.add_style("width: %s" % self.aspect_ratio[0])
-
-        thumb_div.add_style("height: %s" % self.aspect_ratio[1])
-        #thumb_div.add_style("overflow: hidden")
 
         kwargs = {}
         kwargs['show_name_hover'] = self.show_name_hover
@@ -1738,9 +1814,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         # FIXME: for some reason, the hidden overflow is not respected here
         thumb.add_style("margin-top: 30%")
         thumb.add_style("transform: translate(0%, -50%)")
-        #thumb.add_style("border: solid 2px blue")
-        #thumb_div.add_style("border: solid 2px red")
-
 
         # add a div on the bottom
 
@@ -1749,62 +1822,29 @@ class TileLayoutWdg(ToolLayoutWdg):
         tool_div.add_style("display: none")
         tool_div.add_class("spt_tile_tool_top")
 
-        lib_path = thumb.get_lib_path()
-        if lib_path:
-            size = Common.get_dir_info(lib_path).get("size")
-            from pyasm.common import FormatValue
-            size = FormatValue().get_format_value(size, "KB")
-        else:
-            size = 0
 
         size_div = DivWdg()
         tool_div.add(size_div)
-        size_div.add(size)
+        size_div.add(sobject_data.get("size"))
         size_div.add_style("float: right")
         size_div.add_style("margin-top: 3px")
-
-
-
-        #tool_div.add_style("position: absolute")
-        tool_div.add_style("position: relative")
-        #tool_div.add_style("top: 30px")
-        tool_div.add_style("background: #FFF")
-        tool_div.add_style("color: #000")
-        tool_div.add_style("height: 21px")
-        tool_div.add_style("padding: 2px 5px")
-        tool_div.add_style("margin-top: -26px")
+                
         tool_div.add_border(size="0px 1px 1px 1px")
 
-        path = thumb.get_path()
 
-        try:
-            path = thumb.snapshot.get_web_path_by_type("main")
-        except:
-            path = path
+        
+        path = sobject_data.get("path")
         if path:
             href = HtmlElement.href()
             href.add_attr("href", path)
             tool_div.add(href)
 
-
             basename = os.path.basename(path)
             href.add_attr("download", basename)
-
 
             icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
             icon.add_class("hand")
             href.add(icon)
-            """
-            icon.add_behavior( {
-                'type': 'clickX',
-                'path': path,
-                'cbjs_action': '''
-                alert(bvr.path); 
-                '''
-            } )
-            """
-
-
 
 
         if self.bottom:
