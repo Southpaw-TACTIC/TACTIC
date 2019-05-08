@@ -833,7 +833,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
        
 
     if (value) {
-        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
+        var expr = "@GET(" +search_type+ "['" +value_column+ "','" +value+ "'].code)";
     }
     else {
         var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "'].code)";
@@ -1027,6 +1027,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                         if (el) {
                             var display = el.getAttribute('spt_display');
                             display = JSON.parse(display);
+
+                            if (!display)
+                                display = bvr.src_el.getAttribute("spt_label");
+
                             var value =  el.getAttribute('spt_value');
                             if (!display) {
                                 display = value;
@@ -1249,6 +1253,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'cbjs_action': '''
             var display = bvr.src_el.getAttribute("spt_display");
             display = JSON.parse(display);
+
+            if (!display)
+                display = bvr.src_el.getAttribute("spt_label");
 
             var value = bvr.src_el.getAttribute("spt_value");
             if (!display) {
@@ -1536,6 +1543,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             display = labels[i]
             div = self.get_result_wdg(display)
             div.add_attr("spt_value", values[i])
+            div.add_attr("spt_label", labels[i])
             top.add(div)
         if not results:
             div = DivWdg()

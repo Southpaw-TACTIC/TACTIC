@@ -178,18 +178,21 @@ spt.dg_table_action.csv_export = function( evt, bvr )
    
    
     var kwargs = {'args': options, 'values': values};
-    var rtn_file_name = '';
+    var rtn_file_path = '';
     try {
-        rtn_file_name = server.get_widget(class_name, kwargs);
+        rtn_file_path = server.get_widget(class_name, kwargs);
     } catch(e) {
         spt.error(spt.exception.handler(e));
         return;
     }
-    if (rtn_file_name.length > 200 ) {
-        spt.alert("Error exporting one of the widgets:\n" + rtn_file_name, {type: 'html'} );
+    if (rtn_file_path.length > 200 ) {
+        spt.alert("Error exporting one of the widgets:\n" + rtn_file_path, {type: 'html'} );
         return;
     }
         
+    
+    /*
+
     var csv_file_name = encodeURIComponent(rtn_file_name);
     var param_dict = {};
     class_name = "pyasm.widget.CsvGenerator";
@@ -198,8 +201,10 @@ spt.dg_table_action.csv_export = function( evt, bvr )
     param_dict['filepath'] = csv_file_name;
 
     var url = spt.Environment.get().get_widget_server_url(param_dict);
+
+    */
     
-    document.location = url;
+    document.location = rtn_file_path;
 
 }
 

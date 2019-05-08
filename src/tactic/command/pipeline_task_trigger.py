@@ -64,18 +64,13 @@ class PipelineTaskStatusTrigger(Trigger):
                     continue
 
             # make sure the caller process is the same as the source process
-            if src_task.get_value("process") != data.get("src_process"):
+            src_process = data.get("src_process")
+            if src_process and src_task.get_value("process") != src_process:
                 continue
 
             #conditionx = "@GET(.status) != 'Approved'"
             #result = Search.eval(conditionx, src_task)
             #print "result: ", result
-
-
-
-
-
-
 
             # make sure that the appropriate status was set
             src_status = data.get("src_status")
@@ -90,7 +85,7 @@ class PipelineTaskStatusTrigger(Trigger):
                 cmd.set_output(self.input)
                 cmd.execute()
                 continue
- 
+
             # Execute trigger if necessary
             class_path = data.get("class_path")
             if class_path:
