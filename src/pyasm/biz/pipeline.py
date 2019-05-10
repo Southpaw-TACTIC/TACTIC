@@ -952,6 +952,46 @@ class Pipeline(SObject):
             index += 1
 
 
+    def get_dependent_processes(self, start, end):
+
+	process_names = self.get_process_names()
+
+
+	if start not in process_names:
+	    print("process [%s] does not exist" % start)
+	    return
+	if end not in process_names:
+	    print("process [%s] does not exist" % end)
+	    return
+
+	process = end
+
+
+	handled = []
+
+	def handle_process(process, start):
+
+	    if process in handled:
+		return
+
+	    handled.append(process)
+	    if process == start:
+		return
+
+	    input_processes = self.get_input_processes(process)
+	    if not input_processes:
+		return
+
+	    for input_process in input_processes:
+		input_process_name = input_process.get_name()
+		handle_process(input_process_name, start)
+
+	handle_process(process, start)
+
+	return handled
+
+
+
 
 
     def _get_connects(self, process="", direction='from'):

@@ -771,10 +771,27 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         security = Environment.get_security()
 
+
+        #filtered_element_names = ['preview', 'summary']
+        filtered_element_names = []
+
+        count = 0
         for element_name in element_names:
+
+            if filtered_element_names and element_name not in filtered_element_names:
+                continue
+
+            count += 1
+
+
+
             menu_item = DivWdg(css='hand')
             menu_item.add_class("spt_column")
             menu_item.add_style("height: 28px")
+            menu_item.add_style("display: flex")
+            menu_item.add_style("align-items: center")
+
+
 
             checkbox = CheckboxWdg("whatever")
             if browser == 'Qt':
@@ -882,6 +899,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
             elements_wdg.add(menu_item)
 
+        if not count:
+            return None
+
 
         return content_wdg
 
@@ -968,7 +988,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()
 
-
         # define a finger menu
         finger_menu, menu = self.get_finger_menu()
         context_menu.add(finger_menu)
@@ -990,6 +1009,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
             element_names = config.get_element_names()
             for element_name in element_names:
+
                 if element_name not in defined_element_names:
                     defined_element_names.append(element_name)
 
@@ -998,6 +1018,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         for column in columns:
             if column == 's_status':
                 continue
+
             if column not in defined_element_names:
                 defined_element_names.append(column)
 
@@ -1027,17 +1048,21 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
         # Add predefined columns
-        def_db_config = WidgetDbConfig.get_by_search_type("ALL", "definition")
-        if def_db_config:
-            element_names = def_db_config.get_element_names()
-            predefined_element_names.extend(element_names)
 
-        title = "Built-in Widgets"
-        context_menu.add( self.get_columns_wdg(title, predefined_element_names) )
+        show_builtin_columns = self.kwargs.get("show_builtin_columns")
+        if show_builtin_columns not in [False, 'false']:
+            def_db_config = WidgetDbConfig.get_by_search_type("ALL", "definition")
+            if def_db_config:
+                element_names = def_db_config.get_element_names()
+                predefined_element_names.extend(element_names)
+
+            title = "Built-in Columns"
+            context_menu.add( self.get_columns_wdg(title, predefined_element_names) )
 
 
 
         # schema defined columns for foreign keys
+        """
         element_names = []
         view_schema_columns = True
         if view_schema_columns:
@@ -1068,6 +1093,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             #context_menu.add(HtmlElement.br())
             #title = "Schema Columns"
             #context_menu.add( self.get_columns_wdg(title, element_names) )
+        """
 
 
  
@@ -1077,8 +1103,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         default = "deny"
         group = "db_columns"
 
-        view_db_columns = True
-        #if view_db_columns:
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
 

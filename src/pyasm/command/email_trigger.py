@@ -125,6 +125,8 @@ class EmailTrigger(Trigger):
                 rule_key = Xml.get_attribute(rule_node, 'key')
                 rule_value = Xml.get_attribute(rule_node, 'value')
                 compare = Xml.get_attribute(rule_node, 'compare')
+                op = Xml.get_attribute(rule_node, 'op')
+
                 # parse the rule
                 if group_type == "sobject":
                     if not self._process_sobject(main_sobject, rule_key, compare):
@@ -139,11 +141,28 @@ class EmailTrigger(Trigger):
                 if not value:
                     break
                 
-                # match the rule to the value
-                p = re.compile(rule_value)
-                if not p.match(value):
-                    print("... skipping: '%s' != %s" % (value, rule_value))
-                    break
+                if op == "=":
+                    if value != rule_value:
+                        break
+                elif op == "!=":
+                    if value == rule_value:
+                        break
+                elif op == "in":
+                    values = "|".split(rule_value)
+                    if value not in rule_value:
+                        break
+                elif op == "not in":
+                    values = "|".split(rule_value)
+                    if value in rule_value:
+                        break
+
+                # default is match
+                else:
+                    # match the rule to the value
+                    p = re.compile(rule_value)
+                    if not p.match(value):
+                        #print("... skipping: '%s' != %s" % (value, rule_value))
+                        break
             else:
                 is_skipped = False
            
@@ -547,6 +566,7 @@ class EmailTrigger2(EmailTrigger):
             rule_key = Xml.get_attribute(rule_node, 'key')
             rule_value = Xml.get_attribute(rule_node, 'value')
             compare = Xml.get_attribute(rule_node, 'compare')
+            op = Xml.get_attribute(rule_node, 'op')
 
             # evaluate the expression if it exists
             expression = Xml.get_node_value(rule_node)
@@ -574,12 +594,28 @@ class EmailTrigger2(EmailTrigger):
                     value = ''
             if not value:
                 break
-            
-            # match the rule to the value
-            p = re.compile(rule_value)
-            if not p.match(value):
-                print("... skipping: '%s' != %s" % (value, rule_value))
-                break
+                       
+            if op == "=":
+                if value != rule_value:
+                    break
+            elif op == "!=":
+                if value == rule_value:
+                    break
+            elif op == "in":
+                values = "|".split(rule_value)
+                if value not in rule_value:
+                    break
+            elif op == "not in":
+                values = "|".split(rule_value)
+                if value in rule_value:
+                    break
+
+            else: 
+                # match the rule to the value
+                p = re.compile(rule_value)
+                if not p.match(value):
+                    print("... skipping: '%s' != %s" % (value, rule_value))
+                    break
 
         else:
             is_skipped = False

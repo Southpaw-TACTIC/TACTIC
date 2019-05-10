@@ -256,7 +256,7 @@ class BaseTableElementWdg(HtmlElement):
 
 
 
-    # functions taht for a standard way for an widget to deliver data
+    # functions that for a standard way for an widget to deliver data
     def get_data(self, sobject):
         name = self.name
         return sobject.get_value(name, no_exception=True)

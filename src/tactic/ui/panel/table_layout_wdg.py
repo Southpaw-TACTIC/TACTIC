@@ -1283,11 +1283,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         spt.table.set_layout(layout);
                         spt.table.expand_table("full");
                     }
-
-                    spt.table.apply_undo_queue();
-
                     return;
                 }
+                spt.table.apply_undo_queue();
 
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
                 if (bvr.expand_on_load) {
@@ -1309,7 +1307,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 if (bvr.expand_on_load) {
                     spt.table.expand_table("full");
                 }
-                spt.table.apply_undo_queue();
+                // Not sure why we need a set timeout here ...
+                setTimeout( function() {
+                    spt.table.apply_undo_queue();
+                }, 0 );
             '''
             } )
  
@@ -2999,6 +3000,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
     def handle_row(self, table, sobject, row, level=0):
+
         # add the new row
         tr = table.add_row()
         if not self.is_on:
@@ -3010,9 +3012,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         bgcolor2 = bgcolor1
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
-
-
-
 
 
         tr.add_class("spt_table_row_item")
@@ -3037,6 +3036,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+        min_height = 25
 
         # add extra data if it exists
         extra_data = sobject.get_value("_extra_data", no_exception=True)
@@ -3048,6 +3048,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 bvr.src_el.extra_data = bvr.data;
                 '''
             } )
+
+            min_height = extra_data.get("min_height") or min_height
+
+
+        tr.add_style("min-height: %spx" % min_height)
+        tr.add_style("height: %spx" % min_height)
+
+
+
+
+
+
+
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
         tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
         #tr.add_attr("spt_search_type", sobject.get_base_search_type() )
@@ -3159,7 +3172,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-                #if row == 0 and i == 0 and not sobject.is_insert() and not self.kwargs.get("temp"):
                 if sobject.is_insert():
                     load_div = DivWdg()
                     self.top.add(load_div)
@@ -3367,6 +3379,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 # provide an opportunity for the widget to affect the td and tr
                 widget.handle_tr(tr)
                 widget.handle_td(td)
+            elif self.is_insert:
+                widget.handle_tr(tr)
+                widget.handle_td(td)
+
         
             is_editable = True
             # Check if view is editable first, if not, skip checking each column
@@ -6216,7 +6232,13 @@ spt.table.apply_undo_queue = function(undo_queue) {
         }
 
 
-        var orig_value = cell.getAttribute("spt_input_value");
+        // get the original value.  If there is no original value, then
+        // set it soe it can be used for future changes in this undo queue
+        var orig_value = cell.getAttribute("spt_orig_value");
+        if (orig_value == null) {
+            var orig_value = cell.getAttribute("spt_input_value");
+            cell.setAttribute("spt_orig_value", orig_value);
+        }
 
 
         cell.innerHTML = undo.new_html;
@@ -6232,8 +6254,11 @@ spt.table.apply_undo_queue = function(undo_queue) {
             cell.removeClass("spt_cell_changed");
             row.removeClass("spt_row_changed");
 
+            var row_background = row.getAttribute("spt_orig_background");
+            if (!row_background || row_background == "null") row_background = 'transparent';
+
             cell.setStyle("background-color", cell.getAttribute("spt_orig_background"));
-            row.setStyle("background-color", row.getAttribute("spt_orig_background"));
+            row.setStyle("background-color", row_background);
             row.setAttribute("spt_background", row.getAttribute("spt_orig_background"));
         }
         else {
@@ -7004,11 +7029,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
         }
     }
 
-    // FIXME: what about insert row?
-    // FIXME: assumptions about order here???
-    // TODO: taking into account the insert table [.spt_table_insert_row]
-   
-
+  
+    // add the cells
     for ( var i = 0; i < rows.length; i++ ) {
         if (i == data_rows.length) {
             spt.alert("Not enough data to fill all rows");
@@ -7016,7 +7038,18 @@ spt.table.modify_columns = function(element_names, mode, values) {
         }
 
         var cells = data_rows[i].getElements(".spt_cell_edit");
+
+        if (i == 0 ) {
+            var cur_cells = rows[i].getElements(".spt_cell_edit");
+            var last_cell = cur_cells[cur_cells.length-1];
+            var header_cell = spt.table.get_header_by_cell(last_cell);
+            var element_name = header_cell.getAttribute("spt_element_name");
+            spt.table.set_column_width(element_name, 100);
+            
+        }
+
         for (var j = 0; j < cells.length; j++) {
+
 
             if (mode=='add') {
                 rows[i].appendChild(cells[j]);

@@ -513,7 +513,6 @@ class TaskElementWdg(BaseTableElementWdg):
         self.tasks_dict = {}
 
         expression = self.kwargs.get("expression")
-        #expression = "@SOBJECT(connect)"
         if expression:
             self.tasks_dict = Search.eval(expression, self.sobjects, dictionary=True)
         else: 

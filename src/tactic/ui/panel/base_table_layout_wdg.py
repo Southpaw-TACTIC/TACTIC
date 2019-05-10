@@ -91,7 +91,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not self.search_type:
             raise TacticException("Must define a search type")
         self.view = kwargs.get('view')
-        if not self.view:
+        if not self.view or self.view == "None":
             self.view = 'table'
 
         self.do_search = True

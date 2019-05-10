@@ -1008,6 +1008,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_class("spt_pipeline_%s" % node_type)
         node.add_attr("spt_node_type", node_type)
 
+        node.add_class("SPT_TEMPLATE")
+
         node.add_style("color", "#000")
         node.add_style("font-size", "12px")
         node.add_style("position: absolute")
