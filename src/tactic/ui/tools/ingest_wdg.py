@@ -197,6 +197,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         if not sobject:
             file_template.add_class("spt_upload_file_template")
             file_template.add_style("display: none")
+            file_template.add_class("SPT_TEMPLATE")
         else:
             file_template.add_class("spt_upload_file")
 

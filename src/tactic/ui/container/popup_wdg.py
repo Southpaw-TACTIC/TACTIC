@@ -961,7 +961,8 @@ spt.popup.get_widget = function( evt, bvr )
         // get the common popup, clone it and fill it in
         var popup_template = document.id("popup_template");
         // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
-        var popup = spt.behavior.duplicate_element(popup_template);
+        //var popup = spt.behavior.duplicate_element(popup_template);
+        var popup = spt.behavior.clone(popup_template);
 
 
         if( popup_id ) {
@@ -1370,6 +1371,7 @@ spt.popup.tear_off_el = function( el, title, popup_predisplay_fn, class_search_s
     // get the common popup, clone it and fill it in
     var popup_template = document.id("popup_template");
     // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
+    //var popup = spt.behavior.duplicate_element( popup_template );
     var popup = spt.behavior.duplicate_element( popup_template );
 
     if( el.get("id") ) {

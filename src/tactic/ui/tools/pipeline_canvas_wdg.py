@@ -677,6 +677,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add_style("display: none")
         template_div.add_class("spt_pipeline_template")
         inner.add(template_div)
+        template_div.add_class("SPT_TEMPLATE")
 
         node = self.get_node("node", node_type="node")
         node.add_style("left: 0px")

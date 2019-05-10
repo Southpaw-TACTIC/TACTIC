@@ -1485,6 +1485,7 @@ spt.tab.close = function(src_el) {
 
         subheader_div = DivWdg()
         subheader_div.add_class("spt_tab_subheader_top")
+        subheader_div.add_class("SPT_TEMPLATE")
         inner.add(subheader_div)
         self.add_subheader_behaviors(subheader_div)
         #subheader_div.add_style("display: none")
@@ -1743,12 +1744,10 @@ spt.tab.close = function(src_el) {
         content_top.add_class("spt_tab_content_top")
         content_top.add_style("z-index: 1")
         content_top.add_style("margin-top: -1px")
-        #content_top.add_style("box-sizing: border-box")
 
 
         # add a div so that it breaks correctly
         if self.mode == 'default':
-            #content_top.add("<div style='height:5px'></div>")
             content_top.set_round_corners(5, corners=['TR','BR','BL'])
             border = self.kwargs.get("border_color")
             if not border:
@@ -1923,6 +1922,7 @@ spt.tab.close = function(src_el) {
         template_div = DivWdg()
         template_div.add_class("spt_tab_template_top")
         template_div.add_style("display: none")
+        template_div.add_class("SPT_TEMPLATE")
 
         name = ""
         title = ""
