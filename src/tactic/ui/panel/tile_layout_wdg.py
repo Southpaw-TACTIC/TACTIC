@@ -1648,7 +1648,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-    def get_sobject_data(cls, sobjects):
+    def get_sobject_data(self, sobjects):
         
         sobject_data = {}
         for sobject in sobjects:
@@ -1664,8 +1664,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             sobject_data[sobject.get_search_key()] = tile_data
 
             kwargs = {}
-            kwargs['show_name_hover'] = cls.show_name_hover
-            kwargs['aspect_ratio'] = cls.aspect_ratio
+            kwargs['show_name_hover'] = self.show_name_hover
+            kwargs['aspect_ratio'] = self.aspect_ratio
             thumb = ThumbWdg2(**kwargs)
             
             use_parent = self.kwargs.get("use_parent")
@@ -1684,6 +1684,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 size = 0
             tile_data['size'] = size
         
+        
+            path = thumb.get_path()
             try:
                 path = thumb.snapshot.get_web_path_by_type("main")
             except:
@@ -1691,7 +1693,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data['path'] = path
 
         return sobject_data
-    get_sobject_data = classmethod(get_sobject_data)
+    #get_sobject_data = classmethod(get_sobject_data)
 
 
     def get_styles(self):
@@ -1728,7 +1730,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         """
 
 
-        path = thumb.get_path()
 
         style.add(css)
         return style
@@ -1825,7 +1826,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         size_div = DivWdg()
         tool_div.add(size_div)
-        size_div.add(sobject_data.get("size"))
+        size_div.add(tile_data.get("size"))
         size_div.add_style("float: right")
         size_div.add_style("margin-top: 3px")
                 
@@ -1833,7 +1834,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         
-        path = sobject_data.get("path")
+        path = tile_data.get("path")
         if path:
             href = HtmlElement.href()
             href.add_attr("href", path)
