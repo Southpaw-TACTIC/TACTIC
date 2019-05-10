@@ -17,7 +17,7 @@ from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, T
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, DbContainer
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
-from pyasm.biz import ExpressionParser, Project
+from pyasm.biz import ExpressionParser, Project, ProjectSetting
 
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
@@ -2758,6 +2758,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             search_type = self.search_type
 
+
+            format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
+            if format_context in ['false', "False", False]:
+                format_context = 'false'
+            else:
+                format_context = 'true'
+
+
             # get the browser
             web = WebContainer.get_web()
             browser = web.get_browser()
@@ -2769,6 +2777,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not use_html5:
                 bvr_cb = {
                 'cbjs_action': r'''
+
+                    var format_context = %s;
 
                     var activator = spt.smenu.get_activator(bvr);
                     var layout = activator.getParent(".spt_layout");
@@ -2833,7 +2843,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             var filename = parts[parts.length-1];
                             var kwargs;
                             if (context != "icon") {
-                                context = context + "/" + filename;
+                                if (format_context) context = context + "/" + filename;
+                                else context = String(context);
+
                                 kwargs = {mode: 'upload', checkin_type: 'auto'};
                             }
                             else {
@@ -2854,13 +2866,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.named_events.fire_event(update_event);
                     spt.app_busy.hide();
 
-                    '''
+                    ''' % format_context
                 }
 
             else:
 
                 bvr_cb = {
                 'cbjs_action': r'''
+
+                    var format_context = %s;
 
                     var activator = spt.smenu.get_activator(bvr);
                     var layout = activator.getParent(".spt_layout");
@@ -2934,7 +2948,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                     context = bvr.checkin_context;
 
                                 if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
-                                    context = context + "/" + filename;
+                                    if (format_context) context = context + "/" + filename;
+                                    else context = String(context);
                                     kwargs = {mode: 'uploaded', checkin_type: 'auto'};
                                 }
                                 else {
@@ -2975,7 +2990,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         var file = spt.html5upload.get_file()
                         var label = file ? (file.name + ": ") : ''
 
-                        spt.app_busy.show("Uploading", label +  percent + "%");
+                        spt.app_busy.show("Uploading", label +  percent + "%%");
                     }
 
                     try {
@@ -3002,7 +3017,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         spt.app_busy.hide();
                     }
 
-                    '''
+                    ''' % format_context
 
                 }
 

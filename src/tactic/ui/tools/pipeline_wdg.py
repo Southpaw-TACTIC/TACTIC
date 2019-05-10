@@ -2599,7 +2599,6 @@ class BaseInfoWdg(BaseRefreshWdg):
             select.set_option("values", node_types)
             select.set_option("labels", labels)
 
-
             select.add_style("width: 100px")
             if node_type == "node":
                 select.set_value("manual")

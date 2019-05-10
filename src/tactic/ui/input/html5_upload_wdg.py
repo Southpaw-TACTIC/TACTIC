@@ -18,7 +18,8 @@ from tactic.ui.common import BaseRefreshWdg
 from pyasm.common import Common
 from pyasm.web import HtmlElement, DivWdg
 from pyasm.widget import TextWdg, HiddenWdg
-
+from pyasm.biz import ProjectSetting
+from pyasm.search import SearchKey
 
 class Html5UploadWdg(BaseRefreshWdg):
 
@@ -481,7 +482,18 @@ class HtmlUploadWdg(BaseUploadWdg):
         checkin_type = self.kwargs.get("checkin_type")
         if not checkin_type:
             checkin_type = 'auto'
+ 
+        search_type = None
+        if search_key:
+            search_type = SearchKey.extract_base_search_type(search_key)
 
+        
+        format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
+        if format_context in ['false', "False", False]:
+            format_context = 'false'
+        else:
+            format_context = 'true'
+        
         return '''
             var server = TacticServerStub.get();
             var file = spt.html5upload.get_file();
@@ -489,8 +501,11 @@ class HtmlUploadWdg(BaseUploadWdg):
             if (file) {
                 var search_key = "%s";
                 var file_name = file.name;
+                var process = "%s";
 
-                var context = "%s/" + file_name;
+                var format_context = %s;
+                if (format_context) var context = process + "/" + file_name;
+                else var context = process;
 
                 server.simple_checkin(search_key, context, file_name, {mode:'uploaded', checkin_type:'%s'});
                 spt.notify.show_message("Check-in of ["+file_name+"] successful");
@@ -499,7 +514,7 @@ class HtmlUploadWdg(BaseUploadWdg):
               alert('Error: file object cannot be found.')
             }
             spt.app_busy.hide();
-        ''' % (search_key, process, checkin_type)
+        ''' % (search_key, process, format_context, checkin_type)
 
 
 

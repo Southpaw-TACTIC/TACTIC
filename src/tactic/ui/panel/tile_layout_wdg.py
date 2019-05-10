@@ -14,7 +14,7 @@ __all__ = ["TileLayoutWdg"]
 import re, os
 import urllib
 
-from pyasm.biz import CustomScript, Project
+from pyasm.biz import CustomScript, Project, ProjectSetting
 from pyasm.common import Common
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -927,6 +927,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             search_type = self.search_type
 
+        format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
+        if format_context in ['false', "False", False]:
+            format_context = True
+        else:
+            format_context = True
 
         if self.upload_mode in ['drop','both']:
             layout_wdg.add_behavior( {
@@ -936,6 +941,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'drop_shadow': self.show_drop_shadow,
                 'process': process,
                 'border_color': border_color,
+                'format_context': format_context,
                 'cbjs_action': '''
                 
                 spt.thumb = {};
@@ -1004,8 +1010,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                                                 var item = server.insert(search_type, data);
                                                 search_key = item.__search_key__;
                                             }
-
-                                            var context = bvr.process + "/" + filename;
+ 
+                                            if (bvr.format_context) var context = bvr.process + "/" + filename;
+                                            else var context = bvr.process;
                                         
                                         
                                         var kwargs = {mode: 'uploaded'};
@@ -1089,7 +1096,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
                             var filename = file.name;
-                            var context = bvr.process + "/" + filename;
+                            if (bvr.format_context) var context = bvr.process + "/" + filename;
+                            else var context = bvr.process;
 
                             var upload_file_kwargs =  {
                                 files: files,

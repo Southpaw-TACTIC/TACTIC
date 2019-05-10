@@ -833,7 +833,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
        
 
     if (value) {
-        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
+        var expr = "@GET(" +search_type+ "['" +value_column+ "','" +value+ "'].code)";
     }
     else {
         var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "'].code)";
@@ -918,10 +918,14 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             results_class_name = 'tactic.ui.input.TextInputResultsWdg';
 
 
+        highlight = self.kwargs.get("highlight") or ""
+        highlight_color = self.kwargs.get("highlight_color") or ""
+
         custom_cbk = self.kwargs.get("custom_cbk")
         if not custom_cbk:
             custom_cbk = {}
 
+        on_search_complete = self.kwargs.get("on_search_complete") or ""
 
        
         """
@@ -977,9 +981,12 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'case_sensitive': case_sensitive,
             'value_column': value_column,
             'results_class_name': results_class_name,
+            'highlight': highlight,
+            'highlight_color': highlight_color,
             'bg_color': bgcolor,
             'postaction': postaction,
             'default_show': default_show,
+            'on_search_complete': on_search_complete,
             'cbjs_action': '''
             var key = evt.key;
             try {
@@ -1027,6 +1034,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                         if (el) {
                             var display = el.getAttribute('spt_display');
                             display = JSON.parse(display);
+
+                            if (!display)
+                                display = bvr.src_el.getAttribute("spt_label");
+
                             var value =  el.getAttribute('spt_value');
                             if (!display) {
                                 display = value;
@@ -1110,7 +1121,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     case_sensitive: bvr.case_sensitive,
                     value: value,
                     mode: bvr.mode,
-                    keyword_mode: bvr.keyword_mode
+                    keyword_mode: bvr.keyword_mode,
+                    highlight: bvr.highlight,
+                    highlight_color: bvr.highlight_color,
+                    on_complete: bvr.on_search_complete
                 },
                 cbjs_action: cbk,
             }
@@ -1139,6 +1153,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 'case_sensitive': case_sensitive,
                 'value_column': value_column,
                 'results_class_name': results_class_name,
+                'highlight': highlight,
+                'highlight_color': highlight_color,
                 'bg_color': bgcolor,
                 'postaction': postaction,
                 'cbjs_action': '''
@@ -1170,7 +1186,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                         case_sensitive: bvr.case_sensitive,
                         value: "",
                         mode: bvr.mode,
-                        keyword_mode: bvr.keyword_mode
+                        keyword_mode: bvr.keyword_mode,
+                        highlight: bvr.highlight,
+                        highlight_color: bvr.highlight_color
                     },
                     cbjs_action: cbk,
                 }
@@ -1249,6 +1267,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'cbjs_action': '''
             var display = bvr.src_el.getAttribute("spt_display");
             display = JSON.parse(display);
+
+            if (!display)
+                display = bvr.src_el.getAttribute("spt_label");
 
             var value = bvr.src_el.getAttribute("spt_value");
             if (!display) {
@@ -1536,7 +1557,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             display = labels[i]
             div = self.get_result_wdg(display)
             div.add_attr("spt_value", values[i])
-            div.add_attr("spt_display", labels[i])
+            div.add_attr("spt_label", labels[i])
             top.add(div)
         if not results:
             div = DivWdg()
@@ -1552,6 +1573,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
         top = self.top
         orig_value = self.kwargs.get("value")
         case_sensitive = self.kwargs.get("case_sensitive") in ['true',True]
+        highlight = self.kwargs.get("highlight")
+        highlight_color = self.kwargs.get("highlight_color") or "yellow"
 
         if not self.do_search:
             self.draw_result(top, orig_value)
@@ -1559,6 +1582,12 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
         if not case_sensitive:
             orig_value = orig_value.lower()
+
+        on_complete = self.kwargs.get("on_complete") or ""
+        top.add_behavior({
+            'type': 'load',
+            'cbjs_action': on_complete
+            })
 
         # can only support 1 right now
         relevant = self.kwargs.get("relevant") == 'true'
@@ -1878,13 +1907,33 @@ class TextInputResultsWdg(BaseRefreshWdg):
             else:
                 display = keywords
 
-            div.add(display)
+            if highlight:
+                substring_list = display.split(orig_value)
+
+                display_el = ""
+                for i in range(len(substring_list)):
+                    substring = substring_list[i]
+                    display_el += substring
+
+                    if (i != len(substring_list)-1):
+                        display_el += "<span style='background: %s'>%s</span>" % (highlight_color, orig_value)
+                div.add(display_el)
+            else:
+                div.add(display)
             div.add_class("spt_input_text_result")
             div.add_attr("spt_value", keywords)
             # turn off cache to prevent ascii error
             keywords = HtmlElement.get_json_string(keywords, use_cache=False)
             div.add_attr("spt_display", keywords)
 
+
+        if len(filtered) == 0:
+            div = DivWdg()
+            div.add("-- no results --")
+            div.add_style("opacity: 0.5")
+            div.add_style("font-style: italic")
+            div.add_style("text-align: center")
+            top.add(div)
 
 
         return top
