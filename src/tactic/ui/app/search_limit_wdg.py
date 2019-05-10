@@ -651,9 +651,14 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             // remap the bvr.src_el
             bvr.src_el = bvr.src_el.getParent('.spt_table_top');
 
-            //spt.dg_table.search_cbk(evt, bvr);
-            //return;
+            spt.dg_table.search_cbk(evt, bvr);
+            return;
 
+
+
+            // NOTE: below doesn't work just yet because search_cbk, which calls
+            // replace_inner_html deactivates all of the behaviors.  We need a flag
+            // that can disable the deactivation of behaviors
 
             var layout_top = layout.getParent(".spt_layout_top");
 
@@ -664,19 +669,10 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             }
 
 
+            
+            var children = bvr.src_el.getChildren();
+            layout_top.pages[bvr.current_page] = children;
 
-            // replace all of the PUW Stub
-            var puw_stubs = bvr.src_el.getElements(".SPT_PUW_STUB");
-            for (var i = 0; i < puw_stubs.length; i++) {
-                var puw_stub = puw_stubs[i];
-                var puw_el = puw_stub.spt_puw_el;
-                puw_el.replaces(puw_stub);
-                puw_el.removeClass("SPT_PUW_LOADED");
-                puw_el.addClass("SPT_PUW");
-            }
-            var puws = bvr.src_el.getElements(".SPT_PUW");
-
-            layout_top.pages[bvr.current_page] = bvr.src_el.innerHTML;
 
 
             var html = pages[value];
@@ -684,9 +680,13 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
                 spt.dg_table.search_cbk(evt, bvr);
             }
             else {
-               spt.behavior.replace_inner_html(bvr.src_el, html);
+                bvr.src_el.innerHTML = "";
+                html.forEach( function(child) {
+                    bvr.src_el.appendChild(child);
+                } );
+        
             }
-
+ 
             '''
         } )
 
