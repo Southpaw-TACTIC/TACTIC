@@ -672,7 +672,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         gallery_width = self.kwargs.get("gallery_width")
         if not gallery_width:
             gallery_width = ''
-        if mode == "plain":
+
+        if mode in ["plain", "default", "download"]:
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'collection_type': collection_type,
@@ -734,7 +735,10 @@ class TileLayoutWdg(ToolLayoutWdg):
                             path: name,
                             is_new_tab: true
                         }
-                        spt.tab.add_new(parent_code, name, class_name, kwargs);
+                        var tile_layout_top = bvr.src_el.getParent(".spt_tile_layout_top");
+                        //spt.tab.add_new(parent_code, name, class_name, kwargs);
+                        //spt.panel.load_popup(name, class_name, kwargs);
+                        spt.panel.load(tile_layout_top, class_name, kwargs);
                     }
                     else {
                         var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});

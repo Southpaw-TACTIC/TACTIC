@@ -834,12 +834,21 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         return div
 
+
+
+
+
 class CollectionFolderWdg(BaseRefreshWdg):
     '''This is the collections folder structure in CollectionLayoutWdg's left panel. '''
 
     def get_display(self):
 
         self.search_type = self.kwargs.get("search_type")
+        parts = self.search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+
+
         search = Search(self.search_type)
         search.add_filter("_is_collection", True)
 
@@ -847,7 +856,21 @@ class CollectionFolderWdg(BaseRefreshWdg):
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
             search.add_parent_filter(parent)
-        
+
+
+        show_top_only = self.kwargs.get("show_top_only")
+        if show_top_only is None:
+            show_top_only = True
+        if show_top_only in [True, "true"]:
+            search2 = Search(collection_type)
+            search2.add_column("search_code")
+            search.add_search_filter("code", search2, op="not in")
+
+           
+
+        # where code not in (select search_code from asset_in_asset)
+
+
         collections = search.get_sobjects()
         collections_div = DivWdg()
 
@@ -884,9 +907,6 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
         from tactic.ui.panel import ThumbWdg2
 
-
-        parts = self.search_type.split("/")
-        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
 
         collections_div.add_relay_behavior( {
@@ -1018,7 +1038,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         self.kwargs["scale"] = 75
         self.kwargs["show_scale"] = False
-        self.kwargs["expand_mode"] = "gallery"
+        self.kwargs["expand_mode"] = "plain"
         self.kwargs["show_search_limit"] = False
 
         mode = "tile"
