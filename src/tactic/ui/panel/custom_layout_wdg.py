@@ -19,8 +19,8 @@ import cStringIO
 
 from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads, jsondumps
 from pyasm.biz import Schema, ExpressionParser, Project
-from pyasm.search import Search, SearchKey, WidgetDbConfig, SObject
 from pyasm.command import Command
+from pyasm.search import Search, SearchKey, WidgetDbConfig, SObject, ExceptionLog
 from pyasm.web import DivWdg, SpanWdg, HtmlElement, Table, Widget, Html, WebContainer
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg
 
@@ -676,7 +676,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
-                print("Error in view [%s]: " % self.view, exceptions.text_error_template().render())
+                exception_message = exceptions.text_error_template().render()
+                message = "Error in view [%s]: %s" % (self.view, exception_message)
+                ExceptionLog.log(e, message=message)
+
                 #html = exceptions.html_error_template().render(css=False)
                 html = exceptions.html_error_template().render()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
