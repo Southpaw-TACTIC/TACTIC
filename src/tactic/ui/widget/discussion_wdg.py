@@ -328,43 +328,50 @@ class DiscussionWdg(BaseRefreshWdg):
 
             var top = discussion_top;
            
-            var dialog_content = top.getElement(".spt_discussion_content");
-            var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
+            // refresh dialogs (if loaded) and note counts for all contexts
+            var dialog_contents = top.getElements(".spt_discussion_content");
+            var parent_key = top.getAttribute("spt_search_key");
+            var s = TacticServerStub.get();
+            var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
 
-            // refresh the dialog and the note count for this context
-            if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
-                var parent_key = dialog_content.getAttribute('spt_parent_key');
-                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                var kwargs = {
-                    parent_key: parent_key,
-                    context: dialog_content.getAttribute('spt_context'),
-                    default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
-                    note_expandable: dialog_content.getAttribute('spt_note_expandable'),
-                    note_format: dialog_content.getAttribute('spt_note_format')
+            if (dialog_contents.length == num_processes) {
+                for (var i = 0; i < dialog_contents.length; i++) {
+                    var dialog_content = dialog_contents[i];
+                    var group_top = dialog_content.getParent(".spt_discussion_process_top");
+                    var process = group_top.getAttribute('self_context');
+
+                    // refresh the dialog and the note count for this context
+                    if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
+                        var parent_key = dialog_content.getAttribute('spt_parent_key');
+                        var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                        var kwargs = {
+                            parent_key: parent_key,
+                            context: process,
+                            default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
+                            note_expandable: dialog_content.getAttribute('spt_note_expandable'),
+                            note_format: dialog_content.getAttribute('spt_note_format')
+                        }
+
+                        // clear textarea and toggle add widget
+                        var text = top.getElement('textarea[@name=note]');
+                        if (text)
+                            text.value = '';
+                        var add_note = top.getElement(".spt_discussion_add_note");
+                        if (add_note)
+                            spt.toggle_show_hide(add_note);
+
+                        // update dialog
+                        spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
+                    }
+                    // update note count
+                    var note_count_div = group_top.getElement('.spt_note_count');
+                    if (note_count_div) {
+
+                        var note_count = s.eval("@COUNT(sthpw/note['process', '" + process + "'])", {search_keys: [parent_key]});
+                        note_count_div.innerHTML = '(' + note_count + ')';
+                    }
                 }
-
-                // clear textarea and toggle add widget
-                var text = top.getElement('textarea[@name=note]');
-                if (text)
-                    text.value = '';
-                var add_note = top.getElement(".spt_discussion_add_note");
-                if (add_note)
-                    spt.toggle_show_hide(add_note);
-
-                // update dialog
-                spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
-               
-                // update note count
-                var note_count_div = group_top.getElement('.spt_note_count');
-                if (note_count_div) {
-
-                    var s = TacticServerStub.get();
-                    var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
-                    note_count_div.innerHTML = '(' + note_count + ')';
-                }
-
-            }
-            else {
+            } else {
                 spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
             }
 
@@ -1044,31 +1051,39 @@ class DiscussionWdg(BaseRefreshWdg):
                    'interval': 2,
                    "cbjs_action": '''
                 var top = bvr.src_el.getParent(".spt_discussion_top");
-                var dialog_content = top.getElement(".spt_discussion_content");
+                var dialog_contents = top.getElements(".spt_discussion_content");
+                var parent_key = top.getAttribute("spt_search_key");
 
-                var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
-                
-                // update dialog and the count if dialog is visible 
-                if (group_top && group_top.getAttribute("spt_is_loaded") == "true" && 
-                    group_top.getAttribute("spt_update_mode") == "load") {
-                    var parent_key = dialog_content.getAttribute('spt_parent_key');
-                    var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                    var kwargs = {
-                        parent_key: parent_key,
-                        context: dialog_content.getAttribute('spt_context'),
-                        default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
-                        note_expandable: dialog_content.getAttribute('spt_note_expandable'),
-                        note_format: dialog_content.getAttribute('spt_note_format')
+                // update dialogs (if loaded) and note counts
+                var s = TacticServerStub.get();
+                var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
+                if (dialog_contents.length == num_processes) {
+                    for (var i = 0; i < dialog_contents.length; i++) {
+                        var dialog_content = dialog_contents[i];
+                        var group_top = dialog_content.getParent(".spt_discussion_process_top");
+                        var process = group_top.getAttribute("self_context");
+                        // update dialog if loaded
+                        if (group_top && group_top.getAttribute("spt_is_loaded") == "true" &&
+                            group_top.getAttribute("spt_update_mode") == "load") {
+                            //var parent_key = dialog_content.getAttribute('spt_parent_key');
+                            var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                            //var process = dialog_content.getAttribute('spt_context');
+                            var kwargs = {
+                                parent_key: parent_key,
+                                context: process,
+                                default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
+                                note_expandable: dialog_content.getAttribute('spt_note_expandable'),
+                                note_format: dialog_content.getAttribute('spt_note_format')
+                            }
+                            spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: true});
+                        }
+
+                        // update count
+                        var note_count_div = group_top.getElement('.spt_note_count');
+                        var note_count = s.eval("@COUNT(sthpw/note['process', '" + process + "'])", {search_keys: [parent_key]});
+                        note_count_div.innerHTML = '(' + note_count + ')';
                     }
-                    spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: true});
-                    var note_count_div = group_top.getElement('.spt_note_count');
-                    
-                    var s = TacticServerStub.get();
-                    var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
-                    note_count_div.innerHTML = '(' + note_count + ')';
-
-                }
-                else {
+                } else {
                     spt.panel.refresh(top);
                 }
 
