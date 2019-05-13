@@ -16,7 +16,7 @@ import urllib
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Common
-from pyasm.search import Search, SearchKey
+from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import DivWdg, Table, SpanWdg
 from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -403,48 +403,48 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         if self.sobjects:
             
-            project_setting = False
-            if project_setting:
-                content_wdg = self.get_js_content_wdg()
-                inner.add(content_wdg)
-                return inner
-                
             self.sobject_data = self.get_sobject_data(self.sobjects)
-
             style = self.get_styles()
             inner.add(style)
-
+            
             inner.add( self.get_scale_wdg())
             if self.upload_mode in ['button','both']:
                 inner.add(HtmlElement.br(3))
-
+            
             self.process_groups()
+            
+            
+            project_setting = True
+            if project_setting:
+                content_wdg = self.get_js_content_wdg()
+                inner.add(content_wdg)
+            else:    
 
-            for row, sobject in enumerate(self.sobjects):
+                for row, sobject in enumerate(self.sobjects):
 
-                self.handle_group(inner, row, sobject)
-
-
-                if False and not temp and row > 4: 
-                    tile_wdg = DivWdg()
-                    inner.add(tile_wdg)
-                    tile_wdg.add_style("width: 120px")
-                    tile_wdg.add_style("height: 120px")
-                    tile_wdg.add_style("float: left")
-                    tile_wdg.add_style("padding: 20px")
-                    tile_wdg.add_style("text-align: center")
-                    tile_wdg.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
-                    tile_wdg.add(" Loading ...")
-                    tile_wdg.add_attr("spt_search_key", sobject.get_search_key())
-                    tile_wdg.add_class("spt_loading")
-                    has_loading = True
-                    continue
+                    self.handle_group(inner, row, sobject)
 
 
-                kwargs = self.kwargs.copy()
-                tile = self.get_tile_wdg(sobject)
-                inner.add(tile)
-                #inner.add_style("text-align: center")
+                    if False and not temp and row > 4: 
+                        tile_wdg = DivWdg()
+                        inner.add(tile_wdg)
+                        tile_wdg.add_style("width: 120px")
+                        tile_wdg.add_style("height: 120px")
+                        tile_wdg.add_style("float: left")
+                        tile_wdg.add_style("padding: 20px")
+                        tile_wdg.add_style("text-align: center")
+                        tile_wdg.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
+                        tile_wdg.add(" Loading ...")
+                        tile_wdg.add_attr("spt_search_key", sobject.get_search_key())
+                        tile_wdg.add_class("spt_loading")
+                        has_loading = True
+                        continue
+
+
+                    kwargs = self.kwargs.copy()
+                    tile = self.get_tile_wdg(sobject)
+                    inner.add(tile)
+        
         else:
             table = Table()
             inner.add(table)
@@ -507,67 +507,60 @@ class TileLayoutWdg(ToolLayoutWdg):
         template_div.add_class("spt_template")
         template_div.add_style("display", "none")
 
-        template_thumb = self.get_template_thumb()
-        template_div.add(template_thumb)
+        template_tile = self.get_template_tile_wdg()
+        template_div.add(template_tile)
  
         content_div = DivWdg()
         content_wdg.add(content_div)
         content_div.add_class("spt_content")
 
-        sobjects = self.sobjects
-        paths = []
-        for sobject in sobjects:
-            thumb = ThumbWdg2()
-            thumb.set_sobject(sobject)
-            path = thumb.get_path()
-            paths.append(path)
-        print paths
-
-
         content_wdg.add_behavior({
             'type': 'load',
-            'paths': paths,
+            'sobject_data': self.sobject_data,
             'cbjs_action': '''
                 var template_div = bvr.src_el.getElement(".spt_template");
-                var template_thumb = template_div.getElement(".spt_js_thumb");
-
+                var template_tile = template_div.getElement(".spt_tile_top");
                 var content_div = bvr.src_el.getElement(".spt_content");
-                bvr.paths.forEach(function(path) {
-                    var thumb = spt.behavior.clone(template_thumb);
-                    img = thumb.getElement("img");
-                    img.src = path;
-                    content_div.appendChild(thumb);
+                
+                Object.keys(bvr.sobject_data).forEach(function(item) {
+                    data = bvr.sobject_data[item];
+                    console.log(data); 
 
-                })
+                    var tile = spt.behavior.clone(template_tile);
+                    
+                    // Set the icon path or EXT
+                    var icon_path = data.path;
+                    if (icon_path == "__DYNAMIC__") {
+                        var inner = tile.getElement(".spt_ext_icon");
+                        inner.getElement(".spt_ext_ext").innerHTML = data.ext;
+                        inner.getElement(".spt_ext_icon_inner").setStyle("background", data.color);
+                    } else if (icon_path.startsWith("/context")) {
+                        var inner = tile.getElement(".spt_context_icon");
+                        inner.getElement("img").src = icon_path;
+                    } else {
+                        var inner = tile.getElement(".spt_tile_icon");
+                        inner.getElement(".spt_image").src = icon_path;
+                    }
+                    inner.setStyle("display", "");
+                    
+		    tile.setAttribute("spt_search_key", data.spt_search_key);
+		    tile.setAttribute("spt_search_key_v2", data.spt_search_key_v2);
+		    tile.setAttribute("spt_name", data.spt_name);
+		    tile.setAttribute("spt_search_code", data.spt_search_code);
+		    tile.setAttribute("spt_is_collection", data.spt_is_collection);
+		    tile.setAttribute("spt_display_value", data.spt_display_value);
+		    tile.setAttribute("spt_main_path", data.lib_path);
 
-            '''
-        })
+                    tile.getElement(".spt_tile_size").innerHTML = data.size;
+			
+		    content_div.appendChild(tile);
 
+		 })
 
+		'''
+	    })
 
-
-        return content_wdg
-
-
-
-    def get_template_thumb(self):
-
-        div = DivWdg()
-        div.add_class("spt_js_thumb")
-        img = HtmlElement.img()
-        div.add(img)
-
-        style = HtmlElement.style()
-        div.add(style)
-        style.add("""
-            .spt_js_thumb img {
-                width: 50px;
-                height: 50px;
-            }
-
-        """)
-        
-        return div
+	return content_wdg
 
 
 
@@ -611,9 +604,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         data_list = filter_data.get_values_by_prefix("tile_layout")
         if data_list:
             data = data_list[0]
-        else:
-            data = {}
-        
+	else:
+	    data = {}
+	    
 
         self.scale = data.get("scale")
         if self.scale == None:
@@ -1510,6 +1503,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             kwargs['show_name_hover'] = self.show_name_hover
             kwargs['aspect_ratio'] = self.aspect_ratio
             thumb = ThumbWdg2(**kwargs)
+
             
             use_parent = self.kwargs.get("use_parent")
             if use_parent in [True, 'true']:
@@ -1517,21 +1511,14 @@ class TileLayoutWdg(ToolLayoutWdg):
                 thumb.set_sobject(parent)
             else:
                 thumb.set_sobject(sobject)
-
             #tile_data['thumb'] = thumb
-
-            # TODO: Use ThumbWdg3 instead!
-            thumb3 = ThumbWdg3(
-                path=thumb.get_path(),
-                lib_path=thumb.get_lib_path(),
-                aspect_ratio=self.aspect_ratio,
-                show_name_hover = self.show_name_hover,
-            )
-            tile_data['thumb'] = thumb3
 
         
         
             lib_path = thumb.get_lib_path()
+            # TODO
+            tile_data['main_path'] = ""
+            
             if lib_path:
                 size = Common.get_dir_info(lib_path).get("size")
                 from pyasm.common import FormatValue
@@ -1542,14 +1529,53 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         
             path = thumb.get_path()
-            try:
-                path = thumb.snapshot.get_web_path_by_type("main")
-            except:
-                path = path
+        
+            if path == "__DYNAMIC__":
+                # EXT format
+                base,ext = os.path.splitext(lib_path)
+                ext = ext.upper().lstrip(".")
+
+                #flat ui color
+                colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
+                import random
+                color = colors[random.randint(0,7)]
+                
+                tile_data['ext'] = ext
+                tile_data['color'] = color
+             
+            
+            if isinstance(path, unicode):
+                path = path.encode("utf-8")
+
+            
+            if path.endswith("indicator_snake.gif"):
+                pass               
+                """
+                # TODO: Handle this
+		if lib_path.find("#") != -1:
+		    paths = snapshot.get_expanded_file_names()
+		    # handle sequence
+		    lib_dir = snapshot.get_lib_dir()
+		    lib_path = "%s/%s" % (lib_dir, paths[0])
+
+		if not os.path.exists(lib_path):
+		    image_size = 0
+		else:
+		    image_size = os.path.getsize(lib_path)
+
+		if image_size != 0:
+		    # generate icon dynamically
+		    from pyasm.widget import ThumbCmd
+		    search_key = snapshot.get_search_key()
+		    thumb_cmd = ThumbCmd(search_keys=[search_key])
+		    thumb_cmd.execute()
+		    path = thumb_cmd.get_path()  
+                """
+
             tile_data['path'] = path
+	
             
-            
-            
+
             if self.kwargs.get("show_title") not in ['false', False]:
                 if self.title_wdg:
                     # TODO: Test this
@@ -1557,7 +1583,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     title_wdg = self.title_wdg.get_display()
                 else:
                     title_wdg = self.get_title(sobject)
-                tile_data['title_wdg'] = title_wdg
+                #tile_data['title_wdg'] = title_wdg
                
 
             sobject_data[sobject.get_search_key()] = tile_data
@@ -1609,13 +1635,296 @@ class TileLayoutWdg(ToolLayoutWdg):
         """
 
 
+        css += """
+            .spt_ext_icon {
+                padding-top: 10px;
+            }
+
+            .spt_ext_ext {
+                display: inline-block;
+                vertical-align: middle;
+                margin-top: 40%;
+            }
+
+            .spt_ext_icon_inner {
+                text-align: center;
+                width: 53%;
+                height: 80%;
+                margin: 30px auto;
+                font-size: 20px;
+                font-weight: bold;
+                color: #fff;
+            }
+
+        """
+       
 
         style.add(css)
         return style
 
+    def get_template_tile_wdg(self):
+        
+        div = DivWdg()
+        div.add_class("spt_tile_top")
+        div.add_class("unselectable")
+        div.add_class("spt_table_row")
+        div.add_class("spt_table_row_%s" % self.table_id)
+
+        div.add(" ")
+        
+        if self.kwargs.get("show_title") not in ['false', False]:
+            
+            # TODO: Add the title wdg buffer display in javascript
+            title_wdg = DivWdg()
+            div.add(title_wdg)
+            title_wdg.add_class("spt_tile_title")
+
+            title_wdg.add_style("position: absolute")
+            title_wdg.add_style("top: 0")
+            title_wdg.add_style("left: 0")
+            title_wdg.add_style("width: 100%")
+       
+        SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
+
+        if self.show_drop_shadow:
+            div.set_box_shadow()
+
+        border_color = div.get_color('border', modifier=20)
+
+        thumb_drag_div = DivWdg()
+        div.add(thumb_drag_div)
+        thumb_drag_div.add_class("spt_tile_drag")
+        thumb_drag_div.add_behavior( {
+            "type": "drag",
+            "drag_el": '@',
+            'drop_code': 'DROP_ROW',
+            'border_color': border_color,
+            'search_type': self.search_type,
+            "cb_set_prefix": 'spt.tile_layout.image_drag'
+        } )
+
+        thumb_div = DivWdg()
+        thumb_drag_div.add(thumb_div)
+        thumb_div.add_class("spt_tile_content")
+        
+        # TODO copy code from thumbwdg 3 here
+        #thumb = tile_data.get('thumb')
+        thumb = self.get_template_thumb_wdg()
+        thumb_div.add(thumb)
+        thumb_div.add_border()
+        thumb.add_style("margin-top: 30%")
+        thumb.add_style("transform: translate(0%, -50%)")
+
+        tool_div = DivWdg()
+        div.add(tool_div)
+        tool_div.add_style("display: none")
+        tool_div.add_class("spt_tile_tool_top")
+        tool_div.add_border(size="0px 1px 1px 1px")
+
+        size_div = DivWdg()
+        tool_div.add(size_div)
+        size_div.add_class("spt_tile_size")
+        # TODO: in javascript, add size
+        # size_div.add(tile_data.get("size"))
+
+        # Download button
+	href = HtmlElement.href()
+        # TODO: Add the lib path dynmically in javascript
+	href.add_attr("href", "")
+	tool_div.add(href)
+
+	# basename = os.path.basename(path)
+	# TODO: Add the basename dynamically in javascript
+        href.add_attr("download", "")
+
+	icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+	icon.add_class("hand")
+	href.add(icon)
+
+        """
+        # TODO: Dynamically preprocess bottom wdg
+        if self.bottom:
+            self.bottom.set_sobject(sobject)
+            div.add(self.bottom.get_buffer_display())
+        elif self.bottom_expr:
+            bottom_value = Search.eval(self.bottom_expr, sobject, single=True)
+            bottom_value = bottom_value.replace("\n", "<br/>")
+            bottom = DivWdg()
+            bottom.add(bottom_value)
+            bottom.add_class("spt_tile_bottom")
+            bottom.add_style("padding: 10px")
+            bottom.add_style("height: 50px")
+            bottom.add_style("overflow-y: auto")
+            div.add(bottom)
+            #bottom.add_style("width: %s" % (self.aspect_ratio[0]-20))
+        else:
+            table = Table()
+            #div.add(table)
+
+            table.add_style("width: 100%")
+            table.add_style("margin: 5px 10px")
+            table.add_row()
+            table.add_cell("Name:")
+            table.add_cell("Whatever")
+            table.add_row()
+            table.add_cell("File Type:")
+            table.add_cell("Image.jpg")
+        """
+         
+        div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
+        div.add_attr("ondragleave", "spt.thumb.noop_leave(event, this)")
+        div.add_attr("ondragover", "return false")
+        div.add_attr("ondrop", "spt.thumb.noop(event, this)")
+        
+        """
+        # TODO: Remove overlay_expr from this function
+        if self.overlay_expr:
+            from tactic.ui.widget import OverlayStatsWdg
+            stat_div = OverlayStatsWdg(expr = self.overlay_expr, sobject = sobject, bg_color = self.overlay_color)
+            div.add(stat_div)
+        """
+
+        return div
+
+
+    def get_template_thumb_wdg(self):
+    
+        search_type = self.kwargs.get("search_type") or ""
+        search_key = self.kwargs.get("search_key") or ""
+        search_type_path = self.kwargs.get("search_type_path") or ""
+        
+        path = "__DYNAMIC__"
+        lib_path = "cat.pdf"
+
+        aspect_ratio = self.aspect_ratio
+
+        width = "100%"
+        height = "auto"
+
+        div = DivWdg()
+        div.add_class("spt_thumb_top")
+
+        """
+        # TODO: This logic should be handled in get_sobject_data
+        path = self.path
+        if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):
+            path = ""
+        """
+
+        """
+        TODO: This logic should be handled in javascript
+        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(lib_path):
+
+            image_size = os.path.getsize(self.lib_path)
+            if image_size != 0:
+                # generate icon dynamically
+                div.set_attr("spt_search_key", search_key)
+                div.add_class("spt_generate_icon")
+                div.set_attr("spt_image_size", image_size)
+        """
+
+        ##############################################################
+
+        ext_img = DivWdg()
+        ext_img.add_class("spt_image")
+        ext_img.add_class("spt_ext_icon")
+        ext_img.add_style("display", "none")
+        
+        inner = DivWdg()
+        ext_img.add(inner)
+        inner.add_class("spt_ext_icon_inner")
+
+        ext_div = DivWdg()
+        ext_div.add_class("spt_ext_ext")
+        inner.add(ext_div)
+
+        div.add(ext_img)
+
+        ##################################################### 
+        icon_div = DivWdg()
+        icon_div.add_class("spt_tile_icon")
+        icon_div.add_style("display", "none")
+        
+        """
+        # TODO: This should be moved to preprocessing
+        if isinstance(path, unicode):
+            path = path.encode("utf-8")
+
+                if path.endswith("indicator_snake.gif"):
+
+                    if self.lib_path.find("#") != -1:
+                        paths = self.snapshot.get_expanded_file_names()
+                        # handle sequence
+                        lib_dir = self.snapshot.get_lib_dir()
+                        self.lib_path = "%s/%s" % (lib_dir, paths[0])
+
+                    if not os.path.exists(self.lib_path):
+                        image_size = 0
+                    else:
+                        image_size = os.path.getsize(self.lib_path)
+
+                    if image_size != 0:
+                        # generate icon dynamically
+                        from pyasm.widget import ThumbCmd
+                        search_key = self.snapshot.get_search_key()
+                        thumb_cmd = ThumbCmd(search_keys=[search_key])
+                        thumb_cmd.execute()
+                        path = thumb_cmd.get_path()
+        """
+
+        img = HtmlElement.img()
+        img.add_class("spt_image")
+        icon_div.add(img)
+        img.add_style("width: %s" % width)
+        if height:
+            img.add_style("height: %s" % height)
+        else:
+            img.add_style("height: auto")
+        img.add_style('margin-left','auto')
+        img.add_style('margin-right','auto')
+        div.add(icon_div)
+        #############################################################
+
+        context_icon_div = DivWdg()
+        context_icon_div.add_class("spt_image")
+        context_icon_div.add_class("spt_context_icon")
+        context_icon_div.add_style("height: auto")
+        context_icon_div.add_style("margin: auto")
+        context_icon_div.add_style("text-align", "center")
+        context_icon_div.add_style("display", "none")
+        img = HtmlElement.img()
+        context_icon_div.add(img)
+        img.add_style("width: auto")
+        img.add_style("height: 80%")
+        img.add_style("margin-top: 15%")
+        
+        div.add(context_icon_div)
+        
+
+
+        # FIXE: what is this for???
+        if self.kwargs.get('show_name_hover') in ["True","true",True]:
+            name_hover = DivWdg()
+            name_hover.add_class("spt_name_hover")
+            name_hover.add(sobject.get('name'))
+
+            name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
+            name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
+            name_hover.add_styles('opacity: 0; font-size: 16px; color: rgb(217, 217, 217); top: 0px; \
+                                transition: opacity 0s ease-out; -webkit-transition: opacity 0s ease-out; \
+                                height: 100%; width: 100%; position: absolute; padding-top: 20px; \
+                                text-align: center; background-color: rgba(0, 0, 0, 0.6);')
+            div.add(name_hover)
+
+        return div
+
+
+
+
+
     def get_tile_wdg(self, sobject):
         
-        tile_data = self.sobject_data.get(sobject.get_search_key())
+        tile_data = self.sobject_data.get(sobject.get_search_key()) or {}
 
         div = DivWdg()
         div.add_class("spt_tile_top")
@@ -1648,11 +1957,8 @@ class TileLayoutWdg(ToolLayoutWdg):
      
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
-        
         if self.show_drop_shadow:
             div.set_box_shadow()
-
-
 
 
         border_color = div.get_color('border', modifier=20)
@@ -1673,12 +1979,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
 
-        kwargs = {}
-        kwargs['show_name_hover'] = self.show_name_hover
-        kwargs['aspect_ratio'] = self.aspect_ratio
-
-        
-        thumb = tile_data['thumb']
+        thumb = tile_data.get('thumb')
         thumb_div.add(thumb)
         thumb_div.add_border()
 
@@ -2539,7 +2840,6 @@ class ThumbWdg2(BaseRefreshWdg):
         if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):
             path = ""
 
-        print path, self.lib_path, aspect_ratio
         if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(self.lib_path):
 
             image_size = os.path.getsize(self.lib_path)
@@ -2750,189 +3050,6 @@ class ThumbWdg2(BaseRefreshWdg):
     def find_icon_link(self, file_path, repo_path=None):
         from pyasm.widget import ThumbWdg
         return ThumbWdg.find_icon_link(file_path, repo_path)
-
-
-
-
-__all__.append("ThumbWdg3")
-class ThumbWdg3(BaseRefreshWdg):
-
-    def get_display(self):
-
-        search_type = self.kwargs.get("search_type")
-        search_key = self.kwargs.get("search_key")
-        search_type_path = self.kwargs.get("search_type_path")
- 
-        # Lib path used to determine if EXT tile is needed
-        self.lib_path = self.kwargs.get("lib_path")
-
-        # Web path for display
-        self.path = self.kwargs.get("path")
-
-        #search_type = sobject.get_base_search_type()
-        #search_key = sobject.get_search_key()
-        #search_type_obj = sobject.get_search_type_obj()
-        #path = self.get_path_from_sobject(search_type_obj)
- 
-        
-        aspect_ratio = self.kwargs.get("aspect_ratio")
-
-        width = self.kwargs.get("width")
-        if not width:
-            width = "100%"
-        height = self.kwargs.get("height")
-        if not height:
-            height = "auto"
-
-
-        div = self.top
-        div.add_class("spt_thumb_top")
-
-        path = self.path
-        if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):
-            path = ""
-
-
-        if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(self.lib_path):
-
-            image_size = os.path.getsize(self.lib_path)
-            if image_size != 0:
-                # generate icon dynamically
-                div.set_attr("spt_search_key", search_key)
-                div.add_class("spt_generate_icon")
-                div.set_attr("spt_image_size", image_size)
-
-
-        if path:
-            if path == "__DYNAMIC__":
-                base,ext = os.path.splitext(self.lib_path)
-                ext = ext.upper().lstrip(".")
-
-                #flat ui color
-                colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
-                import random
-                color = colors[random.randint(0,7)]
-
-                img = DivWdg()
-                img.add_style("padding-top: 10px")
-                
-                inner = DivWdg()
-                img.add(inner)
-               
-                ext_div = DivWdg()
-                inner.add(ext_div)
-                ext_div.add_styles("display: inline-block; vertical-align: middle; margin-top: 40%;")
-                ext_div.add(ext)
-                
-                inner.add_style("text-align: center")
-                #inner.add_style("min-width: 80px")
-                #inner.add_style("min-height: 50px")
-                inner.add_style("width: 53%")
-                inner.add_style("height: 80%")
-
-                inner.add_style("margin: 30px auto")
-                inner.add_style("font-size: 20px")
-                inner.add_style("font-weight: bold")
-                inner.add_style("color: #fff")
-                inner.add_style("background: %s" % color)
-
-            else:
-                if isinstance(path, unicode):
-                    path = path.encode("utf-8")
-
-                if path.endswith("indicator_snake.gif"):
-
-                    if self.lib_path.find("#") != -1:
-                        paths = self.snapshot.get_expanded_file_names()
-                        # handle sequence
-                        lib_dir = self.snapshot.get_lib_dir()
-                        self.lib_path = "%s/%s" % (lib_dir, paths[0])
-
-                    if not os.path.exists(self.lib_path):
-                        image_size = 0
-                    else:
-                        image_size = os.path.getsize(self.lib_path)
-
-                    if image_size != 0:
-                        # generate icon dynamically
-                        from pyasm.widget import ThumbCmd
-                        search_key = self.snapshot.get_search_key()
-                        thumb_cmd = ThumbCmd(search_keys=[search_key])
-                        thumb_cmd.execute()
-                        path = thumb_cmd.get_path()
-
-
-                path = urllib.pathname2url(path)
-                img = HtmlElement.img(src=path)
-
-                #div.add_attr("spt_main_path", self.get_main_path())
-
-
-
-
-        else:
-            path = search_type_path
-            if path:
-                if isinstance(path, unicode):
-                    path = path.encode("utf-8")
-                path = urllib.pathname2url(path)
-
-                img = DivWdg()
-                img.add_style("opacity: 0.3")
-
-                img_inner = HtmlElement.img(src=path)
-                img.add(img_inner)
-
-                img_inner.add_style("width: %s" % width)
-
-        if path and path.startswith("/context"):
-            #img.add_style("padding: 15% 15%")
-            img.add_style("width: auto")
-            img.add_style("height: 80%")
-            img.add_style("margin-top: 15%")
-
-            img = DivWdg(img)
-            img.add_style("height: auto")
-            img.add_style("margin: auto")
-
-
-
-            #div.add_style("height: 100%")
-            div.add_style("text-align: center")
-        elif path and path != "__DYNAMIC__":
-            img.add_style("width: %s" % width)
-            if height:
-                img.add_style("height: %s" % height)
-            else:
-                img.add_style("height: auto")
-
-            img.add_style('margin-left','auto')
-            img.add_style('margin-right','auto')
-
-        if not path:
-            img = DivWdg()
-        img.add_class("spt_image")
-        div.add(img)
-
-        #if height or self.show_name_hover in ["True","true",True]:
-        #    div.add_style("height: 100%")
-
-
-        # FIXE: what is this for???
-        if self.kwargs.get('show_name_hover') in ["True","true",True]:
-            name_hover = DivWdg()
-            name_hover.add_class("spt_name_hover")
-            name_hover.add(sobject.get('name'))
-
-            name_hover.add_attr('onmouseenter',"this.setStyle('opacity',1)")
-            name_hover.add_attr('onmouseleave',"this.setStyle('opacity',0)")
-            name_hover.add_styles('opacity: 0; font-size: 16px; color: rgb(217, 217, 217); top: 0px; \
-                                transition: opacity 0s ease-out; -webkit-transition: opacity 0s ease-out; \
-                                height: 100%; width: 100%; position: absolute; padding-top: 20px; \
-                                text-align: center; background-color: rgba(0, 0, 0, 0.6);')
-            div.add(name_hover)
-
-        return div
 
 
 
