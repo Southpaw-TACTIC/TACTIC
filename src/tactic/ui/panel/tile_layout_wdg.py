@@ -15,7 +15,7 @@ import re, os
 import urllib
 
 from pyasm.biz import CustomScript, Project
-from pyasm.common import Common
+from pyasm.common import Common, Environment
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import DivWdg, Table, SpanWdg
 from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
@@ -1472,20 +1472,74 @@ class TileLayoutWdg(ToolLayoutWdg):
  
 
     def preprocess_paths(self, sobjects):
+        
+        asset_alias_dict = Environment.get_asset_dirs()
+ 
+        paths_by_key = {}
 
-        expr = "@SOBJECT(sthpw/snapshot.sthpw/file)"
+        search_type = self.search_type
+        
+        file_search = Search("sthpw/file")
 
-        sobject_data = {}
-        return sobject_data
+        if search_type == "sthpw/snapshot":
+            file_search.add_relationship_filters(sobjects)
+        else:
+            snapshot_search = Search("sthpw/snapshot")
+            snapshot_search.add_relationship_filters(sobjects)
+            file_search.add_relationship_search_filter(snapshot_search)
+       
+        files = file_search.get_sobjects()
+        
+        for file_sobj in files:
+            search_type = file_sobj.get("search_type")
+            search_code = file_sobj.get("search_code")
+            search_key = SearchKey.build_search_key(search_type, search_code)
+            file_type = file_sobj.get("type")
+
+            checkin_path = file_sobj.get("checkin_dir")
+            file_name = file_sobj.get("file_name")
+            path = "%s/%s" (checkin_path, file_name)
+            # FIXME: Use alias dir
+            #alias = file_sobj.get("base_dir_alias") or "default"
+            #base_dir = asset_alias_dict.get(alias)
+            
+            sobject_paths = paths_by_key.get(search_key) or {}
+            sobject_paths[file_type] = path
+            paths_by_key[search_key] = sobject_paths
+
+
+        for sobject in sobjects:
+            search_key = sobject.get_search_key()
+            paths = paths_by_key.get(search_key)
+            
+            main_path = paths.get("main") 
+            web_path = paths.get("web")
+            if not web_path:
+                # Get webpath from icon_link functino
+                if sobject.get("_is_collection", no_exception=True):
+                    web_path = "__COLLECTION__"
+                else:
+                    from pyasm.widget import ThumbWdg
+                    web_path = ThumbWdg.find_icon_link(file_path, repo_path)
+                
+            paths["web"] = web_path
+                
+            path = "%s/%s" % (checkin_path.replace("/spt/data/sites", "/assets"), file_name)
+
+
+
+        return paths_by_key
 
 
     def get_sobject_data(self, sobjects):
         
         sobject_data = {}
        
-        preprocess = True
+        paths_by_key = {}
+        preprocess = False
         if preprocess:
-            sobject_data = self.preprocess_paths(sobjects)
+            paths_by_key = self.preprocess_paths()
+            
        
 
         for sobject in sobjects:
@@ -1498,27 +1552,31 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data["spt_is_collection"] = sobject.get_value('_is_collection', no_exception=True)
             tile_data["spt_display_value"] = sobject.get_display_value(long=True)
 
-
-            kwargs = {}
-            kwargs['show_name_hover'] = self.show_name_hover
-            kwargs['aspect_ratio'] = self.aspect_ratio
-            thumb = ThumbWdg2(**kwargs)
-
+            if preprocess:
+                paths = paths_by_key.get(sobject.get_search_key())
             
-            use_parent = self.kwargs.get("use_parent")
-            if use_parent in [True, 'true']:
-                parent = sobject.get_parent()
-                thumb.set_sobject(parent)
             else:
-                thumb.set_sobject(sobject)
-            #tile_data['thumb'] = thumb
 
-        
-        
-            lib_path = thumb.get_lib_path()
-            # TODO
-            tile_data['main_path'] = ""
+                kwargs = {}
+                kwargs['show_name_hover'] = self.show_name_hover
+                kwargs['aspect_ratio'] = self.aspect_ratio
+                thumb = ThumbWdg2(**kwargs)
+
             
+                use_parent = self.kwargs.get("use_parent")
+                if use_parent in [True, 'true']:
+                    parent = sobject.get_parent()
+                    thumb.set_sobject(parent)
+                else:
+                    thumb.set_sobject(sobject)
+        
+        
+                lib_path = thumb.get_lib_path()
+                path = thumb.get_path()
+           
+
+
+
             if lib_path:
                 size = Common.get_dir_info(lib_path).get("size")
                 from pyasm.common import FormatValue
@@ -1528,7 +1586,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data['size'] = size
         
         
-            path = thumb.get_path()
         
             if path == "__DYNAMIC__":
                 # EXT format
@@ -3043,7 +3100,7 @@ class ThumbWdg2(BaseRefreshWdg):
         self.main_path = main_path
         self.icon_path = icon_path
         self.snapshot = snapshot
- 
+        
         return path
 
 
