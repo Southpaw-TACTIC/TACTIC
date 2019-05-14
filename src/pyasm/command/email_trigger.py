@@ -17,6 +17,8 @@ import re
 import threading
 import smtplib
 import types
+import datetime
+from dateutil.relativedelta import relativedelta
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email.mime.application import MIMEApplication
@@ -631,33 +633,76 @@ class EmailTrigger2(EmailTrigger):
         # if all rules are met then get the groups for this notification
         try:
             to_users = handler.get_to()
+            if not to_users:
+                return
+            
             cc_users = handler.get_cc()
             bcc_users = handler.get_bcc()
 
-            subject = handler.get_subject()
-            if len(subject) > 60:
-                subject = subject[0:60] + " ..."
-            message = handler.get_message()
         except SObjectValueException, e:
             raise Exception("Error in running Email handler [%s]. %s" \
                     %(handler.__class__.__name__, e.__str__()))
+        
 
-        if not to_users:
-            return
+        def get_email():
 
-        if isinstance(to_users, set) and isinstance(cc_users, set) and \
-                isinstance(bcc_users, set):
-            all_users = to_users.union(cc_users).union(bcc_users)
-        elif isinstance(to_users, list) and isinstance(cc_users, list) and \
-                isinstance(bcc_users, list):
-            all_users = set(to_users + cc_users + bcc_users)
+            try:
+                subject = handler.get_subject()
+                if len(subject) > 60:
+                    subject = subject[0:60] + " ..."
+                message = handler.get_message()
+            except SObjectValueException, e:
+                raise Exception("Error in running Email handler [%s]. %s" \
+                        %(handler.__class__.__name__, e.__str__()))
+
+            return (subject, message)
+
+        send_email = handler.send_email()
+
+        if handler.has_ticket():
+            data = notification.get_json_value("data") or {}
+            expiry = data.get("login_ticket_expiry") or 1
+            unit = data.get("login_ticket_unit") or "day"
+
+            today = datetime.datetime.today()
+            if expiry == "next_monday":
+                expiry_date = today + relativedelta(weekday=monday)
+            if expiry == "next_friday":
+                expiry_date = today + relativedelta(weekday=FR)
+
+            if unit == "hour":
+                expiry_date = today + relativedelta(hours=expiry)
+            elif unit == "weeks":
+                expiry_date = today + relativedelta(weeks=expiry)
+            else:
+                expiry_date = today + relativedelta(days=expiry)
+
+            for to_user in to_users:
+                handler.set_ticket(to_user, expiry_date)
+                ticket = handler.get_ticket()
+                subject, message = get_email()
+                self._send_to_users([to_user], cc_users, bcc_users, subject, message, send_email)
         else:
-            raise TacticException('to, cc and bcc_users should be of the same type')
+            subject, message = get_email(user=None)
+            self._send_to_users(to_users, cc_users, bcc_users, subject, message, send_email)
+
+
+                
+        
+            
+    def _send_to_users(self, to_users, cc_users, bcc_users, subject, message, send_email):
+
+        all_users = set()
+        for items in [to_users, cc_users, bcc_users]:
+            if isinstance(items, list):
+                all_users.update(items)
+            else:
+                all_users |= items
 
         # filter out email addr as set does not work on SObjects
         email_list = []
         email_users = set()
-        if handler.send_email():
+        if send_email:
             for user in all_users:
                 if type(user) in types.StringTypes:
                     email = user
@@ -672,16 +717,12 @@ class EmailTrigger2(EmailTrigger):
 
         all_emails = ", ".join(email_list)
 
-        #sobj_data = main_sobject.get_aux_data()
-        #email_info = sobj_data.get('__tactic_email_info__')
-        #extra_ccs = email_info.get('mail_cc')
-        #extra_bccs = email_info.get('mail_bcc')
         # send the email
-        if handler.send_email():
+        if send_email:
             self.send(to_users, cc_users, bcc_users, subject, message)
             self.add_description('\nEmail sent to [%s]' %all_emails) 
 
-        self.add_notification(email_users, subject, message, project_code, from_user='')
+        self.add_notification(email_users, subject, message, project_code)
 
     def add_notification(all_users, subject, message, project_code, from_user=''):
 
