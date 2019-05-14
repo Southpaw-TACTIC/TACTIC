@@ -683,7 +683,7 @@ class EmailTrigger2(EmailTrigger):
                 subject, message = get_email()
                 self._send_to_users([to_user], cc_users, bcc_users, subject, message, send_email)
         else:
-            subject, message = get_email(user=None)
+            subject, message = get_email()
             self._send_to_users(to_users, cc_users, bcc_users, subject, message, send_email)
 
 

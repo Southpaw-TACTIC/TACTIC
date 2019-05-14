@@ -202,10 +202,11 @@ class EmailHandler(object):
             env_sobjects['prev_data'] = prev_data
             env_sobjects['update_data'] = update_data
 
+            
+            variables = {}
             ticket = self.get_ticket()
             if ticket:
                 env_sobjects['login_ticket'] = ticket
-                variables = {}
                 variables["TICKET"] = ticket.get("ticket")
   
             notification_message  = parser.eval(notification_message, self.sobject, env_sobjects=env_sobjects, mode='string', vars=variables)
