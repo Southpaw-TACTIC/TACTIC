@@ -22,7 +22,7 @@ __all__ = [
 'HelpItemWdg', 'WarningMenuWdg', 'FloatMenuWdg', 'ExtraInfoWdg', 'UserExtraInfoWdg',
 'ProgressWdg', 'SiteMenuWdg', 'DateSelectWdg', 'CloseWdg', 'PopupWindowLinkWdg',
 'PublishLinkWdg', 'FileUploadUpdateWdg', 'FilterboxWdg', 'ExceptionWdg',
-'SObjectLevelWdg', 'SwfEmbedWdg',
+'SObjectLevelWdg'
 ]
 
 import types
@@ -2948,6 +2948,10 @@ class SObjectLevelWdg(Widget):
         return div
             
 
+
+# DEPRECATED
+"""
+__all__.append('SwfEmbedWdg')
 class SwfEmbedWdg(Widget):
     def __init__(self, name=None):
         self.search_type = None
@@ -3017,7 +3021,7 @@ class SwfEmbedWdg(Widget):
 </object>
         ''' % (width, height, id, id, url, width, height, id)
         return swf
-
+"""
 
 
 

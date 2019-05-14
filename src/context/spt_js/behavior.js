@@ -680,6 +680,19 @@ spt.behavior.replace_inner_html = function( el, new_inner_html, mode )
         spt.behavior._construct_behaviors( [ el ] );
     }
 
+
+    // first get all of the templates and find all of the behaviors below them
+    var templates = el.getElements( ".SPT_TEMPLATE" );
+    for (var i = 0; i < templates.length; i++) {
+        let bvr_els = templates[i].getElements( ".SPT_BVR" );
+        for (var j = 0; j < bvr_els.length; j++) {
+            bvr_els[j].addClass("SPT_TEMPLATE");
+        }
+
+    };
+
+
+
     // now create new behaviors for new innerHTML under "el" element ...
     //
     var bvr_el_list = el.getElements( ".SPT_BVR" );
@@ -1207,9 +1220,12 @@ spt.behavior._construct_behaviors = function( el_list )
 
             // FIXME: this doesn't work with clones
             /*
-            el.bvr_spec_list = bvr_spec_list;
-            el.removeAttribute("SPT_BVR_LIST");
-            el.removeAttribute("SPT_BVR_TYPE_LIST");
+            var is_template = el.hasClass("SPT_TEMPLATE") ;
+            if (is_template) {
+                el.bvr_spec_list = bvr_spec_list;
+                el.removeAttribute("SPT_BVR_LIST");
+                el.removeAttribute("SPT_BVR_TYPE_LIST");
+            }
             */
         }
 

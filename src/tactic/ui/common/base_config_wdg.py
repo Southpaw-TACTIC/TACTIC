@@ -124,6 +124,16 @@ class BaseConfigWdg(BaseRefreshWdg):
                 self.extra_data = jsonloads(self.extra_data)
 
 
+        self.default_data = self.kwargs.get("default_data")
+        if self.default_data and isinstance(self.default_data, basestring):
+            try:
+                self.default_data = jsonloads(self.default_data)
+            except:
+                self.default_data = self.default_data.replace("'", '"')
+                self.default_data = jsonloads(self.default_data)
+
+
+
 
         # go through each element name and construct the handlers
         for idx, element_name in enumerate(self.element_names):
