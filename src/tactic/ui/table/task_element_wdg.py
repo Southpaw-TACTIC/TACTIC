@@ -1521,7 +1521,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if pipeline:
                 #pipeline_processes = pipeline[0].get_processes()
                 pipeline_processes = pipeline[0].get_processes(type=[
-                        #"node",
+                        "node",
                         "manual",
                         "approval",
                         "hierarchy",
