@@ -3428,8 +3428,8 @@ spt.pipeline.set_node_kwarg = function(node, name, value) {
 spt.pipeline.add_node_on_save = function(node, name, value) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
     if (!kwargs) kwargs = {};
-    if (!kwargs.on_save) kwargs.on_save = {};
-    kwargs.on_save[name] = value;
+    if (!kwargs.on_saves) kwargs.on_saves = {};
+    kwargs.on_saves[name] = value;
     spt.pipeline.set_node_kwargs(node, kwargs);
 }
 
