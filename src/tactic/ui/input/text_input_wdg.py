@@ -763,6 +763,17 @@ class LookAheadTextInputWdg(TextInputWdg):
         if not results_on_blur:
             results_on_blur = "none"
 
+        neglect_label_value = self.kwargs.get("neglect_label_value")
+        if neglect_label_value:
+            self.text.add_behavior({
+                'type': 'load',
+                'cbjs_action': '''
+
+                bvr.src_el.removeClass("spt_input");
+
+                '''
+                })
+
         self.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -901,6 +912,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         self.hidden = HiddenWdg(self.name)
         self.top.add(self.hidden)
         self.hidden.add_class("spt_text_value")
+
+        multiple_hidden = self.kwargs.get("multiple_hidden")
+        if multiple_hidden:
+            self.hidden.add_attr("spt_is_multiple", "true")
 
 
         class_name = self.kwargs.get("class")
