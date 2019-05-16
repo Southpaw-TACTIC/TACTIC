@@ -22,7 +22,7 @@ __all__ = [
 ]
 
 
-import os, shutil, string, types
+import os, shutil, string, types, random
 
 from pyasm.common import Common, Marshaller, Date, SPTDate, TacticException
 from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser, PrefSetting
@@ -1068,6 +1068,9 @@ class SelectWdg(BaseInputWdg):
         label = kwargs.get('label')
         bs = kwargs.get('bs')
 
+        if not name:
+            name = "select%s" % random.randint(0, 1000000)
+
         self.sobjects_for_options = None
         self.empty_option_flag = False
         self.empty_option_label, self.empty_option_value = (self.SELECT_LABEL, "")
@@ -1393,8 +1396,26 @@ class SelectWdg(BaseInputWdg):
 
 
     def init(self):
-        self.add_color("background", "background", 10)
-        self.add_color("color", "color")
+        #self.add_color("background", "background", 10)
+        #self.add_color("color", "color")
+        pass
+
+
+
+    def get_styles(self):
+
+        bgcolor = self.get_color("background", 10)
+        fgcolor = self.get_color("foreground")
+        styles = HtmlElement.style('''
+            select {
+                background: %s;
+                color: %s;
+            }
+
+        ''' % (bgcolor, fgcolor)
+        )
+        return styles
+
 
 
     def get_display(self):
@@ -1419,6 +1440,7 @@ class SelectWdg(BaseInputWdg):
             self.add_border()
         else:
             self.add_style("border", "none")
+
 
         #self.add_style("margin: 0px 5px")
 

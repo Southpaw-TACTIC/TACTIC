@@ -1305,6 +1305,24 @@ TacticServerStub = function() {
         
     }
 
+
+
+    this.update = function(search_key, data, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("update", arguments, kwargs, null, on_complete, on_error);
+        if (on_complete) {
+            return;
+        }
+        if (ret_val && ret_val.status == "ERROR") {
+            throw ret_val;
+        }
+        return ret_val;
+    }
+
+
+
+    /*
     this.update = function(search_key, data, kwargs, on_complete, on_error) {
         var newArgs = Array.prototype.slice.call(arguments).slice(0,3);
         if(on_complete){
@@ -1318,6 +1336,7 @@ TacticServerStub = function() {
 
         return this._delegate("update", newArgs, kwargs);
     }
+    */
 
 
 
@@ -1331,6 +1350,7 @@ TacticServerStub = function() {
             return this.update(search_type, data, kwargs);
         }.bind(this) )
     }
+
 
 
 

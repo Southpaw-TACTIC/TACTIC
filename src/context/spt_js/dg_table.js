@@ -2264,6 +2264,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var shelf_view = target.getAttribute("spt_shelf_view") || "";
     var badge_view = target.getAttribute("spt_badge_view") || "";
     var extra_data = target.getAttribute("spt_extra_data") || "";
+    var default_data = target.getAttribute("spt_default_data") || "";
 
     var height = target.getAttribute("spt_height") || "";
     var element_names;
@@ -2355,6 +2356,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'shelf_view': shelf_view,
         'badge_view': badge_view,
         'extra_data': extra_data,
+        'default_data': default_data,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;

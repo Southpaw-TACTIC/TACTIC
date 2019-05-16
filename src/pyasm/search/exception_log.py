@@ -22,7 +22,7 @@ class ExceptionLog(SObject):
     '''Class that controls the logging of all of the exceptions that occur
     during the Tactic runtime'''
 
-    def log(exception):
+    def log(exception, message=None):
         tb = sys.exc_info()[2]
         stacktrace = traceback.format_tb(tb)
         stacktrace_str = "".join(stacktrace)
@@ -30,7 +30,8 @@ class ExceptionLog(SObject):
         # replace crazy windows paths with normal paths
         stacktrace_str = stacktrace_str.replace("\\", "/")
 
-
+        print "-"*50
+        print "From ExceptionLog.log"
         print "-"*50
         print stacktrace_str
         print str(exception)
@@ -44,14 +45,14 @@ class ExceptionLog(SObject):
         if not user_name:
             user_name = "UNKNOWN"
 
+        if not message:
+            message = str(exception)
 
         exception_log = SObjectFactory.create("sthpw/exception_log")
         exception_log.set_value("login", user_name)
         exception_log.set_value("class", exception.__class__.__name__)
-        exception_log.set_value("message", str(exception) )
-
+        exception_log.set_value("message", message)
         exception_log.set_value("stack_trace", stacktrace_str)
-
         exception_log.commit()
 
         del tb, stacktrace
@@ -59,7 +60,6 @@ class ExceptionLog(SObject):
         return exception_log
 
     log = staticmethod(log)
-
 
 
     def get_stack_trace(exception):

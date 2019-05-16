@@ -179,20 +179,44 @@ class BaseTableElementWdg(HtmlElement):
         return True
 
 
+
     def get_title(self):
         '''Returns a widget containing the title to be displayed for this
         column'''
         if self.title:
             title = self.title
+            title = title.replace(r'\n','<br/>')
+
+            if self.title.find("->") != -1:
+                parts = self.title.split("->")
+                title = parts[-1]
+
         else:
             title = self.name
+
+            if self.name.find("->") != -1:
+                parts = self.name.split("->")
+                title = parts[-1]
+
+
             if not title:
                 title = ""
-                return title
 
-            title = Common.get_display_title(title)
+            else:
+                title = Common.get_display_title(title)
+
         title = _(title)
-        return title
+
+        from pyasm.web import DivWdg
+        div = DivWdg()
+        div.add_attr("title", title)
+        div.add_style("margin-top", "6px")
+        div.add(title)
+
+        return div
+
+
+
 
 
     def get_header_option_wdg(self):
@@ -232,7 +256,7 @@ class BaseTableElementWdg(HtmlElement):
 
 
 
-    # functions taht for a standard way for an widget to deliver data
+    # functions that for a standard way for an widget to deliver data
     def get_data(self, sobject):
         name = self.name
         return sobject.get_value(name, no_exception=True)

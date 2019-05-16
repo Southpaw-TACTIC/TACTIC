@@ -255,6 +255,18 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                 else:
                     raise
 
+
+    def get_onload_js(self):
+        # TODO: make the order the same as add_value_update 
+        #bvr.src_el.loadXYZ = function(element_name, cell, sobject) { %s }
+        return '''
+            var value = sobject[element_name];
+            if (!value) value = "";
+            cell.innerHTML = value;
+        '''
+        #}
+
+
     def get_value(self, name=None):
         if not name:
             name = self.get_name()

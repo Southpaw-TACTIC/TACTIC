@@ -11,7 +11,7 @@
 #
 from __future__ import print_function
 
-__all__ = ['Workflow', 'WorkflowException', 'BaseWorkflowNodeHandler', 'BaseProcessTrigger', 'ProcessStatusTrigger', 'CustomProcessConfig']
+__all__ = ['Workflow', 'WorkflowException', 'BaseWorkflowNodeHandler', 'BaseProcessTrigger', 'ProcessStatusTrigger', 'CustomProcessConfig', 'WorkflowManualNodeHandler']
 
 import tacticenv
 
@@ -279,7 +279,8 @@ class TaskStatusChangeTrigger(Trigger):
             'process': process_name,
             'parent_processes': parent_processes,
             'status': status,
-            'internal': True
+            'internal': True,
+            'task': task,
         }
         Trigger.call(task, event, output=output)
 
