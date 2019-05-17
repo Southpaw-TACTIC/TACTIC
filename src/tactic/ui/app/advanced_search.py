@@ -10,9 +10,9 @@
 #
 #
 __all__ = ["AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg",
-"DeleteSavedSearchCmd", "SaveSearchCmd", "GetSavedSearchCmd"]
+"DeleteSavedSearchCmd", "SaveSearchCmd", "GetSavedSearchCmd", "SaveCurrentSearchCmd", "DeleteRecentSearchCmd"]
 
-from pyasm.common import Environment, Xml
+from pyasm.common import Environment, Xml, jsonloads, jsondumps
 from pyasm.command import Command
 from pyasm.search import Search, SearchType
 from pyasm.web import DivWdg, HtmlElement
@@ -77,6 +77,8 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
             }
 
             .spt_look_ahead_top .spt_look_ahead_header {
+                position: relative;
+
                 display: grid;
                 grid-template-columns: auto 35px;
                 grid-gap: 15px;
@@ -90,6 +92,40 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 align-items: center;
                 justify-content: center;
                 font-size: 15px;
+            }
+
+            .spt_look_ahead_top .spt_recent_searches {
+                font-size: 12px;
+                box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 15px;
+                color: rgb(0, 0, 0);
+                top: 35px;
+                border-style: solid;
+                min-width: 220px;
+                border-width: 1px;
+                padding: 5px 10px 10px 5px;
+                border-color: rgb(187, 187, 187);
+                z-index: 1000;
+                background: rgb(255, 255, 255);
+                position: absolute;
+                left: 0;
+            }
+
+            .spt_look_ahead_top .spt_recent_search {
+                display: flex;
+                justify-content: space-between;
+                align-items:center;
+
+                padding: 3px;
+                cursor: hand;
+            }
+
+            .spt_look_ahead_top .spt_recent_search_label {
+                width: 100%;
+            }
+
+            .spt_look_ahead_top .spt_recent_search_remove {
+                font-style: italic;
+                color: red;
             }
 
             .spt_look_ahead_top .spt_text_input_wdg {
@@ -136,6 +172,37 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 cursor: pointer;
             }
 
+            .spt_look_ahead_top .spt_validation_indicator {
+                position: absolute;
+                right: 60;
+                top: 9;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 18px;
+                height: 18px;
+
+                border-radius: 10px;
+                color: white;
+            }
+
+            .spt_look_ahead_top .spt_validation_indicator.spt_pass {
+                background: lightgreen;
+            }
+
+            .spt_look_ahead_top .spt_validation_indicator.spt_fail {
+                background: red;
+            }
+
+            .spt_look_ahead_top .spt_validation_indicator.spt_pass .fa-times {
+                display: none;
+            }
+
+            .spt_look_ahead_top .spt_validation_indicator.spt_fail .fa-check{
+                display: none;
+            }
+
 
             ''')
 
@@ -148,6 +215,8 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         look_ahead_top.add_class("spt_look_ahead_top spt_search_filter")
         look_ahead_top.add_behavior({
             'type': 'load',
+            'search_type': self.search_type,
+            'recent_searches': self.get_recent_searches(),
             'cbjs_action': self.get_onload_js()
             })
         self.add_relay_behaviors(look_ahead_top)
@@ -167,10 +236,39 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         }
 
         columns = SearchType.get_columns(self.search_type)
+
+        on_search_complete = '''
+
+            let top = bvr.src_el.getParent(".spt_look_ahead_top");
+            let validator = top.getElement(".spt_validation_indicator");
+            let textInput = top.getElement(".spt_text_input");
+
+            let value = textInput.value;
+
+            let resultsContainer = top.getElement(".spt_input_text_results");
+            let resultDivs = resultsContainer.getElements(".spt_input_text_result");
+
+            let results = []
+            resultDivs.forEach(function(resultDiv){
+                results.push(resultDiv.innerText);
+            });
+
+            if (results.includes(value)) {
+                validator.removeClass("spt_fail");
+                validator.addClass("spt_pass");
+            } else {
+                validator.removeClass("spt_pass");
+                validator.addClass("spt_fail");
+            }
+
+        '''
+
         if 'keywords' in columns:
-            look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, search_type=self.search_type)
+            look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, highlight=True, 
+                on_search_complete=on_search_complete, keyword_mode="contains", search_type=self.search_type)
         else:
-            look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk)
+            look_ahead_wdg = LookAheadTextInputWdg(name="", width="100%", background="#f4f4f4", custom_cbk=custom_cbk, highlight=True,
+                on_search_complete=on_search_complete, keyword_mode="contains")
         look_ahead_header.add(look_ahead_wdg)
 
         info_wdg = DivWdg("<i class='fa fa-info'></i>")
@@ -178,6 +276,71 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         info_wdg.add_class("info-icon")
         info_wdg.add_class("hand")
 
+        validation_indicator = DivWdg("<i class='fa fa-check'></i><i class='fa fa-times'></i>")
+        look_ahead_header.add(validation_indicator)
+        validation_indicator.add_class("spt_validation_indicator")
+        validation_indicator.add_style("display: none")
+
+        custom_dropdown = DivWdg()
+        look_ahead_header.add(custom_dropdown)
+        custom_dropdown.add_class("spt_recent_searches")
+        custom_dropdown.add_style("display: none")
+
+        recent_search = DivWdg()
+        custom_dropdown.add(recent_search)
+        recent_search.add_class("spt_recent_search")
+        recent_search.add_class("spt_template")
+
+        recent_search_label = DivWdg()
+        recent_search.add(recent_search_label)
+        recent_search_label.add_class("spt_recent_search_label")
+        recent_search_label.add_class("spt_input_text_result")
+
+        recent_search_remove = DivWdg("Remove")
+        recent_search.add(recent_search_remove)
+        recent_search_remove.add_class("spt_recent_search_remove")
+
+        recent_search_remove.add_behavior({
+            'type': 'click',
+            'search_type': self.search_type,
+            'cbjs_action': '''
+
+            let item = bvr.src_el.getParent(".spt_recent_search");
+            spt.advanced_search.keywords.remove_recent(item);
+
+            '''
+            })
+
+        custom_dropdown.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            bvr.src_el.on_complete = function(el) {
+                bvr.src_el.setStyle("display", "none");
+            }
+
+            let template = bvr.src_el.getElement(".spt_template");
+
+            let recent_searches = spt.advanced_search.keywords.recent_searches;
+
+            for (let i=0; i<recent_searches.length; i++) {
+
+                let value = recent_searches[i]
+
+                let clone = spt.behavior.clone(template);
+                let labelDiv = clone.getElement(".spt_recent_search_label");
+                clone.setAttribute("spt_value", value)
+                labelDiv.innerText = value;
+                labelDiv.setAttribute("spt_value", value)
+                clone.removeClass("spt_template");
+
+                bvr.src_el.appendChild(clone);
+            }
+
+            '''
+            })
+
+        #### tag clusters
         tag_cluster = DivWdg()
         look_ahead_top.add(tag_cluster)
         tag_cluster.add_class("spt_search_tags")
@@ -249,46 +412,8 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         return '''
 
 spt.advanced_search = spt.advanced_search || {};
-spt.advanced_search.keywords = spt.advanced_search.keywords || {};
-
-spt.advanced_search.keywords.add_keyword = function(display) {
-    let tagsContainer = bvr.src_el.getElement(".spt_search_tags");
-    let tagTemplate = tagsContainer.getElement(".spt_template");
-
-    let clone = spt.behavior.clone(tagTemplate);
-    clone.getElement(".spt_search_tag_label").innerText = "#"+display;
-    clone.setAttribute("spt_value", display);
-    clone.removeClass("spt_template");
-    tagsContainer.appendChild(clone);
-
-    tagsContainer.removeClass("empty");
-
-    let textTop = bvr.src_el.getElement(".spt_input_text_top");
-    let textInput = textTop.getElement(".spt_text_input");
-    textInput.value = "";
-
-    // extract and set keywords
-    spt.advanced_search.keywords.set_keywords();
-}
-
-spt.advanced_search.keywords.extract_keywords = function() {
-    let tagsContainer = bvr.src_el.getElement(".spt_search_tags");
-    let items = tagsContainer.getElements(".spt_search_tag_item");
-    let keywords = [];
-
-    items.forEach(function(item){
-        if (item.hasClass("spt_template")) return;
-        keywords.push(item.getAttribute("spt_value"));
-    })
-
-    return keywords;
-}
-
-spt.advanced_search.keywords.set_keywords = function() {
-    let keywords = spt.advanced_search.keywords.extract_keywords();
-    let keywordsStorage = bvr.src_el.getElement(".spt_keywords");
-    keywordsStorage.value = keywords.join(",");
-}
+spt.advanced_search.keywords.recent_searches = bvr.recent_searches;
+spt.advanced_search.keywords.search_type = bvr.search_type;
 
         '''
 
@@ -323,6 +448,54 @@ spt.advanced_search.keywords.set_keywords = function() {
             }
 
             spt.advanced_search.keywords.add_keyword(display);
+
+            if (bvr.src_el.hasClass("spt_recent_search_label")) {
+                let top = bvr.src_el.getParent(".spt_look_ahead_top");
+                let customDropdown = top.getElement(".spt_recent_searches");
+
+                spt.body.remove_focus_element(customDropdown);
+                customDropdown.on_complete();
+            } else {
+                spt.advanced_search.keywords.add_recent(value);
+            }
+
+            '''
+            })
+
+        top.add_relay_behavior({
+            'type': 'keyup',
+            'bvr_match_class': 'spt_text_input',
+            'cbjs_action': '''
+
+            let top = bvr.src_el.getParent(".spt_look_ahead_top");
+            let customDropdown = top.getElement(".spt_recent_searches");
+
+            spt.body.remove_focus_element(customDropdown);
+            customDropdown.on_complete();
+
+            let validator = top.getElement(".spt_validation_indicator");
+            let value = bvr.src_el.value;
+            if (value != "") 
+                validator.setStyle("display", "");
+            else
+                validator.setStyle("display", "none");
+
+
+            '''
+            })
+
+        top.add_relay_behavior({
+            'type': 'click',
+            'bvr_match_class': 'spt_text_input',
+            'cbjs_action': '''
+
+            if (bvr.src_el.value != "") return;
+
+            let top = bvr.src_el.getParent(".spt_look_ahead_top");
+            let customDropdown = top.getElement(".spt_recent_searches");
+            customDropdown.setStyle("display", "");
+
+            spt.body.add_focus_element(customDropdown);
 
             '''
             })
@@ -389,6 +562,119 @@ spt.advanced_search.keywords.set_keywords = function() {
             search.add_text_search_filter(column, value)
 
         search.add_op("or")
+
+
+    def get_recent_searches(self):
+
+        search = Search("config/widget_config")
+        search.add_filter("view", "recent_searches")
+        search.add_filter("search_type", self.search_type)
+        search.add_user_filter()
+        config_sobj = search.get_sobject()
+
+        keywords = []
+        if config_sobj:
+            config_xml = config_sobj.get_xml_value("config")
+            from pyasm.widget import WidgetConfig, WidgetConfigView
+            config = WidgetConfig.get(view="recent_searches", xml=config_xml)
+            data = config_xml.get_value("config/recent_searches/values")
+            keywords = jsonloads(data)
+
+        return keywords
+
+
+
+class SaveCurrentSearchCmd(Command):
+
+    def execute(self):
+        search_type = self.kwargs.get("search_type")
+        # values = self.kwargs.get("values")
+        value = self.kwargs.get("value")
+        if not value:
+            return
+
+        search = Search("config/widget_config")
+        search.add_filter("view", "recent_searches")
+        search.add_filter("search_type", search_type)
+        search.add_user_filter()
+        config_sobj = search.get_sobject()
+
+        if not config_sobj:
+            values = [value]
+            values_str = jsondumps(values)
+
+            config = "<config>\n"
+            config += "<recent_searches>\n"
+            # get all of the serialized versions of the filters
+            value_type = "json"
+            config += "<values type='%s'>%s</values>\n" % (value_type, values_str)
+            config += "</recent_searches>\n"
+            config += "</config>\n"
+
+            config_sobj = SearchType.create('config/widget_config')
+            config_sobj.set_value("view", 'recent_searches')
+            config_sobj.set_value("search_type", search_type)
+            config_sobj.set_user()
+        else:
+            config_xml = config_sobj.get_xml_value("config")
+            from pyasm.widget import WidgetConfig, WidgetConfigView
+            config = WidgetConfig.get(view="recent_searches", xml=config_xml)
+            data = config_xml.get_value("config/recent_searches/values")
+            values = jsonloads(data)
+            values.append(value)
+            values_str = jsondumps(values)
+
+            config = "<config>\n"
+            config += "<recent_searches>\n"
+            # get all of the serialized versions of the filters
+            value_type = "json"
+            config += "<values type='%s'>%s</values>\n" % (value_type, values_str)
+            config += "</recent_searches>\n"
+            config += "</config>\n"
+
+
+        config_sobj.set_value("config", config)
+        config_sobj.commit()
+
+
+
+class DeleteRecentSearchCmd(Command):
+
+    def execute(self):
+        search_type = self.kwargs.get("search_type")
+        # values = self.kwargs.get("values")
+        value = self.kwargs.get("value")
+
+        search = Search("config/widget_config")
+        search.add_filter("view", "recent_searches")
+        search.add_filter("search_type", search_type)
+        search.add_user_filter()
+        config_sobj = search.get_sobject()
+
+        deleted = False
+        if config_sobj:
+            config_xml = config_sobj.get_xml_value("config")
+            from pyasm.widget import WidgetConfig, WidgetConfigView
+            config = WidgetConfig.get(view="recent_searches", xml=config_xml)
+            data = config_xml.get_value("config/recent_searches/values")
+            values = jsonloads(data)
+            values.remove(value)
+            values_str = jsondumps(values)
+
+            config = "<config>\n"
+            config += "<recent_searches>\n"
+            # get all of the serialized versions of the filters
+            value_type = "json"
+            config += "<values type='%s'>%s</values>\n" % (value_type, values_str)
+            config += "</recent_searches>\n"
+            config += "</config>\n"
+
+            config_sobj.set_value("config", config)
+            config_sobj.commit()
+
+            deleted = True
+
+        self.info["deleted"] = deleted
 
 
 
@@ -471,10 +757,6 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
 
         save_top = self.top
         save_top.add_class("spt_save_top")
-        save_top.add_behavior({
-            'type': 'load',
-            'cbjs_action': self.get_onload_js()
-            })
 
         ## header
         save_header = DivWdg()
@@ -629,52 +911,6 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
         save_top.add(self.get_styles())
 
         return save_top
-
-
-    def get_onload_js(self):
-
-        return '''
-
-spt.advanced_search = spt.advanced_search || {};
-
-spt.advanced_search.generate_json = function() {
-    var search_top = bvr.src_el.getParent(".spt_search_top");
-    var new_values = [];
-    if (search_top) {
-        var search_containers = search_top.getElements('.spt_search_filter')
-        for (var i = 0; i < search_containers.length; i++) {
-            var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
-            new_values.push(values);
-        }
-        var ops = search_top.getElements(".spt_op");       // special code for ops
-        var results = [];
-        var levels = [];
-        var modes = [];
-        var op_values = [];
-        for (var i = 0; i < ops.length; i++) {
-            var op = ops[i];
-            var level = op.getAttribute("spt_level");
-            level = parseInt(level);
-            var op_value = op.getAttribute("spt_op");
-            results.push( [level, op_value] );
-            var op_mode = op.getAttribute("spt_mode");
-            levels.push(level);
-            op_values.push(op_value);
-            modes.push(op_mode);        }
-        var values = {
-            prefix: 'search_ops',
-            levels: levels,
-            ops: op_values,
-            modes: modes
-        };
-        new_values.push(values);    
-    }    // convert to json
-    
-    return new_values;
-
-}
-
-        '''
 
 
 
@@ -1040,6 +1276,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
             .then(function(ret_val) {
                 let search_values_dict = ret_val.info.search_values_dict;
                 let top = bvr.src_el.getParent('.spt_search_top');
+                top.removeClass("spt_has_changes");
                 let refreshPanel = top.getElement('.spt_search');
 
                 spt.panel.refresh_element(refreshPanel, {filter: search_values_dict, search_view: value});
@@ -1151,82 +1388,6 @@ spt.advanced_search.saved = spt.advanced_search.saved || {};
 spt.advanced_search.saved.categories = bvr.categories;
 spt.advanced_search.saved.values = bvr.values;
 spt.advanced_search.saved.labels = bvr.labels;
-
-spt.advanced_search.saved.add_item = function(key, label, value) {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    let template = categoryContainer.getElement(".spt_saved_search_item.spt_template");
-
-    let clone = spt.behavior.clone(template);
-    let labelDiv = clone.getElement(".spt_saved_search_label");
-    labelDiv.innerText = label;
-
-    clone.setAttribute("spt_category", key);
-    clone.setAttribute("spt_value", value);
-    clone.removeClass("spt_template");
-    categoryContainer.appendChild(clone);
-}
-
-spt.advanced_search.saved.create_item = function(key, label, value) {
-    spt.advanced_search.saved.labels[key].push(label);
-    spt.advanced_search.saved.values[key].push(value);
-}
-
-spt.advanced_search.saved.delete_item = function(key, label) {
-    let index = spt.advanced_search.saved.labels[key].indexOf(label);
-    spt.advanced_search.saved.labels[key].splice(index, 1);
-    spt.advanced_search.saved.values[key].splice(index, 1);
-}
-
-spt.advanced_search.saved.load_items = function(key) {
-    /*let values = spt.advanced_search.saved.get_values(key);
-    let labels = spt.advanced_search.saved.get_labels(key);
-
-    for (let i=0; i<values.length; i++) {
-        let label = labels[i];
-        let value = values[i];
-        
-        spt.advanced_search.saved.add_item(key, label, value);
-    }*/
-
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let selected = container.getElement(".spt_saved_searches_item.selected");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    if (selected) selected.removeClass("selected");
-    categoryContainer.addClass("selected");
-}
-
-spt.advanced_search.saved.clear_items = function() {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let items = container.getElements(".spt_saved_search_item");
-
-    items.forEach(function(item){
-        if (item.hasClass("spt_template")) return;
-        item.remove();
-    });
-}
-
-
-spt.advanced_search.saved.toggle_dropdown = function(display) {
-    let dropdown = bvr.src_el.getElement(".spt_search_categories_dropdown");
-
-    if (display) 
-        dropdown.setStyle("display", display);
-    else
-        spt.toggle_show_hide(dropdown);
-}
-
-spt.advanced_search.saved.get_values = function(key) {
-    return spt.advanced_search.saved.values[key];
-}
-
-spt.advanced_search.saved.get_labels = function(key) {
-    return spt.advanced_search.saved.labels[key];
-}
-
-spt.advanced_search.saved.get_selected = function() {
-    return bvr.src_el.getElement(".spt_saved_search_item.selected");
-}
 
         '''
 
@@ -1518,6 +1679,11 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 padding: 6px 14px;
             }
 
+            .spt_search_top:not(.spt_has_changes) .spt_advanced_search_buttons .save-button[spt_action='save'] {
+                color: #ccc;
+                cursor: default;
+            }
+
 
             ''')
 
@@ -1592,6 +1758,9 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 saveTop.addClass("visible");
                 saveTop.getElement(".spt_save_title").innerText = bvr.src_el.innerText;
             } else if (action == "save") {
+                let top = bvr.src_el.getParent(".spt_search_top");
+                if (!top.hasClass("spt_has_changes")) return;
+
                 var selected = spt.advanced_search.saved.get_selected();
                 if (!selected) {
                     spt.alert("No search item selected");
@@ -1619,6 +1788,9 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
 
                 let on_complete = function(ret_val) {
                     spt.notify.show_message("Search saved");
+
+                    let top = bvr.src_el.getParent('.spt_search_top');
+                    top.removeClass("spt_has_changes");
                 }
 
                 var class_name = "tactic.ui.app.SaveSearchCmd";
