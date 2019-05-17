@@ -1334,13 +1334,14 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
             sobject = Search.get_by_search_key(value_key)
 
-            display = sobject.get_value(column)
-            value = sobject.get_value(value_column, auto_convert=False)
+            if sobject:
+                display = sobject.get_value(column)
+                value = sobject.get_value(value_column, auto_convert=False)
 
-            
-            self.text.set_value(display)
-            if value != None:
-                self.hidden.set_value(value)
+                
+                self.text.set_value(display)
+                if value != None:
+                    self.hidden.set_value(value)
 
 
         elif search_key and search_key != "None":
