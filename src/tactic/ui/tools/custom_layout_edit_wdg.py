@@ -1309,7 +1309,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     event_select = SelectWdg(name="behavior_event")
                     event_select.add_attr("spt_is_multiple", "true")
                     event_div.add(event_select)
-                    event_select.set_option("values", "click|load|unload|double_click|keyup|mouseenter|mouseleave|listen")
+                    event_select.set_option("values", "click|load|unload|double_click|keyup|mouseenter|mouseleave|listen|change|click_up")
                     event_select.add_empty_option("-- Select --")
                     if event:
                         event_select.set_option("default", event)
