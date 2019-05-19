@@ -403,9 +403,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         if self.sobjects:
             
-            self.sobject_data = self.get_sobject_data(self.sobjects)
-            style = self.get_styles()
-            inner.add(style)
+            project_setting = True
+            
+
+            if project_setting:
+                self.sobject_data = self.get_sobject_data(self.sobjects)
+		style = self.get_styles()
+		inner.add(style)
             
             inner.add( self.get_scale_wdg())
             if self.upload_mode in ['button','both']:
@@ -414,7 +418,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             self.process_groups()
             
             
-            project_setting = True
             if project_setting:
                 content_wdg = self.get_js_content_wdg()
                 inner.add(content_wdg)
@@ -1531,8 +1534,6 @@ class TileLayoutWdg(ToolLayoutWdg):
     def get_paths(self, sobject, snapshot, file_objects):
         xml = snapshot.get_xml_value("snapshot")
 
-        protocol = 'http'
-        # go through the nodes and try to find appropriate paths
         paths = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot)
         return paths
 
@@ -1992,44 +1993,61 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-
     def get_tile_wdg(self, sobject):
-        
-        tile_data = self.sobject_data.get(sobject.get_search_key()) or {}
 
         div = DivWdg()
+
+        
         div.add_class("spt_tile_top")
         div.add_class("unselectable")
+        div.add_style('margin-bottom', self.spacing)
+        div.add_style('margin-right', self.spacing)
+        div.add_style('background-color','transparent')
+        div.add_style('position','relative')
+        div.add_style('vertical-align','top')
+
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
 
         div.add(" ")
 
-
-
+ 
         if self.kwargs.get("show_title") not in ['false', False]:
-        
-            title_wdg = tile_data.get("title_wdg")
-            if title_wdg:
-                div.add(title_wdg)
+
+            if self.title_wdg:
+                self.title_wdg.set_sobject(sobject)
+                div.add(self.title_wdg.get_buffer_display())
+                title_wdg = self.title_wdg
+            else:
+                title_wdg = self.get_title(sobject)
+                div.add( title_wdg )
+
 
             title_wdg.add_style("position: absolute")
             title_wdg.add_style("top: 0")
             title_wdg.add_style("left: 0")
             title_wdg.add_style("width: 100%")
+            #title_wdg.add_style("opacity: 0.5")
 
 
-        div.add_attr("spt_search_key", tile_data.get("spt_search_key"))
-        div.add_attr("spt_search_key_v2", tile_data.get("spt_search_key_v2"))
-        div.add_attr("spt_name", tile_data.get("spt_name"))
-        div.add_attr("spt_search_code", tile_data.get("spt_search_code"))
-        div.add_attr("spt_is_collection", tile_data.get("spt_is_collection"))
-        div.add_attr("spt_display_value", tile_data.get("spt_display_value"))
-     
+        div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
+        div.add_attr("spt_search_key_v2", sobject.get_search_key())
+        div.add_attr("spt_name", sobject.get_name())
+        div.add_attr("spt_search_code", sobject.get_code())
+        div.add_attr("spt_is_collection", sobject.get_value('_is_collection', no_exception=True))
+        display_value = sobject.get_display_value(long=True)
+        div.add_attr("spt_display_value", display_value)
+
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
+        
         if self.show_drop_shadow:
             div.set_box_shadow()
+
+
+        div.add_style("overflow: hidden")
+        #div.add_style("float: left")
+        div.add_style("display: inline-block")
 
 
         border_color = div.get_color('border', modifier=20)
@@ -2037,6 +2055,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div = DivWdg()
         div.add(thumb_drag_div)
         thumb_drag_div.add_class("spt_tile_drag")
+        thumb_drag_div.add_style("width: auto")
+        thumb_drag_div.add_style("height: auto")
         thumb_drag_div.add_behavior( {
             "type": "drag",
             "drag_el": '@',
@@ -2050,7 +2070,24 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
 
-        thumb = tile_data.get('thumb')
+        thumb_div.add_style("overflow: hidden")
+        thumb_div.add_style("width: %s" % self.aspect_ratio[0])
+
+        thumb_div.add_style("height: %s" % self.aspect_ratio[1])
+        #thumb_div.add_style("overflow: hidden")
+
+        kwargs = {}
+        kwargs['show_name_hover'] = self.show_name_hover
+        kwargs['aspect_ratio'] = self.aspect_ratio
+
+        thumb = ThumbWdg2(**kwargs)
+
+        use_parent = self.kwargs.get("use_parent")
+        if use_parent in [True, 'true']:
+            parent = sobject.get_parent()
+            thumb.set_sobject(parent)
+        else:
+            thumb.set_sobject(sobject)
         thumb_div.add(thumb)
         thumb_div.add_border()
 
@@ -2058,38 +2095,76 @@ class TileLayoutWdg(ToolLayoutWdg):
         # FIXME: for some reason, the hidden overflow is not respected here
         thumb.add_style("margin-top: 30%")
         thumb.add_style("transform: translate(0%, -50%)")
+        #thumb.add_style("border: solid 2px blue")
+        #thumb_div.add_style("border: solid 2px red")
+
 
         # add a div on the bottom
-
+        div.add_style("position: relative")
 
         tool_div = DivWdg()
         div.add(tool_div)
         tool_div.add_style("display: none")
         tool_div.add_class("spt_tile_tool_top")
-        tool_div.add_border(size="0px 1px 1px 1px")
+
+        lib_path = thumb.get_lib_path()
+        if lib_path:
+            size = Common.get_dir_info(lib_path).get("size")
+            from pyasm.common import FormatValue
+            size = FormatValue().get_format_value(size, "KB")
+        else:
+            size = 0
 
         size_div = DivWdg()
         tool_div.add(size_div)
-        
-        size_div.add_class("spt_tile_size")
-        size_div.add(tile_data.get("size"))
-            
-        # Download button
-        path = tile_data.get("path")
+        size_div.add(size)
+        size_div.add_style("float: right")
+        size_div.add_style("margin-top: 3px")
+
+
+
+        #tool_div.add_style("position: absolute")
+        tool_div.add_style("position: relative")
+        #tool_div.add_style("top: 30px")
+        tool_div.add_style("background: #FFF")
+        tool_div.add_style("color: #000")
+        tool_div.add_style("height: 21px")
+        tool_div.add_style("padding: 2px 5px")
+        tool_div.add_style("margin-top: -26px")
+        tool_div.add_border(size="0px 1px 1px 1px")
+
+        path = thumb.get_path()
+
+        try:
+            path = thumb.snapshot.get_web_path_by_type("main")
+        except:
+            path = path
         if path:
             href = HtmlElement.href()
             href.add_attr("href", path)
             tool_div.add(href)
 
+
             basename = os.path.basename(path)
             href.add_attr("download", basename)
+
 
             icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
             icon.add_class("hand")
             href.add(icon)
+            """
+            icon.add_behavior( {
+                'type': 'clickX',
+                'path': path,
+                'cbjs_action': '''
+                alert(bvr.path); 
+                '''
+            } )
+            """
 
 
-        # TODO: Remove bottom logic from this function
+
+
         if self.bottom:
             self.bottom.set_sobject(sobject)
             div.add(self.bottom.get_buffer_display())
@@ -2123,12 +2198,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("ondragleave", "spt.thumb.noop_leave(event, this)")
         div.add_attr("ondragover", "return false")
         div.add_attr("ondrop", "spt.thumb.noop(event, this)")
-       
-        # TODO: Remove overlay_expr from this function
+        
         if self.overlay_expr:
             from tactic.ui.widget import OverlayStatsWdg
             stat_div = OverlayStatsWdg(expr = self.overlay_expr, sobject = sobject, bg_color = self.overlay_color)
             div.add(stat_div)
+
 
         return div
 
