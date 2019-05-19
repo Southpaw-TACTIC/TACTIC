@@ -5353,6 +5353,10 @@ class ProcessInfoCmd(Command):
             cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
             return cmd.execute()
         except Exception as e:
+            print
+            print("Failed saving node for node type [%s]:" % node_type)
+            print(e)
+            print
             return self.handle_default()
 
 
@@ -6223,7 +6227,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             try {
                 var xml = spt.pipeline.export_group(group_name);
             } catch (err) {
-                spt.alert("Error while parsing xml:", err);
+                spt.alert("Error while parsing xml: " + err);
                 return;
             }
 
