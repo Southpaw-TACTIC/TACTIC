@@ -1457,9 +1457,12 @@ class ThumbWdg(BaseTableElementWdg):
     get_missing_image = staticmethod(get_missing_image)
 
 
-
+   
 
     def get_file_info(xml, file_objects, sobject, snapshot, show_versionless=False, is_list=False, protocol='http'):
+        
+        project_setting = False
+        
         info = {}
         #TODO: {'file_type': [file_type]: [path], 'base_type': [base_type]: [file|directory|sequence]}
 
@@ -1485,7 +1488,11 @@ class ThumbWdg(BaseTableElementWdg):
                 continue
 
             file_name = file_object.get_full_file_name()
-            web_dir = sobject.get_web_dir(snapshot, file_object=file_object)
+            if project_setting:
+                web_dir = sobject.get_web_dir(snapshot, file_object=file_object)
+            else:
+                lib_dir = file_object.get("checkin_dir")
+                web_dir = lib_dir.replace("/spt/data/sites/", "/assets/")
 
             # handle a range if it exists
             file_range = file_object.get_value("file_range")
@@ -1505,14 +1512,18 @@ class ThumbWdg(BaseTableElementWdg):
 
             if isinstance(info, dict):
                 info[type] = path
-                lib_dir = sobject.get_lib_dir(snapshot, file_object=file_object)
+
+                if project_setting:
+                    lib_dir = sobject.get_lib_dir(snapshot, file_object=file_object)
+                else:
+                    lib_dir = file_object.get_value("checkin_dir")
+
                 repo_info[type] = "%s/%s" % (lib_dir, file_name)
             else:
                 info.append((type, path))
 
         return info
     get_file_info = staticmethod(get_file_info)
-
 
     def get_refresh_script(sobject, icon_size=None, show_progress=True):
         print("DEPRECATED: Snapshot.get_refresh_script!")
