@@ -380,23 +380,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             button_div.add( self.get_delete_wdg() )
             button_div.add_style("height: 45px")
            
-        style = HtmlElement.style()
-        css = """
-            .spt_tile_top {
-                margin-bottom: %s;
-                margin-right: %s;
-                background-color: transparent;
-                position: relative;
-                verticial-align: top;
-                overflow: hidden;
-                float: left;
-                display: inline-block;
-                position: relative;
-            }
-
-        """ % (self.spacing, self.spacing)
-        style.add(css)
-        inner.add(style)
                 
         inner.add_style("text-align: left")
         
@@ -568,6 +551,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def init(self):
+        
         self.scale_called = False
         self.scale = None
         top_view = self.kwargs.get("top_view")
@@ -648,6 +632,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         self.gallery_align = self.kwargs.get('gallery_align')
 
         super(TileLayoutWdg, self).init()
+
 
 
     def add_layout_behaviors(self, layout_wdg):
@@ -1476,8 +1461,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def preprocess_paths(self, sobjects):
       
-        import time
-
         paths_by_key = {}
 
         search_type = self.search_type
@@ -1543,12 +1526,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         sobject_data = {}
        
         paths_by_key = {}
-        preprocess = True
-        if preprocess:
-            try:
-                paths_by_key = self.preprocess_paths(sobjects)
-            except Exception, e:
-                print e
+        
+        try:
+            paths_by_key = self.preprocess_paths(sobjects)
+        except Exception, e:
+            print e
             
        
 
@@ -1562,35 +1544,13 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data["spt_is_collection"] = sobject.get_value('_is_collection', no_exception=True)
             tile_data["spt_display_value"] = sobject.get_display_value(long=True)
    
-            if preprocess:
-                paths = paths_by_key.get(sobject.get_search_key())
-                path = paths.get("web")
-                repo_paths = paths.get("_repo")
-                if repo_paths:
-                    lib_path = repo_paths.get("main")
-                else:
-                    lib_path = None
+            paths = paths_by_key.get(sobject.get_search_key())
+            path = paths.get("web")
+            repo_paths = paths.get("_repo")
+            if repo_paths:
+                lib_path = repo_paths.get("main")
             else:
-
-                kwargs = {}
-                kwargs['show_name_hover'] = self.show_name_hover
-                kwargs['aspect_ratio'] = self.aspect_ratio
-                thumb = ThumbWdg2(**kwargs)
-
-            
-                use_parent = self.kwargs.get("use_parent")
-                if use_parent in [True, 'true']:
-                    parent = sobject.get_parent()
-                    thumb.set_sobject(parent)
-                else:
-                    thumb.set_sobject(sobject)
-        
-        
-                lib_path = thumb.get_lib_path()
-                path = thumb.get_path()
-           
-
-
+                lib_path = None
 
             if lib_path:
                 size = Common.get_dir_info(lib_path).get("size")
@@ -1662,7 +1622,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         return sobject_data
-    #get_sobject_data = classmethod(get_sobject_data)
 
 
     def get_styles(self):
@@ -1730,6 +1689,20 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         """
        
+        css += """
+            .spt_tile_top {
+                margin-bottom: %s;
+                margin-right: %s;
+                background-color: transparent;
+                position: relative;
+                verticial-align: top;
+                overflow: hidden;
+                float: left;
+                display: inline-block;
+                position: relative;
+            }
+
+        """ % (self.spacing, self.spacing)
 
         style.add(css)
         return style
