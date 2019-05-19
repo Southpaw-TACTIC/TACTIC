@@ -2896,7 +2896,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
         return div
 
-
+from pyasm.biz import Snapshot
 from pyasm.web import HtmlElement
 from pyasm.biz import FileGroup
 __all__.append("ThumbWdg2")
@@ -2925,22 +2925,11 @@ class ThumbWdg2(BaseRefreshWdg):
         return self.main_path
 
 
+
+
+
     def get_display(self):
 
-        sobject = self.get_current_sobject()
-        if not sobject:
-            search_key = self.kwargs.get("search_key")
-            if search_key:
-                sobject = Search.get_by_search_key(search_key)
-                self.set_sobject(sobject)
-        
-        
-        self.is_collection = sobject.get_value("_is_collection", no_exception=True)
-        search_type = sobject.get_base_search_type()
-        search_key = sobject.get_search_key()
-        search_type_obj = sobject.get_search_type_obj()
-        
-        
         aspect_ratio = self.kwargs.get("aspect_ratio")
 
         width = self.kwargs.get("width")
@@ -2950,6 +2939,12 @@ class ThumbWdg2(BaseRefreshWdg):
         if not height:
             height = "auto"
 
+        sobject = self.get_current_sobject()
+        if not sobject:
+            search_key = self.kwargs.get("search_key")
+            if search_key:
+                sobject = Search.get_by_search_key(search_key)
+                self.set_sobject(sobject)
 
         div = self.top
         div.add_class("spt_thumb_top")
@@ -2958,12 +2953,23 @@ class ThumbWdg2(BaseRefreshWdg):
         if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):
             path = ""
 
+
+        self.is_collection = sobject.get_value("_is_collection", no_exception=True)
+
+        search_type = sobject.get_base_search_type()
         if path and path.endswith("indicator_snake.gif") and not FileGroup.is_sequence(self.lib_path):
 
             image_size = os.path.getsize(self.lib_path)
             if image_size != 0:
                 # generate icon dynamically
-                div.set_attr("spt_search_key", search_key)
+
+                if search_type == 'sthpw/snapshot':
+                    #parent = sobject.get_parent()
+                    #if parent:
+                    #    div.set_attr("spt_search_key", parent.get_search_key())
+                    div.set_attr("spt_search_key", sobject.get_search_key())
+                else:
+                    div.set_attr("spt_search_key", sobject.get_search_key())
                 div.add_class("spt_generate_icon")
                 div.set_attr("spt_image_size", image_size)
 
@@ -3020,6 +3026,13 @@ class ThumbWdg2(BaseRefreshWdg):
 
                     if image_size != 0:
                         # generate icon dynamically
+                        """
+                        img.set_attr("spt_search_key", sobject.get_search_key())
+                        img.add_class("spt_generate_icon")
+                        img.set_attr("spt_image_size", image_size)
+                        """
+
+                        # generate icon inline
                         from pyasm.widget import ThumbCmd
                         search_key = self.snapshot.get_search_key()
                         thumb_cmd = ThumbCmd(search_keys=[search_key])
@@ -3036,7 +3049,8 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
         else:
-            path = self.get_path_from_sobject(search_type_obj)
+            search_type = sobject.get_search_type_obj()
+            path = self.get_path_from_sobject(search_type)
             if path:
                 if isinstance(path, unicode):
                     path = path.encode("utf-8")
@@ -3128,19 +3142,22 @@ class ThumbWdg2(BaseRefreshWdg):
         if base_search_type == "sthpw/snapshot":
             #sobject = sobject.get_parent()
             snapshot = sobject
+
         else:
             search_type = sobject.get_search_type()
             search_code = sobject.get_value("code", no_exception=True)
             if not search_code:
                 search_code = sobject.get_id()
 
+
+
             # FIXME: make this faster
             snapshot = Snapshot.get_snapshot(search_type, search_code, process=processes)
 
 
-        
         if not snapshot:
             snapshot = Snapshot.get_snapshot("sthpw/search_object", base_search_type, process=processes)
+
 
         if snapshot:
             file_type = "web"
@@ -3155,20 +3172,19 @@ class ThumbWdg2(BaseRefreshWdg):
         elif main_path:
             path = self.find_icon_link(main_path)
 
+
         # remember the last path
         self.path = path
         self.lib_path = lib_path
         self.main_path = main_path
         self.icon_path = icon_path
         self.snapshot = snapshot
-        
+ 
         return path
 
 
     def find_icon_link(self, file_path, repo_path=None):
         from pyasm.widget import ThumbWdg
         return ThumbWdg.find_icon_link(file_path, repo_path)
-
-
 
 
