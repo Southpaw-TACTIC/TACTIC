@@ -14,7 +14,7 @@ __all__ = ["TileLayoutWdg"]
 import re, os
 import urllib
 
-from pyasm.biz import CustomScript, Project
+from pyasm.biz import CustomScript, Project, Snapshot, File
 from pyasm.common import Common, Environment
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -1472,63 +1472,69 @@ class TileLayoutWdg(ToolLayoutWdg):
  
 
     def preprocess_paths(self, sobjects):
-        
-        asset_alias_dict = Environment.get_asset_dirs()
- 
+      
+        import time
+
         paths_by_key = {}
 
         search_type = self.search_type
         
-        file_search = Search("sthpw/file")
+        file_sobjects_by_code = {}
+        snapshots_by_sobject = {}
 
-        if search_type == "sthpw/snapshot":
-            file_search.add_relationship_filters(sobjects)
+        if self.search_type == "sthpw/snapshot":
+            snapshots = sobjects
+            for snapshot in snapshots:
+                snapshots_by_sobject[snapshot.get_search_key()] = snapshot
         else:
-            snapshot_search = Search("sthpw/snapshot")
-            snapshot_search.add_relationship_filters(sobjects)
-            file_search.add_relationship_search_filter(snapshot_search)
-       
-        files = file_search.get_sobjects()
-        
-        for file_sobj in files:
-            search_type = file_sobj.get("search_type")
-            search_code = file_sobj.get("search_code")
-            search_key = SearchKey.build_search_key(search_type, search_code)
-            file_type = file_sobj.get("type")
-
-            checkin_path = file_sobj.get("checkin_dir")
-            file_name = file_sobj.get("file_name")
-            path = "%s/%s" (checkin_path, file_name)
-            # FIXME: Use alias dir
-            #alias = file_sobj.get("base_dir_alias") or "default"
-            #base_dir = asset_alias_dict.get(alias)
+            snapshots_by_sobject = Snapshot.get_by_sobjects(sobjects, return_dict=True)
             
-            sobject_paths = paths_by_key.get(search_key) or {}
-            sobject_paths[file_type] = path
-            paths_by_key[search_key] = sobject_paths
+        snapshots = snapshots_by_sobject.values()
+        file_sobjects = File.get_by_snapshots(snapshots)
+        for file_object in file_sobjects:
+            file_code = file_object.get_code()
+            file_sobjects_by_code[file_code] = file_object
 
-
+        paths_by_key = {}
         for sobject in sobjects:
             search_key = sobject.get_search_key()
-            paths = paths_by_key.get(search_key)
             
-            main_path = paths.get("main") 
+            snapshot = snapshots_by_sobject.get(search_key)
+            
+
+            paths = {}
+            if snapshot:
+                paths = self.get_paths(sobject, snapshot, file_sobjects_by_code)
+
+
             web_path = paths.get("web")
             if not web_path:
                 # Get webpath from icon_link functino
                 if sobject.get("_is_collection", no_exception=True):
                     web_path = "__COLLECTION__"
                 else:
-                    from pyasm.widget import ThumbWdg
-                    web_path = ThumbWdg.find_icon_link(file_path, repo_path)
-                
-            paths["web"] = web_path
-                
-            path = "%s/%s" % (checkin_path.replace("/spt/data/sites", "/assets"), file_name)
 
+                    repo_paths = paths.get("_repo")
+                    repo_path = repo_paths.get('main')
+                    file_path = paths.get("main")
+                    web_path = ThumbWdg.find_icon_link(file_path, repo_path)
+
+                assert(web_path)
+                paths['web'] = web_path
+               
+            paths_by_key[search_key] = paths
 
 
         return paths_by_key
+
+
+    def get_paths(self, sobject, snapshot, file_objects):
+        xml = snapshot.get_xml_value("snapshot")
+
+        protocol = 'http'
+        # go through the nodes and try to find appropriate paths
+        paths = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot)
+        return paths
 
 
     def get_sobject_data(self, sobjects):
@@ -1536,9 +1542,12 @@ class TileLayoutWdg(ToolLayoutWdg):
         sobject_data = {}
        
         paths_by_key = {}
-        preprocess = False
+        preprocess = True
         if preprocess:
-            paths_by_key = self.preprocess_paths()
+            try:
+                paths_by_key = self.preprocess_paths(sobjects)
+            except Exception, e:
+                print e
             
        
 
@@ -1551,10 +1560,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data["spt_search_code"] = sobject.get_code()
             tile_data["spt_is_collection"] = sobject.get_value('_is_collection', no_exception=True)
             tile_data["spt_display_value"] = sobject.get_display_value(long=True)
-
+   
             if preprocess:
                 paths = paths_by_key.get(sobject.get_search_key())
-            
+                path = paths.get("web")
+                repo_paths = paths.get("_repo")
+                if repo_paths:
+                    lib_path = repo_paths.get("main")
+                else:
+                    lib_path = None
             else:
 
                 kwargs = {}
@@ -2835,7 +2849,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         return div
 
 
-from pyasm.biz import Snapshot
 from pyasm.web import HtmlElement
 from pyasm.biz import FileGroup
 __all__.append("ThumbWdg2")
