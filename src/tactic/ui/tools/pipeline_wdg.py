@@ -2049,16 +2049,16 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         from_type = self.kwargs.get("from_type")
         to_type = self.kwargs.get("to_type")
 
-        info_wdg = DivWdg()
-        top.add(info_wdg)
-        info_wdg.add("From <b>%s</b> to <b>%s</b>" % (from_node, to_node))
-        info_wdg.add_style("margin: 10px")
+        #info_wdg = DivWdg()
+        #top.add(info_wdg)
+        #info_wdg.add("From <b>%s</b> to <b>%s</b>" % (from_node, to_node))
+        #info_wdg.add_style("margin: 10px")
 
 
         table = Table()
         top.add(table)
         table.add_style("width: 100%")
-        table.add_style("margin: 0px -3px 5px 0px")
+        table.add_style("margin: 0px 5px 5px 10px")
 
         tr = table.add_row()
         tr.add_style("background: #EEE")
@@ -2148,10 +2148,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         left.add("<hr/>")
 
 
-        if from_type in ["condition", "approval"]:
-            out_attrs = ['success','fail']
-        else:
-            out_attrs = ['output']
+        out_attrs = ['output','yes','no','true','false']
 
         left_div = DivWdg()
         left.add(left_div)
@@ -2245,10 +2242,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
 
 
-        if to_type in ["condition", "approval"]:
-            in_attrs = ['input']
-        else:
-            in_attrs = ['input']
+        in_attrs = ['input','review']
 
         right_div = DivWdg()
         right.add(right_div)
@@ -5867,6 +5861,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     item.innerText = title;
                     results.appendChild(item);
                 });
+
+
+
             }
 
             '''
@@ -6272,7 +6269,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button.set_show_arrow_menu(True)
+        # DEPRECATED: never really used
+        #button.set_show_arrow_menu(True)
         menu = Menu(width=200)
         
 
@@ -6551,6 +6549,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
+
+
+
         if show_gear not in ['false', False]:
             button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row.add(button)
@@ -6609,6 +6610,23 @@ class PipelineEditorWdg(BaseRefreshWdg):
             '''
 
             })
+
+
+
+
+        button = ButtonNewWdg(title="Show Process Types", icon="FA_INFO")
+        button_row.add(button)
+        button.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.PipelineProcessTypeWdg';
+            var kwargs = {
+                 
+            };
+            spt.panel.load_popup("Process Types", class_name, kwargs);
+            '''
+        } )
+ 
 
 
 
@@ -8835,8 +8853,88 @@ class PipelineSaveCmd(Command):
 
 
 
+__all__.append("PipelineProcessTypeWdg")
+class PipelineProcessTypeWdg(BaseRefreshWdg):
+
+    def get_display(self):
+
+        top = self.top
+        top.add_style("min-width: 800px")
+        top.add_style("max-width: 800px")
+
+        # get all of the custom process node types
+        search = Search("config/widget_config")
+        search.add_filter("category", "workflow")
+        custom_nodes = search.get_sobjects()
+
+        custom_div = DivWdg()
+        top.add(custom_div)
+        custom_div.add_style("display: flex")
+        custom_div.add_style("flex-wrap: wrap")
+        custom_div.add_style("flex-direction: column")
 
 
+        custom_div.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_custom_node',
+            'cbjs_action': '''
+            var node_type = bvr.src_el.getAttribute("spt_node_type")
+            var node = spt.pipeline.add_node(null, 10, 10, {node_type: node_type} );
+            //spt.pipeline.fit_to_node(node);
+
+            spt.pipeline.unselect_all_nodes();
+            spt.pipeline.unselect_all_connectors();
+            spt.pipeline.select_node(node);
+            '''
+        } )
+
+
+        for i, custom_node in enumerate(custom_nodes):
+
+            item_div = DivWdg()
+            custom_div.add(item_div)
+            item_div.add_class("spt_custom_node")
+
+            item_div.add_style("border-radius: 3px")
+            item_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.1)")
+
+            view = custom_node.get_value("view")
+            item_div.add_attr("spt_node_type", view)
+
+            title_div = DivWdg()
+            item_div.add(title_div)
+            title_div.add(Common.get_display_title(view))
+            title_div.add_style("padding: 3px 10px")
+            title_div.add_style("background: #EEE")
+            title_div.add_style("text-align: center")
+            title_div.add_style("border-bottom: solid 1px #DDD")
+
+            content_div = DivWdg()
+            item_div.add(content_div)
+            content_div.add_style("font-size: 0.8em")
+            content_div.add("This node is used to interact with Salesforce")
+            content_div.add_style("padding: 3px")
+
+            item_div.add_class("hand")
+            item_div.add_class("tactic_hover")
+
+            item_div.add_style("width: 200px")
+            item_div.add_style("height: 60px")
+            item_div.add_style("border: solid 1px #DDD")
+            item_div.add_style("margin: 3px 5px")
+
+            item_div.add_behavior( {
+            "type": 'drag',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.item_drag'
+            } )
+
+
+
+
+
+
+        return top
 
 
 

@@ -1631,7 +1631,6 @@ spt.tab.close = function(src_el) {
         'type': 'mouseleave',
         'bvr_match_class': 'spt_tab_remove',
         'cbjs_action': '''
-        console.log("exit");
         var active = bvr.src_el.getElement(".spt_icon_active");
         active.setStyle("opacity", 0.3);
         '''

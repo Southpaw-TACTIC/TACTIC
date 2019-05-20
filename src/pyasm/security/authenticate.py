@@ -89,7 +89,7 @@ class TacticAuthenticate(Authenticate):
         if not self.login:
             raise SecurityException("Login/Password combination incorrect")
 
-        user_encrypted = sef.login.get_value("password")
+        user_encrypted = self.login.get_value("password")
 
         if user_encrypted.startswith("$S$"):
             salt = user_encrypted[4:12]
