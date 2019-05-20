@@ -787,6 +787,10 @@ class EmailTriggerThread(threading.Thread):
         # get optional arguments
         self.user = Config.get_value('services','mail_user', True)
         self.password = Config.get_value('services','mail_password', True)
+        if len(self.password) > 127:
+            # This is an encrypted password
+            self.password = Common.unencrypt_password(self.password)
+            
         self.port = Config.get_value('services','mail_port', True)
         self.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
         self.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
