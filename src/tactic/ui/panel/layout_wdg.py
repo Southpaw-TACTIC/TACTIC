@@ -707,6 +707,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         content_wdg.add(title_wdg)
         title_wdg.add_style("padding: 10px 3px")
         title_wdg.add_color("background", "background3")
+        #title_wdg.add_style("border-bottom", "solid 1px #DDD")
         title_wdg.add_color("color", "color")
         title_wdg.add_style("margin: 0px -10px 5px -10px")
 
@@ -1011,11 +1012,12 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         defined_element_names = []
         for config in self.config.get_configs():
-            if config.get_view() not in ['definition', 'default_definition']:
+            #if config.get_view() not in ['definition', 'default_definition']:
+            if config.get_view() != 'definition':
                 continue
             file_path = config.get_file_path()
-            #if file_path and file_path.endswith("DEFAULT-conf.xml") or file_path == 'generated':
-            if file_path == 'generated':
+            #if file_path == 'generated':
+            if file_path and file_path.endswith("DEFAULT-conf.xml") or file_path == 'generated':
                 continue
 
             element_names = config.get_element_names()
@@ -1041,6 +1043,13 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         #else:
         #    #defined_element_names = self.config.get_element_names()
         #    defined_element_names = []
+
+        if not filtered_element_names:
+            defined_element_names.sort()
+            title = 'Custom Widgets'
+            context_menu.add( self.get_columns_wdg(title, defined_element_names, is_open=True) )
+
+
 
 
         # Add custom layout widgets
