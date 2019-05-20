@@ -58,9 +58,6 @@ class ProcessInputWdg(BaseInputWdg):
                 top.add_attr("spt_cbjs_get_input_key", "return '%s'" % pipeline_code)
 
         else:
-            # This is quite slow, but it works
-            #top.add_attr("spt_cbjs_get_input_key", "var server=TacticServerStub.get(); var parent_key = cell_to_edit.getParent('.spt_table_tbody').getAttribute('spt_parent_key'); var parent = server.get_by_search_key(parent_key); return parent.pipeline_code")
-
             # ProcessElementWdg's handle_td() sets the spt_pipeline_code attribute
             top.add_attr("spt_cbjs_get_input_key", "return cell_to_edit.getAttribute('spt_pipeline_code')")
 
@@ -158,16 +155,18 @@ class ProcessInputWdg(BaseInputWdg):
                 if show_context:
                     output_contexts = pipeline.get_output_contexts(process.get_name())
                     for context in output_contexts:
-                        values.append(context)
-                        if is_sub_pipeline:
-                            #label = process_name
-                            label = context
-                        else:
-                            label = context
-                        labels.append(label)
+                        if context not in values:
+                            values.append(context)
+                            if is_sub_pipeline:
+                                #label = process_name
+                                label = context
+                            else:
+                                label = context
+                            labels.append(label)
                 else:
-                    values.append(process_name)
-                    labels.append(process_name)
+                    if name not in values:
+                        values.append(process_name)
+                        labels.append(process_name)
 
             select.set_option("values", values) 
             select.set_option("labels", labels) 

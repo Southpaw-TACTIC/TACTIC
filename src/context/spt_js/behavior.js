@@ -379,6 +379,18 @@ spt.behavior.set_default_cbs = function( type, spec )
 
 spt.behavior.construct_behaviors_on_startup = function()
 {
+
+    // first get all of the templates and find all of the behaviors below them
+    var templates = document.getElements( ".SPT_TEMPLATE" );
+    for (var i = 0; i < templates.length; i++) {
+        let bvr_els = templates[i].getElements( ".SPT_BVR" );
+        for (var j = 0; j < bvr_els.length; j++) {
+            bvr_els[j].addClass("SPT_TEMPLATE");
+        }
+
+    };
+
+
     var el_list = document.getElements( ".SPT_BVR" );
     spt.behavior._construct_behaviors( el_list );
 }
@@ -411,11 +423,10 @@ spt.behavior.init_behaviors = function(element) {
 
 // Duplicate an element, including all behaviors ...
 //
-// NOTE: this function should be used instead of the above 'spt.behavior.clone()', which causes bugs in IE
-//       due to IE's idiosyncratic behavior with the underlying .cloneNode() method call
-//
 spt.behavior.duplicate_element = function( el )
 {
+    return spt.behavior.clone(el);
+    /*
     el = document.id(el);
     var tag = el.get("tag");
     var dup_el = new Element( tag );
@@ -445,6 +456,7 @@ spt.behavior.duplicate_element = function( el )
     spt.behavior._construct_behaviors( bvr_el_list );
 
     return dup_el;
+    */
 }
 
 
@@ -679,6 +691,19 @@ spt.behavior.replace_inner_html = function( el, new_inner_html, mode )
         el = spt.behavior.replace_table_child_element(el, new_inner_html);
         spt.behavior._construct_behaviors( [ el ] );
     }
+
+
+    // first get all of the templates and find all of the behaviors below them
+    var templates = el.getElements( ".SPT_TEMPLATE" );
+    for (var i = 0; i < templates.length; i++) {
+        let bvr_els = templates[i].getElements( ".SPT_BVR" );
+        for (var j = 0; j < bvr_els.length; j++) {
+            bvr_els[j].addClass("SPT_TEMPLATE");
+        }
+
+    };
+
+
 
     // now create new behaviors for new innerHTML under "el" element ...
     //
@@ -1183,6 +1208,8 @@ spt.behavior._construct_bvr = function( el, bvr_spec )
 spt.count = {};
 
 
+spt.behavior.remove_bvr_attrs = false;
+
 spt.behavior._construct_behaviors = function( el_list )
 {
     // Add "spt_bvrs" map of lists of behaviors (by type of behavior) ...
@@ -1205,12 +1232,15 @@ spt.behavior._construct_behaviors = function( el_list )
             stmt = stmt.replace(/\&quot\;/g, '"');
             eval(stmt);
 
-            // FIXME: this doesn't work with clones
-            /*
-            el.bvr_spec_list = bvr_spec_list;
-            el.removeAttribute("SPT_BVR_LIST");
-            el.removeAttribute("SPT_BVR_TYPE_LIST");
-            */
+            if (spt.behavior.remove_bvr_attrs) {
+                var is_template = el.hasClass("SPT_TEMPLATE") ;
+                if (!is_template) {
+                    el.bvr_spec_list = bvr_spec_list;
+                    el.removeAttribute("SPT_BVR_LIST");
+                    el.removeAttribute("SPT_BVR_TYPE_LIST");
+                    el.removeAttribute("spt_bvr_list");
+                }
+            }
         }
 
         if (bvr_spec_list == null) {

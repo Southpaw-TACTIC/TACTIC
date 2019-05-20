@@ -18,6 +18,8 @@ import sys,traceback
 from pyasm.common import *
 from pyasm.biz import Pipeline, Snapshot, Task
 from pyasm.search import *
+#from pyasm.common import Common, Environment
+#from pyasm.search import Search, SearchType, Transaction
 from pyasm.security import Batch
 
 
@@ -306,7 +308,10 @@ class Command(Base):
                 cmd.errors.append("%s: %s" %(e.get_title(), error_msg))
             else:
                 cmd.errors.append(str(e))
+ 
 
+            from pyasm.search import ExceptionLog
+            ExceptionLog.log(e)
             raise
 
 

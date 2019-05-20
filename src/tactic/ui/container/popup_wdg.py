@@ -961,7 +961,8 @@ spt.popup.get_widget = function( evt, bvr )
         // get the common popup, clone it and fill it in
         var popup_template = document.id("popup_template");
         // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
-        var popup = spt.behavior.duplicate_element(popup_template);
+        //var popup = spt.behavior.duplicate_element(popup_template);
+        var popup = spt.behavior.clone(popup_template);
 
 
         if( popup_id ) {
@@ -1079,6 +1080,21 @@ spt.popup.get_widget = function( evt, bvr )
         popup.setStyle("margin-left", 0);
         popup.setStyle("position", "fixed");
 
+        var content_size = content_wdg.getSize();
+        var window_size = document.id(window).getSize();
+        var max_height = window_size.y - 100;
+        content_wdg.setStyle("max-height", max_height);
+        if (content_size.y > max_height) {
+            content_wdg.setStyle("height", max_height);
+        }
+        content_wdg.setStyle("max-height", max_height);
+
+        var popup_body = content_wdg.getElement(".spt_popup_body");
+        if (!popup_body) {
+            content_wdg.setStyle("overflow-y", "auto");
+        }
+
+
         spt.popup.show_background();
 
     };
@@ -1127,8 +1143,13 @@ spt.popup.get_widget = function( evt, bvr )
         content_wdg.setStyle("max-height", "auto");
         popup_body.setStyle("overflow-y","auto");
         popup_body.setStyle("overflow-x", "hidden");
-        var max_height = window_size.y - 200 - popup_header_height - popup_footer_height;
+
+        var max_height = window_size.y - 100 - popup_header_height - popup_footer_height;
         popup_body.setStyle("max-height", max_height);
+    }
+    else {
+        var max_height = window_size.y - 100;
+        content_wdg.setStyle("max-height", max_height);
     }
 
     setTimeout(function(){callback()}, 10);
@@ -1370,6 +1391,7 @@ spt.popup.tear_off_el = function( el, title, popup_predisplay_fn, class_search_s
     // get the common popup, clone it and fill it in
     var popup_template = document.id("popup_template");
     // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
+    //var popup = spt.behavior.duplicate_element( popup_template );
     var popup = spt.behavior.duplicate_element( popup_template );
 
     if( el.get("id") ) {

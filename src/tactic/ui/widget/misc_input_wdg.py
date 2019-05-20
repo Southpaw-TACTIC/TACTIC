@@ -169,6 +169,25 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
 
 
 
+    def get_onload_js(self):
+        # TODO: make the order the same as add_value_update 
+        #bvr.src_el.loadXYZ = function(element_name, cell, sobject) { %s }
+        return '''
+            var colors = JSON.parse( bvr.src_el.getAttribute("spt_colors") );
+            var top = document.createElement("div");
+            cell.append(top);
+            var value = sobject[element_name];
+            var color = colors[value];
+
+
+            cell.innerHTML = value;
+
+
+            cell.setStyle("background", color);
+        '''
+        #}
+
+
     def add_value_update(self, value_wdg, sobject, name):
 
         if sobject.get_base_search_type() == "sthpw/task":
@@ -200,10 +219,25 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
  
 
 
-
-
     def handle_td(self, td):
         sobject = self.get_current_sobject()
+
+        if sobject.get_base_search_type() == "sthpw/task":
+            colors = sobject.get_status_colors()
+
+            # FIXME: use the default colors
+            colors = colors.get("task")
+        else:
+            colors = {
+                    'complete': '#FBB'
+            }
+
+        td.set_json_attr("spt_colors", colors)
+
+
+
+
+
 
         edit_scope = self.get_option("edit_scope")
         if edit_scope == "assigned":

@@ -297,6 +297,20 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+            .spt_filter_top .spt_filter_column_select {
+            }
+
+            .spt_filter_top input {
+                width: 250px;
+            }
+        ''' )
+
+        return styles
+
+
 
     def get_display(self):
 
@@ -343,6 +357,8 @@ class GeneralFilterWdg(BaseFilterWdg):
         # add the hidden template filter
         dummy_div = DivWdg()
         top_wdg.add(dummy_div)
+        dummy_div.add_class("SPT_TEMPLATE")
+
         dummy_div.add("Templates<hr/>")
         dummy_div.add_style('display: none')
         dummy_div.add_style("border: solid 1px blue")
@@ -353,6 +369,13 @@ class GeneralFilterWdg(BaseFilterWdg):
         dummy_div.add(filter_template)
         filter_template = self._get_filter_wdg_with_op(i, op, level, mode="child", filter_type="_related")
         dummy_div.add(filter_template)
+
+
+
+        # add a styles widget
+        top_wdg.add( self.get_styles() )
+
+
 
 
         # add in the simple search configs
@@ -806,8 +829,6 @@ class GeneralFilterWdg(BaseFilterWdg):
         #    div.add_style("opacity: 0.5")
 
 
-        #checkbox.set_persist_on_submit()
-
         checkbox.add_behavior( {
             "type": "click_up",
             "cbjs_action" : '''
@@ -826,17 +847,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             "propagate_evt": True
         })
 
-        """
-        checkbox.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent('.spt_search');
-            var el = top.getElement('.spt_search_num_filters');
-            el.innerHTML = 'cow';
-            bvr.src_el.checked = false;
-            '''
-        })
-        """
         span = DivWdg()
         span.add(checkbox)
         span.add('&nbsp;&nbsp;')
@@ -1198,7 +1208,43 @@ class GeneralFilterWdg(BaseFilterWdg):
         search_type_select.add_empty_option('-- Related Type --')
         behavior = {
             'type': 'change',
-            'cbjs_action': 'spt.dg_table.set_filter2(evt, bvr)',
+            #'cbjs_action': 'spt.dg_table.set_filter2(evt, bvr)',
+            'cbjs_action': '''
+
+            var prefix = bvr.prefix;
+            var selector = bvr.src_el;
+
+            // get the column type mapping
+            //var value = document.id(prefix+"_search_type_indexes").value;
+            //value = value.replace(/'/g, '"')
+            //var column_indexes = JSON.parse(value);
+            var column_indexes = bvr.search_type_indexes;
+            
+            //var filter_types = document.id(prefix + '_filter_columns');
+            var filter_types = spt.get_cousin(selector, '.spt_filter_top', '.' + prefix + '_filter_columns');
+
+            // get a handle on all of the alternative filters
+            var filters = filter_types.getChildren();
+          
+            // get the value of the column selector
+            var value = selector.value;
+
+            // WARNING: MAGIC!!
+
+            // get the target and the column index
+            var filter = selector.getParent('.spt_filter_wdg');
+            var column_index = column_indexes[value];
+            if (column_index == undefined) {
+                column_index = 0;
+            }
+            // clone and replace
+            var clone = filters[column_index].clone();
+            var replacee = filter.getElement('.spt_filter_columns');
+            filter.replaceChild( clone, replacee );
+            spt.show(clone);
+            //clone.style.display = "inline";
+
+            ''',
             'prefix': self.prefix,
             'search_type_indexes': self.search_type_indexes
         }
@@ -1219,11 +1265,13 @@ class GeneralFilterWdg(BaseFilterWdg):
     def get_column_selector(self, filter_name, filter_index, columns=[]):
         '''Get a select of the columns for a search type'''
         filter_selector = DivWdg(css='spt_filter_columns')
-        filter_selector.add_style("float: left")
+        filter_selector.add_style("display: flex")
 
         filter_id = "%s_column" % (self.prefix)
         column_select = SelectWdg(filter_id)
         column_select.add_empty_option()
+
+        column_select.add_class("spt_filter_column_select")
 
         if not columns:
             columns = self.columns
@@ -1243,7 +1291,48 @@ class GeneralFilterWdg(BaseFilterWdg):
         column_select.set_option("labels", labels)
         column_select.add_empty_option("-- Attribute --")
         column_select.set_persist_on_submit()
-        column_select.add_event("onchange", "spt.dg_table.set_filter(this, '%s')" % self.prefix)
+        #column_select.add_event("onchange", "spt.dg_table.set_filter(this, '%s')" % self.prefix)
+        column_select.add_behavior({
+            'type': 'change',
+            'cbjs_action': '''
+
+            selector = bvr.src_el;
+            prefix = "%s"
+
+            // get the column type mapping
+            var filter_top = selector.getParent(".spt_filter_top");
+            var hidden = filter_top.getElement(".spt_filter_indexes");
+            var value = hidden.value;
+
+            value = value.replace(/'/g, '"')
+            var column_indexes = JSON.parse(value);
+
+            // get a handle on all of the alternative filters
+            var filter_options = filter_top.getElement(".spt_filter_options");
+            var filters = filter_options.getElements(".spt_filter_type_wdg");
+
+            // get the value of the column selector
+            var value = selector.value;
+
+            // get the target and the column index
+            //var filter = document.id(selector.parentNode.parentNode);
+            var filter = document.id(selector).getParent(".spt_filter_wdg")
+            var column_index = column_indexes[value];
+            if (typeof(column_index) == "undefined") {
+                column_index = 0;
+            }
+
+            // clone and replace
+            var clone = spt.behavior.clone( filters[column_index] )
+            //var children = filter.getChildren();
+            //filter.replaceChild( clone, children[4] );
+            var filter_type_wdg = filter.getElement(".spt_filter_type_wdg");
+            filter.replaceChild( clone, filter.getElement(".spt_filter_type_wdg") );
+
+            clone.style.display = "inline";
+
+            ''' % self.prefix
+            })
         self.set_filter_value(column_select, filter_index)
         filter_selector.add(column_select, "selector"  )
         
@@ -1306,7 +1395,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_text.add_class('spt_filter_text')
             value_text.add_style("float", "left")
             value_text.add_style("height", "30")
-            value_text.add_style("width", "250")
+            #value_text.add_style("width", "250")
             value_text.add_style("margin", "0px 5px")
             self.set_filter_value(value_text, filter_index)
             filter_span.add(value_text);
@@ -1347,15 +1436,9 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             value_text = TextWdg("%s_value" % self.prefix)
             value_text.add_class("form-control")
-            value_text.add_class("spt_filter_input");
-            value_text.add_styles("float: left; margin: 0px 5px")
+            value_text.add_style("float: left")
+            value_text.add_style("margin: 0px 5px")
             value_text.set_persist_on_submit()
-
-            #behavior = {
-            #    'type': 'keyboard',
-            #    'kbd_handler_name': 'TextSearch'
-            #}
-            #value_text.add_behavior(behavior)
 
             value_text.add_behavior( {
                 'type': 'keyup',

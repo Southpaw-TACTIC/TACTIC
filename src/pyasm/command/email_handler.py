@@ -56,6 +56,26 @@ class EmailHandler(object):
         '''return False to skip sending an email'''
         return True
 
+    def has_ticket(self):
+        data = self.notification.get_json_value("data") or {}
+        if data.get("login_ticket_create") in ['true', True]:
+            return True
+        else:
+            return False
+        
+
+    def set_ticket(self, user=None, expiry=None):
+        if isinstance(user, basestring):
+            login_name = user
+        else:
+            login_name = user.get_login()
+        security = Environment.get_security()
+        ticket = security.generate_ticket(login_name, expiry=expiry)
+        self.login_ticket = ticket
+
+    def get_ticket(self):
+        return self.login_ticket
+
     def get_mail_users(self, column):
         # mail groups
         recipients = set()
@@ -185,40 +205,13 @@ class EmailHandler(object):
             env_sobjects['prev_data'] = prev_data
             env_sobjects['update_data'] = update_data
 
+            
             variables = {}
-            data = self.notification.get_json_value("data") or {}
-            if data.get("login_ticket_create") in ['true', True]:
-                expiry = data.get("login_ticket_expiry") or 1
-                unit = data.get("login_ticket_unit") or "day"
-
-                from datetime import datetime
-                from dateutil.relativedelta import relativedelta
-
-                today = datetime.now()
-
-
-                if expiry == "next_monday":
-                    expiry_date = today + relativedelta(weekday=monday)
-                if expiry == "next_friday":
-                    expiry_date = today + relativedelta(weekday=FR)
-
-                if unit == "hour":
-                    expiry_date = today + relativedelta(hours=expiry)
-                elif unit == "weeks":
-                    expiry_date = today + relativedelta(weeks=expiry)
-                else:
-                    expiry_date = today + relativedelta(days=expiry)
-
-
-
-                security = Environment.get_security()
-
-                login_name = "admin"
-                ticket = security.generate_ticket(login_name, expiry=expiry_date, category="temp")
-
+            ticket = self.get_ticket()
+            if ticket:
                 env_sobjects['login_ticket'] = ticket
                 variables["TICKET"] = ticket.get("ticket")
- 
+  
             notification_message  = parser.eval(notification_message, self.sobject, env_sobjects=env_sobjects, mode='string', vars=variables)
             del sudo
             return notification_message

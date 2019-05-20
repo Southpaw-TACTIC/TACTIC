@@ -152,7 +152,6 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         value = self.value
         self._add_css_style(tr, 'rowcss_', name, value)
 
-
     def get_title(self):
         if self.title:
             title = self.title
@@ -668,7 +667,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
                 #    value_wdg.add_style("padding-right: 3px")
 
 
-        min_height = self.get_option("min_height") or 25
+        min_height = self.get_option("min_height")
         single_line = self.get_option("single_line") or False
 
         value_wdg = DivWdg()
@@ -682,7 +681,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
         # some properties
-        value_wdg.add_style("min-height: %spx" % min_height)
+        if min_height:
+            value_wdg.add_style("min-height: %spx" % min_height)
 
         if sobject and SearchType.column_exists(sobject.get_search_type(), name):
 

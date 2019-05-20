@@ -520,7 +520,6 @@ class IconCreator(object):
 
 
 
-
     def _process_pdf(self, file_name):
 
         base, ext = os.path.splitext(file_name)
@@ -784,6 +783,7 @@ class IconCreator(object):
                 "%s - %s" % (self.file_path, e.__str__()))
             self.web_path = None
             self.icon_path = None
+
 
 
 

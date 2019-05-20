@@ -2049,16 +2049,16 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         from_type = self.kwargs.get("from_type")
         to_type = self.kwargs.get("to_type")
 
-        info_wdg = DivWdg()
-        top.add(info_wdg)
-        info_wdg.add("From <b>%s</b> to <b>%s</b>" % (from_node, to_node))
-        info_wdg.add_style("margin: 10px")
+        #info_wdg = DivWdg()
+        #top.add(info_wdg)
+        #info_wdg.add("From <b>%s</b> to <b>%s</b>" % (from_node, to_node))
+        #info_wdg.add_style("margin: 10px")
 
 
         table = Table()
         top.add(table)
         table.add_style("width: 100%")
-        table.add_style("margin: 0px -3px 5px 0px")
+        table.add_style("margin: 0px 5px 5px 10px")
 
         tr = table.add_row()
         tr.add_style("background: #EEE")
@@ -2148,10 +2148,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         left.add("<hr/>")
 
 
-        if from_type in ["condition", "approval"]:
-            out_attrs = ['success','fail']
-        else:
-            out_attrs = ['output']
+        out_attrs = ['output','yes','no','true','false']
 
         left_div = DivWdg()
         left.add(left_div)
@@ -2245,10 +2242,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
 
 
-        if to_type in ["condition", "approval"]:
-            in_attrs = ['input']
-        else:
-            in_attrs = ['input']
+        in_attrs = ['input','review']
 
         right_div = DivWdg()
         right.add(right_div)
@@ -2459,7 +2453,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
 
-    def get_title_wdg(self, node_type, show_node_type_select=True):
+    def get_title_wdg(self, process, node_type, show_node_type_select=True):
 
         div = DivWdg()
         div.add_style("margin-top: -15px")
@@ -2819,7 +2813,7 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add( title_wdg )
 
         # if not process_sobj:
@@ -4004,7 +3998,7 @@ class ActionInfoWdg(BaseInfoWdg):
         self.initialize_session_behavior(top)
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4296,7 +4290,7 @@ class UnknownInfoWdg(BaseInfoWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
         msg_div = DivWdg()
@@ -4348,7 +4342,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
 
 
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4500,7 +4494,7 @@ class HierarchyInfoWdg(BaseInfoWdg):
         search_type = pipeline.get_value("search_type")
 
  
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4620,7 +4614,7 @@ class DependencyInfoWdg(BaseInfoWdg):
         self.initialize_session_behavior(top)
 
  
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -4898,7 +4892,7 @@ class ProgressInfoWdg(BaseInfoWdg):
             })
 
  
-        title_wdg = self.get_title_wdg(node_type)
+        title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
 
@@ -5128,7 +5122,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 
             })
  
-        title_wdg = self.get_title_wdg(node_type, show_node_type_select=False)
+        title_wdg = self.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
 
         color = Task.get_default_color(process)
@@ -5353,6 +5347,10 @@ class ProcessInfoCmd(Command):
             cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
             return cmd.execute()
         except Exception as e:
+            print
+            print("Failed saving node for node type [%s]:" % node_type)
+            print(e)
+            print
             return self.handle_default()
 
 
@@ -5867,6 +5865,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     item.innerText = title;
                     results.appendChild(item);
                 });
+
+
+
             }
 
             '''
@@ -6201,7 +6202,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 name = name.replace(/&/g, "&amp;amp;");
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var description = kwargs.description;
-                var on_saves = kwargs.on_save;
+                var on_saves = kwargs.on_saves;
 
                 if (kwargs.multi) kwargs = spt.pipeline.get_node_multi_kwargs(node);
                 if (on_saves) {
@@ -6218,12 +6219,10 @@ class PipelineEditorWdg(BaseRefreshWdg):
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
 
-            console.log(node_kwargs);
-            
             try {
                 var xml = spt.pipeline.export_group(group_name);
             } catch (err) {
-                spt.alert("Error while parsing xml:", err);
+                spt.alert("Error while parsing xml: " + err);
                 return;
             }
 
@@ -6272,7 +6271,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button.set_show_arrow_menu(True)
+        # DEPRECATED: never really used
+        #button.set_show_arrow_menu(True)
         menu = Menu(width=200)
         
 
@@ -6551,6 +6551,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
+
+
+
         if show_gear not in ['false', False]:
             button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
             button_row.add(button)
@@ -6609,6 +6612,23 @@ class PipelineEditorWdg(BaseRefreshWdg):
             '''
 
             })
+
+
+
+
+        button = ButtonNewWdg(title="Show Process Types", icon="FA_INFO")
+        button_row.add(button)
+        button.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.tools.PipelineProcessTypeWdg';
+            var kwargs = {
+                 
+            };
+            spt.panel.load_popup("Process Types", class_name, kwargs);
+            '''
+        } )
+ 
 
 
 
@@ -8479,7 +8499,8 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var group_el = src_el.getParent(".spt_group_row");
             var row = spt.table.add_new_item({row: group_el});
             row.setAttribute("spt_group_level", 2);
-            row.setAttribute("spt_dynamic", "true");
+            if (group_el.getAttribute("spt_group_name") == "Uncategorized")
+                row.setAttribute("spt_dynamic", "true");
 
             var rowTop = row.getElement(".spt_document_item");
             rowTop.addClass("spt_unsaved_item");
@@ -8834,8 +8855,120 @@ class PipelineSaveCmd(Command):
 
 
 
+__all__.append("PipelineProcessTypeWdg")
+class PipelineProcessTypeWdg(BaseRefreshWdg):
+
+    def get_display(self):
+
+        top = self.top
+        top.add_style("min-width: 800px")
+        top.add_style("max-width: 800px")
+
+        # get all of the custom process node types
+        search = Search("config/widget_config")
+        search.add_filter("category", "workflow")
+        search.add_order_by("view")
+        custom_nodes = search.get_sobjects()
+
+        custom_div = DivWdg()
+        top.add(custom_div)
+        custom_div.add_style("display: flex")
+        custom_div.add_style("flex-wrap: wrap")
+        custom_div.add_style("flex-direction: column")
+
+        custom_div.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_custom_node',
+            'cbjs_action': '''
+            var node_type = bvr.src_el.getAttribute("spt_node_type")
+            var node = spt.pipeline.add_node(null, 10, 10, {node_type: node_type} );
+            //spt.pipeline.fit_to_node(node);
+
+            spt.pipeline.unselect_all_nodes();
+            spt.pipeline.unselect_all_connectors();
+            spt.pipeline.select_node(node);
+            '''
+        } )
+
+        custom_div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+spt.pipeline.item_drag_setup = function(evt, bvr, mouse_411) {
+    console.log("setup");
+}
+
+spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
+    console.log("motion");
+}
+
+spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
+    console.log("action");
+    var drop_on_el = spt.get_event_target(evt);
+    if (! drop_on_el.hasClass(".spt_pipeoine_top") ) {
+        console.log(drop_on_el);
+        var parent = drop_on_el.getParent(".spt_pipeline_top");
+        if (!parent) {
+            return;
+        }
+    }
 
 
+    var node_type = bvr.src_el.getAttribute("spt_node_type");
+
+    var pos = spt.pipeline.get_mouse_position(mouse_411);
+    console.log(pos);
+
+
+    spt.pipeline.add_node(null, pos.x, pos.y, {node_type: node_type});
+}
+
+            '''
+        } )
+
+        for i, custom_node in enumerate(custom_nodes):
+
+            item_div = DivWdg()
+            custom_div.add(item_div)
+            item_div.add_class("spt_custom_node")
+            item_div.add_color("background", "background")
+
+            item_div.add_style("border-radius: 3px")
+            item_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.1)")
+
+            view = custom_node.get_value("view")
+            item_div.add_attr("spt_node_type", view)
+
+            title_div = DivWdg()
+            item_div.add(title_div)
+            title_div.add(Common.get_display_title(view))
+            title_div.add_style("padding: 3px 10px")
+            title_div.add_style("background: #EEE")
+            title_div.add_style("text-align: center")
+            title_div.add_style("border-bottom: solid 1px #DDD")
+
+            content_div = DivWdg()
+            item_div.add(content_div)
+            content_div.add_style("font-size: 0.8em")
+            content_div.add("This node is used to interact with Salesforce")
+            content_div.add_style("padding: 3px")
+
+            item_div.add_class("hand")
+            item_div.add_class("tactic_hover")
+
+            item_div.add_style("width: 200px")
+            item_div.add_style("height: 60px")
+            item_div.add_style("border: solid 1px #DDD")
+            item_div.add_style("margin: 3px 5px")
+
+            item_div.add_behavior( {
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.item_drag'
+            } )
+
+
+        return top
 
 
 
