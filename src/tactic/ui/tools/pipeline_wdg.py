@@ -6201,7 +6201,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 name = name.replace(/&/g, "&amp;amp;");
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var description = kwargs.description;
-                var on_saves = kwargs.on_save;
+                var on_saves = kwargs.on_saves;
 
                 if (kwargs.multi) kwargs = spt.pipeline.get_node_multi_kwargs(node);
                 if (on_saves) {
@@ -8479,7 +8479,8 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var group_el = src_el.getParent(".spt_group_row");
             var row = spt.table.add_new_item({row: group_el});
             row.setAttribute("spt_group_level", 2);
-            row.setAttribute("spt_dynamic", "true");
+            if (group_el.getAttribute("spt_group_name") == "Uncategorized")
+                row.setAttribute("spt_dynamic", "true");
 
             var rowTop = row.getElement(".spt_document_item");
             rowTop.addClass("spt_unsaved_item");
