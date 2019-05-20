@@ -248,7 +248,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
     def get_kwargs_keys(cls):
-        return ['select_color', 'js_load']
+        return ['select_color', 'js_load', "extra_columns"]
     get_kwargs_keys = classmethod(get_kwargs_keys)
 
 

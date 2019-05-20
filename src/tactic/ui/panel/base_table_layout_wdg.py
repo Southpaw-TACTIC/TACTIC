@@ -2083,12 +2083,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         search_type_obj = SearchType.get(self.search_type)
 
+
+        columns = self.element_names
+        columns = []
+
+
+
         button.add_behavior( {
             'type': 'click_up',
             'class_name': 'tactic.ui.panel.AddPredefinedColumnWdg',
             "args": {
                 'title': 'Column Manager',
                 'search_type': self.search_type,
+                'element_names': columns,
             },
             'cbjs_action': '''
                 var table = bvr.src_el.getParent('.spt_table');
