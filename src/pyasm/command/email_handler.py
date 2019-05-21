@@ -65,7 +65,10 @@ class EmailHandler(object):
         
 
     def set_ticket(self, user=None, expiry=None):
-        login_name = user.get_login()
+        if isinstance(user, basestring):
+            login_name = user
+        else:
+            login_name = user.get_login()
         security = Environment.get_security()
         ticket = security.generate_ticket(login_name, expiry=expiry)
         self.login_ticket = ticket

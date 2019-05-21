@@ -30,7 +30,7 @@ from pyasm.common import *
 from pyasm.biz import Project, GroupNotification, Notification, CommandSObj, ProdSetting
 from pyasm.biz import ExpressionParser
 from pyasm.security import *
-from pyasm.search import SObject, Search, SearchType, SObjectValueException
+from pyasm.search import SObject, Search, SearchType, SObjectValueException, ExceptionLog
 from pyasm.command import Command
 from trigger import *
 
@@ -384,7 +384,10 @@ class EmailTrigger(Trigger):
         else:
             recipients = total_bcc_emails|total_cc_emails|to_emails|sender
 
-        email = EmailTriggerThread(user_email, recipients, "%s" %msg.as_string())
+         
+        site = Site.get_site()
+        project_code = Project.get_project_code()
+        email = EmailTriggerThread(user_email, recipients, "%s" %msg.as_string(), site=site, project_code=project_code)
         email.start()
               
         
@@ -485,7 +488,9 @@ class SendEmail(Command):
 
         recipients =  cc|bcc|recipient_emails
 
-        email = EmailTriggerThread(sender_email, recipients, "%s" %msg.as_string())
+        site = Site.get_site()
+        project_code = Project.get_project_code()
+        email = EmailTriggerThread(sender_email, recipients, "%s" %msg.as_string(), site=site, project_code=project_code)
         email.start()
 
     def is_undoable(cls):
@@ -771,7 +776,7 @@ class EmailTrigger2(EmailTrigger):
 
 class EmailTriggerThread(threading.Thread):
     '''Sending email as a separate thread'''
-    def __init__(self, sender_email, recipient_emails, msg):
+    def __init__(self, sender_email, recipient_emails, msg, site=None, project_code=None):
         super(EmailTriggerThread,self).__init__()
         self.sender_email = sender_email
         self.recipient_emails = recipient_emails
@@ -788,12 +793,15 @@ class EmailTriggerThread(threading.Thread):
             self.port = 25
         else:
             self.port = int(self.port)
-            
+
+        self.site = site
+        self.project_code = project_code
+
 
     def set_mailserver(self, mailserver):
         self.mailserver = mailserver
 
-   
+ 
     def run(self):
         try:
             s = smtplib.SMTP()
@@ -815,16 +823,23 @@ class EmailTriggerThread(threading.Thread):
             s.quit()
 
         except Exception, e:
-            print("-"*20)
-            print("WARNING: Error sending email:")
-            print(str(e))
-            print("\n")
-            print("mailserver: ", self.mailserver)
-            print("port: ", self.port)
-            print("sender: ", self.sender_email)
-            print("recipients: ", self.recipient_emails)
-            print("\n")
-            #raise
+            
+
+            message = "-"*20
+            message += "\n"
+            message += "WARNING: Error sending email:"
+            message += str(e)
+            message += "\n"
+            message += "mailserver: %s" % self.mailserver
+            message += "port: %s" % self.port
+            message += "sender: %s" % self.sender_email 
+            message += "recipients: %s" % self.recipient_emails
+           
+            if self.project_code and self.site:
+                Batch(site=self.site, project_code=self.project_code)
+                ExceptionLog.log(e, message=message)
+            else:
+                print(message)
 
 class EmailTriggerTestCmd(Command):
     '''This is run in the same thread for the email testing button'''
@@ -1031,4 +1046,4 @@ class EmailTriggerTest(EmailTrigger2):
         email.execute()
 
     send = classmethod(send)
-  
+ 
