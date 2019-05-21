@@ -507,7 +507,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             'sobject_data': self.sobject_data,
             'cbjs_action': '''
                 var template_div = bvr.src_el.getElement(".spt_template");
-                var template_tile = template_div.getElement(".spt_tile_top");
+                var template_tile = template_div.getElement(".spt_template_tile_top");
                 var content_div = bvr.src_el.getElement(".spt_content");
                 
                 Object.keys(bvr.sobject_data).forEach(function(item) {
@@ -515,6 +515,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                     console.log(data); 
 
                     var tile = spt.behavior.clone(template_tile);
+                    tile.removeClass("spt_template_tile_top");
+                    tile.addClass("spt_tile_top");
                     
                     // Set the icon path or EXT
                     var icon_path = data.path;
@@ -537,10 +539,23 @@ class TileLayoutWdg(ToolLayoutWdg):
 		    tile.setAttribute("spt_search_code", data.spt_search_code);
 		    tile.setAttribute("spt_is_collection", data.spt_is_collection);
 		    tile.setAttribute("spt_display_value", data.spt_display_value);
-		    tile.setAttribute("spt_main_path", data.lib_path);
+		    tile.setAttribute("spt_main_path", data.main_path);
 
-                    tile.getElement(".spt_tile_size").innerHTML = data.size;
-			
+                    is_collection = data.spt_is_collection;
+                    if (is_collection) tile.getElement(".spt_tile_tool_top").destroy();
+                    else {
+                        // Download button
+                        download_el = tile.getElement(".spt_tile_tool_top").getElement("a");
+                        download_el.setAttribute("href", data.main_path);
+                        download_el.setAttribute("download", data.basename);
+
+                        // Size
+                        tile.getElement(".spt_tile_size").innerHTML = data.size;
+		    }
+
+                    thumb_top = tile.getElement(".spt_thumb_top");
+                    thumb_top.setAttribute("spt_main_path", data.main_path);
+
 		    content_div.appendChild(tile);
 
 		 })
@@ -1499,7 +1514,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             if not web_path:
                 # Get webpath from icon_link functino
                 if sobject.get("_is_collection", no_exception=True):
-                    web_path = "__COLLECTION__"
+                    web_path = "/context/icons/mime-types/folder2.jpg"
                 else:
 
                     repo_paths = paths.get("_repo")
@@ -1507,7 +1522,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     file_path = paths.get("main")
                     web_path = ThumbWdg.find_icon_link(file_path, repo_path)
 
-                assert(web_path)
+                #assert(web_path)
                 paths['web'] = web_path
                
             paths_by_key[search_key] = paths
@@ -1558,12 +1573,18 @@ class TileLayoutWdg(ToolLayoutWdg):
                 size = Common.get_dir_info(lib_path).get("size")
                 from pyasm.common import FormatValue
                 size = FormatValue().get_format_value(size, "KB")
+            
             else:
                 size = 0
             tile_data['size'] = size
-        
-        
-        
+                
+                
+            main_path = paths.get("main")
+            if main_path:
+                tile_data['main_path'] = main_path
+                basename = os.path.basename(main_path)
+                tile_data['basename'] = basename
+       
             if path == "__DYNAMIC__":
                 # EXT format
                 base,ext = os.path.splitext(lib_path)
@@ -1712,7 +1733,7 @@ class TileLayoutWdg(ToolLayoutWdg):
     def get_template_tile_wdg(self):
         
         div = DivWdg()
-        div.add_class("spt_tile_top")
+        div.add_class("spt_template_tile_top")
         div.add_class("unselectable")
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
@@ -1754,8 +1775,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add(thumb_div)
         thumb_div.add_class("spt_tile_content")
         
-        # TODO copy code from thumbwdg 3 here
-        #thumb = tile_data.get('thumb')
         thumb = self.get_template_thumb_wdg()
         thumb_div.add(thumb)
         thumb_div.add_border()
@@ -1771,17 +1790,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         size_div = DivWdg()
         tool_div.add(size_div)
         size_div.add_class("spt_tile_size")
-        # TODO: in javascript, add size
-        # size_div.add(tile_data.get("size"))
 
         # Download button
 	href = HtmlElement.href()
-        # TODO: Add the lib path dynmically in javascript
 	href.add_attr("href", "")
 	tool_div.add(href)
-
-	# basename = os.path.basename(path)
-	# TODO: Add the basename dynamically in javascript
         href.add_attr("download", "")
 
 	icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
