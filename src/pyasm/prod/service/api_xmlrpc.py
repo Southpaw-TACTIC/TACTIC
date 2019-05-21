@@ -495,6 +495,8 @@ class BaseApiXMLRPC(XmlrpcServer):
 
     def __init__(self):
 
+        self.errors = []
+
         super(BaseApiXMLRPC,self).__init__()
 
 
@@ -841,8 +843,9 @@ class BaseApiXMLRPC(XmlrpcServer):
 
             columns = result.keys()
 
-
             for column in columns:
+                value2 = None
+
                 if column.startswith("__"):
                     continue
 

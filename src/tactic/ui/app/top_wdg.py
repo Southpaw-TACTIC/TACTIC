@@ -616,6 +616,12 @@ class TopWdg(Widget):
         # instantiated
         #content_div.add(button)
 
+        
+        from tactic.ui.widget import CalendarWdg
+        cal_wdg = CalendarWdg(css_class='spt_calendar_template_top')
+        cal_wdg.top.add_style('display: none')
+        top.add(cal_wdg)
+        cal_wdg.add_class("SPT_TEMPLATE")
 
 
         if self.widgets:
@@ -627,11 +633,6 @@ class TopWdg(Widget):
         content_div.add( content_wdg )
         
         # add a calendar wdg
-        
-        from tactic.ui.widget import CalendarWdg
-        cal_wdg = CalendarWdg(css_class='spt_calendar_template_top')
-        cal_wdg.top.add_style('display: none')
-        content_div.add(cal_wdg)
 
         if web.is_admin_page():
             from tactic_branding_wdg import TacticCopyrightNoticeWdg
@@ -864,6 +865,16 @@ class TopWdg(Widget):
         top.add(script)
 
 
+        # add in some global switches
+        remove_bvr_attrs = ProjectSetting.get_value_by_key("feature/remove_bvr_attrs")
+        if remove_bvr_attrs == "true":
+            script = HtmlElement.script('''
+            spt.behavior.remove_bvr_attrs = true;
+            ''')
+            top.add(script)
+
+
+
         # add a global container for commonly used widgets
         div = DivWdg()
         top.add(div)
@@ -917,6 +928,7 @@ class TopWdg(Widget):
 
         # create another general popup
         popup_div = DivWdg()
+        popup_div.add_class("SPT_TEMPLATE")
         popup_div.set_id("popup_container")
         popup_div.add_class("spt_panel")
         popup = PopupWdg(id="popup_template",destroy_on_close=True)
@@ -1034,7 +1046,11 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
+
         Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
+        # viewer.js from pdfjs may not be needed in the future. For now,
+        # it was added for KYC, which requires this. (added 2019-02)
+        Container.append_seq("Page:js", "/plugins/pdfjs/web/viewer.js")
 
         if not web.is_admin_page():
             Container.append_seq("Page:js", "%s/require.js" % spt_js_url)

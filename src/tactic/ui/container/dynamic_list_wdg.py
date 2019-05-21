@@ -48,33 +48,29 @@ class DynamicListWdg(BaseRefreshWdg):
         top = DivWdg()
         top.add_class("spt_list_top")
 
-        top.add_relay_behavior( {
-            'type': 'mouseup',
-            'bvr_match_class': 'spt_remove',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_list_top");
-            var items = top.getElements(".spt_list_item");
-            if (items.length > 1) {
-                var item = bvr.src_el.getParent(".spt_list_item");
-                item.destroy();
-            }
-            '''
+        top.add_behavior({
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+            })
+
+        callback = self.kwargs.get("callback") or ''
+        top.add_behavior( {
+            'type': 'load',
+            'cbjs_action': callback
         } )
 
+        remove_callback = self.kwargs.get("remove_callback") or '''spt.dynamic_list.remove_item(bvr.src_el)'''
         top.add_relay_behavior( {
-            'type': 'mouseup',
+            'type': 'click',
+            'bvr_match_class': 'spt_remove',
+            'cbjs_action': remove_callback
+        } )
+
+        add_callback = self.kwargs.get("add_callback") or '''spt.dynamic_list.add_item(bvr.src_el)'''
+        top.add_relay_behavior( {
+            'type': 'click',
             'bvr_match_class': 'spt_add',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_list_top");
-            var template = top.getElement(".spt_list_template_item");
-            var new_item = spt.behavior.clone(template);
-            var item = bvr.src_el.getParent(".spt_list_item");
-            new_item.removeClass("spt_list_template_item");
-            new_item.addClass("spt_list_item")
-            new_item.setStyle("display", "")
-            //new_item.inject(top, 'bottom');
-            new_item.inject(item, 'after');
-            '''
+            'cbjs_action': add_callback
         } )
 
 
@@ -168,6 +164,59 @@ class DynamicListWdg(BaseRefreshWdg):
             '''
         } )
         content_div.add(save_button)
+
+
+    def get_onload_js(self):
+
+        return '''
+
+spt.dynamic_list = spt.dynamic_list || {};
+spt.dynamic_list.top = bvr.src_el;
+
+spt.dynamic_list.set_top = function(top) {
+    spt.dynamic_list.top = top;
+}
+
+spt.dynamic_list.get_top = function() {
+    return spt.dynamic_list.top;
+}
+
+spt.dynamic_list.add_item = function(src_el) {
+    var top = spt.dynamic_list.top;
+    var template = top.getElement(".spt_list_template_item");
+
+    var new_item = spt.behavior.clone(template);
+    new_item.removeClass("spt_list_template_item");
+    new_item.addClass("spt_list_item")
+    new_item.setStyle("display", "");
+
+    if (src_el) {
+        var item = src_el.getParent(".spt_list_item");
+        new_item.inject(item, 'after');
+    } else {
+        top.appendChild(new_item);
+    }
+
+    return new_item;
+}
+
+spt.dynamic_list.remove_item = function(src_el) {
+    var items = spt.dynamic_list.top.getElements(".spt_list_item");
+    if (items.length > 1) {
+        var item = src_el.getParent(".spt_list_item");
+        item.destroy();
+    }
+}
+
+        '''
+
+
+
+
+
+
+
+
 
 
 

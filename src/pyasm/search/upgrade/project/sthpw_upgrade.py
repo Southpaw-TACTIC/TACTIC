@@ -17,20 +17,33 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    #
+    # 4.7.0.a01
+    #
+    def upgrade_v4_7_0_a01_002(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "spt_process" ALTER COLUMN "workflow" TYPE jsonb USING workflow::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "spt_process" ALTER COLUMN "workflow" TYPE json;
+            ''')
+
+
+    def upgrade_v4_7_0_a01_001(self):
+
+        from pyasm.search import Search
+        process_code = Search.eval("@GET(sthpw/search_object['code','config/process_state'].code)")
+
+        if not process_code:
+            self.run_sql('''
+            INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/process_state','config/process_state','config','Process States','{project}','spt_process_state','pyasm.search.SObject','Process States','public');
+            ''')
 
     #
     # 4.6.0.a03
     #
-    def upgrade_v4_6_0_a03_013(self):
-        if self.get_database_type() == "PostgreSQL":
-            self.run_sql('''
-            ALTER TABLE "trigger" ADD COLUMN data jsonb;
-            ''')
-        else:
-            self.run_sql('''
-            ALTER TABLE "trigger" ADD COLUMN data json;
-            ''')
-    
     def upgrade_v4_6_0_a03_012(self):
         self.run_sql('''
         ALTER TABLE "pipeline" ADD COLUMN use_workflow boolean default TRUE;
@@ -64,13 +77,13 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_6_0_a03_007(self):
-        if self.get_database_type() == 'PostgreSQL':
+        if self.get_database_type() == 'MySQL':
             self.run_sql('''
-            ALTER TABLE "login_group" ADD COLUMN data jsonb;
+            ALTER TABLE "login_group" ADD COLUMN data json;
             ''')
         else:
             self.run_sql('''
-            ALTER TABLE "login_group" ADD COLUMN data json;
+            ALTER TABLE "login_group" ADD COLUMN data jsonb;
             ''')
 
 
@@ -195,9 +208,9 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.5.0.b01
     #
     def upgrade_v4_5_0_b01_001(self):
-        self.run_sql(''' 
+        self.run_sql('''
         UPDATE search_object set description = 'Task', "title" = 'Task' where code = 'sthpw/task';
-        ''') 
+        ''')
 
 
 
@@ -205,30 +218,30 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.5.0.a01
     #
     def upgrade_v4_5_0_a01_012(self):
-        self.run_sql(''' 
+        self.run_sql('''
         CREATE INDEX "change_timestamp_stype_idx" ON change_timestamp (search_type);
-        ''') 
+        ''')
 
     def upgrade_v4_5_0_a01_011(self):
-        self.run_sql(''' 
-        ALTER TABLE "login_group" ADD "name" text; 
-        ''') 
+        self.run_sql('''
+        ALTER TABLE "login_group" ADD "name" text;
+        ''')
 
 
 
 
     def upgrade_v4_5_0_a01_010(self):
-        self.run_sql(''' 
-        ALTER TABLE "login_group" ADD "is_default" boolean; 
-        ''') 
+        self.run_sql('''
+        ALTER TABLE "login_group" ADD "is_default" boolean;
+        ''')
 
 
 
 
     def upgrade_v4_5_0_a01_009(self):
-        self.run_sql(''' 
+        self.run_sql('''
         CREATE INDEX "sobject_log_stype_idx" ON sobject_log (search_type);
-        ''') 
+        ''')
 
     def upgrade_v4_5_0_a01_008(self):
 
@@ -296,7 +309,7 @@ class SthpwUpgrade(BaseUpgrade):
         ''')
 
 
- 
+
 
     def upgrade_v4_5_0_a01_001(self):
         self.run_sql('''
@@ -320,7 +333,7 @@ class SthpwUpgrade(BaseUpgrade):
             ''')
 
     def upgrade_v4_4_0_v01_005(self):
-        self.run_sql(''' 
+        self.run_sql('''
 
         INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/department','sthpw/department','sthpw','Department','sthpw','department','pyasm.search.SObject','Department','public');
 
@@ -328,7 +341,7 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     def upgrade_v4_4_0_v01_004(self):
-        self.run_sql(''' 
+        self.run_sql('''
         CREATE TABLE department (
         id serial PRIMARY KEY,
         code varchar(256),
@@ -338,32 +351,32 @@ class SthpwUpgrade(BaseUpgrade):
         CONSTRAINT "department_code_idx" UNIQUE (code),
         CONSTRAINT "department_name_idx" UNIQUE (name)
         );
-        ''') 
+        ''')
 
     def upgrade_v4_4_0_v01_003(self):
-        self.run_sql(''' 
+        self.run_sql('''
 
         ALTER TABLE login add constraint "login_upn_idx" UNIQUE (upn);
-        ''') 
+        ''')
     def upgrade_v4_4_0_v01_002(self):
-        self.run_sql(''' 
+        self.run_sql('''
         UPDATE login set upn = login where upn is NULL;
         ''')
 
     def upgrade_v4_4_0_v01_001(self):
-        self.run_sql(''' 
-        ALTER TABLE "login" ADD "upn" varchar(256) NULL; 
-        ''') 
-        
+        self.run_sql('''
+        ALTER TABLE "login" ADD "upn" varchar(256) NULL;
+        ''')
+
     def upgrade_v4_4_0_b01_007(self):
-        self.run_sql(''' 
-        ALTER TABLE "login" ADD "location" text NULL; 
-        ''') 
+        self.run_sql('''
+        ALTER TABLE "login" ADD "location" text NULL;
+        ''')
 
     #
     # 4.4.0.a01
     #
-   
+
 
 
     def upgrade_v4_4_0_a01_006(self):
@@ -376,7 +389,7 @@ class SthpwUpgrade(BaseUpgrade):
         self.run_sql('''
         INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/interaction', 'sthpw/interaction', 'sthpw', 'User Interaction', 'sthpw', 'interaction', 'pyasm.search.SObject', 'User Interaction', 'public');
         ''')
- 
+
 
 
     def upgrade_v4_4_0_a01_004(self):
@@ -432,14 +445,14 @@ class SthpwUpgrade(BaseUpgrade):
             ''')
 
 
-    
+
     #
     # 4.2.0.a01
     #
     def upgrade_v4_2_0_a01_017(self):
-       self.run_sql(''' 
-        ALTER TABLE "login" ADD "location" text NULL; 
-        ''') 
+       self.run_sql('''
+        ALTER TABLE "login" ADD "location" text NULL;
+        ''')
 
     def upgrade_v4_2_0_a01_016(self):
         self.run_sql('''
@@ -450,7 +463,7 @@ class SthpwUpgrade(BaseUpgrade):
         self.run_sql('''
         INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/custom_script', 'sthpw/custom_script', 'sthpw', 'Central Custom Script', 'sthpw', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
         ''')
-            
+
 
     def upgrade_v4_2_0_a01_014(self):
         if self.get_database_type() == 'MySQL':
@@ -506,7 +519,7 @@ class SthpwUpgrade(BaseUpgrade):
         self.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/translation', 'config/translation', 'config', 'Translation', '{project}', 'spt_translation', 'pyasm.search.SObject', 'Translation', 'public');
         ''')
 
- 
+
 
     def upgrade_v4_2_0_a01_007(self):
         self.run_sql('''INSERT INTO search_object (code, search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/watch_folder', 'sthpw/watch_folder', 'sthpw', 'Watch Folder', 'sthpw', 'watch_folder', 'pyasm.search.SObject', 'Watch Folder', 'public');
@@ -524,7 +537,7 @@ class SthpwUpgrade(BaseUpgrade):
             process varchar(256),
             "timestamp" timestamp
         );
-        ''') 
+        ''')
 
 
 
@@ -557,7 +570,7 @@ class SthpwUpgrade(BaseUpgrade):
         ALTER TABLE "search_object" ADD "message_event" varchar(256);
         ''')
 
-    
+
     def upgrade_v4_1_0_v04_001(self):
         self.run_sql('''
         INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('subscription_bar','Determine whether to show the Subscription Bar','|true|false','sequence','display','Subscription Bar');
@@ -571,7 +584,7 @@ class SthpwUpgrade(BaseUpgrade):
         self.run_sql('''
           ALTER TABLE "search_object" ADD "message_event" varchar(256);
         ''')
-  
+
 
 
     def upgrade_v4_1_0_v01_001(self):
@@ -595,7 +608,7 @@ class SthpwUpgrade(BaseUpgrade):
             name varchar(256),
             "timestamp" timestamp
         );
-        ''') 
+        ''')
 
 
 
@@ -618,7 +631,7 @@ class SthpwUpgrade(BaseUpgrade):
         ''')
 
 
-   
+
     #
     # 4.1.0.a01
     #
@@ -691,7 +704,7 @@ class SthpwUpgrade(BaseUpgrade):
             project_code varchar(32),
             "timestamp" timestamp
         );
-        ''') 
+        ''')
 
 
 
@@ -727,7 +740,7 @@ class SthpwUpgrade(BaseUpgrade):
             "timestamp" timestamp,
             CONSTRAINT "subscription_code_idx" UNIQUE (code)
         );
-        ''') 
+        ''')
 
 
 
@@ -750,21 +763,21 @@ class SthpwUpgrade(BaseUpgrade):
             "timestamp" timestamp,
             CONSTRAINT "message_code_idx" UNIQUE (code)
         );
-        ''') 
+        ''')
 
 
 
-    
+
     def upgrade_v4_0_0_rc02_002(self):
         self.run_sql('''
         ALTER TABLE sobject_log ADD "code" VARCHAR(256);
-        ''')   
+        ''')
 
 
     def upgrade_v4_0_0_rc02_001(self):
         self.run_sql('''
         ALTER TABLE debug_log ADD "code" VARCHAR(256);
-        ''')   
+        ''')
 
     def upgrade_v4_0_0_rc01_001(self):
         self.run_sql('''
@@ -780,10 +793,10 @@ class SthpwUpgrade(BaseUpgrade):
             print '''
 
 IMPORTANT NOTICE:
-        
-        
+
+
         You are upgrading from an earlier version to 4.0.  TACTIC version 4.0 has made some important changes, particularly in the way that some tables are related to each other.  Previously, TACTIC would relate such items as snapshots, tasks and notes by the column "search_id".  In 4.0, this has been changed to "search_code".  The "search_id" will still exists, but wil not be used to relate tables.
-        
+
         In order to upgrade, TACTIC needs to fill in the "search_code" column of various tables.  This is a heavy process if you have a lot of data.  It is a non-destructive script and will only add data.  It will not change any current existing data.  You may wish to run this separately if you have large projects with lots of data.
 
         You can run this script now or you can run it manually by:
@@ -812,7 +825,7 @@ IMPORTANT NOTICE:
         print
         os.system(cmd)
         print
-            
+
 
 
 
@@ -866,8 +879,8 @@ IMPORTANT NOTICE:
             self.run_sql('''
             ALTER TABLE file ALTER COLUMN search_id DROP NOT NULL;
             ''')
-   
-  
+
+
 
     def upgrade_v4_0_0_a09_001(self):
         self.run_sql('''
@@ -946,12 +959,12 @@ IMPORTANT NOTICE:
     def upgrade_v4_0_0_a02_004(self):
         self.run_sql('''ALTER TABLE sync_server ADD COLUMN sync_mode varchar(256);''')
 
- 
+
 
     def upgrade_v4_0_0_a02_003(self):
         self.run_sql('''ALTER TABLE sync_server ADD COLUMN description text;''')
 
- 
+
     def upgrade_v4_0_0_a02_002(self):
         self.run_sql('''ALTER TABLE sync_server ADD COLUMN access_rules text;''')
 
@@ -1019,7 +1032,7 @@ IMPORTANT NOTICE:
 
 
 
-   
+
 
     def upgrade_v4_0_0_a01_030(self):
         self.run_sql('''ALTER TABLE sync_job ADD COLUMN error_log text;''')
@@ -1240,7 +1253,7 @@ IMPORTANT NOTICE:
             CREATE INDEX "task_status_idx" on task USING btree (status);
             ''')
 
-   
+
     def upgrade_v3_9_0_v03_001(self):
         self.run_sql('''CREATE INDEX "connection_dst_search_type_dst_search_id_context_idx" on connection (dst_search_type, dst_search_id, context);''')
 
@@ -1251,7 +1264,7 @@ IMPORTANT NOTICE:
     def upgrade_v3_9_0_rc05_001(self):
         self.run_sql('''ALTER TABLE spt_plugin add rel_dir text''')
 
- 
+
 
     def upgrade_v3_9_0_rc03_005(self):
         self.run_sql('''ALTER TABLE ticket add constraint "ticket_code_idx" UNIQUE (code);''')
@@ -1260,54 +1273,54 @@ IMPORTANT NOTICE:
         self.run_sql('''ALTER TABLE ticket ADD "code" varchar(256);''')
 
     def upgrade_v3_9_0_rc03_003(self):
-        self.run_sql('''  
+        self.run_sql('''
             UPDATE login set display_name = last_name || ', ' || first_name where display_name is NULL;
         ''')
 
     def upgrade_v3_9_0_rc03_002(self):
-        self.run_sql('''  
+        self.run_sql('''
             UPDATE login set first_name = '' where first_name is NULL;
         ''')
 
     def upgrade_v3_9_0_rc03_001(self):
-        self.run_sql('''  
+        self.run_sql('''
             UPDATE login set last_name = '' where last_name is NULL;
         ''')
 
     def upgrade_v3_9_0_rc02_002(self):
-        self.run_sql('''  
+        self.run_sql('''
             UPDATE "work_hour" set category='regular' where category is NULL;
         ''')
     #
     # 3.9.0.b06
     #
     def upgrade_v3_9_0_b06_020(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "note_search_type_search_id_idx" on note (search_type, search_id);
         ''')
 
     def upgrade_v3_9_0_b06_019(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "snapshot_search_type_search_id_idx" on snapshot (search_type, search_id);
         ''')
 
     def upgrade_v3_9_0_b06_018(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "sobject_list_search_type_search_id_idx" on sobject_list (search_type, search_id);
         ''')
 
     def upgrade_v3_9_0_b06_017(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "status_log_search_type_search_id_idx" on status_log (search_type, search_id);
         ''')
 
     def upgrade_v3_9_0_b06_016(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "task_search_type_search_id_idx" on task (search_type, search_id);
         ''')
 
     def upgrade_v3_9_0_b06_015(self):
-        self.run_sql('''  
+        self.run_sql('''
             ALTER TABLE sobject_list add constraint "sobject_list_code_idx" UNIQUE (code);
         ''')
 
@@ -1318,14 +1331,14 @@ IMPORTANT NOTICE:
     id serial PRIMARY KEY,
     code character varying(256),
     week integer,
-    mon float, 
-    tue float, 
-    wed float, 
-    thu float, 
-    fri float, 
-    sat float, 
-    sun float, 
-    year integer, 
+    mon float,
+    tue float,
+    wed float,
+    thu float,
+    fri float,
+    sat float,
+    sun float,
+    year integer,
     login character varying(256),
     description character varying(256),
     "type" character varying(256),
@@ -1351,7 +1364,7 @@ IMPORTANT NOTICE:
     ''')
 
     def upgrade_v3_9_0_b06_010(self):
-        self.run_sql(''' 
+        self.run_sql('''
     CREATE TABLE queue (
     id serial PRIMARY KEY,
     code character varying(256),
@@ -1374,7 +1387,7 @@ IMPORTANT NOTICE:
     ''')
 
     def upgrade_v3_9_0_b06_009(self):
-        self.run_sql(''' 
+        self.run_sql('''
     CREATE TABLE pref_list (
     id serial PRIMARY KEY,
     code character varying(256),
@@ -1390,7 +1403,7 @@ IMPORTANT NOTICE:
     ''')
 
     def upgrade_v3_9_0_b06_008(self):
-        self.run_sql(''' 
+        self.run_sql('''
     CREATE TABLE file_access (
     id serial PRIMARY KEY,
     code character varying(256),
@@ -1498,43 +1511,43 @@ IMPORTANT NOTICE:
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
     CONSTRAINT "command_log_code_idx" UNIQUE (code)
 );
-        ''')    
-    
-  
+        ''')
+
+
 
 
     def upgrade_v3_9_0_rc02_002(self):
-        self.run_sql('''  
+        self.run_sql('''
             UPDATE login set display_name = last_name || ', ' || first_name;
         ''')
 
 
     def upgrade_v3_9_0_rc02_001(self):
-        self.run_sql('''  
+        self.run_sql('''
             ALTER TABLE login ADD display_name varchar(256);
         ''')
 
 
 
     def upgrade_v3_9_0_b09_003(self):
-        self.run_sql('''  
+        self.run_sql('''
             ALTER TABLE task ADD actual_duration float;
         ''')
 
     def upgrade_v3_9_0_b09_002(self):
-        self.run_sql('''  
+        self.run_sql('''
             ALTER TABLE task ADD actual_quantity float;
         ''')
 
 
     def upgrade_v3_9_0_b09_001(self):
-        self.run_sql('''  
+        self.run_sql('''
             ALTER TABLE task ADD bid_quantity float;
         ''')
 
 
     def upgrade_v3_9_0_b07_001(self):
-        self.run_sql('''  
+        self.run_sql('''
             UPDATE "work_hour" set category='regular' where category is NULL;
         ''')
 
@@ -1545,37 +1558,37 @@ IMPORTANT NOTICE:
     # 3.8.0.v05
     #
     def upgrade_v3_8_0_v05_021(self):
-        self.run_sql('''  
+        self.run_sql('''
             UPDATE "work_hour" set category='regular' where category is NULL;
         ''')
 
     def upgrade_v3_8_0_v05_020(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "note_search_type_search_id_idx" on note (search_type, search_id);
         ''')
 
     def upgrade_v3_8_0_v05_019(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "snapshot_search_type_search_id_idx" on snapshot (search_type, search_id);
         ''')
 
     def upgrade_v3_8_0_v05_018(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "sobject_list_search_type_search_id_idx" on sobject_list (search_type, search_id);
         ''')
 
     def upgrade_v3_8_0_v05_017(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "status_log_search_type_search_id_idx" on status_log (search_type, search_id);
         ''')
 
     def upgrade_v3_8_0_v05_016(self):
-        self.run_sql('''  
+        self.run_sql('''
             CREATE INDEX "task_search_type_search_id_idx" on task (search_type, search_id);
         ''')
 
     def upgrade_v3_8_0_v05_015(self):
-        self.run_sql('''  
+        self.run_sql('''
             ALTER TABLE sobject_list add constraint "sobject_list_code_idx" UNIQUE (code);
         ''')
 
@@ -1586,14 +1599,14 @@ IMPORTANT NOTICE:
     id serial PRIMARY KEY,
     code character varying(256),
     week integer,
-    mon float, 
-    tue float, 
-    wed float, 
-    thu float, 
-    fri float, 
-    sat float, 
-    sun float, 
-    year integer, 
+    mon float,
+    tue float,
+    wed float,
+    thu float,
+    fri float,
+    sat float,
+    sun float,
+    year integer,
     login character varying(256),
     description character varying(256),
     "type" character varying(256),
@@ -1619,7 +1632,7 @@ IMPORTANT NOTICE:
     ''')
 
     def upgrade_v3_8_0_v05_010(self):
-        self.run_sql(''' 
+        self.run_sql('''
     CREATE TABLE queue (
     id serial PRIMARY KEY,
     code character varying(256),
@@ -1642,7 +1655,7 @@ IMPORTANT NOTICE:
     ''')
 
     def upgrade_v3_8_0_v05_009(self):
-        self.run_sql(''' 
+        self.run_sql('''
     CREATE TABLE pref_list (
     id serial PRIMARY KEY,
     code character varying(256),
@@ -1658,7 +1671,7 @@ IMPORTANT NOTICE:
     ''')
 
     def upgrade_v3_8_0_v05_008(self):
-        self.run_sql(''' 
+        self.run_sql('''
     CREATE TABLE file_access (
     id serial PRIMARY KEY,
     code character varying(256),
@@ -1766,8 +1779,8 @@ IMPORTANT NOTICE:
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
     CONSTRAINT "command_log_code_idx" UNIQUE (code)
 );
-        ''')    
-    
+        ''')
+
     #
     # 3.8.0.v04
     #
@@ -1776,7 +1789,7 @@ IMPORTANT NOTICE:
         ALTER TABLE login_in_group ADD "code" varchar(256);
         ''')
 
-    
+
     #
     # 3.8.0.rc04
     #
@@ -1804,7 +1817,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         self.run_sql('''
         ALTER TABLE work_hour ADD "process" varchar(256);
         ''')
-    
+
 
     def upgrade_v3_8_0_rc03_001(self):
         self.run_sql('''
@@ -1815,27 +1828,27 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         self.run_sql('''
         ALTER TABLE "file" ADD "base_dir_alias" varchar(256);
         ''')
- 
+
     #
     # 3.8.0.b06
     #
     def upgrade_v3_8_0_b06_003(self):
         self.run_sql('''
         DELETE FROM search_object where search_type in ('flash/pickup_request','flash/series');
-        ''') 
+        ''')
 
-   
+
     def upgrade_v3_8_0_b06_002(self):
         self.run_sql('''
         DELETE FROM search_object where search_type in ('flash/episode_instance','flash/asset','flash/design_pack','flash/funpack','flash/shot_instance','flash/shot','flash/layer','flash/script','flash/storyboard','flash/leica','flash/nat_pause','prod/series');
-        ''') 
+        ''')
 
 
     def upgrade_v3_8_0_b06_001(self):
         self.run_sql('''
         DELETE FROM project_type where code = 'flash';
-        ''') 
-   
+        ''')
+
 
     #
     # 3.8.0.b08
@@ -1874,27 +1887,32 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     # 3.8.0.b07
     #
     def upgrade_v3_8_0_b07_001(self):
-        self.run_sql('''
-        ALTER TABLE task DROP CONSTRAINT "pipeline_code_foreign";
-        ''')
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE task DROP CONSTRAINT IF EXISTS "pipeline_code_foreign";
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE task DROP CONSTRAINT "pipeline_code_foreign";
+            ''')
     #
     # 3.8.0.b06
     #
     def upgrade_v3_8_0_b06_003(self):
         self.run_sql('''
         DELETE FROM search_object where search_type in ('flash/pickup_request','flash/series');
-        ''') 
+        ''')
 
     def upgrade_v3_8_0_b06_002(self):
         self.run_sql('''
         DELETE FROM search_object where search_type in ('flash/episode_instance','flash/asset','flash/design_pack','flash/funpack','flash/shot_instance','flash/shot','flash/layer','flash/script','flash/storyboard','flash/leica','flash/nat_pause','prod/series');
-        ''') 
+        ''')
 
 
     def upgrade_v3_8_0_b06_001(self):
         self.run_sql('''
         DELETE FROM project_type where code = 'flash';
-        ''') 
+        ''')
 
 
     #
@@ -1903,22 +1921,22 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v3_8_0_b05_001(self):
         self.run_sql('''
         ALTER TABLE "file" ADD COLUMN repo_type varchar(256);
-        ''') 
+        ''')
 
-   
+
     #
     # 3.8.0.b04
     #
     def upgrade_v3_8_0_b04_002(self):
         self.run_sql('''
         ALTER TABLE login_group ADD COLUMN access_level varchar(32);
-        ''') 
+        ''')
 
-    
+
     def upgrade_v3_8_0_b04_001(self):
         self.run_sql('''
         ALTER TABLE sobject_list ADD COLUMN code varchar(256);
-        ''') 
+        ''')
 
 
     #
@@ -1930,7 +1948,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v3_8_0_b03_001(self):
         self.run_sql('''
         UPDATE search_object set title='Tasks', description='Tasks' where search_type='sthpw/task';
-        ''') 
+        ''')
 
 
     #
@@ -1940,33 +1958,33 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v3_8_0_b02_005(self):
         self.run_sql('''
         ALTER TABLE "file" ADD COLUMN metadata_search text;
-        ''') 
+        ''')
 
 
     def upgrade_v3_8_0_b02_004(self):
         self.run_sql('''
         ALTER TABLE "file" ADD COLUMN metadata text;
-        ''') 
+        ''')
 
 
     def upgrade_v3_8_0_b02_003(self):
         self.run_sql('''
         ALTER TABLE login ADD COLUMN hourly_wage float;
-        ''') 
+        ''')
 
 
 
     def upgrade_v3_8_0_b02_002(self):
         self.run_sql('''
         ALTER TABLE login_group ADD COLUMN start_link text;
-        ''') 
+        ''')
 
- 
+
 
     def upgrade_v3_8_0_b02_001(self):
         self.run_sql('''
         CREATE INDEX "sobject_list_search_type_search_id_idx" on sobject_list (search_type, search_id);
-        ''') 
+        ''')
 
 
     #
@@ -1980,7 +1998,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v3_8_0_a01_004(self):
 		# The pipeline table wass added in 3.1, the search_type was character varying(100)
         self.run_sql('''ALTER TABLE pipeline ALTER COLUMN search_type TYPE varchar(256);''')
- 
+
 
     def upgrade_v3_8_0_a01_003(self):
         self.run_sql('''INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/db_resource', 'sthpw', 'Database Resource', 'sthpw', 'db_resource', 'pyasm.search.SObject', 'Database Resource', 'public');
@@ -2058,7 +2076,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         search.add_having('count(code) > 1')
         search.select.order_bys = []
         sobjects = search.get_sobjects()
-        
+
         duplicated_codes = SObject.get_values(sobjects, 'code')
 
         search = Search('sthpw/task')
@@ -2079,7 +2097,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             print "Updating task id [%s] with new code [%s]"%(id ,new_code)
             sobject.set_value("code", new_code )
             sobject.commit(triggers=False)
-        
+
         for key, value in change_dict.items():
             search = Search('sthpw/work_hour')
             search.add_filter('task_code', key)
@@ -2090,7 +2108,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
                 work_hour.set_value('task_code', value)
                 work_hour.commit(triggers=False)
 
-        
+
 
 
     #
@@ -2106,7 +2124,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         self.run_sql('''
         INSERT INTO pref_list ("key",description,options,"type",category,title) VALUES ('sandbox_base_dir','Determines the base sandbox folder for this project.  This can be customized for each project','','text','check-in','Sandbox Base Folder');
         ''')
- 
+
 
 
 
@@ -2115,9 +2133,9 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         self.run_sql('''
         UPDATE pref_list set options = 'en_US' where "key" = 'language';
         ''')
- 
 
-  
+
+
     #
     # 3.7.0.rc03
     #
@@ -2139,7 +2157,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v3_7_0_rc01_002(self):
         self.run_sql('''UPDATE "search_object" SET code = search_type''');
 
-  
+
     def upgrade_v3_7_0_rc01_001(self):
         self.run_sql('''ALTER TABLE "search_object" ADD COLUMN "code" varchar(256);''')
 
@@ -2335,7 +2353,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v3_6_0_a01_003(self):
         self.run_sql('''INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/ingest_session', 'config', 'Ingest Sessions', '{project}', 'spt_ingest_session', 'pyasm.search.SObject', 'Ingest Sessions', 'public');
         ''')
-    
+
 
 
     def upgrade_v3_6_0_a01_002(self):
@@ -2353,9 +2371,14 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
 
     def upgrade_v3_5_0_v01_004(self):
-        self.run_sql('''
-        alter table task DROP CONSTRAINT "pipeline_code_foreign";
-        ''')
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            alter table task DROP CONSTRAINT IF EXISTS "pipeline_code_foreign";
+            ''')
+        else:
+            self.run_sql('''
+            alter table task DROP CONSTRAINT "pipeline_code_foreign";
+            ''')
 
 
     def upgrade_v3_5_0_v01_003(self):
@@ -2401,6 +2424,10 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             self.run_sql('''
             ALTER TABLE pref_setting DROP INDEX pref_setting_login_fkey;
             ''')
+        elif self.get_database_type() == "PostgreSQL":
+            self.run_sql('''
+            ALTER TABLE pref_setting DROP CONSTRAINT IF EXISTS pref_setting_login_fkey CASCADE;
+            ''')
         else:
             self.run_sql('''
             ALTER TABLE pref_setting DROP CONSTRAINT pref_setting_login_fkey CASCADE;
@@ -2412,6 +2439,10 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             self.run_sql('''
             ALTER TABLE wdg_settings DROP INDEX wdg_settings_project_code_fkey;
             ''')
+        elif self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE wdg_settings DROP CONSTRAINT IF EXISTS wdg_settings_project_code_fkey CASCADE;
+            ''')
         else:
             self.run_sql('''
             ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_project_code_fkey CASCADE;
@@ -2422,11 +2453,15 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             self.run_sql('''
             ALTER TABLE wdg_settings DROP INDEX wdg_settings_login_fkey;
             ''')
+        elif self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE wdg_settings DROP CONSTRAINT IF EXISTS wdg_settings_login_fkey CASCADE;
+            ''')
         else:
             self.run_sql('''
             ALTER TABLE wdg_settings DROP CONSTRAINT wdg_settings_login_fkey CASCADE;
             ''')
- 
+
 
     #
     # 3.5.0.rc01
@@ -2458,20 +2493,30 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     # 3.1.0.b06
     #
     def upgrade_v3_1_0_b06_002(self):
-        self.run_sql('''
-        ALTER TABLE "wdg_settings" DROP constraint "wdg_settings_project_code_fkey";
-        ''')
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "wdg_settings" DROP constraint IF EXISTS "wdg_settings_project_code_fkey";
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "wdg_settings" DROP constraint "wdg_settings_project_code_fkey";
+            ''')
 
     def upgrade_v3_1_0_b06_001(self):
-        self.run_sql('''
-        ALTER TABLE "wdg_settings" DROP constraint "wdg_settings_login_fkey";
-        ''')
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "wdg_settings" DROP constraint IF EXISTS "wdg_settings_login_fkey";
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "wdg_settings" DROP constraint "wdg_settings_login_fkey";
+            ''')
 
 
     def upgrade_v3_1_0_b03_001(self):
         self.run_sql('''
         CREATE INDEX "status_log_search_type_search_id_idx" on status_log (search_type, search_id)
-        ''') 
+        ''')
 
     #
     # 3.1.0.b01
@@ -2546,14 +2591,14 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     def upgrade_v3_0_0_rc03_002(self):
         self.run_sql('''
         CREATE INDEX "note_search_type_search_id_idx" on note (search_type, search_id)
-        ''') 
+        ''')
 
     def upgrade_v3_0_0_rc03_001(self):
         self.run_sql('''
         ALTER TABLE "trigger" ALTER COLUMN event TYPE varchar(256);
         ''')
 
-   
+
     #
     # 3.0.0.b01
     #
@@ -2592,7 +2637,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
 
- 
+
     def upgrade_v3_0_0_b01_002(self):
         self.run_sql('''
         INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/process', 'config', 'Processes', '{project}', 'spt_process', 'pyasm.search.SObject', 'Processes', 'public')
@@ -2620,7 +2665,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     def upgrade_v2_7_0_a01_001(self):
         self.run_sql('''
-        INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/plugin', 'config', 'Plugin', '{project}', 'spt_plugin', 'pyasm.search.SObject', 'Plugin', 'public'); 
+        INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/plugin', 'config', 'Plugin', '{project}', 'spt_plugin', 'pyasm.search.SObject', 'Plugin', 'public');
         ''')
 
     def upgrade_v2_6_0_v01_002(self):
@@ -2697,7 +2742,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     def upgrade_v2_6_0_b01_002(self):
         self.run_sql('''
-        INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/client_trigger', 'config', 'Client Trigger', '{project}', 'spt_client_trigger', 'pyasm.search.SObject', 'Client Trigger', 'public'); 
+        INSERT INTO "search_object" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/client_trigger', 'config', 'Client Trigger', '{project}', 'spt_client_trigger', 'pyasm.search.SObject', 'Client Trigger', 'public');
         ''')
 
     def upgrade_v2_6_0_b01_001(self):
@@ -2705,7 +2750,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/prod_setting', 'config', 'Production Settings', '{project}', 'prod_setting', 'pyasm.prod.biz.ProdSetting', 'Production Settings', 'public');
         ''')
 
-        
+
     #
     # 2.6.0.a01 again
     #
@@ -2716,9 +2761,14 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         '''
         )
     def upgrade_v2_5_0_v02_002(self):
-        self.run_sql('''
-        ALTER TABLE pipeline DROP CONSTRAINT project_code_foreign;
-        ''')
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE pipeline DROP CONSTRAINT IF EXISTS project_code_foreign;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE pipeline DROP CONSTRAINT project_code_foreign;
+            ''')
 
 
 
@@ -2767,9 +2817,14 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
     def upgrade_v2_5_0_rc20_005(self):
-        self.run_sql('''
-        ALTER TABLE "trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
-        ''')
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "trigger" DROP CONSTRAINT IF EXISTS trigger_class_name_event_unique CASCADE;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
+            ''')
 
     def upgrade_v2_5_0_rc20_006(self):
         self.run_sql('''
@@ -2793,16 +2848,21 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     # 2.5.0.rc19
     #
- 
+
     def upgrade_v2_5_0_rc19_001(self):
         self.run_sql('''
-        INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/cache', 'sthpw', 'Cache', 'sthpw', '{public}.cache', 'pyasm.search.SObject', '', 'public');        
+        INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('sthpw/cache', 'sthpw', 'Cache', 'sthpw', '{public}.cache', 'pyasm.search.SObject', '', 'public');
         ''')
 
     def upgrade_v2_5_0_rc19_002(self):
-        self.run_sql('''
-        ALTER TABLE "trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
-        ''')
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "trigger" DROP CONSTRAINT IF EXISTS trigger_class_name_event_unique CASCADE;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "trigger" DROP CONSTRAINT trigger_class_name_event_unique CASCADE;
+            ''')
 
 
     def upgrade_v2_5_0_rc19_003(self):
@@ -2818,11 +2878,11 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             self.run_sql('''ALTER TABLE file MODIFY file_name varchar(512) NULL;''')
         else:
             self.run_sql('''
-            ALTER TABLE "file" ALTER COLUMN file_name drop NOT NULL; 
+            ALTER TABLE "file" ALTER COLUMN file_name drop NOT NULL;
             ''')
     def upgrade_v2_5_0_rc18_002(self):
         self.run_sql('''
-        ALTER TABLE "file" add column base_type varchar(256); 
+        ALTER TABLE "file" add column base_type varchar(256);
         ''')
     #
     # 2.5.0.rc16
@@ -2873,7 +2933,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             ''')
         else:
             self.run_sql('''
-            ALTER TABLE login ALTER COLUMN password DROP NOT NULL; 
+            ALTER TABLE login ALTER COLUMN password DROP NOT NULL;
             ''')
 
     def upgrade_v2_5_0_rc08_001(self):
@@ -2901,7 +2961,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ALTER TABLE login add column "phone_number" varchar(32);
         ''')
 
-  
+
     # 2.5.0.rc01
     def upgrade_v2_5_0_rc02_002(self):
         self.run_sql('''
@@ -2917,7 +2977,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         self.run_sql('''
         update pref_list set options = 'true' where "key"='use_java_maya';
         ''')
-   
+
     def upgrade_v2_5_0_rc01_002(self):
         self.run_sql('''
         delete from pref_list where "key"='select_filter';
@@ -2947,11 +3007,16 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
     def upgrade_v2_5_0_b03_001(self):
-        self.run_sql('''
-        ALTER TABLE snapshot_type drop CONSTRAINT snapshot_type_pkey;
-        ''')
-    # 2.5.0.b02
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE snapshot_type drop CONSTRAINT IF EXISTS snapshot_type_pkey;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE snapshot_type drop CONSTRAINT snapshot_type_pkey;
+            ''')
 
+    # 2.5.0.b02
     def upgrade_v2_5_0_b02_005(self):
         self.run_sql('''
         CREATE INDEX snapshot_search_code_idx on snapshot(search_code);
@@ -2964,7 +3029,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
 
 
-    
+
 
     def upgrade_v2_5_0_b02_002(self):
         self.run_sql('''
@@ -2978,12 +3043,12 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ''')
     #
     # 2.5.0.a01
-    # 
+    #
     def upgrade_v2_5_0_a01_005(self):
         self.run_sql('''
         UPDATE search_object SET class_name = 'pyasm.prod.biz.AssetLibrary' where search_type='prod/asset_library';
-        ''') 
-   
+        ''')
+
     def upgrade_v2_5_0_a01_004(self):
         self.run_sql('''
         alter table template ALTER COLUMN search_type drop NOT NULL;
@@ -3015,7 +3080,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
 
     #
     # 2.4.0.a01
-    # 
+    #
     def upgrade_v2_4_0_a01_013(self):
         self.run_sql('''
         INSERT INTO search_object (search_type, namespace, description, "database", table_name, class_name, title, "schema") VALUES ('config/naming', 'config', 'Naming', '{project}', '{public}.naming', 'pyasm.biz.Naming', '', 'public');
@@ -3128,7 +3193,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         alter table transaction_state add constraint "transaction_state_unique"
         unique(ticket);
         ''')
-    
+
     def upgrade_v2_2_0_b01_004(self):
         self.run_sql('''
         drop index "transaction_state_ticket_idx";
@@ -3196,9 +3261,9 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
         ALTER TABLE snapshot_type ADD COLUMN relfile text;
         ''')
 
-    # Repeating here so 2.1.0 users can also get this 
+    # Repeating here so 2.1.0 users can also get this
     def upgrade_v2_1_0_a02_001(self):
-        
+
         self.run_sql('''
         ALTER TABLE transaction_log add column title text;
         ''')
@@ -3209,7 +3274,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     # 2.0.0.rc01
     #
     def upgrade_v2_0_0_rc01_001(self):
-        
+
         self.run_sql('''
         ALTER TABLE transaction_log add column title text;
         ''')
@@ -3217,10 +3282,10 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     #
     # 2.0.0.b03
     #
-   
+
 
     def upgrade_v2_0_0_b03_001(self):
-        
+
         self.run_sql('''
         UPDATE schema SET schema = '<schema>
 

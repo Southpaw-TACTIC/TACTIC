@@ -19,6 +19,7 @@ import cStringIO
 
 from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads, jsondumps
 from pyasm.biz import Schema, ExpressionParser, Project
+from pyasm.command import Command
 from pyasm.search import Search, SearchKey, WidgetDbConfig, SObject, ExceptionLog
 from pyasm.web import DivWdg, SpanWdg, HtmlElement, Table, Widget, Html, WebContainer
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg
@@ -824,6 +825,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                         self.content.add_behavior(bvr)
 
                     else:
+                        bvr['bvr_match_class'] = css_class
                         bvr['_handoff_'] = '@.getParent(".spt_custom_content").getElements(".%s")' % css_class
                         if not bvr.get("type"):
                             bvr['type'] = 'click_up'
@@ -1465,6 +1467,39 @@ class CustomLayoutWdg(BaseRefreshWdg):
         menu_data['opt_spec_list'] = opt_spec_list
 
         return menu_data
+
+
+
+__all__.append("CustomLayoutCbk")
+class CustomLayoutCbk(Command):
+
+    def execute(self):
+
+        view = self.kwargs.get("view")
+        view = view.replace("/", ".") # in case we / in the view name
+
+        callback = self.kwargs.get("callback")
+
+        search = Search("config/widget_config")
+        search.add_filter("view", view)
+        search.add_filter("category", "CustomLayoutWdg")
+        sobject = search.get_sobject()
+
+        config = sobject.get_xml_value("config")
+
+        callback_code = config.get_value("config//callback[@class='%s']" % callback)
+
+        callback_kwargs = self.kwargs.get("kwargs") or {}
+
+        from tactic.command import PythonCmd
+        cmd = PythonCmd(code=callback_code, **callback_kwargs)
+
+        results = cmd.execute()
+
+        self.info['results'] =  results
+
+
+
 
 
 

@@ -57,6 +57,15 @@ class SimpleSearchExampleWdg(BaseRefreshWdg):
 
 class SimpleSearchWdg(BaseRefreshWdg):
 
+    # These methods are here to place in the Advanced search (will need to deal with later)
+    def is_visible(self):
+        return True
+    def set_filter_mode(self, mode):
+        pass
+    def get_num_filters_enabled(self):
+        return 5
+
+
     SEARCH_COLS = ['keyword','keywords','key','name','description','code']
 
     def get_args_keys(self):
@@ -223,12 +232,15 @@ class SimpleSearchWdg(BaseRefreshWdg):
         } )
 
 
+        show_title = self.kwargs.get("show_title")
+        if show_title not in ['false', False]:
+            title_div = DivWdg()
+            td.add(title_div)
+            title_div.add("<div style='font-size: 16px'>Search Criteria</div>")
+            title_div.add("<div>Select filters to refine your search</div>")
+            title_div.add_style("padding: 10px 0px 0px 20px")
 
-        title_div = DivWdg()
-        td.add(title_div)
-        title_div.add("<div style='font-size: 16px'>Search Criteria</div>")
-        title_div.add("<div>Select filters to refine your search</div>")
-        title_div.add_style("padding: 10px 0px 0px 20px")
+
 
         table.add_style("margin-left: auto")
         table.add_style("margin-right: auto")
@@ -253,7 +265,6 @@ class SimpleSearchWdg(BaseRefreshWdg):
         else:
             show_search = True
 
-        show_search = True
         if show_search:
             search_wdg = self.get_search_wdg()
             table.add_row()
@@ -623,12 +634,13 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 
 
 
-            icon = IconWdg("Filter Set", "BS_ASTERISK")
+            icon = IconWdg("Filter Set", "FA_CHECK_SQUARE_O")
             #icon.add_style("color", "#393")
             icon_div.add(icon)
             icon.add_class("spt_filter_set")
             icon.add_class("hand")
             icon.add_attr("spt_element_name", element_name)
+            icon.add_style("margin-top: 2px")
 
             icon.add_behavior( {
                 'type': 'click',
@@ -643,7 +655,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 icon.add_style("display: none")
 
             else:
-                color = icon_div.get_color("background", -10)
+                color = icon_div.get_color("background", -3)
                 icon_td.add_style("background-color", color)
                 title_td.add_style("background-color", color)
                 element_td.add_style("background-color", color)

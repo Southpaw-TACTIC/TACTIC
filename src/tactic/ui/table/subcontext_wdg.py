@@ -33,7 +33,7 @@ class ProcessElementWdg(SimpleTableElementWdg):
     def handle_td(self, td):
         sobj = self.get_current_sobject()
         parent = None
-        
+
         value = sobj.get_value('process')
         td.add_attr('spt_input_value', value)
 

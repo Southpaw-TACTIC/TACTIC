@@ -2882,6 +2882,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
     }
 
+
+
     def get_display(self):
         target_id = self.kwargs.get("target_id")
         if not target_id:
@@ -3087,15 +3089,14 @@ class ViewPanelWdg(BaseRefreshWdg):
                 can_search = False
 
 
-        # FIXME: this doesn't work yet because the filter information
-        # is not passed through
-        #if show_shelf not in [False, 'false']:
-        #if True:
+
+        simple_search_view = self.kwargs.get('simple_search_view')
+
         if can_search:
             search = self.kwargs.get("search")
             try:
                 from tactic.ui.app import SearchWdg
-                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=self.state, run_search_bvr=run_search_bvr, limit=search_limit)
+                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=self.state, run_search_bvr=run_search_bvr, limit=search_limit, filter_view=simple_search_view)
             except SearchException as e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
@@ -3120,7 +3121,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # add an exposed search
-        simple_search_view = self.kwargs.get('simple_search_view')
         simple_search_config = self.kwargs.get('simple_search_config')
         
         custom_simple_search_view = None
@@ -3179,7 +3179,9 @@ class ViewPanelWdg(BaseRefreshWdg):
                 simple_search_wdg.add_style("top: 40px")
                 #simple_search_wdg.add_style("top: 10px")
                 simple_search_wdg.add_style("left: 10px")
-                simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.5)")
+                simple_search_wdg.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
+                border_color = inner.get_color("border")
+                simple_search_wdg.add_style("border: solid 1px %s" % border_color)
 
 
 
@@ -3227,6 +3229,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_elements = self.kwargs.get("group_elements")
         group_label_expr = self.kwargs.get("group_label_expr")
         group_label_view = self.kwargs.get("group_label_view")
+        group_label_class = self.kwargs.get("group_label_class")
         expand_mode = self.kwargs.get("expand_mode")
         show_name_hover = self.kwargs.get("show_name_hover")
         op_filters = self.kwargs.get("op_filters")
@@ -3239,6 +3242,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         if extra_data:
             if isinstance(extra_data, dict):
                 extra_data = jsondumps(extra_data)
+        default_data = self.kwargs.get("default_data")
+        if default_data:
+            if isinstance(default_data, dict):
+                default_data = jsondumps(default_data)
+
 
         is_inner = self.kwargs.get("is_inner")
 
@@ -3324,6 +3332,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "group_elements" : group_elements,
             "group_label_expr" : group_label_expr,
             "group_label_view" : group_label_view,
+            "group_label_class": group_label_class,
             "mode": mode,
             "height": height,
             "keywords": keywords,
@@ -3339,6 +3348,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "settings": settings,
             "gear_settings": gear_settings,
             "extra_data": extra_data,
+            "default_data": default_data,
             #"search_wdg": search_wdg
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,

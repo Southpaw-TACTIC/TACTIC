@@ -1305,6 +1305,24 @@ TacticServerStub = function() {
         
     }
 
+
+
+    this.update = function(search_key, data, kwargs, on_complete, on_error) {
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        var ret_val = this._delegate("update", arguments, kwargs, null, on_complete, on_error);
+        if (on_complete) {
+            return;
+        }
+        if (ret_val && ret_val.status == "ERROR") {
+            throw ret_val;
+        }
+        return ret_val;
+    }
+
+
+
+    /*
     this.update = function(search_key, data, kwargs, on_complete, on_error) {
         var newArgs = Array.prototype.slice.call(arguments).slice(0,3);
         if(on_complete){
@@ -1318,6 +1336,7 @@ TacticServerStub = function() {
 
         return this._delegate("update", newArgs, kwargs);
     }
+    */
 
 
 
@@ -1331,6 +1350,7 @@ TacticServerStub = function() {
             return this.update(search_type, data, kwargs);
         }.bind(this) )
     }
+
 
 
 
@@ -1634,12 +1654,44 @@ TacticServerStub = function() {
     }
 
 
+    this.execute_cbk = function(bvr, callback, args, kwargs) {
+        var cbk = "tactic.ui.panel.CustomLayoutCbk";
+        var top = bvr.src_el.getParent(".spt_custom_top");
+        var view = top.getAttribute("spt_view");
+
+        var cbk_kwargs = {
+            view: view,
+            callback: callback,
+            kwargs: args,
+        }
+
+        return this.execute_cmd(cbk, cbk_kwargs)
+    }
+
+
+    this.p_execute_cbk = function(bvr, callback, args, kwargs) {
+        var cbk = "tactic.ui.panel.CustomLayoutCbk";
+        var top = bvr.src_el.getParent(".spt_custom_top");
+        var view = top.getAttribute("spt_view");
+
+        var cbk_kwargs = {
+            view: view,
+            callback: callback,
+            kwargs: args
+        }
+
+        return this.p_execute_cmd(cbk, cbk_kwargs)
+    }
+ 
+
 
     
 
     this.execute = function(code) {
         return this._delegate("execute", arguments, null);
     }
+
+
 
     this.check_access = function(access_group, key, access, kwargs) {
         return this._delegate("check_access", arguments, kwargs);

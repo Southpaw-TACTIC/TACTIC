@@ -72,7 +72,7 @@ class PythonCmd(Command):
 spt_mako_results['spt_ret_val'] = spt_run_code()
 %%>
 ''' % code
-        
+ 
 
         #template = Template(code, output_encoding='utf-8', input_encoding='utf-8')
         try:
@@ -86,7 +86,6 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
             print code
             print "---"
             raise
-            raise CommandExitException(e)
 
         return spt_mako_results['spt_ret_val']
 

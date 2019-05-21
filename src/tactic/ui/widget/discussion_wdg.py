@@ -186,6 +186,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         self.hidden = False
         self.allow_email = self.kwargs.get('allow_email') != 'false'
         self.show_task_process = self.kwargs.get('show_task_process') == 'true'
+
         self.discussion = DiscussionWdg(show_border='false', contexts_checked='false', add_behaviors=False,**self.kwargs)
         
 
@@ -328,43 +329,50 @@ class DiscussionWdg(BaseRefreshWdg):
 
             var top = discussion_top;
            
-            var dialog_content = top.getElement(".spt_discussion_content");
-            var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
+            // refresh dialogs (if loaded) and note counts for all contexts
+            var dialog_contents = top.getElements(".spt_discussion_content");
+            var parent_key = top.getAttribute("spt_search_key");
+            var s = TacticServerStub.get();
+            var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
 
-            // refresh the dialog and the note count for this context
-            if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
-                var parent_key = dialog_content.getAttribute('spt_parent_key');
-                var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                var kwargs = {
-                    parent_key: parent_key,
-                    context: dialog_content.getAttribute('spt_context'),
-                    default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
-                    note_expandable: dialog_content.getAttribute('spt_note_expandable'),
-                    note_format: dialog_content.getAttribute('spt_note_format')
+            if (dialog_contents.length == num_processes) {
+                for (var i = 0; i < dialog_contents.length; i++) {
+                    var dialog_content = dialog_contents[i];
+                    var group_top = dialog_content.getParent(".spt_discussion_process_top");
+                    var process = group_top.getAttribute('self_context');
+
+                    // refresh the dialog and the note count for this context
+                    if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
+                        var parent_key = dialog_content.getAttribute('spt_parent_key');
+                        var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                        var kwargs = {
+                            parent_key: parent_key,
+                            context: process,
+                            default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
+                            note_expandable: dialog_content.getAttribute('spt_note_expandable'),
+                            note_format: dialog_content.getAttribute('spt_note_format')
+                        }
+
+                        // clear textarea and toggle add widget
+                        var text = top.getElement('textarea[@name=note]');
+                        if (text)
+                            text.value = '';
+                        var add_note = top.getElement(".spt_discussion_add_note");
+                        if (add_note)
+                            spt.toggle_show_hide(add_note);
+
+                        // update dialog
+                        spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
+                    }
+                    // update note count
+                    var note_count_div = group_top.getElement('.spt_note_count');
+                    if (note_count_div) {
+
+                        var note_count = s.eval("@COUNT(sthpw/note['process', '" + process + "'])", {search_keys: [parent_key]});
+                        note_count_div.innerHTML = '(' + note_count + ')';
+                    }
                 }
-
-                // clear textarea and toggle add widget
-                var text = top.getElement('textarea[@name=note]');
-                if (text)
-                    text.value = '';
-                var add_note = top.getElement(".spt_discussion_add_note");
-                if (add_note)
-                    spt.toggle_show_hide(add_note);
-
-                // update dialog
-                spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
-               
-                // update note count
-                var note_count_div = group_top.getElement('.spt_note_count');
-                if (note_count_div) {
-
-                    var s = TacticServerStub.get();
-                    var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
-                    note_count_div.innerHTML = '(' + note_count + ')';
-                }
-
-            }
-            else {
+            } else {
                 spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
             }
 
@@ -406,6 +414,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 top = bvr.src_el.getParent(".spt_discussion_top");
             }
 
+
             var container = top.getElement(".spt_add_note_container");
             var add_note = container.getElement(".spt_discussion_add_note");
 
@@ -425,6 +434,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
                 spt.panel.load(container, class_name, kwargs, {},  {fade: false, async: false});
                 add_note = top.getElement(".spt_discussion_add_note");
+                //var popup = spt.panel.load_popup("Add Note", class_name, kwargs);
+                //add_note = popup.getElement(".spt_discussion_add_note");
             }
             
             if (bvr.src_el.getAttribute('force_show') == 'true')
@@ -635,13 +646,21 @@ class DiscussionWdg(BaseRefreshWdg):
                         process = ''
                         if has_process:
                             process = sobject.get_value('process')
-                        # this is used in the key for note_dict
-                        self.parent_processes.append(process)
+
+                        context = sobject.get_value("context")
+                        if context != process:
+                            self.parent_processes.append(context)
+                        else:
+                            # this is used in the key for note_dict
+                            self.parent_processes.append(process)
+
                         parent = self._get_parent(sobject)
                         # must append even if it is None
                         self.parents.append(parent)
                 else:
                     self.parents = self.sobjects
+
+
             else: # indiviual update     
                 search_key = self.kwargs.get("search_key")
                 assert search_key
@@ -679,7 +698,6 @@ class DiscussionWdg(BaseRefreshWdg):
         else:
             self.process = self.kwargs.get("process")
 
-            # TODO: this needs to be eval to be a list if it's a comma separated string
             self.contexts = self.kwargs.get("context")
             if self.contexts and isinstance(self.contexts, basestring):
                 self.contexts = self.contexts.split(',')
@@ -700,6 +718,7 @@ class DiscussionWdg(BaseRefreshWdg):
         search = Search("sthpw/note") 
         search.add_relationship_filters(self.filtered_parents, type='hierarchy')
         search.add_order_by("process")
+        search.add_order_by("context")
         search.add_order_by("timestamp desc")
 
         if self.process:
@@ -716,6 +735,7 @@ class DiscussionWdg(BaseRefreshWdg):
         schema = Schema.get()
 
         for note in notes:
+
 
             """
             search_type = note.get_value("search_type")
@@ -845,6 +865,24 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_notes_dialog {
+                border: solid 1px #DDD;
+                width: 100%;
+                height: auto;
+                box-sizing: border-box;
+                margin: 0px 30px 10px 20px;
+                padding: 0px 10px;
+            }
+
+
+            ''')
+
+        return styles
+
 
 
     def get_display(self):
@@ -889,7 +927,6 @@ class DiscussionWdg(BaseRefreshWdg):
         else:
             self.show_context_header = False
 
-            
 
         # show the number of notes that will start open.  default is 0
         self.default_num_notes = self.kwargs.get("default_num_notes")
@@ -990,6 +1027,7 @@ class DiscussionWdg(BaseRefreshWdg):
             gallery_div.add_class("spt_note_gallery")
             top.add( gallery_div )
 
+        top.add(self.get_styles())
 
         context_str = ",".join(contexts)
         update_div = DivWdg()
@@ -1025,31 +1063,39 @@ class DiscussionWdg(BaseRefreshWdg):
                    'interval': 2,
                    "cbjs_action": '''
                 var top = bvr.src_el.getParent(".spt_discussion_top");
-                var dialog_content = top.getElement(".spt_discussion_content");
+                var dialog_contents = top.getElements(".spt_discussion_content");
+                var parent_key = top.getAttribute("spt_search_key");
 
-                var group_top = dialog_content ? dialog_content.getParent(".spt_discussion_process_top") : null;
-                
-                // update dialog and the count if dialog is visible 
-                if (group_top && group_top.getAttribute("spt_is_loaded") == "true" && 
-                    group_top.getAttribute("spt_update_mode") == "load") {
-                    var parent_key = dialog_content.getAttribute('spt_parent_key');
-                    var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                    var kwargs = {
-                        parent_key: parent_key,
-                        context: dialog_content.getAttribute('spt_context'),
-                        default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
-                        note_expandable: dialog_content.getAttribute('spt_note_expandable'),
-                        note_format: dialog_content.getAttribute('spt_note_format')
+                // update dialogs (if loaded) and note counts
+                var s = TacticServerStub.get();
+                var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
+                if (dialog_contents.length == num_processes) {
+                    for (var i = 0; i < dialog_contents.length; i++) {
+                        var dialog_content = dialog_contents[i];
+                        var group_top = dialog_content.getParent(".spt_discussion_process_top");
+                        var process = group_top.getAttribute("self_context");
+                        // update dialog if loaded
+                        if (group_top && group_top.getAttribute("spt_is_loaded") == "true" &&
+                            group_top.getAttribute("spt_update_mode") == "load") {
+                            //var parent_key = dialog_content.getAttribute('spt_parent_key');
+                            var class_name = 'tactic.ui.widget.NoteCollectionWdg';
+                            //var process = dialog_content.getAttribute('spt_context');
+                            var kwargs = {
+                                parent_key: parent_key,
+                                context: process,
+                                default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
+                                note_expandable: dialog_content.getAttribute('spt_note_expandable'),
+                                note_format: dialog_content.getAttribute('spt_note_format')
+                            }
+                            spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: true});
+                        }
+
+                        // update count
+                        var note_count_div = group_top.getElement('.spt_note_count');
+                        var note_count = s.eval("@COUNT(sthpw/note['process', '" + process + "'])", {search_keys: [parent_key]});
+                        note_count_div.innerHTML = '(' + note_count + ')';
                     }
-                    spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: true});
-                    var note_count_div = group_top.getElement('.spt_note_count');
-                    
-                    var s = TacticServerStub.get();
-                    var note_count = s.eval('@COUNT(sthpw/note)', {search_keys: [parent_key]});
-                    note_count_div.innerHTML = '(' + note_count + ')';
-
-                }
-                else {
+                } else {
                     spt.panel.refresh(top);
                 }
 
@@ -1181,13 +1227,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog = DivWdg()
                 no_notes_div.add(note_dialog)
                 unique_id = note_dialog.set_unique_id()
-                note_dialog.add_style("border: solid 1px #DDD")
-                note_dialog.add_style("width: 100%")
-                note_dialog.add_style("height: auto")
+                note_dialog.add_class("spt_notes_dialog")
                 note_dialog.add_style("display: none")
-                note_dialog.add_style("box-sizing: border-box")
-                note_dialog.add_style("margin: 0px 30px 10px 20px")
-                note_dialog.add_style("padding: 0px 10px")
                 no_notes_msg.add_behavior( {
                     'type': 'click',
                     'unique_id': unique_id,
@@ -1212,7 +1253,6 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
-
             
             note_dialog.add(add_note_wdg)
 
@@ -1249,6 +1289,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 context = note.get_value("context")
                 contexts.add(context)
             contexts_div = DivWdg()
+            contexts_div.add_style("padding: 5px")
+            contexts_div.add_style("margin: 5px 0px 15px 0px")
             contexts_div.add_color("color", "color")
             if self.show_border:
                 contexts_div.add_border()
@@ -1303,8 +1345,23 @@ class DiscussionWdg(BaseRefreshWdg):
         content_div = DivWdg()
         top.add(content_div)
 
+
+        pipeline = Pipeline.get_by_sobject(self.sobject)
+        if pipeline:
+            processes = pipeline.get_process_names()
+
+            # append processes that are not in the workflow
+            for p in process_notes.keys():
+                if p not in processes:
+                    processes.append(p)
+        else:
+            # if no workflow, then display alphabetically
+            processes = process_notes.keys()
+            processes.sort()
+
+
         # go through every process and display notes.
-        for process in process_notes:
+        for process in processes:
             #notes_list = context_notes.get(context)
 
             # This widget used to be context centric ... it is now process centric
@@ -1312,6 +1369,8 @@ class DiscussionWdg(BaseRefreshWdg):
             context = process
 
             notes_list = process_notes.get(process)
+            if not notes_list:
+                continue
 
             note_keys = []
             for note in notes_list:
@@ -1397,13 +1456,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 note_dialog = DivWdg()
                 note_dialog_div.add(note_dialog)
                 unique_id = note_dialog.set_unique_id()
-                note_dialog.add_style("border: solid 1px #DDD")
-                note_dialog.add_style("width: 100%")
-                note_dialog.add_style("height: auto")
+                note_dialog.add_class("spt_notes_dialog")
                 note_dialog.add_style("display: none")
-                note_dialog.add_style("box-sizing: border-box")
-                note_dialog.add_style("margin: 0px 30px 10px 20px")
-                note_dialog.add_style("padding: 0px 10px")
                 """
                 process_wdg.add_behavior( {
                     'type': 'click',
@@ -1554,7 +1608,6 @@ class DiscussionWdg(BaseRefreshWdg):
             } )
 
 
-
         return top
 
 
@@ -1619,17 +1672,22 @@ class NoteCollectionWdg(BaseRefreshWdg):
         process = self.kwargs.get("process")
 
         if note_keys:
-            notes = Search.get_by_search_keys(note_keys)
+            notes = Search.get_by_search_keys(note_keys, keep_order=True)
             parent = Search.get_by_search_key(parent_key)
         elif parent_key:
             # during dynamic update, parent_key and context are used
             parent = Search.get_by_search_key(parent_key)
             if context:
-                notes = Search.eval("@SOBJECT(sthpw/note['context','%s'])"%context, sobjects=[parent])
+                search = Search.eval("@SEARCH(sthpw/note['context','%s'])"%context, sobjects=[parent])
             elif process:
-                notes = Search.eval("@SOBJECT(sthpw/note['process','%s'])"%process, sobjects=[parent])
+                search = Search.eval("@SEARCH(sthpw/note['process','%s'])"%process, sobjects=[parent])
             else:
-                notes = Search.eval("@SOBJECT(sthpw/note['context','%s'])"%context, sobjects=[parent])
+                search = Search.eval("@SEARCH(sthpw/note['context','%s'])"%context, sobjects=[parent])
+
+            search.add_order_by("context")
+            search.add_order_by("timestamp desc")
+            notes = search.get_sobjects()
+
 
             
         if not notes:
@@ -1782,6 +1840,36 @@ class NoteWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='title', label='Actions...')
         menu.add(menu_item)
 
+        menu_item = MenuItem(type='action', label='Reply')
+        #menu.add(menu_item)
+        menu_item.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_note_top");
+            var search_key = top.getAttribute("note_search_key");
+            /*
+            var top = activator.getParent(".spt_dialog_top");
+            if (top == null) {
+                top = bvr.src_el.getParent(".spt_discussion_top");
+            }
+
+            var container = top.getElement(".spt_add_note_container");
+            var add_note = container.getElement(".spt_discussion_add_note");
+            */
+
+
+            var class_name = 'tactic.ui.widget.DiscussionAddNoteWdg';
+            var kwargs = {
+                search_key: search_key,
+                hidden: false,
+                process: 'Internal Review',
+            }
+            var popup = spt.panel.load_popup("Add Note", class_name, kwargs);
+            '''
+        } )
+
+
         menu_item = MenuItem(type='action', label='Edit Note')
         menu.add(menu_item)
         menu_item.add_behavior( {
@@ -1901,7 +1989,6 @@ class NoteWdg(BaseRefreshWdg):
 
 
     def get_note_wdg(self, note, note_hidden=False):
-        context = note.get_value("context")
 
         mode = "dialog"
 
@@ -1917,6 +2004,11 @@ class NoteWdg(BaseRefreshWdg):
         login = note.get_value("login")
         date = note.get_value("timestamp")
         context = note.get_value("context")
+        process = note.get_value("process")
+        parent_code = note.get_value("parent_code")
+        if parent_code:
+            div.add_style("margin-left: 40px")
+            div.add_style("border-left: solid 2px #DDD")
 
         div.add_attr("self_context", context.encode("UTF-8"))
 
@@ -1948,13 +2040,16 @@ class NoteWdg(BaseRefreshWdg):
             tr.add_style("background: rgba(232, 74, 77, 0.8)")
 
         else:
-            tr.add_color("background", "background", -10)
+            #tr.add_color("background", "background", -10)
+            pass
+
+        tr.add_style("border-bottom: solid 2px #DDD")
 
         td = content.add_cell()
 
 
+
         icon = IconWdg("Note", "BS_PENCIL")
-        #td.add(icon)
         icon.add_style("float: left")
         icon.add_style("margin: 0px 5px")
 
@@ -1963,7 +2058,12 @@ class NoteWdg(BaseRefreshWdg):
         title.add_class("spt_note_header")
         title.add_style("margin: 5px 12px")
         #title.add_style("font-weight: bold")
+        #title.add_style("display: flex")
+        #title.add_style("align-items: center")
 
+
+        if context != process:
+            title.add("<div style='float: left; margin-bottom: 3px; margin-right: 10px;'>[%s]:</div>" % context)
 
 
 
@@ -1982,8 +2082,6 @@ class NoteWdg(BaseRefreshWdg):
             menus = [self.get_note_menu()]
             SmartMenu.add_smart_menu_set( icon, { 'NOTE_EDIT_CTX': menus } )
             SmartMenu.assign_as_local_activator( icon, "NOTE_EDIT_CTX", True )
-
-
 
 
 
@@ -2200,15 +2298,25 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         self.append_processes = self.kwargs.get("append_process")
         if self.append_processes:
             self.append_processes = self.append_processes.split(",")
-            # remove any spaces
+            # remove any trailing spaces
             self.append_processes = [x.strip() for x in self.append_processes if x]
 
 
         self.custom_processes = self.kwargs.get("custom_processes")
         if self.custom_processes:
             self.custom_processes = self.custom_processes.split(",")
-            # remove any spaces
+            # remove any trailing spaces
             self.custom_processes = [x.strip() for x in self.custom_processes if x]
+
+
+        self.custom_contexts = self.kwargs.get("custom_contexts")
+        if self.custom_contexts:
+            self.custom_contexts = self.custom_contexts.split(",")
+            # remove any trailing spaces
+            self.custom_contexts = [x.strip() for x in self.custom_contexts if x]
+
+
+
 
 
         self.upload_id = self.kwargs.get("upload_id")
@@ -2219,6 +2327,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
     def get_display(self):
+
+        #TODO: find a better fix?
+        self.kwargs["bvr_list"] = None
+        self.kwargs["bvr_type_list"] = None
 
         parent = self.kwargs.get("parent")
         if not parent:
@@ -2239,6 +2351,11 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
       
         content_div = self.top
         content_div.add_style("min-width: 300px")
+
+        is_standalone = self.kwargs.get("is_standalone")
+        if is_standalone in [True, 'true']:
+            content_div.add_class("spt_discussion_top")
+            DiscussionWdg.add_layout_behaviors(self.top, allow_email=False, show_task_process=False)
 
         self.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")
@@ -2343,7 +2460,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         
             # context is optional, only drawn if it's different from process
         elif len(process_names) == 1:
-            wdg_label = "Send To Process:"
+            wdg_label = "For Process:"
             span = SpanWdg(wdg_label)
             span.add_style('padding-right: 4px')
             content_div.add(span)
@@ -2353,7 +2470,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             content_div.add(hidden)
             content_div.add("<b>%s</b>" % process_names[0])
         else:
-            wdg_label = "Send To Process:"
+            wdg_label = "For Process:"
             span = SpanWdg(wdg_label)
             span.add_style('padding-right: 4px')
             content_div.add(span)
@@ -2363,6 +2480,19 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             process_select.set_option("values", process_names)
             process_select.add_style("width: 200px")
             content_div.add(process_select)
+            process_select.add_style("height: 25px")
+
+
+
+        if self.custom_contexts:
+            context_select = SelectWdg("add_context")
+            context_select.add_class("spt_add_note_context")
+            context_select.set_option("values", self.custom_contexts)
+            context_select.add_style("width: 200px")
+            content_div.add(context_select)
+            context_select.add_style("height: 25px")
+
+
 
 
         # add the context label if it is different from process in use_parent mode
@@ -2391,9 +2521,13 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
         #add_button = ProdIconButtonWdg("Submit Note")
+        add_div = DivWdg()
+        content_div.add(add_div)
+        add_div.add_style("float: right")
+        add_div.add_style("margin-top: -25px")
+
         add_button = ActionButtonWdg(title="Add Note", color="primary", tip='Submit information to create a new note')
-        content_div.add(add_button)
-        add_button.add_style("float: right")
+        add_div.add(add_button)
 
         submit_class = DiscussionWdg.get_note_class(self.hidden, 'spt_discussion_submit') 
         add_button.add_class(submit_class)
@@ -2488,9 +2622,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
       
 
-        browse_button = UploadButtonWdg(title="Attach File", tip='Browse for files to attach to this note', on_complete=on_complete,\
+        browse_button = UploadButtonWdg(title="Attach File", mode="icon", tip='Browse for files to attach to this note', on_complete=on_complete,\
                 upload_init=upload_init, multiple='true', upload_id=table_upload_id) 
         attachment_div.add(browse_button)
+        browse_button.add_style("margin-top: -25px")
         #browse_button.add_style("float: left")
 
 

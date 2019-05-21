@@ -17,7 +17,7 @@ from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, T
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, DbContainer
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
-from pyasm.biz import ExpressionParser, Project
+from pyasm.biz import ExpressionParser, Project, ProjectSetting
 
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
@@ -91,7 +91,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not self.search_type:
             raise TacticException("Must define a search type")
         self.view = kwargs.get('view')
-        if not self.view:
+        if not self.view or self.view == "None":
             self.view = 'table'
 
         self.do_search = True
@@ -597,7 +597,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view)
+            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=self.simple_search_view)
 
         
         search = self.search_wdg.get_search()
@@ -945,7 +945,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_style("padding-top: 3px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
-        
+
         border_color = div.get_color("table_border",  default="border")
         if self.get_setting("header_background"):
             div.add_color("background", "background",-1)
@@ -1193,7 +1193,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
             num_div.add_class("hand")
-            color = num_div.get_color("background3", -5)
+            color = num_div.get_color("background", -5)
             num_div.add_behavior( {
                 'type': 'mouseover',
                 'color': color,
@@ -1241,6 +1241,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if not self.can_expand():
             show_expand = False
+        # DISABLE as it doesn't make any sense any more
+        show_expand = False
  
         expand_wdg = None
         if show_expand:
@@ -1886,9 +1888,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_search and search_dialog_id:
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
-            #button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
             button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
-            #button.add_style("float: left")
             div.add(button)
 
 
@@ -2085,12 +2085,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         search_type_obj = SearchType.get(self.search_type)
 
+
+        extra_element_names = self.kwargs.get("extra_element_names") or []
+        if isinstance(extra_element_names, basestring):
+            extra_element_names = extra_element_names.split(",")
+
         button.add_behavior( {
             'type': 'click_up',
             'class_name': 'tactic.ui.panel.AddPredefinedColumnWdg',
             "args": {
                 'title': 'Column Manager',
                 'search_type': self.search_type,
+                'extra_element_names': extra_element_names,
             },
             'cbjs_action': '''
                 var table = bvr.src_el.getParent('.spt_table');
@@ -2108,9 +2114,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 bvr.args.element_names = element_names;
 
-                var class_name = 'tactic.ui.panel.AddPredefinedColumnWdg';
-
-                var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                var popup = spt.panel.load_popup(bvr.args.title, bvr.class_name, bvr.args);
                 popup.activator = bvr.src_el;
                 popup.panel = panel;
                 ''',
@@ -2760,6 +2764,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             search_type = self.search_type
 
+
+            format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
+            if format_context in ['false', "False", False]:
+                format_context = 'false'
+            else:
+                format_context = 'true'
+
+
             # get the browser
             web = WebContainer.get_web()
             browser = web.get_browser()
@@ -2771,6 +2783,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not use_html5:
                 bvr_cb = {
                 'cbjs_action': r'''
+
+                    var format_context = %s;
 
                     var activator = spt.smenu.get_activator(bvr);
                     var layout = activator.getParent(".spt_layout");
@@ -2835,7 +2849,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             var filename = parts[parts.length-1];
                             var kwargs;
                             if (context != "icon") {
-                                context = context + "/" + filename;
+                                if (format_context) context = context + "/" + filename;
+                                else context = String(context);
+
                                 kwargs = {mode: 'upload', checkin_type: 'auto'};
                             }
                             else {
@@ -2856,13 +2872,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.named_events.fire_event(update_event);
                     spt.app_busy.hide();
 
-                    '''
+                    ''' % format_context
                 }
 
             else:
 
                 bvr_cb = {
                 'cbjs_action': r'''
+
+                    var format_context = %s;
 
                     var activator = spt.smenu.get_activator(bvr);
                     var layout = activator.getParent(".spt_layout");
@@ -2936,7 +2954,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                     context = bvr.checkin_context;
 
                                 if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
-                                    context = context + "/" + filename;
+                                    if (format_context) context = context + "/" + filename;
+                                    else context = String(context);
                                     kwargs = {mode: 'uploaded', checkin_type: 'auto'};
                                 }
                                 else {
@@ -2977,7 +2996,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         var file = spt.html5upload.get_file()
                         var label = file ? (file.name + ": ") : ''
 
-                        spt.app_busy.show("Uploading", label +  percent + "%");
+                        spt.app_busy.show("Uploading", label +  percent + "%%");
                     }
 
                     try {
@@ -3004,7 +3023,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         spt.app_busy.hide();
                     }
 
-                    '''
+                    ''' % format_context
 
                 }
 

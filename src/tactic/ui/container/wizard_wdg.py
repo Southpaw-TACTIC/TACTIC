@@ -11,7 +11,7 @@
 #
 __all__ = ["WizardWdg", "TestWizardWdg"]
 
-from pyasm.common import Common
+from pyasm.common import Common, jsonloads
 from pyasm.web import *
 from pyasm.widget import IconWdg, IconButtonWdg, SelectWdg, ProdIconButtonWdg, TextWdg
 
@@ -69,6 +69,10 @@ class WizardWdg(BaseRefreshWdg):
         top.add(inner)
         inner.add_style("width: %s" % width)
 
+        inner.add_style("display: flex")
+        inner.add_style("flex-direction: column")
+
+
         title = self.kwargs.get("title")
         if not title:
             title = "none"
@@ -90,6 +94,11 @@ class WizardWdg(BaseRefreshWdg):
             self.titles = []
 
 
+        extra_data = self.kwargs.get("extra_data") or {}
+        if isinstance(extra_data, basestring):
+            extra_data = jsonloads(extra_data)
+
+
 
 
         views = self.kwargs.get("views")
@@ -107,22 +116,23 @@ class WizardWdg(BaseRefreshWdg):
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
 
-                widget = CustomLayoutWdg(view=view)
+                widget = CustomLayoutWdg(view=view, **extra_data)
                 self.add(widget, title)
 
 
 
         header_wdg = self.get_header_wdg()
         inner.add(header_wdg)
-        #header_wdg.add_color("background", "background", -5)
-        header_wdg.add_class("spt_popup_header")
+
+        # Removing these because they don't work very well ... produces double scrollbars
+        #header_wdg.add_class("spt_popup_header")
 
         inner.add("<br/>")
 
         inner.add("<hr/>")
 
         pages_div = DivWdg()
-        pages_div.add_class("spt_popup_body")
+        #pages_div.add_class("spt_popup_body")
         inner.add(pages_div)
         pages_div.add_style("overflow-y: auto")
 
@@ -149,7 +159,7 @@ class WizardWdg(BaseRefreshWdg):
 
         pages_div.add("<hr/>")
         bottom_wdg = self.get_bottom_wdg()
-        bottom_wdg.add_class("spt_popup_footer")
+        #bottom_wdg.add_class("spt_popup_footer")
         inner.add(bottom_wdg)
 
         return top
@@ -316,7 +326,7 @@ class WizardWdg(BaseRefreshWdg):
     def get_bottom_wdg(self):
         from tactic.ui.widget import ActionButtonWdg
         div = DivWdg()
-        div.add_style("margin-top: 10px")
+        div.add_style("margin: 10px 10px 0px 0px")
 
 
         back = ActionButtonWdg(title="< Back", tip="Go back to last page")
@@ -396,7 +406,7 @@ class WizardWdg(BaseRefreshWdg):
 
             if not submit_title:
                 submit_title = "Submit"
-            submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title)
+            submit = ActionButtonWdg(title="%s >>" % submit_title, tip=submit_title, color="primary")
             submit.add_class("spt_wizard_submit")
             submit.add_behavior( {
             'type': 'click_up',
@@ -416,7 +426,7 @@ class WizardWdg(BaseRefreshWdg):
                 }
                 else if (bvr.jsscript) {
                     var values = spt.api.get_input_values(top, null, false);
-                    spt.CustomProject.run_script_by_path(bvr.jsscript, values);
+                    spt.CustomProject.run_script_by_path(bvr.jsscript, values, bvr);
                 }
                 else if (bvr.script) {
                     var values = spt.api.get_input_values(top, null, false);

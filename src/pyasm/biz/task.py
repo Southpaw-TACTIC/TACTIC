@@ -35,11 +35,13 @@ TASK_PIPELINE = '''
   <process completion="10" color="#8ad3e5" name="Pending"/>
   <process completion="20" color="#e9e386" name="In Progress"/>
   <process completion="30" color="#a96ccf" name="Need Assistance"/>
-  <process completion="80" color="#e84a4d" name="Revise"/>
-  <process completion="80" color="#e84a4d" name="Reject"/>
-  <process completion="80" color="#e84a4d" name="Review"/>
+  <process completion="30" color="#e84a4d" name="Escalated"/>
+  <process completion="50" color="#e84a4d" name="Revise"/>
+  <process completion="50" color="#e84a4d" name="Reject"/>
+  <process completion="50" color="#e84a4d" name="Review"/>
   <process completion="100" color="#a3d991" name="Complete"/>
   <process completion="100" color="#a3d991" name="Approved"/>
+  <process completion="100" color="#DDDDDD" name="Not Required"/>
 </pipeline>
 '''
 
@@ -107,13 +109,14 @@ OTHER_COLORS = {
     "Revise":   "#e84a4d",
     "Reject":   "#e84a4d",
     "Review":   "#e84a4d",
+    "Escalated": "#e84a4d",
     "Ready":    "#a3d991",
     "In_Progress":"#e9e386",
     "Cancelled":"#DDDDDD",
     "Canceled": "#DDDDDD",
     "On Hold":  "#a96ccf",
     "Archived": "#DDDDDD",
-    "Not Required": "#DDDDDD",
+    "Not Required": "#DDDDDD"
 }
 
 
@@ -987,6 +990,7 @@ class Task(SObject):
 
         # this is the explicit mode for creating task for a specific process:context combo
         if mode == 'context':
+            # DEPRECATED: leave for backwards compatibility
 
             start_date= SPTDate.today()
             start_date = SPTDate.add_business_days(start_date, start_offset)
@@ -1034,10 +1038,10 @@ class Task(SObject):
                 start_date_str = start_date.strftime("%Y-%m-%d")
                 end_date_str = end_date.strftime("%Y-%m-%d")
 
-                assigned_login_group = attrs.get("assigned_login_group") or None
+                assigned_group = attrs.get("assigned_group") or None
 
                 # Create the task
-                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned, status=status, assigned_group=assigned_login_group)
+                last_task = Task.create(sobject, process_name, description, depend_id, pipeline_code=pipe_code, start_date=start_date_str, end_date=end_date_str, context=context, bid_duration=bid_duration, assigned=assigned, status=status, assigned_group=assigned_group)
 
                 # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(last_task.get_value('process'), last_task.get_value("context") )
@@ -1204,7 +1208,7 @@ class Task(SObject):
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-            pipe_code = process_obj.get_task_pipeline()
+            pipe_code = workflow.get("task_pipeline") or process_obj.get_task_pipeline()
 
             #start_date_str = start_date.get_db_date()
             #end_date_str = end_date.get_db_date()
@@ -1558,11 +1562,14 @@ class TaskGenerator(object):
                 start_processes.append(process_name)
 
 
+        self.last_end_dates = {}
 
         for start_process in start_processes:
 
             # reset the start date for each start process
             self.start_date = self.first_start_date
+
+            self.last_end_dates[start_process] = self.first_start_date
 
             self.handle_process(start_process)
 
@@ -1578,13 +1585,12 @@ class TaskGenerator(object):
         handled_processes = self.handled_processes
         process_sobjects = self.process_sobjects
 
-
         output_processes = pipeline.get_output_process_names(process)
 
         for output_process in output_processes:
 
             # check that all inputs have been handled
-            input_processes = pipeline.get_input_process_names(output_process)
+            input_processes = pipeline.get_input_process_names(output_process, to_attr="input")
             if len(input_processes) > 1:
                 # find out if all the input processes have been handled
                 inputs_handled = True
@@ -1602,17 +1608,22 @@ class TaskGenerator(object):
                 continue
 
 
-
             # remap the start date from the inputs and reset the end date
             if input_processes:
                 last_end_date = self.first_start_date
                 for input_process in input_processes:
                     last_task = self.process_tasks.get(input_process)
-                    if last_task and last_task.get_datetime_value("bid_end_date") > last_end_date:
-                        last_end_date = last_task.get_datetime_value("bid_end_date")
+                    if last_task:
+                        last_end_date_temp = last_task.get_datetime_value("bid_end_date")
+                    else:
+                        last_end_date_temp = self.last_end_dates[input_process]
+                    if last_end_date_temp and last_end_date_temp > last_end_date:
+                        last_end_date = last_end_date_temp
+                self.last_end_dates[output_process] = last_end_date
                 self.start_date = last_end_date + timedelta(days=1)
             else:
                 self.start_date = self.first_start_date
+                self.last_end_dates[output_process] = self.first_start_date
 
             self.end_date = None
 
@@ -1645,6 +1656,7 @@ class TaskGenerator(object):
         attrs = process_obj.get_attributes()
 
         task_creation = workflow.get("task_creation")
+
 
 
         # if this process has hierarchy, then create the subtasks
@@ -1756,7 +1768,7 @@ class TaskGenerator(object):
 
 
 
-            task_type = None
+            task_type = workflow.get("task_type")
             if process_type in ['approval']:
                 task_type = "approval"
 
@@ -1796,14 +1808,17 @@ class TaskGenerator(object):
                 end_date = self.start_date + timedelta(days=1)
 
             # get from XML data
-            assigned_login_group = attrs.get("assigned_login_group") or None
+            assigned_group = workflow.get("assigned_group")
+            if not assigned_group: # backwards compatibility
+                assigned_group = attrs.get("assigned_group") or None
+
 
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-            pipeline_code = process_obj.get_task_pipeline()
+            pipeline_code = workflow.get("task_pipeline") or process_obj.get_task_pipeline()
 
 
             for context in output_contexts:
@@ -1834,7 +1849,7 @@ class TaskGenerator(object):
                 #import time
                 #start = time.time()
                 triggers = "none"
-                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_login_group)
+                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_group)
                 #print "process: ", full_process_name
                 #print "time: ", time.time() - start
 

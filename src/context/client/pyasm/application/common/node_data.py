@@ -48,8 +48,8 @@ class NodeData(object):
         try:
             self.dom = parseString(xml)
 
-        except Exception, e:
-            print "Warning: node '%s' has invalid tacticNodeData" % self.app_node_name
+        except Exception as e:
+            print("Warning: node '%s' has invalid tacticNodeData" % self.app_node_name)
             self.clear()
 
 
@@ -110,7 +110,7 @@ class NodeData(object):
 
 
     def dump(self):
-        print self.dom.toxml()
+        print(self.dom.toxml())
 
    
     def create(self):

@@ -746,6 +746,7 @@ class Sql(Base):
                     self.results = self.cursor.fetchall()
 
                 self.cursor.close()
+
                 #print(time.time() - start)
 
 
@@ -819,6 +820,10 @@ class Sql(Base):
             self.query = query
             self.cursor = self.conn.cursor()
 
+            #print "query: ", query
+            #import time
+            #start = time.time()
+
             #self.execute(query)
             from pyasm.security import Site
             self.cursor.execute(query)
@@ -834,6 +839,8 @@ class Sql(Base):
                 self.last_row_id = 0
 
             self.cursor.close()
+
+            #print time.time() - start
 
 
             # commit the transaction if there is no transaction
@@ -1609,15 +1616,10 @@ class DbPasswordUtil(object):
     def get_password(cls):
         coded = Config.get_value("database", "password")
 
-        """
-        if Config.get_value("database", "vendor") == 'SQLServer':
-            print("WARNING: SQLServer implementation does not support encoded keys for database passwords")
-            return coded
-        """
         if not coded or coded == "none":
             return ""
 
-        if len(coded) < 64:
+        if len(coded) < 128:
             return coded
 
         from pyasm.security import CryptoKey
@@ -2068,6 +2070,14 @@ class Select(object):
 
     def add_op(self, op, idx=None):
         assert op in ['and', 'or', 'begin']
+
+        self.raw_filters.append( {
+            'op': op,
+        } )
+
+
+
+
         if idx == None:
             # TODO: determine if this is needed later
             #if self.wheres and op != "begin" and self.wheres[-1] == "begin":

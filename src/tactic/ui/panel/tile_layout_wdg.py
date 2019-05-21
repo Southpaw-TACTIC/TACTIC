@@ -773,7 +773,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         gallery_width = self.kwargs.get("gallery_width")
         if not gallery_width:
             gallery_width = ''
-        if mode == "plain":
+
+        if mode in ["plain", "default", "download"]:
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'collection_type': collection_type,
@@ -835,7 +836,10 @@ class TileLayoutWdg(ToolLayoutWdg):
                             path: name,
                             is_new_tab: true
                         }
-                        spt.tab.add_new(parent_code, name, class_name, kwargs);
+                        var tile_layout_top = bvr.src_el.getParent(".spt_tile_layout_top");
+                        //spt.tab.add_new(parent_code, name, class_name, kwargs);
+                        //spt.panel.load_popup(name, class_name, kwargs);
+                        spt.panel.load(tile_layout_top, class_name, kwargs);
                     }
                     else {
                         var snapshot = server.get_snapshot(search_key, {context: "", include_web_paths_dict:true});
@@ -1028,6 +1032,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             search_type = self.search_type
 
+        format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
+        if format_context in ['false', "False", False]:
+            format_context = True
+        else:
+            format_context = True
 
         if self.upload_mode in ['drop','both']:
             layout_wdg.add_behavior( {
@@ -1037,6 +1046,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'drop_shadow': self.show_drop_shadow,
                 'process': process,
                 'border_color': border_color,
+                'format_context': format_context,
                 'cbjs_action': '''
                 
                 spt.thumb = {};
@@ -1105,8 +1115,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                                                 var item = server.insert(search_type, data);
                                                 search_key = item.__search_key__;
                                             }
-
-                                            var context = bvr.process + "/" + filename;
+ 
+                                            if (bvr.format_context) var context = bvr.process + "/" + filename;
+                                            else var context = bvr.process;
                                         
                                         
                                         var kwargs = {mode: 'uploaded'};
@@ -1190,7 +1201,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
                             var filename = file.name;
-                            var context = bvr.process + "/" + filename;
+                            if (bvr.format_context) var context = bvr.process + "/" + filename;
+                            else var context = bvr.process;
 
                             var upload_file_kwargs =  {
                                 files: files,

@@ -53,6 +53,11 @@ class SearchBoxPopupWdg(BaseRefreshWdg):
         self.parent_key  = self.kwargs.get('parent_key')
         self.filter  = self.kwargs.get('filter')
         self.state  = self.kwargs.get('state')
+
+        # 
+        filter_view = slef.kwargs.get("filter_view")
+        filter_view = "job_filter"
+
         
         self.state = BaseRefreshWdg.process_state(self.state)
 
@@ -114,6 +119,9 @@ class SearchWdg(BaseRefreshWdg):
 
 
     def get_default_filter_config(self):
+
+        filter_view = self.kwargs.get('filter_view') or ""
+
         default_filter_view = self.kwargs.get("default_filter_view")
         if default_filter_view:
             config_view = WidgetConfigView.get_by_search_type(self.search_type, view=default_filter_view)
@@ -129,15 +137,19 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<config>\n")
         config.append("<filter>\n")
 
-        # config.append('''
-        # <element name='Keywords'>
-        #   <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
-        #     <search_type>%s</search_type>
-        #     <prefix>quick</prefix>
-        #   </display>
-        # </element>
-        # ''' % self.search_type)
 
+        """
+        config.append('''
+        <element name='Keywords'>
+          <display class='tactic.ui.filter.SObjectSearchFilterWdg'>
+            <search_type>%s</search_type>
+            <prefix>quick</prefix>
+          </display>
+        </element>
+        ''' % self.search_type)
+        """
+
+        """
         config.append('''
         <element name='Keywords'>
           <display class='tactic.ui.app.AdvancedSearchKeywordWdg'>
@@ -146,6 +158,28 @@ class SearchWdg(BaseRefreshWdg):
           </display>
         </element>
         ''' % self.search_type)
+        """
+
+
+        # Simple search
+        """
+        simple_search_view = "task_filter"
+        config.append('''
+        <element name='Simple'>
+          <display class='tactic.ui.app.SimpleSearchWdg'>
+            <prefix>custom</prefix>
+            <search_type>%s</search_type>
+            <mode>custom</mode>
+            <show_title>false</show_title>
+            <show_search>false</show_search>
+            <search_view>%s</search_view>
+          </display>
+        </element>
+        ''' % (self.search_type, simple_search_view) )
+        """
+
+
+
 
         config.append('''
         <element name='Custom'>
@@ -160,61 +194,29 @@ class SearchWdg(BaseRefreshWdg):
 
 
         config.append('''
-        <element name='Filter'>
+        <element name='Search Parameters'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
              <prefix>main_body</prefix>
              <search_type>%s</search_type>
-             <mode>sobject</mode>
+             <modeX>sobject</modeX>
+             <mode>child</mode>
+            <filter_view>%s</filter_view>
            </display>
         </element>
-        ''' % self.search_type)
+        ''' % (self.search_type, filter_view) )
+
 
         """
         config.append('''
-        <element name='Filter2'>
-          <display class='tactic.ui.filter.GeneralFilterWdg'>
-             <prefix>filter2</prefix>
-             <search_type>%s</search_type>
-             <mode>sobject</mode>
-           </display>
-        </element>
-        ''' % self.search_type)
-        """
-
-        """
-        config.append('''
-        <element name='Parent'>
-          <display class='tactic.ui.filter.GeneralFilterWdg'>
-            <prefix>parent</prefix>
-            <search_type>%s</search_type>
-            <mode>parent</mode>
-          </display>
-        </element>
-        ''' % self.search_type)
-        """
-
-
-        config.append('''
-        <element name='Related'>
+        <element name='Advanced2'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
             <prefix>children</prefix>
             <search_type>%s</search_type>
             <mode>child</mode>
+            <filter_view>%s</filter_view>
           </display>
         </element>
-        ''' % self.search_type)
-
-
-        """
-        config.append('''
-        <element name='Related'>
-          <display class='tactic.ui.filter.GeneralFilterWdg'>
-            <prefix>related</prefix>
-            <search_type>%s</search_type>
-            <mode>child</mode>
-          </display>
-        </element>
-        ''' % self.search_type)
+        ''' % (self.search_type, filter_view))
         """
 
 
@@ -604,6 +606,8 @@ class SearchWdg(BaseRefreshWdg):
 
 
     def get_display(self):
+        
+        
         # if no filters are defined, then display nothing
         if not self.filters:
             return Widget()
@@ -611,10 +615,12 @@ class SearchWdg(BaseRefreshWdg):
         top = self.top
         top.add_class("spt_search_top")
         # TODO: expand on this
+       
         top.add_behavior({
             'type': 'load',
             'cbjs_action': self.get_onload_js()
-            })
+        })
+        
         top.add_relay_behavior({
             'type': 'click',
             'bvr_match_class': 'spt_search_filter',
@@ -624,7 +630,7 @@ class SearchWdg(BaseRefreshWdg):
             top.addClass('spt_has_changes');
 
             '''
-            })
+        })
 
         container = DivWdg()
         top.add(container)
@@ -687,6 +693,8 @@ class SearchWdg(BaseRefreshWdg):
         filter_div = DivWdg()
         filter_div.set_id("search_filters")
         filter_div.add_class("spt_search_filters")
+
+
 
 
         # TODO: disabling for now
@@ -764,21 +772,21 @@ class SearchWdg(BaseRefreshWdg):
         match_div.add("of the following rules")
 
         match_div.add_color("color", "color2")
-        #match_div.add(" on the following")
-        #hint = HintWdg( "An 'AND' operation is always applied to each category below. " \
-        #                "This controls only the filters within each category." )
-        #match_div.add(hint)
-        #match_div.add('<br/>')
-        #match_div.add_style("padding-top: 5px")
-        filter_div.add( match_div)
 
+        # search_wdg.add_style("margin-left: 5px")
+        # filter_div.add( search_wdg)
+        # search_wdg.add_style("float: left")
+
+        filter_div.add( match_div)
+        filter_div.add_style("padding-top: 5px")
 
         filters_div = DivWdg()
 
         security = Environment.get_security()
 
         # add all the filters
-        for filter in self.filters:
+        num_filters = len(self.filters)
+        for i, filter in enumerate(self.filters):
             element_name = filter.get_name()
 
             if not security.check_access("search", element_name, "view"):
@@ -787,36 +795,45 @@ class SearchWdg(BaseRefreshWdg):
             # no need to create it again    
             #filter = self.config.get_display_widget(element_name)
             div = DivWdg()
+            div.add_color("background", "background")
             filters_div.add(div)
 
-            div.add_class("hand")
-            class_suffix = element_name.replace(' ', '_')
-            cbjs_action = 'var el=spt.get_cousin(bvr.src_el,".spt_search",".spt_filter_%s");spt.simple_display_toggle(el);' % class_suffix
-            div.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': cbjs_action
-            } )
+
             div.add_color("color", "color", +5)
-            #div.add_gradient("background", "background", -5, -5)
-            div.add_style("margin-top: -1px")
+            if i == 0:
+                div.add_style("margin-top: -10px -1px -1px -1px")
+            else:
+                div.add_style("margin-top: -1px -1px -1px -1px")
             div.add_style("height: 18px")
 
             div.add_style("padding: 8px 5px")
             div.add_style("white-space: nowrap")
 
-            
-            if element_name in ["Parent", 'Children']:
-                swap = SwapDisplayWdg.get_triangle_wdg()
+            class_suffix = element_name.replace(' ', '_')
+
+            if num_filters > 1: 
+                div.add_class("hand")
+                cbjs_action = 'var el=spt.get_cousin(bvr.src_el,".spt_search",".spt_filter_%s");spt.simple_display_toggle(el);' % class_suffix
+                div.add_behavior( {
+                    'type': 'click_up',
+                    'cbjs_action': cbjs_action
+                } )
+                if element_name in ["Parent", 'Children']:
+                    swap = SwapDisplayWdg.get_triangle_wdg()
+                else:
+                    swap = SwapDisplayWdg.get_triangle_wdg()
+                    swap.set_off()
+                swap.add_action_script(cbjs_action)
+
+
+                div.add_event("onclick", swap.get_swap_script() )
+                div.add(swap)
             else:
-                swap = SwapDisplayWdg.get_triangle_wdg()
-                swap.set_off()
-            swap.add_action_script(cbjs_action)
+                div.add_style("padding: 8px 10px")
 
-
-            div.add_event("onclick", swap.get_swap_script() )
-            div.add(swap)
             div.add_class("SPT_DTS")
             div.add(element_name)
+
 
             div = DivWdg()
             div.add_class("spt_filter_%s" % class_suffix)
@@ -844,8 +861,27 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
+        # show_action = self.kwargs.get("show_action")
+        # if show_action in ['bottom_only', 'top_bottom']:
+
+        #     buttons_div = DivWdg()
+
+        #     buttons_div.add_style("margin-top: 7px")
+        #     buttons_div.add_style("margin-bottom: 7px")
+        #     search_wdg = self.get_search_wdg()
+        #     search_wdg.add_style("margin: 15px auto")
+        #     buttons_div.add(search_wdg)
+        #     filter_div.add(buttons_div)
+
+        # else:
+        #     spacing_div = DivWdg()
+        #     spacing_div.add_style("height: 8px")
+        #     spacing_div.add_color("background", "background")
+        #     spacing_div.add_style("margin: -1px")
+        #     filters_div.add(spacing_div)
 
         filter_top.add(filter_div)
+
 
         if self.kwargs.get("is_refresh"):
             return filter_top
@@ -911,7 +947,6 @@ class SearchWdg(BaseRefreshWdg):
         if self.run_search_bvr:
             run_search_bvr = self.run_search_bvr
         else:
-            # cbjs works better than cbfn here
             run_search_bvr = {
                 'type':         'click_up',
                 'new_search':   True,
@@ -992,10 +1027,11 @@ class SearchWdg(BaseRefreshWdg):
 
 
     def get_onload_js(self):
+        
+        return r'''
 
-        return '''
+if (typeof(spt.advanced_search) == "undefined") spt.advanced_search = {};
 
-spt.advanced_search = spt.advanced_search || {};
 spt.advanced_search.top = bvr.src_el;
 
 spt.advanced_search.get_top = function() {
@@ -1042,6 +1078,44 @@ spt.advanced_search.generate_json = function() {
     return new_values;
 
 }
+
+spt.advanced_search.get_filter_values = function(search_top) {
+    // get all of the search input values
+    var new_values = [];
+    var search_containers = search_top.getElements('.spt_search_filter')
+    for (var i = 0; i < search_containers.length; i++) {
+	var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+	new_values.push(values);
+    }
+    var ops = search_top.getElements(".spt_op");
+    // special code for ops
+    var results = [];
+    var levels = [];
+    var modes = [];
+    var op_values = [];
+    for (var i = 0; i < ops.length; i++) {
+	var op = ops[i];
+	var level = op.getAttribute("spt_level");
+	level = parseInt(level);
+	var op_value = op.getAttribute("spt_op");
+	results.push( [level, op_value] );
+	var op_mode = op.getAttribute("spt_mode");
+	levels.push(level);
+	op_values.push(op_value);
+	modes.push(op_mode);
+    }
+    var values = {
+	prefix: 'search_ops',
+	levels: levels,
+	ops: op_values,
+	modes: modes
+    };
+    new_values.push(values);
+    return new_values;
+}   
+
+
+
 
 
 /* Keyword widget */
@@ -1135,86 +1209,6 @@ spt.advanced_search.keywords.remove_recent = function(item) {
 }
 
 
-/* saved search widget */
-
-spt.advanced_search.saved = spt.advanced_search.saved || {};
-
-spt.advanced_search.saved.add_item = function(key, label, value) {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    let template = categoryContainer.getElement(".spt_saved_search_item.spt_template");
-
-    let clone = spt.behavior.clone(template);
-    let labelDiv = clone.getElement(".spt_saved_search_label");
-    labelDiv.innerText = label;
-
-    clone.setAttribute("spt_category", key);
-    clone.setAttribute("spt_value", value);
-    clone.removeClass("spt_template");
-    categoryContainer.appendChild(clone);
-}
-
-spt.advanced_search.saved.create_item = function(key, label, value) {
-    spt.advanced_search.saved.labels[key].push(label);
-    spt.advanced_search.saved.values[key].push(value);
-}
-
-spt.advanced_search.saved.delete_item = function(key, label) {
-    let index = spt.advanced_search.saved.labels[key].indexOf(label);
-    spt.advanced_search.saved.labels[key].splice(index, 1);
-    spt.advanced_search.saved.values[key].splice(index, 1);
-}
-
-spt.advanced_search.saved.load_items = function(key) {
-    /*let values = spt.advanced_search.saved.get_values(key);
-    let labels = spt.advanced_search.saved.get_labels(key);
-
-    for (let i=0; i<values.length; i++) {
-        let label = labels[i];
-        let value = values[i];
-        
-        spt.advanced_search.saved.add_item(key, label, value);
-    }*/
-
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let selected = container.getElement(".spt_saved_searches_item.selected");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    if (selected) selected.removeClass("selected");
-    categoryContainer.addClass("selected");
-}
-
-spt.advanced_search.saved.clear_items = function() {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let items = container.getElements(".spt_saved_search_item");
-
-    items.forEach(function(item){
-        if (item.hasClass("spt_template")) return;
-        item.remove();
-    });
-}
-
-
-spt.advanced_search.saved.toggle_dropdown = function(display) {
-    let dropdown = bvr.src_el.getElement(".spt_search_categories_dropdown");
-
-    if (display) 
-        dropdown.setStyle("display", display);
-    else
-        spt.toggle_show_hide(dropdown);
-}
-
-spt.advanced_search.saved.get_values = function(key) {
-    return spt.advanced_search.saved.values[key];
-}
-
-spt.advanced_search.saved.get_labels = function(key) {
-    return spt.advanced_search.saved.labels[key];
-}
-
-spt.advanced_search.saved.get_selected = function() {
-    return bvr.src_el.getElement(".spt_saved_search_item.selected");
-}
-
         '''
 
 
@@ -1253,6 +1247,8 @@ spt.advanced_search.saved.get_selected = function() {
         key = SearchWdg._get_key(search_type, view)
         WidgetSettings.set_value_by_key(key, '')
     clear_search_data = staticmethod(clear_search_data)
+
+
 
 
 

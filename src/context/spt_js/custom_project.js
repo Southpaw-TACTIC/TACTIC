@@ -77,7 +77,7 @@ spt.CustomProject.get_script_by_path = function(script_path, popup) {
 }
 
 
-spt.CustomProject.run_script_by_path = function( script_path, input )
+spt.CustomProject.run_script_by_path = function( script_path, input, bvr )
 {
     var script = spt.CustomProject.get_script_by_path( script_path );
     if( ! script ) {
@@ -86,7 +86,7 @@ spt.CustomProject.run_script_by_path = function( script_path, input )
     try {
         if (!input) input = {};
         var kwargs = input;
-        eval(script, input);
+        eval(script, input, bvr);
     } catch(e) {
         spt.alert("[ERROR in custom script '" + script_path + "']: " + e);
     }

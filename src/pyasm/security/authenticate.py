@@ -14,8 +14,10 @@ __all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate']
 
 import hashlib
 
-from pyasm.common import SecurityException, Config
+from pyasm.common import SecurityException, Config, Common
 from security import Login
+from drupal_password_hasher import DrupalPasswordHasher
+
 
 
 class Authenticate(object):
@@ -81,30 +83,50 @@ class TacticAuthenticate(Authenticate):
     '''Authenticate using the TACTIC database'''
 
     def verify(self, login_name, password):
-        encrypted = hashlib.md5(password).hexdigest()
 
         # get the login sobject from the database
         self.login = Login.get_by_login(login_name, use_upn=True)
         if not self.login:
             raise SecurityException("Login/Password combination incorrect")
 
+        user_encrypted = self.login.get_value("password")
+
+        if user_encrypted.startswith("$S$"):
+            salt = user_encrypted[4:12]
+            iter_code = user_encrypted[3]
+            #salt = Common.generate_alphanum_key(num_digits=8, mode='alpha')
+            #iter_code = 'D'
+            encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
+        else:
+            encrypted = hashlib.md5(password).hexdigest()
+
         # encrypt and check the password
-        if encrypted != self.login.get_value("password"):
+        if encrypted != user_encrypted:
             raise SecurityException("Login/Password combination incorrect")
         return True
 
 
     def add_user_info(self, login, password):
-        #encrypted = md5.new(password).hexdigest()
-        encrypted = hashlib.md5(password).hexdigest()
+
+        mode = Config.get_value("security", "authenticate_encryption")
+        if mode == "drupal":
+            salt = Common.generate_alphanum_key(num_digits=8, mode='alpha')
+            iter_code = 'D'
+            encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
+        else:
+            encrypted = hashlib.md5(password).hexdigest()
+
         login.set_value("password", encrypted)
         
 
     # DEPRECATED
     def authenticate(self, login, password):
+        raise Exception("TacticAuthenticate.authenticate() is DEPRECATED")
+        
         # encrypt and check the password
-        #encrypted = md5.new(password).hexdigest()
         encrypted = hashlib.md5(password).hexdigest()
+
+
         if encrypted != login.get_value("password"):
             raise SecurityException("Login/Password combination incorrect")
         return True

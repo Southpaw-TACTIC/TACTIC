@@ -226,8 +226,10 @@ class EditCmd(Command):
             action_options = config.get_action_options(element_name)
 
             if self.data != None:
-
                 element_data = self.data.get(element_name)
+                #if isinstance( element_data, basestring):
+                #    element_data = jsonloads(element_data)
+
                 action_handler.set_data(element_data)
 
             for key, value in action_options.items():
@@ -350,8 +352,10 @@ class EditCmd(Command):
         if name:
             sobject.set_value("name", name)
 
-
         for key, value in self.extra_data.items():
+            # FIXME: this is rather hacky
+            if key == "data":
+                continue
             sobject.set_value(key, value)
 
 

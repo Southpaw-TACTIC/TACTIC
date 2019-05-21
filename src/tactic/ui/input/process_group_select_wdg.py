@@ -15,7 +15,7 @@ __all__ = ['ProcessGroupSelectWdg', 'LoginTableElementWdg']
 
 from pyasm.search import Search, SearchKey, SearchException
 from pyasm.biz import Pipeline
-from pyasm.web import DivWdg, SpanWdg
+from pyasm.web import DivWdg, SpanWdg, HtmlElement
 from pyasm.widget import BaseInputWdg, SelectWdg
 from tactic.ui.common import SimpleTableElementWdg
 
@@ -255,12 +255,31 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                 else:
                     raise
 
+
+    def get_onload_js(self):
+        # TODO: make the order the same as add_value_update 
+        #bvr.src_el.loadXYZ = function(element_name, cell, sobject) { %s }
+        return '''
+            var value = sobject[element_name];
+            if (!value) value = "";
+            cell.innerHTML = value;
+        '''
+        #}
+
+
     def get_value(self, name=None):
         if not name:
             name = self.get_name()
 
         div = DivWdg()
-        div.add_style("display: inline-block")
+        div.add(HtmlElement.style('''
+
+            .spt_login_table_element_value {
+                display: inline-block
+            }
+
+            '''))
+        div.add_class("spt_login_table_element_value")
 
         value = super(LoginTableElementWdg, self).get_value(name)
         if value:
@@ -272,9 +291,10 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         self.sobject = self.get_current_sobject()
 
-        if self.is_editable() and not value:
+        if self.sobject and self.is_editable() and not value:
             empty = SpanWdg()
             div.add(empty)
+            div.add_class("spt_process_group_select_empty")
             div.add_style("text-align: center")
             div.add_style("width: 100%")
             div.add_style("white-space: nowrap" )

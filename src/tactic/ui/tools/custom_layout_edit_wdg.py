@@ -13,7 +13,7 @@
 __all__ = ['CustomLayoutEditWdg', 'CustomLayoutEditTestWdg','CustomLayoutHelpWdg', 'CustomLayoutEditSaveCmd', 'CustomLayoutActionCbk']
 from pyasm.common import  jsondumps, jsonloads, TacticException, Environment
 from pyasm.search import Search, SearchType
-from pyasm.biz import Project
+from pyasm.biz import Project, ProjectSetting
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg, Widget, WebContainer
 from pyasm.widget import IconWdg
 from pyasm.widget import TextWdg, TextAreaWdg, XmlWdg, HiddenWdg, SelectWdg
@@ -228,15 +228,16 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_border()
 
 
-        table = Table()
+        table = DivWdg()
+        table.add_style("display: flex")
+        table.add_style("align-items: center")
         title_wdg.add(table)
-        table.add_row()
-        table.add_cell("<b>%s:</b>" % title)
+        table.add("<div style='font-size: 14px'>%s:</div>" % title)
 
         hint = None
 
         if title == "Behaviors":
-            hint = IconButtonWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
             data = '''<behavior class="custom_css_class">
                     { "type": "click_up", 
                     "cbjs_action": "spt.alert('clicked')"}
@@ -245,7 +246,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
     
           
         elif title == "Styles":
-            hint = ButtonNewWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
             data = '''
 .frame_container {
             border: 1px solid #000000;
@@ -257,7 +258,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 }
 '''
         elif title == "Options":
-            hint = ButtonNewWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
             data = '''
     This is where you can define options for your Custom Layout with Type set to column:
 
@@ -272,7 +273,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
            
             
         elif title == "HTML":
-            hint = IconButtonWdg(title="Show Example", icon=IconWdg.HELP)
+            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
 
             data = '''<div><div><b>Layout Title</b></div><br/>
 <%
@@ -306,8 +307,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     '''
         if hint:
-            td = table.add_cell(hint)
-            td.add_style("padding-left: 10px")
+            hint_div = DivWdg()
+            table.add(hint_div)
+            hint_div.add(hint)
+            hint_div.add_style("padding-left: 10px")
 
             hint.add_behavior({
                 'type': 'click_up',
@@ -333,7 +336,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         top.add(inner)
         inner.add_style("margin: -1px")
         inner.add_class("spt_custom_layout_inner")
-
+            
+        self.separate_behaviors = ProjectSetting.get_value_by_key("custom_layout_editor/behavior_separation") \
+            in ['true', 'True', True]
+    
 
         self.plugin = None
 
@@ -864,6 +870,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 html = ''
                 style = ''
                 behavior_nodes = []
+                callback_nodes = []
                 htmls = []
                 mako = ''
                 kwargs = ''
@@ -885,6 +892,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 kwargs = xml.get_value("config/%s/kwargs" % view)
 
                 behavior_nodes = xml.get_nodes("config/%s/behavior" % view)
+                callback_nodes = xml.get_nodes("config/%s/callback" % view)
 
                 html_nodes = xml.get_nodes("config/%s/html/*" % view)
                 htmls = []
@@ -1163,10 +1171,15 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             #right_div.add("<br/>"*2)
 
+
+
             # behaviors
             behavior_div = DivWdg()
             tab.add(behavior_div)
             behavior_div.set_name("Behaviors")
+
+            behavior_div.add_class("spt_behavior_top")
+
 
             text = TextAreaWdg("behavior")
             text.add_class("spt_behavior")
@@ -1176,7 +1189,205 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             title_wdg = self.get_title_wdg("Behaviors", content_id, is_on=True)
             behavior_div.add(title_wdg)
 
-            behavior_div.add(text)
+
+            if not self.separate_behaviors:
+                behavior_div.add(text)
+                text.add_style("width: 100%")
+                text.add_style("height: 450px")
+                text.add_style("min-height: 300px")
+                text.add_style("font-size: 12px")
+                text.add_style("font-family: courier")
+
+                value = []
+                for behavior_node in behavior_nodes:
+                    value.append( xml.to_string(behavior_node))
+                behavior_str = "\n\n".join(value)
+
+                text.set_value(behavior_str)
+
+            else:
+
+                add_button = ButtonNewWdg(title="", icon="FA_PLUS")
+                behavior_div.add(add_button)
+                add_button.add_behavior( {
+                    'type': 'click',
+                    'cbjs_action': '''
+                    // find the template and clone
+                    var top = bvr.src_el.getParent(".spt_behavior_top");
+                    var item = top.getElement(".spt_behavior_template");
+                    var clone = spt.behavior.clone(item);
+                    clone.inject(item, "after");
+                    clone.setStyle("display", "");
+
+                    var swap = clone.getElement(".spt_swap_top");
+                    var content_id = spt.generate_key(6);
+                    var text = clone.getElement(".spt_behavior_text");
+
+                    swap.setAttribute("spt_content_id", content_id);
+                    text.setAttribute("id", content_id)
+
+                    clone.removeClass("spt_behavior_template");
+                    clone.addClass("spt_behavior_item");
+
+                    '''
+                } )
+
+                # This breaks the beahviors into separate intefaces
+                behavior_div.add_color("background", "background", -5)
+                table = Table()
+                table.add_style("width: 100%")
+                behavior_div.add(table)
+                if not behavior_nodes:
+                    behavior_nodes.append("__new__")
+                    nodes = behavior_nodes
+
+                else:
+                    # create a template node
+                    template_node = "__new__"
+                    nodes = behavior_nodes[:]
+                    nodes.insert(0, template_node)
+
+                from tactic.ui.widget import SwapDisplayWdg
+
+                # go through each node and draw the interface
+                for i, behavior_node in enumerate(nodes):
+                    tr = table.add_row()
+                    if i == 0:
+                        tr.add_class("spt_behavior_template")
+                        tr.add_style("display: none")
+                    else:
+                        tr.add_class("spt_behavior_item")
+                       
+                    value = ""
+                    class_name = "" 
+                    event = ""
+                    event_name = ""
+                    modkeys = ""
+                    mouse_btn = ""
+                    relay_class = ""
+
+                    placeholder = "(NEW)"
+                    if behavior_node != "__new__":
+                        value = xml.get_node_value(behavior_node)
+                        class_name = Xml.get_attribute(behavior_node, "class")
+                        event = Xml.get_attribute(behavior_node, 'event')
+                        event_name = Xml.get_attribute(behavior_node,'event_name')
+                        modkeys = Xml.get_attribute(behavior_node, 'modkeys')
+                        mouse_btn = Xml.get_attribute(behavior_node, 'mouse_btn')
+                        relay_class = Xml.get_attribute(behavior_node, 'relay_class')
+
+                    td = table.add_cell()
+                    td.add_style("vertical-align: top")
+
+                    header_div = DivWdg()
+                    td.add(header_div)
+                    header_div.add_style("display: flex")
+                    header_div.add_style("align-items: center")
+
+                    swap = SwapDisplayWdg()
+                    header_div.add(swap)
+
+                    # Class name
+                    bvr_name_text = TextInputWdg(name="behavior_name")
+                    bvr_name_text.add_attr("spt_is_multiple", "true")
+                    #td.add(bvr_name_text)
+                    bvr_name_text.add_style("border: none")
+                    bvr_name_text.add_style("height: 20px")
+                    bvr_name_text.add_style("background: transparent")
+                    bvr_name_text.add_style("box-shadow: none")
+                    bvr_name_text.add_attr("placeholder", placeholder)
+                    swap.set_title_wdg(bvr_name_text)
+                    if class_name:
+                        bvr_name_text.set_value(class_name)
+                    
+                    # Event type 
+                    event_div = DivWdg()
+                    header_div.add(event_div)
+                    event_div.add("<div style='margin-right: 5px;'>Event: </div>")
+                    event_div.add_style("display: flex")
+                    event_div.add_style("align-items: center")
+                    event_select = SelectWdg(name="behavior_event")
+                    event_select.add_attr("spt_is_multiple", "true")
+                    event_div.add(event_select)
+                    event_select.set_option("values", "click|load|unload|double_click|keyup|mouseenter|mouseleave|listen|change|select")
+                    event_select.add_empty_option("-- Select --")
+                    if event:
+                        event_select.set_option("default", event)
+                    event_select.add_style("width: 120px")
+                    event_select.add_style("height: 25px")
+
+                    # Event name (for listen events)
+                    event_name_div = DivWdg()
+                    header_div.add(event_name_div)
+                    event_name_div.add("<div style='margin: auto 5px;'>Event name: </div>")
+                    event_name_div.add_style("display: flex")
+                    event_div.add_style("align-items: center")
+                    bvr_event_name = TextInputWdg(name="behavior_event_name")
+                    bvr_event_name.add_attr("spt_is_multiple", "true")
+                    event_name_div.add(bvr_event_name)
+                    if event_name:
+                        bvr_event_name.set_value(event_name)
+
+                    # Modkeys TODO
+                    # Mouse keys TODO
+
+                    # Relay class
+                    relay_class_div = DivWdg()
+                    header_div.add(relay_class_div)
+                    relay_class_div.add("<div style='margin: auto 5px;'>Relay class: </div>")
+                    relay_class_div.add_style("display: flex")
+                    relay_class_div.add_style("align-items: center")
+                    bvr_relay_class = TextInputWdg(name="behavior_relay_class")
+                    bvr_relay_class.add_attr("spt_is_multiple", "true")
+                    relay_class_div.add(bvr_relay_class)
+                    if relay_class:
+                        bvr_relay_class.set_value(relay_class)
+
+                     
+
+                    content_div = DivWdg()
+                    content_div.add_style("width: 100%")
+                    td.add(content_div)
+                    unique_id = content_div.set_unique_id("behavior")
+                    swap.set_content_id(unique_id)
+                    content_div.add_style("display: none")
+                    content_div.add_class("spt_behavior_text")
+
+                    if behavior_node == "__new__":
+                        bvr_text = TextAreaWdg("behavior_content")
+                        bvr_text.add_style("font-size: 12px")
+                        bvr_text.add_style("font-family: courier")
+                        bvr_text.add_style("padding: 5px")
+                        bvr_text.add_attr("spt_is_multiple", "true")
+                        content_div.add(bvr_text)
+                        bvr_text.add_style("width: 100%")
+                        bvr_text.add_style("min-height: 400px")
+
+                        bvr_text.set_value( value )
+                    else:
+                        # New lines added on save
+                        if value.startswith('\n'):
+                            value = value[1:]
+                        if value.endswith('\n'):
+                            value = value[:-1]
+                        editor = AceEditorWdg(width="100%", language="javascript", code=value, show_options=False, editor_id='custom_layout_behavior')
+                        content_div.add(editor)
+
+
+            # callbacks
+            callback_div = DivWdg()
+            tab.add(callback_div)
+            callback_div.set_name("Callbacks")
+
+            text = TextAreaWdg("callback")
+            text.add_class("spt_callback")
+            content_id = text.set_unique_id()
+            #text.add_style("display: none")
+
+            title_wdg = self.get_title_wdg("Callback", content_id, is_on=True)
+            callback_div.add(title_wdg)
+
+            callback_div.add(text)
             text.add_style("width: 100%")
             text.add_style("height: 450px")
             text.add_style("min-height: 300px")
@@ -1184,62 +1395,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_style("font-family: courier")
 
             value = []
-            for behavior_node in behavior_nodes:
-                value.append( xml.to_string(behavior_node))
-            behavior_str = "\n\n".join(value)
+            for callback_node in callback_nodes:
+                value.append( xml.to_string(callback_node))
+            callback_str = "\n\n".join(value)
 
-            text.set_value(behavior_str)
-
-            """
-            # This breaks the beahviors into separate intefaces
-            behavior_div.add_color("background", "background", -5)
-            table = Table()
-            table.add_style("width: 100%")
-            behavior_div.add(table)
-            if not behavior_nodes:
-                behavior_nodes.append("__new__")
-
-            from tactic.ui.widget import SwapDisplayWdg
-            for behavior_node in behavior_nodes:
-                table.add_row()
-
-                if behavior_node == "__new__":
-                    name = ""
-                    value = ""
-                else:
-                    name = Xml.get_attribute(behavior_node, "class")
-                    if not name:
-                        name = Xml.get_attribute(behavior_node, "relay_class")
-                    value = xml.to_string(behavior_node)
-
-
-                td = table.add_cell()
-                td.add_style("vertical-align: top")
-                swap = SwapDisplayWdg()
-                td.add(swap)
-                
-                bvr_name_text = TextInputWdg(name="behavior_name")
-                bvr_name_text.add_attr("spt_is_multiple", "true")
-                #td.add(bvr_name_text)
-                swap.set_title_wdg(bvr_name_text)
-                bvr_name_text.set_value(name)
-
-                content_div = DivWdg()
-                content_div.add_style("width: 100%")
-                td.add(content_div)
-                unique_id = content_div.set_unique_id("behavior")
-                swap.set_content_id(unique_id)
-                content_div.add_style("display: none")
-
-                bvr_text = TextAreaWdg("behavior_content")
-                bvr_text.add_style("font-size: 12px")
-                bvr_text.add_style("font-family: courier")
-                bvr_text.add_attr("spt_is_multiple", "true")
-                content_div.add(bvr_text)
-                bvr_text.set_value( value )
-                bvr_text.add_style("width: 100%")
-                bvr_text.add_style("min-height: 400px")
-            """
+            text.set_value(callback_str)
 
 
 
@@ -1328,7 +1488,60 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 msg_div.add_style("padding: 30px")
             """
  
+        top.add_behavior({
+            'type': 'load',
+            'cbjs_action': """
 
+                spt.custom_layout_editor = {};
+                 
+                spt.custom_layout_editor.compile_behaviors = function(values) {
+                    
+                    
+                    var behavior_tab = bvr.src_el.getElement(".spt_behavior_top");
+                    
+                    var behavior_elements = behavior_tab.getElements(".spt_behavior_item");
+                    
+                    var behavior = '\\n';
+                    for (var i = 0; i < behavior_elements.length; i++) {
+                        
+                        var item = behavior_elements[i];
+                        var inputs = spt.api.get_input_values(item);
+                        var behavior_name = inputs.behavior_name[0];
+                        var behavior_event = inputs.behavior_event[0];
+                        var behavior_event_name = inputs.behavior_event_name[0];
+                        var behavior_relay_class = inputs.behavior_relay_class[0];
+
+                        try {
+                            spt.ace_editor.set_editor_top(item);
+                            var content = spt.ace_editor.get_value();
+                        } catch(e) {
+                            var content = inputs.behavior_content[0];
+                        }
+
+                        behavior += '<behavior '
+                        if (behavior_name) behavior += 'class="'+behavior_name+'" ';
+                        if (behavior_relay_class) behavior += 'relay_class="'+behavior_relay_class+'" ';
+                        if (behavior_event) behavior += 'event="'+behavior_event+'" ';
+                        if (behavior_event_name) behavior += 'event_name="'+behavior_event_name+'" ';
+                        
+                        // Strip off end whitespace
+                        behavior = behavior.trim()
+                        
+                        behavior += '>';
+                        behavior += '\\n';
+                        behavior += content;
+                        behavior += '\\n';
+                        behavior += '</behavior>';
+                        behavior += '\\n';
+                        behavior += '\\n';
+                        behavior += '\\n';
+                    }
+
+                    return behavior;
+
+                };
+            """
+        })
 
 
         if self.kwargs.get("is_refresh") == 'true':
@@ -1353,7 +1566,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row = ButtonRowWdg()
         shelf_wdg.add(button_row)
         button_row.add_style("float: left")
-        button = ButtonNewWdg(title="Refresh", icon="BS_REFRESH")
+        button = ButtonNewWdg(title="Refresh", icon="FA_REFRESH")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1368,11 +1581,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # Save button
-        button = ButtonNewWdg(title="Save", icon="BS_SAVE")
+        button = ButtonNewWdg(title="Save", icon="FA_SAVE")
         button_row.add(button)
 
         button.add_behavior( {
             'type': 'click_up',
+            'separate_behaviors': self.separate_behaviors,
             'editor_id': self.editor_id,
             'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
@@ -1403,20 +1617,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var style = values.style;
             var kwargs = values.kwargs;
 
-            var behavior = values.behavior;
-
-            /*
-            var behavior_names = values.behavior_name;
-            var behavior_contents = values.behavior_content;
-            var behavior = "\n";
-            for (var i = 0; i < behavior_names.length; i++) {
-                behavior += '<behavior class="'+behavior_names[i]+'">';
-                behavior += behavior_contents[i];
-                behavior += '</behavior>';
-                behavior += '\n';
-            }
-            */
-
+            if (bvr.separate_behaviors) var behavior = spt.custom_layout_editor.compile_behaviors(values);
+            else behavior = values.behavior;
+            
+            var callback = values.callback;
 
             if (!view) {
                 spt.alert("A view name must be provided to save. e.g. 'custom/task_list' will create a custom folder with a task_list view");
@@ -1432,6 +1636,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 html: html,
                 style: style,
                 behavior: behavior,
+                callback: callback,
                 mako: mako,
                 kwargs: kwargs
 
@@ -1456,7 +1661,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add new button
-        button = ButtonNewWdg(title="Add New", icon="BS_PLUS")
+        button = ButtonNewWdg(title="Add New", icon="FA_PLUS")
         button_row.add(button)
 
 
@@ -1471,7 +1676,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add new button
-        button = ButtonNewWdg(title="Add Elements", icon=IconWdg.G_SETTINGS_GRAY, show_arrow=True)
+        button = ButtonNewWdg(title="Add Elements", icon="FA_GEAR", show_arrow=True)
         button_row.add(button)
 
         # add in a context menu
@@ -1485,10 +1690,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         #button = ButtonNewWdg(title="Test", icon=IconWdg.ARROW_RIGHT)
-        button = ButtonNewWdg(title="Test", icon="BS_PLAY")
+        button = ButtonNewWdg(title="Test Widget", icon="FA_PLAY")
         button_row.add(button)
         button.add_behavior( {
             'type': 'click_up',
+            'separate_behaviors': self.separate_behaviors,
             'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
@@ -1516,8 +1722,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             if (!values.view) {
                 values.view = "__test__"
             }
-
-
+            
+            if (bvr.separate_behaviors) values.behavior = spt.custom_layout_editor.compile_behaviors(values);
 
             var class_name = 'tactic.ui.tools.CustomLayoutEditTestWdg';
             try {
@@ -1534,7 +1740,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         #help_button.add_style("float: left")
 
         #button = ButtonNewWdg(title="Link Actions", icon=IconWdg.LINK, show_arrow=True)
-        button = ButtonNewWdg(title="Link Actions", icon="BS_LINK", show_arrow=True)
+        button = ButtonNewWdg(title="Link Actions", icon="FA_LINK", show_arrow=True)
         button_row.add(button)
 
         menu = self.get_link_menu()
@@ -1547,7 +1753,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         #help_button = ButtonNewWdg(title="Help", icon=IconWdg.HELP)
-        help_button = ButtonNewWdg(title="Help", icon="BS_QUESTION_SIGN")
+        help_button = ButtonNewWdg(title="Help", icon="FA_QUESTION_CIRCLE_O")
         button_row.add(help_button)
         help_button.add_behavior( {
             'type': 'click_up',
@@ -1556,6 +1762,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             spt.help.load_alias("custom-layout-editor|tactic-developer_developer_custom-layout-editor");
             '''
         } )
+        help_button.add_style("float: right")
 
 
 
@@ -2604,6 +2811,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
         mako = self.kwargs.get("mako")
         behavior = self.kwargs.get("behavior")
+        callback = self.kwargs.get("callback")
         kwargs = self.kwargs.get("kwargs")
         is_test = self.kwargs.get("is_test")
 
@@ -2642,7 +2850,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
 
 
-        config_xml = CustomLayoutEditSaveCmd.build_xml(view, html, style, behavior, mako=mako, kwargs=kwargs)
+        config_xml = CustomLayoutEditSaveCmd.build_xml(view, html, style, behavior, callback, mako=mako, kwargs=kwargs)
         layout = CustomLayoutWdg(config_xml=config_xml, view=view, include_mako=True, is_test=is_test, kwargs=kwargs, plugin=plugin)
         top.add(layout)
 
@@ -2653,7 +2861,7 @@ class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
 class CustomLayoutEditSaveCmd(Command):
 
-    def build_xml(cls, view, html, style=None, behavior=None, mako=None, kwargs=None):
+    def build_xml(cls, view, html, style=None, behavior=None, callback=None, mako=None, kwargs=None):
 
         # build up the custom layout
         if not html:
@@ -2745,11 +2953,28 @@ class CustomLayoutEditSaveCmd(Command):
             layout.append(behavior)
 
 
+
+        if callback:
+            if callback.find('<![CDATA[') != -1:
+                raise TacticException("CDATA is automatically added when it is saved. Do not include any CDATA tag in callback.")
+            callback = callback.strip()
+            #callback = callback.replace("\\", "\\\\")
+
+            p = re.compile("(<callback.*?>)")
+            callback = p.sub("\\1<![CDATA[", callback)
+            callback = callback.replace("</callback>", "]]></callback>")
+
+            layout.append(callback)
+
+
+
         layout.append("</%s>" % view)
         layout.append("</config>")
 
-        config_xml = "\n".join(layout)
 
+
+
+        config_xml = "\n".join(layout)
 
 
         #f = open("/tmp/tt.xml", 'w')
@@ -2780,6 +3005,7 @@ class CustomLayoutEditSaveCmd(Command):
         code = self.kwargs.get("code")
 
         behavior = self.kwargs.get("behavior")
+        callback = self.kwargs.get("callback")
         mako = self.kwargs.get("mako")
 
         if html and html.find('<![CDATA[') != -1:
@@ -2788,7 +3014,7 @@ class CustomLayoutEditSaveCmd(Command):
         if style and style.find('<![CDATA[') != -1:
             raise TacticException("Do not include any CDATA tag in Styles section.")
 
-        config_xml = self.build_xml(view, html, style, behavior, mako, kwargs)
+        config_xml = self.build_xml(view, html, style, behavior, callback, mako, kwargs)
 
         xml = Xml()
         xml.read_string(config_xml)

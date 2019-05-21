@@ -30,9 +30,9 @@ import random
 class DeleteToolWdg(BaseRefreshWdg):
 
     def init(self):
-        
+
         self.delete_group = "admin"
-        
+
 
     def get_display(self):
         top = self.top
@@ -71,7 +71,8 @@ class DeleteToolWdg(BaseRefreshWdg):
         title = DivWdg()
         top.add(title)
 
-        icon = IconWdg("WARNING", IconWdg.WARNING)
+        #icon = IconWdg("WARNING", IconWdg.WARNING)
+        icon = IconWdg("WARNING", "FA_EXCLAMATION-TRIANGLE", size="20px")
         icon.add_style("float: left")
         title.add(icon)
 
@@ -93,8 +94,8 @@ class DeleteToolWdg(BaseRefreshWdg):
         content.add("The item to be deleted has a number of dependencies as described below:<br/>", 'heading')
 
         # find all the relationships
-        related_types = SearchType.get_related_types(search_type, direction='children') 
-       
+        related_types = SearchType.get_related_types(search_type, direction='children')
+
         items_div = DivWdg()
         content.add( items_div )
         items_div.add_style("padding: 10px")
@@ -114,7 +115,7 @@ class DeleteToolWdg(BaseRefreshWdg):
                 valid_related_ctr += 1
 
 
-        
+
 
         if valid_related_ctr > 0:
             #icon = IconWdg("Note", "BS_NOTE")
@@ -180,7 +181,7 @@ class DeleteToolWdg(BaseRefreshWdg):
         };
 
         var del_trigger = function() {
-            
+
             // for fast table
             var tmps = spt.split_search_key(bvr.search_keys[0])
             var tmps2 = tmps[0].split('?');
@@ -334,7 +335,7 @@ class DeleteCmd(Command):
             self.delete_sobject(sobject)
 
 
-    
+
 
     def delete_sobject(self, sobject):
 
@@ -342,7 +343,7 @@ class DeleteCmd(Command):
 
         # this is used by API method delete_sobject
         auto_discover = self.kwargs.get("auto_discover")
-        
+
         values = self.kwargs.get("values")
         if values:
             related_types = values.get("related_types")
@@ -411,7 +412,7 @@ class DeleteCmd(Command):
             sobject.delete()
 
 
-    
+
     def delete_snapshot(self, snapshot):
 
         # get all of the file paths
@@ -500,15 +501,15 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
         else:
             label = 'project-specific'
 
-        
+
         # warn if more than 1 sType point to the same table in the same project
         expr = "@GET(sthpw/search_type['table_name', '%s']['database', 'in',  '{project}|%s']['namespace','%s'].search_type)" %(table, project_code, project_code)
         rtn = Search.eval(expr)
-        
+
         warning_msg = ''
         if len(rtn) > 1:
             warning_msg = 'Warning: There is more than 1 sType [%s] pointing to the same table [%s]. Deleting will affect both sTypes.' %(', '.join(rtn), table)
-           
+
         title_wdg = DivWdg()
 
         top.add(title_wdg)
@@ -622,9 +623,9 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
             // force a schema save
             spt.named_events.fire_event('schema|save', bvr)
             top.destroy();
-            
+
             server.finish();
-        
+
         }
         catch(e) {
             spt.alert(spt.exception.handler(e));
@@ -633,7 +634,7 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
         spt.app_busy.hide();
 
         spt.notify.show_message("Successfully deleted sType ["+bvr.search_type+"]");
-       
+
         '''
         } )
 
@@ -667,13 +668,13 @@ class DeleteSearchTypeCmd(Command):
         if self.database != Project.get_project_code() and self.database !='sthpw':
             raise TacticException('You are not allowed to delete the sType [%s] from another project [%s].' %(self.search_type, self.database))
             return False
-        
+
         return True
 
     def execute(self):
         search_type = self.search_type
 
-        search_type_obj = self.search_type_obj 
+        search_type_obj = self.search_type_obj
 
         database = self.database
 
@@ -688,14 +689,14 @@ class DeleteSearchTypeCmd(Command):
         except (SqlException, SearchException), e:
             print("WARNING: ", e)
 
-       
+
         try:
             table_name = search_type_obj.get_table()
             # must log first
             TableDropUndo.log(search_type, database, table_name)
         except (SqlException, SearchException), e:
             print("WARNING: ", e)
-       
+
 
 
         try:
@@ -705,8 +706,8 @@ class DeleteSearchTypeCmd(Command):
         except (SqlException, SearchException), e:
             print("WARNING: ", e)
 
-        
-       
+
+
         # dump the table to a file and store it in cache
         #from pyasm.search import TableDataDumper
         #dumper = TableDataDumper()
@@ -721,7 +722,7 @@ class DeleteSearchTypeCmd(Command):
             print("deleting: ", pipeline.get_search_key())
             pipeline.delete()
         """
- 
+
         # delete the actual search type entry if it's not multi-project
         if db_val != '{project}':
             search_type_obj.delete()
@@ -775,7 +776,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
 
     def get_display(self):
-       
+
         top = self.top
         top.add_color("background", "background")
         top.add_color("color", "color")
@@ -789,7 +790,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             Site.set_site(site)
 
         login = Environment.get_user_name()
-        
+
         security = Environment.get_security()
 
         if not security.is_admin() and not security.is_in_group(self.delete_group):
@@ -822,7 +823,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             return top
 
 
-        
+
 
 
         if project_code:
@@ -843,14 +844,14 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             if project:
                 project_code = project.get_code()
 
-       
-           
+
+
         title_wdg = DivWdg()
 
         if project:
             top.add(title_wdg)
             title_wdg.add(IconWdg(icon=IconWdg.WARNING))
-            title_wdg.add("Deleting Project: %s" % project.get_value("title") ) 
+            title_wdg.add("Deleting Project: %s" % project.get_value("title") )
             title_wdg.add_color("background", "background", -5)
             title_wdg.add_style("padding: 5px")
             title_wdg.add_style("font-weight: bold")
@@ -874,7 +875,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             warning_wdg.add_style("margin: 20 10px")
             content.add("<br/>")
 
-        
+
         if not project_code:
             content.add("This project [%s] has been deleted."%search_key)
             return top
@@ -891,7 +892,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         content.add("<b>NOTE: These items will be deleted, but the sTypes entries in search_objects table will be retained.</b> ")
 
 
-      
+
         content.add("<br/>")
         content.add("<br/>")
 
@@ -930,7 +931,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
             total_items += count
             search_type_wdg.add("&nbsp; - &nbsp; %s item(s)" % count)
 
-            # TODO: this is similar to SearchType.get_related_types(). streamline at some point. 
+            # TODO: this is similar to SearchType.get_related_types(). streamline at some point.
             related_types = self.get_related_types(search_type)
             for related_type in related_types:
 
@@ -1058,7 +1059,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                     error_message = spt.exception.handler(e);
                 }
 
-                
+
                 spt.app_busy.hide();
 
                 if (success) {
@@ -1081,15 +1082,15 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                         error_message += '. You are advised to sign out and log in again.';
                     spt.error(error_message);
                 }
-                
-                
+
+
                 var top = bvr.src_el.getParent(".spt_popup");
                 spt.popup.destroy(top);
                 server.finish();
-                    
-                    
+
+
             }, 100);
-       
+
         '''
         } )
 
@@ -1122,7 +1123,7 @@ class DeleteProjectCmd(DeleteCmd):
         from pyasm.security import Security
 
         delete_group = "admin"
-        
+
         security = Environment.get_security()
         if not security.is_in_group(delete_group):
             raise Exception("Only users in [%s] can delete projects"%delete_group)
@@ -1163,7 +1164,7 @@ class DeleteProjectCmd(DeleteCmd):
 
 
         sthpw_project = Project.get_by_code('sthpw')
-        
+
         # delete the database
         sthpw_db_resource = sthpw_project.get_project_db_resource()
         db_resource = project.get_project_db_resource()
@@ -1186,12 +1187,12 @@ class DeleteProjectCmd(DeleteCmd):
         # this is just extra check
         if result and "failed" in result:
             raise TacticException(result)
-        
-       
-        Container.put("Sql:database_exists:%s"%db_resource.get_key(), None) 
 
-		
-       
+
+        Container.put("Sql:database_exists:%s"%db_resource.get_key(), None)
+
+
+
 
         sql = DbContainer.get(db_resource, connect=True)
         if sql:
@@ -1203,7 +1204,7 @@ class DeleteProjectCmd(DeleteCmd):
                 pass
         # remove the project entry
         project.delete(triggers=False)
-      
+
         schema = Schema.get_by_code(project_code)
         if schema:
             schema.delete()
@@ -1222,7 +1223,7 @@ class DeleteProjectCmd(DeleteCmd):
 
 
 
- 
+
         return
 
 

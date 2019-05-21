@@ -53,7 +53,7 @@ if os.name == "nt":
         except:
             continue
         else:
-            
+
             print("ImageMagick found in %s" %exe)
     if not convert_exe_list:
         # IM might not be in Program Files but may still be in PATH
@@ -67,9 +67,9 @@ if os.name == "nt":
             pass
 else:
     # in other systems (e.g. unix) 'convert' is expected to be in PATH
-    try:    
+    try:
         convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
-        convert_return,convert_err = convert_process.communicate()        
+        convert_return,convert_err = convert_process.communicate()
         if 'ImageMagick' in convert_return:
             convert_exe = 'convert'
             HAS_IMAGE_MAGICK = True
@@ -103,12 +103,12 @@ class File(SObject):
             'ini', 'db', 'py', 'pyd', 'spt', 'rpm', 'gz'
     ]
 
-    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax', 
+    VIDEO_EXT = ['mov','wmv','mpg','mpeg','m1v','m2v','mp2','mp4','mpa','mpe','mp4','wma','asf','asx','avi','wax',
                 'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb', 'gif']
 
     #IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
-    IMAGE_EXT = ['jpg','png','tif','tiff','dds','dcm']
-                
+    IMAGE_EXT = ['jpg','jpeg', 'png','tif','tiff','dds','dcm']
+
 
 
 
@@ -316,7 +316,7 @@ class File(SObject):
         file.set_value("search_type", search_type)
         if search_code:
             file.set_value("search_code", search_code)
-        
+
         # MongoDb
         if search_id and isinstance(search_id, int):
             file.set_value("search_id", search_id)
@@ -331,9 +331,9 @@ class File(SObject):
             file.set_value("base_type", File.BASE_TYPE_FILE)
 
         project = Project.get()
-        
+
         file.set_value("project_code", project.get_code())
-    
+
         if exists:
             if isdir:
                 dir_info = Common.get_dir_info(file_path)
@@ -393,7 +393,7 @@ class File(SObject):
 
     process_file_path = staticmethod(process_file_path)
 
-    
+
     def get_md5(path):
         '''get md5 checksum'''
         py_exec = Config.get_value("services", "python")
@@ -411,9 +411,9 @@ class File(SObject):
             if not output:
                 err = value[1]
                 print(err)
-            
+
         return output
-       
+
     get_md5 = staticmethod(get_md5)
 
     def is_file_group(file_path):
@@ -440,7 +440,7 @@ class FileAccess(SObject):
         return file_access
 
     create = staticmethod(create)
-       
+
 
 
 
@@ -473,7 +473,7 @@ class IconCreator(object):
     def set_icon_mode(self):
         '''icon mode down res is 1/4 size'''
         self.icon_mode = True
-    
+
     def get_icon_path(self):
         return self.icon_path
 
@@ -481,7 +481,7 @@ class IconCreator(object):
         return self.web_path
 
 
-    
+
     def create_icons(self):
         self.execute()
 
@@ -520,18 +520,17 @@ class IconCreator(object):
 
 
 
-
     def _process_pdf(self, file_name):
 
         base, ext = os.path.splitext(file_name)
-       
+
         # naming convetion should take care of inserting a suffix like icon, web
         # but these paths need a unique name
         icon_file_name = base + "_icon.png"
         tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
 
         thumb_web_size = self.get_web_file_size()
-        
+
         web_file_name = base + "_web.png"
         tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
         if sys.platform == 'darwin':
@@ -543,8 +542,8 @@ class IconCreator(object):
                 self.file_path = self.file_path.encode('utf-8')
                 import shlex, subprocess
                 subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%self.file_path,\
-                        "%s"%tmp_icon_path]) 
-                
+                        "%s"%tmp_icon_path])
+
                 # Shrink image based on web_file_size
                 # (preserves aspect ratio regardless)
                 pdf_width = thumb_web_size[0]
@@ -554,7 +553,7 @@ class IconCreator(object):
                     pdf_height = thumb_web_size[1]
                 size = '%sx%s>' % (pdf_width, pdf_height)
 
-                subprocess.call([convert_exe, '-geometry', size, '-raise','2x2','%s[0]' %self.file_path, "%s"%tmp_web_path]) 
+                subprocess.call([convert_exe, '-geometry', size, '-raise','2x2','%s[0]' %self.file_path, "%s"%tmp_web_path])
 
             except Exception as e:
                 print("Error extracting from pdf [%s]" % e)
@@ -579,15 +578,15 @@ class IconCreator(object):
             parts = re.split('[\Wx]+', web_file_size)
             if len(parts) == 1:
                 parts.append(-1)
-            
+
             if len(parts) == 2:
                 try:
                     thumb_size = (int(parts[0]), int(parts[1]))
                 except ValueError:
                     thumb_size = (640, 480)
 
-        return thumb_size 
- 
+        return thumb_size
+
     def _process_video(self, file_name):
         if not HAS_FFMPEG:
             return
@@ -608,14 +607,14 @@ class IconCreator(object):
         #os.system(cmd)
 
         import subprocess
-                
+
         try:
             # Attempt to resize only if necessary. Requires ffprobe call.
             # (More recent version of ffmpeg support the argument
             # -vf scale="'if(gt(iw, 640), 640, iw)':'if(gt(ih, 6400), 6400, -1)'"
             # allowing for scaling which preserves aspect ratio and only scales
             # when necessary. For now, it is necessary to query video size.)
-            free_aspect_ratio = thumb_web_size[1] == -1 
+            free_aspect_ratio = thumb_web_size[1] == -1
             try:
                 command = ["ffprobe", "-print_format", "json", "-select_streams", "v:0", "-show_entries", "stream=height,width",  self.file_path]
                 p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -625,10 +624,10 @@ class IconCreator(object):
                 sample_stream = streams[0]
                 width = int(sample_stream.get("width"))
                 height = int(sample_stream.get("height"))
-            
+
                 max_width = thumb_web_size[0]
                 max_height = max_width*10 if free_aspect_ratio else thumb_web_size[1]
-               
+
                 if width < max_width and height < max_height:
                     # Resizing is not necessary
                     size_option = ""
@@ -636,11 +635,11 @@ class IconCreator(object):
                 elif not free_aspect_ratio and (width > max_width or height > max_height):
                     size_option = "-s"
                     size =  "%sx%s" % (thumb_web_size[0], thumb_web_size[1])
-                else: 
+                else:
                     if width > height:
                         size_option = "-vf"
                         size = "scale=%s:-1" % thumb_web_size[0]
-                        
+
                     elif height > width:
                         aspect_ratio = float(float(height)/(width))
                         if aspect_ratio >= 10:
@@ -659,7 +658,7 @@ class IconCreator(object):
                                 size = "scale=-1:%s" % max_height
 
             except Exception as e:
-                if free_aspect_ratio: 
+                if free_aspect_ratio:
                     size_option = "-vf"
                     size = "scale=%s:-1" % thumb_web_size[0]
                 else:
@@ -682,11 +681,11 @@ class IconCreator(object):
             Environment.add_warning("Could not process file", \
                     "%s - %s" % (self.file_path, e.__str__()))
             pass
-          
+
         try:
             subprocess.call([ffmpeg_exe, '-i', self.file_path, "-y", "-ss", "00:00:00","-t","1",\
                     "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
-            
+
             if os.path.exists(tmp_icon_path):
                 self.icon_path = tmp_icon_path
             else:
@@ -750,9 +749,9 @@ class IconCreator(object):
 
 
             else:
-                
+
                 thumb_size = self.get_web_file_size()
-                
+
                 try:
                     self._resize_image(self.file_path, tmp_web_path, thumb_size)
                 except TacticException:
@@ -784,21 +783,22 @@ class IconCreator(object):
                 "%s - %s" % (self.file_path, e.__str__()))
             self.web_path = None
             self.icon_path = None
-        
-            
+
+
+
 
     def _extract_frame(self, large_path, small_path, thumb_size):
         pass
 
 
     def _resize_image(self, large_path, small_path, thumb_size):
-      
+
         free_aspect_ratio = thumb_size[1] == -1
 
         try:
             large_path = large_path.encode('utf-8')
             small_path = small_path.encode('utf-8')
-            
+
             if HAS_IMAGE_MAGICK:
                 # generate imagemagick command
                 convert_cmd = []
@@ -808,9 +808,9 @@ class IconCreator(object):
                     convert_cmd.append('-flatten')
                 if large_path.lower().endswith('psd'):
                     large_path += "[0]"
-                
+
                 if free_aspect_ratio:
-                    # The max allowed height is 10x the width 
+                    # The max allowed height is 10x the width
                     convert_cmd.extend(['-resize','%sx%s>' % (thumb_size[0], thumb_size[0]*10)])
                 else:
                     convert_cmd.extend(['-resize','%sx%s>' %(thumb_size[0], thumb_size[1])])
@@ -858,7 +858,7 @@ class IconCreator(object):
                     im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
                     im.save(small_path, to_ext)
                 else:
-                    
+
                     #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
                     x,y = im.size
 
@@ -890,7 +890,7 @@ class IconCreator(object):
                 subprocess.call(convert_cmd)
             else:
                 raise TacticException('No image manipulation tool installed')
-            
+
         except Exception as e:
             print("Error: ", e)
 
@@ -926,7 +926,7 @@ class IconCreator(object):
     def add_icons(file_paths):
         new_file_paths=[]
         new_file_types=[]
-        
+
         for file_path in file_paths:
 
             # create icons and add to the list
@@ -941,10 +941,10 @@ class IconCreator(object):
             new_file_paths.append(web_path)
             new_file_types.append("web")
 
-        return new_file_paths, new_file_types 
+        return new_file_paths, new_file_types
     add_icons = staticmethod(add_icons)
 
-    
+
 
 
 class FileGroup(File):
@@ -986,7 +986,7 @@ class FileGroup(File):
             total += size
 
         project = Project.get()
-        file.set_value("project_code", project.get_code())   
+        file.set_value("project_code", project.get_code())
 
         file.set_value("st_size", total)
         file.set_value("file_range", file_range.get_key())
@@ -994,7 +994,7 @@ class FileGroup(File):
             file.set_value("type", file_type)
         file.set_value("base_type", File.BASE_TYPE_SEQ)
         file.commit()
-       
+
         return file
     create = staticmethod(create)
 
@@ -1012,7 +1012,7 @@ class FileGroup(File):
             for i in range(frame_start, frame_end+1, frame_by):
                 expanded = file_path % i
                 file_paths.append( expanded )
-        else: 
+        else:
             # find out the number of #'s in the path
             padding = len( file_path[file_path.index('#'):file_path.rindex('#')] )+1
 
@@ -1114,7 +1114,7 @@ class FileRange(object):
         self.frame_start = frame_start
         self.frame_end = frame_end
         self.frame_by = frame_by
-        
+
         assert(isinstance(frame_start, (int)))
         assert(isinstance(frame_end, (int)))
         assert(isinstance(frame_by, (int)))
@@ -1132,7 +1132,7 @@ class FileRange(object):
         assert(isinstance(frame_by, (int)))
         self.frame_by = frame_by
 
-  
+
     def set_duration(self, duration):
         self.frame_start = 1
         self.frame_end = duration
@@ -1148,7 +1148,7 @@ class FileRange(object):
             return "%s-%s" % (self.frame_start, self.frame_end)
         else:
             return self.get_key()
-        
+
 
 
     def get_values(self):
@@ -1161,7 +1161,7 @@ class FileRange(object):
         frame_by = 1
         if file_range.find("/") != -1:
             file_range, frame_by = file_range.split("/")
-    
+
         tmps = file_range.split("-")
         if len(tmps) > 2:
             raise FileException("Unable to determine file_range [%s]" %file_range)
@@ -1172,7 +1172,7 @@ class FileRange(object):
 
         return FileRange(frame_start, frame_end, frame_by)
     get = staticmethod(get)
-        
+
 
 
     def check(cls, files):
@@ -1322,7 +1322,7 @@ class FileRange(object):
                     if c != compares[j]:
                         continue
 
-                    
+
 
 
                 # figure out the difference between this and the last one

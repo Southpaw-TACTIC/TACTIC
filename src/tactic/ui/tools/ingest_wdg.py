@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project, FileGroup, FileRange, Snapshot
+from pyasm.biz import File, Project, FileGroup, FileRange, Snapshot, ProjectSetting
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -53,7 +53,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         'update_process': 'Determines the update process for snapshots when the update_mode is set to true and one sobject is found',
         'ignore_path_keywords': 'Comma separated string of path keywords to be hidden',
         'project_code': 'Publish to another project',
-        'keyword_mode': 'Takes values "simplified" and "none". When "simplified", keywords will not be extracted from file name. When "none", keywords will notbe ingested into sobject.'
+        'keyword_mode': 'Takes values "simplified" and "none". When "simplified", keywords will not be extracted from file name. When "none", keywords will notbe ingested into sobject.',
+        'create_icon': 'determines if an icon is created or not'
     }
 
 
@@ -197,6 +198,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         if not sobject:
             file_template.add_class("spt_upload_file_template")
             file_template.add_style("display: none")
+            file_template.add_class("SPT_TEMPLATE")
         else:
             file_template.add_class("spt_upload_file")
 
@@ -469,7 +471,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             update_mode_option = self.kwargs.get("update_mode")
             if not update_mode_option:
-                update_mode_option = "true"
+                update_mode_option = "false"
             update_mode = SelectWdg(name="update mode")
             update_mode.add_class("spt_update_mode_select")
             update_mode.set_option("values", ["false", "true", "sequence"])
@@ -1208,6 +1210,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         spt.panel.refresh(top);
         '''
 
+
+
         script_found = True
         oncomplete_script_path = self.kwargs.get("oncomplete_script_path")
         if oncomplete_script_path:
@@ -1227,7 +1231,6 @@ class IngestUploadWdg(BaseRefreshWdg):
             oncomplete_script = self.kwargs.get("oncomplete_script")
         if self.kwargs.get("on_complete"):
             oncomplete_script = self.kwargs.get("on_complete")
-
 
 
 
@@ -1256,6 +1259,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         if (!project_code) {
             project_code = null;
         }
+
+        create_icon = bvr.kwargs.create_icon;
 
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
@@ -1368,6 +1373,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             context_mode: context_mode,
             zip_mode: zip_mode,
             project_code: project_code,
+            create_icon: create_icon,
         }
 
         on_complete = function(rtn_data) {
@@ -1376,11 +1382,17 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         };
 
+        on_error = function(error) {
+            spt.alert(error);
+            progress_el.setStyle("background", "#F00");
+            spt.message.stop_interval(message_key);
+        }
+
 
         var class_name = bvr.action_handler;
         // TODO: make the async_callback return throw an e so we can run
         // server.abort
-        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete});
+        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete, on_error: on_error});
 
         on_progress = function(message) {
 
@@ -1398,7 +1410,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
         }
-        spt.message.set_interval(message_key, on_progress, 500, bvr.src_el);
+        spt.message.set_interval(message_key, on_progress, 2000, bvr.src_el);
 
         '''
 
@@ -1435,6 +1447,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         context_mode = self.kwargs.get("context_mode")
         keyword_mode = self.kwargs.get("keyword_mode")
 
+        create_icon = self.kwargs.get("create_icon")
+        if create_icon in ['false', False]:
+            create_icon = False
+        else:
+            create_icon = True
+
 
         button.add_behavior( {
             'type': 'click_up',
@@ -1450,7 +1468,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                 'update_process': self.update_process,
                 'ignore_path_keywords': self.ignore_path_keywords,
                 'project_code': self.project_code,
-                'keyword_mode': keyword_mode
+                'keyword_mode': keyword_mode,
+                'create_icon': create_icon
             },
             'cbjs_action': '''
 
@@ -1790,11 +1809,14 @@ class IngestUploadCmd(Command):
 
     def execute(self):
 
+        import time
+        start = time.time()
+
         self.server = None
 
         self.message_key = self.kwargs.get("message_key")
         try:
-            return self._execute()
+            ret_val = self._execute()
         except Exception as e:
             if self.message_key:
                 msg = {
@@ -1807,6 +1829,18 @@ class IngestUploadCmd(Command):
                 server.log_message(self.message_key, msg, status="in progress")
 
                 raise
+
+
+        end = time.time()
+        print "---"
+        print "---"
+        print "---"
+        print "total: ", end - start
+        print "---"
+        print "---"
+        print "---"
+
+        return ret_val
 
 
     def _execute(self):
@@ -2232,6 +2266,14 @@ class IngestUploadCmd(Command):
             status = sobject.get_value("status", no_exception=True)
             is_verified = status in ['Verified']
 
+
+            create_icon = self.kwargs.get("create_icon")
+            if create_icon in ['false', False]:
+                create_icon = False
+            else:
+                create_icon = True
+
+
             # use API to check in file
 
             process = self.kwargs.get("process")
@@ -2246,7 +2288,9 @@ class IngestUploadCmd(Command):
             if process == "icon":
                 context = "icon"
             else:
-                context = "%s/%s" % (context, filename)
+                format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
+                if format_context not in ['false', "False", False]:
+                    context = "%s/%s" % (context, filename)
 
             if context_mode == "case_insensitive":
                 context = context.lower()
@@ -2280,7 +2324,7 @@ class IngestUploadCmd(Command):
                     snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='move', version=version)
                 else:
                     file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
-                    snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded', version=version)
+                    snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded', version=version, create_icon=create_icon)
 
             elif mode == "search_key":
 
@@ -2294,14 +2338,14 @@ class IngestUploadCmd(Command):
                     tmp_path = "%s/%s" % (tmp_dir, new_filename)
                     shutil.copy(file_path, tmp_path)
                     # auto create icon
-                    snapshot = server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
+                    snapshot = server.simple_checkin(search_key, context, tmp_path, process=process, mode='move', create_icon=create_icon)
 
             elif self.kwargs.get("base_dir"):
                 # auto create icon
-                snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move', version=version)
+                snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move', version=version, create_icon=create_icon)
 
             else:
-                snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded', version=version)
+                snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded', version=version, create_icon=create_icon)
 
 
             snapshots.append(snapshot)

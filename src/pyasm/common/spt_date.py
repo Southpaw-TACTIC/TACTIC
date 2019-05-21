@@ -377,7 +377,7 @@ class SPTDate(object):
 
 
 
-    def get_time_ago(cls, date, convert=False, start=None):
+    def get_time_ago(cls, date, convert=False, start=None, show_date=True):
 
         if isinstance(date, basestring):
             date = parser.parse(date)
@@ -399,8 +399,13 @@ class SPTDate(object):
         else:
             txt = "ago"
 
+
+
         if diff.days >= 7:
-            value = date.strftime("%b %d at %I:%M %p")
+            if show_date in ['false', False]:
+                value = "%s days %s" % (diff.days, txt)
+            else:
+                value = date.strftime("%b %d at %I:%M %p")
 
         elif diff.days == 1:
             value = "1 day %s" % txt
@@ -435,6 +440,61 @@ class SPTDate(object):
         return value
 
     get_time_ago = classmethod(get_time_ago)
+
+
+    def get_time_diff(cls, start=None, end=None, convert=False, txt=""):
+
+        if isinstance(start, basestring):
+            start = parser.parse(start)
+        if isinstance(end, basestring):
+            end = parser.parse(end)
+
+        if convert:
+            start = cls.convert(start)
+            end = cls.convert(end)
+        else:
+            start = cls.strip_timezone(start)
+            end = cls.strip_timezone(end)
+
+        diff = end - start
+
+        days = diff.days + float(int(10 * diff.seconds / (24*60*60))) / 10
+
+        if diff.days == 0 and diff.seconds == 0:
+            value = "-"
+
+        elif abs(diff.days) > 1:
+            value = "%s days %s" % (days, txt)
+
+        # less than a minute
+        elif diff.seconds < 60:
+            value = "%s seconds %s" % (diff.seconds, txt)
+
+        # less than an hour
+        elif diff.seconds < 60 * 60:
+            minutes = diff.seconds / 60
+            if minutes == 1:
+                value = "1 minute %s" % txt
+            else:
+                value = "%s minutes %s" % (minutes, txt)
+
+        # less than a day
+        elif diff.seconds < 60 * 60 * 24:
+            hours = float(diff.seconds) / 60.0 / 60.0
+            if hours < 12:
+                value = "%0.1f hours %s" % (hours, txt)
+            else:
+                value = "%s hours %s" % (int(hours), txt)
+
+
+        else:
+            value = date.strftime("%b %d at %I:%m %p")
+
+        return value
+
+    get_time_diff = classmethod(get_time_diff)
+
+
 
 
 if __name__ == '__main__':

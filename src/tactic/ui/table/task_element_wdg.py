@@ -513,7 +513,6 @@ class TaskElementWdg(BaseTableElementWdg):
         self.tasks_dict = {}
 
         expression = self.kwargs.get("expression")
-        #expression = "@SOBJECT(connect)"
         if expression:
             self.tasks_dict = Search.eval(expression, self.sobjects, dictionary=True)
         else: 
@@ -621,6 +620,7 @@ class TaskElementWdg(BaseTableElementWdg):
                         #"dependency",
                         "progress"
                 ])
+
 
                 # if this pipeline has more processes than the default, make this the default
                 if len(processes) > len(default_pipeline):
@@ -1072,11 +1072,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
     def get_tasks(self, sobject=None, pipeline_code=None):
         tasks = self._get_tasks(sobject=None, pipeline_code=None)
-        #tasks = self._get_tasks(sobject=None, pipeline_code="PIPELINE00110")
         return tasks
 
     def _get_tasks(self, sobject=None, pipeline_code=None):
-        #self.preprocess()
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
@@ -1106,6 +1104,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             tasks = []
 
 
+        processes = self.kwargs.get("processes")
+        if isinstance(processes, basestring):
+            processes = processes.split(",")
+
+
+
         # get the pipeline
         if not pipeline_code:
             pipeline_code = self.get_pipeline_code()
@@ -1115,8 +1119,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         else:
             pipeline = None
 
-        if pipeline:
-            processes = pipeline.get_process_names()
+        if pipeline or processes:
+            if not processes:
+                processes = pipeline.get_process_names()
 
             supprocess = self.kwargs.get("parent_process")
             if supprocess:
@@ -1134,6 +1139,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     processes_remove.append(process)
             for process in processes_remove:
                 processes.remove(process)
+
 
             # filter by current pipeline's processes
             # show_current_pipeline_only is not in task_filter since
@@ -1179,9 +1185,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         pipeline_code = self.get_pipeline_code()
         pipeline = Pipeline.get_by_code(pipeline_code)
         show_filler_tasks = self.kwargs.get("show_filler_tasks")
+
+        print("show: ", show_filler_tasks)
+
         if pipeline and show_filler_tasks in ["true", True]:
 
-            processes = pipeline.get_process_names(type=["node","manual","approval","hierarchy","dependency"])
+            processes = pipeline.get_process_names(exclude=["action"])
             
             if self.filler_cache == None:
                 self.filler_cache = {}
@@ -1512,7 +1521,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if pipeline:
                 #pipeline_processes = pipeline[0].get_processes()
                 pipeline_processes = pipeline[0].get_processes(type=[
-                        #"node",
+                        "node",
                         "manual",
                         "approval",
                         "hierarchy",
@@ -2041,7 +2050,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         #table.add_attr("border", "1")
         div.add(table)
         table.add_row()
-        table.add_style("width: 100%")
+        #table.add_style("width: 100%")
 
         if self.show_border != 'none' :
             if self.show_border == 'one-sided' and not last_one:
@@ -3078,7 +3087,8 @@ class TaskSummaryElementWdg(TaskElementWdg):
 
     def _get_display_default(self):
 
-        self.kwargs["show_filler_tasks"] = True
+        if self.kwargs.get("show_filler_tasks") is None:
+            self.kwargs["show_filler_tasks"] = True
 
         self.tasks = self.get_tasks()
         sobject = self.get_current_sobject()
@@ -3145,9 +3155,13 @@ class TaskSummaryElementWdg(TaskElementWdg):
             title_div = DivWdg()
             title_div.add(title)
             title_div.add_style("max-height: 30px")
+            title_div.add_style("min-width: 50px")
             title_div.add_style("margin-bottom: 3px")
             #title_div.add_style("height: 25px")
             title_div.add_style("overflow: hidden")
+            title_div.add_style("white-space: nowrap")
+            title_div.add_style("text-overflow: ellipsis")
+            title_div.add_style("text-align: center")
 
             td.add(title_div)
             td.add_style("text-align: center")

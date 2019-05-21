@@ -73,7 +73,7 @@ class FileCheckin(BaseCheckin):
 
            checkin_type - auto or strict: specifies how defaults are handled
                 strict uses strict naming conventions with explicit versionless
-                auto uses looser naming conventions with auto versionless
+                auto uses a looser naming conventions with the auto versionless
            version - force the version of the check-in
            single_snapshot - if set to True, it raises a SingleSnapshotException if an existing snapshot already exists.
             

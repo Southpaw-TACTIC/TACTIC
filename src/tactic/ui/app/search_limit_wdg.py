@@ -633,6 +633,9 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_search_limit_top");
             var page_el = top.getElement(".spt_page");
 
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
             var value = bvr.src_el.getAttribute("spt_page");
             if (value == 'next') {
                 value = bvr.current_page + 1;
@@ -644,9 +647,46 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             }
             page_el.value = value;
 
+
+            // remap the bvr.src_el
             bvr.src_el = bvr.src_el.getParent('.spt_table_top');
-            //bvr.panel = bvr.src_el.getParent('.spt_view_panel');
+
             spt.dg_table.search_cbk(evt, bvr);
+            return;
+
+
+
+            // NOTE: below doesn't work just yet because search_cbk, which calls
+            // replace_inner_html deactivates all of the behaviors.  We need a flag
+            // that can disable the deactivation of behaviors
+
+            var layout_top = layout.getParent(".spt_layout_top");
+
+            var pages = layout_top.pages;
+            if (!pages) {
+                pages = {};
+                layout_top.pages = pages;
+            }
+
+
+            
+            var children = bvr.src_el.getChildren();
+            layout_top.pages[bvr.current_page] = children;
+
+
+
+            var html = pages[value];
+            if (!html) {
+                spt.dg_table.search_cbk(evt, bvr);
+            }
+            else {
+                bvr.src_el.innerHTML = "";
+                html.forEach( function(child) {
+                    bvr.src_el.appendChild(child);
+                } );
+        
+            }
+ 
             '''
         } )
 

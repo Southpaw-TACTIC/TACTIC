@@ -122,6 +122,13 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <connect from="config/process" to="sthpw/pipeline"
         relationship="code" from_col="pipeline_code" to_col="code"/>
 
+   <connect from="config/process_state" to="sthpw/pipeline"
+        relationship="code" from_col="pipeline_code" to_col="code"/>
+
+   <connect from="config/process_state" to="*"
+        type='hierarchy' relationship='search_type'/>
+
+
 
     <connect from="sthpw/task" to="sthpw/milestone" relationship='code'/>
 

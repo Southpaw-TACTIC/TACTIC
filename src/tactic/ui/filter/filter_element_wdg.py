@@ -1329,6 +1329,7 @@ class DateFilterElementWdg(BaseFilterElementWdg):
             search_type = search.get_search_type()
             date_col = expression
 
+
         start_date = self.values.get("start_date")
         end_date = self.values.get("end_date")
         if not start_date and not end_date:
@@ -1390,9 +1391,15 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         op.add_style("margin-left: 5px")
         td.add(op)
 
+
+        start_date = self.values.get("start_date")
+        end_date = self.values.get("end_date")
+
         from tactic.ui.widget import CalendarInputWdg
         td = table.add_cell()
         cal1 = CalendarInputWdg("start_date")
+        if start_date:
+            cal1.set_value(start_date)
         td.add(cal1)
 
         td = table.add_cell()
@@ -1401,6 +1408,8 @@ class DateFilterElementWdg(BaseFilterElementWdg):
 
         td = table.add_cell()
         cal2 = CalendarInputWdg("end_date")
+        if end_date:
+            cal2.set_value(end_date)
         td.add(cal2)
 
         return div
@@ -1476,6 +1485,7 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
 
         return
 
+        """
         # Add in the ability to do something like ...
         #select * from sequence where code not in (select distinct sequence_code from shot);
         relationship = None
@@ -1485,6 +1495,7 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
             where = '''id not in (select distinct sequence_code from shot)'''
 
         #search.add_empty_related_filter("sthpw/task", op='not in')
+        """
 
 
 
