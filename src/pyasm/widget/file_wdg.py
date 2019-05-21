@@ -1461,7 +1461,9 @@ class ThumbWdg(BaseTableElementWdg):
 
     def get_file_info(xml, file_objects, sobject, snapshot, show_versionless=False, is_list=False, protocol='http'):
         
-        project_setting = False
+        from pyasm.biz import ProjectSetting
+        fast_dir = ProjectSetting.get_value_by_key("tile_layout/fast_dir") in \
+                ['true', True]
         
         info = {}
         #TODO: {'file_type': [file_type]: [path], 'base_type': [base_type]: [file|directory|sequence]}
@@ -1488,7 +1490,7 @@ class ThumbWdg(BaseTableElementWdg):
                 continue
 
             file_name = file_object.get_full_file_name()
-            if project_setting:
+            if not fast_dir:
                 web_dir = sobject.get_web_dir(snapshot, file_object=file_object)
             else:
                 lib_dir = file_object.get("checkin_dir")
@@ -1513,7 +1515,7 @@ class ThumbWdg(BaseTableElementWdg):
             if isinstance(info, dict):
                 info[type] = path
 
-                if project_setting:
+                if not fast_dir:
                     lib_dir = sobject.get_lib_dir(snapshot, file_object=file_object)
                 else:
                     lib_dir = file_object.get_value("checkin_dir")
