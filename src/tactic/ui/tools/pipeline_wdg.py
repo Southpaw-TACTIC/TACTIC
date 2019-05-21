@@ -6215,8 +6215,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
 
-            console.log(node_kwargs);
-            
             try {
                 var xml = spt.pipeline.export_group(group_name);
             } catch (err) {
@@ -8865,6 +8863,7 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         # get all of the custom process node types
         search = Search("config/widget_config")
         search.add_filter("category", "workflow")
+        search.add_order_by("view")
         custom_nodes = search.get_sobjects()
 
         custom_div = DivWdg()
@@ -8872,7 +8871,6 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         custom_div.add_style("display: flex")
         custom_div.add_style("flex-wrap: wrap")
         custom_div.add_style("flex-direction: column")
-
 
         custom_div.add_relay_behavior( {
             'type': 'click',
@@ -8888,12 +8886,47 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
             '''
         } )
 
+        custom_div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+spt.pipeline.item_drag_setup = function(evt, bvr, mouse_411) {
+    console.log("setup");
+}
+
+spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
+    console.log("motion");
+}
+
+spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
+    console.log("action");
+    var drop_on_el = spt.get_event_target(evt);
+    if (! drop_on_el.hasClass(".spt_pipeoine_top") ) {
+        console.log(drop_on_el);
+        var parent = drop_on_el.getParent(".spt_pipeline_top");
+        if (!parent) {
+            return;
+        }
+    }
+
+
+    var node_type = bvr.src_el.getAttribute("spt_node_type");
+
+    var pos = spt.pipeline.get_mouse_position(mouse_411);
+    console.log(pos);
+
+
+    spt.pipeline.add_node(null, pos.x, pos.y, {node_type: node_type});
+}
+
+            '''
+        } )
 
         for i, custom_node in enumerate(custom_nodes):
 
             item_div = DivWdg()
             custom_div.add(item_div)
             item_div.add_class("spt_custom_node")
+            item_div.add_color("background", "background")
 
             item_div.add_style("border-radius: 3px")
             item_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.1)")
@@ -8925,13 +8958,10 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
             item_div.add_behavior( {
             "type": 'drag',
+            "mouse_btn": 'LMB',
             "drag_el": '@',
             "cb_set_prefix": 'spt.pipeline.item_drag'
             } )
-
-
-
-
 
 
         return top
