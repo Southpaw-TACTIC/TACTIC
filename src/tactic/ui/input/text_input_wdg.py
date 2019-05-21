@@ -815,8 +815,10 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         if (!data && data != 0) {
             hidden_el.value = '';
             if (kwargs.validate != false) {
-                //src_el.setStyle("background", "#A99");
+                src_el.setStyle("background", "#A99");
                 src_el.addClass("spt_invalid");
+            } else {
+                src_el.value = '';
             }
         }
         else {
@@ -879,7 +881,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'do_search': do_search,
             'results_on_blur': results_on_blur,
             'cbjs_action': '''
-          
+         
+            console.log(bvr);
             // put a delay in here so that a click in the results
             // has time to register
             var validate = bvr.validate == 'True';
@@ -897,14 +900,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     var display_value = bvr.src_el.value;
                     var value = hidden_el.value;
                     
-                    if (validate && bvr.value_column) {
+                    if (bvr.value_column) {
                         var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
                         spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
-                    } else if (bvr.value_column) {
-                        // FIXME: If value column is defined, then based on user input,
-                        // should figure out the value. For now, assume used has inputted
-                        // value for value column.
-                        hidden_el.value = display_value; 
                     } else {
                         hidden_el.value = display_value; 
                     }
