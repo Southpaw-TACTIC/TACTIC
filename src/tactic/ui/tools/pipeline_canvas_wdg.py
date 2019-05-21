@@ -2799,6 +2799,11 @@ spt.pipeline.get_all_nodes = function() {
 }
 
 
+spt.pipeline.get_nodes_by_type = function(node_type) {
+    var canvas = spt.pipeline.get_canvas();
+    nodes = canvas.getElements(".spt_pipeline_node[spt_node_type='"+ node_type +"']");
+    return nodes;
+}
 
 
 spt.pipeline.get_node_by_name = function(name) {
@@ -3423,8 +3428,8 @@ spt.pipeline.set_node_kwarg = function(node, name, value) {
 spt.pipeline.add_node_on_save = function(node, name, value) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
     if (!kwargs) kwargs = {};
-    if (!kwargs.on_save) kwargs.on_save = {};
-    kwargs.on_save[name] = value;
+    if (!kwargs.on_saves) kwargs.on_saves = {};
+    kwargs.on_saves[name] = value;
     spt.pipeline.set_node_kwargs(node, kwargs);
 }
 
