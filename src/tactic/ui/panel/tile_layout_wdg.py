@@ -14,7 +14,7 @@ __all__ = ["TileLayoutWdg"]
 import re, os
 import urllib
 
-from pyasm.biz import CustomScript, Project, Snapshot, File
+from pyasm.biz import CustomScript, Project, Snapshot, File, ProjectSetting
 from pyasm.common import Common, Environment
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -386,10 +386,12 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         if self.sobjects:
             
-            project_setting = True
+            
+            js_load = ProjectSetting.get_value_by_key("tile_layout/js_load") in \
+                    ['true', True]
             
 
-            if project_setting:
+            if js_load:
                 self.sobject_data = self.get_sobject_data(self.sobjects)
 		style = self.get_styles()
 		inner.add(style)
@@ -401,7 +403,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             self.process_groups()
             
             
-            if project_setting:
+            if js_load:
                 content_wdg = self.get_js_content_wdg()
                 inner.add(content_wdg)
             else:    
