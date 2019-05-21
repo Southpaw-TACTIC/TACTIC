@@ -1345,8 +1345,23 @@ class DiscussionWdg(BaseRefreshWdg):
         content_div = DivWdg()
         top.add(content_div)
 
+
+        pipeline = Pipeline.get_by_sobject(self.sobject)
+        if pipeline:
+            processes = pipeline.get_process_names()
+
+            # append processes that are not in the workflow
+            for p in process_notes.keys():
+                if p not in processes:
+                    processes.append(p)
+        else:
+            # if no workflow, then display alphabetically
+            processes = process_notes.keys()
+            processes.sort()
+
+
         # go through every process and display notes.
-        for process in process_notes:
+        for process in processes:
             #notes_list = context_notes.get(context)
 
             # This widget used to be context centric ... it is now process centric
@@ -1354,6 +1369,8 @@ class DiscussionWdg(BaseRefreshWdg):
             context = process
 
             notes_list = process_notes.get(process)
+            if not notes_list:
+                continue
 
             note_keys = []
             for note in notes_list:
