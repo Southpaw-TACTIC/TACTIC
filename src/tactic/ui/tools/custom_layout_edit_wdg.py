@@ -1700,6 +1700,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button.add_behavior( {
             'type': 'click_up',
             'separate_behaviors': self.separate_behaviors,
+            'ace_editor_style': self.ace_editor_style,
             'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
@@ -1716,6 +1717,18 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 mako = mako.substring(1);
             }
             values.mako = mako;
+            
+            if (bvr.ace_editor_style) {
+                style_tab = top.getElement(".spt_style_tab");
+                spt.ace_editor.set_editor_top(style_tab);
+                var style = spt.ace_editor.get_value();
+                //FIXME: get_value appends newline onto beginning.
+                if (style && style.startsWith("\n")) {
+                    style = style.substring(1);
+                }
+                values.style = style;
+            }
+            
 
             values.is_test = true;
 
