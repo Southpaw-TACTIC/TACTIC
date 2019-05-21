@@ -742,6 +742,8 @@ class AceEditorWdg(BaseRefreshWdg):
         if not code:
             code = ""
 
+        dynamic_height = self.kwargs.get("dynamic_height") or False
+
 
         show_options = self.kwargs.get("show_options")
         if show_options in ['false', False]:
@@ -838,12 +840,23 @@ class AceEditorWdg(BaseRefreshWdg):
             load_div.add_behavior( {
                 'type': 'load',
                 'code': code,
+                'dynamic_height': dynamic_height,
                 'language': language,
                 'editor_id': self.get_editor_id(),
                 'readonly': readonly,
                 'cbjs_action': '''
                 spt.ace_editor.set_editor(bvr.editor_id);
                 
+                var set_max_lines = function (editor) {
+                    spt.ace_editor.set_editor_top(editor.container.getParent(".spt_ace_editor_top"));
+                    doc = spt.ace_editor.get_document();
+                    length = doc.getLength()
+                    maxLines = length + 10;
+                    editor.setOptions({
+                        maxLines: maxLines
+                    });
+                }
+
                 var func = function() {
                     spt.ace_editor.set_editor(bvr.editor_id);
                     var editor = spt.ace_editor.editor;
@@ -853,6 +866,13 @@ class AceEditorWdg(BaseRefreshWdg):
                     }
                     spt.ace_editor.set_language(bvr.language);
                     editor.setReadOnly(bvr.readonly);
+                    
+                    if (bvr.dynamic_height) {
+                        editor.on("change", function(event, obj) {
+                            set_max_lines(obj); 
+                        });
+                        set_max_lines(editor);
+                    }
                 };
 
                 var editor = spt.ace_editor.editor;
@@ -862,6 +882,7 @@ class AceEditorWdg(BaseRefreshWdg):
                 else {
                     func();
                 }
+
 
                 '''
             } )
@@ -1101,9 +1122,10 @@ spt.ace_editor.set_language = function(value) {
     else if (value == 'expression') {
         mode = require("ace/mode/xml").Mode;
     } else if (value == 'html') {
-        mode = require("ace/mode/html").Mode
-    }
-    else {
+        mode = require("ace/mode/html").Mode;
+    } else if (value == 'css') {
+        mode = require("ace/mode/css").Mode;
+    } else {
         mode = require("ace/mode/javascript").Mode;
     }
     session.setMode( new mode() );
@@ -1210,6 +1232,7 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
             "/context/spt_js/ace/ace-1.2.3/src/mode-xml.js",
             "/context/spt_js/ace/ace-1.2.3/src/mode-python.js",
             "/context/spt_js/ace/ace-1.2.3/src/mode-html.js",
+            "/context/spt_js/ace/ace-1.2.3/src/mode-css.js",
             "/context/spt_js/ace/ace-1.2.3/src/theme-twilight.js",
             "/context/spt_js/ace/ace-1.2.3/src/theme-textmate.js",
             "/context/spt_js/ace/ace-1.2.3/src/theme-vibrant_ink.js",
