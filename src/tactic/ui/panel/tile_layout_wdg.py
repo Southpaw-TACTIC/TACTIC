@@ -559,6 +559,17 @@ class TileLayoutWdg(ToolLayoutWdg):
                         tile.getElement(".spt_tile_size").innerHTML = data.size;
 		    }
 
+
+                    default_tile_title = tile.getElement(".spt_default_tile_title");
+                    if (default_tile_title) {
+                        title_text_div = default_tile_title.getElement(".spt_tile_title_text");
+                        title_text_div.innerHTML = data.title_text;
+                        title_text_div.setAttribute("title", data.title_text);
+                    } else {
+                        tile_title = tile.getElement(".spt_tile_title");
+                        tile_title.load(data);
+                    }
+
                     thumb_top = tile.getElement(".spt_thumb_top");
                     thumb_top.setAttribute("spt_main_path", data.main_path);
 
@@ -1750,9 +1761,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         css += """
             .spt_default_tile_title {
-                padding: 3px;
                 height: 20px;
-                position: relative;
+                padding: 3px;
+                width: 100%;
+                position: absolute;
+                left: 0;
             }
 
             .spt_tile_bg {
@@ -1786,6 +1799,26 @@ class TileLayoutWdg(ToolLayoutWdg):
                 white-space: nowrap;
                 color: #FFF;
             }
+
+        """
+        css += """
+            .spt_tile_detail {
+                float: right;
+                margin-top: -2px;
+                position: relative;
+                z-index: 2;
+                margin-right: 3px;
+                color: #FFF;
+            }
+
+            .spt_tile_collection {
+                margin-right: 5px;
+                float: right;
+                margin-top: -2px;
+                position: relative;
+                z-index: 2;
+            }
+
 
         """
 
@@ -1931,16 +1964,14 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         show_detail = self.kwargs.get("show_detail")
-        show_detail = False
         if show_detail not in [False, 'false']:
             detail_div = DivWdg()
             div.add(detail_div)
-            detail_div.add_style("float: right")
-            detail_div.add_style("margin-top: -2px")
-            detail_div.add_style("position: relative")
-            detail_div.add_style("z-index: 2")
 
-            if sobject.get_value("_is_collection", no_exception=True) == True:
+            # TODO: Handle this....
+            #if sobject.get_value("_is_collection", no_exception=True) == True:
+            if False:
+                """
                 detail_div.add_class("spt_tile_collection");
 
                 search_type = sobject.get_base_search_type()
@@ -1949,14 +1980,11 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
                 detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
-                detail_div.add_style("margin-right: 5px")
+                """
             else:
                 detail_div.add_class("spt_tile_detail")
-                detail_div.add_style("color: #FFF")
-
                 detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
                 detail_div.add(detail)
-                detail_div.add_style("margin-right: 3px")
 
 
         header_div = DivWdg()
@@ -1969,8 +1997,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         checkbox = CheckboxWdg("select")
         checkbox.add_class("spt_tile_checkbox")
 
-        title = ""
-
 
         table = Table()
         header_div.add(table)
@@ -1981,10 +2007,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         title_div.add_class("spt_tile_title_text")
 
         td = table.add_cell(title_div)
-        title_div.add(title)
-        
-        # TODO: Move to postprocessing
-        #title_div.add_attr("title", title)
         
         title_div.add("<br clear='all'/>")
         title_div.add_class("hand")
@@ -1992,13 +2014,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         if self.kwargs.get("hide_checkbox") in ['true', True]:
             checkbox.add_style("visibility: hidden")
             title_div.add_style("left: 10px")
-
-        """
-        FIXME: This doesn't seem right?
-        description = sobject.get_value("description", no_exception=True)
-        if description:
-            div.add_attr("title", sobject.get_code())
-        """
 
         return div
 
