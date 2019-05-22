@@ -1461,12 +1461,12 @@ class ThumbWdg(BaseTableElementWdg):
 
     def get_file_info(xml, file_objects, sobject, snapshot, show_versionless=False, is_list=False, protocol='http'):
         
-        from pyasm.biz import ProjectSetting
-        fast_dir = ProjectSetting.get_value_by_key("tile_layout/fast_dir") in \
-                ['true', True]
-        
         info = {}
         #TODO: {'file_type': [file_type]: [path], 'base_type': [base_type]: [file|directory|sequence]}
+
+        # Test overhead of naming engine
+        # fast_dir = True
+        fast_dir = False
 
         if is_list:
             info = []
