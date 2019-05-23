@@ -561,8 +561,12 @@ class TileLayoutWdg(ToolLayoutWdg):
 		    tile.setAttribute("spt_main_path", data.main_path);
 
                     is_collection = data.spt_is_collection;
-                    if (is_collection) tile.getElement(".spt_tile_tool_top").destroy();
-                    else {
+                    if (is_collection) {
+                        tile.getElement(".spt_tile_tool_top").destroy();
+                        tile.getElement(".spt_tile_collection").setStyle("display", "");
+                        tile.getElement(".spt_tile_detail").setStyle("display", "none");
+                        tile.getElement(".spt_tile_collection_count").innerHTML = data.collection_count;
+                    } else {
                         // Download button
                         download_el = tile.getElement(".spt_tile_tool_top").getElement("a");
                         download_el.setAttribute("href", data.main_path);
@@ -1755,6 +1759,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             if not title_text:
                 title_text = sobject.get_value("code", no_exception=True)
             tile_data['title_text'] = title_text
+            
+            
+            if sobject.get_value("_is_collection", no_exception=True): 
+                search_type = sobject.get_base_search_type()
+                parts = search_type.split("/")
+                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                tile_data['collection_count'] = num_items
  
             sobject_data[sobject.get_search_key()] = tile_data
 
@@ -1904,6 +1917,15 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         """
+        
+        css += """
+            .spt_tile_collection_count {
+                margin-top: 2px;
+                float: right;
+
+            }
+
+        """
 
         style.add(css)
         return style
@@ -2051,23 +2073,18 @@ class TileLayoutWdg(ToolLayoutWdg):
             detail_div = DivWdg()
             div.add(detail_div)
 
-            # TODO: Handle this....
-            #if sobject.get_value("_is_collection", no_exception=True) == True:
-            if False:
-                """
-                detail_div.add_class("spt_tile_collection");
+            count_div = DivWdg()
+            detail_div.add(count_div)
+            count_div.add_class("spt_tile_collection")
+            count_div.add_style("display", "none")
+            count_div.add("<div class='spt_tile_collection_count hand badge'>0</div>")
+            
+            expand_div = DivWdg()
+            detail_div.add(expand_div)
+            expand_div.add_class("spt_tile_detail")
+            detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
+            expand_div.add(detail)
 
-                search_type = sobject.get_base_search_type()
-                parts = search_type.split("/")
-                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
-
-                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
-                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
-                """
-            else:
-                detail_div.add_class("spt_tile_detail")
-                detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
-                detail_div.add(detail)
 
 
         header_div = DivWdg()
