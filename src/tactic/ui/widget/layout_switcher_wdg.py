@@ -245,8 +245,12 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 else:
                     state_value = element_names[0]
 
+            state_value_hidden = False
+            default_title = None
 
             for element_name in element_names:
+
+                attrs = config.get_element_attributes(element_name)
 
                 item_div = DivWdg()
                 menu_wdg.add(item_div)
@@ -255,10 +259,16 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
                 item_div.add_style("width: 100%")
 
-                attrs = config.get_element_attributes(element_name)
+                hidden = attrs.get("hidden") == "true"
+                if hidden:
+                    item_div.add_style("display: none")
+
                 title = attrs.get("title")
                 if not title:
                     title = Common.get_display_title(element_name)
+
+                if not default_title and not hidden:
+                    default_title = title
 
 
                 for name, value in attrs.items():
@@ -284,6 +294,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
                 if show_first != False:
                     if element_name == state_value:
+                        state_value_hidden = True
                         item_div.add_behavior( {
                             'type': 'load',
                             'cbjs_action': '''
@@ -299,6 +310,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         'element_name': element_name,
                         'target': target,
                         'save_state': save_state,
+                        'hidden': hidden,
                         'cbjs_action': '''
                         var menu_item = bvr.src_el;
                         var top = menu_item.getParent(".spt_switcher_top");
@@ -332,7 +344,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         var title = bvr.src_el.getAttribute("spt_title");
 
                         var title_el = top.getElement(".spt_title");
-                        if (title_el)
+                        if (title_el && !bvr.hidden)
                             title_el.innerHTML = title
 
                         if (bvr.save_state) {
@@ -342,6 +354,22 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
                         '''
                     } )
+
+            if state_value and state_value_hidden:
+                if not default_title:
+                    default_title = "Switch Layout"
+
+                activator.add_behavior( {
+                    'type': 'load',
+                    'title': default_title,
+                    'cbjs_action': '''
+                    var activator = bvr.src_el;
+                    var title = activator.getElement(".spt_title");
+
+                    title.innerText = bvr.title;
+
+                    '''
+                } )
             
         return top
 
