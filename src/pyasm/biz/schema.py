@@ -67,6 +67,8 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
     <search_type name="sthpw/sobject_log"/>
     <search_type name="sthpw/retire_log"/>
     <search_type name="sthpw/notification_log"/>
+    <search_type name="sthpw/notification_login" />    
+    <connect from="sthpw/notification_login" to="sthpw/notification_log" relationship='id' from_col='notification_log_id'/>
     <search_type name="sthpw/group_notification" display="@GET(sthpw/group_notification.login_group)"/>
     <search_type name="sthpw/cache"/>
     <search_type name="sthpw/queue"/>
