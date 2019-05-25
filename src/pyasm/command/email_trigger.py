@@ -844,8 +844,7 @@ class EmailTriggerThread(threading.Thread):
             if self.project_code and self.site:
                 Batch(site=self.site, project_code=self.project_code)
                 ExceptionLog.log(e, message=message)
-            else:
-                print(message)
+                
 
 class EmailTriggerTestCmd(Command):
     '''This is run in the same thread for the email testing button'''
@@ -947,7 +946,6 @@ class EmailTriggerTest(EmailTrigger2):
     ''' this is needed by Email Test button'''
 
     def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[]):
-        print "EMAIL TESTTTTTTTTTTTTTTTTTTTTT"
         cc = set()
         sender = set()
         to_emails = set()
@@ -960,8 +958,6 @@ class EmailTriggerTest(EmailTrigger2):
             total_bcc_emails.update(bcc_emails)
 
         user_email = Environment.get_login().get_full_email()
-        print "USER EMAIL"
-        print user_email
 
         sender.add(user_email)
 
