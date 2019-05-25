@@ -1081,7 +1081,12 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         extra_data = self.kwargs.get("extra_data") or {}
         if isinstance(extra_data, basestring):
-            extra_data = jsonloads(extra_data)
+            try:
+                extra_data = jsonloads(extra_data)
+            except Exception as e:
+                print("WARNING: extra_data is not valid json")
+                print("extra_data: ", extra_data)
+                extra_data = {}
 
 
         if self.upload_mode in ['drop','both']:

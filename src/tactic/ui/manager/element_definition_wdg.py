@@ -15,7 +15,7 @@ import os
 
 import tacticenv
 
-from pyasm.common import Date, Environment, Xml, TacticException, SetupException, Common
+from pyasm.common import Date, Environment, Xml, TacticException, SetupException, Common, jsonloads, jsondumps
 from pyasm.command import Command
 from pyasm.biz import Project
 from pyasm.search import Search, SearchType, WidgetDbConfig
@@ -1785,6 +1785,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
     def get_display(self):
         widget_key = self.kwargs.get("widget_key")
         display_class = self.kwargs.get("display_class")
+        view = self.kwargs.get("view")
         display_options = self.kwargs.get("display_options")
         action_class = self.kwargs.get("action_class")
         action_options = self.kwargs.get("action_options")
@@ -1859,17 +1860,30 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
                 return;
             }
             var wdg = top.getElement(".spt_widget_selector_class");
-            var text = top.getElement(".spt_widget_display_class");
-            text.value = '';
+            var wdg_text = top.getElement(".spt_widget_display_class");
+            wdg_text.value = '';
+
+            //var view_el = top.getElement(".spt_widget_selector_view");
+            //var view_text = top.getElement(".spt_widget_view");
+            //view_text.value = '';
+
+
             if (value == '__class__') {
                 spt.show(wdg);
+                //spt.hide(view_el);
             }
+            else if (value == 'custom_layoutX') {
+                spt.hide(wdg);
+                //spt.show(view_el);
+            }
+ 
             else if (value == '') {
                 spt.hide(wdg);
+                //spt.hide(view_el);
             }
             else {
-                
                 spt.hide(wdg);
+                //spt.hide(view_el);
             }
 
             var values = spt.api.Utility.get_input_values(top);
@@ -1963,7 +1977,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
         # add the class
         tr = table.add_row()
-        if widget_key or not display_class:
+        if widget_key or not display_class or view:
             tr.add_style("display: none")
         tr.add_class("spt_widget_selector_class")
         td = table.add_cell()
@@ -1997,6 +2011,57 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         if display_class:
             class_text.set_value(display_class)
         class_text.add_attr("size", "50")
+
+
+        # add the view
+        """
+        tr = table.add_row()
+        if widget_key or not view:
+            tr.add_style("display: none")
+        tr.add_class("spt_widget_selector_view")
+        td = table.add_cell()
+        td.add("View: ")
+        td.add_style("padding: 5px")
+        td.add_style("padding-left: 14px")
+
+        view_text = TextInputWdg(name="xxx_%s|view" % prefix)
+        table.add_cell(view_text)
+
+        view_text.add_class("spt_widget_view")
+        view_text.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_widget_selector_top");
+            var values = spt.api.Utility.get_input_values(top);
+            var wdg = top.getElement(".spt_widget_options_top");
+            spt.panel.refresh(wdg, values);
+            '''
+        } )
+        view_text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_widget_selector_top");
+            var values = spt.api.Utility.get_input_values(top);
+            var wdg = top.getElement(".spt_widget_options_top");
+            spt.panel.refresh(wdg, values);
+            '''
+        } )
+ 
+        if view:
+            view_text.set_value(view)
+        view_text.add_attr("size", "50")
+        """
+
+
+
+
+
+
+
+
+
+
+
 
         # introspect the widget
         #if not display_class:
@@ -2233,7 +2298,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
         display_class = ''
-        if widget_key and widget_key != '__class__':
+        #if widget_key and widget_key not in ['__class__', 'custom_layout']:
+        if widget_key and widget_key not in ['__class__']:
             handler = WidgetClassHandler()
             display_class = handler.get_display_handler(widget_key)
 
@@ -2244,6 +2310,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
         if not display_class:
             display_class = "pyasm.widget.SimpleTableElementWdg"
+
+
+
+
 
         display_options = self.kwargs.get("display_options")
 
@@ -2260,6 +2330,34 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
         class_options = self.kwargs.get("args_keys")
         category_options = self.kwargs.get("category_keys") or {}
+
+
+
+        # if we have a view from a custom layout
+        #view = None
+        #view = "job.test.task_detail.sample_data"
+        view = web.get_form_value("xxx_%s|view" % prefix)
+        if widget_key != 'custom_layout' and view:
+            search = Search("config/widget_config")
+            search.add_filter("view", view)
+            search.add_filter("category", "CustomLayoutWdg")
+            config = search.get_sobject()
+            if config:
+                config_xml = config.get_xml()
+                node = config_xml.get_node("config//kwargs")
+                value = config_xml.get_node_value(node)
+                if value:
+                    class_options = jsonloads(value)
+                else:
+                    class_options = None
+            else:
+                top.add("Cannot find view [%s]" % view)
+                return top
+                
+
+
+
+
 
         if not class_options:
             class_options = {}
@@ -2316,7 +2414,6 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     xml_value =  xml.get_node_value(node)
                     data = {}
                     try:
-                        from pyasm.common import jsonloads, jsondumps
                         xml_value = eval(xml_value)
                         data = jsondumps(xml_value)
                         data = jsonloads(data)
@@ -2666,10 +2763,11 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             edit_div.add_class("spt_widget_section_edit")
             if is_open == False:
                 edit_div.add_style("display: none")
+            edit_div.add_style("box-sizing: border-box")
             edit_div.add(title_wdg)
            
             edit_div.add_style("padding-bottom: 5px")
-            edit_div.add_style("padding-left: 15px")
+            edit_div.add_style("padding-left: 30px")
 
             #title_wdg.add_style("float: left")
             current_div.add_style("padding-left: 10px")

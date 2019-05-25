@@ -680,6 +680,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
+                print("Error in view [%s]" % self.view)
                 exception_message = exceptions.text_error_template().render()
                 message = "Error in view [%s]: %s" % (self.view, exception_message)
                 ExceptionLog.log(e, message=message)

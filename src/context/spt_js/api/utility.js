@@ -228,6 +228,9 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
         var input = input_list[i];
         var name = input.name;
         var value = values[name];
+        if (typeof(value) == 'undefined') {
+            continue;
+        }
         input.value = value;
     }
 
