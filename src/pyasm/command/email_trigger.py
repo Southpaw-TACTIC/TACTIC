@@ -181,6 +181,7 @@ class EmailTrigger(Trigger):
 
 
                 subject = handler.get_subject()
+                subject = subject.rstrip()
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
@@ -653,10 +654,9 @@ class EmailTrigger2(EmailTrigger):
 
             try:
                 subject = handler.get_subject()
+                subject = subject.rstrip()
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
-                else:
-                    subject = subject[0:60] + " "
                 message = handler.get_message()
             except SObjectValueException, e:
                 raise Exception("Error in running Email handler [%s]. %s" \
@@ -850,9 +850,10 @@ class EmailTriggerThread(threading.Thread):
 class EmailTriggerTestCmd(Command):
     '''This is run in the same thread for the email testing button'''
     def __init__(self, **kwargs):
-        
+        print "IS HEREEEEEEEEEEEEE"
         self.kwargs = kwargs
         self.sender_email = self.kwargs.get('sender_email')
+        print kwargs
 
         if not self.sender_email:
             raise TacticException("Sender's email is empty.")
@@ -946,7 +947,7 @@ class EmailTriggerTest(EmailTrigger2):
     ''' this is needed by Email Test button'''
 
     def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[]):
-
+        print "EMAIL TESTTTTTTTTTTTTTTTTTTTTT"
         cc = set()
         sender = set()
         to_emails = set()
@@ -959,6 +960,9 @@ class EmailTriggerTest(EmailTrigger2):
             total_bcc_emails.update(bcc_emails)
 
         user_email = Environment.get_login().get_full_email()
+        print "USER EMAIL"
+        print user_email
+
         sender.add(user_email)
 
         for x in to_users:
