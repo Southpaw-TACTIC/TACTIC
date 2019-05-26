@@ -2603,7 +2603,7 @@ spt.tab.close = function(src_el) {
                 title_div.add(count_wdg)
                 count_wdg.add_style("float: right")
                 count_wdg.add_style("font-size: 0.7em")
-                count_wdg.add_style("margin-right: 10px")
+                count_wdg.add_style("margin-left: 10px")
                 if count_color:
                     count_wdg.add_style("background", count_color)
 
