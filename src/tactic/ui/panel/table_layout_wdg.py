@@ -6201,6 +6201,10 @@ spt.table.redo_last = function() {
 spt.table.apply_undo_queue = function(undo_queue) {
     var layout = spt.table.get_layout();
     var layout_top = layout.getParent(".spt_layout_top");
+    // sometimes layout_top is null
+    if (!layout_top) {
+        return;
+    }
 
     var undo_queue = layout_top.undo_queue;
 
