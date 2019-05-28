@@ -575,7 +575,10 @@ class Search(Base):
                 assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
                 #self.add_where( "\"%s\" %s '%s'" % (name,op,value))
                 if op in ('in', 'not in'):
-                    values =  value.split('|')
+                    if isinstance(value, basestring):
+                        values = value.split('|')
+                    else:
+                        values = value
                     #avoid empty value
                     values  = [x for x in values if x]
                     self.add_filters(name, values, op=op, table=table)
@@ -5507,6 +5510,40 @@ class SObject(object):
        
         return sobj
     get_by_code = classmethod(get_by_code)
+
+
+    #
+    # Collection Methods
+    #
+    def get_collection_type(self):
+        base_search_type = self.get_base_search_type()
+        parts = base_search_type.split("/")
+        return "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+    def add_to_collection(self, collection):
+        if not collection.get_value("_is_collection", no_exception=True):
+            raise Exception("SObject [%s] is not a collection" % collection.get_code() )
+
+        collection_type = self.get_collection_type()
+
+        search_code = self.get_code()
+        parent_code = collection.get_code()
+
+        search = Search(collection_type)
+        search.add_filter("search_code", search_code)
+        search.add_filter("parent_code", parent_code)
+        item = search.get_sobject()
+        if item:
+            return
+
+        item = SearchType.create(collection_type)
+        item.set_value("search_code", search_code)
+        item.set_value("parent_code", parent_code)
+        item.commit()
+
+
+
+
 
 
     #

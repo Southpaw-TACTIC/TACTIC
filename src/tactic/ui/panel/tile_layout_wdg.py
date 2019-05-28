@@ -16,6 +16,7 @@ import urllib
 
 from pyasm.biz import CustomScript, Project, ProjectSetting
 from pyasm.common import Common
+from pyasm.command import Command
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table, SpanWdg
 from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
@@ -184,6 +185,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
+    def get_kwargs_keys(cls):
+        return ['collection_key']
+    get_kwargs_keys = classmethod(get_kwargs_keys)
 
     def can_select(self):
         return True
@@ -227,6 +231,15 @@ class TileLayoutWdg(ToolLayoutWdg):
         context = self.kwargs.get("context")
         if context:
             search.add_filter("context", context)
+
+
+        collection_key = self.kwargs.get("collection_key")
+        if collection_key:
+            collection = Search.get_by_search_key(collection_key)
+            search2 = Search( collection.get_collection_type() )
+            search2.add_filter("parent_code", collection.get_code() )
+            search2.add_column("search_code")
+            search.add_search_filter("code", search2)
 
         return super(ToolLayoutWdg, self).alter_search(search)
 
@@ -937,197 +950,229 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             format_context = True
 
+        collection_key = self.kwargs.get("collection_key")
+
+        extra_data = self.kwargs.get("extra_data") or {}
+        if isinstance(extra_data, basestring):
+            extra_data = jsonloads(extra_data)
+
+
         if self.upload_mode in ['drop','both']:
             layout_wdg.add_behavior( {
-                'type': 'load',
-                'search_type': search_type,
-                'search_key': self.parent_key,
-                'drop_shadow': self.show_drop_shadow,
-                'process': process,
-                'border_color': border_color,
-                'format_context': format_context,
-                'cbjs_action': '''
+            'type': 'load',
+            'search_type': self.search_type,
+            'search_key': self.parent_key,
+            'collection_key': collection_key,
+            'drop_shadow': self.show_drop_shadow,
+            'process': process,
+            'border_color': border_color,
+            'format_context': format_context,
+            'extra_data': extra_data,
+            'cbjs_action': '''
+            
+            spt.thumb = {};
+
+            spt.thumb.background_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','2px dashed ' + bvr.border_color);
+            }
+            spt.thumb.background_leave = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','none');
+            }
+
+            // background_drop creates an entirely new item based on the file name that is being inserted
+            spt.thumb.background_drop = function(evt, el) {
+
+                el.setStyle('border','none');
+                var top = document.id(el);
+
+                spt.html5upload.clear();
+                var server = TacticServerStub.get();
                 
-                spt.thumb = {};
+                evt.dataTransfer.dropEffect = 'copy';
+                var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
 
-                spt.thumb.background_enter = function(evt, el) {
-                    evt.preventDefault();
-                    el.setStyle('border','2px dashed ' + bvr.border_color);
-                }
-                spt.thumb.background_leave = function(evt, el) {
-                    evt.preventDefault();
-                    el.setStyle('border','none');
-                }
+                var filenames = [];
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
 
-                // background_drop creates an entirely new item based on the file name that is being inserted
-                spt.thumb.background_drop = function(evt, el) {
-                    //evt.stopPropagation();
-                    //evt.preventDefault();
+                    filenames.push(file.name);
+                }   
 
-                    el.setStyle('border','none');
-                    var top = document.id(el);
+                var yes = function() {
 
-                    spt.html5upload.clear();
-                    var server = TacticServerStub.get();
-                    
-                    evt.dataTransfer.dropEffect = 'copy';
-                    var files = evt.dataTransfer.files;
-                    evt.stopPropagation();
-                    evt.preventDefault();
+                    var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
 
-                    var filenames = [];
-                    for (var i = 0; i < files.length; i++) {
-                        var file = files[i];
+                    var upload_complete = function() {
+                        try {
+                            var server = TacticServerStub.get();
+                            server.set_transaction_ticket(ticket);
 
-                        filenames.push(file.name);
-                    }   
-                    
-                    var yes = function() {
-                        spt.app_busy.show("Attaching file");
-
-                            var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
-                            var upload_file_kwargs =  {
-                                files: files,
-                                ticket: ticket,
-                               
-                                upload_complete: function() {
-
-                                    try {
-                                        var server = TacticServerStub.get();
-                                        server.set_transaction_ticket(ticket);
-                                        
-                                        for (var i = 0; i < files.length; i++) {
-                                            var size = files[i].size;
-                                            var file = files[i];
-
-                                            var filename = file.name;
-
-                                            var search_key;
-                                            var data = {
-                                                name: filename
-                                            }
-                                            if (bvr.search_key) {
-                                                search_key = bvr.search_key;
-                                            }
-                                            else {
-                                                var search_type = bvr.search_type;
-                                                var item = server.insert(search_type, data);
-                                                search_key = item.__search_key__;
-                                            }
- 
-                                            if (bvr.format_context) var context = bvr.process + "/" + filename;
-                                            else var context = bvr.process;
-                                        
-                                        
-                                        var kwargs = {mode: 'uploaded'};
-                                        server.simple_checkin( search_key, context, filename, kwargs);
-
-                                        }
-                                        server.finish();
-                                        var layout = el.getParent(".spt_layout");
-                                        spt.table.set_layout(layout);
-                                        spt.table.run_search();
-                                    } catch(e) {
-                                        spt.alert(spt.exception.handler(e));
-                                        server.abort();
-                                    }
+                            // if we have a search_key that is different from the
+                            // search_type, then create a new sobject
+                            var mode = "insert";
+                            if (bvr.search_key) {
+                                if (bvr.search_key.startsWith(bvr.search_type+"?")) {
+                                    mode = "update";
                                 }
-                            };
-                            spt.html5upload.upload_file(upload_file_kwargs);
-
-                            // just support one file at the moment
-                            //break;
-                     
-                        spt.app_busy.hide();
-                    }
-                    spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes);
-                }
-     
-                // noop means inserting a file into an already existing tile
-                spt.thumb.noop_enter = function(evt, el) {
-                    evt.preventDefault();
-                    el.setStyle("box-shadow", "0px 0px 15px #970");
-                }
-                spt.thumb.noop_leave = function(evt, el) {
-                    evt.preventDefault();
-                    if (bvr.drop_shadow)
-                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
-                    else
-                        el.setStyle("box-shadow", "none");
-
-
-                }
-
-                spt.thumb.noop = function(evt, el) {
-                    evt.dataTransfer.dropEffect = 'copy';
-                    var files = evt.dataTransfer.files;
-                    evt.stopPropagation();
-                    evt.preventDefault();
-
-                    if (bvr.drop_shadow)
-                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
-                    else
-                        el.setStyle("box-shadow", "none");
-                    var top = document.id(el);
-                    var thumb_el = top.getElement(".spt_thumb_top");
-
-
-                    var filenames = [];
-                    for (var i = 0; i < files.length; i++) {
-                        var file = files[i];
-                        filenames.push(file.name);
-                    }   
-
-                    // use the parent key if available
-                    var search_key = bvr.search_key ? bvr.search_key : top.getAttribute("spt_search_key");
-                    var yes = function() {
-                        for (var i = 0; i < files.length; i++) {
-                            var size = files[i].size;
-                            var file = files[i];
-
-                            setTimeout( function() {
-                                var loadingImage = loadImage(
-                                    file,
-                                    function (img) {
-                                        img.setStyle("width", "100%");
-                                        img.setStyle("height", "");
-                                        thumb_el.innerHTML = "";
-                                        thumb_el.appendChild(img);
-                                    },
-                                    {maxWidth: 240, canvas: true, contain: true}
-                                );
-                            }, 0 );
-
-
-                            var filename = file.name;
-                            if (bvr.format_context) var context = bvr.process + "/" + filename;
-                            else var context = bvr.process;
-
-                            var upload_file_kwargs =  {
-                                files: files,
-                                upload_complete: function() {
-                                    try {
-                                        var server = TacticServerStub.get();
-                                        var kwargs = {mode: 'uploaded'};
-                                        server.simple_checkin( search_key, context, filename, kwargs);
-                                        spt.notify.show_message("Check-in completed for " + search_key);
-                                    } catch(e) {
-                                        spt.alert(spt.exception.handler(e));
-                                        server.abort();
-                                        
-                                    }
+                                else {
+                                    mode = "child";
                                 }
-                            };
-                            spt.html5upload.upload_file(upload_file_kwargs);
-             
+                            }
+
+                            for (var i = 0; i < files.length; i++) {
+                                var size = files[i].size;
+                                var file = files[i];
+
+                                var filename = file.name;
+
+                                var search_key;
+                                var data = {
+                                    name: filename,
+                                }
+                                for (var key in bvr.extra_data) {
+                                    data[key] = bvr.extra_data[key];
+                                }
+
+                                if (mode == "insert") {
+                                    var search_type = bvr.search_type;
+                                    var item = server.insert(search_type, data, { collection_key: bvr.collection_key} );
+                                    search_key = item.__search_key__;
+                                }
+                                else if (mode == "child") {
+                                    var search_type = bvr.search_type;
+                                    var item = server.insert(search_type, data, { parent_key: bvr.search_key, collection_key: bvr.collection_key });
+                                    search_key = item.__search_key__;
+                                }
+                                else {
+                                    search_key = bvr.search_key;
+                                }
+
+                                if (bvr.format_context)
+                                    var context = bvr.process + "/" + filename;
+                                else
+                                    var context = bvr.process;
+                            
+                            
+                                var kwargs = {mode: 'uploaded'};
+                                server.simple_checkin( search_key, context, filename, kwargs);
+
+                            }
+                            server.finish();
+
+                            var layout = el.getParent(".spt_layout");
+                            spt.table.set_layout(layout);
+                            spt.table.run_search();
+
+                        } catch(e) {
+                            spt.alert(spt.exception.handler(e));
+                            server.abort();
                         }
                     }
-                    
-                    spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes);
-                    
 
+
+                    var upload_file_kwargs =  {
+                        files: files,
+                        ticket: ticket,
+                        upload_complete: upload_complete
+                    };
+                    spt.html5upload.upload_file(upload_file_kwargs);
+
+                    // just support one file at the moment
+                    //break;
+                 
                 }
-                '''
+                spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes);
+            }
+ 
+            // noop means inserting a file into an already existing tile
+            spt.thumb.noop_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle("box-shadow", "0px 0px 15px #970");
+            }
+            spt.thumb.noop_leave = function(evt, el) {
+                evt.preventDefault();
+                if (bvr.drop_shadow)
+                    el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                else
+                    el.setStyle("box-shadow", "none");
+
+
+            }
+
+            spt.thumb.noop = function(evt, el) {
+                evt.dataTransfer.dropEffect = 'copy';
+                var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
+
+                if (bvr.drop_shadow)
+                    el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                else
+                    el.setStyle("box-shadow", "none");
+                var top = document.id(el);
+                var thumb_el = top.getElement(".spt_thumb_top");
+
+
+                var filenames = [];
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    filenames.push(file.name);
+                }   
+
+                // use the parent key if available
+                var search_key = bvr.search_key ? bvr.search_key : top.getAttribute("spt_search_key");
+                var yes = function() {
+                    for (var i = 0; i < files.length; i++) {
+                        var size = files[i].size;
+                        var file = files[i];
+
+                        setTimeout( function() {
+                            var loadingImage = loadImage(
+                                file,
+                                function (img) {
+                                    img.setStyle("width", "100%");
+                                    img.setStyle("height", "");
+                                    thumb_el.innerHTML = "";
+                                    thumb_el.appendChild(img);
+                                },
+                                {maxWidth: 240, canvas: true, contain: true}
+                            );
+                        }, 0 );
+
+
+                        var filename = file.name;
+                        if (bvr.format_context) var context = bvr.process + "/" + filename;
+                        else var context = bvr.process;
+
+                        var upload_file_kwargs =  {
+                            files: files,
+                            upload_complete: function() {
+                                try {
+                                    var server = TacticServerStub.get();
+                                    var kwargs = {mode: 'uploaded'};
+                                    server.simple_checkin( search_key, context, filename, kwargs);
+                                    spt.notify.show_message("Check-in completed for " + search_key);
+                                } catch(e) {
+                                    spt.alert(spt.exception.handler(e));
+                                    server.abort();
+                                    
+                                }
+                            }
+                        };
+                        spt.html5upload.upload_file(upload_file_kwargs);
+         
+                    }
+                }
+                
+                spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes);
+                
+
+            }
+            '''
             } )
 
         
@@ -2319,6 +2364,60 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
 
         return div
+
+
+
+class TileUploadCmd(Command):
+
+    def execute(self):
+        """
+        var search_key;
+        var data = {
+            name: filename
+        }
+        if (bvr.search_key) {
+            search_key = bvr.search_key;
+        }
+        else {
+            var search_type = bvr.search_type;
+            var item = server.insert(search_type, data);
+            search_key = item.__search_key__;
+        }
+        """
+
+        search_key = self.kwargs.get("search_key")
+        search_type = self.kwargs.get("search_type")
+        data = self.kwargs.get("data")
+        if isinstance(data, basestring):
+            data = jsonloads(data)
+
+        if search_key:
+            sobject = Search.get_by_search_key(search_key)
+        else:
+            sobject = SearchType.create(search_type)
+
+        for name, value in data.items():
+            sobject.set_value(name, value)
+        sobject.commit()
+
+
+        # put this asset in a collection
+        collection_key = self.kwargs.get("collection_key")
+        if colletion_key:
+            search = Search.get_by_search_key(collection_key)
+
+
+        #var kwargs = {mode: 'uploaded'};
+        #server.simple_checkin( search_key, context, filename, kwargs);
+
+        # check in file
+        checkin = FileCheckin(sobject=sobject)
+        checkin.execute()
+
+
+ 
+ 
+
 
 
 from pyasm.biz import Snapshot
