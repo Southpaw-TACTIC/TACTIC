@@ -483,8 +483,28 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 scale = scale / 1.05;
                 spt.pipeline.set_scale(scale);
             }
+            else if (key == "1") {
+                var scale = 0.5;
+                spt.pipeline.set_scale(scale);
+            }
+            else if (key == "2") {
+                var scale = 1.0;
+                spt.pipeline.set_scale(scale);
+            }
+            else if (key == "3") {
+                var scale = 1.5;
+                spt.pipeline.set_scale(scale);
+            }
+ 
             else if (key == "backspace" || key == "delete") {
                 spt.pipeline.delete_selected();
+
+            } else if (key == "t") {
+                var class_name = 'tactic.ui.tools.PipelineProcessTypeWdg';
+                var kwargs = {
+                };
+                spt.panel.load_popup("Process Types", class_name, kwargs);
+ 
             }
 
 
@@ -677,6 +697,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add_style("display: none")
         template_div.add_class("spt_pipeline_template")
         inner.add(template_div)
+        template_div.add_class("SPT_TEMPLATE")
 
         node = self.get_node("node", node_type="node")
         node.add_style("left: 0px")
@@ -3078,8 +3099,9 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
     if (typeof(x) == 'undefined' || x == null) {
             var size = canvas.getSize();
-            x = size.x/3 + nodes.length*15;
-            y = size.y/3 + nodes.length*10;
+            var scale = spt.pipeline.get_scale();
+            x = size.x/3 + nodes.length*15*scale;
+            y = size.y/3 + nodes.length*10*scale;
     }
 
     var template_container = top.getElement(".spt_pipeline_template");
@@ -3155,10 +3177,21 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
     // position the node on the canvas
     if (x == 0 && y == 0) {
-            var nodes = spt.pipeline.get_all_nodes();
-            var num_nodes = nodes.length;
-            x = num_nodes * 120 + 50;
-            y = num_nodes * 0 + 50;
+        var nodes = spt.pipeline.get_all_nodes();
+        var num_nodes = nodes.length;
+        x = num_nodes * 120 + 50;
+        y = num_nodes * 0 + 50;
+    }
+
+
+    // check if there are any nodes on this exact position
+    for (var i = 0; i < nodes.length; i++) {
+        var pos = spt.pipeline.get_position(nodes[i]);
+        if (pos.x == x && pos.y == y) {
+            x += 10;
+            y += 10;
+        }
+
     }
 
 
@@ -4072,22 +4105,23 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
 
     var data = spt.pipeline.get_data();
     var canvas = spt.pipeline.get_canvas();
-    var canvas_pos = spt.pipeline.get_el_position(canvas);
 
     var scale = spt.pipeline.get_scale();
+    var translate = spt.pipeline.get_translate();
+
     var node;
     var node_pos;
-    var node_lastpos;
 
     if (data.line_mode == 'bezier' || data.line_mode == 'curved_edge') {
         node = bvr.src_el.getParent(".spt_pipeline_node");
+
         node_pos = spt.pipeline.get_position(node);
-        node_lastpos = spt.pipeline.get_el_last_position(node);
-
         var size = spt.pipeline.get_size(node);
+        node_pos = { x: (node_pos.x+size.x)*scale, y: (node_pos.y+size.y/2)*scale };
 
-        node_pos = { x: (node_pos.x + size.x), y: (node_pos.y + size.y/2)};
-
+        var paint = spt.pipeline.get_paint();
+        var offset = canvas.getPosition(paint);
+        node_pos = { x: (node_pos.x+offset.x), y: (node_pos.y + offset.y)};
     }
     else {
         node = bvr.src_el.getParent(".spt_pipeline_node");
@@ -4095,6 +4129,7 @@ spt.pipeline.drag_connector_motion = function(evt, bvr, mouse_411) {
         node_pos = { x: (node_pos.x + 50), y: (node_pos.y + 20)};
 
     }
+
 
     var rel_pos = spt.pipeline.get_mouse_position(mouse_411);
 
@@ -4198,12 +4233,18 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     if (to_node == null) {
 
         var pos = spt.pipeline.get_mouse_position(mouse_411);
+
+        var scale = spt.pipeline.get_scale();
+        var paint = spt.pipeline.get_paint();
+        var offset = canvas.getPosition(paint);
+        pos = { x: (pos.x-offset.x)/scale, y: (pos.y - offset.y)/scale};
+
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
-        // FIXME: hard coded
 
+        // FIXME: hard coded
         var height = 40;
-        spt.pipeline.move_to(to_node, pos.x-height/2, pos.y);
+        spt.pipeline.move_to(to_node, pos.x, pos.y-height/2);
     }
 
     if (to_node != null) {
@@ -4650,12 +4691,17 @@ spt.pipeline.draw_curved_edge_line = function(start, end, color) {
     ctx.stroke();
 }
 
-spt.pipeline.draw_text = function(text, x, y) {
+spt.pipeline.draw_text = function(text, x, y, color) {
     var ctx = spt.pipeline.get_ctx();
-    ctx.fillStyle = '#DE4A18';
-    ctx.font = 'normal 11px sans-serif';
+    if (!color) {
+        //color = "#DE4A18";
+        color = "#666";
+    }
+    ctx.fillStyle = color;
+    var scale = spt.pipeline.get_scale();
+    var font_size = 11*scale;
+    ctx.font = 'normal '+font_size+'px sans-serif';
     ctx.fillText(text, x, y);
-
 }
 
 spt.pipeline.draw_line = function(start, end, color) {
@@ -5444,6 +5490,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
 
         }
 
+        var show_output_attr = true;
 
         if (show_attr) {
             var node = this.from_node;
@@ -5464,6 +5511,27 @@ spt.pipeline.Connector = function(from_node, to_node) {
                 spt.pipeline.draw_text(to_attr, to_pos.x + to_dx, to_pos.y + to_dy);
             }
         }
+
+        else if (show_output_attr) {
+            var node = this.from_node;
+            attrs = this.get_attrs();
+            if (attrs) {
+                var scale = spt.pipeline.get_scale();
+
+                var from_attr = attrs['from_attr'] ? attrs['from_attr'] : 'output';
+                if (from_attr != 'output') {
+                    var to_attr = attrs['to_attr'] ? attrs['to_attr'] : 'input';
+
+                    var from_dx =  (to_pos.x - from_pos.x) / 2 + 5*scale;
+                    var from_dy =  (to_pos.y - from_pos.y) / 2 + 5*scale;
+
+                    spt.pipeline.draw_text(from_attr, from_pos.x + from_dx, from_pos.y + from_dy);
+                }
+            }
+        }
+
+
+
 
 
     }

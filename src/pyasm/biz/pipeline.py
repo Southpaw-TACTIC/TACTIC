@@ -978,7 +978,7 @@ class Pipeline(SObject):
 	    if process == start:
 		return
 
-	    input_processes = self.get_input_processes(process)
+	    input_processes = self.get_input_processes(process, to_attr="input")
 	    if not input_processes:
 		return
 

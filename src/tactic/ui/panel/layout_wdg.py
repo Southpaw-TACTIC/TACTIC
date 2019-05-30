@@ -706,7 +706,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         title_wdg = DivWdg()
         content_wdg.add(title_wdg)
         title_wdg.add_style("padding: 10px 3px")
-        title_wdg.add_color("background", "background3")
+        #title_wdg.add_color("background", "background3")
+        title_wdg.add_style("border-bottom", "solid 1px #DDD")
         title_wdg.add_color("color", "color")
         title_wdg.add_style("margin: 0px -10px 5px -10px")
 
@@ -772,24 +773,17 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         security = Environment.get_security()
 
 
-        #filtered_element_names = ['preview', 'summary']
-        filtered_element_names = []
-
         count = 0
         for element_name in element_names:
 
-            if filtered_element_names and element_name not in filtered_element_names:
-                continue
-
             count += 1
-
-
 
             menu_item = DivWdg(css='hand')
             menu_item.add_class("spt_column")
             menu_item.add_style("height: 28px")
             menu_item.add_style("display: flex")
             menu_item.add_style("align-items: center")
+            menu_item.add_style("padding-left: 10px")
 
 
 
@@ -845,13 +839,18 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             title = title.replace("\n", " ")
             title = title.replace("\\n", " ")
 
+            if title.find("->") != -1:
+                parts = title.split("->")
+                title = parts[1]
+
+
             if len(title) > 45:
                 title = "%s ..." % title[:42]
             else:
                 title = title
 
 
-            full_title = "%s <i style='opacity: 0.5'>(%s)</i>" % ( title, element_name)
+            full_title = "%s &nbsp; <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % ( title, element_name)
             display_title = full_title
             
 
@@ -916,10 +915,27 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         search_type_obj = SearchType.get(search_type)
 
 
-        #self.current_elements = ['asset_library', 'code']
         self.current_elements = self.kwargs.get('element_names')
         if not self.current_elements:
             self.current_elements = []
+
+
+        # for testing purposes
+        is_admin = self.kwargs.get("is_admin")
+        if is_admin in ['false', False]:
+            self.is_admin = False
+        else:
+            self.is_admin = Environment.get_security().is_admin()
+        self.is_admin = False
+
+
+
+        self.extra_elements = self.kwargs.get("extra_element_names")
+        if self.extra_elements:
+            self.all_element_names = self.current_elements[:]
+            self.all_element_names.extend(self.extra_elements)
+        else:
+            self.all_element_names = []
 
 
 
@@ -927,26 +943,47 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
 
-        #popup_wdg = PopupWdg(id=self.kwargs.get("popup_id"), opacity="0", allow_page_activity="true", width="400px")
-        #title = "Column Manager (%s)" % search_type
-        #popup_wdg.add(title, "title")
-
         # hardcode to insert at 3, this will be overridden on client side
         widget_idx = 3
 
         top.add_color("background", "background")
         top.add_border()
 
-        shelf_wdg = DivWdg()
-        top.add(shelf_wdg)
-        #context_menu.add(shelf_wdg)
-        shelf_wdg.add_style("padding: 5px 5px 0px 5px")
+        # shelf widget sholuld only be seen by admin
+        if self.is_admin:
+
+            shelf_wdg = DivWdg()
+            top.add(shelf_wdg)
+            shelf_wdg.add_style("padding: 5px 5px 0px 5px")
 
 
-        from tactic.ui.app import HelpButtonWdg
-        help_button = HelpButtonWdg(alias='main')
-        shelf_wdg.add(help_button)
-        help_button.add_style("float: right")
+
+            from tactic.ui.app import HelpButtonWdg
+            help_button = HelpButtonWdg(alias='main')
+            shelf_wdg.add(help_button)
+            help_button.add_style("float: right")
+
+
+
+            from tactic.ui.widget import ActionButtonWdg
+            add_button = ActionButtonWdg(title="Add")
+            shelf_wdg.add(add_button)
+            shelf_wdg.add("<br clear='all'/>")
+
+            title = self.kwargs.get("title")
+            add_button.add_behavior( {
+                'type': 'click_up',
+                'title': title,
+                'search_type': search_type,
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.startup.column_edit_wdg.ColumnEditWdg';
+                var kwargs = {
+                    search_type: bvr.search_type
+                }
+                spt.panel.load_popup(bvr.title, class_name, kwargs);
+                '''
+            } )
+
 
 
         context_menu = DivWdg()
@@ -962,56 +999,37 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
 
-        from tactic.ui.widget import ActionButtonWdg
-        add_button = ActionButtonWdg(title="Add")
-        shelf_wdg.add(add_button)
-        shelf_wdg.add("<br clear='all'/>")
-
-        title = self.kwargs.get("title")
-        add_button.add_behavior( {
-            'type': 'click_up',
-            'title': title,
-            'search_type': search_type,
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.startup.column_edit_wdg.ColumnEditWdg';
-            var kwargs = {
-                search_type: bvr.search_type
-            }
-            spt.panel.load_popup(bvr.title, class_name, kwargs);
-            '''
-        } )
-
-
-
         self.config = WidgetConfigView.get_by_search_type(search_type, "definition")
 
         predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()
 
         # define a finger menu
-        finger_menu, menu = self.get_finger_menu()
-        context_menu.add(finger_menu)
+        #finger_menu, menu = self.get_finger_menu()
+        #context_menu.add(finger_menu)
 
-        menu.set_activator_over(context_menu, "spt_column", top_class='spt_column_manager', offset={'x':10,'y':0})
-        menu.set_activator_out(context_menu, "spt_column", top_class='spt_column_manager')
-
+        ##menu.set_activator_over(context_menu, "spt_column", top_class='spt_column_manager', offset={'x':10,'y':0})
+        #menu.set_activator_out(context_menu, "spt_column", top_class='spt_column_manager')
 
 
 
         defined_element_names = []
         for config in self.config.get_configs():
+            #if config.get_view() not in ['definition', 'default_definition']:
             if config.get_view() != 'definition':
                 continue
             file_path = config.get_file_path()
-            #print("file_path: ", file_path)
+            #if file_path == 'generated':
             if file_path and file_path.endswith("DEFAULT-conf.xml") or file_path == 'generated':
                 continue
 
             element_names = config.get_element_names()
+
             for element_name in element_names:
 
                 if element_name not in defined_element_names:
                     defined_element_names.append(element_name)
+
 
         column_info = SearchType.get_column_info(search_type)
         columns = column_info.keys()
@@ -1022,17 +1040,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             if column not in defined_element_names:
                 defined_element_names.append(column)
 
-        #definition_config = self.config.get_definition_config()
-        #if definition_config:
-        #    defined_element_names = definition_config.get_element_names()
-        #else:
-        #    #defined_element_names = self.config.get_element_names()
-        #    defined_element_names = []
-
-        defined_element_names.sort()
-        title = 'Custom Widgets'
-        context_menu.add( self.get_columns_wdg(title, defined_element_names, is_open=True) )
-
 
 
         # Add custom layout widgets
@@ -1040,17 +1047,32 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         search.add_filter("widget_type", "column")
         configs = search.get_sobjects()
         if configs:
-            element_names = [x.get_value("view") for x in configs]
+            config_element_names = [x.get_value("view") for x in configs]
 
-            title = "Custom Layout Columns"
-            context_menu.add( self.get_columns_wdg(title, element_names) )
+            defined_element_names.extend(config_element_names)
+
+
+        if self.all_element_names:
+            self.all_element_names.sort()
+            title = 'Columns'
+            context_menu.add( self.get_columns_wdg(title, self.all_element_names, is_open=True) )
+
+        else:
+            defined_element_names.sort()
+            title = 'Columns'
+            context_menu.add( self.get_columns_wdg(title, defined_element_names, is_open=True) )
+
+
+
 
 
 
         # Add predefined columns
 
         show_builtin_columns = self.kwargs.get("show_builtin_columns")
-        if show_builtin_columns not in [False, 'false']:
+
+        # admin site will always show all builtin
+        if self.is_admin or show_builtin_columns in [True, 'true']:
             def_db_config = WidgetDbConfig.get_by_search_type("ALL", "definition")
             if def_db_config:
                 element_names = def_db_config.get_element_names()

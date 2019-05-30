@@ -357,6 +357,8 @@ class GeneralFilterWdg(BaseFilterWdg):
         # add the hidden template filter
         dummy_div = DivWdg()
         top_wdg.add(dummy_div)
+        dummy_div.add_class("SPT_TEMPLATE")
+
         dummy_div.add("Templates<hr/>")
         dummy_div.add_style('display: none')
         dummy_div.add_style("border: solid 1px blue")

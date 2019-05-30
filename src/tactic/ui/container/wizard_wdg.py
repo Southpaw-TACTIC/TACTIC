@@ -69,6 +69,10 @@ class WizardWdg(BaseRefreshWdg):
         top.add(inner)
         inner.add_style("width: %s" % width)
 
+        inner.add_style("display: flex")
+        inner.add_style("flex-direction: column")
+
+
         title = self.kwargs.get("title")
         if not title:
             title = "none"
@@ -119,15 +123,16 @@ class WizardWdg(BaseRefreshWdg):
 
         header_wdg = self.get_header_wdg()
         inner.add(header_wdg)
-        #header_wdg.add_color("background", "background", -5)
-        header_wdg.add_class("spt_popup_header")
+
+        # Removing these because they don't work very well ... produces double scrollbars
+        #header_wdg.add_class("spt_popup_header")
 
         inner.add("<br/>")
 
         inner.add("<hr/>")
 
         pages_div = DivWdg()
-        pages_div.add_class("spt_popup_body")
+        #pages_div.add_class("spt_popup_body")
         inner.add(pages_div)
         pages_div.add_style("overflow-y: auto")
 
@@ -154,7 +159,7 @@ class WizardWdg(BaseRefreshWdg):
 
         pages_div.add("<hr/>")
         bottom_wdg = self.get_bottom_wdg()
-        bottom_wdg.add_class("spt_popup_footer")
+        #bottom_wdg.add_class("spt_popup_footer")
         inner.add(bottom_wdg)
 
         return top
