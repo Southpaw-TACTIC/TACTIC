@@ -1241,6 +1241,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if not self.can_expand():
             show_expand = False
+        # DISABLE as it doesn't make any sense any more
+        show_expand = False
  
         expand_wdg = None
         if show_expand:
@@ -2083,12 +2085,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         search_type_obj = SearchType.get(self.search_type)
 
+
+        extra_element_names = self.kwargs.get("extra_element_names") or []
+        if isinstance(extra_element_names, basestring):
+            extra_element_names = extra_element_names.split(",")
+
         button.add_behavior( {
             'type': 'click_up',
             'class_name': 'tactic.ui.panel.AddPredefinedColumnWdg',
             "args": {
                 'title': 'Column Manager',
                 'search_type': self.search_type,
+                'extra_element_names': extra_element_names,
             },
             'cbjs_action': '''
                 var table = bvr.src_el.getParent('.spt_table');
@@ -2106,9 +2114,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
                 bvr.args.element_names = element_names;
 
-                var class_name = 'tactic.ui.panel.AddPredefinedColumnWdg';
-
-                var popup = spt.panel.load_popup(bvr.args.title, class_name, bvr.args);
+                var popup = spt.panel.load_popup(bvr.args.title, bvr.class_name, bvr.args);
                 popup.activator = bvr.src_el;
                 popup.panel = panel;
                 ''',

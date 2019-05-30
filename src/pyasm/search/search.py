@@ -1870,7 +1870,7 @@ class Search(Base):
         if not num_sobjects:
             num_sobjects = 0
         num_sobjects = num_sobjects + len(results)
-        if len(results) > 1000:
+        if len(results) > 10000:
             print("WARNING query: (%s) sobjects found: %s" % (len(results), statement.encode('utf-8','ignore')))
         Container.put("NUM_SOBJECTS", num_sobjects)
 

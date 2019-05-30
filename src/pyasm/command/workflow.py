@@ -1904,7 +1904,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
         if not triggers:
             triggers = {}
 
-        return self.handle_condition_node(self.sobject, self.pipeline, self.process, triggers)
+        self.handle_complete()
+        self.handle_condition_node(self.sobject, self.pipeline, self.process, triggers)
 
 
 

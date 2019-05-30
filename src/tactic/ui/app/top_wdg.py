@@ -621,6 +621,7 @@ class TopWdg(Widget):
         cal_wdg = CalendarWdg(css_class='spt_calendar_template_top')
         cal_wdg.top.add_style('display: none')
         top.add(cal_wdg)
+        cal_wdg.add_class("SPT_TEMPLATE")
 
 
         if self.widgets:
@@ -864,6 +865,16 @@ class TopWdg(Widget):
         top.add(script)
 
 
+        # add in some global switches
+        remove_bvr_attrs = ProjectSetting.get_value_by_key("feature/remove_bvr_attrs")
+        if remove_bvr_attrs == "true":
+            script = HtmlElement.script('''
+            spt.behavior.remove_bvr_attrs = true;
+            ''')
+            top.add(script)
+
+
+
         # add a global container for commonly used widgets
         div = DivWdg()
         top.add(div)
@@ -917,6 +928,7 @@ class TopWdg(Widget):
 
         # create another general popup
         popup_div = DivWdg()
+        popup_div.add_class("SPT_TEMPLATE")
         popup_div.set_id("popup_container")
         popup_div.add_class("spt_panel")
         popup = PopupWdg(id="popup_template",destroy_on_close=True)

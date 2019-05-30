@@ -1616,15 +1616,10 @@ class DbPasswordUtil(object):
     def get_password(cls):
         coded = Config.get_value("database", "password")
 
-        """
-        if Config.get_value("database", "vendor") == 'SQLServer':
-            print("WARNING: SQLServer implementation does not support encoded keys for database passwords")
-            return coded
-        """
         if not coded or coded == "none":
             return ""
 
-        if len(coded) < 64:
+        if len(coded) < 128:
             return coded
 
         from pyasm.security import CryptoKey

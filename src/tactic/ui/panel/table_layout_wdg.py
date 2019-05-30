@@ -248,7 +248,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
     def get_kwargs_keys(cls):
-        return ['select_color', 'js_load']
+        return ['select_color', 'js_load', "extra_columns"]
     get_kwargs_keys = classmethod(get_kwargs_keys)
 
 
@@ -2049,6 +2049,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         row = self.handle_row(table, insert_sobject, row=0)
+        row.add_class("SPT_TEMPLATE")
         row.add_class("spt_table_insert_row spt_clone")
         # to make focusable
         row.add_attr('tabIndex','-1')
