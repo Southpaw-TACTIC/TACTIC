@@ -7240,7 +7240,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         td.add_style("width: 250px")
         td.add_attr("title", "Nodes can grouped together within a workflow")
         #td.add_style("width: 200px")
-        text_name = "spt_property_group"
+        text_name = "group"
         text = TextWdg(text_name)
         text.add_class(text_name)
         self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
@@ -7250,11 +7250,11 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             th.add_style("height: 30px")
             
             # completion (visibility depends on sType)
-            table.add_row(css='spt_property_status_completion')
+            table.add_row(css='status_completion')
             td = table.add_cell('Completion (0 to 100):')
             td.add_attr("title", "Determines the completion level that this node represents.")
 
-            text_name = "spt_property_completion"
+            text_name = "completion"
             text = TextInputWdg(name=text_name, type="number")
             text.add_class(text_name)
             self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
@@ -7276,7 +7276,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
            
 
             # task_pipeline  (visibility depends on sType)
-            table.add_row(css='spt_property_task_status_pipeline')
+            table.add_row(css='task_status_pipeline')
             td = table.add_cell('Task Status Workflow')
             td.add_attr("title", "The task status workflow determines all of the statuses that occur within this process")
 
@@ -7335,7 +7335,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         td = table.add_cell('Default Start to End Duration:')
         td.add_attr("title", "The default duration determines the starting duration of a task that is generated for this process")
 
-        text_name = "spt_property_duration"
+        text_name = "duration"
         text = TextWdg(text_name)
         text.add_style("width: 40px")
         text.add_class(text_name)
@@ -7351,7 +7351,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         td = table.add_cell('Expected Work Hours:')
         td.add_attr("title", "The default bid duration determines the estimated number of hours will be spent on this task.")
 
-        text_name = "spt_property_bid_duration"
+        text_name = "bid_duration"
         text = TextWdg(text_name)
         text.add_style("width: 40px")
         text.add_class(text_name)
@@ -7395,7 +7395,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         td = table.add_cell('Color:')
         td.add_attr("title", "Used by various parts of the interface to show the color of this process.")
 
-        text_name = "spt_property_color"
+        text_name = "color"
         text = TextWdg(text_name)
         color = ColorInputWdg(text_name)
         color.set_input(text)
@@ -7409,7 +7409,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell('Label:')
 
-        text_name = "spt_property_label"
+        text_name = "label"
         text = TextWdg(text_name)
         text.add_class(text_name)
         self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
@@ -7481,15 +7481,15 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         autocreate_task = True if self.workflow.get("autocreate_task") == True else False
 
         return {
-            "spt_property_group": self.workflow.get("spt_property_group"),
-            "spt_property_completion": self.workflow.get("spt_property_completion"),
+            "group": self.workflow.get("group"),
+            "completion": self.workflow.get("completion"),
             "task_pipeline": self.workflow.get("task_pipeline"),
             "assigned_group": self.workflow.get("assigned_group"),
             "supervisor_group": self.workflow.get("supervisor_group"),
-            "spt_property_duration": self.workflow.get("spt_property_duration"),
-            "spt_property_bid_duration": self.workflow.get("spt_property_bid_duration"),
-            "spt_property_color": self.workflow.get("spt_property_color"),
-            "spt_property_label": self.workflow.get("spt_property_label"),
+            "duration": self.workflow.get("duration"),
+            "bid_duration": self.workflow.get("bid_duration"),
+            "color": self.workflow.get("color"),
+            "label": self.workflow.get("label"),
             "task_creation": task_creation,
             "autocreate_task": autocreate_task
         }
