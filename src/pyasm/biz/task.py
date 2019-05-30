@@ -1756,7 +1756,7 @@ class TaskGenerator(object):
             duration = attrs.get("duration")
             if duration:
                 duration = int(duration)
-            else if workflow.get("duration"):
+            elif workflow.get("duration"):
                 duration = workflow.get("duration")
             else:
                 duration = default_duration
@@ -1764,7 +1764,7 @@ class TaskGenerator(object):
             bid_duration = attrs.get("bid_duration")
             if bid_duration:
                 bid_duration = int(bid_duration)
-            else if workflow.get("bid_duration"):
+            elif workflow.get("bid_duration"):
                 bid_duration = workflow.get("bid_duration")
             else:
                 bid_duration = default_bid_duration
