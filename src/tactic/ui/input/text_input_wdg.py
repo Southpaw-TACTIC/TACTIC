@@ -237,6 +237,7 @@ class TextInputWdg(BaseInputWdg):
 
         super(TextInputWdg, self).__init__(self.name)
 
+
         self.icon = self.kwargs.get("icon")
         self.icon_pos = self.kwargs.get("icon_pos")
         if not self.icon_pos:
@@ -816,6 +817,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             if (kwargs.validate != false) {
                 //src_el.setStyle("background", "#A99");
                 src_el.addClass("spt_invalid");
+            } else {
+                src_el.value = '';
             }
         }
         else {
@@ -878,7 +881,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'do_search': do_search,
             'results_on_blur': results_on_blur,
             'cbjs_action': '''
-          
+         
+            console.log(bvr);
             // put a delay in here so that a click in the results
             // has time to register
             var validate = bvr.validate == 'True';
@@ -891,19 +895,21 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 spt.text_input.last_index = 0;
                 spt.text_input.index = -1;
 
-                // if there is value_column and something in the input, it tries to validate 
-                if (bvr.value_column) {
-                    var hidden_el = top.getElement(".spt_text_value");
-                    if (bvr.src_el.value) {
-                        var display_value = bvr.src_el.value;
-                        var value = hidden_el.value;
+                var hidden_el = top.getElement(".spt_text_value");
+                if (bvr.src_el.value) {
+                    var display_value = bvr.src_el.value;
+                    var value = hidden_el.value;
+                    
+                    if (bvr.value_column) {
                         var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
                         spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
                     } else {
-                        hidden_el.value ='';
+                        hidden_el.value = display_value; 
                     }
-                        
+                } else {
+                    hidden_el.value ='';
                 }
+                    
             }, 250 );
 
             '''

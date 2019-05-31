@@ -339,6 +339,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             
         self.separate_behaviors = ProjectSetting.get_value_by_key("custom_layout_editor/behavior_separation") \
             in ['true', 'True', True]
+        
+        self.ace_editor_style = ProjectSetting.get_value_by_key("custom_layout_editor/ace_editor_style") \
+            in ['true', 'True', True]
     
 
         self.plugin = None
@@ -1106,72 +1109,55 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             tab.add(mako_div)
             mako_div.set_name("python")
             
-            title_wdg = self.get_title_wdg("Python", content_id, is_on=True)
-            mako_div.add(title_wdg)
-
             editor = AceEditorWdg(width="100%", language="python", code=mako, show_options=False, editor_id='custom_layout_mako')
             self.mako_editor_id = editor.get_editor_id()
+            title_wdg = self.get_title_wdg("Python", self.mako_editor_id, is_on=True)
+            
+            mako_div.add(title_wdg)
             mako_div.add(editor)
 
-            """
-            text = TextAreaWdg("mako")
-            text.add_class("spt_mako")
-            text.add_class("spt_python")
-            content_id = text.set_unique_id()
-            
-            mako_div.add(text)
-            text.add_style("width: 100%")
-            text.add_style("height: 400px")
-            text.add_style("min-height: 300px")
-            text.add_style("font-size: 12px")
-            text.add_style("font-family: courier")
-            text.add_style("margin: 0 -1 0 -1")
-            #text.add_style("padding-left: 3px")
-            text.set_value(mako)
-            text.add_behavior( {
-                'type': 'mouseout',
-                'cbjs_action': '''
-                var size = bvr.src_el.getSize();
-                spt.container.set_value("CustomLayoutEditor::size", size);
-                '''
-            } )
-            text.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                var size = spt.container.get_value("CustomLayoutEditor::size")
-                if (size) {
-                    bvr.src_el.setStyle("width", size.x);
-                    bvr.src_el.setStyle("height", size.y);
-                }
-                '''
-            } )
-            """
 
 
             # styles
-            style_div = DivWdg()
-            tab.add(style_div)
-            style_div.set_name("Styles")
+            
+            if self.ace_editor_style:
+                if style.startswith('\n'):
+                    style = style[1:]
+                
+                style_div = DivWdg()
+                style_div.add_class("spt_style_tab")
+                tab.add(style_div)
+                style_div.set_name("Styles")
+                
+                editor = AceEditorWdg(width="100%", language="css", code=style, show_options=False, editor_id='custom_layout_css')
+                self.style_editor_id = editor.get_editor_id()
+                title_wdg = self.get_title_wdg("Style", self.style_editor_id, is_on=True)
+                
+                style_div.add(title_wdg)
+                style_div.add(editor)
 
-            text = TextAreaWdg("style")
-            text.add_class("spt_style")
-            content_id = text.set_unique_id()
-            #text.add_style("display: none")
+            else:
+                style_div = DivWdg()
+                tab.add(style_div)
+                style_div.set_name("Styles")
 
-            title_wdg = self.get_title_wdg("Styles", content_id, is_on=True)
-            style_div.add(title_wdg)
+                text = TextAreaWdg("style")
+                text.add_class("spt_style")
+                content_id = text.set_unique_id()
+                #text.add_style("display: none")
 
-            style_div.add(text)
-            text.add_style("width: 100%")
-            text.add_style("height: 300px")
-            text.add_style("min-height: 300px")
-            text.add_style("font-size: 12px")
-            text.add_style("font-family: courier")
-            text.set_value(style)
+                title_wdg = self.get_title_wdg("Styles", content_id, is_on=True)
+                style_div.add(title_wdg)
 
-            #right_div.add("<br/>"*2)
+                style_div.add(text)
+                text.add_style("width: 100%")
+                text.add_style("height: 300px")
+                text.add_style("min-height: 300px")
+                text.add_style("font-size: 12px")
+                text.add_style("font-family: courier")
+                text.set_value(style)
 
-
+                #right_div.add("<br/>"*2)
 
             # behaviors
             behavior_div = DivWdg()
@@ -1370,7 +1356,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                             value = value[1:]
                         if value.endswith('\n'):
                             value = value[:-1]
-                        editor = AceEditorWdg(width="100%", language="javascript", code=value, show_options=False, editor_id='custom_layout_behavior')
+                        editor = AceEditorWdg(
+                            width="100%", 
+                            language="javascript", 
+                            code=value, 
+                            show_options=False, 
+                            editor_id='custom_layout_behavior',
+                            dynamic_height=True
+                        )
                         content_div.add(editor)
 
 
@@ -1586,6 +1579,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         button.add_behavior( {
             'type': 'click_up',
+            'ace_editor_style': self.ace_editor_style,
             'separate_behaviors': self.separate_behaviors,
             'editor_id': self.editor_id,
             'cbjs_action': r'''
@@ -1614,7 +1608,18 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var view = values.view;
             var widget_type = values.widget_type;
             var code = values.code;
-            var style = values.style;
+
+            if (bvr.ace_editor_style) {
+                style_tab = top.getElement(".spt_style_tab");
+                spt.ace_editor.set_editor_top(style_tab);
+                var style = spt.ace_editor.get_value();
+                //FIXME: get_value appends newline onto beginning.
+                if (style && style.startsWith("\n")) {
+                    style = style.substring(1);
+                }
+            } else var style = values.style;
+            
+            
             var kwargs = values.kwargs;
 
             if (bvr.separate_behaviors) var behavior = spt.custom_layout_editor.compile_behaviors(values);
@@ -1695,6 +1700,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button.add_behavior( {
             'type': 'click_up',
             'separate_behaviors': self.separate_behaviors,
+            'ace_editor_style': self.ace_editor_style,
             'cbjs_action': r'''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             var values = spt.api.Utility.get_input_values(top, null, false);
@@ -1711,6 +1717,18 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 mako = mako.substring(1);
             }
             values.mako = mako;
+            
+            if (bvr.ace_editor_style) {
+                style_tab = top.getElement(".spt_style_tab");
+                spt.ace_editor.set_editor_top(style_tab);
+                var style = spt.ace_editor.get_value();
+                //FIXME: get_value appends newline onto beginning.
+                if (style && style.startsWith("\n")) {
+                    style = style.substring(1);
+                }
+                values.style = style;
+            }
+            
 
             values.is_test = true;
 
