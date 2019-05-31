@@ -1750,22 +1750,24 @@ class TaskGenerator(object):
             attrs = process_obj.get_attributes()
 
 
+            workflow = process_sobject.get_json_value("workflow") or {}
+
 
             duration = attrs.get("duration")
             if duration:
                 duration = int(duration)
+            elif workflow.get("duration") and workflow.get("duration").isdigit():
+                duration = int(workflow.get("duration"))
             else:
                 duration = default_duration
 
             bid_duration = attrs.get("bid_duration")
-            if not bid_duration:
-                bid_duration = default_bid_duration
-            else:
+            if bid_duration:
                 bid_duration = int(bid_duration)
-
-
-            workflow = process_sobject.get_json_value("workflow") or {}
-
+            elif workflow.get("bid_duration") and workflow.get("bid_duration").isdigit():
+                bid_duration = int(workflow.get("bid_duration"))
+            else:
+                bid_duration = default_bid_duration
 
 
             task_type = workflow.get("task_type")
