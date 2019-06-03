@@ -1832,14 +1832,6 @@ class IngestUploadCmd(Command):
 
 
         end = time.time()
-        print "---"
-        print "---"
-        print "---"
-        print "total: ", end - start
-        print "---"
-        print "---"
-        print "---"
-
         return ret_val
 
 
@@ -2260,8 +2252,19 @@ class IngestUploadCmd(Command):
                     sobject.set_value("relative_dir", category)
             """
 
+
+            # commit sobject
             sobject.commit()
             search_key = sobject.get_search_key()
+
+
+            # add to a collection if specified
+            collection_key = self.kwargs.get("collection_key")
+            if collection_key:
+                collection = Search.get_by_search_key(collection)
+                sobject.add_to_collection(collection)
+
+
 
             status = sobject.get_value("status", no_exception=True)
             is_verified = status in ['Verified']

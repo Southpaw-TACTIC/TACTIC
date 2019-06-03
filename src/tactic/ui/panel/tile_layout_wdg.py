@@ -15,7 +15,7 @@ import re, os
 import urllib
 
 from pyasm.biz import CustomScript, Project, ProjectSetting
-from pyasm.common import Common
+from pyasm.common import Common, jsonloads, jsondumps
 from pyasm.command import Command
 from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table, SpanWdg
@@ -681,6 +681,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         if not mode:
             mode = "gallery"
 
+        # Force this for now (media)
+        mode = 'gallery'
+
         
         gallery_width = self.kwargs.get("gallery_width")
         if not gallery_width:
@@ -1074,7 +1077,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     }
 
 
-                    var upload_file_kwargs =  {
+                    var upload_file_kwargs = {
                         files: files,
                         ticket: ticket,
                         upload_complete: upload_complete
@@ -1085,7 +1088,42 @@ class TileLayoutWdg(ToolLayoutWdg):
                     //break;
                  
                 }
-                spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes);
+
+
+                //var use_ingest = true;
+                var use_ingest = false;
+                if (use_ingest) {
+                    console.log("extra_data");
+                    console.log(bvr.extra_data);
+                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    var kwargs = {
+                        context_mode: 'case_sensitive',
+                        extra_data: bvr.extra_data,
+                        collection_key: bvr.collection_key,
+                        hidden_options: 'process',
+                        on_complete: function() {
+                            var layout = el.getParent(".spt_layout");
+                            spt.table.set_layout(layout);
+                            spt.table.run_search();
+                        },
+                        search_type: bvr.search_type,
+                        show_settings: true,
+                    }
+                    var popup = spt.panel.load_popup("Ingest Files", class_name, kwargs);
+
+                    var el = popup.getElement(".spt_to_ingest_files");
+                    spt.drag.noop(evt, el);
+
+                }
+
+                else if (filenames.length == 1) {
+                    //spt.confirm('Add file [' + filenames[0] + ']?', yes);
+                    yes();
+                }
+                else {
+                    spt.confirm('Add '+filenames.length+' files?', yes);
+                }
+
             }
  
             // noop means inserting a file into an already existing tile

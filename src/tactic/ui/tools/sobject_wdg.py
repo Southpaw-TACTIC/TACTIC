@@ -107,7 +107,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("padding: 10px 15px")
 
-
         title = DivWdg()
         div.add(title)
         title.add_style("text-overflow: ellipsis")
@@ -199,8 +198,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         top = self.top
         top.add_class("spt_detail_top")
-        #top.add_color("background", "background")
-        #top.add_color("color", "color")
 
 
         if not self.sobject:
@@ -380,7 +377,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         config_xml = self.get_config_xml()
         config = WidgetConfig.get(view="tab", xml=config_xml)
 
-
         if process:
             custom_view = "tab_config_%s" % process
         else:
@@ -509,42 +505,73 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 'show_default_elements': show_default_elements
         }
 
-        config_xml = []
-
-        config_xml.append('''
-        <config>
-        <tab>''')
-
         tabs = self.kwargs.get("tab_element_names")
 
         tab_view = self.kwargs.get("tab_view")
         if not tab_view:
             tab_view = "tab_element_names"
 
-        config = None
+
+
+
+
+
+        # get the configs from the database
+        config_search = Search("config/widget_config")
+        config_search.add_filter("view", tab_view)
+        config_search.add_filter("search_type", self.search_type)
+        config_search.add_order_by("timestamp desc")
+        configs = config_search.get_sobjects()
+
 
         # SObject settings overridews WidgetConfig entry
         sobject_settings = self.sobject.get_json_value("settings", default={}, no_exception=True)
+        sobject_config = None
+        element_names = None
+
         if sobject_settings:
-            wdg_settings = sobject_settings.get("SObjectDetailWdg")
-            config = wdg_settings.get("config")
-            xml = Xml()
-            xml.read_string(config)
-            config = WidgetConfig.get("tab_element_names", xml=xml)
+            wdg_settings = sobject_settings.get("SObjectDetailWdg") or {}
+            config_xml = wdg_settings.get("config")
+            if config_xml:
+                xml = Xml()
+                xml.read_string(config_xml)
+                sobject_config = WidgetConfig.get("tab_element_names", xml=xml)
 
-        if not config: 
-            config_search = Search("config/widget_config")
-            config_search.add_filter("view", tab_view)
-            config_search.add_filter("search_type", self.search_type)
-            config_search.add_order_by("timestamp desc")
-            configs = config_search.get_sobjects()
 
-            from pyasm.search import WidgetDbConfig
-            config = WidgetDbConfig.merge_configs(configs)
+            element_names = sobject_settings.get("tab_element_names") or []
+            if not element_names and sobject_config:
+                element_names = sobject_config.get_element_names()
+
+            # remove empty
+            x = []
+            for item in element_names:
+                if item:
+                    x.append(item)
+            element_names = x
+
+
+        from pyasm.search import WidgetDbConfig
+        from pyasm.widget import WidgetConfigView
+        #configX = WidgetDbConfig.merge_configs(configs)
+        config = WidgetConfigView(search_type=sobject.get_base_search_type(), view=tab_view, configs=configs)
+        if sobject_config:
+            config.add_config(sobject_config)
+
+
+
+        config_xml = self.kwargs.get("config_xml")
+        if config_xml:
+            custom_config = WidgetConfig.get("tab_element_names", xml=config_xml)
+            config.add_config(custom_config)
+
+
+
 
 
         if tabs:
             tabs = [x.strip() for x in tabs.split(',')] 
+        elif element_names:
+            tabs = element_names
         elif config:
             tabs = config.get_element_names()
         else:
@@ -564,6 +591,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             if "checkin_history" in tabs:
                 tabs.remove("checkin_history")
+
+
+
+        config_xml = []
+
+        config_xml.append('''
+        <config>
+        <tab>''')
+
 
         for tab in tabs:
 

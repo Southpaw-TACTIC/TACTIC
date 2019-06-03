@@ -211,12 +211,12 @@ class BaseInputWdg(HtmlElement):
         self.options = options
 		
         if self.has_option('search_key'):
-		    search_key = options.get('search_key')
-		    if search_key:
-				sobj = SearchKey.get_by_search_key(search_key)
-				self.set_sobjects([sobj])
+            search_key = options.get('search_key')
+            if search_key:
+                sobj = SearchKey.get_by_search_key(search_key)
+                self.set_sobjects([sobj])
 
-            
+    
 
     def has_option(self, key):
         return self.options.has_key(key)
@@ -859,11 +859,22 @@ class CheckboxWdg(BaseInputWdg):
     def set_checked(self):
         self.set_option("checked", "1")
 
+    def set_unchecked(self):
+        self.set_option("checked", None)
+
 
     def is_checked(self, for_display=False):
+
+        return self.get_option("checked") in ['1','on','true']
+
         # Checkbox needs special treatment when comes to getting values
         values = self.get_values(for_display=for_display)
         value_option = self._get_value_option()
+
+        print "values: ", values
+        print "value_option: ", value_option
+        print
+
         # FIXME if values is boolean, it will raise exception
         if value_option in values:
             return True
@@ -918,6 +929,10 @@ class CheckboxWdg(BaseInputWdg):
         if self.is_read_only():
             self.set_attr('disabled', 'disabled')
 
+        if self.value in ['1','on','true']:
+            self.set_checked()
+
+        """
         if len(values) == 1:
             # skip boolean
             value = values[0]
@@ -930,9 +945,12 @@ class CheckboxWdg(BaseInputWdg):
                 self.set_checked()
             elif True in values: # for boolean columns
                 self.set_checked()
+        """
 
         # convert all of the options to attributes
         for name, option in self.options.items():
+            if option is None:
+                continue
             self.set_attr(name,option)
 
         self.handle_behavior()
@@ -959,9 +977,6 @@ class CheckboxWdg(BaseInputWdg):
                     'propagate_evt': True,
                     "cbjs_preaction":
                     "spt.input.save_selected(bvr, '%s','%s')"%(self.name, key)}
-                    #"spt.api.Utility.save_widget_setting('%s',bvr.src_el.value)"%key}
-            #if self.change_cbjs_action:
-            #    behavior['cbjs_action'] = self.change_cbjs_action
             self.add_behavior(behavior)
 
 class FilterCheckboxWdg(CheckboxWdg):

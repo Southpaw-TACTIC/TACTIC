@@ -700,6 +700,32 @@ class BaseProcessTrigger(Trigger):
 
 
 
+    def get_process_state(sobject, process):
+
+        key = "Workflow|process_state|%s" % sobject.get_search_key()
+        process_states_dict = Container.get(key)
+        if process_states_dict is None:
+            process_states_dict = {}
+            Container.put(key, proces_states_dict)
+
+            search = Search("config/process_state")
+            search.add_sobject_filter(sobject)
+            #search.add_filter("process", process)
+            process_states = search.get_sobjects()
+
+            for process_state in process_states:
+                process = process_state.get_value("process")
+                process_states_dict[process] = process_state
+
+        process_state = process_states_dict.get(process)
+        if not process_state:
+            process_state = SearchType.create("config/process_state")
+            process_state.set_sobject_value(sobject)
+            process_state.set_value("process", process)
+
+            process_states_dict[process] = process_state
+
+
 
     def log_message(self, sobject, process, status):
 
@@ -708,6 +734,14 @@ class BaseProcessTrigger(Trigger):
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
         server.log_message(key, status)
+
+        # TODO use process state.
+        # status and state will be transitioned to process_state (instead of messaging)
+        """
+        process_state = self.get_process_state(sobject, process)
+        process_state.set_value("status", status)
+        process_state.commit()
+        """
 
 
 
