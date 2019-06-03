@@ -469,8 +469,11 @@ class TacticTimedThread(threading.Thread):
  
 class TacticSchedulerThread(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, site=None):
         self.dev_mode = False
+
+        self.site = site
+
         super(TacticSchedulerThread,self).__init__()
 
     def get_title(self):
@@ -485,14 +488,11 @@ class TacticSchedulerThread(threading.Thread):
     def run(self):
         time.sleep(3)
 
-        #print("Starting Scheduler ....")
-
         # set the site
-        from pyasm.security import Site
-        print "WARNING: hard codding site"
-        site = "workflow"
-        Site.set_site(site)
-        
+        if self.site:
+            from pyasm.security import Site
+            site = self.site
+            Site.set_site(site)
 
         # NOTE: not sure why we have to do a batch here
         from pyasm.security import Batch
@@ -575,7 +575,11 @@ class TacticSchedulerThread(threading.Thread):
                 project_triggers_count += 1
 
             if has_triggers and self.dev_mode:
-                print("Found [%s] scheduled triggers in project [%s]..." % (project_triggers_count, project_code))
+                if self.site:
+                    site = self.site
+                else:
+                    site = "default"
+                print("Found [%s] scheduled triggers in site [%s] - project [%s]..." % (project_triggers_count, site, project_code))
 
 
 
@@ -927,12 +931,16 @@ class TacticMonitor(object):
         if not start_scheduler:
             start_scheduler = Config.get_value("services", "scheduler")
         if start_scheduler in ['true', True]:
-            print("Starting Scheduler")
-            tactic_scheduler_thread = TacticSchedulerThread()
-            tactic_scheduler_thread.set_dev(self.dev_mode)
-            tactic_scheduler_thread.start()
-            tactic_threads.append(tactic_scheduler_thread)
-
+            
+            sites = Config.get_value("services", "scheduler_sites")
+            if sites:
+                sites = re.split("[|,]", sites)
+            from pyasm.security import Site
+            for site in sites:
+                tactic_scheduler_thread = TacticSchedulerThread(site=site)
+                tactic_scheduler_thread.set_dev(self.dev_mode)
+                tactic_scheduler_thread.start()
+                tactic_threads.append(tactic_scheduler_thread)
 
 
         if len(tactic_threads) == 0:
