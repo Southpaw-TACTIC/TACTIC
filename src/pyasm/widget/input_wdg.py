@@ -871,10 +871,6 @@ class CheckboxWdg(BaseInputWdg):
         values = self.get_values(for_display=for_display)
         value_option = self._get_value_option()
 
-        print "values: ", values
-        print "value_option: ", value_option
-        print
-
         # FIXME if values is boolean, it will raise exception
         if value_option in values:
             return True
@@ -1326,7 +1322,7 @@ class SelectWdg(BaseInputWdg):
                 parser = ExpressionParser()
                 self.values = parser.eval(values_expr, sobjects=sobjects)
             except Exception as e:
-                print "Expression error: ", str(e)
+                print("Expression error: ", str(e))
                 self.values = ['Error in values expression']
                 self.labels = self.values[:]
                 # don't raise anything yet until things are properly drawn
@@ -1340,7 +1336,7 @@ class SelectWdg(BaseInputWdg):
                     if isinstance(self.labels, basestring):
                         self.labels = [self.labels]
                 except Exception as e:
-                    print "Expression error: ", str(e)
+                    print("Expression error: ", str(e))
                     self.labels = ['Error in labels expression']
             else:
                 self.labels = self.values[:]
