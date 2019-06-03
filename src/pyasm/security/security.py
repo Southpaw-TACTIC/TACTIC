@@ -84,8 +84,10 @@ class Login(SObject):
     def get_full_email(self):
         email = self.get_value("email")
         if email:
-            return "%s %s <%s>" % (self.get_value("first_name"), \
-                self.get_value("last_name"), self.get_value("email") )
+            first_name = self.get_value("first_name") or ""
+            last_name = self.get_value("last_name") or ""
+            value = "%s %s <%s>" % (first_name, last_name, email)
+            return value
         else:
             return ""
 
@@ -255,6 +257,7 @@ class Login(SObject):
                 login.set_value("first_name", "Adminstrator")
                 login.set_value("last_name", "")
                 login.set_value("display_name", "Administrator")
+		
 
                 data = login.get_data()
                 for column in columns:
@@ -273,6 +276,9 @@ class Login(SObject):
                     password = "39195b0707436a7ecb92565bf3411ab1"
                 login.set_value("password", password)
 
+	    if not login.get_value("email"):
+                default_admin_email = Config.get_value("services", "mail_default_admin_email")
+		login.set_value("email", default_admin_email)
 
         else:
             search = Search("sthpw/login")
