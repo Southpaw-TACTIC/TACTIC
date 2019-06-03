@@ -783,7 +783,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             mode = "gallery"
 
         # Force this for now (media)
-        mode = 'gallery'
+        #mode = 'gallery'
 
         
         gallery_width = self.kwargs.get("gallery_width")

@@ -620,11 +620,15 @@ class CustomLayoutWdg(BaseRefreshWdg):
         html = html.replace("<![CDATA[", "")
         html = html.replace("]]>", "")
         #html = html.decode('utf-8')
-      
-        if self.encoding == 'ascii':
-            template = Template(html)
-        else:
-            template = Template(html, output_encoding=self.encoding, input_encoding=self.encoding)
+
+        try:
+            if self.encoding == 'ascii':
+                template = Template(html)
+            else:
+                template = Template(html, output_encoding=self.encoding, input_encoding=self.encoding)
+        except Exception as e:
+            print("Error in view [%s]" % self.view)
+            raise
 
         # get the api version of the sobject
         if not self.is_table_element:
