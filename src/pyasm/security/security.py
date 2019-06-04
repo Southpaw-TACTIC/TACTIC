@@ -255,6 +255,9 @@ class Login(SObject):
                 login.set_value("first_name", "Adminstrator")
                 login.set_value("last_name", "")
                 login.set_value("display_name", "Administrator")
+		
+		default_admin_email = Config.get_value("services", "mail_default_admin_email")
+		login.set_value("email", default_admin_email)
 
                 data = login.get_data()
                 for column in columns:

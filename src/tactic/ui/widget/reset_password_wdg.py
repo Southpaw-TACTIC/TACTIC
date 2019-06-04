@@ -327,9 +327,11 @@ class ResetPasswordCmd(Command):
                 admin = Login.get_by_login('admin')
                 if admin:
                     sender_email = admin.get_value('email')
-                else:
+        	    if not sender_email:
+			from pyasm.common import Config
+			sender_email = Config.get_value("services", "mail_default_admin_email")
+	        else:
                     sender_email = 'support@southpawtech.com'
-		sender_email = 'support@southpawtech.com'
                 recipient_emails = [email]
                 #email_msg =  'Your TACTIC password has been reset. The new password is:\n%s\nYou can change your password once you log in by going to Edit My Account at the top right corner.'%auto_password
 		email_msg = 'Your TACTIC pass word reset code is:\n%s' % auto_password
