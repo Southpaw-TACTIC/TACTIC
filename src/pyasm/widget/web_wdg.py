@@ -1571,7 +1571,7 @@ class WebLoginWdg2(Widget):
 
         styles = HtmlElement.style('''
 
-        .login-container {
+        .tactic-container {
             position: relative;
 
             display: flex;
@@ -1589,13 +1589,20 @@ class WebLoginWdg2(Widget):
             font-size: 10px;
         }
 
+        .login-container {
+            margin-top: 40px;
+            width: 100%;
+        }
+
         .sign-in-text {
+            position: absolute;
+            top: 90px;
             font-size: 18px;
             margin: 10px 0;
             background: white;
             z-index: 2;
             padding: 0 10px;
-            color: #333;
+            color: #666;
         }
 
         .sign-in-line {
@@ -1715,7 +1722,7 @@ class WebLoginWdg2(Widget):
                 ''')
         
         div = DivWdg()
-        div.add_class("login-container")
+        div.add_class("tactic-container")
         if override_background:
             div.add_class("spt_margin_center")
         div.add_class("centered")
@@ -1784,7 +1791,10 @@ class WebLoginWdg2(Widget):
         div.add( HtmlElement.br() )
 
         div.add("<div class='sign-in-line'></div>")
-        div.add("<div class='sign-in-text'>Sign In</div>")
+
+	title = self.kwargs.get("title")
+	if title:
+            div.add("<div class='sign-in-text'>%s</div>" % title)
 
         div.add( HtmlElement.br() )
 
@@ -1851,9 +1861,12 @@ class WebLoginWdg2(Widget):
             table.add_cell( domain_wdg )
             table.add_row()
 
+        login_container = DivWdg()
+        div.add(login_container)
+        login_container.add_class("login-container")
         
         username_container = DivWdg()
-        div.add(username_container)
+        login_container.add(username_container)
         username_container.add_class("sign-in-input")
         username_container.add("<div class='label'>%s</div>" % name_label)
 
@@ -1880,7 +1893,7 @@ class WebLoginWdg2(Widget):
             div.add("<div class='msg-container style='margin-bottom: 20px;'>Please change the \"admin\" password</div>")
 
         password_container = DivWdg()
-        div.add(password_container)
+        login_container.add(password_container)
         password_container.add_class("sign-in-input")
         password_container.add("<div class='label'>%s</div>" % password_label)
 
