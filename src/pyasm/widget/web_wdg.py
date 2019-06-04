@@ -1696,6 +1696,7 @@ class WebLoginWdg2(Widget):
 
 
         web = WebContainer.get_web()
+        msg = web.get_form_value(self.LOGIN_MSG)
             
         box = DivWdg()
         if override_background:
@@ -1859,13 +1860,11 @@ class WebLoginWdg2(Widget):
         username_container = DivWdg()
         div.add(username_container)
         username_container.add_class("sign-in-input")
-        username_container.add("<div class='label'>Username</div>")
+        login_label = self.kwargs.get("login_placeholder") or "Login"
+        username_container.add("<div class='label'>%s</div>" % login_label)
 
         text_wdg = TextWdg("login")
         username_container.add(text_wdg)
-        if override_login:
-            text_wdg.add_class("spt_login_textbox")
-            text_wdg.add_class("form-control")
 
         if self.hidden:
             login_name = Environment.get_user_name()
@@ -1875,11 +1874,6 @@ class WebLoginWdg2(Widget):
             custom_projects = Search.eval("@COUNT(sthpw/project['code','not in','sthpw|admin|unittest'])")
             if custom_projects == 0:
                 text_wdg.set_value('admin')
-                
-       
-        login_placeholder = self.kwargs.get("login_placeholder")
-        if login_placeholder:
-            text_wdg.add_attr("placeholder", login_placeholder)
 
         #text_wdg.add_event("onLoad", "this.focus()")
         #table.add_cell( text_wdg )
@@ -1889,90 +1883,26 @@ class WebLoginWdg2(Widget):
             text_wdg.add_style("background: #CCC")
             text_wdg.set_value("admin")
 
-            tr = table.add_row()
-            td = table.add_cell("Please change the \"admin\" password")
-            td.add_styles('height: 24px; padding-left: 6px')
-        else:
-            if override_password:
-                text_wdg.add_style("")
-
-
-        table.add_row()
+            div.add("<div class='msg-container style='margin-bottom: 20px;'>Please change the \"admin\" password</div>")
 
         password_container = DivWdg()
         div.add(password_container)
         password_container.add_class("sign-in-input")
-        password_container.add("<div class='label'>Password</div>")
+        password_label = self.kwargs.get("password_placeholder") or "Password"
+        password_container.add("<div class='label'>%s</div>" % password_label)
 
         password_wdg = PasswordWdg("password")
         password_container.add(password_wdg)
 
-        if override_password:
-            password_wdg.add_class("spt_login_textbox")
-            password_wdg.add_class("form-control")
-        
-        password_placeholder = self.kwargs.get("password_placeholder")
-        if password_placeholder:
-            password_wdg.add_attr("placeholder", password_placeholder)
-
-        th = table.add_header( "<b> %s: </b>"%password_label )
-        th.add_style("padding: 5px")
-        #table.add_cell( password_wdg )
-
-
         if change_admin:
-            table.add_row()
+            password_container2 = DivWdg()
+            div.add(password_container2)
+            password_container2.add_class("sign-in-input")
+            password_container2.add("<div class='label'>Verify Password</div>")
+
             password_wdg2 = PasswordWdg("verify_password")
-            if override_password:
-                password_wdg2.add_class("spt_login_textbox")
-                password_wdg2.add_class("form-control")
-            else:
-                password_wdg2.add_style("color: black")
-                password_wdg2.add_style("background: #EEE")
-                password_wdg2.add_style("padding: 2px")
-                password_wdg2.add_style("width: 130px")
-            th = table.add_header( "<b>Verify Password: </b>" )
-            th.add_style("padding: 5px")
-            table.add_cell( password_wdg2 )
+            password_container2.add(password_wdg2)
 
-
-
-
-
-
-        table2 = Table()
-        table2.center()
-        table2.add_style("width: 280px")
-
-        table2.add_row()
-
-        # build the button manually
-        span = SpanWdg()
-
-        if override_login:
-            up = SpanWdg()
-            span.add("<div class='spt_login_button'>Login</div>")
-        else:
-            up = HtmlElement.img('/context/icons/logo/submit_on.png')
-        up.set_id("submit_on")
-
-        if override_login:
-            down = HtmlElement.img('')
-            span.add("")
-        else:
-            down = HtmlElement.img('/context/icons/logo/submit_over.png')
-        down.add_styles( "cursor: pointer;" )
-        down.set_id("submit_over")
-        down.add_style("display: none")
-
-        span.add(up)
-        span.add(down)
-        span.add(HiddenWdg("Submit"))
-            
-        span.add_event("onmouseover", "getElementById('submit_on').style.display='none';getElementById('submit_over').style.display='';")
-        span.add_event("onmouseout", "getElementById('submit_over').style.display='none';getElementById('submit_on').style.display='';")
-        span.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
-        #div.add(span)
 
         bottom_container = DivWdg()
         div.add(bottom_container)
@@ -1983,28 +1913,10 @@ class WebLoginWdg2(Widget):
         submit_btn.add(HiddenWdg("Submit"))
         submit_btn.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
 
-        #th = table2.add_header(span)
-        #th.add_style("text-align: center")
-
         forgot_password_container = DivWdg()
         bottom_container.add(forgot_password_container)
-        forgot_password_container.add_class("forgot-password-container")
-        hidden = HiddenWdg('reset_request')
-        forgot_password_container.add(hidden)
-
-        access_msg = "Forgot your password?"
-        login_value = web.get_form_value('login')
-        js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
-        link = HtmlElement.js_href(js, data=access_msg)
-        link.add_color('color','color', 60)
-        forgot_password_container.add(link)
-
         bottom_container.add(submit_btn)
 
-        table2.add_row()
-        
-        msg = web.get_form_value(self.LOGIN_MSG)
-        td = table2.add_cell(css='center_content')
 
         err_msg_container = DivWdg()
         div.add(err_msg_container)
@@ -2013,10 +1925,7 @@ class WebLoginWdg2(Widget):
         if bottom_link:
             bottom_dict = jsonloads(bottom_link)
             for key, value in bottom_dict.items():
-                td.add("<div class='spt_bottom_link'><a href=%s> %s </a></div>" % (value,key))
                 err_msg_container.add("<div class='spt_bottom_link'><a href=%s> %s </a></div>" % (value,key))
-        else:
-            td.add_style("")
         
         if self.hidden:
             msg = 'Your session has expired. Please login again.'
@@ -2025,21 +1934,13 @@ class WebLoginWdg2(Widget):
         if msg:
             from tactic.ui.widget import ResetPasswordWdg
             if msg == ResetPasswordWdg.RESET_MSG:
-                td.add(IconWdg("INFO", IconWdg.INFO))
                 err_msg_container.add(IconWdg("INFO", IconWdg.INFO))
-            else:
-                pass
 
             err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
-            td.add_style('line-height', '14px')
-            td.add_style('padding-top', '10px')
 
-            tr = table2.add_row()
-            tr.add_style('line-height: 70px')
-
-            #td = table2.add_cell(css='center_content')
+            forgot_password_container.add_class("forgot-password-container")
             hidden = HiddenWdg('reset_request')
-            #td.add(hidden)
+            forgot_password_container.add(hidden)
 
             authenticate_class = Config.get_value("security", "authenticate_class")
             if msg != ResetPasswordWdg.RESET_MSG and not authenticate_class:
@@ -2048,7 +1949,7 @@ class WebLoginWdg2(Widget):
                 js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
                 link = HtmlElement.js_href(js, data=access_msg)
                 link.add_color('color','color', 60)
-                #td.add(link)
+                forgot_password_container.add(link)
 
         else:
             if override_background:
@@ -2057,9 +1958,6 @@ class WebLoginWdg2(Widget):
 
         #div.add(HtmlElement.br())
         #div.add(table)
-
-        #div.add( HtmlElement.spacer_div(1,14) )
-        #div.add(table2)
         div.add(HiddenWdg(self.LOGIN_MSG))
 
         box.add(script)
