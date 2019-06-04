@@ -849,10 +849,8 @@ class EmailTriggerThread(threading.Thread):
 class EmailTriggerTestCmd(Command):
     '''This is run in the same thread for the email testing button'''
     def __init__(self, **kwargs):
-        print "IS HEREEEEEEEEEEEEE"
         self.kwargs = kwargs
         self.sender_email = self.kwargs.get('sender_email')
-        print kwargs
 
         if not self.sender_email:
             raise TacticException("Sender's email is empty.")
@@ -958,7 +956,6 @@ class EmailTriggerTest(EmailTrigger2):
             total_bcc_emails.update(bcc_emails)
 
         user_email = Environment.get_login().get_full_email()
-
         sender.add(user_email)
 
         for x in to_users:

@@ -392,7 +392,13 @@ class TileLayoutWdg(ToolLayoutWdg):
             
 
             if js_load:
+                import time
+                start = time.time()
                 self.sobject_data = self.get_sobject_data(self.sobjects)
+                end = time.time()
+                print
+                print("TILE LAYOUT PREPROCESSING TOOK [%s] SECONDS" % (end-start))
+                print
 		style = self.get_styles()
 		inner.add(style)
             
@@ -552,6 +558,17 @@ class TileLayoutWdg(ToolLayoutWdg):
                         // Size
                         tile.getElement(".spt_tile_size").innerHTML = data.size;
 		    }
+
+
+                    default_tile_title = tile.getElement(".spt_default_tile_title");
+                    if (default_tile_title) {
+                        title_text_div = default_tile_title.getElement(".spt_tile_title_text");
+                        title_text_div.innerHTML = data.title_text;
+                        title_text_div.setAttribute("title", data.title_text);
+                    } else {
+                        tile_title = tile.getElement(".spt_tile_title");
+                        tile_title.load(data);
+                    }
 
                     thumb_top = tile.getElement(".spt_thumb_top");
                     thumb_top.setAttribute("spt_main_path", data.main_path);
@@ -1503,13 +1520,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                 snapshots_by_sobject[snapshot.get_search_key()] = snapshot
         else:
             snapshots_by_sobject = Snapshot.get_by_sobjects(sobjects, return_dict=True)
-            
+
         snapshots = snapshots_by_sobject.values()
         file_sobjects = File.get_by_snapshots(snapshots)
         for file_object in file_sobjects:
             file_code = file_object.get_code()
             file_sobjects_by_code[file_code] = file_object
-
+ 
         paths_by_key = {}
         for sobject in sobjects:
             search_key = sobject.get_search_key()
@@ -1642,17 +1659,20 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data['path'] = path
 	
             
-
-            if self.kwargs.get("show_title") not in ['false', False]:
-                if self.title_wdg:
-                    # TODO: Test this
-                    self.title_wdg.set_sobject(sobject)
-                    title_wdg = self.title_wdg.get_display()
-                else:
-                    title_wdg = self.get_title(sobject)
-                #tile_data['title_wdg'] = title_wdg
                
-
+            # Search expr might not be very efficient
+            # But keep for legacy implementation
+            title_expr = self.kwargs.get("title_expr")
+            if title_expr:
+                title_text = Search.eval(title_expr, sobject, single=True)
+            elif sobject.get_base_search_type() == "sthpw/snapshot":
+                title_text = sobject.get_value("context")
+            else:
+                title_text = sobject.get_value("name", no_exception=True)
+            if not title_text:
+                title_text = sobject.get_value("code", no_exception=True)
+            tile_data['title_text'] = title_text
+ 
             sobject_data[sobject.get_search_key()] = tile_data
 
 
@@ -1738,6 +1758,69 @@ class TileLayoutWdg(ToolLayoutWdg):
             }
 
         """ % (self.spacing, self.spacing)
+        
+        css += """
+            .spt_default_tile_title {
+                height: 20px;
+                padding: 3px;
+                width: 100%;
+                position: absolute;
+                left: 0;
+            }
+
+            .spt_tile_bg {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
+                background: #000;
+                opacity: 0.3;
+                z-index: 1;
+            }
+            
+            .spt_tile_select {
+                overflow-x: hidden;
+                overflow-y: hidden;
+                position: relative;
+                z-index: 3;
+            }
+         
+            .spt_tile_checkbox {
+                margin-top: 2px;
+            }
+        
+            .spt_tile_title_text {
+                height: 15px;
+                left: 25px;
+                top: 3px;
+                position: absolute;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: #FFF;
+            }
+
+        """
+        css += """
+            .spt_tile_detail {
+                float: right;
+                margin-top: -2px;
+                position: relative;
+                z-index: 2;
+                margin-right: 3px;
+                color: #FFF;
+            }
+
+            .spt_tile_collection {
+                margin-right: 5px;
+                float: right;
+                margin-top: -2px;
+                position: relative;
+                z-index: 2;
+            }
+
+
+        """
 
         style.add(css)
         return style
@@ -1751,18 +1834,24 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row_%s" % self.table_id)
 
         div.add(" ")
-        
+       
         if self.kwargs.get("show_title") not in ['false', False]:
-            
-            # TODO: Add the title wdg buffer display in javascript
-            title_wdg = DivWdg()
+           
+            title_wdg = self.get_template_title()
             div.add(title_wdg)
-            title_wdg.add_class("spt_tile_title")
 
+            """
+            if self.title_wdg:
+                self.title_wdg.set_sobject(sobject)
+                title_wdg = self.title_wdg.get_display()
+            else:
+                title_wdg = self.get_title(sobject)
             title_wdg.add_style("position: absolute")
             title_wdg.add_style("top: 0")
             title_wdg.add_style("left: 0")
             title_wdg.add_style("width: 100%")
+            """
+            
        
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
@@ -1855,6 +1944,76 @@ class TileLayoutWdg(ToolLayoutWdg):
             stat_div = OverlayStatsWdg(expr = self.overlay_expr, sobject = sobject, bg_color = self.overlay_color)
             div.add(stat_div)
         """
+
+        return div
+    
+    
+    def get_template_title(self):
+        
+        div = DivWdg()
+
+        div.add_class("spt_tile_title")
+        div.add_class("spt_default_tile_title")
+        
+        
+        bg_wdg = DivWdg()
+        div.add(bg_wdg)
+        bg_wdg.add_class("spt_tile_bg")
+        bg_wdg.set_box_shadow(color="#000")
+        bg_wdg.add(" ")
+
+
+        show_detail = self.kwargs.get("show_detail")
+        if show_detail not in [False, 'false']:
+            detail_div = DivWdg()
+            div.add(detail_div)
+
+            # TODO: Handle this....
+            #if sobject.get_value("_is_collection", no_exception=True) == True:
+            if False:
+                """
+                detail_div.add_class("spt_tile_collection");
+
+                search_type = sobject.get_base_search_type()
+                parts = search_type.split("/")
+                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
+                """
+            else:
+                detail_div.add_class("spt_tile_detail")
+                detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
+                detail_div.add(detail)
+
+
+        header_div = DivWdg()
+        header_div.add_class("spt_tile_select")
+        div.add(header_div)
+        
+        header_div.add_class("SPT_DTS")
+
+        from pyasm.widget import CheckboxWdg
+        checkbox = CheckboxWdg("select")
+        checkbox.add_class("spt_tile_checkbox")
+
+
+        table = Table()
+        header_div.add(table)
+
+        table.add_cell(checkbox)
+
+        title_div = DivWdg()
+        title_div.add_class("spt_tile_title_text")
+
+        td = table.add_cell(title_div)
+        
+        title_div.add("<br clear='all'/>")
+        title_div.add_class("hand")
+        
+        if self.kwargs.get("hide_checkbox") in ['true', True]:
+            checkbox.add_style("visibility: hidden")
+            title_div.add_style("left: 10px")
 
         return div
 
@@ -2920,8 +3079,9 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             div.add_attr("title", sobject.get_code())
 
 
-
         return div
+
+
 
 from pyasm.biz import Snapshot
 from pyasm.web import HtmlElement
