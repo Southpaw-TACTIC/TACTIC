@@ -1589,7 +1589,7 @@ class WebLoginWdg2(Widget):
             font-size: 10px;
         }
 
-        .login-container {
+        .content-container {
             margin-top: 40px;
             width: 100%;
         }
@@ -1792,8 +1792,8 @@ class WebLoginWdg2(Widget):
 
         div.add("<div class='sign-in-line'></div>")
 
-	title = self.kwargs.get("title")
-	if title:
+        title = self.kwargs.get("title")
+        if title:
             div.add("<div class='sign-in-text'>%s</div>" % title)
 
         div.add( HtmlElement.br() )
@@ -1801,19 +1801,20 @@ class WebLoginWdg2(Widget):
         box.add(div)
 
 
+
+        ####### CONTENT #######
+        content_container = DivWdg()
+        div.add(content_container)
+        content_container.add_class("content-container")
+
+
+
         # hidden element in the form to pass message that this was not
         # actually a typical submitted form, but rather the result
         # of a login page
-        div.add( HiddenWdg("is_from_login", "yes") )
+        content_container.add( HiddenWdg("is_from_login", "yes") )
 
-        table = Table()
-        table.add_color("color", "color")
-        table.center()
-        table.set_attr("cellpadding", "3px")
-        table.add_row()
-
-
-	# TODO: make new wdg compatible with domains and hosts
+        # TODO: make new wdg compatible with domains and hosts
         # look for defined domains
         domains = Config.get_value("active_directory", "domains")
         if not domains:
@@ -1839,7 +1840,6 @@ class WebLoginWdg2(Widget):
             host = host.split(':')[0]
         if domains:
             
-            th = table.add_header( "<b>Domain: </b>")
             domain_wdg = SelectWdg("domain")
             domain_wdg.set_persist_on_submit()
             if len(domains) > 1:
@@ -1858,11 +1858,10 @@ class WebLoginWdg2(Widget):
             else:
                 domain_wdg.add_style("background-color: #EEE")
                 domain_wdg.add_style("height: 20px")
-            table.add_cell( domain_wdg )
-            table.add_row()
+            content_container.add( domain_wdg )
 
         login_container = DivWdg()
-        div.add(login_container)
+        content_container.add(login_container)
         login_container.add_class("login-container")
         
         username_container = DivWdg()
@@ -1890,7 +1889,7 @@ class WebLoginWdg2(Widget):
             text_wdg.add_style("background: #CCC")
             text_wdg.set_value("admin")
 
-            div.add("<div class='msg-container style='margin-bottom: 20px;'>Please change the \"admin\" password</div>")
+            content_container.add("<div class='msg-container style='margin-bottom: 20px;'>Please change the \"admin\" password</div>")
 
         password_container = DivWdg()
         login_container.add(password_container)
@@ -1902,7 +1901,7 @@ class WebLoginWdg2(Widget):
 
         if change_admin:
             password_container2 = DivWdg()
-            div.add(password_container2)
+            content_container.add(password_container2)
             password_container2.add_class("sign-in-input")
             password_container2.add("<div class='label'>Verify Password</div>")
 
@@ -1911,7 +1910,7 @@ class WebLoginWdg2(Widget):
 
 
         bottom_container = DivWdg()
-        div.add(bottom_container)
+        content_container.add(bottom_container)
         bottom_container.add_class("bottom-container")
 
         submit_btn = DivWdg("Sign In")
@@ -1925,7 +1924,7 @@ class WebLoginWdg2(Widget):
 
 
         err_msg_container = DivWdg()
-        div.add(err_msg_container)
+        content_container.add(err_msg_container)
         err_msg_container.add_class("msg-container")
 
         if bottom_link:
@@ -1935,7 +1934,6 @@ class WebLoginWdg2(Widget):
         
         if self.hidden:
             msg = 'Your session has expired. Please login again.'
-            div.add_style("height: 230px")
 
         if msg:
             from tactic.ui.widget import ResetPasswordWdg
@@ -1957,14 +1955,8 @@ class WebLoginWdg2(Widget):
                 link.add_color('color','color', 60)
                 forgot_password_container.add(link)
 
-        else:
-            if override_background:
-                div.add_style("")
-                div.add_style("height: 250px")
 
-        #div.add(HtmlElement.br())
-        #div.add(table)
-        div.add(HiddenWdg(self.LOGIN_MSG))
+        content_container.add(HiddenWdg(self.LOGIN_MSG))
 
         box.add(script)
 
