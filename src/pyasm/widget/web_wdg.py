@@ -1803,7 +1803,7 @@ class WebLoginWdg2(Widget):
         table.add_row()
 
 
-
+	# TODO: make new wdg compatible with domains and hosts
         # look for defined domains
         domains = Config.get_value("active_directory", "domains")
         if not domains:
@@ -1852,16 +1852,10 @@ class WebLoginWdg2(Widget):
             table.add_row()
 
         
-
-        th = table.add_header( "<b> %s: </b>"%name_label)
-        th.add_style("padding: 5px")
-
-
         username_container = DivWdg()
         div.add(username_container)
         username_container.add_class("sign-in-input")
-        login_label = self.kwargs.get("login_placeholder") or "Login"
-        username_container.add("<div class='label'>%s</div>" % login_label)
+        username_container.add("<div class='label'>%s</div>" % name_label)
 
         text_wdg = TextWdg("login")
         username_container.add(text_wdg)
@@ -1888,7 +1882,6 @@ class WebLoginWdg2(Widget):
         password_container = DivWdg()
         div.add(password_container)
         password_container.add_class("sign-in-input")
-        password_label = self.kwargs.get("password_placeholder") or "Password"
         password_container.add("<div class='label'>%s</div>" % password_label)
 
         password_wdg = PasswordWdg("password")
