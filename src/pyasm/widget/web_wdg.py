@@ -14,7 +14,7 @@ __all__ = [
 'PyMayaInit', 'PyFlashInit', 'PyPerforceInit', 'PyHoudiniInit', 'PyXSIInit',
 'BottomWdg', 'DynTopWdg', 'DynBottomWdg', 'EditLinkWdg', 'ProdSettingLinkWdg', 'SubmissionLinkWdg', 'RenderLinkWdg', 'FileAppendLinkWdg',
 'InsertLinkWdg', 'IframeInsertLinkWdg', 'DeleteLinkWdg', 'RetireLinkWdg',
-'ReactivateLinkWdg', 'SwapDisplayWdg', 'DebugWdg', 'WebLoginWdg',
+'ReactivateLinkWdg', 'SwapDisplayWdg', 'DebugWdg', 'WebLoginWdg', 'WebLoginWdg2',
 'WebLoginCmd', 'WebLicenseWdg', 'TacticLogoWdg',
 #'ChangePasswordWdg', 'ChangePasswordLinkWdg',
 'SignOutLinkWdg', 'UndoButtonWdg', 'RedoButtonWdg',
@@ -1141,6 +1141,7 @@ class TacticLogoWdg(Widget):
         return div
 
 
+
 class WebLoginWdg(Widget):
 
     LOGIN_MSG = 'login_message'
@@ -1552,6 +1553,540 @@ class WebLoginWdg(Widget):
         """)
 
         return styles
+
+
+
+class WebLoginWdg2(Widget):
+
+    LOGIN_MSG = 'login_message'
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        # hidden is for inline login when a session expires
+        self.hidden = kwargs.get('hidden') in  [True, 'True']
+        super(WebLoginWdg2,self).__init__("div")
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+        .login-container {
+            position: relative;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            margin: 0px;
+            padding: 25px;
+
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+            background: white;
+
+            font-size: 10px;
+        }
+
+        .sign-in-text {
+            font-size: 18px;
+            margin: 10px 0;
+            background: white;
+            z-index: 2;
+            padding: 0 10px;
+            color: #333;
+        }
+
+        .sign-in-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: #ccc;
+            top: 120px;
+        }
+
+        .sign-in-input {
+            position: relative;
+            width: 100%;
+         }
+
+        .sign-in-input .label {
+            position: absolute; 
+            top: -6;
+            left: 8;
+            
+            padding: 0 5px;
+            
+            background: white;
+            font-weight: normal;
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .sign-in-input input {
+            color: black;
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .sign-in-btn {
+            align-self: flex-end;
+            background: #ccc;
+            color: white;
+            padding: 10px 16px;
+            font-size: 14px;
+            border-radius: 3px;
+            box-shadow: 0px 2px 4px 0px #bbb;
+        }
+
+        .sign-in-btn:hover {
+            background: #aaa;
+        }
+
+        .bottom-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .msg-container {
+            display: flex;
+            align-items: center;
+            align-self: start;
+            color: red;
+        }
+
+        .msg-container i {
+            margin-right: 5px;
+        }
+
+        .spt_login_screen {
+            width: 100%;
+            height: 85%;
+        }
+
+        ''')
+
+        return styles
+        
+
+    def get_display(self):
+        name_label = self.kwargs.get('name_label')
+        password_label = self.kwargs.get('password_label')
+        override_background = self.kwargs.get('override_background') == "true"
+        override_logo = self.kwargs.get('override_logo') == "true"
+        override_company_name = self.kwargs.get('override_company_name') == "true"
+        override_password = self.kwargs.get('override_password') == "true"
+        override_login = self.kwargs.get('override_login') == "true"
+        bottom_link = self.kwargs.get('bottom_link')
+
+
+        if not name_label:
+            if override_background:
+                name_label = "Username"
+            else:
+                name_label = "Name"
+        if not password_label:
+            password_label = "Password"
+
+
+        web = WebContainer.get_web()
+            
+        box = DivWdg()
+        if override_background:
+            box.add_class("spt_tactic_background")
+        else:
+            box.add_style("margin: auto auto")
+            box.add_style("width: 400px")
+            box.add_style("text-align: center")
+
+        box.add_event("onkeyup", "tactic_login(event)")
+        script = HtmlElement.script('''function tactic_login(e) {
+                if (!e) var e = window.event;
+                if (e.keyCode == 13) {
+                    document.form.submit();
+                }}
+                ''')
+        
+        div = DivWdg()
+        div.add_class("login-container")
+        if override_background:
+            div.add_class("spt_margin_center")
+        div.add_class("centered")
+
+
+        allow_change_admin = self.kwargs.get("allow_change_admin")
+        if allow_change_admin in [False, 'false']:
+            allow_change_admin = False
+        else:
+            allow_change_admin = True
+
+        # if admin password is still the default, force the user to change it
+        change_admin = False
+        if allow_change_admin:
+            from pyasm.security import Sudo
+            sudo = Sudo()
+            try:
+                admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+            finally:
+                sudo.exit()
+            if admin_login and admin_login.get_value('s_status') =='retired':
+                admin_login.reactivate()
+                web = WebContainer.get_web()
+                web.set_form_value(self.LOGIN_MSG, "admin user has been reactivated.")
+                admin_password = admin_log.get_value("password")
+                if admin_password == Login.get_default_encrypted_password():
+                    change_admin = True
+
+         
+            if admin_login:
+                password = admin_login.get_value("password")
+                if password == Login.get_default_encrypted_password() or not password:
+
+                    change_admin = True
+            else:
+                admin_login = SearchType.create('sthpw/login')
+                admin_login.set_value('login','admin')
+                admin_login.commit()
+                change_admin = True
+                # recreate the admin_login
+                
+
+            sudo.exit()
+
+        if override_logo:
+            div.add("<div class='spt_tactic_logo'></div>")
+        else:
+            div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
+
+        if change_admin:
+            if override_background:
+                div.add_class("spt_change_admin")
+        else:
+            if override_background:
+                div.add_class("spt_not_change_admin")
+
+
+        #div.add_style("padding-top: 95px")
+        sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
+        sthpw.add_styles("margin-top: 4; color: #ccc;")
+        if override_company_name:
+            sthpw.add_class("spt_login_company")
+            #sthpw.add_style("color: #CCCCCC")
+        
+        div.add( sthpw )
+        div.add( HtmlElement.br() )
+
+        div.add("<div class='sign-in-line'></div>")
+        div.add("<div class='sign-in-text'>Sign In</div>")
+
+        div.add( HtmlElement.br() )
+
+        box.add(div)
+
+
+        # hidden element in the form to pass message that this was not
+        # actually a typical submitted form, but rather the result
+        # of a login page
+        div.add( HiddenWdg("is_from_login", "yes") )
+
+        table = Table()
+        table.add_color("color", "color")
+        table.center()
+        table.set_attr("cellpadding", "3px")
+        table.add_row()
+
+
+
+        # look for defined domains
+        domains = Config.get_value("active_directory", "domains")
+        if not domains:
+            # backwards compatibility
+            domains = Config.get_value("security", "authenticate_domains")
+
+        if domains:
+            domains = domains.split('|')
+
+        hosts = Config.get_value("active_directory", "hosts")
+        if not hosts:
+            hosts = Config.get_value("security", "hosts")
+            
+        if hosts:
+            hosts = hosts.split('|')
+       
+        if hosts and len(hosts) != len(domains):
+            msg = 'When specified, the number of IP_address has to match the number of domains'
+            web.set_form_value(self.LOGIN_MSG, msg)
+
+        host = web.get_http_host()
+        if host.find(':') != -1:
+            host = host.split(':')[0]
+        if domains:
+            
+            th = table.add_header( "<b>Domain: </b>")
+            domain_wdg = SelectWdg("domain")
+            domain_wdg.set_persist_on_submit()
+            if len(domains) > 1:
+                domain_wdg.add_empty_option("-- Select --")
+            domain_wdg.set_option("values", domains)
+            try:
+                matched_idx = hosts.index(host)
+            except ValueError:
+                matched_idx = -1
+            # select the matching domain based on host/IP in browser URL
+            if host and matched_idx > -1:
+                domain_wdg.set_value(domains[matched_idx])
+            
+            if override_password:
+                domain_wdg.add_style("")
+            else:
+                domain_wdg.add_style("background-color: #EEE")
+                domain_wdg.add_style("height: 20px")
+            table.add_cell( domain_wdg )
+            table.add_row()
+
+        
+
+        th = table.add_header( "<b> %s: </b>"%name_label)
+        th.add_style("padding: 5px")
+
+
+        username_container = DivWdg()
+        div.add(username_container)
+        username_container.add_class("sign-in-input")
+        username_container.add("<div class='label'>Username</div>")
+
+        text_wdg = TextWdg("login")
+        username_container.add(text_wdg)
+        if override_login:
+            text_wdg.add_class("spt_login_textbox")
+            text_wdg.add_class("form-control")
+
+        if self.hidden:
+            login_name = Environment.get_user_name()
+            text_wdg.set_value(login_name)
+        else:
+            # check if it's first time login
+            custom_projects = Search.eval("@COUNT(sthpw/project['code','not in','sthpw|admin|unittest'])")
+            if custom_projects == 0:
+                text_wdg.set_value('admin')
+                
+       
+        login_placeholder = self.kwargs.get("login_placeholder")
+        if login_placeholder:
+            text_wdg.add_attr("placeholder", login_placeholder)
+
+        #text_wdg.add_event("onLoad", "this.focus()")
+        #table.add_cell( text_wdg )
+
+        if change_admin:
+            text_wdg.add_attr("readonly", "readonly")
+            text_wdg.add_style("background: #CCC")
+            text_wdg.set_value("admin")
+
+            tr = table.add_row()
+            td = table.add_cell("Please change the \"admin\" password")
+            td.add_styles('height: 24px; padding-left: 6px')
+        else:
+            if override_password:
+                text_wdg.add_style("")
+
+
+        table.add_row()
+
+        password_container = DivWdg()
+        div.add(password_container)
+        password_container.add_class("sign-in-input")
+        password_container.add("<div class='label'>Password</div>")
+
+        password_wdg = PasswordWdg("password")
+        password_container.add(password_wdg)
+
+        if override_password:
+            password_wdg.add_class("spt_login_textbox")
+            password_wdg.add_class("form-control")
+        
+        password_placeholder = self.kwargs.get("password_placeholder")
+        if password_placeholder:
+            password_wdg.add_attr("placeholder", password_placeholder)
+
+        th = table.add_header( "<b> %s: </b>"%password_label )
+        th.add_style("padding: 5px")
+        #table.add_cell( password_wdg )
+
+
+        if change_admin:
+            table.add_row()
+            password_wdg2 = PasswordWdg("verify_password")
+            if override_password:
+                password_wdg2.add_class("spt_login_textbox")
+                password_wdg2.add_class("form-control")
+            else:
+                password_wdg2.add_style("color: black")
+                password_wdg2.add_style("background: #EEE")
+                password_wdg2.add_style("padding: 2px")
+                password_wdg2.add_style("width: 130px")
+            th = table.add_header( "<b>Verify Password: </b>" )
+            th.add_style("padding: 5px")
+            table.add_cell( password_wdg2 )
+
+
+
+
+
+
+        table2 = Table()
+        table2.center()
+        table2.add_style("width: 280px")
+
+        table2.add_row()
+
+        # build the button manually
+        span = SpanWdg()
+
+        if override_login:
+            up = SpanWdg()
+            span.add("<div class='spt_login_button'>Login</div>")
+        else:
+            up = HtmlElement.img('/context/icons/logo/submit_on.png')
+        up.set_id("submit_on")
+
+        if override_login:
+            down = HtmlElement.img('')
+            span.add("")
+        else:
+            down = HtmlElement.img('/context/icons/logo/submit_over.png')
+        down.add_styles( "cursor: pointer;" )
+        down.set_id("submit_over")
+        down.add_style("display: none")
+
+        span.add(up)
+        span.add(down)
+        span.add(HiddenWdg("Submit"))
+            
+        span.add_event("onmouseover", "getElementById('submit_on').style.display='none';getElementById('submit_over').style.display='';")
+        span.add_event("onmouseout", "getElementById('submit_over').style.display='none';getElementById('submit_on').style.display='';")
+        span.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
+        #div.add(span)
+
+        bottom_container = DivWdg()
+        div.add(bottom_container)
+        bottom_container.add_class("bottom-container")
+
+        submit_btn = DivWdg("Sign In")
+        submit_btn.add_class("sign-in-btn hand")
+        submit_btn.add(HiddenWdg("Submit"))
+        submit_btn.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
+
+        #th = table2.add_header(span)
+        #th.add_style("text-align: center")
+
+        forgot_password_container = DivWdg()
+        bottom_container.add(forgot_password_container)
+        forgot_password_container.add_class("forgot-password-container")
+        hidden = HiddenWdg('reset_request')
+        forgot_password_container.add(hidden)
+
+        access_msg = "Forgot your password?"
+        login_value = web.get_form_value('login')
+        js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
+        link = HtmlElement.js_href(js, data=access_msg)
+        link.add_color('color','color', 60)
+        forgot_password_container.add(link)
+
+        bottom_container.add(submit_btn)
+
+        table2.add_row()
+        
+        msg = web.get_form_value(self.LOGIN_MSG)
+        td = table2.add_cell(css='center_content')
+
+        err_msg_container = DivWdg()
+        div.add(err_msg_container)
+        err_msg_container.add_class("msg-container")
+
+        if bottom_link:
+            bottom_dict = jsonloads(bottom_link)
+            for key, value in bottom_dict.items():
+                td.add("<div class='spt_bottom_link'><a href=%s> %s </a></div>" % (value,key))
+                err_msg_container.add("<div class='spt_bottom_link'><a href=%s> %s </a></div>" % (value,key))
+        else:
+            td.add_style("")
+        
+        if self.hidden:
+            msg = 'Your session has expired. Please login again.'
+            div.add_style("height: 230px")
+
+        if msg:
+            from tactic.ui.widget import ResetPasswordWdg
+            if msg == ResetPasswordWdg.RESET_MSG:
+                td.add(IconWdg("INFO", IconWdg.INFO))
+                err_msg_container.add(IconWdg("INFO", IconWdg.INFO))
+            else:
+                pass
+
+            err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
+            td.add_style('line-height', '14px')
+            td.add_style('padding-top', '10px')
+
+            tr = table2.add_row()
+            tr.add_style('line-height: 70px')
+
+            #td = table2.add_cell(css='center_content')
+            hidden = HiddenWdg('reset_request')
+            #td.add(hidden)
+
+            authenticate_class = Config.get_value("security", "authenticate_class")
+            if msg != ResetPasswordWdg.RESET_MSG and not authenticate_class:
+                access_msg = "Forgot your password?"
+                login_value = web.get_form_value('login')
+                js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
+                link = HtmlElement.js_href(js, data=access_msg)
+                link.add_color('color','color', 60)
+                #td.add(link)
+
+        else:
+            if override_background:
+                div.add_style("")
+                div.add_style("height: 250px")
+
+        #div.add(HtmlElement.br())
+        #div.add(table)
+
+        #div.add( HtmlElement.spacer_div(1,14) )
+        #div.add(table2)
+        div.add(HiddenWdg(self.LOGIN_MSG))
+
+        box.add(script)
+
+        widget = Widget()
+        #widget.add( HtmlElement.br(3) )
+        table = Table()
+        table.add_class('spt_login_screen')
+        if self.hidden:
+            table.add_style('display','none')
+            table.add_style('top','0px')
+            table.add_style('position','absolute')
+
+
+        table.add_row()
+        td = table.add_cell()
+        td.add_style("vertical-align: middle")
+        td.add_style("text-align: center")
+        td.add_style("background: transparent")
+        td.add(box)
+        widget.add(table)
+
+        styles = self.get_styles()
+        widget.add(styles)
+        
+        return widget
+
 
 
 # DEPRECATED: moved lower to pyasm/web
