@@ -362,7 +362,7 @@ class ResetPasswordWdg2(BaseSignInWdg):
         div.add(code_div)
         code_div.add_class("spt_code_div")
 
-        code_div.add("<div class='msg-container'>A code was sent to your email. Please enter the code to reset your password:</div>")
+        code_div.add("<div class='msg-container'>A code was sent to %s email. Please enter the code to reset your password:</div>" % login_name)
         
         code_container = DivWdg()
         code_div.add(code_container)
