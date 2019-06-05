@@ -310,7 +310,7 @@ class BaseAppServer(Base):
                     web_wdg = site_obj.get_login_wdg(link)
                     if not web_wdg:
                         # else get the default one
-                        web_wdg = WebLoginWdg2(allow_change_admin=allow_change_admin)
+                        web_wdg = WebLoginWdg2(allow_change_admin=allow_change_admin, show_back_btn=False)
                     
                     top.add(web_wdg)
 

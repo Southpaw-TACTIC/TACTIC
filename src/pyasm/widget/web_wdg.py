@@ -1778,14 +1778,16 @@ class BaseSignInWdg(Widget):
 
         div.add( HtmlElement.br() )
 
-        back_btn = DivWdg("<i class='fa fa-chevron-left'></i>")
-        div.add(back_btn)
-        back_btn.add_class("floating-back-btn")
-        back_btn.add("<span>Back to login</span>")
+        show_back_btn = self.kwargs.get("show_back_btn")
+        if show_back_btn:
+            back_btn = DivWdg("<i class='fa fa-chevron-left'></i>")
+            div.add(back_btn)
+            back_btn.add_class("floating-back-btn")
+            back_btn.add("<span>Back to login</span>")
 
-        hidden = HiddenWdg('back_to_login')
-        back_btn.add(hidden)
-        back_btn.add_event('onclick',"document.form.elements['back_to_login'].value='true'; document.form.submit()")
+            hidden = HiddenWdg('back_to_login')
+            back_btn.add(hidden)
+            back_btn.add_event('onclick',"document.form.elements['back_to_login'].value='true'; document.form.submit()")
 
         ####### CONTENT #######
         content_container = DivWdg()
