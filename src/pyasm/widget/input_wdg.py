@@ -1449,6 +1449,8 @@ class SelectWdg(BaseInputWdg):
         border_mode = self.get_option("border_mode") or "box"
         if border_mode == "box":
             self.add_border()
+        elif border_mode == "custom":
+            pass
         else:
             self.add_style("border", "none")
 
