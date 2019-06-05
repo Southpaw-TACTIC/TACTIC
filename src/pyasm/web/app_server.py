@@ -234,10 +234,27 @@ class BaseAppServer(Base):
         body.add_color("background", "background")
         body.add_color("color", "color")
 
+	reset_password = web.get_form_value('reset_password') == 'true'
+        reset_request = web.get_form_value('reset_request') == 'true'
+	sent_code = web.get_form_value("sent_code") == 'true'
+        
+	from tactic.ui.widget import ResetPasswordWdg, NewResetPasswordWdg
+	if reset_password:
+	    code = web.get_form_value('code')		
+            login_name = web.get_form_value('login')
+            login = Login.get_by_login(login_name, use_upn=True)
 
-        reset_request = web.get_form_value('reset_request') =='true'
-        if reset_request:
-            from tactic.ui.widget import ResetPasswordWdg
+            code_correct = False
+	    if login:
+                data = login.get_json_value('data')
+                if data:
+                    temporary_code = data.get('temporary_code')
+		    if code == temporary_code:
+			code_correct = True
+			top.add(NewResetPasswordWdg())
+	    if not code_correct:
+	    	top.add(ResetPasswordWdg())
+	elif reset_request or sent_code:
             top.add(ResetPasswordWdg())
         else:
             reset_msg = web.get_form_value('reset_msg')
@@ -777,13 +794,25 @@ class BaseAppServer(Base):
                     site_obj.pop_site()
                 return security
 
-
         if not security.is_logged_in():
-            reset_password = web.get_form_value("reset_password") == 'true'
-            if reset_password:
+            send_code = web.get_form_value("send_code") == 'true'
+	    reset_password = web.get_form_value("reset_password") == 'true'
+	    new_password = web.get_form_value("new_password") == 'true'
+	    if reset_password:
+		pass
+	    elif new_password:
+		from tactic.ui.widget import NewPasswordCmd
+		reset_cmd = NewPasswordCmd()
+		try:
+		    reset_cmd.execute()
+		except TacticException as e:
+		    print("Reset failed. %s" %e.__str__())
+            elif send_code:
                 from tactic.ui.widget import ResetPasswordCmd
                 reset_cmd = ResetPasswordCmd(reset=True)
-                try:
+                web.set_form_value('sent_code', 'true')
+		web.set_form_value('send_code', '')
+		try:
                     reset_cmd.execute()
                 except TacticException as e:
                     print("Reset failed. %s" %e.__str__())
@@ -793,7 +822,7 @@ class BaseAppServer(Base):
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
-
+	
         # clear the password
         web.set_form_value('password','')
 
@@ -821,7 +850,7 @@ class BaseAppServer(Base):
 
         # for now apply the access rules after
         security.add_access_rules()
-        
+
         return security
 
 

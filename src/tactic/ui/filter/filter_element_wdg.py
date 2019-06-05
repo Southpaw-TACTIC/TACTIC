@@ -1062,6 +1062,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
 
     def get_display(self):
+        
         # can predefine a filter_search_type for the look ahead search
         self.filter_search_type = self.get_option("filter_search_type")
         if not self.filter_search_type:
@@ -1209,6 +1210,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         'cbjs_action': '''
         var key = evt.key;
         if (key == 'enter') {
+            var top = bvr.src_el.getParent(".spt_input_text_top");
+            var hidden_el = top.getElement(".spt_text_value");
+            if (bvr.src_el.value) hidden_el.value = bvr.src_el.value;
             spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
         }
         ''' } )

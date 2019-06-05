@@ -181,6 +181,7 @@ class EmailTrigger(Trigger):
 
 
                 subject = handler.get_subject()
+                subject = subject.rstrip()
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
@@ -259,7 +260,6 @@ class EmailTrigger(Trigger):
     add_email = classmethod(add_email)
 
     def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[], from_user=None):
-
         cc = set()
         sender = set()
         to_emails = set()
@@ -343,6 +343,7 @@ class EmailTrigger(Trigger):
 
         charset = 'us-ascii'
         is_uni = False
+
         if type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
@@ -355,6 +356,7 @@ class EmailTrigger(Trigger):
             st = 'plain'
         
         msg = MIMEText(message, _subtype=st, _charset=charset)
+
         ''' 
         msg['Subject'] = subject
         msg['From'] = user_email
@@ -383,8 +385,7 @@ class EmailTrigger(Trigger):
             recipients = total_bcc_emails|total_cc_emails|to_emails
         else:
             recipients = total_bcc_emails|total_cc_emails|to_emails|sender
-
-         
+ 
         site = Site.get_site()
         project_code = Project.get_project_code()
         email = EmailTriggerThread(user_email, recipients, "%s" %msg.as_string(), site=site, project_code=project_code)
@@ -653,6 +654,7 @@ class EmailTrigger2(EmailTrigger):
 
             try:
                 subject = handler.get_subject()
+                subject = subject.rstrip()
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
@@ -784,14 +786,11 @@ class EmailTriggerThread(threading.Thread):
         self.mailserver = Config.get_value('services','mailserver')
         # get optional arguments
         self.user = Config.get_value('services','mail_user', True)
-
-
         self.password = Config.get_value('services','mail_password', True)
         if len(self.password) > 127:
             # This is an encrypted password
             self.password = Common.unencrypt_password(self.password)
-
-
+            
         self.port = Config.get_value('services','mail_port', True)
         self.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
         self.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
@@ -845,13 +844,11 @@ class EmailTriggerThread(threading.Thread):
             if self.project_code and self.site:
                 Batch(site=self.site, project_code=self.project_code)
                 ExceptionLog.log(e, message=message)
-            else:
-                print(message)
+                
 
 class EmailTriggerTestCmd(Command):
     '''This is run in the same thread for the email testing button'''
     def __init__(self, **kwargs):
-        
         self.kwargs = kwargs
         self.sender_email = self.kwargs.get('sender_email')
 
@@ -947,7 +944,6 @@ class EmailTriggerTest(EmailTrigger2):
     ''' this is needed by Email Test button'''
 
     def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[]):
-
         cc = set()
         sender = set()
         to_emails = set()
