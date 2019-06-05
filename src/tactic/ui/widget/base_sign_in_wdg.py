@@ -318,7 +318,7 @@ class ResetPasswordWdg2(BaseSignInWdg):
                 text-align: left;
             }
 
-            .reset-container .msg-container .msg-user {
+            .msg-user {
                 text-decoration: underline;
             }
 
