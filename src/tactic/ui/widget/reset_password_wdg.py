@@ -189,11 +189,24 @@ class ResetPasswordWdg(BaseSignInWdg):
         div.add_style("font-size: 10px")
         div.add_class("reset-container")
 
+        reset_div = DivWdg()
+        div.add(reset_div)
+        reset_div.add_class("spt_reset_div")
+
+        name_container = DivWdg()
+        reset_div.add(name_container)
+        name_container.add_class("sign-in-input")
+        name_container.add("<div class='label'>Name</div>")
+
+        name_wdg = TextWdg("reset_login")
+        name_container.add(name_wdg)
+        if login_name:
+            name_wdg.set_value(login_name)
 
         # build the button manually
         email_reset_btn = DivWdg('Reset via Email')
-        div.add(email_reset_btn)
-        email_reset_btn.add_class('sign-in-btn email-reset-btn hand')
+        reset_div.add(email_reset_btn)
+        email_reset_btn.add_class('sign-in-btn hand')
         email_reset_btn.add_attr('title', 'Reset via Email')
         email_reset_btn.add_event('onclick',"document.form.elements['send_code'].value='true'; document.form.submit()")
 
@@ -234,7 +247,7 @@ class ResetPasswordCmd(Command):
 
     def check(self):
         web = WebContainer.get_web()
-        self.login = web.get_form_value("login")
+        self.login = web.get_form_value("reset_login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
             web.set_form_value(ResetPasswordWdg.MSG, error_msg)
