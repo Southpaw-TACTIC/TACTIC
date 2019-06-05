@@ -234,27 +234,33 @@ class BaseAppServer(Base):
         body.add_color("background", "background")
         body.add_color("color", "color")
 
-	reset_password = web.get_form_value('reset_password') == 'true'
+        reset_password = web.get_form_value('reset_password') == 'true'
         reset_request = web.get_form_value('reset_request') == 'true'
-	sent_code = web.get_form_value("sent_code") == 'true'
+        sent_code = web.get_form_value("sent_code") == 'true'
+
+        back_to_login = web.get_form_value("back_to_login") == 'true'
+        if back_to_login:
+            reset_password = False
+            reset_request = False
+            sent_code = False
         
-	from tactic.ui.widget import ResetPasswordWdg2, NewPasswordWdg2
-	if reset_password:
-	    code = web.get_form_value('code')		
+        from tactic.ui.widget import ResetPasswordWdg2, NewPasswordWdg2
+        if reset_password:
+            code = web.get_form_value('code')
             login_name = web.get_form_value('login')
             login = Login.get_by_login(login_name, use_upn=True)
 
             code_correct = False
-	    if login:
+            if login:
                 data = login.get_json_value('data')
                 if data:
                     temporary_code = data.get('temporary_code')
-		    if code == temporary_code:
-			code_correct = True
-			top.add(NewPasswordWdg2())
-	    if not code_correct:
-	    	top.add(ResetPasswordWdg2())
-	elif reset_request or sent_code:
+                    if code == temporary_code:
+                        code_correct = True
+                        top.add(NewPasswordWdg2())
+            if not code_correct:
+                top.add(ResetPasswordWdg2())
+        elif reset_request or sent_code:
             top.add(ResetPasswordWdg2())
         else:
             reset_msg = web.get_form_value('reset_msg')

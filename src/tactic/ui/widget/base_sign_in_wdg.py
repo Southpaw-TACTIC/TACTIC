@@ -251,6 +251,10 @@ class BaseSignInWdg(Widget):
         back_btn.add_class("floating-back-btn")
         back_btn.add("<span>Back to login</span>")
 
+        hidden = HiddenWdg('back_to_login')
+        back_btn.add(hidden)
+        back_btn.add_event('onclick',"document.form.elements['back_to_login'].value='true'; document.form.submit()")
+
         ####### CONTENT #######
         content_container = DivWdg()
         div.add(content_container)
