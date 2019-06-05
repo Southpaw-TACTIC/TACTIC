@@ -702,12 +702,16 @@ spt.tab.select = function(element_name) {
             var layout = table.getParent(".spt_layout");
             spt.table.set_layout(layout);
         }
-    }
 
+        var last_element_name = spt.tab.get_selected_element_name();
+        if (last_element_name) {
+            top.setAttribute("spt_last_element_name", last_element_name);
+        }
 
-    var last_element_name = spt.tab.get_selected_element_name();
-    if (last_element_name) {
-        top.setAttribute("spt_last_element_name", last_element_name);
+        return true;
+    } else {
+
+        return false;
     }
 
 
