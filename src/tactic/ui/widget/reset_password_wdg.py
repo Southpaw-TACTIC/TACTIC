@@ -27,23 +27,23 @@ class NewResetPasswordWdg(BaseRefreshWdg):
 
 
     def get_styles(self):
-	
-	styles = HtmlElement.style('''
 
-	.password-inputs {
-	    display: flex;
-	    flex-direction: column;
+        styles = HtmlElement.style('''
+
+        .password-inputs {
+            display: flex;
+            flex-direction: column;
             align-items: center;
             margin-top: 10px;   
-	}
+        }
 
-	input[type="password"] {
-    	    margin-bottom: 10px;
-	}	
+        input[type="password"] {
+           margin-bottom: 10px;
+        }	
 
-	''')
+        ''')
 
-	return styles
+        return styles
 
 
     def get_display(self):
@@ -69,7 +69,7 @@ class NewResetPasswordWdg(BaseRefreshWdg):
 
         div.add_style("padding-top: 95px")
 
-	sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
+        sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
         sthpw.add_style("color: #CCCCCC")
         div.add( sthpw )
         div.add( HtmlElement.br() )
@@ -83,31 +83,31 @@ class NewResetPasswordWdg(BaseRefreshWdg):
         div.add( HiddenWdg("is_from_login", "yes") )
         div.add_style("font-size: 10px")
 
-	login_div = DivWdg()
-	div.add(login_div)
-	login_div.add_class("password-inputs")
+        login_div = DivWdg()
+        div.add(login_div)
+        login_div.add_class("password-inputs")
 
-	password_input = HtmlElement.text()
-	login_div.add(password_input)
-	password_input.add_attr("name", "my_password")
-	password_input.add_attr("placeholder", "Password")
-	password_input.add_attr("type", "password")
+        password_input = HtmlElement.text()
+        login_div.add(password_input)
+        password_input.add_attr("name", "my_password")
+        password_input.add_attr("placeholder", "Password")
+        password_input.add_attr("type", "password")
 
         confirm_password_input = HtmlElement.text()
-	login_div.add(confirm_password_input)
-	confirm_password_input.add_attr("name", "confirm_password")
-	confirm_password_input.add_attr("placeholder", "Confirm Password")
-	confirm_password_input.add_attr("type", "password")
+        login_div.add(confirm_password_input)
+        confirm_password_input.add_attr("name", "confirm_password")
+        confirm_password_input.add_attr("placeholder", "Confirm Password")
+        confirm_password_input.add_attr("type", "password")
 
-	reset_button = ActionButtonWdg(tip='Reset Password', title='Reset')
+        reset_button = ActionButtonWdg(tip='Reset Password', title='Reset')
         login_div.add(reset_button)
         reset_button.add_style("margin: 0 auto")
         reset_button.add_event("onclick", "document.form.elements['new_password'].value='true'; document.form.submit()")
 
-	hidden = HiddenWdg("new_password")
-	login_div.add(hidden)
+        hidden = HiddenWdg("new_password")
+        login_div.add(hidden)
 
-	widget = Widget()
+        widget = Widget()
         #widget.add( HtmlElement.br(3) )
         table = Table()
         table.add_style("width: 100%")
@@ -120,7 +120,7 @@ class NewResetPasswordWdg(BaseRefreshWdg):
         td.add(box)
         widget.add(table)
 
-	widget.add(self.get_styles())
+        widget.add(self.get_styles())
 
         return widget
 
