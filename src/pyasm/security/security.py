@@ -20,7 +20,13 @@ from pyasm.search import *
 from access_manager import *
 from access_rule import *
 
+if Config.get_value("install", "shutil_fix") in ["enabled"]:
+    # disabling copystat method for windows shared folder mounted on linux
+    def copystat_dummy(src, dst):
+        pass
 
+    import shutil
+    shutil.copystat = copystat_dummy
 
 def get_security_version():
     version = Config.get_value("security", "version")
