@@ -2175,6 +2175,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         if pipeline_code:
             load_div.add_behavior( { 
             'type': 'load',
+            'search_key': self.kwargs.get("search_key"),
             'process': process,
             'enabled_tasks': enabled_tasks,
             'pipeline': pipeline_code,
@@ -2211,6 +2212,12 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
             spt.pipeline.fit_to_canvas(bvr.pipeline);
 
+            var search_key = bvr.search_key;
+            if (search_key) {
+                spt.pipeline.set_status_color(search_key);
+            }
+
+
 
             var top = spt.pipeline.top;
             var text = top.getElement(".spt_pipeline_editor_current2");
@@ -2222,7 +2229,6 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             var pipeline = server.get_by_code("sthpw/pipeline", bvr.pipeline);
             var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+pipeline.code+"'>"+pipeline.name+"</span>";
             text.innerHTML = html;
-
 
 
             '''

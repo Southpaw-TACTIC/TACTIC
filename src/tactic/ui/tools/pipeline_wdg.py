@@ -6615,7 +6615,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-
+        """
         button = ButtonNewWdg(title="Show Process Types", icon="FA_INFO")
         button_row.add(button)
         button.add_behavior({
@@ -6628,6 +6628,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.panel.load_popup("Process Types", class_name, kwargs);
             '''
         } )
+        """
  
 
 
@@ -6706,8 +6707,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         select = SelectWdg("zoom")
         select.add_style("width: 85px")
         select.add_style("margin-top: -3px")
-        select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit to Current Group", "Fit To Canvas"])
-        select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_current", "fit_to_canvas"])
+        select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit To Canvas"])
+        select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_canvas"])
         select.add_empty_option("Zoom")
         button_row.add(select)
         #select.set_value("1.0")
@@ -8861,8 +8862,8 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = self.top
-        top.add_style("min-width: 800px")
-        top.add_style("max-width: 800px")
+        top.add_style("min-width: 200px")
+        top.add_style("max-width: 300px")
 
         # get all of the custom process node types
         search = Search("config/widget_config")
