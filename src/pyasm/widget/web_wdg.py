@@ -1778,8 +1778,8 @@ class BaseSignInWdg(Widget):
 
         div.add( HtmlElement.br() )
 
-        show_back_btn = self.kwargs.get("show_back_btn")
-        if show_back_btn:
+        hide_back_btn = self.kwargs.get("hide_back_btn")
+        if not hide_back_btn:
             back_btn = DivWdg("<i class='fa fa-chevron-left'></i>")
             div.add(back_btn)
             back_btn.add_class("floating-back-btn")
