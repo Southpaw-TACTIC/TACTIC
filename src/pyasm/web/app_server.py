@@ -253,6 +253,7 @@ class BaseAppServer(Base):
             code_correct = False
             if login:
                 data = login.get_json_value('data')
+                print data, "what?"
                 if data:
                     temporary_code = data.get('temporary_code')
                     if code == temporary_code:
@@ -260,6 +261,8 @@ class BaseAppServer(Base):
                         top.add(NewPasswordWdg())
             if not code_correct:
                 top.add(ResetPasswordWdg())
+
+            print code_correct, code, login_name
         elif reset_request or sent_code:
             top.add(ResetPasswordWdg())
         else:
@@ -802,23 +805,23 @@ class BaseAppServer(Base):
 
         if not security.is_logged_in():
             send_code = web.get_form_value("send_code") == 'true'
-	    reset_password = web.get_form_value("reset_password") == 'true'
-	    new_password = web.get_form_value("new_password") == 'true'
-	    if reset_password:
-		pass
-	    elif new_password:
-		from tactic.ui.widget import NewPasswordCmd
-		reset_cmd = NewPasswordCmd()
-		try:
-		    reset_cmd.execute()
-		except TacticException as e:
-		    print("Reset failed. %s" %e.__str__())
+            reset_password = web.get_form_value("reset_password") == 'true'
+            new_password = web.get_form_value("new_password") == 'true'
+            if reset_password:
+                pass
+            elif new_password:
+                from tactic.ui.widget import NewPasswordCmd
+                reset_cmd = NewPasswordCmd()
+                try:
+                    reset_cmd.execute()
+                except TacticException as e:
+                    print("Reset failed. %s" %e.__str__())
             elif send_code:
                 from tactic.ui.widget import ResetPasswordCmd
                 reset_cmd = ResetPasswordCmd(reset=True)
                 web.set_form_value('sent_code', 'true')
-		web.set_form_value('send_code', '')
-		try:
+                web.set_form_value('send_code', '')
+                try:
                     reset_cmd.execute()
                 except TacticException as e:
                     print("Reset failed. %s" %e.__str__())
