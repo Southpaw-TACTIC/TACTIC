@@ -100,7 +100,7 @@ class NewPasswordCmd(Command):
 
     def check(self):
         web = WebContainer.get_web()
-        self.login = web.get_form_value("login")
+        self.login = web.get_form_value("reset_login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
             web.set_form_value(ResetPasswordWdg.MSG, error_msg)

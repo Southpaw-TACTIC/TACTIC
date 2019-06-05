@@ -247,7 +247,7 @@ class BaseAppServer(Base):
         from tactic.ui.widget import ResetPasswordWdg, NewPasswordWdg
         if reset_password:
             code = web.get_form_value('code')
-            login_name = web.get_form_value('login')
+            login_name = web.get_form_value('reset_login')
             login = Login.get_by_login(login_name, use_upn=True)
 
             code_correct = False
