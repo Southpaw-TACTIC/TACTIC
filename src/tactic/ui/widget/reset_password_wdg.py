@@ -174,11 +174,11 @@ class ResetPasswordWdg(BaseSignInWdg):
     def get_content(self):
         
         web = WebContainer.get_web()
-        print web, "web???"
-
         login_name = web.get_form_value('login')
         reset_login_name = web.get_form_value('reset_login')
         hidden = HiddenWdg('login', login_name)
+
+        print web.get_form_keys(), web.get_form_args(), "??"
      
         div = DivWdg()
         div.add_style("margin: 0px 0px")
