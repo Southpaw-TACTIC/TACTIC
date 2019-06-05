@@ -244,7 +244,7 @@ class BaseAppServer(Base):
             reset_request = False
             sent_code = False
         
-        from tactic.ui.widget import ResetPasswordWdg2, NewPasswordWdg2
+        from tactic.ui.widget import ResetPasswordWdg, NewPasswordWdg
         if reset_password:
             code = web.get_form_value('code')
             login_name = web.get_form_value('login')
@@ -257,11 +257,11 @@ class BaseAppServer(Base):
                     temporary_code = data.get('temporary_code')
                     if code == temporary_code:
                         code_correct = True
-                        top.add(NewPasswordWdg2())
+                        top.add(NewPasswordWdg())
             if not code_correct:
-                top.add(ResetPasswordWdg2())
+                top.add(ResetPasswordWdg())
         elif reset_request or sent_code:
-            top.add(ResetPasswordWdg2())
+            top.add(ResetPasswordWdg())
         else:
             reset_msg = web.get_form_value('reset_msg')
             if reset_msg:

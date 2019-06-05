@@ -14,7 +14,7 @@ __all__ = [
 'PyMayaInit', 'PyFlashInit', 'PyPerforceInit', 'PyHoudiniInit', 'PyXSIInit',
 'BottomWdg', 'DynTopWdg', 'DynBottomWdg', 'EditLinkWdg', 'ProdSettingLinkWdg', 'SubmissionLinkWdg', 'RenderLinkWdg', 'FileAppendLinkWdg',
 'InsertLinkWdg', 'IframeInsertLinkWdg', 'DeleteLinkWdg', 'RetireLinkWdg',
-'ReactivateLinkWdg', 'SwapDisplayWdg', 'DebugWdg', 'WebLoginWdg', 'WebLoginWdg2',
+'ReactivateLinkWdg', 'SwapDisplayWdg', 'DebugWdg', 'WebLoginWdg', 'WebLoginWdg2', 'BaseSignInWdg',
 'WebLoginCmd', 'WebLicenseWdg', 'TacticLogoWdg',
 #'ChangePasswordWdg', 'ChangePasswordLinkWdg',
 'SignOutLinkWdg', 'UndoButtonWdg', 'RedoButtonWdg',
@@ -1555,16 +1555,14 @@ class WebLoginWdg(Widget):
         return styles
 
 
+class BaseSignInWdg(Widget):
 
-class WebLoginWdg2(Widget):
-
-    LOGIN_MSG = 'login_message'
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         # hidden is for inline login when a session expires
         self.hidden = kwargs.get('hidden') in  [True, 'True']
-        super(WebLoginWdg2,self).__init__("div")
+        super(BaseSignInWdg,self).__init__("div")
 
 
     def get_styles(self):
@@ -1596,7 +1594,7 @@ class WebLoginWdg2(Widget):
 
         .sign-in-text {
             position: absolute;
-            top: 90px;
+            top: 100px;
             font-size: 18px;
             margin: 10px 0;
             background: white;
@@ -1616,7 +1614,17 @@ class WebLoginWdg2(Widget):
         .sign-in-input {
             position: relative;
             width: 100%;
-         }
+        }
+
+        .board-man-gets-PAID {
+            styl: paid;
+            board: man;
+            board: man;
+            board: mans;
+            gets: paid;
+            styl: board;
+            man: kawhi;
+        }
 
         .sign-in-input .label {
             position: absolute; 
@@ -1672,6 +1680,48 @@ class WebLoginWdg2(Widget):
             margin-right: 5px;
         }
 
+        .floating-back-btn {
+            position: absolute;
+            top: 105;
+            left: 10;
+
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            box-shadow: 0px 2px 4px 0px #ccc;
+            border-radius: 15px;
+            background: #ccc;
+            overflow: hidden;
+            width: 20px;
+            height: 20px;
+
+            font-size: 14px;
+            color: white;
+            cursor: hand;
+            
+            transition: width 0.25s;
+        }
+
+        .floating-back-btn:hover {
+            width: 120px;
+        }
+
+        .floating-back-btn .fa {
+            margin-left: 3px;
+        }
+
+        .floating-back-btn span {
+            width: 100px;
+            position: absolute;
+            left: 20;
+        }
+
+        .spt_tactic_background {
+            margin: auto auto;
+            width: 400px;
+            text-align: center;
+        }
+
         .spt_login_screen {
             width: 100%;
             height: 85%;
@@ -1683,35 +1733,11 @@ class WebLoginWdg2(Widget):
         
 
     def get_display(self):
-        name_label = self.kwargs.get('name_label')
-        password_label = self.kwargs.get('password_label')
-        override_background = self.kwargs.get('override_background') == "true"
         override_logo = self.kwargs.get('override_logo') == "true"
         override_company_name = self.kwargs.get('override_company_name') == "true"
-        override_password = self.kwargs.get('override_password') == "true"
-        override_login = self.kwargs.get('override_login') == "true"
-        bottom_link = self.kwargs.get('bottom_link')
-
-
-        if not name_label:
-            if override_background:
-                name_label = "Username"
-            else:
-                name_label = "Name"
-        if not password_label:
-            password_label = "Password"
-
-
-        web = WebContainer.get_web()
-        msg = web.get_form_value(self.LOGIN_MSG)
             
         box = DivWdg()
-        if override_background:
-            box.add_class("spt_tactic_background")
-        else:
-            box.add_style("margin: auto auto")
-            box.add_style("width: 400px")
-            box.add_style("text-align: center")
+        box.add_class("spt_tactic_background")
 
         box.add_event("onkeyup", "tactic_login(event)")
         script = HtmlElement.script('''function tactic_login(e) {
@@ -1720,13 +1746,101 @@ class WebLoginWdg2(Widget):
                     document.form.submit();
                 }}
                 ''')
+        box.add_event("onkeyup", "tactic_login(event)")
         
         div = DivWdg()
+        box.add(div)
         div.add_class("tactic-container")
-        if override_background:
-            div.add_class("spt_margin_center")
         div.add_class("centered")
 
+
+        if override_logo:
+            div.add("<div class='spt_tactic_logo'></div>")
+        else:
+            div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
+
+
+        #div.add_style("padding-top: 95px")
+        sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
+        sthpw.add_styles("margin-top: 4; color: #ccc;")
+        if override_company_name:
+            sthpw.add_class("spt_login_company")
+            #sthpw.add_style("color: #CCCCCC")
+        
+        div.add( sthpw )
+        div.add( HtmlElement.br() )
+
+        div.add("<div class='sign-in-line'></div>")
+
+        title = self.kwargs.get("title")
+        if title:
+            div.add("<div class='sign-in-text'>%s</div>" % title)
+
+        div.add( HtmlElement.br() )
+
+        back_btn = DivWdg("<i class='fa fa-chevron-left'></i>")
+        div.add(back_btn)
+        back_btn.add_class("floating-back-btn")
+        back_btn.add("<span>Back to login</span>")
+
+        hidden = HiddenWdg('back_to_login')
+        back_btn.add(hidden)
+        back_btn.add_event('onclick',"document.form.elements['back_to_login'].value='true'; document.form.submit()")
+
+        ####### CONTENT #######
+        content_container = DivWdg()
+        div.add(content_container)
+        content_container.add_class("content-container")
+
+        content_container.add(self.get_content())
+
+
+        widget = Widget()
+        #widget.add( HtmlElement.br(3) )
+        table = Table()
+        table.add_class('spt_login_screen')
+        if self.hidden:
+            table.add_style('display','none')
+            table.add_style('top','0px')
+            table.add_style('position','absolute')
+
+        box.add(script)
+
+        table.add_row()
+        td = table.add_cell()
+        td.add_style("vertical-align: middle")
+        td.add_style("text-align: center")
+        td.add_style("background: transparent")
+        td.add(box)
+        widget.add(table)
+
+        styles = self.get_styles()
+        widget.add(styles)
+        
+        return widget
+
+
+    def get_content(self):
+
+        return ""
+
+
+
+
+class WebLoginWdg2(BaseSignInWdg):
+
+    LOGIN_MSG = 'login_message'
+
+    def get_content(self):
+        name_label = self.kwargs.get('name_label') or "Name"
+        password_label = self.kwargs.get('password_label') or "Password"
+        override_password = self.kwargs.get('override_password') == "true"
+        override_login = self.kwargs.get('override_login') == "true"
+        bottom_link = self.kwargs.get('bottom_link')
+
+
+        web = WebContainer.get_web()
+        msg = web.get_form_value(self.LOGIN_MSG)
 
         allow_change_admin = self.kwargs.get("allow_change_admin")
         if allow_change_admin in [False, 'false']:
@@ -1767,47 +1881,10 @@ class WebLoginWdg2(Widget):
 
             sudo.exit()
 
-        if override_logo:
-            div.add("<div class='spt_tactic_logo'></div>")
-        else:
-            div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
-
-        if change_admin:
-            if override_background:
-                div.add_class("spt_change_admin")
-        else:
-            if override_background:
-                div.add_class("spt_not_change_admin")
-
-
-        #div.add_style("padding-top: 95px")
-        sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
-        sthpw.add_styles("margin-top: 4; color: #ccc;")
-        if override_company_name:
-            sthpw.add_class("spt_login_company")
-            #sthpw.add_style("color: #CCCCCC")
-        
-        div.add( sthpw )
-        div.add( HtmlElement.br() )
-
-        div.add("<div class='sign-in-line'></div>")
-
-        title = self.kwargs.get("title")
-        if title:
-            div.add("<div class='sign-in-text'>%s</div>" % title)
-
-        div.add( HtmlElement.br() )
-
-        box.add(div)
-
-
 
         ####### CONTENT #######
         content_container = DivWdg()
-        div.add(content_container)
         content_container.add_class("content-container")
-
-
 
         # hidden element in the form to pass message that this was not
         # actually a typical submitted form, but rather the result
@@ -1889,8 +1966,6 @@ class WebLoginWdg2(Widget):
             text_wdg.add_style("background: #CCC")
             text_wdg.set_value("admin")
 
-            content_container.add("<div class='msg-container style='margin-bottom: 20px;'>Please change the \"admin\" password</div>")
-
         password_container = DivWdg()
         login_container.add(password_container)
         password_container.add_class("sign-in-input")
@@ -1907,6 +1982,8 @@ class WebLoginWdg2(Widget):
 
             password_wdg2 = PasswordWdg("verify_password")
             password_container2.add(password_wdg2)
+
+            content_container.add("<div class='msg-container'>Please change the \"admin\" password</div>")
 
 
         bottom_container = DivWdg()
@@ -1957,31 +2034,8 @@ class WebLoginWdg2(Widget):
 
 
         content_container.add(HiddenWdg(self.LOGIN_MSG))
-
-        box.add(script)
-
-        widget = Widget()
-        #widget.add( HtmlElement.br(3) )
-        table = Table()
-        table.add_class('spt_login_screen')
-        if self.hidden:
-            table.add_style('display','none')
-            table.add_style('top','0px')
-            table.add_style('position','absolute')
-
-
-        table.add_row()
-        td = table.add_cell()
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
-        td.add_style("background: transparent")
-        td.add(box)
-        widget.add(table)
-
-        styles = self.get_styles()
-        widget.add(styles)
         
-        return widget
+        return content_container
 
 
 
