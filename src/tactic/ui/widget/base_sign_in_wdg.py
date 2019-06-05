@@ -318,6 +318,10 @@ class ResetPasswordWdg2(BaseSignInWdg):
                 text-align: left;
             }
 
+            .reset-container .msg-container .msg-user {
+                text-decoration: underline;
+            }
+
             .spt_code_div {
                 display: flex;
                 flex-direction: column;
@@ -362,7 +366,7 @@ class ResetPasswordWdg2(BaseSignInWdg):
         div.add(code_div)
         code_div.add_class("spt_code_div")
 
-        code_div.add("<div class='msg-container'>A code was sent to %s email. Please enter the code to reset your password:</div>" % login_name)
+        code_div.add("<div class='msg-container'>A code was sent to <span class='msg-user'>%s<span>'s email. Please enter the code to reset your password:</div>" % login_name)
         
         code_container = DivWdg()
         code_div.add(code_container)
