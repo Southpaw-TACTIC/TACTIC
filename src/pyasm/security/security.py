@@ -20,7 +20,13 @@ from pyasm.search import *
 from access_manager import *
 from access_rule import *
 
+if Config.get_value("install", "shutil_fix") in ["enabled"]:
+    # disabling copystat method for windows shared folder mounted on linux
+    def copystat_dummy(src, dst):
+        pass
 
+    import shutil
+    shutil.copystat = copystat_dummy
 
 def get_security_version():
     version = Config.get_value("security", "version")
@@ -84,8 +90,10 @@ class Login(SObject):
     def get_full_email(self):
         email = self.get_value("email")
         if email:
-            return "%s %s <%s>" % (self.get_value("first_name"), \
-                self.get_value("last_name"), self.get_value("email") )
+            first_name = self.get_value("first_name") or ""
+            last_name = self.get_value("last_name") or ""
+            value = "%s %s <%s>" % (first_name, last_name, email)
+            return value
         else:
             return ""
 
@@ -256,9 +264,6 @@ class Login(SObject):
                 login.set_value("last_name", "")
                 login.set_value("display_name", "Administrator")
 
-                default_admin_email = Config.get_value("services", "mail_default_admin_email")
-                login.set_value("email", default_admin_email)
-
                 data = login.get_data()
                 for column in columns:
                     if data.get(column) == None:
@@ -276,6 +281,9 @@ class Login(SObject):
                     password = "39195b0707436a7ecb92565bf3411ab1"
                 login.set_value("password", password)
 
+	    if not login.get_value("email"):
+                default_admin_email = Config.get_value("services", "mail_default_admin_email")
+		login.set_value("email", default_admin_email)
 
         else:
             search = Search("sthpw/login")

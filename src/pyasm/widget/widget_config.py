@@ -523,7 +523,7 @@ class WidgetConfig(Base):
 
 class WidgetConfigView(Base):
     '''Abstracts all the sources of configurations for a particular view'''
-    def __init__(self, search_type, view, configs, state=None, layout=None):
+    def __init__(self, search_type, view, configs=[], state=None, layout=None):
         self.search_type = search_type
         self.view = view
         self.configs = configs

@@ -1927,9 +1927,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     @xmlrpc_decorator
-    def insert(self, ticket, search_type, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True):
-        return self._insert(search_type, data, metadata, parent_key, info, use_id, triggers)
-    def _insert(self, search_type, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True):
+    def insert(self, ticket, search_type, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True, collection_key=None):
+        return self._insert(search_type, data, metadata, parent_key, info, use_id, triggers, collection_key=collection_key)
+    def _insert(self, search_type, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True, collection_key=None):
 
         '''General insert for creating a new sobject
         @params:
@@ -1939,11 +1939,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
                the sobject defined by the search_key.
 
         @keyparam:
-        parent - set the parent key for this sobject
+        parent_key - set the parent key for this sobject
         info - info dictionary passed to the ApiClientCmd
         
         use_id - use id in the returned search key
         triggers - boolean to fire trigger on insert
+
+        collection_key - add the sobject to a given collection
 
         @return:
         a single dictionary representing the sobject with it's current data
@@ -1973,6 +1975,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject.commit(triggers=triggers)
         self.set_sobject(sobject)
         self.update_info(info)
+
+        if collection_key:
+            collection = Search.get_by_search_key(collection_key)
+            sobject.add_to_collection(collection)
 
         # return the data for this sobject
         sobject_dict = self._get_sobject_dict(sobject, use_id=use_id)

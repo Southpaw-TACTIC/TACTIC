@@ -584,7 +584,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
 
     def get_kwargs_keys(cls):
-        return ['group_elements', 'show_collection_shelf', 'library_title']
+        return ['group_elements', 'show_collection_shelf', 'library_title','collection_key']
     get_kwargs_keys = classmethod(get_kwargs_keys)
 
 
@@ -810,6 +810,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
     def get_right_content_wdg(self):
 
+        parent_key = self.kwargs.get("parent_key")
+        collection_key = self.kwargs.get("collection_key")
+
         div = DivWdg()
         div.add_style("width: 100%")
         div.add_class("spt_collection_content")
@@ -826,9 +829,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 show_search_limit=False,
                 sobjects=self.sobjects,
                 detail_element_names=self.kwargs.get("detail_element_names"),
-                do_search='false',
+                #do_search='false',
                 upload_mode=self.kwargs.get("upload_mode"),
-                group_elements=group_elements
+                group_elements=group_elements,
+                parent_key=parent_key,
+                collection_key=collection_key
         )
         div.add(tile)
 
@@ -910,7 +915,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
 
         collections_div.add_relay_behavior( {
-            'type': 'mouseup',
+            'type': 'click',
             'search_type': self.search_type,
             'parent_key': parent_key,
             'collection_type': collection_type,
@@ -956,8 +961,9 @@ class CollectionFolderWdg(BaseRefreshWdg):
                 search_type: bvr.search_type,
                 show_shelf: false,
                 show_search_limit: true,
-                expression: expr,
+                //expression: expr,
                 parent_dict: parent_dict,
+                parent_key: bvr.parent_key,
             }
             spt.panel.load(content, cls, kwargs);
 
@@ -1041,8 +1047,35 @@ class CollectionContentWdg(BaseRefreshWdg):
         self.kwargs["expand_mode"] = "plain"
         self.kwargs["show_search_limit"] = False
 
+
+        if not collection:
+            search_type = self.kwargs.get("search_type")
+
+            parts = self.kwargs.get("search_type").split("/")
+            collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+            search = Search(search_type)
+            search2 = Search(collection_type)
+            search2.add_column("search_code")
+            search.add_search_filter("code", search2, op="not in")
+
+            #expression = "@SEARCH(%s['code','not in',@GET(%s.search_code)])" % (search_type, collection_type)
+ 
+            #self.kwargs["expression"] = expression
+            #del(self.kwargs['sobjects'])
+
         mode = "tile"
         #mode = "table"
+        #self.kwargs['show_border'] = 'horizontal'
+
+        # remove the sobjects from the kwargs so on refresh, the stringified sobjects
+        # don't cause a stack trace
+        sobjects = self.kwargs.get("sobjects")
+        if self.kwargs.has_key("sobjects"):
+            del(self.kwargs["sobjects"])
+        if sobjects is None:
+            self.kwargs["do_search"] = 'true'
+
         if mode == "table":
             from table_layout_wdg import TableLayoutWdg
             tile = TableLayoutWdg(
@@ -1053,6 +1086,8 @@ class CollectionContentWdg(BaseRefreshWdg):
             tile = TileLayoutWdg(
                 **self.kwargs
             )
+        if sobjects:
+            tile.set_sobjects(sobjects)
         parent_dict = self.kwargs.get("parent_dict")
         has_parent=False
         if parent_dict:

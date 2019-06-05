@@ -932,6 +932,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         #xml_wdg.add_style('width: 550px')
         xml_wdg.add_style("margin-top: 10px")
         xml_wdg.add_style("padding: 10px")
+        xml_wdg.add_style("margin: 10px")
         xml_wdg.add_border()
         title_wdg = DivWdg()
         title_wdg.add("XML Definition")
@@ -1745,7 +1746,8 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
     def get_xml_wdg(self, xml_str):
 
         xml_wdg = DivWdg()
-        xml_wdg.add_style('width: auto')
+        xml_wdg.add_style("width: 100%")
+        xml_wdg.add_style("box-sizing: border-box")
 
         xml_wdg.add_style("margin-top: 50px")
         xml_wdg.add_style("padding: 10px")
@@ -1757,10 +1759,11 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
 
         self.main_xml_text = TextAreaWdg("xml_def")
+        self.main_xml_text.add_style("box-sizing: border-box")
         self.main_xml_text.add_style('overflow: auto')
         self.main_xml_text.add_style("margin: 10px")
         self.main_xml_text.set_option("rows", "20")
-        self.main_xml_text.add_style("width: auto")
+        self.main_xml_text.add_style("width: 100%")
 
         if xml_str:
             self.main_xml_text.set_value(xml_str)

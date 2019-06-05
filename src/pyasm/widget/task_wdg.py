@@ -1009,6 +1009,8 @@ class TaskParentSpacingTableElement(SimpleTableElementWdg):
         pass
 
     def handle_td(self, td):
+
+
         sobject = self.get_current_sobject()
         parent = None
         if sobject.is_insert():

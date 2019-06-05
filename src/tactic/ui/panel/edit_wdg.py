@@ -30,14 +30,24 @@ class EditException(Exception):
 
 
 class EditTitleWdg(BaseInputWdg):
+    def __init__(self, name=None, **kwargs):
+        super(EditTitleWdg,self).__init__(name=name, type="edit_title", **kwargs)
+        self.level = self.get_option("level") or "0"
+
+        self.title = self.get_title()
+
+        if self.get_option("no_text") in [True, "true"]:
+            self.no_text = True
+        else:
+            self.no_text = False
+
     def get_display(self):
 
         #mode = self.kwargs.get("mode")
 
-        title = self.get_title()
-        if not title:
-            title = self.get_name()
-            title = Common.get_display_title(title)
+        if not self.title:
+            self.title = self.get_name()
+            self.title = Common.get_display_title(self.title)
 
 
         #description = self.get_description()
@@ -57,10 +67,13 @@ class EditTitleWdg(BaseInputWdg):
 
 
         div = DivWdg()
-        div.add_style("margin-top: 20px")
-        div.add_style("font-size: 16px")
-        div.add_style("font-weight: bold")
-        div.add(title)
+        if not self.no_text:
+            font_size = str(16-int(self.level)*2)
+            margin_top = str(20-int(self.level)*2)
+            div.add_style("font-size: %spx" % font_size)
+            div.add_style("font-weight: bold")
+            div.add_style("margin-top: %spx" % margin_top)
+            div.add(self.title)
         div.add("<hr/>")
 
         return div

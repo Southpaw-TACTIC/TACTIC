@@ -37,9 +37,12 @@ class ProcessElementWdg(SimpleTableElementWdg):
         value = sobj.get_value('process')
         td.add_attr('spt_input_value', value)
 
+
         if sobj.is_insert():
-            state = self.get_state()
-            parent_key = state.get('parent_key')
+            parent_key = self.kwargs.get("parent_key")
+            if not parent_key:
+                state = self.get_state()
+                parent_key = state.get('parent_key')
             if parent_key:
                 parent = SearchKey.get_by_search_key(parent_key)
         else:

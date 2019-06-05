@@ -1186,8 +1186,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         pipeline = Pipeline.get_by_code(pipeline_code)
         show_filler_tasks = self.kwargs.get("show_filler_tasks")
 
-        print("show: ", show_filler_tasks)
-
         if pipeline and show_filler_tasks in ["true", True]:
 
             processes = pipeline.get_process_names(exclude=["action"])

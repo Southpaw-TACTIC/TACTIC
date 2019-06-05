@@ -14,10 +14,11 @@ __all__ = ["TileLayoutWdg"]
 import re, os
 import urllib
 
-from pyasm.biz import CustomScript, Project, Snapshot, File, ProjectSetting
-from pyasm.common import Common, Environment
+from pyasm.common import Common, Environment, jsonloads, jsondumps
+from pyasm.biz import CustomScript, Project, Snapshot, File, ProjectSetting, FileGroup
+from pyasm.command import Command
 from pyasm.search import Search, SearchKey, SearchType
-from pyasm.web import DivWdg, Table, SpanWdg
+from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement
 from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
@@ -184,6 +185,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
+    def get_kwargs_keys(cls):
+        return ['collection_key']
+    get_kwargs_keys = classmethod(get_kwargs_keys)
 
     def can_select(self):
         return True
@@ -227,6 +231,15 @@ class TileLayoutWdg(ToolLayoutWdg):
         context = self.kwargs.get("context")
         if context:
             search.add_filter("context", context)
+
+
+        collection_key = self.kwargs.get("collection_key")
+        if collection_key:
+            collection = Search.get_by_search_key(collection_key)
+            search2 = Search( collection.get_collection_type() )
+            search2.add_filter("parent_code", collection.get_code() )
+            search2.add_column("search_code")
+            search.add_search_filter("code", search2)
 
         return super(ToolLayoutWdg, self).alter_search(search)
 
@@ -392,7 +405,13 @@ class TileLayoutWdg(ToolLayoutWdg):
             
 
             if js_load:
+                import time
+                start = time.time()
                 self.sobject_data = self.get_sobject_data(self.sobjects)
+                end = time.time()
+                print
+                print("TILE LAYOUT PREPROCESSING TOOK [%s] SECONDS" % (end-start))
+                print
 		style = self.get_styles()
 		inner.add(style)
             
@@ -552,6 +571,17 @@ class TileLayoutWdg(ToolLayoutWdg):
                         // Size
                         tile.getElement(".spt_tile_size").innerHTML = data.size;
 		    }
+
+
+                    default_tile_title = tile.getElement(".spt_default_tile_title");
+                    if (default_tile_title) {
+                        title_text_div = default_tile_title.getElement(".spt_tile_title_text");
+                        title_text_div.innerHTML = data.title_text;
+                        title_text_div.setAttribute("title", data.title_text);
+                    } else {
+                        tile_title = tile.getElement(".spt_tile_title");
+                        tile_title.load(data);
+                    }
 
                     thumb_top = tile.getElement(".spt_thumb_top");
                     thumb_top.setAttribute("spt_main_path", data.main_path);
@@ -768,6 +798,9 @@ class TileLayoutWdg(ToolLayoutWdg):
         mode = self.kwargs.get("expand_mode")
         if not mode:
             mode = "gallery"
+
+        # Force this for now (media)
+        #mode = 'gallery'
 
         
         gallery_width = self.kwargs.get("gallery_width")
@@ -1038,197 +1071,264 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             format_context = True
 
+        collection_key = self.kwargs.get("collection_key")
+
+        extra_data = self.kwargs.get("extra_data") or {}
+        if isinstance(extra_data, basestring):
+            extra_data = jsonloads(extra_data)
+
+
         if self.upload_mode in ['drop','both']:
             layout_wdg.add_behavior( {
-                'type': 'load',
-                'search_type': search_type,
-                'search_key': self.parent_key,
-                'drop_shadow': self.show_drop_shadow,
-                'process': process,
-                'border_color': border_color,
-                'format_context': format_context,
-                'cbjs_action': '''
+            'type': 'load',
+            'search_type': self.search_type,
+            'search_key': self.parent_key,
+            'collection_key': collection_key,
+            'drop_shadow': self.show_drop_shadow,
+            'process': process,
+            'border_color': border_color,
+            'format_context': format_context,
+            'extra_data': extra_data,
+            'cbjs_action': '''
+            
+            spt.thumb = {};
+
+            spt.thumb.background_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','2px dashed ' + bvr.border_color);
+            }
+            spt.thumb.background_leave = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle('border','none');
+            }
+
+            // background_drop creates an entirely new item based on the file name that is being inserted
+            spt.thumb.background_drop = function(evt, el) {
+
+                el.setStyle('border','none');
+                var top = document.id(el);
+
+                spt.html5upload.clear();
+                var server = TacticServerStub.get();
                 
-                spt.thumb = {};
+                evt.dataTransfer.dropEffect = 'copy';
+                var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
 
-                spt.thumb.background_enter = function(evt, el) {
-                    evt.preventDefault();
-                    el.setStyle('border','2px dashed ' + bvr.border_color);
-                }
-                spt.thumb.background_leave = function(evt, el) {
-                    evt.preventDefault();
-                    el.setStyle('border','none');
-                }
+                var filenames = [];
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
 
-                // background_drop creates an entirely new item based on the file name that is being inserted
-                spt.thumb.background_drop = function(evt, el) {
-                    //evt.stopPropagation();
-                    //evt.preventDefault();
+                    filenames.push(file.name);
+                }   
 
-                    el.setStyle('border','none');
-                    var top = document.id(el);
+                var yes = function() {
 
-                    spt.html5upload.clear();
-                    var server = TacticServerStub.get();
-                    
-                    evt.dataTransfer.dropEffect = 'copy';
-                    var files = evt.dataTransfer.files;
-                    evt.stopPropagation();
-                    evt.preventDefault();
+                    var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
 
-                    var filenames = [];
-                    for (var i = 0; i < files.length; i++) {
-                        var file = files[i];
+                    var upload_complete = function() {
+                        try {
+                            var server = TacticServerStub.get();
+                            server.set_transaction_ticket(ticket);
 
-                        filenames.push(file.name);
-                    }   
-                    
-                    var yes = function() {
-                        spt.app_busy.show("Attaching file");
-
-                            var ticket = server.start({title: "Tile Check-in" , description: "Tile Check-in [" + filenames[0] + "]" });
-                            var upload_file_kwargs =  {
-                                files: files,
-                                ticket: ticket,
-                               
-                                upload_complete: function() {
-
-                                    try {
-                                        var server = TacticServerStub.get();
-                                        server.set_transaction_ticket(ticket);
-                                        
-                                        for (var i = 0; i < files.length; i++) {
-                                            var size = files[i].size;
-                                            var file = files[i];
-
-                                            var filename = file.name;
-
-                                            var search_key;
-                                            var data = {
-                                                name: filename
-                                            }
-                                            if (bvr.search_key) {
-                                                search_key = bvr.search_key;
-                                            }
-                                            else {
-                                                var search_type = bvr.search_type;
-                                                var item = server.insert(search_type, data);
-                                                search_key = item.__search_key__;
-                                            }
- 
-                                            if (bvr.format_context) var context = bvr.process + "/" + filename;
-                                            else var context = bvr.process;
-                                        
-                                        
-                                        var kwargs = {mode: 'uploaded'};
-                                        server.simple_checkin( search_key, context, filename, kwargs);
-
-                                        }
-                                        server.finish();
-                                        var layout = el.getParent(".spt_layout");
-                                        spt.table.set_layout(layout);
-                                        spt.table.run_search();
-                                    } catch(e) {
-                                        spt.alert(spt.exception.handler(e));
-                                        server.abort();
-                                    }
+                            // if we have a search_key that is different from the
+                            // search_type, then create a new sobject
+                            var mode = "insert";
+                            if (bvr.search_key) {
+                                if (bvr.search_key.startsWith(bvr.search_type+"?")) {
+                                    mode = "update";
                                 }
-                            };
-                            spt.html5upload.upload_file(upload_file_kwargs);
-
-                            // just support one file at the moment
-                            //break;
-                     
-                        spt.app_busy.hide();
-                    }
-                    spt.confirm('Check in [' + filenames[0] + '] for a new item?', yes);
-                }
-     
-                // noop means inserting a file into an already existing tile
-                spt.thumb.noop_enter = function(evt, el) {
-                    evt.preventDefault();
-                    el.setStyle("box-shadow", "0px 0px 15px #970");
-                }
-                spt.thumb.noop_leave = function(evt, el) {
-                    evt.preventDefault();
-                    if (bvr.drop_shadow)
-                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
-                    else
-                        el.setStyle("box-shadow", "none");
-
-
-                }
-
-                spt.thumb.noop = function(evt, el) {
-                    evt.dataTransfer.dropEffect = 'copy';
-                    var files = evt.dataTransfer.files;
-                    evt.stopPropagation();
-                    evt.preventDefault();
-
-                    if (bvr.drop_shadow)
-                        el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
-                    else
-                        el.setStyle("box-shadow", "none");
-                    var top = document.id(el);
-                    var thumb_el = top.getElement(".spt_thumb_top");
-
-
-                    var filenames = [];
-                    for (var i = 0; i < files.length; i++) {
-                        var file = files[i];
-                        filenames.push(file.name);
-                    }   
-
-                    // use the parent key if available
-                    var search_key = bvr.search_key ? bvr.search_key : top.getAttribute("spt_search_key");
-                    var yes = function() {
-                        for (var i = 0; i < files.length; i++) {
-                            var size = files[i].size;
-                            var file = files[i];
-
-                            setTimeout( function() {
-                                var loadingImage = loadImage(
-                                    file,
-                                    function (img) {
-                                        img.setStyle("width", "100%");
-                                        img.setStyle("height", "");
-                                        thumb_el.innerHTML = "";
-                                        thumb_el.appendChild(img);
-                                    },
-                                    {maxWidth: 240, canvas: true, contain: true}
-                                );
-                            }, 0 );
-
-
-                            var filename = file.name;
-                            if (bvr.format_context) var context = bvr.process + "/" + filename;
-                            else var context = bvr.process;
-
-                            var upload_file_kwargs =  {
-                                files: files,
-                                upload_complete: function() {
-                                    try {
-                                        var server = TacticServerStub.get();
-                                        var kwargs = {mode: 'uploaded'};
-                                        server.simple_checkin( search_key, context, filename, kwargs);
-                                        spt.notify.show_message("Check-in completed for " + search_key);
-                                    } catch(e) {
-                                        spt.alert(spt.exception.handler(e));
-                                        server.abort();
-                                        
-                                    }
+                                else {
+                                    mode = "child";
                                 }
-                            };
-                            spt.html5upload.upload_file(upload_file_kwargs);
-             
+                            }
+
+                            for (var i = 0; i < files.length; i++) {
+                                var size = files[i].size;
+                                var file = files[i];
+
+                                var filename = file.name;
+
+                                var search_key;
+                                var data = {
+                                    name: filename,
+                                }
+                                for (var key in bvr.extra_data) {
+                                    data[key] = bvr.extra_data[key];
+                                }
+
+                                if (mode == "insert") {
+                                    var search_type = bvr.search_type;
+                                    var item = server.insert(search_type, data, { collection_key: bvr.collection_key} );
+                                    search_key = item.__search_key__;
+                                }
+                                else if (mode == "child") {
+                                    var search_type = bvr.search_type;
+                                    var item = server.insert(search_type, data, { parent_key: bvr.search_key, collection_key: bvr.collection_key });
+                                    search_key = item.__search_key__;
+                                }
+                                else {
+                                    search_key = bvr.search_key;
+                                }
+
+                                if (bvr.format_context)
+                                    var context = bvr.process + "/" + filename;
+                                else
+                                    var context = bvr.process;
+                            
+                            
+                                var kwargs = {mode: 'uploaded'};
+                                server.simple_checkin( search_key, context, filename, kwargs);
+
+                            }
+                            server.finish();
+
+                            var layout = el.getParent(".spt_layout");
+                            spt.table.set_layout(layout);
+                            spt.table.run_search();
+
+                        } catch(e) {
+                            spt.alert(spt.exception.handler(e));
+                            server.abort();
                         }
                     }
-                    
-                    spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes);
-                    
+
+
+                    var upload_file_kwargs = {
+                        files: files,
+                        ticket: ticket,
+                        upload_complete: upload_complete
+                    };
+                    spt.html5upload.upload_file(upload_file_kwargs);
+
+                    // just support one file at the moment
+                    //break;
+                 
+                }
+
+
+                //var use_ingest = true;
+                var use_ingest = false;
+                if (use_ingest) {
+                    console.log("extra_data");
+                    console.log(bvr.extra_data);
+                    var class_name = 'tactic.ui.tools.IngestUploadWdg';
+                    var kwargs = {
+                        context_mode: 'case_sensitive',
+                        extra_data: bvr.extra_data,
+                        collection_key: bvr.collection_key,
+                        hidden_options: 'process',
+                        on_complete: function() {
+                            var layout = el.getParent(".spt_layout");
+                            spt.table.set_layout(layout);
+                            spt.table.run_search();
+                        },
+                        search_type: bvr.search_type,
+                        show_settings: true,
+                    }
+                    var popup = spt.panel.load_popup("Ingest Files", class_name, kwargs);
+
+                    var el = popup.getElement(".spt_to_ingest_files");
+                    spt.drag.noop(evt, el);
 
                 }
-                '''
+
+                else if (filenames.length == 1) {
+                    //spt.confirm('Add file [' + filenames[0] + ']?', yes);
+                    yes();
+                }
+                else {
+                    spt.confirm('Add '+filenames.length+' files?', yes);
+                }
+
+            }
+ 
+            // noop means inserting a file into an already existing tile
+            spt.thumb.noop_enter = function(evt, el) {
+                evt.preventDefault();
+                el.setStyle("box-shadow", "0px 0px 15px #970");
+            }
+            spt.thumb.noop_leave = function(evt, el) {
+                evt.preventDefault();
+                if (bvr.drop_shadow)
+                    el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                else
+                    el.setStyle("box-shadow", "none");
+
+
+            }
+
+            spt.thumb.noop = function(evt, el) {
+                evt.dataTransfer.dropEffect = 'copy';
+                var files = evt.dataTransfer.files;
+                evt.stopPropagation();
+                evt.preventDefault();
+
+                if (bvr.drop_shadow)
+                    el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
+                else
+                    el.setStyle("box-shadow", "none");
+                var top = document.id(el);
+                var thumb_el = top.getElement(".spt_thumb_top");
+
+
+                var filenames = [];
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    filenames.push(file.name);
+                }   
+
+                // use the parent key if available
+                var search_key = bvr.search_key ? bvr.search_key : top.getAttribute("spt_search_key");
+                var yes = function() {
+                    for (var i = 0; i < files.length; i++) {
+                        var size = files[i].size;
+                        var file = files[i];
+
+                        setTimeout( function() {
+                            var loadingImage = loadImage(
+                                file,
+                                function (img) {
+                                    img.setStyle("width", "100%");
+                                    img.setStyle("height", "");
+                                    thumb_el.innerHTML = "";
+                                    thumb_el.appendChild(img);
+                                },
+                                {maxWidth: 240, canvas: true, contain: true}
+                            );
+                        }, 0 );
+
+
+                        var filename = file.name;
+                        if (bvr.format_context) var context = bvr.process + "/" + filename;
+                        else var context = bvr.process;
+
+                        var upload_file_kwargs =  {
+                            files: files,
+                            upload_complete: function() {
+                                try {
+                                    var server = TacticServerStub.get();
+                                    var kwargs = {mode: 'uploaded'};
+                                    server.simple_checkin( search_key, context, filename, kwargs);
+                                    spt.notify.show_message("Check-in completed for " + search_key);
+                                } catch(e) {
+                                    spt.alert(spt.exception.handler(e));
+                                    server.abort();
+                                    
+                                }
+                            }
+                        };
+                        spt.html5upload.upload_file(upload_file_kwargs);
+         
+                    }
+                }
+                
+                spt.confirm('Check in [' + filenames + '] for '+ search_key + '?', yes);
+                
+
+            }
+            '''
             } )
 
         
@@ -1503,13 +1603,13 @@ class TileLayoutWdg(ToolLayoutWdg):
                 snapshots_by_sobject[snapshot.get_search_key()] = snapshot
         else:
             snapshots_by_sobject = Snapshot.get_by_sobjects(sobjects, return_dict=True)
-            
+
         snapshots = snapshots_by_sobject.values()
         file_sobjects = File.get_by_snapshots(snapshots)
         for file_object in file_sobjects:
             file_code = file_object.get_code()
             file_sobjects_by_code[file_code] = file_object
-
+ 
         paths_by_key = {}
         for sobject in sobjects:
             search_key = sobject.get_search_key()
@@ -1642,17 +1742,20 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data['path'] = path
 	
             
-
-            if self.kwargs.get("show_title") not in ['false', False]:
-                if self.title_wdg:
-                    # TODO: Test this
-                    self.title_wdg.set_sobject(sobject)
-                    title_wdg = self.title_wdg.get_display()
-                else:
-                    title_wdg = self.get_title(sobject)
-                #tile_data['title_wdg'] = title_wdg
                
-
+            # Search expr might not be very efficient
+            # But keep for legacy implementation
+            title_expr = self.kwargs.get("title_expr")
+            if title_expr:
+                title_text = Search.eval(title_expr, sobject, single=True)
+            elif sobject.get_base_search_type() == "sthpw/snapshot":
+                title_text = sobject.get_value("context")
+            else:
+                title_text = sobject.get_value("name", no_exception=True)
+            if not title_text:
+                title_text = sobject.get_value("code", no_exception=True)
+            tile_data['title_text'] = title_text
+ 
             sobject_data[sobject.get_search_key()] = tile_data
 
 
@@ -1738,6 +1841,69 @@ class TileLayoutWdg(ToolLayoutWdg):
             }
 
         """ % (self.spacing, self.spacing)
+        
+        css += """
+            .spt_default_tile_title {
+                height: 20px;
+                padding: 3px;
+                width: 100%;
+                position: absolute;
+                left: 0;
+            }
+
+            .spt_tile_bg {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
+                background: #000;
+                opacity: 0.3;
+                z-index: 1;
+            }
+            
+            .spt_tile_select {
+                overflow-x: hidden;
+                overflow-y: hidden;
+                position: relative;
+                z-index: 3;
+            }
+         
+            .spt_tile_checkbox {
+                margin-top: 2px;
+            }
+        
+            .spt_tile_title_text {
+                height: 15px;
+                left: 25px;
+                top: 3px;
+                position: absolute;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: #FFF;
+            }
+
+        """
+        css += """
+            .spt_tile_detail {
+                float: right;
+                margin-top: -2px;
+                position: relative;
+                z-index: 2;
+                margin-right: 3px;
+                color: #FFF;
+            }
+
+            .spt_tile_collection {
+                margin-right: 5px;
+                float: right;
+                margin-top: -2px;
+                position: relative;
+                z-index: 2;
+            }
+
+
+        """
 
         style.add(css)
         return style
@@ -1751,18 +1917,24 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row_%s" % self.table_id)
 
         div.add(" ")
-        
+       
         if self.kwargs.get("show_title") not in ['false', False]:
-            
-            # TODO: Add the title wdg buffer display in javascript
-            title_wdg = DivWdg()
+           
+            title_wdg = self.get_template_title()
             div.add(title_wdg)
-            title_wdg.add_class("spt_tile_title")
 
+            """
+            if self.title_wdg:
+                self.title_wdg.set_sobject(sobject)
+                title_wdg = self.title_wdg.get_display()
+            else:
+                title_wdg = self.get_title(sobject)
             title_wdg.add_style("position: absolute")
             title_wdg.add_style("top: 0")
             title_wdg.add_style("left: 0")
             title_wdg.add_style("width: 100%")
+            """
+            
        
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
 
@@ -1855,6 +2027,76 @@ class TileLayoutWdg(ToolLayoutWdg):
             stat_div = OverlayStatsWdg(expr = self.overlay_expr, sobject = sobject, bg_color = self.overlay_color)
             div.add(stat_div)
         """
+
+        return div
+    
+    
+    def get_template_title(self):
+        
+        div = DivWdg()
+
+        div.add_class("spt_tile_title")
+        div.add_class("spt_default_tile_title")
+        
+        
+        bg_wdg = DivWdg()
+        div.add(bg_wdg)
+        bg_wdg.add_class("spt_tile_bg")
+        bg_wdg.set_box_shadow(color="#000")
+        bg_wdg.add(" ")
+
+
+        show_detail = self.kwargs.get("show_detail")
+        if show_detail not in [False, 'false']:
+            detail_div = DivWdg()
+            div.add(detail_div)
+
+            # TODO: Handle this....
+            #if sobject.get_value("_is_collection", no_exception=True) == True:
+            if False:
+                """
+                detail_div.add_class("spt_tile_collection");
+
+                search_type = sobject.get_base_search_type()
+                parts = search_type.split("/")
+                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
+                """
+            else:
+                detail_div.add_class("spt_tile_detail")
+                detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
+                detail_div.add(detail)
+
+
+        header_div = DivWdg()
+        header_div.add_class("spt_tile_select")
+        div.add(header_div)
+        
+        header_div.add_class("SPT_DTS")
+
+        from pyasm.widget import CheckboxWdg
+        checkbox = CheckboxWdg("select")
+        checkbox.add_class("spt_tile_checkbox")
+
+
+        table = Table()
+        header_div.add(table)
+
+        table.add_cell(checkbox)
+
+        title_div = DivWdg()
+        title_div.add_class("spt_tile_title_text")
+
+        td = table.add_cell(title_div)
+        
+        title_div.add("<br clear='all'/>")
+        title_div.add_class("hand")
+        
+        if self.kwargs.get("hide_checkbox") in ['true', True]:
+            checkbox.add_style("visibility: hidden")
+            title_div.add_style("left: 10px")
 
         return div
 
@@ -2920,12 +3162,10 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             div.add_attr("title", sobject.get_code())
 
 
-
         return div
 
-from pyasm.biz import Snapshot
-from pyasm.web import HtmlElement
-from pyasm.biz import FileGroup
+
+
 __all__.append("ThumbWdg2")
 class ThumbWdg2(BaseRefreshWdg):
 

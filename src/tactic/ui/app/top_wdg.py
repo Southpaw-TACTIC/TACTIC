@@ -241,7 +241,8 @@ class TopWdg(Widget):
             }
 
 
-            spt.panel.load_popup(title, class_name, kwargs);
+            var popup = spt.panel.load_popup(title, class_name, kwargs);
+            popup.activator = bvr.src_el;
             '''
         } )
 
@@ -251,10 +252,6 @@ class TopWdg(Widget):
             'bvr_match_class': 'tactic_load',
             'cbjs_action': '''
 
-            var view = bvr.src_el.getAttribute("view");
-            if (!view) {
-                spt.alert("No view found");
-            }
 
             var target_class = bvr.src_el.getAttribute("target");
             if (! target_class ) {
@@ -271,10 +268,16 @@ class TopWdg(Widget):
             }
 
 
-
-            var class_name = 'tactic.ui.panel.CustomLayoutWdg';
-            var kwargs = {
-                view: view,  
+            var class_name = bvr.src_el.getAttribute("class_name");
+            var kwargs = {};
+            if (!class_name) {
+                var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                var view = bvr.src_el.getAttribute("view");
+                if (!view) {
+                    spt.alert("No view found");
+                    return;
+                }
+                kwargs["view"] = view;
             }
 
 

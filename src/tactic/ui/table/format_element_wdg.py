@@ -622,25 +622,49 @@ class FormatElementWdg(SimpleTableElementWdg):
             if self.attributes.get('edit') == 'false':
                 checkbox.set_option('disabled','disabled')
 
+
             checkbox.set_option("value", "true")
             if value:
                 checkbox.set_checked()
+            else:
+                checkbox.set_unchecked()
             div.add(checkbox)
+            checkbox.add_style("pointer-events", "none")
 
             div.add_class('spt_format_checkbox_%s' % self.get_name())
 
-            checkbox.add_behavior( {
+            div.add_behavior( {
             'type': 'click',
             'cbjs_action': '''
 
             var cached_data = {};
-            var value_wdg = bvr.src_el;
-            var top_el = bvr.src_el.getParent(".spt_boolean_top");
+
+            //var top_el = bvr.src_el.getParent(".spt_boolean_top");
+            // var value_wdg == bvr.src_el;
+            var top_el = bvr.src_el;
+            var value_wdg = bvr.src_el.getElement("input");
+
             spt.dg_table.edit.widget = top_el;
             var key_code = spt.kbd.special_keys_map.ENTER;
             spt.dg_table.inline_edit_cell_cbk( value_wdg, cached_data );
 
-            bvr.src_el.checked = !bvr.src_el.checked
+
+
+            var cell = bvr.src_el.getParent(".spt_edit_cell");
+            if (cell) {
+                if (cell.getAttribute("spt_input_value") == "false") {
+                    cell.setAttribute("spt_input_value", "true");
+                    value_wdg.checked = true;
+                }
+                else {
+                    cell.setAttribute("spt_input_value", "false");
+                    value_wdg.checked = false;
+                }
+            }
+
+            //bvr.src_el.checked = !bvr.src_el.checked;
+            //value_wdg.checked = !value_wdg.checked;
+
             '''
             } )
 
@@ -718,9 +742,9 @@ class FormatElementWdg(SimpleTableElementWdg):
 
     def handle_td(self, td):
         super(FormatElementWdg, self).handle_td(td)
-        version = self.parent_wdg.get_layout_version()
-        if version == "2":
-            return
+        #version = self.parent_wdg.get_layout_version()
+        #if version == "2":
+        #    return
         format = self.get_option('format')
         if format == 'Checkbox':
             td.add_attr("spt_input_type", "inline")
