@@ -140,24 +140,24 @@ class NewPasswordCmd(Command):
 
 
     def execute(self):
-	self.check()
+        self.check()
 
-	web = WebContainer.get_web()
+        web = WebContainer.get_web()
 
-	password = web.get_form_value("my_password")
-	confirm_password = web.get_form_value("confirm_password")
+        password = web.get_form_value("my_password")
+        confirm_password = web.get_form_value("confirm_password")
 
-	login = Login.get_by_login(self.login, use_upn=True)
-	if not login:
+        login = Login.get_by_login(self.login, use_upn=True)
+        if not login:
             web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
-            return	
+            return  
 
-	if password == confirm_password:
-	    encrypted = hashlib.md5(password).hexdigest()
+        if password == confirm_password:
+            encrypted = hashlib.md5(password).hexdigest()
             login.set_value('password', encrypted)
             login.commit()
-	else:
-	    web.set_form_value(ResetPasswordWdg.MSG, 'The entered passwords do not match.')
+        else:
+            web.set_form_value(ResetPasswordWdg.MSG, 'The entered passwords do not match.')
             return
 
 
@@ -173,7 +173,7 @@ class ResetPasswordWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         login_name = web.get_form_value('login')
         hidden = HiddenWdg('login', login_name)
-	box = DivWdg(css='login')
+        box = DivWdg(css='login')
 
         if web.is_IE():
             box.add_style("margin-top: 150px")
@@ -211,7 +211,7 @@ class ResetPasswordWdg(BaseRefreshWdg):
         table.set_attr("cellpadding", "3px")
         table.add_row()
 
-    
+
 
         table2 = Table(css="login")
         table2.center()
@@ -230,11 +230,11 @@ class ResetPasswordWdg(BaseRefreshWdg):
         td = table2.add_cell(button)
         hidden = HiddenWdg('send_code')
         td.add(hidden)
-       
+
         #th.add_class('center_content')
-        
+
         table2.add_row()
-    
+
 
         div.add(HtmlElement.br())
         div.add(table)
@@ -243,23 +243,23 @@ class ResetPasswordWdg(BaseRefreshWdg):
         div.add(table2)
         #div.add(HiddenWdg(self.LOGIN_MSG))
         code_div = DivWdg()
-	div.add(code_div)
-	code_div.add_style("margin: 20 0")
+        div.add(code_div)
+        code_div.add_style("margin: 20 0")
 
-   	input_div = HtmlElement.text()
+        input_div = HtmlElement.text()
         code_div.add(input_div)
         input_div.add_attr('name', 'code')
-	input_div.add_style('margin-bottom: 10px')
+        input_div.add_style('margin-bottom: 10px')
 
         next_button = ActionButtonWdg(tip='Next', title='Next')
         code_div.add(next_button)
-	next_button.add_style("margin: 0 auto")
-	next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
+        next_button.add_style("margin: 0 auto")
+        next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
 
         hidden = HiddenWdg('reset_password')
         code_div.add(hidden)
 
-	#box.add(script)
+        #box.add(script)
 
         widget = Widget()
         #widget.add( HtmlElement.br(3) )
@@ -327,23 +327,23 @@ class ResetPasswordCmd(Command):
                 admin = Login.get_by_login('admin')
                 if admin:
                     sender_email = admin.get_value('email')
-        	    if not sender_email:
-			from pyasm.common import Config
-			sender_email = Config.get_value("services", "mail_default_admin_email")
-	        else:
+                if not sender_email:
+                    from pyasm.common import Config
+                    sender_email = Config.get_value("services", "mail_default_admin_email")
+                else:
                     sender_email = 'support@southpawtech.com'
                 recipient_emails = [email]
                 #email_msg =  'Your TACTIC password has been reset. The new password is:\n%s\nYou can change your password once you log in by going to Edit My Account at the top right corner.'%auto_password
-		email_msg = 'Your TACTIC pass word reset code is:\n%s' % auto_password
+                email_msg = 'Your TACTIC pass word reset code is:\n%s' % auto_password
                 email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject='TACTIC password change')
 
-		data = login.get_json_value("data")
-      		data['temporary_code'] = auto_password
-		login.set_json_value('data', data)
-		login.commit()
+                data = login.get_json_value("data")
+                data['temporary_code'] = auto_password
+                login.set_json_value('data', data)
+                login.commit()
 
                 email_cmd.execute()
-			
+
             except TacticException as e:
                 msg = "Failed to send an email for your new password. Reset aborted."
                 web.set_form_value(ResetPasswordWdg.MSG, msg)
