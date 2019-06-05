@@ -1883,13 +1883,12 @@ class WebLoginWdg2(BaseSignInWdg):
 
 
         ####### CONTENT #######
-        content_container = DivWdg()
-        content_container.add_class("content-container")
+        div = DivWdg()
 
         # hidden element in the form to pass message that this was not
         # actually a typical submitted form, but rather the result
         # of a login page
-        content_container.add( HiddenWdg("is_from_login", "yes") )
+        div.add( HiddenWdg("is_from_login", "yes") )
 
         # TODO: make new wdg compatible with domains and hosts
         # look for defined domains
@@ -1935,10 +1934,10 @@ class WebLoginWdg2(BaseSignInWdg):
             else:
                 domain_wdg.add_style("background-color: #EEE")
                 domain_wdg.add_style("height: 20px")
-            content_container.add( domain_wdg )
+            div.add( domain_wdg )
 
         login_container = DivWdg()
-        content_container.add(login_container)
+        div.add(login_container)
         login_container.add_class("login-container")
         
         username_container = DivWdg()
@@ -1976,18 +1975,18 @@ class WebLoginWdg2(BaseSignInWdg):
 
         if change_admin:
             password_container2 = DivWdg()
-            content_container.add(password_container2)
+            div.add(password_container2)
             password_container2.add_class("sign-in-input")
             password_container2.add("<div class='label'>Verify Password</div>")
 
             password_wdg2 = PasswordWdg("verify_password")
             password_container2.add(password_wdg2)
 
-            content_container.add("<div class='msg-container'>Please change the \"admin\" password</div>")
+            div.add("<div class='msg-container'>Please change the \"admin\" password</div>")
 
 
         bottom_container = DivWdg()
-        content_container.add(bottom_container)
+        div.add(bottom_container)
         bottom_container.add_class("bottom-container")
 
         submit_btn = DivWdg("Sign In")
@@ -2001,7 +2000,7 @@ class WebLoginWdg2(BaseSignInWdg):
 
 
         err_msg_container = DivWdg()
-        content_container.add(err_msg_container)
+        div.add(err_msg_container)
         err_msg_container.add_class("msg-container")
 
         if bottom_link:
@@ -2033,9 +2032,9 @@ class WebLoginWdg2(BaseSignInWdg):
                 forgot_password_container.add(link)
 
 
-        content_container.add(HiddenWdg(self.LOGIN_MSG))
+        div.add(HiddenWdg(self.LOGIN_MSG))
         
-        return content_container
+        return div
 
 
 
