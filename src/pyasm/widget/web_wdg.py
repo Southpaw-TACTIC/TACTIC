@@ -1671,13 +1671,17 @@ class BaseSignInWdg(Widget):
 
         .msg-container {
             display: flex;
-            align-items: center;
             align-self: start;
             color: red;
         }
 
         .msg-container i {
+            margin-top: 1px;
             margin-right: 5px;
+        }
+
+        .msg-container span {
+            text-align: start;
         }
 
         .floating-back-btn {

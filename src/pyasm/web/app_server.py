@@ -247,7 +247,7 @@ class BaseAppServer(Base):
         from tactic.ui.widget import CodeConfirmationWdg, NewPasswordWdg, ResetOptionsWdg
         if reset_password:
             code = web.get_form_value('code')
-            login_name = web.get_form_value('reset_login')
+            login_name = web.get_form_value('login')
             login = Login.get_by_login(login_name, use_upn=True)
 
             code_correct = False
@@ -267,7 +267,7 @@ class BaseAppServer(Base):
         else:
             reset_msg = web.get_form_value('reset_msg')
             if reset_msg:
-                web.set_form_value(WebLoginWdg.LOGIN_MSG, reset_msg)
+                web.set_form_value(WebLoginWdg2.LOGIN_MSG, reset_msg)
 
             web_wdg = None
             sudo = Sudo()

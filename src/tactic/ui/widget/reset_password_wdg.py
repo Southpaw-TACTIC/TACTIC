@@ -100,7 +100,7 @@ class NewPasswordCmd(Command):
 
     def check(self):
         web = WebContainer.get_web()
-        self.login = web.get_form_value("reset_login")
+        self.login = web.get_form_value("login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
             web.set_form_value(CodeConfirmationWdg.MSG, error_msg)
@@ -174,10 +174,9 @@ class CodeConfirmationWdg(BaseSignInWdg):
     def get_content(self):
         
         web = WebContainer.get_web()
-        login_name = web.get_form_value('login')
-        reset_login_name = web.get_form_value('reset_login')
+        login_name = web.get_form_value('reset_login')
         hidden = HiddenWdg('login', login_name)
-        
+
         div = DivWdg()
         div.add_style("margin: 0px 0px")
 
