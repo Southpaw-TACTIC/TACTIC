@@ -1995,14 +1995,15 @@ class WebLoginWdg2(BaseSignInWdg):
         div.add(bottom_container)
         bottom_container.add_class("bottom-container")
 
-        submit_btn = DivWdg("Sign In")
-        submit_btn.add_class("sign-in-btn hand")
-        submit_btn.add(HiddenWdg("Submit"))
-        submit_btn.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
-
         forgot_password_container = DivWdg()
         bottom_container.add(forgot_password_container)
-        bottom_container.add(submit_btn)
+
+        if (not override_login):
+            submit_btn = DivWdg("Sign In")
+            submit_btn.add_class("sign-in-btn hand")
+            submit_btn.add(HiddenWdg("Submit"))
+            submit_btn.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
+            bottom_container.add(submit_btn)
 
 
         err_msg_container = DivWdg()
