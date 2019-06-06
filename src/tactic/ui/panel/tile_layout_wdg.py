@@ -531,7 +531,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 
                 Object.keys(bvr.sobject_data).forEach(function(item) {
                     data = bvr.sobject_data[item];
-                    console.log(data); 
+                    //console.log(data); 
 
                     var tile = spt.behavior.clone(template_tile);
                     tile.removeClass("spt_template_tile_top");
@@ -539,18 +539,20 @@ class TileLayoutWdg(ToolLayoutWdg):
                     
                     // Set the icon path or EXT
                     var icon_path = data.path;
-                    if (icon_path == "__DYNAMIC__") {
-                        var inner = tile.getElement(".spt_ext_icon");
-                        inner.getElement(".spt_ext_ext").innerHTML = data.ext;
-                        inner.getElement(".spt_ext_icon_inner").setStyle("background", data.color);
-                    } else if (icon_path.startsWith("/context")) {
-                        var inner = tile.getElement(".spt_context_icon");
-                        inner.getElement("img").src = icon_path;
-                    } else {
-                        var inner = tile.getElement(".spt_tile_icon");
-                        inner.getElement(".spt_image").src = icon_path;
+                    if (icon_path) {
+                        if (icon_path == "__DYNAMIC__") {
+                            var inner = tile.getElement(".spt_ext_icon");
+                            inner.getElement(".spt_ext_ext").innerHTML = data.ext;
+                            inner.getElement(".spt_ext_icon_inner").setStyle("background", data.color);
+                        } else if (icon_path.startsWith("/context")) {
+                            var inner = tile.getElement(".spt_context_icon");
+                            inner.getElement("img").src = icon_path;
+                        } else {
+                            var inner = tile.getElement(".spt_tile_icon");
+                            inner.getElement(".spt_image").src = icon_path;
+                        }
+                        inner.setStyle("display", "");
                     }
-                    inner.setStyle("display", "");
                     
 		    tile.setAttribute("spt_search_key", data.spt_search_key);
 		    tile.setAttribute("spt_search_key_v2", data.spt_search_key_v2);
@@ -573,7 +575,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                         download_el.setAttribute("download", data.basename);
 
                         // Size
-                        tile.getElement(".spt_tile_size").innerHTML = data.size;
+                        if (data.size) tile.getElement(".spt_tile_size").innerHTML = data.size;
 		    }
 
 
@@ -1621,40 +1623,38 @@ class TileLayoutWdg(ToolLayoutWdg):
  
         paths_by_key = {}
         for sobject in sobjects:
+            
             search_key = sobject.get_search_key()
-            
-            snapshot = snapshots_by_sobject.get(search_key)
-            
+                    
             paths = {}
-            if snapshot:
-                paths = self.get_paths(sobject, snapshot, file_sobjects_by_code)
+            if sobject.get("_is_collection", no_exception=True):
+                web_path = "/context/icons/mime-types/folder2.jpg"
+                paths['web'] = web_path
+            else:
+                snapshot = snapshots_by_sobject.get(search_key)
+                if snapshot:
+                    paths = self.get_paths(sobject, snapshot, file_sobjects_by_code)
                 
-            web_path = paths.get("web")
-            if not web_path:
-                # Get webpath from icon_link function
-                if sobject.get("_is_collection", no_exception=True):
-                    web_path = "/context/icons/mime-types/folder2.jpg"
-                    paths['web'] = web_path
-                else:
-                    repo_paths = paths.get("_repo")
-                    repo_path = repo_paths.get('main')
-                    file_path = paths.get("main")
-                    web_path = ThumbWdg.find_icon_link(file_path, repo_path)
-                    paths['web'] = web_path
-        
-                    if web_path == "/context/icons/mime-types/indicator_snake.gif" and create_icon:
-                        # generate icon dynamically
-                        from pyasm.widget import ThumbCmd
-                        snapshot_key = snapshot.get_search_key()
-                        thumb_cmd = ThumbCmd(search_keys=[snapshot_key])
-                        thumb_cmd.execute()
-                        
-                        # need new snapshot, file sobjects to get new paths
-                        new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
-                        paths = new_paths_by_key.get(sobject.get_search_key())
+                    web_path = paths.get("web")
+                    if not web_path:
+                        repo_paths = paths.get("_repo")
+                        repo_path = repo_paths.get('main')
+                        file_path = paths.get("main")
+                        web_path = ThumbWdg.find_icon_link(file_path, repo_path)
+                        paths['web'] = web_path
+            
+                        if web_path == "/context/icons/mime-types/indicator_snake.gif" and create_icon:
+                            # generate icon dynamically
+                            from pyasm.widget import ThumbCmd
+                            snapshot_key = snapshot.get_search_key()
+                            thumb_cmd = ThumbCmd(search_keys=[snapshot_key])
+                            thumb_cmd.execute()
+                            
+                            # need new snapshot, file sobjects to get new paths
+                            new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
+                            paths = new_paths_by_key.get(sobject.get_search_key())
 
                
-
             paths_by_key[search_key] = paths
 
 
@@ -1673,15 +1673,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         sobject_data = {}
        
-        paths_by_key = {}
-        
-        try:
-            paths_by_key = self.preprocess_paths(sobjects)
-        except Exception, e:
-            print("Error in preprocessing TileLayout paths: ")
-            print(e)
-            print
-            
+        paths_by_key = self.preprocess_paths(sobjects)
        
         for sobject in sobjects:
 
@@ -1694,55 +1686,56 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data["spt_display_value"] = sobject.get_display_value(long=True)
   
 
-            paths = paths_by_key.get(sobject.get_search_key())
-            path = paths.get("web")
+            paths = paths_by_key.get(sobject.get_search_key()) or {}
+            if paths:
+                path = paths.get("web")
             
-            repo_paths = paths.get("_repo")
-            if repo_paths:
-                lib_path = repo_paths.get("main")
-            else:
-                lib_path = None
+                repo_paths = paths.get("_repo")
+                if repo_paths:
+                    lib_path = repo_paths.get("main")
+                else:
+                    lib_path = None
 
-            if lib_path:
-                size = Common.get_dir_info(lib_path).get("size")
-                from pyasm.common import FormatValue
-                size = FormatValue().get_format_value(size, "KB")
+                if lib_path:
+                    size = Common.get_dir_info(lib_path).get("size")
+                    from pyasm.common import FormatValue
+                    size = FormatValue().get_format_value(size, "KB")
             
-            else:
-                size = 0
-            tile_data['size'] = size
+                else:
+                    size = 0
+                tile_data['size'] = size
                 
                 
-            main_path = paths.get("main")
-            if main_path:
-                tile_data['main_path'] = main_path
-                basename = os.path.basename(main_path)
-                tile_data['basename'] = basename
+                main_path = paths.get("main")
+                if main_path:
+                    tile_data['main_path'] = main_path
+                    basename = os.path.basename(main_path)
+                    tile_data['basename'] = basename
        
-            if path == "__DYNAMIC__":
-                # EXT format
-                base,ext = os.path.splitext(lib_path)
-                ext = ext.upper().lstrip(".")
+                if path == "__DYNAMIC__":
+                    # EXT format
+                    base,ext = os.path.splitext(lib_path)
+                    ext = ext.upper().lstrip(".")
 
-                #flat ui color
-                colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
-                import random
-                color = colors[random.randint(0,7)]
+                    #flat ui color
+                    colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
+                    import random
+                    color = colors[random.randint(0,7)]
+                    
+                    tile_data['ext'] = ext
+                    tile_data['color'] = color
+                 
                 
-                tile_data['ext'] = ext
-                tile_data['color'] = color
-             
-            
-            if isinstance(path, unicode):
-                path = path.encode("utf-8")
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
 
             
-            if path and path.endswith("indicator_snake.gif"):
-                # TODO: Dynamically generate after load
-                # Now, dynamically generated during load.
-                pass               
+                if path and path.endswith("indicator_snake.gif"):
+                    # TODO: Dynamically generate after load
+                    # Now, dynamically generated during load.
+                    pass               
 
-            tile_data['path'] = path
+                tile_data['path'] = path
 	
             
                
@@ -1840,7 +1833,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         """
        
         css += """
-            .spt_tile_top {
+            .spt_tile_layout_top .spt_tile_top {
                 margin-bottom: %s;
                 margin-right: %s;
                 background-color: transparent;
