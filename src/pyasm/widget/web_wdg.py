@@ -1479,8 +1479,8 @@ class WebLoginWdg(Widget):
             div.add_style("height: 230px")
 
         if msg:
-            from tactic.ui.widget import ResetPasswordWdg
-            if msg == ResetPasswordWdg.RESET_MSG:
+            from tactic.ui.widget import CodeConfirmationWdg
+            if msg == CodeConfirmationWdg.RESET_MSG:
                 td.add(IconWdg("INFO", IconWdg.INFO))
             else:
                 pass
@@ -1496,7 +1496,7 @@ class WebLoginWdg(Widget):
             td.add(hidden)
 
             authenticate_class = Config.get_value("security", "authenticate_class")
-            if msg != ResetPasswordWdg.RESET_MSG and not authenticate_class:
+            if msg != CodeConfirmationWdg.RESET_MSG and not authenticate_class:
                 access_msg = "Forgot your password?"
                 login_value = web.get_form_value('login')
                 js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
@@ -2014,8 +2014,8 @@ class WebLoginWdg2(BaseSignInWdg):
             msg = 'Your session has expired. Please login again.'
 
         if msg:
-            from tactic.ui.widget import ResetPasswordWdg
-            if msg == ResetPasswordWdg.RESET_MSG:
+            from tactic.ui.widget import CodeConfirmationWdg
+            if msg == CodeConfirmationWdg.RESET_MSG:
                 err_msg_container.add(IconWdg("INFO", IconWdg.INFO))
 
             err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
@@ -2025,7 +2025,7 @@ class WebLoginWdg2(BaseSignInWdg):
             forgot_password_container.add(hidden)
 
             authenticate_class = Config.get_value("security", "authenticate_class")
-            if msg != ResetPasswordWdg.RESET_MSG and not authenticate_class:
+            if msg != CodeConfirmationWdg.RESET_MSG and not authenticate_class:
                 access_msg = "Forgot your password?"
                 login_value = web.get_form_value('login')
                 js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
