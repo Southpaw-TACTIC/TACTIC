@@ -177,8 +177,6 @@ class ResetPasswordWdg(BaseSignInWdg):
         login_name = web.get_form_value('login')
         reset_login_name = web.get_form_value('reset_login')
         hidden = HiddenWdg('login', login_name)
-
-        print web.get_form_keys(), web.get_form_args(), "??"
      
         div = DivWdg()
         div.add_style("margin: 0px 0px")
@@ -204,7 +202,7 @@ class ResetPasswordWdg(BaseSignInWdg):
         name_wdg = TextWdg("reset_login")
         name_container.add(name_wdg)
         if reset_login_name:
-            name_wdg.set_value(login_name)
+            name_wdg.set_value(reset_login_name)
         elif login_name:
             name_wdg.set_value(login_name)
 
