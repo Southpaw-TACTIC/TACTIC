@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["ResetPasswordWdg", "NewPasswordWdg", "ResetPasswordCmd", "NewPasswordCmd"]
+__all__ = ["CodeConfirmationWdg", "NewPasswordWdg", "NewPasswordCmd", "ResetOptionsWdg", "ResetOptionsCmd"]
 
 import random
 import hashlib
@@ -103,7 +103,7 @@ class NewPasswordCmd(Command):
         self.login = web.get_form_value("reset_login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
-            web.set_form_value(ResetPasswordWdg.MSG, error_msg)
+            web.set_form_value(CodeConfirmationWdg.MSG, error_msg)
             raise TacticException(error_msg)
             return False
         return True
@@ -119,7 +119,7 @@ class NewPasswordCmd(Command):
 
         login = Login.get_by_login(self.login, use_upn=True)
         if not login:
-            web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
+            web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
             return  
 
         if password == confirm_password:
@@ -127,12 +127,12 @@ class NewPasswordCmd(Command):
             login.set_value('password', encrypted)
             login.commit()
         else:
-            web.set_form_value(ResetPasswordWdg.MSG, 'The entered passwords do not match.')
+            web.set_form_value(CodeConfirmationWdg.MSG, 'The entered passwords do not match.')
             return
 
 
 
-class ResetPasswordWdg(BaseSignInWdg):
+class CodeConfirmationWdg(BaseSignInWdg):
 
     MSG = 'reset_msg'
     RESET_MSG = 'Reset completed.'
@@ -177,7 +177,78 @@ class ResetPasswordWdg(BaseSignInWdg):
         login_name = web.get_form_value('login')
         reset_login_name = web.get_form_value('reset_login')
         hidden = HiddenWdg('login', login_name)
-     
+        
+        div = DivWdg()
+        div.add_style("margin: 0px 0px")
+
+        div.add(hidden)
+
+        # hidden element in the form to pass message that this was not
+        # actually a typical submitted form, but rather the result
+        # of a login page
+        div.add( HiddenWdg("is_from_login", "yes") )
+        div.add_style("font-size: 10px")
+        div.add_class("reset-container")
+        
+        code_div = DivWdg()
+        div.add(code_div)
+        code_div.add_class("spt_code_div")
+
+        code_div.add("<div class='code-msg-container'>A code was sent to <span class='msg-user'>%s</span>'s email. Please enter the code to reset your password:</div>" % login_name)
+        
+        code_container = DivWdg()
+        code_div.add(code_container)
+        code_container.add_class("sign-in-input")
+        code_container.add("<div class='label'>Code</div>")
+
+        code_wdg = TextWdg("code")
+        code_container.add(code_wdg)
+
+        next_button = DivWdg('Next')
+        code_div.add(next_button)
+        next_button.add_class('sign-in-btn hand')
+        next_button.add_attr('title', 'Next')
+        next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
+
+        hidden = HiddenWdg('reset_password')
+        code_div.add(hidden)
+
+        div.add(self.get_content_styles())
+        
+        return div
+
+
+
+class ResetOptionsWdg(BaseSignInWdg):
+
+    MSG = 'reset_msg'
+    RESET_MSG = 'Reset completed.'
+
+    def get_content_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .reset-container {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sign-in-btn.email-reset-btn {
+                align-self: flex-start;
+            }
+
+            ''')
+
+        return styles
+
+
+    def get_content(self):
+        
+        web = WebContainer.get_web()
+        login_name = web.get_form_value('login')
+        reset_login_name = web.get_form_value('reset_login')
+        hidden = HiddenWdg('login', login_name)
+
         div = DivWdg()
         div.add_style("margin: 0px 0px")
 
@@ -215,45 +286,21 @@ class ResetPasswordWdg(BaseSignInWdg):
 
         hidden = HiddenWdg('send_code')
         div.add(hidden)
-    
-        #div.add(HiddenWdg(self.LOGIN_MSG))
-        code_div = DivWdg()
-        div.add(code_div)
-        code_div.add_class("spt_code_div")
-
-        code_div.add("<div class='code-msg-container'>A code was sent to <span class='msg-user'>%s</span>'s email. Please enter the code to reset your password:</div>" % login_name)
-        
-        code_container = DivWdg()
-        code_div.add(code_container)
-        code_container.add_class("sign-in-input")
-        code_container.add("<div class='label'>Code</div>")
-
-        code_wdg = TextWdg("code")
-        code_container.add(code_wdg)
-
-        next_button = DivWdg('Next')
-        code_div.add(next_button)
-        next_button.add_class('sign-in-btn hand')
-        next_button.add_attr('title', 'Next')
-        next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
-
-        hidden = HiddenWdg('reset_password')
-        code_div.add(hidden)
 
         div.add(self.get_content_styles())
         
         return div
+     
 
 
-
-class ResetPasswordCmd(Command):
+class ResetOptionsCmd(Command):
 
     def check(self):
         web = WebContainer.get_web()
         self.login = web.get_form_value("reset_login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
-            web.set_form_value(ResetPasswordWdg.MSG, error_msg)
+            web.set_form_value(CodeConfirmationWdg.MSG, error_msg)
             raise TacticException(error_msg)
             return False
         return True
@@ -274,11 +321,11 @@ class ResetPasswordCmd(Command):
             #Batch()
             login = Login.get_by_login(self.login, use_upn=True)
             if not login:
-                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
+                web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
                 return
             email = login.get_value('email')
             if not email:
-                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
+                web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
                 return
 
         
@@ -286,7 +333,7 @@ class ResetPasswordCmd(Command):
             unique_code = ''.join([ random.choice('abcdefghijklmno12345') for i in xrange(0, 5)])
             auto_password = unique_code
             
-            msg = ResetPasswordWdg.RESET_MSG
+            msg = CodeConfirmationWdg.RESET_MSG
             
             # send the email
             try:
@@ -313,13 +360,12 @@ class ResetPasswordCmd(Command):
 
             except TacticException as e:
                 msg = "Failed to send an email for your new password. Reset aborted."
-                web.set_form_value(ResetPasswordWdg.MSG, msg)
+                web.set_form_value(CodeConfirmationWdg.MSG, msg)
                 raise 
                 
             # handle windows domains
             #if self.domain:
             #    self.login = "%s\\%s" % (self.domain, self.login)
 
-            web.set_form_value(ResetPasswordWdg.MSG, msg)
+            web.set_form_value(CodeConfirmationWdg.MSG, msg)
 
-     
