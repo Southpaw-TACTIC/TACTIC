@@ -263,6 +263,12 @@ class BaseAppServer(Base):
                         if code == temporary_code:
                             code_correct = True
                             top.add(NewPasswordWdg())
+                        else:
+                            web.set_form_value(CodeConfirmationWdg.MSG, "The code entered was incorrect")
+                    else:
+                        web.set_form_value(CodeConfirmationWdg.MSG, "The code has not been initialized. Please try again.")
+                else:
+                    web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.' % login_name)
                 if not code_correct:
                     top.add(CodeConfirmationWdg())
         elif send_code:
