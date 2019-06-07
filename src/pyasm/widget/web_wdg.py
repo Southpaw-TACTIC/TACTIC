@@ -1649,6 +1649,16 @@ class BaseSignInWdg(Widget):
             font-size: 16px;
         }
 
+        .sign-in-input select {
+            color: black;
+            width: 100%;
+            height: 52px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
         .sign-in-btn {
             align-self: flex-end;
             background: #ccc;
@@ -1731,6 +1741,11 @@ class BaseSignInWdg(Widget):
             height: 85%;
         }
 
+        .spt_tactic_logo {
+            height: 40px;
+            margin-top: 10px;
+        }
+
         ''')
 
         return styles
@@ -1761,12 +1776,12 @@ class BaseSignInWdg(Widget):
         if override_logo:
             div.add("<div class='spt_tactic_logo'></div>")
         else:
-            div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
+            div.add("<img class='spt_tactic_logo' src='/context/icons/logo/TACTIC.png'/>")
 
 
         #div.add_style("padding-top: 95px")
         sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
-        sthpw.add_styles("margin-top: 4; color: #ccc;")
+        sthpw.add_styles("margin-top: 4; color: #666;")
         if override_company_name:
             sthpw.add_class("spt_login_company")
             #sthpw.add_style("color: #CCCCCC")
@@ -1896,7 +1911,10 @@ class WebLoginWdg2(BaseSignInWdg):
         # of a login page
         div.add( HiddenWdg("is_from_login", "yes") )
 
-        # TODO: make new wdg compatible with domains and hosts
+        login_container = DivWdg()
+        div.add(login_container)
+        login_container.add_class("login-container")
+
         # look for defined domains
         domains = Config.get_value("active_directory", "domains")
         if not domains:
@@ -1920,12 +1938,18 @@ class WebLoginWdg2(BaseSignInWdg):
         host = web.get_http_host()
         if host.find(':') != -1:
             host = host.split(':')[0]
+        domains = ['a', 'b']
         if domains:
             
-            domain_wdg = SelectWdg("domain")
+            domain_container = DivWdg()
+            login_container.add(domain_container)
+            domain_container.add_class("sign-in-input")
+            domain_container.add("<div class='label'>Domain</div>")
+
+            domain_wdg = SelectWdg("domain", border_mode='custom')
             domain_wdg.set_persist_on_submit()
             if len(domains) > 1:
-                domain_wdg.add_empty_option("-- Select --")
+                domain_wdg.add_empty_option("")
             domain_wdg.set_option("values", domains)
             try:
                 matched_idx = hosts.index(host)
@@ -1934,17 +1958,8 @@ class WebLoginWdg2(BaseSignInWdg):
             # select the matching domain based on host/IP in browser URL
             if host and matched_idx > -1:
                 domain_wdg.set_value(domains[matched_idx])
-            
-            if override_password:
-                domain_wdg.add_style("")
-            else:
-                domain_wdg.add_style("background-color: #EEE")
-                domain_wdg.add_style("height: 20px")
-            div.add( domain_wdg )
 
-        login_container = DivWdg()
-        div.add(login_container)
-        login_container.add_class("login-container")
+            domain_container.add( domain_wdg )
         
         username_container = DivWdg()
         login_container.add(username_container)
@@ -1968,7 +1983,11 @@ class WebLoginWdg2(BaseSignInWdg):
 
         if change_admin:
             text_wdg.add_attr("readonly", "readonly")
-            text_wdg.add_style("background: #CCC")
+            text_wdg.add_styles("color: #ccc; cursor: not-allowed;")
+            text_wdg.add_behavior({
+                'type': 'click',
+                'cbjs_action': ''''''
+                })
             text_wdg.set_value("admin")
 
         password_container = DivWdg()
