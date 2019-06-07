@@ -236,32 +236,40 @@ class BaseAppServer(Base):
 
         reset_password = web.get_form_value('reset_password') == 'true'
         reset_request = web.get_form_value('reset_request') == 'true'
+        new_password = web.get_form_value('new_password') == 'true'
         send_code = web.get_form_value('send_code') == 'true'
+        is_err = web.get_form_value('is_err') == 'true'
 
         back_to_login = web.get_form_value("back_to_login") == 'true'
         if back_to_login:
             reset_password = False
             reset_request = False
             send_code = False
-        
+
         from tactic.ui.widget import CodeConfirmationWdg, NewPasswordWdg, ResetOptionsWdg
         if reset_password:
-            code = web.get_form_value('code')
-            login_name = web.get_form_value('login')
-            login = Login.get_by_login(login_name, use_upn=True)
-
-            code_correct = False
-            if login:
-                data = login.get_json_value('data')
-                if data:
-                    temporary_code = data.get('temporary_code')
-                    if code == temporary_code:
-                        code_correct = True
-                        top.add(NewPasswordWdg())
-            if not code_correct:
+            if is_err:
                 top.add(CodeConfirmationWdg())
+            else:
+                code = web.get_form_value('code')
+                login_name = web.get_form_value('login')
+                login = Login.get_by_login(login_name, use_upn=True)
+
+                code_correct = False
+                if login:
+                    data = login.get_json_value('data')
+                    if data:
+                        temporary_code = data.get('temporary_code')
+                        if code == temporary_code:
+                            code_correct = True
+                            top.add(NewPasswordWdg())
+                if not code_correct:
+                    top.add(CodeConfirmationWdg())
         elif send_code:
-            top.add(CodeConfirmationWdg())
+            if is_err:
+                top.add(ResetOptionsWdg())
+            else:
+                top.add(CodeConfirmationWdg())
         elif reset_request:
             top.add(ResetOptionsWdg())
         else:
