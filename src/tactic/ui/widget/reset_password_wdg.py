@@ -9,13 +9,13 @@
 #
 #
 #
-__all__ = ["ResetPasswordWdg", "NewResetPasswordWdg", "ResetPasswordCmd", "NewPasswordCmd"]
+__all__ = ["CodeConfirmationWdg", "NewPasswordWdg", "NewPasswordCmd", "ResetOptionsWdg", "ResetOptionsCmd"]
 
 import random
 import hashlib
 
 from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget, WebContainer
-from pyasm.widget import HiddenWdg, TextWdg, IconWdg
+from pyasm.widget import HiddenWdg, TextWdg, IconWdg, PasswordWdg, BaseSignInWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg
 from pyasm.command import Command
@@ -23,58 +23,36 @@ from pyasm.common import TacticException
 from pyasm.security import Batch, Login
 
 
-class NewResetPasswordWdg(BaseRefreshWdg):
+class NewPasswordWdg(BaseSignInWdg):
 
 
-    def get_styles(self):
-	
-	styles = HtmlElement.style('''
+    def get_content_styles(self):
 
-	.password-inputs {
-	    display: flex;
-	    flex-direction: column;
-            align-items: center;
-            margin-top: 10px;   
-	}
+        styles = HtmlElement.style('''
 
-	input[type="password"] {
-    	    margin-bottom: 10px;
-	}	
+        .password-inputs {
+            display: flex;
+            flex-direction: column;
+        }
 
-	''')
+        .password-inputs .sign-in-btn {
+            align-self: center;
+        }
 
-	return styles
+        ''')
+
+        return styles
 
 
-    def get_display(self):
+    def get_content(self):
         
         web = WebContainer.get_web()
         login_name = web.get_form_value('login')
         hidden = HiddenWdg('login', login_name)
-        box = DivWdg(css='login')
-
-        if web.is_IE():
-            box.add_style("margin-top: 150px")
-            box.add_style("margin-bottom: 150px")
-        else:
-            box.add_style("margin-top: auto")
-            box.add_style("margin-bottom: auto")
-        box.add_style("text-align: center")
 
         div = DivWdg()
         div.add_style("margin: 0px 0px")
-        div.add_class("centered")
-
-
-
-        div.add_style("padding-top: 95px")
-
-	sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
-        sthpw.add_style("color: #CCCCCC")
-        div.add( sthpw )
-        div.add( HtmlElement.br() )
         div.add(hidden)
-        box.add(div)
 
 
         # hidden element in the form to pass message that this was not
@@ -83,46 +61,38 @@ class NewResetPasswordWdg(BaseRefreshWdg):
         div.add( HiddenWdg("is_from_login", "yes") )
         div.add_style("font-size: 10px")
 
-	login_div = DivWdg()
-	div.add(login_div)
-	login_div.add_class("password-inputs")
+        login_div = DivWdg()
+        div.add(login_div)
+        login_div.add_class("password-inputs")
 
-	password_input = HtmlElement.text()
-	login_div.add(password_input)
-	password_input.add_attr("name", "my_password")
-	password_input.add_attr("placeholder", "Password")
-	password_input.add_attr("type", "password")
+        password_container = DivWdg()
+        login_div.add(password_container)
+        password_container.add_class("sign-in-input")
+        password_container.add("<div class='label'>Password</div>")
 
-        confirm_password_input = HtmlElement.text()
-	login_div.add(confirm_password_input)
-	confirm_password_input.add_attr("name", "confirm_password")
-	confirm_password_input.add_attr("placeholder", "Confirm Password")
-	confirm_password_input.add_attr("type", "password")
+        password_wdg = PasswordWdg("my_password")
+        password_container.add(password_wdg)
 
-	reset_button = ActionButtonWdg(tip='Reset Password', title='Reset')
+        confirm_password_container = DivWdg()
+        login_div.add(confirm_password_container)
+        confirm_password_container.add_class("sign-in-input")
+        confirm_password_container.add("<div class='label'>Confirm Password</div>")
+
+        confirm_password_wdg = PasswordWdg("confirm_password")
+        confirm_password_container.add(confirm_password_wdg)
+
+        reset_button = DivWdg('Reset')
         login_div.add(reset_button)
-        reset_button.add_style("margin: 0 auto")
+        reset_button.add_class("sign-in-btn hand")
+        reset_button.add_attr('title', 'Reset Password')
         reset_button.add_event("onclick", "document.form.elements['new_password'].value='true'; document.form.submit()")
 
-	hidden = HiddenWdg("new_password")
-	login_div.add(hidden)
+        hidden = HiddenWdg("new_password")
+        login_div.add(hidden)
 
-	widget = Widget()
-        #widget.add( HtmlElement.br(3) )
-        table = Table()
-        table.add_style("width: 100%")
-        table.add_style("height: 85%")
-        table.add_row()
-        td = table.add_cell()
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
-        td.add_style("background: transparent")
-        td.add(box)
-        widget.add(table)
+        div.add(self.get_content_styles())
 
-	widget.add(self.get_styles())
-
-        return widget
+        return div
 
 
 class NewPasswordCmd(Command):
@@ -133,159 +103,203 @@ class NewPasswordCmd(Command):
         self.login = web.get_form_value("login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
-            web.set_form_value(ResetPasswordWdg.MSG, error_msg)
+            web.set_form_value(CodeConfirmationWdg.MSG, error_msg)
             raise TacticException(error_msg)
             return False
         return True
 
 
     def execute(self):
-	self.check()
+        self.check()
 
-	web = WebContainer.get_web()
+        web = WebContainer.get_web()
 
-	password = web.get_form_value("my_password")
-	confirm_password = web.get_form_value("confirm_password")
+        password = web.get_form_value("my_password")
+        confirm_password = web.get_form_value("confirm_password")
 
-	login = Login.get_by_login(self.login, use_upn=True)
-	if not login:
-            web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
-            return	
+        login = Login.get_by_login(self.login, use_upn=True)
+        if not login:
+            web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
+            return  
 
-	if password == confirm_password:
-	    encrypted = hashlib.md5(password).hexdigest()
+        if password == confirm_password:
+            encrypted = hashlib.md5(password).hexdigest()
             login.set_value('password', encrypted)
             login.commit()
-	else:
-	    web.set_form_value(ResetPasswordWdg.MSG, 'The entered passwords do not match.')
+        else:
+            web.set_form_value(CodeConfirmationWdg.MSG, 'The entered passwords do not match.')
             return
 
 
 
-class ResetPasswordWdg(BaseRefreshWdg):
-
+class CodeConfirmationWdg(BaseSignInWdg):
 
     MSG = 'reset_msg'
     RESET_MSG = 'Reset completed.'
 
-    def get_display(self):
+    def get_content_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .reset-container {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sign-in-btn.email-reset-btn {
+                align-self: flex-start;
+            }
+
+            .code-msg-container {
+                margin: 20 0;
+                color: #666;
+                font-size: 12px;
+                text-align: left;
+            }
+
+            .msg-user {
+                text-decoration: underline;
+            }
+
+            .spt_code_div {
+                display: flex;
+                flex-direction: column;
+            }
+
+            ''')
+
+        return styles
+
+
+    def get_content(self):
         
         web = WebContainer.get_web()
-        login_name = web.get_form_value('login')
+        login_name = web.get_form_value('reset_login')
         hidden = HiddenWdg('login', login_name)
-	box = DivWdg(css='login')
 
-        if web.is_IE():
-            box.add_style("margin-top: 150px")
-            box.add_style("margin-bottom: 150px")
-        else:
-            box.add_style("margin-top: auto")
-            box.add_style("margin-bottom: auto")
-        box.add_style("text-align: center")
-     
         div = DivWdg()
         div.add_style("margin: 0px 0px")
-        div.add_class("centered")
 
-
-
-        div.add_style("padding-top: 95px")
-
-
-        sthpw = SpanWdg("SOUTHPAW TECHNOLOGY INC", css="login_sthpw")
-        sthpw.add_style("color: #CCCCCC")
-        div.add( sthpw )
-        div.add( HtmlElement.br() )
         div.add(hidden)
-        box.add(div)
-
 
         # hidden element in the form to pass message that this was not
         # actually a typical submitted form, but rather the result
         # of a login page
         div.add( HiddenWdg("is_from_login", "yes") )
         div.add_style("font-size: 10px")
-
-        table = Table(css="login")
-        table.center()
-        table.set_attr("cellpadding", "3px")
-        table.add_row()
-
-    
-
-        table2 = Table(css="login")
-        table2.center()
-        table2.add_style("width: 240px")
-
-        table2.add_row()
-
-        td = table2.add_header('A code will be sent to the email address for [ %s ].'%login_name)
-        td.add_color('color','color', + 80)
-        table2.add_row_cell('&nbsp;')
-        # build the button manually
-        button = ActionButtonWdg(tip='Send Code', title='Send Code')
-        button.add_style('margin: auto')
-        button.add_event('onclick',"document.form.elements['send_code'].value='true'; document.form.submit()")
-        table2.add_row()
-        td = table2.add_cell(button)
-        hidden = HiddenWdg('send_code')
-        td.add(hidden)
-       
-        #th.add_class('center_content')
+        div.add_class("reset-container")
         
-        table2.add_row()
-    
-
-        div.add(HtmlElement.br())
-        div.add(table)
-
-        div.add( HtmlElement.spacer_div(1,14) )
-        div.add(table2)
-        #div.add(HiddenWdg(self.LOGIN_MSG))
         code_div = DivWdg()
-	div.add(code_div)
-	code_div.add_style("margin: 20 0")
+        div.add(code_div)
+        code_div.add_class("spt_code_div")
 
-   	input_div = HtmlElement.text()
-        code_div.add(input_div)
-        input_div.add_attr('name', 'code')
-	input_div.add_style('margin-bottom: 10px')
+        code_div.add("<div class='code-msg-container'>A code was sent to <span class='msg-user'>%s</span>'s email. Please enter the code to reset your password:</div>" % login_name)
+        
+        code_container = DivWdg()
+        code_div.add(code_container)
+        code_container.add_class("sign-in-input")
+        code_container.add("<div class='label'>Code</div>")
 
-        next_button = ActionButtonWdg(tip='Next', title='Next')
+        code_wdg = TextWdg("code")
+        code_container.add(code_wdg)
+
+        next_button = DivWdg('Next')
         code_div.add(next_button)
-	next_button.add_style("margin: 0 auto")
-	next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
+        next_button.add_class('sign-in-btn hand')
+        next_button.add_attr('title', 'Next')
+        next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
 
         hidden = HiddenWdg('reset_password')
         code_div.add(hidden)
 
-	#box.add(script)
-
-        widget = Widget()
-        #widget.add( HtmlElement.br(3) )
-        table = Table()
-        table.add_style("width: 100%")
-        table.add_style("height: 85%")
-        table.add_row()
-        td = table.add_cell()
-        td.add_style("vertical-align: middle")
-        td.add_style("text-align: center")
-        td.add_style("background: transparent")
-        td.add(box)
-        widget.add(table)
+        div.add(self.get_content_styles())
         
-        return widget
+        return div
 
 
 
-class ResetPasswordCmd(Command):
+class ResetOptionsWdg(BaseSignInWdg):
+
+    MSG = 'reset_msg'
+    RESET_MSG = 'Reset completed.'
+
+    def get_content_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .reset-container {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sign-in-btn.email-reset-btn {
+                align-self: flex-start;
+            }
+
+            ''')
+
+        return styles
+
+
+    def get_content(self):
+        
+        web = WebContainer.get_web()
+        login_name = web.get_form_value('login')
+        reset_login_name = web.get_form_value('reset_login')
+        hidden = HiddenWdg('login', login_name)
+
+        div = DivWdg()
+        div.add_style("margin: 0px 0px")
+
+        div.add(hidden)
+
+        # hidden element in the form to pass message that this was not
+        # actually a typical submitted form, but rather the result
+        # of a login page
+        div.add( HiddenWdg("is_from_login", "yes") )
+        div.add_style("font-size: 10px")
+        div.add_class("reset-container")
+
+        reset_div = DivWdg()
+        div.add(reset_div)
+        reset_div.add_class("spt_reset_div")
+
+        name_container = DivWdg()
+        reset_div.add(name_container)
+        name_container.add_class("sign-in-input")
+        name_container.add("<div class='label'>Name</div>")
+
+        name_wdg = TextWdg("reset_login")
+        name_container.add(name_wdg)
+        if reset_login_name:
+            name_wdg.set_value(reset_login_name)
+        elif login_name:
+            name_wdg.set_value(login_name)
+
+        # build the button manually
+        email_reset_btn = DivWdg('Reset via Email')
+        reset_div.add(email_reset_btn)
+        email_reset_btn.add_class('sign-in-btn hand')
+        email_reset_btn.add_attr('title', 'Reset via Email')
+        email_reset_btn.add_event('onclick',"document.form.elements['send_code'].value='true'; document.form.submit()")
+
+        hidden = HiddenWdg('send_code')
+        div.add(hidden)
+
+        div.add(self.get_content_styles())
+        
+        return div
+     
+
+
+class ResetOptionsCmd(Command):
 
     def check(self):
         web = WebContainer.get_web()
-        self.login = web.get_form_value("login")
+        self.login = web.get_form_value("reset_login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
-            web.set_form_value(ResetPasswordWdg.MSG, error_msg)
+            web.set_form_value(CodeConfirmationWdg.MSG, error_msg)
             raise TacticException(error_msg)
             return False
         return True
@@ -306,11 +320,11 @@ class ResetPasswordCmd(Command):
             #Batch()
             login = Login.get_by_login(self.login, use_upn=True)
             if not login:
-                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
+                web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
                 return
             email = login.get_value('email')
             if not email:
-                web.set_form_value(ResetPasswordWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
+                web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
                 return
 
         
@@ -318,7 +332,7 @@ class ResetPasswordCmd(Command):
             unique_code = ''.join([ random.choice('abcdefghijklmno12345') for i in xrange(0, 5)])
             auto_password = unique_code
             
-            msg = ResetPasswordWdg.RESET_MSG
+            msg = CodeConfirmationWdg.RESET_MSG
             
             # send the email
             try:
@@ -328,30 +342,29 @@ class ResetPasswordCmd(Command):
                 if admin:
                     sender_email = admin.get_full_email()
                     if not sender_email:
-			from pyasm.common import Config
-			sender_email = Config.get_value("services", "mail_default_admin_email")
-	        else:
-                    sender_email = 'support@southpawtech.com'
+                        from pyasm.common import Config
+                        sender_email = Config.get_value("services", "mail_default_admin_email")
+                    else:
+                        sender_email = 'support@southpawtech.com'
                 recipient_emails = [email]
-		email_msg = 'Your TACTIC password reset code is:\n\n%s' % auto_password
+                email_msg = 'Your TACTIC password reset code is:\n\n%s' % auto_password
                 email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject='TACTIC password change')
 
-		data = login.get_json_value("data")
-      		data['temporary_code'] = auto_password
-		login.set_json_value('data', data)
-		login.commit()
+                data = login.get_json_value("data")
+                data['temporary_code'] = auto_password
+                login.set_json_value('data', data)
+                login.commit()
 
                 email_cmd.execute()
-			
+
             except TacticException as e:
                 msg = "Failed to send an email for your new password. Reset aborted."
-                web.set_form_value(ResetPasswordWdg.MSG, msg)
+                web.set_form_value(CodeConfirmationWdg.MSG, msg)
                 raise 
                 
             # handle windows domains
             #if self.domain:
             #    self.login = "%s\\%s" % (self.domain, self.login)
 
-            web.set_form_value(ResetPasswordWdg.MSG, msg)
+            web.set_form_value(CodeConfirmationWdg.MSG, msg)
 
-     
