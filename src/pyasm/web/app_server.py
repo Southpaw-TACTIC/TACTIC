@@ -273,14 +273,9 @@ class BaseAppServer(Base):
         elif reset_request:
             top.add(ResetOptionsWdg())
         else:
-            new_login_wdg = Config.get_value("services", "new_login_wdg") == 'true'
-
             reset_msg = web.get_form_value('reset_msg')
             if reset_msg:
-                if new_login_wdg:
-                    web.set_form_value(WebLoginWdg2.LOGIN_MSG, reset_msg)
-                else:
-                    web.set_form_value(WebLoginWdg.LOGIN_MSG, reset_msg)
+                web.set_form_value(WebLoginWdg2.LOGIN_MSG, reset_msg)
 
             web_wdg = None
             sudo = Sudo()
@@ -325,10 +320,7 @@ class BaseAppServer(Base):
                     web_wdg = site_obj.get_login_wdg(link)
                     if not web_wdg:
                         # else get the default one
-                        if new_login_wdg:
-                            web_wdg = WebLoginWdg2(allow_change_admin=allow_change_admin, hide_back_btn=True)
-                        else:
-                            web_wdg = WebLoginWdg(allow_change_admin=allow_change_admin)
+                        web_wdg = WebLoginWdg2(allow_change_admin=allow_change_admin, hide_back_btn=True)
                     
                     top.add(web_wdg)
 
