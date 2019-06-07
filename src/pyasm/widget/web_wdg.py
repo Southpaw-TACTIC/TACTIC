@@ -1938,7 +1938,6 @@ class WebLoginWdg2(BaseSignInWdg):
         host = web.get_http_host()
         if host.find(':') != -1:
             host = host.split(':')[0]
-        domains = ['a', 'b']
         if domains:
             
             domain_container = DivWdg()
