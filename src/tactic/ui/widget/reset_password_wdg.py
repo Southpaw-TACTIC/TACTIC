@@ -90,6 +90,14 @@ class NewPasswordWdg(BaseSignInWdg):
         hidden = HiddenWdg("new_password")
         login_div.add(hidden)
 
+        msg = web.get_form_value(CodeConfirmationWdg.MSG)
+        if msg:
+            err_msg_container = DivWdg()
+            div.add(err_msg_container)
+            err_msg_container.add_class("msg-container")
+
+            err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
+
         div.add(self.get_content_styles())
 
         return div
@@ -212,6 +220,14 @@ class CodeConfirmationWdg(BaseSignInWdg):
         hidden = HiddenWdg('reset_password')
         code_div.add(hidden)
 
+        msg = web.get_form_value(CodeConfirmationWdg.MSG)
+        if msg:
+            err_msg_container = DivWdg()
+            div.add(err_msg_container)
+            err_msg_container.add_class("msg-container")
+
+            err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
+
         div.add(self.get_content_styles())
         
         return div
@@ -285,6 +301,14 @@ class ResetOptionsWdg(BaseSignInWdg):
 
         hidden = HiddenWdg('send_code')
         div.add(hidden)
+
+        msg = web.get_form_value(CodeConfirmationWdg.MSG)
+        if msg:
+            err_msg_container = DivWdg()
+            div.add(err_msg_container)
+            err_msg_container.add_class("msg-container")
+
+            err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
 
         div.add(self.get_content_styles())
         
