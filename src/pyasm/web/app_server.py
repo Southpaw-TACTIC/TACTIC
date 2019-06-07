@@ -17,7 +17,7 @@ import re, types
 from pyasm.common import *
 from pyasm.search import SObjectFactory, DbContainer, DbResource, ExceptionLog, SearchType, Search, Sql, DatabaseException
 from pyasm.security import *
-from pyasm.biz import PrefSetting, Translation, ProjectSetting
+from pyasm.biz import PrefSetting, Translation
 
 from web_container import WebContainer
 from widget import Widget, Html
@@ -265,7 +265,7 @@ class BaseAppServer(Base):
         elif reset_request:
             top.add(ResetOptionsWdg())
         else:
-            new_login_wdg = ProjectSetting.get_value_by_key("new_login_wdg") == 'true'
+            new_login_wdg = Config.get_value("services", "new_login_wdg") == 'true'
 
             reset_msg = web.get_form_value('reset_msg')
             if reset_msg:
