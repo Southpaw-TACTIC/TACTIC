@@ -185,7 +185,7 @@ class CodeConfirmationWdg(BaseSignInWdg):
     def get_content(self):
         
         web = WebContainer.get_web()
-        login_name = web.get_form_value('reset_login')
+        login_name = web.get_form_value('login')
         hidden = HiddenWdg('login', login_name)
 
         div = DivWdg()
@@ -199,29 +199,32 @@ class CodeConfirmationWdg(BaseSignInWdg):
         div.add( HiddenWdg("is_from_login", "yes") )
         div.add_style("font-size: 10px")
         div.add_class("reset-container")
-        
-        code_div = DivWdg()
-        div.add(code_div)
-        code_div.add_class("spt_code_div")
 
-        code_div.add("<div class='code-msg-container'>A code was sent to <span class='msg-user'>%s</span>'s email. Please enter the code to reset your password:</div>" % login_name)
+        div.add("<div class='code-msg-container'>A code was sent to <span class='msg-user'>%s</span>'s email. Please enter the code to reset your password:</div>" % login_name)
         
         code_container = DivWdg()
-        code_div.add(code_container)
+        div.add(code_container)
         code_container.add_class("sign-in-input")
         code_container.add("<div class='label'>Code</div>")
 
         code_wdg = TextWdg("code")
         code_container.add(code_wdg)
 
+        bottom_container = DivWdg()
+        div.add(bottom_container)
+        bottom_container.add_class("bottom-container")
+
+        resend_container = DivWdg()
+        bottom_container.add(resend_container)
+
         next_button = DivWdg('Next')
-        code_div.add(next_button)
+        bottom_container.add(next_button)
         next_button.add_class('sign-in-btn hand')
         next_button.add_attr('title', 'Next')
         next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
 
         hidden = HiddenWdg('reset_password')
-        code_div.add(hidden)
+        div.add(hidden)
 
         msg = web.get_form_value(CodeConfirmationWdg.MSG)
         if msg:
@@ -230,6 +233,18 @@ class CodeConfirmationWdg(BaseSignInWdg):
             err_msg_container.add_class("msg-container")
 
             err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
+
+
+            resend_container.add_class("forgot-password-container")
+            hidden = HiddenWdg('resend_code')
+            resend_container.add(hidden)
+
+            access_msg = "Resend email"
+            js = '''document.form.elements['resend_code'].value='true'; document.form.submit()'''
+            link = HtmlElement.js_href(js, data=access_msg)
+            link.add_color('color','color', 60)
+            resend_container.add(link)
+
 
         div.add(self.get_content_styles())
         
@@ -264,8 +279,6 @@ class ResetOptionsWdg(BaseSignInWdg):
         
         web = WebContainer.get_web()
         login_name = web.get_form_value('login')
-        reset_login_name = web.get_form_value('reset_login')
-        hidden = HiddenWdg('login', login_name)
 
         div = DivWdg()
         div.add_style("margin: 0px 0px")
@@ -288,11 +301,9 @@ class ResetOptionsWdg(BaseSignInWdg):
         name_container.add_class("sign-in-input")
         name_container.add("<div class='label'>Name</div>")
 
-        name_wdg = TextWdg("reset_login")
+        name_wdg = TextWdg("login")
         name_container.add(name_wdg)
-        if reset_login_name:
-            name_wdg.set_value(reset_login_name)
-        elif login_name:
+        if login_name:
             name_wdg.set_value(login_name)
 
         # build the button manually
@@ -323,7 +334,7 @@ class ResetOptionsCmd(Command):
 
     def check(self):
         web = WebContainer.get_web()
-        self.login = web.get_form_value("reset_login")
+        self.login = web.get_form_value("login")
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
             web.set_form_value("is_err", "true")

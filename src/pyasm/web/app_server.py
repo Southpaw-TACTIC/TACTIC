@@ -237,6 +237,7 @@ class BaseAppServer(Base):
         reset_password = web.get_form_value('reset_password') == 'true'
         reset_request = web.get_form_value('reset_request') == 'true'
         new_password = web.get_form_value('new_password') == 'true'
+        resend_code = web.get_form_value('resend_code') == 'true'
         send_code = web.get_form_value('send_code') == 'true'
         is_err = web.get_form_value('is_err') == 'true'
 
@@ -276,6 +277,8 @@ class BaseAppServer(Base):
                 top.add(ResetOptionsWdg())
             else:
                 top.add(CodeConfirmationWdg())
+        elif resend_code:
+            top.add(CodeConfirmationWdg())
         elif reset_request:
             top.add(ResetOptionsWdg())
         else:
@@ -820,9 +823,10 @@ class BaseAppServer(Base):
                 return security
 
         if not security.is_logged_in():
-            send_code = web.get_form_value("send_code") == 'true'
             reset_password = web.get_form_value("reset_password") == 'true'
             new_password = web.get_form_value("new_password") == 'true'
+            resend_code = web.get_form_value('resend_code') == 'true'
+            send_code = web.get_form_value("send_code") == 'true'
             if reset_password:
                 pass
             elif new_password:
@@ -832,7 +836,7 @@ class BaseAppServer(Base):
                     reset_cmd.execute()
                 except TacticException as e:
                     print("Reset failed. %s" %e.__str__())
-            elif send_code:
+            elif send_code or resend_code:
                 from tactic.ui.widget import ResetOptionsCmd
                 reset_cmd = ResetOptionsCmd(reset=True)
                 try:
