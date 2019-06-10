@@ -237,7 +237,7 @@ class ExpressionParser(object):
         today = datetime.datetime.utcnow().date()
         today = datetime.datetime(today.year, today.month, today.day)
 
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
         timezone = PrefSetting.get_value_by_key('timezone')
         if timezone:
