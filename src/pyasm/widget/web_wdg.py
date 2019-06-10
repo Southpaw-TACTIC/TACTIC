@@ -1683,6 +1683,7 @@ class BaseSignInWdg(Widget):
             display: flex;
             align-self: start;
             color: red;
+            margin-top: 5px;
         }
 
         .msg-container i {
