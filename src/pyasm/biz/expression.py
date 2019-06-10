@@ -216,8 +216,17 @@ class ExpressionParser(object):
             return self.result
 
 
+    def utc_to_local(self, utc_dt, timezone):
+        from pyasm.biz import PrefSetting
+        import pytz
+        local_tz = pytz.timezone(timezone)
+        local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        return local_tz.normalize(local_dt)
+
 
     def get_date_vars(self):
+        from pyasm.biz import PrefSetting
+
         date_vars = Container.get("Expression:date_vars")
         if date_vars != None:
             return date_vars
@@ -225,9 +234,16 @@ class ExpressionParser(object):
         date_vars = {}
         Container.put("Expression:date_vars", date_vars)
 
-        today = datetime.datetime.today()
+        today = datetime.datetime.utcnow().date()
         today = datetime.datetime(today.year, today.month, today.day)
+
         now = datetime.datetime.now()
+
+        timezone = PrefSetting.get_value_by_key('timezone')
+        if timezone:
+            today = self.utc_to_local(today, timezone)
+            now = self.utc_to_local(now, timezone)
+
         year = datetime.datetime(today.year, 1, 1)
         month = datetime.datetime(today.year, today.month, 1)
 
