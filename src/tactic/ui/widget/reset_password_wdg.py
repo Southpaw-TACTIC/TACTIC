@@ -283,8 +283,6 @@ class ResetOptionsWdg(BaseSignInWdg):
         div = DivWdg()
         div.add_style("margin: 0px 0px")
 
-        div.add(hidden)
-
         # hidden element in the form to pass message that this was not
         # actually a typical submitted form, but rather the result
         # of a login page
