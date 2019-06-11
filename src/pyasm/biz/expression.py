@@ -155,15 +155,13 @@ class ExpressionParser(object):
         keys.sort()
         keys.reverse()
         #for name, value in self.vars.items():
-        for name in keys:
-
-            value = self.vars.get(name)
-            new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
-            # HACK: replace with the single quotes first.  Not elegant, but
-            # it works for now until we have real variables
-            self.expression = re.sub("'\$%s'"%name, new_value, self.expression)
-            self.expression = re.sub("\$%s"%name, new_value, self.expression)
-
+        if '$' in self.expression:
+            for name in keys:
+                value = self.vars.get(name)
+                new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
+                # HACK: replace with the single quotes first.  Not elegant, but
+                # it works for now until we have real variables
+                self.expression = self.expression.replace("'$%s'"%name, new_value).replace("$%s"%name, new_value)
 
         if not mode:
             # start in string mode
@@ -179,6 +177,7 @@ class ExpressionParser(object):
             else:
                 new_parser = StringMode()
                 self.is_single = False
+
     
         elif mode == 'expression':
             # start in string mode
