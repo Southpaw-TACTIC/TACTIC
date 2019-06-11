@@ -22,6 +22,8 @@ from database_impl import *
 from pyasm.unittest import *
 from pyasm.biz import Project
 import unittest
+from datetime import datetime
+import pytz
 
 class SearchTest(unittest.TestCase):
 
@@ -103,6 +105,7 @@ class SearchTest(unittest.TestCase):
             self._test_get_by_statement()
 
             self._test_views()
+            self._test_timezone()
 
 
         finally:
@@ -934,6 +937,64 @@ class SearchTest(unittest.TestCase):
 
             update.set_value('description',None)
             self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (self.sthpw_prefix, time_dict.get(db_type)))
+
+
+
+    def _test_timezone(self):
+
+        # timestamp without timezone: set value without timezone conversion
+
+        task = SearchType.create('sthpw/task')
+        input_time = datetime.now().replace(microsecond=0)
+
+        task.set_value('timestamp', input_time)
+        task.commit()
+        output_time = task.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+
+        # timestamp without timezone: set value with timezone conversion
+
+        task = SearchType.create('sthpw/task')
+        input_time = datetime.utcnow().replace(microsecond=0)
+        local_tz = pytz.timezone("Europe/Moscow")
+        tz_input_time = input_time.replace(tzinfo=pytz.utc).astimezone(local_tz)
+
+        task.set_value('timestamp', tz_input_time)
+        task.commit()
+        output_time = task.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+
+
+        # timestamp with timezone: set value without timezone conversion
+
+        ticket = SearchType.create('sthpw/ticket')
+        input_time = datetime.now().replace(microsecond=0)
+
+        ticket.set_value('timestamp', input_time)
+        ticket.set_value('login', 'admin')
+        ticket.set_value('ticket', 'test')
+        ticket.set_value('expiry', input_time)
+        ticket.commit()
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+
+
+        # timestamp with timezone: set value with timezone conversion
+
+        ticket = SearchType.create('sthpw/ticket')
+        input_time = datetime.utcnow().replace(microsecond=0)
+        local_tz = pytz.timezone("Europe/Moscow")
+        tz_input_time = input_time.replace(tzinfo=pytz.utc).astimezone(local_tz)
+
+        ticket.set_value('timestamp', tz_input_time)
+        ticket.set_value('login', 'admin')
+        ticket.set_value('ticket', 'test2')
+        ticket.set_value('expiry', input_time)
+        ticket.commit()
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+
+
 
 
     def _test_multi_db_subselect(self):
