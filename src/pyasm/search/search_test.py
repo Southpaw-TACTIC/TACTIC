@@ -28,6 +28,10 @@ import pytz
 class SearchTest(unittest.TestCase):
 
 
+    def _commit(self, impl):
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
+
     def test_all(self):
         # start batch environment
         Batch()
@@ -79,7 +83,7 @@ class SearchTest(unittest.TestCase):
             self.person = Person.create( "1", "e",
                     "ComputerWorld", "5")
 
-
+	    '''
 
             self._test_no_id()
 
@@ -105,12 +109,15 @@ class SearchTest(unittest.TestCase):
             self._test_get_by_statement()
 
             self._test_views()
+	    '''   
             self._test_timezone()
 
 
         finally:
             self.transaction.rollback()
             Project.set_project('unittest')
+
+            self._commit(impl)            
 
             test_env.delete()
             sample3d_test_env.delete()
@@ -945,34 +952,48 @@ class SearchTest(unittest.TestCase):
         # timestamp without timezone: set value without timezone conversion
 
         task = SearchType.create('sthpw/task')
-        input_time = datetime.now().replace(microsecond=0)
+        input_time = datetime.utcnow().replace(microsecond=0)
 
         task.set_value('timestamp', input_time)
+        task.set_value('task_type', 'search_test')
         task.commit()
         output_time = task.get_datetime_value('timestamp')
         self.assertEquals(input_time, output_time)
 
         # timestamp without timezone: set value with timezone conversion
 
-        task = SearchType.create('sthpw/task')
-        input_time = datetime.utcnow().replace(microsecond=0)
+        task1 = SearchType.create('sthpw/task')
+        input_time1 = datetime.utcnow().replace(microsecond=0)
         local_tz = pytz.timezone("Europe/Moscow")
-        tz_input_time = input_time.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        tz_input_time = input_time1.replace(tzinfo=pytz.utc).astimezone(local_tz)
 
-        task.set_value('timestamp', tz_input_time)
-        task.commit()
-        output_time = task.get_datetime_value('timestamp')
-        self.assertEquals(input_time, output_time)
+        task1.set_value('timestamp', tz_input_time)
+        task1.commit()
+        output_time = task1.get_datetime_value('timestamp')
+        self.assertEquals(input_time1, output_time)
 
+	# search for task using both timestamps
+
+	search = Search('sthpw/task')
+        search.add_filter('task_type', 'search_test')
+	search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+	self.assertEquals(task.get_code(), search_result.get_code())
+
+        search = Search('sthpw/task')
+        search.add_filter('task_type', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
 
         # timestamp with timezone: set value without timezone conversion
 
         ticket = SearchType.create('sthpw/ticket')
-        input_time = datetime.now().replace(microsecond=0)
+        input_time = datetime.utcnow().replace(microsecond=0)
 
         ticket.set_value('timestamp', input_time)
         ticket.set_value('login', 'admin')
-        ticket.set_value('ticket', 'test')
+        ticket.set_value('ticket', 'search_test')
         ticket.set_value('expiry', input_time)
         ticket.commit()
         output_time = ticket.get_datetime_value('timestamp')
@@ -981,19 +1002,33 @@ class SearchTest(unittest.TestCase):
 
         # timestamp with timezone: set value with timezone conversion
 
-        ticket = SearchType.create('sthpw/ticket')
-        input_time = datetime.utcnow().replace(microsecond=0)
+        ticket1 = SearchType.create('sthpw/ticket')
+        input_time1 = datetime.utcnow().replace(microsecond=0)
         local_tz = pytz.timezone("Europe/Moscow")
-        tz_input_time = input_time.replace(tzinfo=pytz.utc).astimezone(local_tz)
+        tz_input_time = input_time1.replace(tzinfo=pytz.utc).astimezone(local_tz)
 
-        ticket.set_value('timestamp', tz_input_time)
-        ticket.set_value('login', 'admin')
-        ticket.set_value('ticket', 'test2')
-        ticket.set_value('expiry', input_time)
-        ticket.commit()
-        output_time = ticket.get_datetime_value('timestamp')
+        ticket1.set_value('timestamp', tz_input_time)
+        ticket1.set_value('login', 'admin')
+        ticket1.set_value('ticket', 'test2')
+        ticket1.set_value('expiry', tz_input_time)
+        ticket1.commit()
+        output_time = ticket1.get_datetime_value('timestamp')
         self.assertEquals(input_time, output_time)
 
+
+	# search ticket using both timestamps
+
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
+
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
 
 
 
