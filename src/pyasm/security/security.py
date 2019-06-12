@@ -263,7 +263,6 @@ class Login(SObject):
                 login.set_value("first_name", "Adminstrator")
                 login.set_value("last_name", "")
                 login.set_value("display_name", "Administrator")
-		
 
                 data = login.get_data()
                 for column in columns:
