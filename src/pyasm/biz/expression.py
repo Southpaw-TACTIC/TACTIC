@@ -20,7 +20,7 @@ from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 import calendar
 import datetime
 
-from pyasm.common import TacticException, Environment, Container, FormatValue, Config
+from pyasm.common import TacticException, Environment, Container, FormatValue, Config, SPTDate
 from pyasm.search import Search, SObject, SearchKey, SearchType
 from pyasm.security import Site
 
@@ -215,15 +215,6 @@ class ExpressionParser(object):
         else:
             return self.result
 
-
-    def utc_to_local(self, utc_dt, timezone):
-        from pyasm.biz import PrefSetting
-        import pytz
-        local_tz = pytz.timezone(timezone)
-        local_dt = utc_dt.replace(tzinfo=pytz.utc).astimezone(local_tz)
-        return local_tz.normalize(local_dt)
-
-
     def get_date_vars(self):
         from pyasm.biz import PrefSetting
 
@@ -234,15 +225,13 @@ class ExpressionParser(object):
         date_vars = {}
         Container.put("Expression:date_vars", date_vars)
 
-        today = datetime.datetime.utcnow().date()
-        today = datetime.datetime(today.year, today.month, today.day)
-
         now = datetime.datetime.utcnow()
-
         timezone = PrefSetting.get_value_by_key('timezone')
         if timezone:
-            today = self.utc_to_local(today, timezone)
-            now = self.utc_to_local(now, timezone)
+            now = SPTDate.convert_to_timezone(now, timezone)
+
+        today = now.replace(hour=0, minute=0, second=0)
+        today = SPTDate.convert(today)
 
         year = datetime.datetime(today.year, 1, 1)
         month = datetime.datetime(today.year, today.month, 1)

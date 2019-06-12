@@ -83,8 +83,6 @@ class SearchTest(unittest.TestCase):
             self.person = Person.create( "1", "e",
                     "ComputerWorld", "5")
 
-	    '''
-
             self._test_no_id()
 
             self._test_order_by()
@@ -107,9 +105,7 @@ class SearchTest(unittest.TestCase):
             self._test_set_value()
             self._test_search_set_value()
             self._test_get_by_statement()
-
-            self._test_views()
-	    '''   
+            self._test_views()   
             self._test_timezone()
 
 
@@ -955,7 +951,7 @@ class SearchTest(unittest.TestCase):
         input_time = datetime.utcnow().replace(microsecond=0)
 
         task.set_value('timestamp', input_time)
-        task.set_value('task_type', 'search_test')
+        task.set_value('description', 'search_test')
         task.commit()
         output_time = task.get_datetime_value('timestamp')
         self.assertEquals(input_time, output_time)
@@ -972,16 +968,16 @@ class SearchTest(unittest.TestCase):
         output_time = task1.get_datetime_value('timestamp')
         self.assertEquals(input_time1, output_time)
 
-	# search for task using both timestamps
-
-	search = Search('sthpw/task')
-        search.add_filter('task_type', 'search_test')
-	search.add_filter('timestamp', input_time)
-        search_result = search.get_sobject()
-	self.assertEquals(task.get_code(), search_result.get_code())
+	    # search for task using both timestamps
 
         search = Search('sthpw/task')
-        search.add_filter('task_type', 'search_test')
+        search.add_filter('description', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
+
+        search = Search('sthpw/task')
+        search.add_filter('description', 'search_test')
         search.add_filter('timestamp', tz_input_time)
         search_result = search.get_sobject()
         self.assertEquals(task.get_code(), search_result.get_code())
@@ -1016,7 +1012,7 @@ class SearchTest(unittest.TestCase):
         self.assertEquals(input_time, output_time)
 
 
-	# search ticket using both timestamps
+	    # search ticket using both timestamps
 
         search = Search('sthpw/ticket')
         search.add_filter('ticket', 'search_test')
