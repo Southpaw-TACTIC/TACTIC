@@ -3295,11 +3295,20 @@ class SObject(object):
 
         # NOTE: this should be pretty quick, but could use some optimization
         column_type = SearchType.get_column_type(self.full_search_type, name)
-        info = self.get_database_impl().process_value(name, value, column_type)
+        info = None
+
+        if column_type == "timestamp":
+            try:
+                if value.tzinfo:
+                    value = SPTDate.convert_to_timezone(value, 'UTC')
+            except:
+                pass
+        else:
+            info = self.get_database_impl().process_value(name, value, column_type)
+
         if info:
             value = info.get("value")
             quoted = info.get("quoted")
-
 
         # handle security
         from pyasm.biz import Project
@@ -3351,7 +3360,7 @@ class SObject(object):
                     value = value.decode('utf-8', 'ignore')
                 except UnicodeDecodeError, e:
                     value = value.decode('iso-8859-1', 'ignore')
-        
+
         self._set_value(name, value, quoted=quoted)
 
 
