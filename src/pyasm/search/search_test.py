@@ -975,17 +975,17 @@ class SearchTest(unittest.TestCase):
 
 	    # search for task using both timestamps
 
-        # search = Search('sthpw/task')
-        # search.add_filter('description', 'search_test')
-        # search.add_filter('timestamp', input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(task.get_code(), search_result.get_code())
+        search = Search('sthpw/task')
+        search.add_filter('description', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
 
-        # search = Search('sthpw/task')
-        # search.add_filter('description', 'search_test')
-        # search.add_filter('timestamp', tz_input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(task.get_code(), search_result.get_code())
+        search = Search('sthpw/task')
+        search.add_filter('description', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
 
         # timestamp with timezone: set value without timezone conversion
 
@@ -1022,17 +1022,17 @@ class SearchTest(unittest.TestCase):
 
 	    # search ticket using both timestamps
 
-        # search = Search('sthpw/ticket')
-        # search.add_filter('ticket', 'search_test')
-        # search.add_filter('timestamp', input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(ticket.get_code(), search_result.get_code())
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
 
-        # search = Search('sthpw/ticket')
-        # search.add_filter('ticket', 'search_test')
-        # search.add_filter('timestamp', tz_input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(ticket.get_code(), search_result.get_code())
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
 
 
 
