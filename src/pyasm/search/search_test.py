@@ -105,7 +105,7 @@ class SearchTest(unittest.TestCase):
             self._test_set_value()
             self._test_search_set_value()
             self._test_get_by_statement()
-            self._test_views()   
+            self._test_views()
             self._test_timezone()
 
 
