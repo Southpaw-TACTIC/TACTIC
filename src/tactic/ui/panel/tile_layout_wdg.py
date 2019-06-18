@@ -531,7 +531,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 
                 Object.keys(bvr.sobject_data).forEach(function(item) {
                     data = bvr.sobject_data[item];
-                    console.log(data); 
+                    //console.log(data); 
 
                     var tile = spt.behavior.clone(template_tile);
                     tile.removeClass("spt_template_tile_top");
@@ -539,18 +539,20 @@ class TileLayoutWdg(ToolLayoutWdg):
                     
                     // Set the icon path or EXT
                     var icon_path = data.path;
-                    if (icon_path == "__DYNAMIC__") {
-                        var inner = tile.getElement(".spt_ext_icon");
-                        inner.getElement(".spt_ext_ext").innerHTML = data.ext;
-                        inner.getElement(".spt_ext_icon_inner").setStyle("background", data.color);
-                    } else if (icon_path.startsWith("/context")) {
-                        var inner = tile.getElement(".spt_context_icon");
-                        inner.getElement("img").src = icon_path;
-                    } else {
-                        var inner = tile.getElement(".spt_tile_icon");
-                        inner.getElement(".spt_image").src = icon_path;
+                    if (icon_path) {
+                        if (icon_path == "__DYNAMIC__") {
+                            var inner = tile.getElement(".spt_ext_icon");
+                            inner.getElement(".spt_ext_ext").innerHTML = data.ext;
+                            inner.getElement(".spt_ext_icon_inner").setStyle("background", data.color);
+                        } else if (icon_path.startsWith("/context")) {
+                            var inner = tile.getElement(".spt_context_icon");
+                            inner.getElement("img").src = icon_path;
+                        } else {
+                            var inner = tile.getElement(".spt_tile_icon");
+                            inner.getElement(".spt_image").src = icon_path;
+                        }
+                        inner.setStyle("display", "");
                     }
-                    inner.setStyle("display", "");
                     
 		    tile.setAttribute("spt_search_key", data.spt_search_key);
 		    tile.setAttribute("spt_search_key_v2", data.spt_search_key_v2);
@@ -561,15 +563,19 @@ class TileLayoutWdg(ToolLayoutWdg):
 		    tile.setAttribute("spt_main_path", data.main_path);
 
                     is_collection = data.spt_is_collection;
-                    if (is_collection) tile.getElement(".spt_tile_tool_top").destroy();
-                    else {
+                    if (is_collection) {
+                        tile.getElement(".spt_tile_tool_top").destroy();
+                        tile.getElement(".spt_tile_collection").setStyle("display", "");
+                        tile.getElement(".spt_tile_detail").setStyle("display", "none");
+                        tile.getElement(".spt_tile_collection_count").innerHTML = data.collection_count;
+                    } else {
                         // Download button
                         download_el = tile.getElement(".spt_tile_tool_top").getElement("a");
                         download_el.setAttribute("href", data.main_path);
                         download_el.setAttribute("download", data.basename);
 
                         // Size
-                        tile.getElement(".spt_tile_size").innerHTML = data.size;
+                        if (data.size) tile.getElement(".spt_tile_size").innerHTML = data.size;
 		    }
 
 
@@ -1588,7 +1594,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             } )
  
 
-    def preprocess_paths(self, sobjects):
+    def preprocess_paths(self, sobjects, create_icon=True):
       
         paths_by_key = {}
 
@@ -1612,30 +1618,37 @@ class TileLayoutWdg(ToolLayoutWdg):
  
         paths_by_key = {}
         for sobject in sobjects:
+            
             search_key = sobject.get_search_key()
-            
-            snapshot = snapshots_by_sobject.get(search_key)
-            
-
+                    
             paths = {}
-            if snapshot:
-                paths = self.get_paths(sobject, snapshot, file_sobjects_by_code)
-
-
-            web_path = paths.get("web")
-            if not web_path:
-                # Get webpath from icon_link functino
-                if sobject.get("_is_collection", no_exception=True):
-                    web_path = "/context/icons/mime-types/folder2.jpg"
-                else:
-
-                    repo_paths = paths.get("_repo")
-                    repo_path = repo_paths.get('main')
-                    file_path = paths.get("main")
-                    web_path = ThumbWdg.find_icon_link(file_path, repo_path)
-
-                #assert(web_path)
+            if sobject.get("_is_collection", no_exception=True):
+                web_path = "/context/icons/mime-types/folder2.jpg"
                 paths['web'] = web_path
+            else:
+                snapshot = snapshots_by_sobject.get(search_key)
+                if snapshot:
+                    paths = self.get_paths(sobject, snapshot, file_sobjects_by_code)
+                
+                    web_path = paths.get("web")
+                    if not web_path:
+                        repo_paths = paths.get("_repo")
+                        repo_path = repo_paths.get('main')
+                        file_path = paths.get("main")
+                        web_path = ThumbWdg.find_icon_link(file_path, repo_path)
+                        paths['web'] = web_path
+            
+                        if web_path == "/context/icons/mime-types/indicator_snake.gif" and create_icon:
+                            # generate icon dynamically
+                            from pyasm.widget import ThumbCmd
+                            snapshot_key = snapshot.get_search_key()
+                            thumb_cmd = ThumbCmd(search_keys=[snapshot_key])
+                            thumb_cmd.execute()
+                            
+                            # need new snapshot, file sobjects to get new paths
+                            new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
+                            paths = new_paths_by_key.get(sobject.get_search_key())
+
                
             paths_by_key[search_key] = paths
 
@@ -1647,6 +1660,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         xml = snapshot.get_xml_value("snapshot")
 
         paths = ThumbWdg.get_file_info(xml, file_objects, sobject, snapshot)
+        
         return paths
 
 
@@ -1654,15 +1668,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         sobject_data = {}
        
-        paths_by_key = {}
-        
-        try:
-            paths_by_key = self.preprocess_paths(sobjects)
-        except Exception, e:
-            print e
-            
+        paths_by_key = self.preprocess_paths(sobjects)
        
-
         for sobject in sobjects:
 
             tile_data = {}
@@ -1672,74 +1679,58 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data["spt_search_code"] = sobject.get_code()
             tile_data["spt_is_collection"] = sobject.get_value('_is_collection', no_exception=True)
             tile_data["spt_display_value"] = sobject.get_display_value(long=True)
-   
-            paths = paths_by_key.get(sobject.get_search_key())
-            path = paths.get("web")
-            repo_paths = paths.get("_repo")
-            if repo_paths:
-                lib_path = repo_paths.get("main")
-            else:
-                lib_path = None
+  
 
-            if lib_path:
-                size = Common.get_dir_info(lib_path).get("size")
-                from pyasm.common import FormatValue
-                size = FormatValue().get_format_value(size, "KB")
+            paths = paths_by_key.get(sobject.get_search_key()) or {}
+            if paths:
+                path = paths.get("web")
             
-            else:
-                size = 0
-            tile_data['size'] = size
+                repo_paths = paths.get("_repo")
+                if repo_paths:
+                    lib_path = repo_paths.get("main")
+                else:
+                    lib_path = None
+
+                if lib_path:
+                    size = Common.get_dir_info(lib_path).get("size")
+                    from pyasm.common import FormatValue
+                    size = FormatValue().get_format_value(size, "KB")
+            
+                else:
+                    size = 0
+                tile_data['size'] = size
                 
                 
-            main_path = paths.get("main")
-            if main_path:
-                tile_data['main_path'] = main_path
-                basename = os.path.basename(main_path)
-                tile_data['basename'] = basename
+                main_path = paths.get("main")
+                if main_path:
+                    tile_data['main_path'] = main_path
+                    basename = os.path.basename(main_path)
+                    tile_data['basename'] = basename
        
-            if path == "__DYNAMIC__":
-                # EXT format
-                base,ext = os.path.splitext(lib_path)
-                ext = ext.upper().lstrip(".")
+                if path == "__DYNAMIC__":
+                    # EXT format
+                    base,ext = os.path.splitext(lib_path)
+                    ext = ext.upper().lstrip(".")
 
-                #flat ui color
-                colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
-                import random
-                color = colors[random.randint(0,7)]
+                    #flat ui color
+                    colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
+                    import random
+                    color = colors[random.randint(0,7)]
+                    
+                    tile_data['ext'] = ext
+                    tile_data['color'] = color
+                 
                 
-                tile_data['ext'] = ext
-                tile_data['color'] = color
-             
-            
-            if isinstance(path, unicode):
-                path = path.encode("utf-8")
+                if isinstance(path, unicode):
+                    path = path.encode("utf-8")
 
             
-            if path.endswith("indicator_snake.gif"):
-                pass               
-                """
-                # TODO: Handle this
-		if lib_path.find("#") != -1:
-		    paths = snapshot.get_expanded_file_names()
-		    # handle sequence
-		    lib_dir = snapshot.get_lib_dir()
-		    lib_path = "%s/%s" % (lib_dir, paths[0])
+                if path and path.endswith("indicator_snake.gif"):
+                    # TODO: Dynamically generate after load
+                    # Now, dynamically generated during load.
+                    pass               
 
-		if not os.path.exists(lib_path):
-		    image_size = 0
-		else:
-		    image_size = os.path.getsize(lib_path)
-
-		if image_size != 0:
-		    # generate icon dynamically
-		    from pyasm.widget import ThumbCmd
-		    search_key = snapshot.get_search_key()
-		    thumb_cmd = ThumbCmd(search_keys=[search_key])
-		    thumb_cmd.execute()
-		    path = thumb_cmd.get_path()  
-                """
-
-            tile_data['path'] = path
+                tile_data['path'] = path
 	
             
                
@@ -1755,6 +1746,15 @@ class TileLayoutWdg(ToolLayoutWdg):
             if not title_text:
                 title_text = sobject.get_value("code", no_exception=True)
             tile_data['title_text'] = title_text
+            
+            
+            if sobject.get_value("_is_collection", no_exception=True): 
+                search_type = sobject.get_base_search_type()
+                parts = search_type.split("/")
+                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                tile_data['collection_count'] = num_items
  
             sobject_data[sobject.get_search_key()] = tile_data
 
@@ -1828,7 +1828,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         """
        
         css += """
-            .spt_tile_top {
+            .spt_tile_layout_top .spt_tile_top {
                 margin-bottom: %s;
                 margin-right: %s;
                 background-color: transparent;
@@ -1902,6 +1902,15 @@ class TileLayoutWdg(ToolLayoutWdg):
                 z-index: 2;
             }
 
+
+        """
+        
+        css += """
+            .spt_tile_collection_count {
+                margin-top: 2px;
+                float: right;
+
+            }
 
         """
 
@@ -2051,23 +2060,18 @@ class TileLayoutWdg(ToolLayoutWdg):
             detail_div = DivWdg()
             div.add(detail_div)
 
-            # TODO: Handle this....
-            #if sobject.get_value("_is_collection", no_exception=True) == True:
-            if False:
-                """
-                detail_div.add_class("spt_tile_collection");
+            count_div = DivWdg()
+            detail_div.add(count_div)
+            count_div.add_class("spt_tile_collection")
+            count_div.add_style("display", "none")
+            count_div.add("<div class='spt_tile_collection_count hand badge'>0</div>")
+            
+            expand_div = DivWdg()
+            detail_div.add(expand_div)
+            expand_div.add_class("spt_tile_detail")
+            detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
+            expand_div.add(detail)
 
-                search_type = sobject.get_base_search_type()
-                parts = search_type.split("/")
-                collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
-
-                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
-                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
-                """
-            else:
-                detail_div.add_class("spt_tile_detail")
-                detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
-                detail_div.add(detail)
 
 
         header_div = DivWdg()
