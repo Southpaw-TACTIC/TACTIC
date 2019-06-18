@@ -140,9 +140,10 @@ class ProcessInputWdg(BaseInputWdg):
             if not pipeline:
                 continue
             # get the sub-pipeline processes as well
-            processes = pipeline.get_processes(recurse=True)
+            processes = pipeline.get_processes(recurse=True, type=["manual","approval", "node"])
             values = []
             labels = []
+            
             for process in processes:
                 is_sub_pipeline = False
                 if process.is_from_sub_pipeline():
