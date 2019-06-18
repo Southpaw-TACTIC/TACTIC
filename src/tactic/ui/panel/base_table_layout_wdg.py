@@ -432,10 +432,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.kwargs.get('op_filters'):
             search.add_op_filters(self.kwargs.get("op_filters"))
 
-
+        values = filter_data.get_values_by_prefix("group")
+        order = WebContainer.get_web().get_form_value('order')
 
         # user-chosen order has top priority
-        order = WebContainer.get_web().get_form_value('order')
         if order:
             self.order_element = order
             if not values:
@@ -450,7 +450,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # passed in filter overrides
-        values = filter_data.get_values_by_prefix("group")
         if values:
 
             group_values = values[0]
