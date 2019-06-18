@@ -10,12 +10,12 @@
 #
 #
 
-__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg']
+__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg', 'NodeRenameWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Container, Common, jsondumps
-from pyasm.web import DivWdg, WebContainer, Table, Widget
+from pyasm.web import DivWdg, WebContainer, Table, Widget, HtmlElement
 from pyasm.search import Search, SearchType
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
@@ -1419,6 +1419,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         text.add_behavior( {
             'type': 'keyup',
             'cbjs_action': '''
+            console.log("keyup");
             var key = evt.key;
             if (key == "enter") {
                 bvr.src_el.blur();
@@ -1440,6 +1441,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         'type': 'change',
         'filter_node_name': self.filter_node_name,
         'cbjs_action': '''
+        console.log("change");
         bvr.src_el.blur();
         '''
         } )
@@ -1448,6 +1450,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         'type': 'blur',
         'filter_node_name': self.filter_node_name,
         'cbjs_action': '''
+        console.log("blur");
         bvr.src_el.setStyle("display", "none");
 
         var node = bvr.src_el.getParent(".spt_pipeline_node");
@@ -3687,12 +3690,24 @@ spt.pipeline._rename_node = function(node, value) {
 
 
 spt.pipeline.set_rename_mode = function(node) {
+    /*
     var input = node.getElement(".spt_input");
     var label = node.getElement(".spt_label");
     label.setStyle("display", "none");
     input.setStyle("display", "");
     input.focus();
-    input.select();
+    //input.select();
+    */
+
+    var name = spt.pipeline.get_node_name(node);
+    var kwargs = {
+        name: name
+    };
+
+    var class_name = "tactic.ui.tools.NodeRenameWdg"
+
+    var popup = spt.panel.load_popup("Rename Node", class_name, kwargs);
+    popup.activator = node;
 }
 
 
@@ -6736,6 +6751,101 @@ spt.pipeline.get_connectors_to_node = function(to_name) {
 }
 
     '''
+
+
+class NodeRenameWdg(BaseRefreshWdg):
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_rename_node {
+                display: flex;
+                height: 40px;
+            }
+
+            .spt_node_name_input {
+                padding: 10px;
+            }
+
+            .spt_node_name_submit {
+                background: #ccc;
+                cursor: hand;
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                text-transform: uppercase;
+                color: white;
+            }
+
+            .spt_node_name_submit:hover {
+                background: #999;
+            }
+
+            ''')
+
+        return styles
+
+
+    def get_display(self):
+
+        top = DivWdg()
+        top.add_class("spt_rename_node")
+
+        name = self.kwargs.get("name") or ""
+
+        name_input = HtmlElement.text()
+        top.add(name_input)
+        name_input.add_class("spt_node_name_input")
+        name_input.add_attr("value", name)
+        name_input.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var node = popup.activator;
+
+            var top = node.getParent(".spt_pipeline_top");
+
+            if (!top.hot_key_state) return;
+            
+            top.hot_key_state = false;
+            document.activeElement.blur();
+            bvr.src_el.focus();
+
+            '''
+            })
+
+        btn = DivWdg("Rename")
+        top.add(btn)
+        btn.add_class("spt_node_name_submit")
+        btn.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_rename_node");
+            var inp = top.getElement(".spt_node_name_input");
+            var name = inp.value;
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var node = popup.activator;
+            spt.pipeline.set_node_name(node, name);
+
+            spt.popup.close(popup);
+
+            var top = nodex.getParent(".spt_pipeline_top");
+            top.hot_key_state = true;
+
+            '''
+            })
+
+        top.add(self.get_styles())
+
+        return top
+
+
+
 
 
 
