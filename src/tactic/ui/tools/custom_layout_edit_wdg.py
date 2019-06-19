@@ -263,12 +263,13 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
     This is where you can define options for your Custom Layout with Type set to column:
 
     {
-    'basic_option': 'You can describe your option here',
-    'advanced_option': { 'descriptiom' : 'You can describe your option here and in type specify what type of edit widget is used to display the option.',
-                         'category': 'Display',
-                         'type': 'TextWdg'
-                    }
-}
+        "basic_option": "You can describe your option here',
+        "advanced_option": {
+            "description" : 'You can describe your option here and in type specify what type of edit widget is used to display the option.',
+            "category": "Display",
+            "type": "TextWdg"
+        }
+    }
 '''
            
             
