@@ -193,10 +193,11 @@ class ColorInputWdg(BaseInputWdg):
             start_color = [r, g, b]
 
         behavior = {
-            'type': 'click',
+            'type': 'click_up',
             'name': self.get_name(),
             'start_color': start_color,
             'cbjs_action': '''
+
             var pos = bvr.src_el.getPosition();
             var input = bvr.src_el.getElement(".spt_color_input");
             var cell_edit = bvr.src_el.getParent(".spt_cell_edit");

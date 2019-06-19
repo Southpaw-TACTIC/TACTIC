@@ -1950,7 +1950,6 @@ class PipelineInfoWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("margin: 5px 10px 20px 5px")
         div.add("<div><b>Color:</b></div>")
-        from tactic.ui.input import ColorInputWdg
         text = ColorInputWdg()
         div.add(text)
         text.add_style("width: 100%")
@@ -1962,17 +1961,13 @@ class PipelineInfoWdg(BaseRefreshWdg):
             'type': 'load',
             'cbjs_action': '''
 
-            var node = spt.pipeline.get_info_node();
-            if (node) {
+            var data = spt.pipeline.get_data();
+            var group_name = spt.pipeline.get_current_group();
+            var group = spt.pipeline.get_group(group_name);
+            color = group.get_color();
 
-            } else {
-                var data = spt.pipeline.get_data();
-                var group_name = spt.pipeline.get_current_group();
-                var color = data.colors[group_name];
-
-                bvr.src_el.value = color;
-                bvr.src_el.setStyle("background", color);
-            }    
+            bvr.src_el.value = color;
+            bvr.src_el.setStyle("background", color);
 
             '''
         } )
@@ -5208,6 +5203,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             var node = spt.pipeline.get_info_node();
             var color = spt.pipeline.get_node_property(node, "color");
             bvr.src_el.value = color;
+            bvr.src_el.setStyle("background", color);
 
             '''
         } )
@@ -7421,6 +7417,19 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         color.set_input(text)
         text.add_class(text_name)
         self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
+        text.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var node = spt.pipeline.get_info_node();
+            var color = spt.pipeline.get_node_kwarg(node, "color");
+            if (color) {
+                bvr.src_el.value = color;
+                bvr.src_el.setStyle("background", color);
+            }
+
+            '''
+        } )
 
         td = table.add_cell(color)
         th.add_style("height: 40px")
