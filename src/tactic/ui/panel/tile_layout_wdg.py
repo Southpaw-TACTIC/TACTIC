@@ -1634,6 +1634,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 snapshot = snapshots_by_sobject.get(search_key)
                 if snapshot:
                     paths = self.get_paths(sobject, snapshot, file_sobjects_by_code)
+
+                    #TODO: Handle case where files are missing
                 
                     web_path = paths.get("web")
                     if not web_path:
@@ -1644,15 +1646,18 @@ class TileLayoutWdg(ToolLayoutWdg):
                         paths['web'] = web_path
             
                         if web_path == "/context/icons/mime-types/indicator_snake.gif" and create_icon:
-                            # generate icon dynamically
-                            from pyasm.widget import ThumbCmd
-                            snapshot_key = snapshot.get_search_key()
-                            thumb_cmd = ThumbCmd(search_keys=[snapshot_key])
-                            thumb_cmd.execute()
+                            try:
+                                # generate icon dynamically
+                                from pyasm.widget import ThumbCmd
+                                snapshot_key = snapshot.get_search_key()
+                                thumb_cmd = ThumbCmd(search_keys=[snapshot_key])
+                                thumb_cmd.execute()
                             
-                            # need new snapshot, file sobjects to get new paths
-                            new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
-                            paths = new_paths_by_key.get(sobject.get_search_key())
+                                # need new snapshot, file sobjects to get new paths
+                                new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
+                                paths = new_paths_by_key.get(sobject.get_search_key())
+                            except Exception, e:
+                                print "ThumbCmd failed on [%s]: %s" % (snapshot.get_code(), e)
 
                
             paths_by_key[search_key] = paths
