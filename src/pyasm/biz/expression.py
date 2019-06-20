@@ -20,7 +20,7 @@ from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 import calendar
 import datetime
 
-from pyasm.common import TacticException, Environment, Container, FormatValue, Config
+from pyasm.common import TacticException, Environment, Container, FormatValue, Config, SPTDate
 from pyasm.search import Search, SObject, SearchKey, SearchType
 from pyasm.security import Site
 
@@ -155,15 +155,13 @@ class ExpressionParser(object):
         keys.sort()
         keys.reverse()
         #for name, value in self.vars.items():
-        for name in keys:
-
-            value = self.vars.get(name)
-            new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
-            # HACK: replace with the single quotes first.  Not elegant, but
-            # it works for now until we have real variables
-            self.expression = re.sub("'\$%s'"%name, new_value, self.expression)
-            self.expression = re.sub("\$%s"%name, new_value, self.expression)
-
+        if '$' in self.expression:
+            for name in keys:
+                value = self.vars.get(name)
+                new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
+                # HACK: replace with the single quotes first.  Not elegant, but
+                # it works for now until we have real variables
+                self.expression = self.expression.replace("'$%s'"%name, new_value).replace("$%s"%name, new_value)
 
         if not mode:
             # start in string mode
@@ -179,6 +177,7 @@ class ExpressionParser(object):
             else:
                 new_parser = StringMode()
                 self.is_single = False
+
     
         elif mode == 'expression':
             # start in string mode
@@ -215,9 +214,9 @@ class ExpressionParser(object):
         else:
             return self.result
 
-
-
     def get_date_vars(self):
+        from pyasm.biz import PrefSetting
+
         date_vars = Container.get("Expression:date_vars")
         if date_vars != None:
             return date_vars
@@ -225,9 +224,14 @@ class ExpressionParser(object):
         date_vars = {}
         Container.put("Expression:date_vars", date_vars)
 
-        today = datetime.datetime.today()
-        today = datetime.datetime(today.year, today.month, today.day)
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
+        timezone = PrefSetting.get_value_by_key('timezone')
+        if timezone:
+            now = SPTDate.convert_to_timezone(now, timezone)
+
+        today = now.replace(hour=0, minute=0, second=0)
+        today = SPTDate.convert(today)
+
         year = datetime.datetime(today.year, 1, 1)
         month = datetime.datetime(today.year, today.month, 1)
 
