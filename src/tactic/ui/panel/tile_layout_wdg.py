@@ -1081,7 +1081,12 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         extra_data = self.kwargs.get("extra_data") or {}
         if isinstance(extra_data, basestring):
-            extra_data = jsonloads(extra_data)
+            try:
+                extra_data = jsonloads(extra_data)
+            except Exception as e:
+                print("WARNING: extra_data is not valid json")
+                print("extra_data: ", extra_data)
+                extra_data = {}
 
 
         if self.upload_mode in ['drop','both']:
@@ -1629,6 +1634,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 snapshot = snapshots_by_sobject.get(search_key)
                 if snapshot:
                     paths = self.get_paths(sobject, snapshot, file_sobjects_by_code)
+
+                    #TODO: Handle case where files are missing
                 
                     web_path = paths.get("web")
                     if not web_path:
@@ -1639,15 +1646,18 @@ class TileLayoutWdg(ToolLayoutWdg):
                         paths['web'] = web_path
             
                         if web_path == "/context/icons/mime-types/indicator_snake.gif" and create_icon:
-                            # generate icon dynamically
-                            from pyasm.widget import ThumbCmd
-                            snapshot_key = snapshot.get_search_key()
-                            thumb_cmd = ThumbCmd(search_keys=[snapshot_key])
-                            thumb_cmd.execute()
+                            try:
+                                # generate icon dynamically
+                                from pyasm.widget import ThumbCmd
+                                snapshot_key = snapshot.get_search_key()
+                                thumb_cmd = ThumbCmd(search_keys=[snapshot_key])
+                                thumb_cmd.execute()
                             
-                            # need new snapshot, file sobjects to get new paths
-                            new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
-                            paths = new_paths_by_key.get(sobject.get_search_key())
+                                # need new snapshot, file sobjects to get new paths
+                                new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
+                                paths = new_paths_by_key.get(sobject.get_search_key())
+                            except Exception, e:
+                                print "ThumbCmd failed on [%s]: %s" % (snapshot.get_code(), e)
 
                
             paths_by_key[search_key] = paths

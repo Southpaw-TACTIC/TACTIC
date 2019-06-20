@@ -398,13 +398,13 @@ spt.behavior.construct_behaviors_on_startup = function()
 
 
 // Clone an element with full copying of behaviors
-spt.behavior.clone = function( element ) {
+spt.behavior.clone = function( element, data ) {
     var element = document.id(element)
     var clone = element.clone();
 
     var clone_el_list = clone.getElements( ".SPT_BVR" );
-    spt.behavior._construct_behaviors( [clone] );
-    spt.behavior._construct_behaviors( clone_el_list );
+    spt.behavior._construct_behaviors( [clone], data );
+    spt.behavior._construct_behaviors( clone_el_list, data );
     return clone;
 }
 
@@ -1210,7 +1210,7 @@ spt.count = {};
 
 spt.behavior.remove_bvr_attrs = false;
 
-spt.behavior._construct_behaviors = function( el_list )
+spt.behavior._construct_behaviors = function( el_list, data )
 {
     // Add "spt_bvrs" map of lists of behaviors (by type of behavior) ...
     //
@@ -1260,7 +1260,7 @@ spt.behavior._construct_behaviors = function( el_list )
     // Piggy-back the call to the handler for processing load behaviors here at the end of _construct_behaviors
     // so that we only need to include it in one place ...
     //
-    spt.behavior.process_load_behaviors( el_list );
+    spt.behavior.process_load_behaviors( el_list, data );
 }
 
 
@@ -1294,7 +1294,7 @@ spt.behavior.add = function( el, bvr_in )
 }
 
 
-spt.behavior.process_load_behaviors = function( el_list )
+spt.behavior.process_load_behaviors = function( el_list, data )
 {
     // Function callback signature for cbfn_action of 'load' type behaviors is this:
     //
@@ -1316,6 +1316,9 @@ spt.behavior.process_load_behaviors = function( el_list )
             var load_bvrs = el.spt_bvrs['load'];
             for( var i=0; i < load_bvrs.length; i++ ) {
                 var bvr = load_bvrs[i];
+                if (data) {
+                    bvr._data = data;
+                }
 
                 if( bvr.cbjs_action ) {
                     cbjs_action = bvr.cbjs_action;
