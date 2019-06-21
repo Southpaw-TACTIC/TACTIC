@@ -5397,9 +5397,14 @@ class ProcessInfoCmd(Command):
 
         cbk_classes = self.kwargs.get("cbk_classes") or []
 
+        handled = set()
         for cbk_class in cbk_classes:
+            if cbk_class in handled:
+                continue
             cmd = Common.create_from_class_path(cbk_class, {}, self.kwargs)
             cmd.execute()
+            handled.add(cbk_class)
+
 
 
     def handle_action(self):
@@ -6198,6 +6203,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var node_kwargs = {};
             for (var i=0; i<nodes.length; i++) {
                 var node = nodes[i];
+
+                if (!node.has_changes) {
+                    continue;
+                }
+
                 var name = spt.pipeline.get_node_name(node);
                 name = name.replace(/&/g, "&amp;amp;");
                 var kwargs = spt.pipeline.get_node_kwargs(node);
@@ -6238,6 +6248,15 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                 spt.named_events.fire_event('pipeline|save', {});
+
+                // reset all of the changes on the node
+                for (var i=0; i<nodes.length; i++) {
+                    var node = nodes[i];
+                    node.has_changes = false;
+                }
+
+ 
+
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
             }
@@ -6615,7 +6634,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-
+        """
         button = ButtonNewWdg(title="Show Process Types", icon="FA_INFO")
         button_row.add(button)
         button.add_behavior({
@@ -6628,6 +6647,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.panel.load_popup("Process Types", class_name, kwargs);
             '''
         } )
+        """
  
 
 
@@ -6706,8 +6726,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         select = SelectWdg("zoom")
         select.add_style("width: 85px")
         select.add_style("margin-top: -3px")
-        select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit to Current Group", "Fit To Canvas"])
-        select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_current", "fit_to_canvas"])
+        select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit To Canvas"])
+        select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_canvas"])
         select.add_empty_option("Zoom")
         button_row.add(select)
         #select.set_value("1.0")
@@ -7141,27 +7161,16 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         div.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
-
-            var values = spt.api.get_input_values(bvr.src_el, null, false);
-            var keys = Object.keys(values);
-
             var on_save = function(kwargs) {
-                var new_kwargs = {};
-                var values = {};
-
-                for (var key in kwargs) {
-                    var value = kwargs[key];
-
-                    if (keys.contains(key)) values[key] = value;
-                    else new_kwargs[key] = value;
+                var cbk_class = "tactic.ui.tools.PipelinePropertyCbk";
+                if (kwargs.cbk_classes) {
+                    if (!kwargs.cbk_classes.contains(cbk_class)) {
+                        kwargs.cbk_classes.push(cbk_class);
+                    }
                 }
-                new_kwargs.pipeline_properties = values;
+                else kwargs.cbk_classes = [cbk_class];
 
-                cbk_class = "tactic.ui.tools.PipelinePropertyCbk";
-                if (new_kwargs.cbk_classes) new_kwargs.cbk_classes.push(cbk_class);
-                else new_kwargs.cbk_classes = [cbk_class];
-
-                return new_kwargs;
+                return kwargs;
             }
 
             var node = spt.pipeline.get_info_node();
@@ -7563,6 +7572,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
 
+            node.has_changes = true;
+
             spt.named_events.fire_event('pipeline|change', {});
             '''
         }
@@ -7590,6 +7601,8 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, value);
 
+            node.has_changes = true;
+
             spt.named_events.fire_event('pipeline|change', {});
             '''
             
@@ -7614,7 +7627,7 @@ class PipelinePropertyCbk(Command):
 
         workflow = process_sobj.get_json_value("workflow") or {}
 
-        values = self.kwargs.get("pipeline_properties")
+        values = self.kwargs.get("pipeline_properties") or {}
 
         for name, value in values.items():
             workflow[name] = value
@@ -8861,8 +8874,8 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = self.top
-        top.add_style("min-width: 800px")
-        top.add_style("max-width: 800px")
+        top.add_style("min-width: 200px")
+        top.add_style("max-width: 300px")
 
         # get all of the custom process node types
         search = Search("config/widget_config")

@@ -263,12 +263,13 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
     This is where you can define options for your Custom Layout with Type set to column:
 
     {
-    'basic_option': 'You can describe your option here',
-    'advanced_option': { 'descriptiom' : 'You can describe your option here and in type specify what type of edit widget is used to display the option.',
-                         'category': 'Display',
-                         'type': 'TextWdg'
-                    }
-}
+        "basic_option": "You can describe your option here',
+        "advanced_option": {
+            "description" : 'You can describe your option here and in type specify what type of edit widget is used to display the option.',
+            "category": "Display",
+            "type": "TextWdg"
+        }
+    }
 '''
            
             
@@ -1275,6 +1276,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
                     # Class name
                     bvr_name_text = TextInputWdg(name="behavior_name")
+                    bvr_name_text.add_class("spt_behavior_name")
                     bvr_name_text.add_attr("spt_is_multiple", "true")
                     #td.add(bvr_name_text)
                     bvr_name_text.add_style("border: none")
@@ -1328,6 +1330,29 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     relay_class_div.add(bvr_relay_class)
                     if relay_class:
                         bvr_relay_class.set_value(relay_class)
+
+
+                    remove_div = DivWdg()
+                    header_div.add(remove_div)
+                    remove_div.add("<i class='fa fa-remove'/>")
+                    remove_div.add_style("margin-left: 15px")
+                    remove_div.add_class("hand")
+                    remove_div.add_class("tactic_hover")
+
+                    remove_div.add_behavior( {
+                        'type': 'click',
+                        'cbjs_action': '''
+                        var top = bvr.src_el.getParent(".spt_behavior_item");
+                        var el = top.getElement(".spt_behavior_name");
+                        spt.confirm("Are you sure you wish to remove behavior on ["+el.value+"]",
+                            function() {
+                                Effects.fade_out(top, 500, function() {
+                                    spt.behavior.destroy(top);
+                                });
+                            } )
+                        '''
+                    } )
+
 
                      
 

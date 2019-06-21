@@ -168,7 +168,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
             right.add( self.get_settings_wdg() )
-            if self.show_settings in [False, 'false']:
+            if self.show_settings in [False, 'false', 'hidden']:
                 right.add_style("display: none")
 
         else:
@@ -322,6 +322,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("width: 400px")
         div.add_style("padding: 20px")
+        div.add_style("max-height: 510px")
+        div.add_style("overflow: auto")
+        div.add_style("margin-bottom: 20px")
 
         title_wdg = DivWdg()
         div.add(title_wdg)

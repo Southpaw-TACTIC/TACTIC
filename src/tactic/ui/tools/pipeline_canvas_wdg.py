@@ -3439,6 +3439,7 @@ spt.pipeline.get_node_properties = function(node) {
 // Kwargs are ProcessInfoCmd inputs
 spt.pipeline.get_node_kwargs = function(node) {
     var type = spt.pipeline.get_node_type(node);
+    type = "settings";
     var property = node.properties;
     if (property) return property[type] || {};
     return {};
@@ -3451,6 +3452,7 @@ spt.pipeline.get_node_kwarg = function(node, name) {
 
 spt.pipeline.set_node_kwargs = function(node, kwargs) {
     var type = spt.pipeline.get_node_type(node);
+    type = "settings";
     spt.pipeline.set_node_property(node, type, kwargs);
 }
 
@@ -6224,6 +6226,11 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
         if (node_type == "auto") {
             node_type = "action";
         }
+        else if (node_type == "node") {
+            node_type = "manual";
+        }
+
+
 
         var options = {
             group: group,
@@ -6249,17 +6256,24 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
             var name = attributes[j].name;
             if (name == "node") continue;
             var value = attributes[j].value;
+            if (name == "type" && value == "node") {
+                value = "manual";
+            }
+
+            if (name == "settings" && typeOf(value) == "string") {
+                value = JSON.parse(value);
+            }
             node.properties[name] = value;
         }
 
 
-
+        // remember the settings value in spt_settings in case of undo
         var settings = xml_nodes[i].getAttribute("settings");
         if (settings) {
             settings_json = JSON.parse(settings);
             if (node.update_node_settings) {
                 node.update_node_settings(settings_json);
-				node.setAttribute("spt_settings", settings)
+                node.setAttribute("spt_settings", settings)
             }
         }
 
@@ -6618,9 +6632,13 @@ spt.pipeline.export_group = function(group_name) {
                 value = value.replace(/'/g, "&amp;apos;");
             }
             if (key == "settings" && value) {
+
+                // DEPRECATED: ignoring settings
+                // Settings are now sent separately
+                continue;
+
                 settings_str = JSON.stringify(value);
                 xml += " "+key+"='"+settings_str+"'";
-
 
             }
             else {
