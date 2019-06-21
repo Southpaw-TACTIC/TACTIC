@@ -460,7 +460,7 @@ class WorkHourCalendarDayWdg(BaseCalendarDayWdg):
 
         div.add_style("padding: 5px")
         div.add_style("text-align: right")
-        div.add_style("width: 90")
+        div.add_style("width: 90px")
 
 
         if not total_straight:
@@ -909,8 +909,8 @@ class SObjectCalendarWdg(CalendarWdg):
         """
 
         if self.width:
-            div.add_style("width: %s" % self.width);
-        div.add_style("min-height: %s" % self.height);
+            div.add_style("width: %s" % self.width)
+        div.add_style("min-height: %s" % self.height)
         #div.add_style("overflow: hidden");
         div.add_style("padding: 2px 0 2px 0")
 
@@ -962,7 +962,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
             content.add_style("height: 100%")
             #content.add_style("width: 400px")
-            content.add_style("min-height: %s" % self.height);
+            content.add_style("min-height: %s" % self.height)
 
             self.handler.set_sobjects(sobjects)
         else:
@@ -970,13 +970,13 @@ class SObjectCalendarWdg(CalendarWdg):
             content.add_style("vertical-align: top")
             content.add_style("height: 100%")
             #content.add_style("width: 400px")
-            content.add_style("min-height: %s" % self.height);
+            content.add_style("min-height: %s" % self.height)
 
             self.handler.set_sobjects([])
 
         # force it to be 120px for now
         if self.width:
-            content.add_style("width: %spx" % self.width)
+            content.add_style("width: %s" % self.width)
 
         self.handler.set_date(day)
 

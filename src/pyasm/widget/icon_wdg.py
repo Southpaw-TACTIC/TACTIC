@@ -481,10 +481,13 @@ class IconWdg(DivWdg):
             self.add(self.text)
 
         if self.width:
+            width = str(self.width) + "px"
+            if "px" in str(self.width) or "%" in str(self.width):
+                width = self.width
             if self.icon_path.startswith("BS_"):
-                self.icon.add_style('font-size', str(self.width) + "px")
+                self.icon.add_style('font-size', width)
             else:
-                self.icon.add_style('width', str(self.width) + "px")
+                self.icon.add_style('width', width)
         return super(IconWdg,self).get_display()
 
     def get_icon(self):

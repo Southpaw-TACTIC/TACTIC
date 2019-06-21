@@ -2224,7 +2224,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             header_height = "30px"
-            inner_div.add_style("min-height: %spx" % header_height)
+            inner_div.add_style("min-height: %s" % header_height)
 
 
 

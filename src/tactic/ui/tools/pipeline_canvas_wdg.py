@@ -866,7 +866,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #canvas.add_style("float: left")
         canvas.add_style("position: relative")
 
-        canvas.add_style("margin-top: -%spx" % self.height)
+        height = str(self.height) + "px"
+        if 'px' in str(self.height) or "%" in str(self.height):
+            height = str(self.height)
+        canvas.add_style("margin-top: -%s" % height)
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
         canvas.set_attr("spt_background_color", self.background_color)
@@ -5050,19 +5053,30 @@ spt.pipeline.set_size = function(width, height) {
     var canvas = spt.pipeline.get_canvas();
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
-    outer.setStyle("width", ""+ width+"px");
-    if (height) {
-        outer.setStyle("height", ""+height+"px");
+
+    heightStr = height.toString() + "px"
+    if ('px' in height.toString() || "%" in height.toString()){
+        heightStr = height.toString()
     }
 
-    paint.setAttribute("width", ""+ width+"px");
-    if (height) {
-        paint.setAttribute("height", ""+height+"px");
-        paint.setStyle("margin-top", "" + (-height)+"px");
+    widthStr = width.toString() + "px"
+    if ('px' in width.toString || "%" in height.toString()){
+        widthStr = width.toString()
     }
-    canvas.setStyle("width", ""+width+"px");
+
+    outer.setStyle("width", ""+ widthStr);
     if (height) {
-        canvas.setStyle("height", ""+height+"px");
+        outer.setStyle("height", ""+heightStr);
+    }
+
+    paint.setAttribute("width", ""+ widthStr);
+    if (height) {
+        paint.setAttribute("height", ""+heightStr);
+        paint.setStyle("margin-top", "" +"-"+heightStr);
+    }
+    canvas.setStyle("width", ""+widthStr);
+    if (height) {
+        canvas.setStyle("height", ""+heightStr);
     }
     spt.pipeline.redraw_canvas();
 
