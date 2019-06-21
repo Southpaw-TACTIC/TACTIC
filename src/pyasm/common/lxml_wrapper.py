@@ -13,13 +13,23 @@
 __all__ = ["XmlException", "Xml"]
 
 
-import time, string, types, thread, os
+import time, string, types, os
 
-from cStringIO import StringIO
+try:
+    import _thread as thread
+except:
+    import thread
 
-from base import *
-from common import *
-from common_exception import TacticException
+
+try:
+    from cStringIO import StringIO
+except:
+    from io import StringIO as cStringIO
+
+
+from .base import *
+from .common import *
+from .common_exception import TacticException
 
 import lxml.etree as etree
 
@@ -86,8 +96,8 @@ class Xml(Base):
 
 
 
-        except Exception, e:
-            #print "Error in xml file: ", file_path
+        except Exception as e:
+            #print("Error in xml file: ", file_path)
             raise XmlException(e)
 
 
@@ -116,7 +126,7 @@ class Xml(Base):
             xml_string = xml_string.replace('encoding="UTF-8"','')
             xml_string = xml_string.replace("encoding='UTF-8'",'')
             if xml_string.startswith('<?xml version="1.0" encoding="UTF-8"?>'):
-                #print "STRING ", xml_string
+                #print("STRING ", xml_string)
                 #xml_string = xml_string.encode('UTF-8')
                 pass
 
@@ -126,10 +136,10 @@ class Xml(Base):
             if not xml_string:
                 raise XmlException('The input XML is empty.')
             self.doc = etree.fromstring(xml_string, parser)
-        except Exception, e:
+        except Exception as e:
             if print_error:
-                print "Error in xml: ", xml_string
-                print e
+                print("Error in xml: ", xml_string)
+                print(e)
             raise XmlException(e)
 
 
@@ -270,7 +280,7 @@ class Xml(Base):
             result = self.doc.xpath(xpath, namespaces=namespaces)
         else:
             result = node.xpath(xpath, namespaces=namespaces)
-            print "xpath: ", xpath
+            print("xpath: ", xpath)
         self.cache_xpath[xpath] = result
 
         return result
@@ -280,7 +290,7 @@ class Xml(Base):
         '''get all of the nodes within the given xpath string'''
         try:
             nodes = self._evaluate(xpath)
-        except Exception, e:
+        except Exception as e:
             raise XmlException('XPath Error for [%s]: %s'% (xpath, e.message))
         return nodes
     
@@ -354,7 +364,7 @@ class Xml(Base):
 
     def dump(self):
         '''print out the stringafied version'''
-        print self.to_string()
+        print(self.to_string())
 
 
 
@@ -537,8 +547,6 @@ class Xml(Base):
 
 
 
-
-    import StringIO
     def parse_html(html, encoding='utf-8'):
         parser = etree.HTMLParser(remove_blank_text=False, encoding=encoding)
         tree = etree.parse(StringIO(html), parser)

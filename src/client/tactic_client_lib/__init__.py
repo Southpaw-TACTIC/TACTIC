@@ -22,8 +22,8 @@ path = '%s/tactic.zip' % path
 if path not in sys.path:
     sys.path.insert(0, path)
 
-from tactic_server_stub import *
-from cgapp import *
+from .tactic_server_stub import *
+from .cgapp import *
 
 
 

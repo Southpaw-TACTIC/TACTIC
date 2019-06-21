@@ -26,7 +26,7 @@ class TacticException(Exception):
 # prefer lxml
 try:
     import lxml.etree as etree
-    from lxml_wrapper import *
+    from .lxml_wrapper import *
 except Exception as e:
     print("WARNING: ", e)
     from .xml_wrapper import *

@@ -281,9 +281,9 @@ class Login(SObject):
                     password = "39195b0707436a7ecb92565bf3411ab1"
                 login.set_value("password", password)
 
-	    if not login.get_value("email"):
+            if not login.get_value("email"):
                 default_admin_email = Config.get_value("services", "mail_default_admin_email")
-		login.set_value("email", default_admin_email)
+                login.set_value("email", default_admin_email)
 
         else:
             search = Search("sthpw/login")
@@ -1191,10 +1191,10 @@ class Ticket(SObject):
             ticket.set_value("expiry", expiry, quoted=0)
 
         if commit:
-	    try:
+            try:
                 ticket.commit(triggers="none")
             except SqlException as e:
-                print "Sql error has occured."
+                print("Sql error has occured.")
    
 
         return ticket

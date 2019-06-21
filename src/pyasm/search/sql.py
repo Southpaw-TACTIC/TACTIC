@@ -28,13 +28,13 @@ try:
     import pyodbc
     DATABASE_DICT["SQLServer"] = pyodbc
     #Config.set_value("database", "vendor", "SQLServer")
-except ImportError, e:
+except ImportError as e:
     pass
 
 try:
     try:
         import psycopg2
-    except ImportError, e:
+    except ImportError as e:
         # if psycopg2 is not installed we try to use psycopg2cffi (useful for pypy compatibility)
         from psycopg2cffi import compat
         compat.register()
@@ -43,7 +43,7 @@ try:
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
     #psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
     DATABASE_DICT["PostgreSQL"] = psycopg2
-except ImportError, e:
+except ImportError as e:
     pass
 
 try:
@@ -60,14 +60,14 @@ try:
 
     DATABASE_DICT["Oracle"] = cx_Oracle
 
-except ImportError, e:
+except ImportError as e:
     pass
 
 # MySQL
 try:
     import MySQLdb
     DATABASE_DICT["MySQL"] = MySQLdb
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -75,7 +75,7 @@ except ImportError, e:
 try:
     import sqlite3 as sqlite
     DATABASE_DICT["Sqlite"] = sqlite
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -84,7 +84,7 @@ try:
     import pymongo
     pymongo.ProgrammingError = Exception
     DATABASE_DICT["MongoDb"] = pymongo
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -103,7 +103,7 @@ except ImportError, e:
 try:
     from database_impl import TacticImpl
     DATABASE_DICT["TACTIC"] = TacticImpl
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -468,7 +468,7 @@ class Sql(Base):
                 database_name = self.get_database_name()
                 sql_dict[database_name] = self
 
-            except self.pgdb.OperationalError, e:
+            except self.pgdb.OperationalError as e:
                 raise SqlException(e.__str__())
 
 
@@ -753,7 +753,7 @@ class Sql(Base):
             return self.results
 
 
-        except self.pgdb.OperationalError, e:
+        except self.pgdb.OperationalError as e:
             # A reconnect will only be attempted on the first query.
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
@@ -782,7 +782,7 @@ class Sql(Base):
             self.connect()
             return self.do_query(query, num_attempts=num_attempts+1)
 
-        except self.pgdb.Error, e:
+        except self.pgdb.Error as e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error
@@ -848,7 +848,7 @@ class Sql(Base):
                 self.transaction_count = 1
                 self.commit()
 
-        except self.pgdb.ProgrammingError, e:
+        except self.pgdb.ProgrammingError as e:
             if str(e).find("already exists") != -1:
                 return
             if isinstance(query, unicode):
@@ -859,7 +859,7 @@ class Sql(Base):
             print("Error with query (ProgrammingError): ", self.database_name, wrong_query)
             print(str(e))
             raise SqlException(str(e))
-        except self.pgdb.Error, e:
+        except self.pgdb.Error as e:
             if not quiet:
                 if isinstance(query, unicode):
                     wrong_query = query.encode('utf-8')

@@ -28,14 +28,14 @@ from .encrypt_util import *
 # prefer lxml
 try:
     import lxml.etree as etree
-    from lxml_wrapper import *
+    from .lxml_wrapper import *
 except:
-    from xml_wrapper import *
+    from .xml_wrapper import *
 
 
-from system import *
-from watch_folder import *
+from .system import *
+from .watch_folder import *
 
-from js_wrapper import *
+from .js_wrapper import *
 
 

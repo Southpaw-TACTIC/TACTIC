@@ -18,7 +18,8 @@ import datetime
 import locale
 import os
 from dateutil import parser
-from timecode import TimeCode
+
+from .timecode import TimeCode
 
 
 try:
@@ -53,7 +54,7 @@ class FormatValue(object):
         """Format a currency according to locality and given places"""
         try:
             num = float(num)
-        except ValueError, e:
+        except ValueError as e:
             num = 0
         return locale.currency(num, True, grouping, monetary)
 
