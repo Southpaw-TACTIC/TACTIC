@@ -25,7 +25,7 @@ class CryptoKey(object):
         self.private_key = None
         self.public_key = None
 
-    def generate(self, size=1024):
+    def generate(self, size=2048):
         self.key = RSA.generate(size, os.urandom)
         self.private_key = (self.key.n, self.key.e, self.key.d)
         self.public_key = (self.key.n, self.key.e)
@@ -71,7 +71,8 @@ class CryptoKey(object):
 
 
     def encrypt(self, msg):
-        coded = self.key.encrypt(msg, "x1y2y3")
+        k = 84744 # A random parameter (for compatibility only. This value will be ignored) 
+        coded = self.key.encrypt(msg.encode(), k) # encode required for Python3
         hex = binascii.hexlify(str(coded))
         return hex
      

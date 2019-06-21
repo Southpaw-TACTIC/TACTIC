@@ -19,10 +19,10 @@ import uuid
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
-from sobject_config import *
-from transaction import Transaction
-from sobject_mapping import *
-from database_impl import DatabaseImpl
+from .sobject_config import *
+from .transaction import Transaction
+from .sobject_mapping import *
+from .database_impl import DatabaseImpl
 
 # Need to import this way because of how DbResource needs to get imported
 from pyasm.search.sql import SqlException, DatabaseException, Sql, DbResource, DbContainer, DbPasswordUtil, Select, Insert, Update, CreateTable, DropTable, AlterTable
@@ -3049,7 +3049,7 @@ class SObject(object):
                     return ""
             else:
                 return value
-        except KeyError, e:
+        except KeyError as e:
             pass
 
 
@@ -3349,7 +3349,7 @@ class SObject(object):
                 #value = value.decode('string_escape'))
                 try:
                     value = value.decode('utf-8', 'ignore')
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     value = value.decode('iso-8859-1', 'ignore')
         
         self._set_value(name, value, quoted=quoted)
@@ -6849,12 +6849,12 @@ class SObjectUndo:
         if search_id:
             try:
                 search_id = int(search_id)
-            except ValueError, e:
+            except ValueError as e:
                 # try to extract from quotes: example '15'
                 if search_id.startswith("'") and search_id.endswith("'"):
                     try:
                         search_id = int(search_id.strip("'"))
-                    except ValueError, e:
+                    except ValueError as e:
                         print("ERROR: undo error: ", e.__str__())
                         return
 
@@ -7242,7 +7242,7 @@ class SearchKey(object):
                 for name_value_pair in name_value_pairs:
                     name, value = name_value_pair.split("=")
                     data[name] = value
-            except ValueError, e:
+            except ValueError as e:
                 raise SearchException('Badly formatted search key found [%s]'%search_key)
             if search_type.startswith("sthpw/"):
                 old_search_type = search_type

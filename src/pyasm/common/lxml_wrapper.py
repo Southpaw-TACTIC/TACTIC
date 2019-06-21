@@ -33,6 +33,9 @@ from .common_exception import TacticException
 
 import lxml.etree as etree
 
+import six
+basestring = six.string_types
+
 
 class XmlException(TacticException):
     pass

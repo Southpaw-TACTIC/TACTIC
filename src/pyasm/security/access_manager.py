@@ -107,10 +107,10 @@ class AccessManager(Base):
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print "TRACE: ", self.was_admin
-            print stacktrace_str
-            print "-"*50
+            print("-"*50)
+            print("TRACE: ", self.was_admin)
+            print(stacktrace_str)
+            print("-"*50)
         """
 
 
@@ -546,7 +546,7 @@ class AccessManager(Base):
             rule = dct
             rule_search_type = rule.get('search_type')
             if not rule_search_type:
-                print "No [search_type] defined in security rule"
+                print("No [search_type] defined in security rule")
                 continue
 
             # search types must match
@@ -706,14 +706,14 @@ class AccessManager(Base):
         '''For debugging, printing out the rules for a particular group'''
         rules = self.groups.get(group)
         if not rules:
-            print "no rules for %s" %group
+            print("no rules for %s" %group)
             return
         for rule, values in rules.items():
             if isinstance(values, tuple):
                 v = values[0]
             else:
                 v = values
-            print "xml_rule: ", rule, " is ", v
+            print("xml_rule: ", rule, " is ", v)
         
 
 

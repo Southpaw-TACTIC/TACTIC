@@ -17,8 +17,8 @@ import hashlib, os, sys, types
 from pyasm.common import *
 from pyasm.search import *
 
-from access_manager import *
-from access_rule import *
+from .access_manager import *
+from .access_rule import *
 
 if Config.get_value("install", "shutil_fix") in ["enabled"]:
     # disabling copystat method for windows shared folder mounted on linux

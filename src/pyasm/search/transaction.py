@@ -844,7 +844,7 @@ class FileUndo:
                 # remove directory
                 try:
                     os.rmdir(src)
-                except OSError, e:
+                except OSError as e:
                     if 'Directory not empty' in e.__str__():
                         # can consider removing the contents first and then rmdir
                         raise TransactionException(e)
@@ -939,10 +939,10 @@ class FileUndo:
                             raise IOError(str(e))
 
 
-        except IOError, e:
+        except IOError as e:
             print( e.__str__())
             print("Failed to undo %s %s" % (type, src))
-        except OSError, e:
+        except OSError as e:
             raise TransactionException("Failed to undo due to OS Error during %s. %s" % (type, e.__str__()))
         except Exception as e:
             print("Error: %s" %e)
@@ -1261,7 +1261,7 @@ class TableUndo(Base):
                      SearchType.sequence_setval(search_type, seq_max)
 
 
-            except IOError, e:
+            except IOError as e:
                  print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             """
@@ -1339,7 +1339,7 @@ class TableDropUndo(Base):
                  st_obj = SearchType.get(search_type)
                  if seq_max:
                      SearchType.sequence_setval(search_type, seq_max)
-            except IOError, e:
+            except IOError as e:
                  print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             except SqlException as e:

@@ -13,8 +13,8 @@
 __all__ = ['WidgetDbConfig', 'WidgetDbConfigCache']
 
 from pyasm.common import *
-from sql import *
-from search import *
+from .sql import *
+from .search import *
 
 
 class WidgetDbConfig(SObject):
