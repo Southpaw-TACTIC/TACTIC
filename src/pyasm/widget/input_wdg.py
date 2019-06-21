@@ -720,10 +720,10 @@ class TextAreaWdg(BaseTextWdg):
         # on OSX rows and cols flag are not respected
         width = kwargs.get("width")
         if width:
-            self.add_style("width", width)
+            self.add_style("width", str(width) + "px")
         height = kwargs.get("height")
         if height:
-            self.add_style("height", height)
+            self.add_style("height", str(height) + "px")
 
     
         web = WebContainer.get_web()
@@ -741,7 +741,7 @@ class TextAreaWdg(BaseTextWdg):
 
         browser = web.get_browser()
         if not width and not cols:
-            width = 300
+            width = "300px"
             self.add_style("width", width)
 
 
@@ -848,7 +848,7 @@ class CheckboxWdg(BaseInputWdg):
 
         self.add_style("display: inline-block")
         self.add_style("vertical-align: middle")
-        self.add_style("margin: 0")
+        self.add_style("margin: 0px")
 
 
 
@@ -1444,7 +1444,7 @@ class SelectWdg(BaseInputWdg):
 
         width = self.get_option("width")
         if width:
-            self.add_style("width: %s" % width)
+            self.add_style("width: %spx" % width)
 
         border_mode = self.get_option("border_mode") or "box"
         if border_mode == "box":
@@ -2117,8 +2117,8 @@ class MultiUploadWdg(BaseInputWdg):
         applet.set_attr("code", "upload.UploadApplet")
         applet.set_attr("codebase", "%s/java" % context_url.get_url() )
         applet.set_attr("archive", "Upload-latest.jar")
-        applet.set_attr("width", "450")
-        applet.set_attr("height", "120")
+        applet.set_attr("width", "450px")
+        applet.set_attr("height", "120px")
         applet.set_attr("id", self.UPLOAD_ID)
         
         # create param for applet
@@ -2157,8 +2157,8 @@ class DownloadWdg(BaseInputWdg):
         applet.set_attr("code", "upload.DownloadApplet")
         applet.set_attr("codebase", "%s/java" % context_url.get_url() )
         applet.set_attr("archive", "Upload-latest.jar")
-        applet.set_attr("width", "1")
-        applet.set_attr("height", "1")
+        applet.set_attr("width", "1px")
+        applet.set_attr("height", "1px")
         applet.set_attr("id", download_id)
     
         # create param for applet
@@ -2685,7 +2685,7 @@ class PopupMenuWdg(BaseInputWdg):
                 item = DivWdg(css='hand')
                 item.add(widget)
                 if self.menu_width:
-                    item.add_style('width', self.menu_width)
+                    item.add_style('width', str(self.menu_width) + "px")
                 content_div.add(item)
                 continue
             id='%s_%s' %(self.get_input_name(), widget.get_name())
@@ -2693,7 +2693,7 @@ class PopupMenuWdg(BaseInputWdg):
             item.set_attr('name', self.item_name)
             item.set_attr('tab', id)
             if self.menu_width:
-                item.add_style('width', self.menu_width)
+                item.add_style('width', str(self.menu_width) + "px")
             item.add_style('padding-left','3px')
             
             

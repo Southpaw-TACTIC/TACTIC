@@ -119,8 +119,8 @@ class BaseNodeWdg(BaseRefreshWdg):
         border_color = self.get_border_color()
         box_shadow = self.get_box_shadow()
 
-        top.add_style("width", width)
-        top.add_style("height", height)
+        top.add_style("width", str(width)+"px")
+        top.add_style("height", str(height)+"px")
         top.add_style("box-sizing", "border-box")
 
         top.add_attr("spt_border_color", border_color)
@@ -137,12 +137,12 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("border-radius: %spx" % (height/2))
 
         elif shape == "elipse":
-            top.add_style("width", height)
+            top.add_style("width", str(height)+"px")
             top.add_style("border-radius: %spx" % border_radius)
 
         elif shape == "diamond":
             top.add_style("transform: rotate(-45deg)")
-            top.add_style("width", height)
+            top.add_style("width", str(height)+"px")
 
         else:
             top.add_style("border-radius: %spx" % border_radius)
@@ -196,16 +196,16 @@ class BaseNodeWdg(BaseRefreshWdg):
         div.add(style)
         style.add('''
         .star-six {
-            width: 0;
-            height: 0;
+            width: 0px;
+            height: 0px;
             border-left: 50px solid transparent;
             border-right: 50px solid transparent;
             border-bottom: 100px solid red;
             position: relative;
         }
         .star-six:after {
-            width: 0;
-            height: 0;
+            width: 0px;
+            height: 0px;
             border-left: 50px solid transparent;
             border-right: 50px solid transparent;
             border-top: 100px solid red;
@@ -362,7 +362,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # outer is used to resize canvas
         outer = DivWdg()
 
-        top.add(outer);
+        top.add(outer)
         outer.add_class("spt_pipeline_resize")
         outer.add_class("spt_resizable")
 
@@ -382,7 +382,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         from tactic.ui.input import TextInputWdg
         hot_key_div = DivWdg()
         outer.add(hot_key_div)
-        hot_key_div.add_style("margin-left: -5000");
+        hot_key_div.add_style("margin-left: -5000px");
         hot_key_div.add_style("position: absolute");
 
         hot_key_input = TextInputWdg(name="hot_key_input")
@@ -580,8 +580,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         inner.add(canvas)
 
         canvas.add_class("spt_pipeline_canvas")
-        canvas.add_style("width: %s" % self.width)
-        canvas.add_style("height: %s" % self.height)
+        canvas.add_style("width: %spx" % self.width)
+        canvas.add_style("height: %spx" % self.height)
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
 
@@ -866,7 +866,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #canvas.add_style("float: left")
         canvas.add_style("position: relative")
 
-        canvas.add_style("margin-top: -%s" % self.height)
+        canvas.add_style("margin-top: -%spx" % self.height)
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
         canvas.set_attr("spt_background_color", self.background_color)
@@ -5050,19 +5050,19 @@ spt.pipeline.set_size = function(width, height) {
     var canvas = spt.pipeline.get_canvas();
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
-    outer.setStyle("width", ""+width);
+    outer.setStyle("width", ""+ width+"px");
     if (height) {
-        outer.setStyle("height", ""+height);
+        outer.setStyle("height", ""+height+"px");
     }
 
-    paint.setAttribute("width", ""+width);
+    paint.setAttribute("width", ""+ width+"px");
     if (height) {
-        paint.setAttribute("height", ""+height);
-        paint.setStyle("margin-top", "" + (-height));
+        paint.setAttribute("height", ""+height+"px");
+        paint.setStyle("margin-top", "" + (-height)+"px");
     }
-    canvas.setStyle("width", ""+width);
+    canvas.setStyle("width", ""+width+"px");
     if (height) {
-        canvas.setStyle("height", ""+height);
+        canvas.setStyle("height", ""+height+"px");
     }
     spt.pipeline.redraw_canvas();
 
@@ -5228,18 +5228,17 @@ spt.pipeline.resize_drag_motion = function(evt, bvr, mouse_411) {
     var height = canvas.getStyle("height");
     height = parseInt( height.replace("px", "") );
     height += dy;
-
     outer = top.getElement(".spt_pipeline_resize")
-    outer.setStyle("width", ""+width);
-    outer.setStyle("height", ""+height);
+    outer.setStyle("width", ""+width+"px");
+    outer.setStyle("height", ""+height+"px");
 
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
-    paint.setAttribute("width", ""+width);
-    paint.setAttribute("height", ""+height);
-    paint.setStyle("margin-top", "" + (-height));
-    canvas.setStyle("width", ""+width);
-    canvas.setStyle("height", ""+height);
+    paint.setAttribute("width", ""+width+"px");
+    paint.setAttribute("height", ""+height+"px");
+    paint.setStyle("margin-top", "" + (-height)+"px");
+    canvas.setStyle("width", ""+width+"px");
+    canvas.setStyle("height", ""+height+"px");
     spt.pipeline.redraw_canvas();
     spt.pipeline.last_mouse_pos = mouse_pos;
 }

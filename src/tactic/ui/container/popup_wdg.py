@@ -432,7 +432,9 @@ class PopupWdg(BaseRefreshWdg):
 
         content_div.set_id("%s_content" % self.name)
         content_div.add_class("spt_popup_content")
-        content_div.add_style("overflow: hidden")
+        content_div.add_style("width: 100%")
+        content_div.add_style("overflow-x: hidden")
+        content_div.add_style("overflow-y: auto")
         content_div.add_style("display: block")
         #content_div.add_style("padding: 10px")
         if not self.content_wdg:
@@ -1092,6 +1094,8 @@ spt.popup.get_widget = function( evt, bvr )
         var popup_body = content_wdg.getElement(".spt_popup_body");
         if (!popup_body) {
             content_wdg.setStyle("overflow-y", "auto");
+            popup_body.setStyle("overflow-x", "hidden");
+            popup_body.setStyle("overflow-y", "auto");
         }
 
 
@@ -1139,7 +1143,8 @@ spt.popup.get_widget = function( evt, bvr )
         }
 
         var window_size = document.id(window).getSize();
-        content_wdg.setStyle("overflow-y","hidden");
+        content_wdg.setStyle("overflow-x","hidden");
+        content_wdg.setStyle("overflow-y","auto");
         content_wdg.setStyle("max-height", "auto");
         popup_body.setStyle("overflow-y","auto");
         popup_body.setStyle("overflow-x", "hidden");

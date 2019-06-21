@@ -1769,7 +1769,7 @@ spt.tab.close = function(src_el) {
             content_top.add_attr("spt_window_resize_offset", resize_offset)
             content_top.add_attr("spt_window_resize_attr", resize_attr)
             #content_top.add_style("overflow: auto")
-            content_top.add_style("overflow: none")
+            content_top.add_style("overflow: hidden")
 
         else:
 

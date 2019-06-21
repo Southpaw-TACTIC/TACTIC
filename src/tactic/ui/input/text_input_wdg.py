@@ -97,8 +97,8 @@ class TextInputWdg(BaseInputWdg):
 
     def get_input_group_wdg(self):
         input_group = DivWdg()
-        input_group.add_style("width: %s" % self.width)
-        input_group.add_style("height: %s" % self.height)
+        input_group.add_style("width: %spx" % self.width)
+        input_group.add_style("height: %spx" % self.height)
         input_group.add_style("margin-right: 5px")
 
         return input_group
@@ -254,7 +254,7 @@ class TextInputWdg(BaseInputWdg):
             if not self.width.endswith("%"):
                 self.width = int(self.width)
 
-        self.text.add_style("width: %s" % self.width)
+        self.text.add_style("width: %spx" % self.width)
 
 
     def add_style(self, name, value=None):
@@ -422,7 +422,7 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            edit_div.add_style("margin-left: %s" % self.width)
+            edit_div.add_style("margin-left: %spx" % self.width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -467,7 +467,7 @@ class TextInputWdg(BaseInputWdg):
         input_group = self.get_input_group_wdg()
 
         div.add(input_group)
-        self.text.add_style("height: %s" % self.height)
+        self.text.add_style("height: %spx" % self.height)
 
         icon_styles = self.kwargs.get("icon_styles")
         icon_class = self.kwargs.get("icon_class")

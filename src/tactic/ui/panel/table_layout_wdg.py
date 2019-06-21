@@ -628,7 +628,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout_inner")
 
-        inner.add_style("postion: relative")
+        inner.add_style("position: relative")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px")
         inner.add_style("border-color", inner.get_color("border"))
@@ -929,7 +929,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             height = self.kwargs.get("height")
             if height:
-                scroll.add_style("height: %s" % height)
+                scroll.add_style("height: %spx" % height)
 
 
             window_resize_offset = self.kwargs.get("window_resize_offset")
@@ -975,7 +975,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     'type': 'load',
                     'cbjs_action': '''
                     var y = window.getSize().y;
-                    bvr.src_el.setStyle('height', y);
+                    bvr.src_el.setStyle('height', y + "px");
                     '''
                     } )
 
@@ -2224,7 +2224,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             header_height = "30px"
-            inner_div.add_style("min-height: %s" % header_height)
+            inner_div.add_style("min-height: %spx" % header_height)
 
 
 
@@ -3233,9 +3233,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                                     }
                                 }
                                 for (var j = 0; j < table_els.length; j++) {
-                                    table_els[j].setStyle("height", height);
+                                    table_els[j].setStyle("height", height + "px");
                                 }
-                                rows[i].setStyle("height", height);
+                                rows[i].setStyle("height", height + "px");
                             }
                         }
                         resize_heights();
@@ -3251,7 +3251,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         header_els.forEach( function(el) {
                             el.setStyle("position", "absolute");
                             //var height = "35px";
-                            //el.setStyle("height", height);
+                            //el.setStyle("height", height + "px");
                             
                         } );
 
@@ -3283,11 +3283,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                         setTimeout( function() {
                             var size = table_scroll.getSize().x;
-                            scroll.setStyle("width", size);
+                            scroll.setStyle("width", size + "px");
 
                             var size2 = table_scroll.scrollWidth;
                             var size2 = header_table.getSize().x;
-                            scroll_content.setStyle("width", size2+offset+100);
+                            scroll_content.setStyle("width", size2+offset+100 + "px");
 
                             if (size2 <= size) {
                                 //scroll.setStyle("display", "none");
@@ -3310,9 +3310,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         /*
                         var callback = function() {
                             var size = header_table.getSize();
-                            scroll_content.setStyle("width", size.x+120);
+                            scroll_content.setStyle("width", (size.x+120) + "px");
                             //var size = layout.getSize();
-                            //scroll.setStyle("width", size.x);
+                            //scroll.setStyle("width", size.x + "px");
                         }
                         var observer = new ResizeObserver(callback);
                         observer.observe(header_table);
@@ -4909,7 +4909,7 @@ spt.table.add_new_item = function(kwargs) {
             var header = headers[i];
             var clone_cell = clone_cells[i];
             var size = header.getSize();
-            clone_cell.setStyle("width", size.x);
+            clone_cell.setStyle("width", size.x + "px");
         }
         */
 
@@ -4924,7 +4924,7 @@ spt.table.add_new_item = function(kwargs) {
             var clone_cell = clone_cells[i];
             var size = cell.getSize();
             if (clone_cell)
-                clone_cell.setStyle("width", size.x);
+                clone_cell.setStyle("width", size.x + "px");
         }
 
         clone.inject(row, position);
@@ -5018,7 +5018,7 @@ spt.table.add_new_group = function(kwargs) {
             var clone_cell = clone_cells[i];
             var size = cell.getSize();
             if (clone_cell)
-                clone_cell.setStyle("width", size.x);
+                clone_cell.setStyle("width", size.x + ""px);
         }
         */
 
@@ -5228,7 +5228,7 @@ spt.table.show_edit = function(cell) {
     var dummy = document.id(document.createElement("div"));
     if (typeof(size) != 'undefined') {
         // the offset takes into account the padding (3px) and border (1px) x2
-        dummy.setStyle("height", size.y-8);
+        dummy.setStyle("height", size.y-8 + 'px');
     }
     dummy.innerHTML = "&nbsp;";
     cell.appendChild(dummy);
@@ -7490,7 +7490,7 @@ spt.table.set_column_width = function(element_name, width) {
         var els = row.getElements(".spt_table_hidden_group_td");
         for (var i = 0; i < els.length; i++) {
             if (element_name == els[i].getAttribute("spt_element_name")) {
-                els[i].setStyle("width", width);
+                els[i].setStyle("width", width + "px");
                 continue;
             }
             
@@ -7531,26 +7531,26 @@ spt.table.set_column_width = function(element_name, width) {
     var curr_header = spt.table.get_header_by_cell(cell);
     if (total_width) {
         /*
-        header_table.setStyle("width", total_width);
-        table.setStyle("width", total_width);
+        header_table.setStyle("width", total_width + "px");
+        table.setStyle("width", total_width + "px");
         subtable = table.getElement(".spt_table_table");
         if (subtable) {
-            subtable.setStyle("width", total_width);
+            subtable.setStyle("width", total_width + "px");
             
         }
         */
     }
 
-    curr_header.setStyle("width", width);
+    curr_header.setStyle("width", width + "px");
     curr_header.setAttribute("last_width", width);
-    cell.setStyle("width", width);
+    cell.setStyle("width", width + "px");
     cell.setAttribute("last_width", width);
 
 
 
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
     if (insert_cell)
-        insert_cell.setStyle("width", width);
+        insert_cell.setStyle("width", width + "px");
    
 }
 
@@ -7610,7 +7610,7 @@ spt.table.align_column_widths = function() {
     // set the row widths to that of the header
     for (var i = 0; i < cells.length; i++) {
         var width = headers[i].getStyle("width");
-        cells[i].setStyle("width", width);
+        cells[i].setStyle("width", width + "px");
     }
 }
 
@@ -7661,16 +7661,16 @@ spt.table.expand_table = function(mode) {
 
                 // if this is the last cell
                 if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                    cell.setStyle("width", layout_width-total_width)
+                    cell.setStyle("width", layout_width-total_width + "px")
                 }
 
                 else if (last_width && last_width != "-1") {
-                    cell.setStyle("width", last_width);
+                    cell.setStyle("width", last_width + "px");
                 }
                 else {
                     var size = cell.getSize();
                     if (size.x) {
-                        cell.setStyle("width", size.x);
+                        cell.setStyle("width", size.x + "px");
                     }
                     else {
                         cell.setStyle("width", "100px");
@@ -7703,15 +7703,15 @@ spt.table.expand_table = function(mode) {
 
                     // if this is the last cell
                     if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                        cell.setStyle("width", layout_width-total_width)
+                        cell.setStyle("width", layout_width-total_width + "px")
                     }
                     else if (last_width && last_width != "-1") {
-                        cell.setStyle("width", last_width);
+                        cell.setStyle("width", last_width + 'px');
                     }
                     else {
                         var size = cell.getSize();
                         if (size.x) {
-                            cell.setStyle("width", size.x);
+                            cell.setStyle("width", size.x + "px");
                         }
                         else {
                             cell.setStyle("width", "100px");
@@ -7812,7 +7812,7 @@ spt.table.expand_table = function(mode) {
             div.addClass("spt_header_padding");
 
             var height = header_parent.getStyle("height");
-            div.setStyle("height", height);
+            div.setStyle("height", height + "px");
             div.setStyle("background", "#F5F5F5");
             div.setStyle("float", "right");
 
@@ -7936,7 +7936,7 @@ spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
     clone.setStyle("z-index", "100");
     clone.setStyle("left", mouse_411.curr_x-layout_pos.x+5);
     clone.setStyle("top", mouse_411.curr_y-layout_pos.y+5);
-    clone.setStyle("width", size.x);
+    clone.setStyle("width", size.x + "px");
     clone.setStyle("max-width", "200px");
     clone.setStyle("min-height", "30px");
     clone.setStyle("background", "#CCC");
@@ -8780,7 +8780,7 @@ spt.table.open_ingest_tool = function(search_type) {
 
                 if not level_sobjects_dict:
                     done = True
-                    break;
+                    break
 
 
                 current_sobjects = []
