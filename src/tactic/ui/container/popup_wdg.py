@@ -1094,8 +1094,6 @@ spt.popup.get_widget = function( evt, bvr )
         var popup_body = content_wdg.getElement(".spt_popup_body");
         if (!popup_body) {
             content_wdg.setStyle("overflow-y", "auto");
-            popup_body.setStyle("overflow-x", "hidden");
-            popup_body.setStyle("overflow-y", "auto");
         }
 
 
