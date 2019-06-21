@@ -13,8 +13,10 @@
 
 __all__ = ["Container", "GlobalContainer"]
 
-
-import thread
+try:
+    import _thread as thread
+except:
+    import thread
 
 
 # Get the container instance
