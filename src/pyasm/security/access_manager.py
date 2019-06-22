@@ -17,6 +17,9 @@ import types
 from pyasm.common import Base, Xml, Environment, Common
 from pyasm.search import Search
 
+import six
+basestring = six.string_types
+
 
 class AccessException(Exception):
     pass

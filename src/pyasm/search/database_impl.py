@@ -18,6 +18,9 @@ import datetime
 
 from pyasm.common import Environment, SetupException, Config, Container, TacticException, SPTDate
 
+import six
+basestring = six.string_types
+
 
 class DatabaseImplException(TacticException):
     pass
@@ -278,7 +281,7 @@ class DatabaseImpl(DatabaseImplInterface):
         try:
             db_resource = database
             #from pyasm.search import DbContainer, DbResource
-            from sql import DbContainer, DbResource
+            from .sql import DbContainer, DbResource
             if isinstance(database, basestring):
                 if host == None:
                     vendor = Config.get_value("database", "vendor")
@@ -302,6 +305,7 @@ class DatabaseImpl(DatabaseImplInterface):
             Container.put("Sql:database_exists:%s"%db_resource.get_key(), True) 
         except Exception as e:
             #print("Error: ", str(e))
+            raise
             return False
         else:
             return True
@@ -334,7 +338,7 @@ class DatabaseImpl(DatabaseImplInterface):
             return cached
 
         table_info = self.get_table_info(db_resource)
-        if table_info.has_key(table):
+        if table in table_info:
             exists = True
         else:
             exists = False
@@ -676,7 +680,7 @@ class BaseSQLDatabaseImpl(DatabaseImpl):
             parts = column.split("->")
             column = parts[0]
 
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get(db_resource)
         columns = sql.get_columns(table)
         if column in columns:
@@ -2068,7 +2072,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             Container.put(key, cache_dict)
 
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             key2 = "%s" % (db_resource.get_db_resource())
         else:
@@ -2081,7 +2085,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         cache_dict[key2] = info
 
 
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         sql = DbContainer.get(db_resource)
 
         statement = '''SELECT tablename FROM pg_tables

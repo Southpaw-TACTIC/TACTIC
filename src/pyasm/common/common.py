@@ -29,6 +29,7 @@ import threading, zipfile
 import hashlib, urllib
 import datetime
 import colorsys
+import codecs
 
 import six
 basestring = six.string_types
@@ -376,7 +377,9 @@ class Common(Base):
         if not digits:
             digits = 19
         num_digits = digits
-        key = os.urandom(num_digits / 2).encode('hex')
+        key = os.urandom(num_digits)
+        key = codecs.encode(key, "hex")
+        key = key[:num_digits]
         return key
     generate_random_key = staticmethod(generate_random_key)
 
@@ -619,7 +622,7 @@ class Common(Base):
     def get_dict_list(dct):
         '''get a tuple sorted list given a dictionary'''
         keys = dct.keys()
-        keys.sort()
+        keys = sorted(keys)
         # value is str() to remove the u' in front of unicode str
         return [(x, dct[x]) for x in keys]
     get_dict_list = staticmethod(get_dict_list)

@@ -2469,7 +2469,8 @@ class SObject(object):
                 self.search_type_obj = self
                 self.full_search_type = "sthpw/search_object"
 
-            elif type(search_type) in types.StringTypes:
+            #elif type(search_type) in types.StringTypes:
+            elif isinstance(search_type, basestring):
                 self.search_type_obj = SearchType.get(search_type)
                 self.full_search_type = Project.get_full_search_type(search_type)
             else:
@@ -3027,7 +3028,7 @@ class SObject(object):
 
         # first look at the update data
         # This will fail most often, so we don't use the try/except clause
-        if self.has_updates and self.update_data.has_key(name):
+        if self.has_updates and name in self.update_data:
             if is_data:
                 return self.update_data.get(name).get(attr)
             else:
@@ -3084,10 +3085,10 @@ class SObject(object):
 
 
         # first look at the update data
-        if self.update_data.has_key(name):
+        if name in self.update_data:
             return True
         # then look at the old data
-        elif self.data.has_key(name):
+        elif name in self.data:
             return True
         else:
             return False
@@ -3275,7 +3276,7 @@ class SObject(object):
             Container.put("SObject:xml_cache", xml_dict)
         search_key = self.get_search_key()
         key = "%s|%s" % (search_key, name)
-        if xml_dict.has_key(key):
+        if key in xml_dict:
             del xml_dict[key]
 
 
@@ -3292,7 +3293,8 @@ class SObject(object):
         if isinstance(value, Xml):
             value.clear_xpath_cache()
             value = value.to_string()
-        elif type(value) in [types.ListType, types.TupleType]:
+        #elif type(value) in [types.ListType, types.TupleType]:
+        elif isinstance(value, (list, tuple)):
             if len(value) == 0:
                 # This check added to handle cases where a list is empty, as 'value[0]' is not defined
                 # in that case. For now we just return and skip the setting of this value.
@@ -3360,6 +3362,8 @@ class SObject(object):
                     value = value.decode('utf-8', 'ignore')
                 except UnicodeDecodeError as e:
                     value = value.decode('iso-8859-1', 'ignore')
+                except:
+                    pass # Python3 does not have decode
         
         self._set_value(name, value, quoted=quoted)
 
@@ -3368,11 +3372,8 @@ class SObject(object):
     def _set_value(self, name, value, quoted=True):
         '''called by set_value()'''
 
-        if self.update_data.has_key(name) or not self.data.has_key(name) or value != self.data[name]:
-
-            # FIXME: this may be necessary with MySQL
-            #if isinstance(value, basestring):
-            #    value = value.replace("\\", "\\\\")
+        #if self.update_data.has_key(name) or not self.data.has_key(name) or value != self.data[name]:
+        if name in self.update_data or name not in self.data or value != self.data[name]:
 
             self.update_data[name] = value
             self.quoted_flag[name] = quoted
@@ -5565,8 +5566,8 @@ class SObject(object):
 
     def get_cache_dict(cls, sobject=None, search_type=None):
         '''get the cache dict to insert new sobj into'''
-        if sobject and type(sobject) != types.ListType:
-            #key = SObject._get_cached_key(sobject.SEARCH_TYPE)
+        #if sobject and type(sobject) != types.ListType:
+        if sobject and not isinstance(sobject, list):
             key = SObject._get_cached_key(sobject.get_base_search_type())
         elif search_type:
             key = SObject._get_cached_key(search_type)

@@ -17,7 +17,6 @@ __package__ = "pyasm.search"
 from pyasm.biz import Project
 from pyasm.common import Container
 from pyasm.unittest import UnittestEnvironment
-from pyasm.unittest import UnittestEnvironment
 from pyasm.security import *
 
 from .transaction import *
@@ -39,7 +38,6 @@ class SqlTest(unittest.TestCase):
         self.test_env.create()
 
     def test_all(self):
-
 
 
         try:

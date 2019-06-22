@@ -20,7 +20,6 @@ from pyasm.security import Batch
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
 from tactic.command import CreateProjectCmd, PluginInstaller
-from tactic.ui.tools import DeleteProjectCmd
 
 class UnittestEnvironment(object):
 
@@ -51,6 +50,7 @@ class UnittestEnvironment(object):
     def delete(self):
         print("Deleting existing Unittest project")
         related_types = ["sthpw/schema", "sthpw/task","sthpw/snapshot", "sthpw/file"]
+        from tactic.ui.tools import DeleteProjectCmd
         delete_cmd = DeleteProjectCmd(project_code=self.project_code, related_types=related_types)
         delete_cmd.execute()
 
