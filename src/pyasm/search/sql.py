@@ -977,7 +977,7 @@ class Sql(Base):
                 value = "1"
             else:
                 value = "0"
-        elif isintance(value, list):
+        elif isinstance(value, list):
             value = value[0]
             value = value.replace("'", "''")
         elif value_type == types.MethodType:
