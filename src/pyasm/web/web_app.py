@@ -41,7 +41,7 @@ class WebApp(Base):
             raise WebAppException("No top level widget defined")
 
         # add to the access log
-        # FIXME: this does not get committed if there is an exception.  The
+        # NOTE: this does not get committed if there is an exception.  The
         # transaction will back out.
         access_log_flag = False
         access_log = None

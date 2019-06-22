@@ -68,7 +68,7 @@ class EventContainer(Widget):
     def __init__(self):
         super(EventContainer,self).__init__()
  
-        from html_wdg import HtmlElement
+        from .html_wdg import HtmlElement
         self.script = HtmlElement.script()
         self.add_widget(self.script)
 

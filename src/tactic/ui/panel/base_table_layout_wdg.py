@@ -396,7 +396,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #args_keys = self.get_args_keys()
         args_keys = self.ARGS_KEYS
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            #if not args_keys.has_key(key):
+            if key not in args_keys:
                 #raise TacticException("Key [%s] not in accepted arguments" % key)
                 pass
 
@@ -851,7 +852,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 new_settings[item] = True
             settings = new_settings
 
-        if settings.has_key("gear") and settings.get("gear") == True:
+        #if settings.has_key("gear") and settings.get("gear") == True:
+        if 'gear' in settings and settings.get("gear") == True:
             gear_settings = self.kwargs.get("gear_settings")
             if isinstance(gear_settings, basestring):
                 if gear_settings.startswith("{") and gear_settings.endswith("}"):
@@ -886,7 +888,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if settings.get(name) in [None, False, "false"]:
                 # if not in settings, then the default is false
                 default = False
-            if not settings.has_key(name):
+            #if not settings.has_key(name):
+            if name not in settings:
                 value = settings_default.get(name)
             else:
                 value = settings.get(name)

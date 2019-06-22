@@ -863,10 +863,15 @@ class Sql(Base):
         except self.pgdb.ProgrammingError as e:
             if str(e).find("already exists") != -1:
                 return
-            if isinstance(query, unicode):
-                wrong_query = query.encode('utf-8')
+
+            if sys.version_info[0] < 3:
+                if isinstance(query, unicode):
+                    wrong_query = query.encode('utf-8')
+                else:
+                    wrong_query = unicode(query, errors='ignore').encode('utf-8')
             else:
-                wrong_query = unicode(query, errors='ignore').encode('utf-8')
+                # python 3 does not need to do any encodeing
+                wrong_query = query
 
             print("Error with query (ProgrammingError): ", self.database_name, wrong_query)
             print(str(e))
@@ -972,7 +977,8 @@ class Sql(Base):
             value = value.replace("'", "''")
         elif isinstance(value, int):
             value = str(value)
-        elif value_type == types.BooleanType:
+        #elif value_type == types.BooleanType:
+        elif isinstance(value_type, bool):
             if value == True:
                 value = "1"
             else:
@@ -982,7 +988,8 @@ class Sql(Base):
             value = value.replace("'", "''")
         elif value_type == types.MethodType:
             raise SqlException("Value passed in was an <instancemethod>")
-        elif value_type in [types.FloatType, types.IntType]:
+        #elif value_type in [types.FloatType, types.IntType]:
+        elif isinstance(value_type, (float, int)):
             pass
         elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
             value = str(value)
@@ -1578,7 +1585,7 @@ class DbContainer(Base):
     def remove(database_name):
         '''remove a connection to the database'''
         sql_dict = DbContainer._get_sql_dict()
-        if sql_dict.has_key(database_name):
+        if database_name in sql_dict:
             sql_dict[database_name].close()
             del sql_dict[database_name]
     remove = staticmethod(remove)
@@ -3013,8 +3020,8 @@ class Insert(object):
         self.impl.preprocess_sql(self.data, self.unquoted_cols)
 
         # quote the values
-        values = self.data.values()
-        cols = self.data.keys()
+        values = list(self.data.values())
+        cols = list(self.data.keys())
 
         #if not cols:
         #    # add an empty row
@@ -3075,13 +3082,14 @@ class Insert(object):
 
         for x in statement:
             if isinstance(x, str):
-                x = x.decode('string_escape')
-
                 #if os.name != 'nt':
                 try:
+                    x = x.decode('string_escape')
                     x = x.decode('utf-8')
                 except UnicodeDecodeError as e:
                     x = x.decode('iso-8859-1')
+                except:
+                    pass # python 3 does need not decode
 
                 # this only works in Linux can causes error with windows xml parser down the road
                 #x = unicode(x, encoding='utf-8')

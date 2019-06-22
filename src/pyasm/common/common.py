@@ -15,6 +15,9 @@ __all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
 import os, sys, time, string, re, random, types, pprint, traceback
+
+IS_Pv3 = sys.version_info[0] > 2
+
 try:
     import thread
 except:
@@ -380,6 +383,10 @@ class Common(Base):
         key = os.urandom(num_digits)
         key = codecs.encode(key, "hex")
         key = key[:num_digits]
+        try:
+            key = str(key, 'utf-8')
+        except:
+            pass
         return key
     generate_random_key = staticmethod(generate_random_key)
 
@@ -884,6 +891,14 @@ class Common(Base):
 
 
     def process_unicode_string( in_string ):
+
+        if not IS_Pv3:
+            return
+
+        # for Python 2.7
+        if not isinstance(in_string, unicode):
+            return
+
         if isinstance(in_string, unicode):
             return in_string.encode('utf-8')
         elif isinstance(in_string, basestring):
@@ -958,7 +973,8 @@ class Common(Base):
         second = float(int(second, 16) ) / 256
         third =  float(int(third, 16) ) / 256
 
-        if type(modifier) == types.ListType:
+        #if type(modifier) == types.ListType:
+        if isinstance(modifier, list):
             rgb = []
             rgb.append( 0.01*modifier[0] + first )
             rgb.append( 0.01*modifier[1] + second )

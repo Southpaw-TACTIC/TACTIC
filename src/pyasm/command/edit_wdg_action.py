@@ -117,14 +117,14 @@ class DatabaseAction(Command):
 
 
     def has_option(self, key):
-        return self.options.has_key(key)
+        return key in self.options
 
     def set_option(self, key, value):
         self.options[key] = value
         
     def get_option(self, key):
         '''gets the value of the specified option'''
-        if self.options.has_key(key):
+        if key in self.options:
             return self.options[key]
         else:
             return ""

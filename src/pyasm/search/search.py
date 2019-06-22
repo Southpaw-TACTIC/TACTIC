@@ -2501,7 +2501,7 @@ class SObject(object):
                 self.data = fast_data['data'][fast_data['count']]
 
                 # MongoDb
-                #if self.data.has_key("_id") and not self.data.has_key("code"):
+                #if '_id' in self.data and 'code' not in self.data:
                 #    self.data["code"] = self.data["_id"]
 
                 # convert datetimes to strings
@@ -2864,7 +2864,7 @@ class SObject(object):
 
     def get_attr(self, name):
         self._handle_attrs()
-        if self.attrs.has_key(name):
+        if name in self.attrs:
             return self.attrs[name]
         elif self.has_value(name):
             # by default all columns are attrs

@@ -162,7 +162,7 @@ class Transaction(Base):
         assert self.counter == 0
 
         # commit all of the transaction items
-        from sql import SqlException
+        from .sql import SqlException
         for transaction_obj in self.transaction_objs:
             try:
                 transaction_obj.commit()
@@ -249,7 +249,8 @@ class Transaction(Base):
         db_name = database.get_database_name()
 
         # if the database is listed, then ignore it
-        if self.databases.has_key(db_name):
+        #if self.databases.has_key(db_name):
+        if db_name in self.databases:
             return
 
         # start a transaction in the database

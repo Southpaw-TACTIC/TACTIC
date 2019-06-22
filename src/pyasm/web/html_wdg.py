@@ -19,6 +19,7 @@ import re
 import string
 import types
 import locale
+import sys
 
 from dateutil import parser
 
@@ -31,6 +32,11 @@ from pyasm.common import SPTDate
 from .event_container import *
 from .widget import Widget
 from .web_container import WebContainer
+
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
 
 
 class HtmlException(Exception):
@@ -173,10 +179,12 @@ class HtmlElement(Widget):
     def set_attr(self, name, value):
         '''Set an attribute of the html element'''
 
-        if type(value) in types.StringTypes:
+        #if type(value) in types.StringTypes:
+        if isinstance(value, basestring):
             self.attrs[name] = value
-        elif isinstance(value, unicode):
-            self.attrs[name] = value.encode('utf-8')
+        # This is never called because of the above
+        #elif isinstance(value, unicode):
+        #    self.attrs[name] = value.encode('utf-8')
         else:
             self.attrs[name] = str(value)
 
@@ -221,7 +229,7 @@ class HtmlElement(Widget):
     def remove_class(self, value):
         '''Adds a class attribute of the html element for css styling'''
         assert value
-        if self.classes.has_key(value):
+        if value in self.classes:
             self.classes.pop(value)
 
         
@@ -283,7 +291,7 @@ class HtmlElement(Widget):
         if not self.styles:
             self.styles = {}
 
-        elif not override and self.styles.has_key(name):
+        elif not override and name in self.styles:
             return
 
 
@@ -332,25 +340,25 @@ class HtmlElement(Widget):
 
 
     def get_palette(self):
-        from palette import Palette
+        from .palette import Palette
         palette = Palette.get()
         return palette
 
 
     def get_theme(self):
-        from palette import Palette
+        from .palette import Palette
         palette = Palette.get()
         return palette.get_theme()
 
 
     def get_color(self, palette_key, modifier=0, default=None):
-        from palette import Palette
+        from .palette import Palette
         palette = Palette.get()
         color = palette.color(palette_key, modifier, default=default)
         return color
 
     def add_color(self, name, palette_key, modifier=0, default=None):
-        from palette import Palette
+        from .palette import Palette
         palette = Palette.get()
         color = palette.color(palette_key, modifier, default=default)
         self.add_style("%s: %s" % (name, color) )
@@ -360,8 +368,8 @@ class HtmlElement(Widget):
 
     def get_gradient(self, palette_key, modifier=0, range=-20, reverse=False, default=None,angle=180):
 
-        from palette import Palette
-        from web_container import WebContainer
+        from .palette import Palette
+        from .web_container import WebContainer
         web = WebContainer.get_web()
         palette = Palette.get()
         if web.is_IE():
@@ -481,7 +489,8 @@ class HtmlElement(Widget):
         if self.behaviors == None:
             self.behaviors = []
 
-        if type(bvr_spec) == types.DictType:
+        #if type(bvr_spec) == types.DictType:
+        if isinstance(bvr_spec, dict):
             # handle any cbjs string value that has newlines (e.g. ones specified using triple single quote block
             # quotes in order to have the javascript code readable as indented multi-line code) ...
             regex = re.compile( r'\n\s*' )
@@ -513,7 +522,8 @@ class HtmlElement(Widget):
                     raise Exception( "Error: script path [%s] does not exist" % script_path )
                     
 
-            for k,v in bvr_spec.iteritems():
+            #for k,v in bvr_spec.iteritems():
+            for k,v in bvr_spec.items():
                 if 'cbjs' in k and '\n' in v:
                     bvr_spec[k] = regex.sub( '\n', v )
             self.behaviors.append( bvr_spec )
@@ -634,7 +644,7 @@ class HtmlElement(Widget):
         if not self.events:
             self.events = {}
 
-        if not self.events.has_key(event):
+        if event not in self.events:
             self.events[event] = []
         if idx == None:
             self.events[event].append(function)
@@ -649,7 +659,7 @@ class HtmlElement(Widget):
     def remove_event(self, event):
         if not self.events:
             return
-        if self.events.has_key(event):
+        if event in self.events:
             self.events.pop(event)
         
     def get_event_attr(self, event):
@@ -704,15 +714,15 @@ class HtmlElement(Widget):
         that actually draws the html element to the buffer'''
         html = WebContainer.get_buffer()
         buffer = html.get_buffer()
-        
+       
         buffer.write("<%s" % self.type)
 
         attrs = []
         if self.attrs:
             for x,y in self.attrs.items():
-                if type(x) == types.UnicodeType:
+                if not IS_Pv3:
+                    #if type(x) == types.UnicodeType:
                     x = Common.process_unicode_string(x)
-                if type(y) == types.UnicodeType:
                     y = Common.process_unicode_string(y)
                 attrs.append( ' %s="%s"' % (x,y) )
 

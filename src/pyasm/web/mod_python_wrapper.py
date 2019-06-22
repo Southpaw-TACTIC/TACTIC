@@ -77,7 +77,7 @@ class ModPython(WebEnvironment):
 
     def get_env(self, env_var):
         env = self.request.subprocess_env
-        if env.has_key(env_var):
+        if env_var in env:
             return env[env_var]
         else:
             return ""

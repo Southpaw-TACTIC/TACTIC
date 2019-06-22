@@ -160,7 +160,7 @@ class SearchTypeCache(BaseCache):
 
     def build_cache_by_column(self, column):
         # do not build if it already exists
-        if self.caches.has_key(column):
+        if column in self.caches:
             return
 
         # build a search_key cache

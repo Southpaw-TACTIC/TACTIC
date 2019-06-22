@@ -157,7 +157,7 @@ class SectionWdg(BaseRefreshWdg):
         div.add_style("width: 65px")
         div.add_style("height: 50px")
         div.add_style("float: left")
-	div.add_style("text-align: center")
+        div.add_style("text-align: center")
         div.add(image)
         section_wdg.add(desc_div)
         div.add_style("overflow: hidden")
@@ -419,7 +419,7 @@ class MainWdg(BaseRefreshWdg):
         title = "Configuration"
         #description = '''All TACTIC projects can be uniquely designed and managed using our configuration tools.'''
         description = '''Configure a Project from start to finish.'''
-	image = "<img src='/context/icons/64x64/configuration_64.png'/>"
+        image = "<img src='/context/icons/64x64/configuration_64.png'/>"
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -479,7 +479,7 @@ class MainWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         title = "Custom Layouts"
         description = '''Create interfaces using the Custom Layout Editor.'''
-	image = "<img src='/context/icons/64x64/layout_64.png'/>"
+        image = "<img src='/context/icons/64x64/layout_64.png'/>"
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''

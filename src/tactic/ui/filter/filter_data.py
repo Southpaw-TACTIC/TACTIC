@@ -19,6 +19,9 @@ from pyasm.common import SetupException, Container, jsonloads, jsondumps
 
 import types
 
+import six
+basestring = six.string_types
+
 
 class FilterData(object):
     '''Utility class to manipulate data used by filters.  The data is a global
@@ -32,7 +35,7 @@ class FilterData(object):
 
         if not data:
             self.data = []
-        elif type(data) in types.StringTypes:
+        elif isinstance(data, basestring):
             try:
                 # optimize the loading of json data
                 json_data = Container.get("json_data")
@@ -90,7 +93,7 @@ class FilterData(object):
 
     def add_data(self, data):
         '''add data dictionary.'''
-        if type(data) in types.StringTypes:
+        if isinstance(data, basestring):
             try:
                 data = jsonloads(data)
             except ValueError as e:

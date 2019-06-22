@@ -18,9 +18,10 @@ import os, types, re
 try:
     from cStringIO import StringIO as Buffer
 except:
-    from io import BytesIO as Buffer
+    from io import StringIO as Buffer
 
-
+import six
+basestring = six.string_types
 
 
 
@@ -275,7 +276,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     # unfortunately, html does not recognize <textarea/>
                     # so we have to make sure it becomes <textarea></textarea>
                     text = xml.to_string(node)
-                    text = text.encode('utf-8')
+                    text = str(text.encode('utf-8'))
                     keys = ['textarea','input']
                     for key in keys:
                         p = re.compile("(<%s.*?/>)" % key)
@@ -678,7 +679,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         try:
             html = template.render(server=self.server, search=Search, sobject=sobject, sobjects=self.sobject_dicts, data=self.data, plugin=plugin, kwargs=self.kwargs)
-
+            html = html.decode()
 
             # we have to replace all & signs to &amp; for it be proper html
             html = html.replace("&", "&amp;")

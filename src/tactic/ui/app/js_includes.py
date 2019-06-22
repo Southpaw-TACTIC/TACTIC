@@ -99,15 +99,15 @@ class JSIncludes(object):
     ]
 
 
-    def get_compact_js_context_path_suffix():
+    def get_compact_js_context_path_suffix(cls):
         context_path_suffix = "spt_js/_compact_spt_all_r%s.js" % Environment.get_release_version().replace(".","_")
         return context_path_suffix
-    get_compact_js_context_path_suffix = staticmethod(get_compact_js_context_path_suffix )
+    get_compact_js_context_path_suffix = classmethod(get_compact_js_context_path_suffix )
 
 
-    def get_compact_js_filepath():
+    def get_compact_js_filepath(cls):
         all_js_path = "%s/src/context/%s" % \
-                            ( Environment.get_install_dir(), get_compact_js_context_path_suffix() )
+                            ( Environment.get_install_dir(), cls.get_compact_js_context_path_suffix() )
         return all_js_path
-    get_compact_js_filepath = staticmethod( get_compact_js_filepath )
+    get_compact_js_filepath = classmethod( get_compact_js_filepath )
 

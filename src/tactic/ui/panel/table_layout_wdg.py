@@ -33,6 +33,9 @@ from tactic.ui.widget import ActionButtonWdg
 
 from .base_table_layout_wdg import BaseTableLayoutWdg
 
+import six
+basestring = six.string_types
+
 
 class TableLayoutWdg(BaseTableLayoutWdg):
     SCROLLBAR_WIDTH = 17

@@ -26,6 +26,9 @@ from tactic.ui.container.smart_menu_wdg import SmartMenu
 from tactic.ui.widget import ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
+import six
+basestring = six.string_types
+
 
 class SideBarPanelWdg(BaseRefreshWdg):
 
@@ -1503,7 +1506,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-        if type(view) in types.StringTypes:
+        if isinstance(view, basestring):
             view = [view]
 
         # draw each view
@@ -2924,7 +2927,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             # take the search filter structure from search_view
             # if filter is a non-xml string, then it is in JSON format
             
-            if type(filter) in types.StringTypes and filter != '':
+            if isinstance(filter, basestring) and filter != '':
                 try:
                     filter = jsonloads(filter)
                 except Exception:
@@ -2965,7 +2968,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         self.state = self.kwargs.get('state')
         if not self.state:
             self.state = {}
-        if type(self.state) in types.StringTypes:
+        if isinstance(self.state, basestring):
             try:
                 self.state = eval(self.state)
             except Exception as e:

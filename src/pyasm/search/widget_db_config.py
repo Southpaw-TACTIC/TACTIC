@@ -714,7 +714,7 @@ class WidgetDbConfig(SObject):
                 attrs = config.get_element_attributes(element_name)
                 keys = attrs.keys()
                 for key in keys:
-                    if not main_attrs.has_key(key):
+                    if key not in main_attrs:
                         main_xml.set_attribute(node, key, attrs.get(key))
 
                 if main_display_node is not None:

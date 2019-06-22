@@ -152,13 +152,17 @@ class ExpressionParser(object):
         # replace all of the variables: Note that this replaces even in the
         # string area ... not sure if this is what we want
         keys = self.vars.keys()
-        keys.sort()
+        keys = sorted(keys)
         keys.reverse()
         #for name, value in self.vars.items():
         for name in keys:
 
             value = self.vars.get(name)
-            new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
+            try:
+                new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
+            except:
+                new_value = str(value) # python 3 
+
             # HACK: replace with the single quotes first.  Not elegant, but
             # it works for now until we have real variables
             self.expression = re.sub("'\$%s'"%name, new_value, self.expression)

@@ -19,6 +19,9 @@ from pyasm.search import WidgetDbConfig, SObjectDefaultConfig, SearchType, Searc
 from pyasm.web import *
 from pyasm.command import Command
 
+import six
+basestring = six.string_types
+
 class WidgetConfigException(TacticException):
     pass
 
@@ -46,7 +49,8 @@ class WidgetConfig(Base):
             self.xml.read_file(file_path, cache=use_cache)
 
         elif xml:
-            if type(xml) in types.StringTypes:
+            #if type(xml) in types.StringTypes:
+            if isinstance(xml, basestring):
                 self.xml = Xml()
                 self.xml.read_string(xml)
             else:

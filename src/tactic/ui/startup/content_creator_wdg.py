@@ -22,7 +22,7 @@ import os
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
-from misc_wdg import QuickLinksWdg, TitleWdg
+from .misc_wdg import QuickLinksWdg, TitleWdg
 
 
 
@@ -96,7 +96,7 @@ class ToolsWdg(BaseRefreshWdg):
         div.add_style("margin: 10px")
         #div.add_style("width: 209px")
         div.add_style("height: 64px")
-	div.add_style("text-align: center")
+        div.add_style("text-align: center")
         div.add(image)
 	#div.set_box_shadow("1px 1px 1px 1px")
         section_wdg.add(desc_div)

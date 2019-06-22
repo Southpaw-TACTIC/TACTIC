@@ -483,7 +483,7 @@ class PopupWdg(BaseRefreshWdg):
 
 
     def add_header_context_menu(self, widget):
-        from menu_wdg import Menu, MenuItem
+        from .menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         menu.set_allow_icons(False)
         menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )

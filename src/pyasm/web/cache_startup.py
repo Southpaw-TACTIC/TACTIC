@@ -209,7 +209,7 @@ class CacheStartup(object):
 
 
 
-        from web_container import WebContainer
+        from .web_container import WebContainer
 
         if not WebContainer.is_dev_mode():
             task = KillTacticTask()

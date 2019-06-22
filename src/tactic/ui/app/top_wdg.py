@@ -17,6 +17,9 @@ __all__ = [ 'TopWdg', 'TitleTopWdg']
 import types
 import os
 
+import six
+basestring = six.string_types
+
 
 from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
 from pyasm.biz import Project, ProjectSetting
@@ -638,7 +641,7 @@ class TopWdg(Widget):
         # add a calendar wdg
 
         if web.is_admin_page():
-            from tactic_branding_wdg import TacticCopyrightNoticeWdg
+            from .tactic_branding_wdg import TacticCopyrightNoticeWdg
             branding = TacticCopyrightNoticeWdg(show_license_info=True)
             top.add(branding)
 
@@ -920,7 +923,7 @@ class TopWdg(Widget):
  
 
         else:
-            from page_header_wdg import AppBusyWdg
+            from .page_header_wdg import AppBusyWdg
             div.add( AppBusyWdg() )
 
 
@@ -950,7 +953,7 @@ class TopWdg(Widget):
         div.add(color)
 
         # add in a global notify wdg
-        from notify_wdg import NotifyWdg
+        from .notify_wdg import NotifyWdg
         widget.add(NotifyWdg())
 
         from tactic.ui.app import DynamicUpdateWdg
@@ -1322,7 +1325,7 @@ class SitePage(AppServer):
         if not page:
             page = self.get_page_widget()
         page.set_as_top()
-        if type(page) in types.StringTypes:
+        if isinstance(page, basestring):
             page = StringWdg(page)
 
         application.add(page, 'content')

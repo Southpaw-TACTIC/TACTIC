@@ -215,7 +215,7 @@ class AccessManager(Base):
                 group_type = Xml.get_attribute( rule_node, "category" )
 
             # get an existing rule set or create a new one
-            if self.groups.has_key(group_type):
+            if group_type in self.groups:
                 rules = self.groups[group_type]
             else:
                 rules = {}
@@ -241,7 +241,7 @@ class AccessManager(Base):
                 count += 1
 
 
-            if count == 1 and attrs2.has_key('key'):
+            if count == 1 and 'key' in attrs2:
                 # backwards compatibility
                 rule_key = attrs2['key']
             else:
@@ -298,7 +298,7 @@ class AccessManager(Base):
                 # check if rule_access exists first, which doesn't for search_filter,
                 # but it has to go into the rules regardless
                 # if the rule already exists, take the highest one
-                if rule_access and rules.has_key(rule_key):
+                if rule_access and rule_key in rules:
                     curr_access, cur_attrs = rules[rule_key]
 
                     try:

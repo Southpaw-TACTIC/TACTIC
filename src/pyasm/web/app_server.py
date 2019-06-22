@@ -35,7 +35,7 @@ import os
 try:
     from cStringIO import StringIO as Buffer
 except:
-    from io import BytesIO as Buffer
+    from io import StringIO as Buffer
 
 
 
