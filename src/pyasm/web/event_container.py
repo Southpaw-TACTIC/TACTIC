@@ -13,7 +13,7 @@ __all__ = ['Event', 'EventContainer']
 
 from pyasm.common import Base, Container
 from pyasm.web import WebContainer
-from widget import *
+from .widget import *
 
 import time, random
 

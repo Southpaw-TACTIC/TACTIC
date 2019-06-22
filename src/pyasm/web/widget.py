@@ -12,15 +12,27 @@
 
 __all__ = [ 'WidgetException', 'Widget', 'WidgetSettings', 'StringWdg', 'Html', 'Url', 'ClassWdg', 'MethodWdg', 'WidgetSettingSaveCbk' ]
 
-import types, string, urllib, cStringIO, urlparse, random
+import types, string, urllib, random
+
+try:
+    import urlparse
+except:
+    import urllib.parse
+
+#import cStringIO
+try:
+    from cStringIO import Buffer
+except:
+    from io import BytesIO as Buffer
+
 
 from pyasm.common import *
+from pyasm.biz import Project
 from pyasm.security import *
 from pyasm.search import *
 
-from web_container import *
-from web_state import *
-from pyasm.biz import Project
+from .web_container import *
+from .web_state import *
 
 
 class WidgetException(Exception):
@@ -846,7 +858,7 @@ class Html(Base):
     '''String buffer class for html code'''
 
     def __init__(self):
-        self._buffer = cStringIO.StringIO()
+        self._buffer = Buffer()
 
     def __del__(self):
         self.clear()

@@ -24,7 +24,7 @@ except:
 try:
     from cStringIO import StringIO
 except:
-    from io import StringIO as cStringIO
+    from io import StringIO
 
 
 from .base import *
@@ -124,9 +124,10 @@ class Xml(Base):
     def read_string(self, xml_string, print_error=True, remove_blank_text=True):
 
         #if type(xml_string) not in types.StringTypes:
-        if isinstance(xml_string, basestring):
+        if not isinstance(xml_string, basestring):
             xml_string = str(xml_string)
-        elif type(xml_string) == types.UnicodeType:
+        #elif type(xml_string) == types.UnicodeType:
+        elif isinstance(xml_string, basestring):
             xml_string = xml_string.replace('encoding="UTF-8"','')
             xml_string = xml_string.replace("encoding='UTF-8'",'')
             if xml_string.startswith('<?xml version="1.0" encoding="UTF-8"?>'):
@@ -519,9 +520,6 @@ class Xml(Base):
     # FIXME
     def get_node_xml(node):
         '''returns a stringified version of the node'''
-        #xml = StringIO()
-        #PrettyPrint(node,xml)
-        #return xml.getvalue()
         xml = Xml()
         return xml.to_string(node)
     get_node_xml = staticmethod(get_node_xml)

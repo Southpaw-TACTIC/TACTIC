@@ -16,10 +16,10 @@ __all__ = []
 
 import string, sys
 
-from command import *
-
 from pyasm.common import *
 from pyasm.search import *
+
+from .command import *
 
 class EditCmdException(Exception):
     pass

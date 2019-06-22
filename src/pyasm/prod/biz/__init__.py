@@ -10,19 +10,19 @@
 #
 #
 
-from prod_dir_naming import *
-from prod_file_naming import *
-from prod_app_naming import *
-from prod_setting import *
-from naming import *
-from shot import *
-from asset import *
-from episode import *
-from sequence import *
-from texture import *
-from session import *
-from render import *
-from submission import *
+from .prod_dir_naming import *
+from .prod_file_naming import *
+from .prod_app_naming import *
+from .prod_setting import *
+from .naming import *
+from .shot import *
+from .asset import *
+from .episode import *
+from .sequence import *
+from .texture import *
+from .session import *
+from .render import *
+from .submission import *
 
 
 

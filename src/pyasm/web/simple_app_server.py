@@ -12,11 +12,16 @@
 
 __all__ = ['SimpleAppServer']
 
-import cStringIO, os, re
+import os, re
+try:
+    from cStringIO import Buffer
+except:
+    from io import BytesIO as Buffer
+
 
 from pyasm.common import Container
-from web_container import WebContainer
-from app_server import BaseAppServer
+from .web_container import WebContainer
+from .app_server import BaseAppServer
 
 
 # DEPRECATED
@@ -38,7 +43,7 @@ class SimpleAppServer(BaseAppServer):
     '''A simple application server without security restrictions.'''
 
     def execute(self):
-        self.buffer = cStringIO.StringIO()
+        self.buffer = Buffer()
         try:
             # clear the main containers
             Container.create()

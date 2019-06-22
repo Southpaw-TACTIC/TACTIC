@@ -22,15 +22,15 @@ import locale
 
 from dateutil import parser
 
-from event_container import *
 
 from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue
 from pyasm.search import Search, SObject, SearchType
-from widget import Widget
-from web_container import WebContainer
 from pyasm.biz import PrefSetting
 from pyasm.common import SPTDate
 
+from .event_container import *
+from .widget import Widget
+from .web_container import WebContainer
 
 
 class HtmlException(Exception):
@@ -99,7 +99,7 @@ class HtmlElement(Widget):
 
     """
         HtmlElement.count += 1
-        #print "create: ", HtmlElement.count
+        #print("create: ", HtmlElement.count)
         search_key = self.type
         count = HtmlElement.track.get(search_key)
         if count == None:
@@ -116,9 +116,9 @@ class HtmlElement(Widget):
         HtmlElement.count -= 1
 
         search_key = self.type
-        print "search_key: ", search_key
+        print("search_key: ", search_key)
         count = HtmlElement.track[search_key]
-        #print "delete: ", HtmlElement.count, search_key, count
+        #print("delete: ", HtmlElement.count, search_key, count)
 
         if count == 1:
             del(HtmlElement.track[search_key])
@@ -127,16 +127,16 @@ class HtmlElement(Widget):
         else:
             HtmlElement.track[search_key] = count - 1
 
-        #print HtmlElement.track
+        #print(HtmlElement.track)
         self.data = None
         self.update_data = None
 
         total = 0
         for key, x in HtmlElement.track.items():
             if x > 1:
-                print key, x
+                print(key, x)
             total += x
-        print "total: ", total
+        print("total: ", total)
 
         self.clear()
     """
@@ -144,7 +144,7 @@ class HtmlElement(Widget):
 
 
     def clear(self):
-        #print "clear: ", self
+        #print("clear: ", self)
         self.attrs = None
         self.events = None
         self.type = None
@@ -476,8 +476,8 @@ class HtmlElement(Widget):
 
     def add_behavior(self, bvr_spec):
         '''adds an individual behavior specification to the HTML based widget'''
-        #print "bvr: ", str(bvr_spec).replace(r"\n", "\n")
-        #print "---"
+        #print("bvr: ", str(bvr_spec).replace(r"\n", "\n"))
+        #print("---")
         if self.behaviors == None:
             self.behaviors = []
 
@@ -623,7 +623,7 @@ class HtmlElement(Widget):
             if v[0] not in [ '"', "'" ]:
                 v = "'%s'" % v
             stmt = 'bvr_spec[%s] = %s' % (k, v)
-            exec stmt
+            exec(stmt)
         return bvr_spec
 
     convert_behavior_str = classmethod(convert_behavior_str)
@@ -935,7 +935,7 @@ class HtmlElement(Widget):
             return_type = update.get("return")
 
 
-            #print "expression: ", expression
+            #print("expression: ", expression)
 
             # search key is used to determine whether a change has occured.
             # when it is None, the expression is always evaluated ... however,
@@ -991,15 +991,15 @@ class HtmlElement(Widget):
 
             elif compare:
                 value = Search.eval(compare, sobject, single=True)
-                print "compare: ", compare
-                print "value: ", value
+                print("compare: ", compare)
+                print("value: ", value)
 
             elif expression:
                 value = Search.eval(expression, sobject, single=True)
-                #print "sobject: ", sobject.get_search_key()
-                #print "expression: ", expression
-                #print "value: ", value
-                #print
+                #print("sobject: ", sobject.get_search_key())
+                #print("expression: ", expression)
+                #print("value: ", value)
+                #print("\n")
 
             format_str = update.get("format")
             if format_str:
@@ -1311,7 +1311,7 @@ class HtmlElement(Widget):
         if dict_str == None:
             try:
                 dict_str = jsondumps(dict)
-            except UnicodeDecodeError, e:
+            except UnicodeDecodeError as e:
                 if isinstance(dict, basestring):
                     dict = dict.decode('iso-8859-1')
                     dict_str = jsondumps(dict)

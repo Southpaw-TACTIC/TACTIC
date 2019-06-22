@@ -135,7 +135,7 @@ class ProdSetting(SObject):
             try:
                 key, value = item.split(':')
                 map.append((key, value))
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('ProdSettings should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
         return map
     get_map_by_key = classmethod(get_map_by_key)
@@ -151,7 +151,7 @@ class ProdSetting(SObject):
             try:
                 key, value = item.split(':')
                 dict[key] = value
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('ProdSettings should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
         return dict
     get_dict_by_key = classmethod(get_dict_by_key)
