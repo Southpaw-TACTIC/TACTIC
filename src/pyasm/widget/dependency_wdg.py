@@ -348,7 +348,7 @@ class DependencyWdg(BaseRefreshWdg):
         
         try: 
             sobject = ref_snapshot.get_sobject()
-        except SObjectNotFoundException, e:
+        except SObjectNotFoundException as e:
             widget.add('[%s|%s] may have been deleted or is not viewable.' % (ref_snapshot.get_value('search_type'),\
                 ref_snapshot.get_value('search_id')))
             return

@@ -1650,7 +1650,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         try:
             int(data)
             column_type = 'integer'
-        except ValueError, e:
+        except ValueError as e:
             pass
        
         return column_type
@@ -1660,7 +1660,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         try:
             float(data)
             column_type = 'float'
-        except ValueError, e:
+        except ValueError as e:
             pass
         
         return column_type

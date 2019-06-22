@@ -105,7 +105,7 @@ except ImportError as e:
 try:
     import simple_salesforce
     DATABASE_DICT["Salesforce"] = simple_salesforce
-except ImportError, e:
+except ImportError as e:
     pass
 """
 
@@ -675,7 +675,7 @@ class Sql(Base):
             self.description = self.cursor.description
             return
 
-        except pgdb.OperationalError, e:
+        except pgdb.OperationalError as e:
             # A reconnect will only be attempted on the first query.
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
@@ -703,7 +703,7 @@ class Sql(Base):
             self.connect()
             return self.do_query(query, num_attempts=num_attempts+1)
 
-        except pgdb.Error, e:
+        except pgdb.Error as e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error

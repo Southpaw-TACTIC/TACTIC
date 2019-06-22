@@ -502,7 +502,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     try:
                         limit = int(limit)
                         self.search_limit.set_limit(limit)
-                    except ValueError, e:
+                    except ValueError as e:
                         pass
                 stated_limit = self.search_limit.get_stated_limit()
                 if stated_limit:

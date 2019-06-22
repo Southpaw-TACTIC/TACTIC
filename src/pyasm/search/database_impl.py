@@ -586,7 +586,7 @@ class DatabaseImpl(DatabaseImplInterface):
     def get_columns(cls, db_resource, table):
         '''get ordered column names'''
          # do a dummy select to get the ordered columns
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         sql = DbContainer.get(db_resource)
 
         select = Select()

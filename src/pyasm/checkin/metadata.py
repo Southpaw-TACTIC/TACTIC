@@ -350,7 +350,7 @@ class PILMetadataParser(BaseMetadataParser):
             from PIL import Image
             im = Image.open(path)
             return self._get_data(im)
-        except Exception, e:
+        except Exception as e:
             print "WARNING: ", e
             return {}
 
@@ -457,7 +457,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
 
             return metadata
-        except Exception, e:
+        except Exception as e:
             info = {
                     "Message": str(e)
             }
@@ -504,7 +504,7 @@ class XMPMetadataParser(BaseMetadataParser):
 
 
             return metadata
-        except Exception, e:
+        except Exception as e:
             info = {
                     "Message": str(e)
             }
@@ -589,7 +589,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
                 ret[name] = value
                 names.add(name)
-            except Exception, e:
+            except Exception as e:
                 print "WARNING: Cannot handle line [%s] with error: " % line, e
 
 

@@ -1872,7 +1872,7 @@ class GanttCbk(DatabaseAction):
                 index = 0
             try:
                 options = options_list[index]
-            except IndexError, e:
+            except IndexError as e:
                 raise TacticException('Missing option in the action class GanttCbk. Please check the Column Definition. The number of action options should match the number of editable bars.')
             
             expression = options.get("sobjects")

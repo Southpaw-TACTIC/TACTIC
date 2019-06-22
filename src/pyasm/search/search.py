@@ -134,6 +134,8 @@ class Search(Base):
 
         if search_type == None:
             raise SearchException("search_type is None")
+
+
         # get the search type sobject for the search
         if type(search_type) == types.TypeType:
             # get search defined in the class

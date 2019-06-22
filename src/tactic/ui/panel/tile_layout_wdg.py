@@ -1656,7 +1656,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 # need new snapshot, file sobjects to get new paths
                                 new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
                                 paths = new_paths_by_key.get(sobject.get_search_key())
-                            except Exception, e:
+                            except Exception as e:
                                 print "ThumbCmd failed on [%s]: %s" % (snapshot.get_code(), e)
 
                

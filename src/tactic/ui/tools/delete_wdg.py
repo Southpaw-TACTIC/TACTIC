@@ -686,7 +686,7 @@ class DeleteSearchTypeCmd(Command):
             for sobject in sobjects:
                 cmd = DeleteCmd(sobject=sobject, values=self.values)
                 cmd.execute()
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -694,7 +694,7 @@ class DeleteSearchTypeCmd(Command):
             table_name = search_type_obj.get_table()
             # must log first
             TableDropUndo.log(search_type, database, table_name)
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -703,7 +703,7 @@ class DeleteSearchTypeCmd(Command):
             from pyasm.search import DropTable
             cmd = DropTable(search_type)
             cmd.commit()
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 

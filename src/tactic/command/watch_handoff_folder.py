@@ -576,7 +576,7 @@ if __name__ == '__main__':
     while 1:
         try:
             time.sleep(15)
-        except (KeyboardInterrupt, SystemExit), e:
+        except (KeyboardInterrupt, SystemExit) as e:
             scheduler.stop()
             break
 

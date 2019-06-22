@@ -140,7 +140,7 @@ class BaseConfigWdg(HtmlElement):
                 element = self.config.get_display_widget(element_name)
             else:
                 element = WidgetConfig.create_widget( display_handler )
-            #except ImportError, e:
+            #except ImportError as e:
             #    # FIXME: not sure what to do with an import error here
             #    element = SimpleTableElementWdg()
 

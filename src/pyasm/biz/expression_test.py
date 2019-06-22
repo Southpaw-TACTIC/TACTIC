@@ -501,27 +501,27 @@ class ExpressionTest(unittest.TestCase):
 
         try:
             related = self.parser.eval(expression)
-        except SearchException, e:
+        except SearchException as e:
             self.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
             
 
         expression ='''@SOBJECT(unittest/city.unittest/person["name ='ben'"])'''
         try:
             related = self.parser.eval(expression)
-        except SearchException, e:
+        except SearchException as e:
             self.assertEquals(str(e).startswith('Single argument filter is no longer supported.'), True)
     
 
         # test for missing ] bracket Syntax Error
         try:
             expression = "@SOBJECT(sthpw/login['login', @GET(sthpw/login['login','ben'.login)])"
-        except SyntaxError, e:
+        except SyntaxError as e:
             self.assertEquals(True, 'Incorrect syntax: square brackets for the filter' in e.__str__())
 
         # test for outermost missing ] bracket Syntax Error
         try:
             expression = "@SOBJECT(sthpw/login['login', @GET(sthpw/login['login','ben'].login))"
-        except SyntaxError, e:
+        except SyntaxError as e:
             self.assertEquals(True, 'Incorrect syntax found' in e.__str__())
 
 
@@ -1177,7 +1177,7 @@ class ExpressionTest(unittest.TestCase):
         try:
             expression = "@GET(  unittest/person.age)* 12 12 "
             result = self.parser.eval(expression, person)
-        except SyntaxError, e:
+        except SyntaxError as e:
             #print str(e)
             pass
         else:
@@ -1839,7 +1839,7 @@ class ExpressionTest(unittest.TestCase):
             expression = "@GET (unittest/person.age)"
             parser = ExpressionParser()
             parser.eval(expression)
-        except SyntaxError, e:
+        except SyntaxError as e:
             #print str(e)
             pass
         else:
@@ -1849,7 +1849,7 @@ class ExpressionTest(unittest.TestCase):
             expression = "@ GET(unittest/person.age)"
             parser = ExpressionParser()
             parser.eval(expression)
-        except SyntaxError, e:
+        except SyntaxError as e:
             #print str(e)
             pass
         else:
@@ -1890,7 +1890,7 @@ class ExpressionTest(unittest.TestCase):
             expression = "@GET( unittest/person, .age  )"
             parser = ExpressionParser()
             result = parser.eval(expression, person)
-        except SyntaxError, e:
+        except SyntaxError as e:
             #print str(e)
             pass
         else:
@@ -2116,7 +2116,7 @@ class ExpressionTest(unittest.TestCase):
             expression = "@GET(.age) + ls"
             parser = ExpressionParser()
             result = parser.eval(expression, [person, person1])
-        except SyntaxError, e:
+        except SyntaxError as e:
             #print str(e)
             pass
         #else:
@@ -2127,7 +2127,7 @@ class ExpressionTest(unittest.TestCase):
             expression = "@GET(.age) ls"
             parser = ExpressionParser()
             result = parser.eval(expression, [person, person1])
-        except SyntaxError, e:
+        except SyntaxError as e:
             #print str(e)
             pass
         else:

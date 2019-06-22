@@ -2132,7 +2132,7 @@ class WebLoginCmd(Command):
 
         try:
             security.login_user(self.login, self.password, domain=self.domain)
-        except SecurityException, e:
+        except SecurityException as e:
             msg = str(e)
             if not msg:
                 msg = "Incorrect username or password"
@@ -2524,7 +2524,7 @@ class CmdReportWdg(Widget):
                 # if they find the file exist
                 os.unlink(error_path)
                 self.total_errors.append(client_error)
-            except IOError, e:
+            except IOError as e:
                 self.total_errors.append("Error reading error.txt")
 
         if not self.total_errors:
@@ -2587,7 +2587,7 @@ class WarningReportWdg(Widget):
                     wdg_warnings.append(warn)
 
                 os.unlink(error_path)
-            except IOError, e:
+            except IOError as e:
                 raise TacticException("Error reading warning.txt")
 
         for warning in wdg_warnings:
@@ -3105,7 +3105,7 @@ class FileUploadUpdateWdg(AjaxWdg):
                 file_size = float(file_size)/ 1048576
                 file_size = '%.2f' %file_size
             f.close()
-        except IOError, e:
+        except IOError as e:
             pass 
        
         update_label = ''

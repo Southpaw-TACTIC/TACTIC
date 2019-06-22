@@ -1790,7 +1790,7 @@ class PluginTools(PluginBase):
                         if commit:
                             try:
                                 sobject.commit(triggers=False)
-                            except UnicodeDecodeError, e:
+                            except UnicodeDecodeError as e:
                                 raise
                             except Exception as e:
                                 print("WARNING: could not commit [%s] due to error [%s]" % (sobject.get_search_key(), e))
@@ -1809,7 +1809,7 @@ class PluginTools(PluginBase):
                                 plugin_content.set_value("plugin_code", self.plugin.get_code())
                                 plugin_content.commit()
 
-                    except UnicodeDecodeError, e:
+                    except UnicodeDecodeError as e:
                         print("Skipping due to unicode decode error: [%s]" % statement_str)
                         continue
 

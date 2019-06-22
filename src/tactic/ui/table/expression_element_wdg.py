@@ -211,7 +211,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
             else:
                 result = self._get_result(sobject, self.expression)
 
-        except Exception, e:
+        except Exception as e:
             result = ""
 
         return result
@@ -446,7 +446,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         try:
             if not list:
                 result = result.get_display_value()
-        except AttributeError, e:
+        except AttributeError as e:
             pass
 
         if list and result:

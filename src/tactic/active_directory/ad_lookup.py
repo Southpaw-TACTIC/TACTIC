@@ -25,7 +25,7 @@ ERROR = ""
 try:
     import win32security, pywintypes
     import active_directory
-except ImportError, e:
+except ImportError as e:
     if os.name != 'nt':
         ERROR = "Active directory libraries only work on a Windows platform"
     else:

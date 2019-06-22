@@ -32,7 +32,7 @@ class UploadServerWdg(Widget):
         num_files = web.get_form_value("num_files")
         files = []
 
-        print "num_files: ", num_files
+        print("num_files: ", num_files)
 
         # HTML5 upload
         if num_files:
@@ -63,7 +63,7 @@ class UploadServerWdg(Widget):
 
 
         if files:
-            print "files: ", files
+            print("files: ", files)
             return "file_name=%s\n" % ','.join(files)
         else:
             return "NO FILES"
@@ -83,9 +83,9 @@ class UploadServerWdg(Widget):
         # step would be necessary
         try:
             file_name = file_name.decode('unicode-escape')
-        except UnicodeEncodeError, e:
+        except UnicodeEncodeError as e:
             pass
-        except UnicodeError,e:
+        except UnicodeError as e:
             pass
         file_name = file_name.replace("\\", "/")
         file_name = os.path.basename(file_name)
@@ -191,8 +191,8 @@ class UploadServerWdg(Widget):
                 current_umask = os.umask(0)
                 os.umask(current_umask)
                 os.chmod(to_path, 0o666 - current_umask)
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
 
             return [to_path]
 

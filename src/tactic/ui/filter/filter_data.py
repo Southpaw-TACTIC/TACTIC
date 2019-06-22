@@ -45,7 +45,7 @@ class FilterData(object):
                     self.data = jsonloads(data)
                     json_data[data] = self.data
 
-            except ValueError, e:
+            except ValueError as e:
                 if e.__str__().find('No JSON object') != -1:
                     raise SetupException('Data is not decodable as JSON.')
                 # try a straight eval
@@ -75,7 +75,7 @@ class FilterData(object):
             try:
                 data = data.replace("'", '"')
                 data = jsonloads(data)
-            except ValueError, e:
+            except ValueError as e:
                 if e.__str__().find('No JSON object') != -1:
                     raise SetupException('Data is not decodable as JSON. [%s]'%data)
                 # try a straight eval
@@ -93,7 +93,7 @@ class FilterData(object):
         if type(data) in types.StringTypes:
             try:
                 data = jsonloads(data)
-            except ValueError, e:
+            except ValueError as e:
                 if e.__str__().find('No JSON object') != -1:
                     raise SetupException('Data is not decodable as JSON.')
 

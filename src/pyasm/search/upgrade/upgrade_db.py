@@ -122,8 +122,8 @@ class Upgrade(object):
 
 
             if not self.quiet:
-                print project.get_code(), type
-                print "-"*30
+                print(project.get_code(), type)
+                print("-"*30)
 
             # if the project is admin, the just ignore for now
             if code == 'admin':
@@ -133,7 +133,7 @@ class Upgrade(object):
                 ofile.write("*" * 80 + '\n')
                 msg =  "Project [%s] does not have a database\n"% project.get_code()
                 ofile.write(msg)
-                print msg
+                print(msg)
                 ofile.write("*" * 80 + '\n\n')
                 continue
 
@@ -188,7 +188,7 @@ class Upgrade(object):
                     project.set_value("last_version_update", self.to_version)
             else: 
                 # it should be getting the upgrade now, redo the search
-                print "Please run upgrade_db.py again, the sthpw db has just been updated"
+                print("Please run upgrade_db.py again, the sthpw db has just been updated")
                 return
             project.commit(triggers=False)
 
@@ -197,29 +197,29 @@ class Upgrade(object):
         # print the errors for each upgrade
         for cls_name, project_code, errors in error_list:
             if not self.quiet:
-                print
-                print "Errors for %s [%s]:" %(project_code, cls_name)
+                print("\n")
+                print("Errors for %s [%s]:" %(project_code, cls_name))
             ofile.write("Errors for %s [%s]:\n" %(project_code, cls_name))
             if not self.quiet:
-                print "*" * 80
+                print("*" * 80)
             ofile.write("*" * 80 + '\n')
             for func, error in errors:
                 if not self.quiet:
-                    print '[%s]' % func
-                    print "-" * 70
-                    print error
+                    print('[%s]' % func)
+                    print("-" * 70)
+                    print(error)
                 ofile.write('[%s]\n' % func)
                 ofile.write("-" * 70 + '\n')
                 ofile.write('%s\n' %error)
         ofile.close()
 
         if self.quiet:
-            print "Please refer to the file [%s] for any upgrade messages." %output_file
-            print
+            print("Please refer to the file [%s] for any upgrade messages." %output_file0
+            print("\n")
         # handle sthpw database separately.  This ensures that the project entry
         # gets created if none exists.
-        #print "sthpw"
-        #print "-"*30
+        #print("sthpw")
+        #print("-"*30)
         #upgrade = SthpwUpgrade()
         #upgrade.set_project("sthpw")
         #Command.execute_cmd(upgrade)
@@ -240,11 +240,11 @@ class Upgrade(object):
                         src_file = '%s/%s' %(src_code_template_dir, zip_file)
                         dest_file = '%s/%s' %(dest_dir, zip_file)
                         shutil.copyfile(src_file, dest_file)
-                    except IOError, e:
-                        print e
+                    except IOError as e:
+                        print(e)
                         io_errors = True
                 if not io_errors:
-                    print "Default project template files have been updated."
+                    print("Default project template files have been updated.")
                 else:
-                    print "There was a problem copying the default template files to <TACTIC_DATA_DIR>/templates."
+                    print("There was a problem copying the default template files to <TACTIC_DATA_DIR>/templates.")
 
