@@ -1390,19 +1390,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                             dynamic_height=True
                         )
                         content_div.add(editor)
-                    
-                    remove_button = ButtonNewWdg(title="", icon="FA_MINUS")
-                    header_div.add(remove_button)
-                    remove_button.add_behavior({
-                        'type': 'click',
-                        'cbjs_action': '''
-                        var item = bvr.src_el.getParent(".spt_behavior_item");
-                        var confirm = spt.confirm("Are you sure you want to remove this behavior?", function(){
-                            spt.behavior.destroy_element(item);
-                        });
-                        '''
-                    })
-
 
             # callbacks
             callback_div = DivWdg()
