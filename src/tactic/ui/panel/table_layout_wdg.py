@@ -31,7 +31,7 @@ from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
 
-from base_table_layout_wdg import BaseTableLayoutWdg
+from .base_table_layout_wdg import BaseTableLayoutWdg
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
@@ -47,20 +47,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'description': "Determines whether to draw with widgets or just use the raw data",
             'type': 'SelectWdg',
             'values': 'widget|raw',
-            'order': 00,
+            'order': '00',
             'category': 'Misc'
         },
 
         "search_type": {
             'description': "search type that this panels works with",
             'type': 'TextWdg',
-            'order': 01,
+            'order': '01',
             'category': 'Required'
         },
         "view": {
             'description': "view to be displayed",
             'type': 'TextWdg',
-            'order': 02,
+            'order': '02',
             'category': 'Required',
             'default': 'table',
         },
@@ -78,28 +78,28 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         "element_names": {
             'description': "Comma delimited list of elemnent to view",
             'type': 'TextWdg',
-            'order': 00,
+            'order': '00',
             'category': 'Optional'
         },
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 01,
+            'order': '01',
             'category': 'Optional'
         },
         "show_header": {
             'description': "Determines whether or not to show the table header",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 02,
+            'order': '02',
             'category': 'Optional'
         },
         "show_select": {
             'description': "Determine whether to show the selection checkbox for each row",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 03,
+            'order': '03',
             'category': 'Optional'
         },
 

@@ -1010,10 +1010,10 @@ class ActionButtonWdgOld(DivWdg):
         text_div.add("<b>%s</b>" % title)
         text_div.add_style("width: 100%")
 
-	if self.browser == 'Qt' and os.name != 'nt':
+        if self.browser == 'Qt' and os.name != 'nt':
             text_div.add_style("top: 8px")
         else:
-	    text_div.add_style("top: 6px")
+            text_div.add_style("top: 6px")
 
 
         text_div.add_style("z-index: 10")

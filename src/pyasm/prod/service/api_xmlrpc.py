@@ -105,10 +105,12 @@ def get_simple_cmd(self, meth, ticket, args):
                 
                 
             try:
+
                 # Do a security check
                 if Config.get_value("security", "api_method_restricted") == "true":
                     security = Environment.get_security()
                     #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_methods
+
                     access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                     if not access:
                        raise ApiException("Access denied")
@@ -329,6 +331,23 @@ def xmlrpc_decorator(meth):
 
 
             try:
+
+                """
+                if meth.__name__ not in [
+                        'get_widget',
+                        'execute_cmd',
+                        
+                        'eval',
+                        'get_by_search_key',
+                        'query',
+                        'get_task_status_colors'
+                        ]:
+                    print("----------------")
+                    print(meth.__name__)
+                    print("----------------")
+                """
+
+
                 #if meth.__name__ in QUERY_METHODS:
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)

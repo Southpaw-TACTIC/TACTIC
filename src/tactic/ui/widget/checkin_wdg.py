@@ -13,7 +13,7 @@
 __all__ = ['CheckinWdg', 'CheckoutWdg',  'CheckinQueueWdg', 'SObjectCheckinHistoryWdg', 'CheckinInfoPanelWdg', 'CheckinSandboxListWdg', 'CheckinSandboxNotExistsWdg', 'FileSelectorWdg']
 import re
 from pyasm.common import Common, TacticException, Config, Environment, Container
-from pyasm.biz import File, Snapshot, Pipeline, Context, Project
+from pyasm.biz import File, Snapshot, Pipeline, Context, Project, ProdSetting
 from pyasm.search import Search, SObjectFactory, SearchType, SearchKey, SearchException
 from pyasm.command import Command
 from pyasm.web import HtmlElement, SpanWdg, DivWdg, Table, WebContainer, Widget, FloatDivWdg, StringWdg, WidgetSettings
@@ -23,11 +23,10 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg, ButtonRowWdg, ButtonNewWdg
 from tactic.ui.container import Menu, MenuItem, GearMenuWdg, SmartMenu
 
-from swap_display_wdg import SwapDisplayWdg as NewSwapDisplayWdg
-from button_wdg import TextBtnWdg, TextBtnSetWdg
-from misc_input_wdg import SearchTypeSelectWdg
-from upload_wdg import SimpleUploadWdg
-from pyasm.prod.biz import ProdSetting
+from .swap_display_wdg import SwapDisplayWdg as NewSwapDisplayWdg
+from .button_wdg import TextBtnWdg, TextBtnSetWdg
+from .misc_input_wdg import SearchTypeSelectWdg
+from .upload_wdg import SimpleUploadWdg
 
 import os
 

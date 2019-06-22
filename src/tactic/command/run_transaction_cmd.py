@@ -19,7 +19,7 @@ from pyasm.biz import Project
 from pyasm.command import Command, Trigger
 from pyasm.search import SearchType, Search, SObject, DbContainer
 
-from scheduler import Scheduler
+from .scheduler import Scheduler
 
 import os, codecs, sys, shutil
 from dateutil import parser
@@ -167,7 +167,7 @@ class TransactionQueueAppendCmd(Trigger):
 
 
 # create a task from the job
-from queue import JobTask
+from .queue import JobTask
 class TransactionQueueManager(JobTask):
 
     def __init__(self, **kwargs):
@@ -920,7 +920,7 @@ class TransactionLogCompareCmd(Command):
 __all__.extend( ['TransactionPluginCreateCmd', 'TransactionPluginInstallCmd'])
 
 from pyasm.common import ZipUtil
-from plugin import PluginCreator, PluginInstaller
+from .plugin import PluginCreator, PluginInstaller
 
 
 class TransactionPluginCreateCmd(Command):

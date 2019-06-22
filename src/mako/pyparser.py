@@ -10,7 +10,20 @@ Parsing to AST is done via _ast on Python > 2.5, otherwise the compiler
 module is used.
 """
 
-from StringIO import StringIO
+#from StringIO import StringIO
+import sys
+py3k = getattr(sys, 'py3kwarning', False) or sys.version_info >= (3, 0)
+if py3k:
+    from io import StringIO
+else:
+    try:
+        from cStringIO import StringIO
+    except:
+        from StringIO import StringIO
+
+
+
+
 from mako import exceptions, util
 import operator
 
@@ -51,7 +64,7 @@ def parse(code, mode='exec', **exception_kwargs):
             if isinstance(code, unicode):
                 code = code.encode('ascii', 'backslashreplace')
             return compiler_parse(code, mode)
-    except Exception, e:
+    except Exception as e:
         raise exceptions.SyntaxException("(%s) %s (%s)" % (e.__class__.__name__, str(e), repr(code[0:50])), **exception_kwargs)
 
 
@@ -401,6 +414,6 @@ else:
 
     class walker(visitor.ASTVisitor):
         def dispatch(self, node, *args):
-            print "Node:", str(node)
-            #print "dir:", dir(node)
+            print("Node:", str(node))
+            #print("dir:", dir(node))
             return visitor.ASTVisitor.dispatch(self, node, *args)

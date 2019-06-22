@@ -16,7 +16,7 @@ import os, re
 
 from pyasm.common import Base
 
-from asset import ShotInstance
+from .asset import ShotInstance
 
 class ProdNodeNaming(Base):
     '''defines the callbacks for namespace naming of maya assets'''

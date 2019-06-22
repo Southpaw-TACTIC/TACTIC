@@ -10,4 +10,4 @@
 #
 #
 
-from perforce import *
+from .perforce import *

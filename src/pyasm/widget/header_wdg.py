@@ -16,8 +16,10 @@ from pyasm.web import *
 from pyasm.widget import *
 from pyasm.biz import *
 from pyasm.search import Search, SObject
-from clipboard_wdg import ClipboardWdg
-from file_wdg import ThumbWdg
+
+from .clipboard_wdg import ClipboardWdg
+from .file_wdg import ThumbWdg
+
 import math, random, types, cgi
 
 class HeaderWdg(Widget):

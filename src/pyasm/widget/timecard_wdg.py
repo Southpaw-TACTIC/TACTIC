@@ -24,11 +24,12 @@ from pyasm.biz import Pipeline, Timecard, Project, Task
 from pyasm.web import *
 from pyasm.widget import IconSubmitWdg, HiddenWdg, WidgetConfigView, HintWdg, ExpandableTextWdg, CalendarInputWdg
 from pyasm.common import *
-from input_wdg import TextWdg, CalendarWdg, SelectWdg, ActionSelectWdg, FilterSelectWdg
-from table_element_wdg import BaseTableElementWdg
-from icon_wdg import IconWdg
-from file_wdg import ThumbWdg
-from custom_info_wdg import CustomInfoInputWdg
+
+from .input_wdg import TextWdg, CalendarWdg, SelectWdg, ActionSelectWdg, FilterSelectWdg
+from .table_element_wdg import BaseTableElementWdg
+from .icon_wdg import IconWdg
+from .file_wdg import ThumbWdg
+from .custom_info_wdg import CustomInfoInputWdg
 
 def _get_div(width):
     ''' just to get a div to draw this widget '''

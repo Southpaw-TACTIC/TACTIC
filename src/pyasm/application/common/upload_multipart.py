@@ -148,8 +148,13 @@ class UploadMultipart(object):
             M.append(CRLF)
 
         #body = CRLF.join(L)
-        import cStringIO
-        buf = cStringIO.StringIO()
+        #import cStringIO
+        try:
+            from cStringIO import StringIO as Buffer
+        except:
+            from io import StringIO as Buffer
+
+        buf = Buffer()
         buf.writelines(M)
         body = buf.getvalue()
 

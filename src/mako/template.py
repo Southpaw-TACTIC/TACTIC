@@ -371,7 +371,7 @@ def _compile_text(template, text, filename):
         cid = cid.encode()
     module = types.ModuleType(cid)
     code = compile(source, cid, 'exec')
-    exec code in module.__dict__, module.__dict__
+    exec(code in module.__dict__, module.__dict__)
     return (source, module)
 
 def _compile_module_file(template, text, filename, outputpath):

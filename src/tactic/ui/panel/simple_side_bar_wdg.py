@@ -21,7 +21,7 @@ from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu, Menu, MenuItem
 
-from panel_wdg import SideBarPanelWdg, SideBarBookmarkMenuWdg
+from .panel_wdg import SideBarPanelWdg, SideBarBookmarkMenuWdg
 
 
 class SimpleSideBarWdg(SideBarPanelWdg):

@@ -140,7 +140,7 @@ class NamingInputWdg(BaseInputWdg):
         if self.new_sample_name:
             tmp = self.new_sample_name.strip("/")
             parts = re.split( '[\\/._]', tmp)
-            print "parts: ", parts
+            print("parts: ", parts)
         else:
             return widget
 
@@ -319,7 +319,7 @@ class NamingAction2(DatabaseAction):
             type_value = web.get_form_value("type_%s" % idx)
             naming = naming.replace("{%d}" % idx, type_value)
 
-        print "naming: ", name, naming
+        print("naming: ", name, naming)
         sobject.set_value(self.get_name(), naming)
 """
 

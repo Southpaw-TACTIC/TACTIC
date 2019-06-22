@@ -137,7 +137,8 @@ class Search(Base):
 
 
         # get the search type sobject for the search
-        if type(search_type) == types.TypeType:
+        #if type(search_type) == types.TypeType:
+        if isinstance(search_type, type):
             # get search defined in the class
             search_type = search_type.SEARCH_TYPE
             self.search_type_obj = SearchType.get(search_type)

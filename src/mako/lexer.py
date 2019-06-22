@@ -176,7 +176,7 @@ class Lexer(object):
         if decode_raw:
             try:
                 text = text.decode(parsed_encoding)
-            except UnicodeDecodeError, e:
+            except UnicodeDecodeError as e:
                 raise exceptions.CompileException(
                                 "Unicode decode operation of encoding '%s' failed" %
                                 parsed_encoding, 

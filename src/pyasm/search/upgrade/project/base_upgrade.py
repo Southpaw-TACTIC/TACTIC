@@ -111,7 +111,7 @@ class BaseUpgrade(Command):
             elif not (self.version_update < method_version <= self.to_version):
                     continue
             if not self.quiet:
-                print("Running upgrade for [%s]..." %name)n
+                print("Running upgrade for [%s]..." %name)
 
             self.run_method(name, method)
 

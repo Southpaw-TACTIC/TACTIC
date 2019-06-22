@@ -13,9 +13,10 @@
 __all__ = ['SearchLimitWdg','RetiredFilterWdg']
 
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, SpanWdg
-from input_wdg import HiddenWdg, SubmitWdg, FilterSelectWdg, TextWdg, FilterTextWdg, FilterCheckboxWdg
-from icon_wdg import IconSubmitWdg, IconWdg, IconButtonWdg
-from web_wdg import SwapDisplayWdg
+
+from .input_wdg import HiddenWdg, SubmitWdg, FilterSelectWdg, TextWdg, FilterTextWdg, FilterCheckboxWdg
+from .icon_wdg import IconSubmitWdg, IconWdg, IconButtonWdg
+from .web_wdg import SwapDisplayWdg
 
 
 # DEPRECATED

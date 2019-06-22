@@ -30,7 +30,7 @@ from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg, SimpleTableEle
 from tactic.ui.container import PopupWdg, SmartMenu, HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, TextBtnSetWdg, CalendarInputWdg
 
-from base_table_layout_wdg import BaseTableLayoutWdg
+from .base_table_layout_wdg import BaseTableLayoutWdg
 
 
 class TablePrintLayoutTitleWdg(BaseRefreshWdg):

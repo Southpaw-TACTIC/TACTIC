@@ -14,7 +14,8 @@ __all__ = ['DeleteElementWdg']
 
 from pyasm.widget import IconWdg
 
-from button_wdg import ButtonElementWdg
+from .button_wdg import ButtonElementWdg
+
 class DeleteElementWdg(ButtonElementWdg):
     ARGS_KEYS = {
     }

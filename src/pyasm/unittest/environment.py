@@ -36,7 +36,7 @@ class UnittestEnvironment(object):
 
             self.delete()
 
-        print "Setting up clean Unittest project"
+        print("Setting up clean Unittest project")
 
         # create the project
         create_cmd = CreateProjectCmd(project_code=self.project_code, project_title="Unittest") #, project_type="unittest")
@@ -49,7 +49,7 @@ class UnittestEnvironment(object):
 
 
     def delete(self):
-        print "Deleting existing Unittest project"
+        print("Deleting existing Unittest project")
         related_types = ["sthpw/schema", "sthpw/task","sthpw/snapshot", "sthpw/file"]
         delete_cmd = DeleteProjectCmd(project_code=self.project_code, related_types=related_types)
         delete_cmd.execute()
@@ -73,7 +73,7 @@ class Sample3dEnvironment(UnittestEnvironment):
 
             self.delete()
 
-        print "Setting up a basic Sample3d project"
+        print("Setting up a basic Sample3d project")
 
         # create the project
         create_cmd = CreateProjectCmd(project_code=self.project_code, project_title="Sample 3D") #, project_type="unittest")

@@ -12,15 +12,18 @@
 #
 import tacticenv
 
-from pyasm.security import *
-from transaction import *
-from search import *
-from sql import *
-from database_impl import *
+__package__ = "pyasm.search"
+
 from pyasm.biz import Project
 from pyasm.common import Container
 from pyasm.unittest import UnittestEnvironment
 from pyasm.unittest import UnittestEnvironment
+from pyasm.security import *
+
+from .transaction import *
+from .search import *
+from .sql import *
+from .database_impl import *
 
 import unittest
 
@@ -263,11 +266,11 @@ class SqlTest(unittest.TestCase):
 
         database_type = Project.get_by_code("unittest").get_database_type()
         if database_type == "MySQL":
-            print
-            print "WARNING: !!!!!!!"
-            print "_test_tranaction is disabled"
-            print "WARNING: !!!!!!!"
-            print
+            print("\n")
+            print("WARNING: !!!!!!!")
+            print("_test_tranaction is disabled")
+            print("WARNING: !!!!!!!")
+            print("\n")
             return
 
 

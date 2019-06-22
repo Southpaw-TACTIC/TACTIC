@@ -13,12 +13,6 @@
 __all__ = ['SimpleAppServer']
 
 import os, re
-try:
-    from cStringIO import Buffer
-except:
-    from io import BytesIO as Buffer
-
-
 from pyasm.common import Container
 from .web_container import WebContainer
 from .app_server import BaseAppServer

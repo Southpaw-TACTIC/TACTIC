@@ -19,8 +19,8 @@ from pyasm.web import *
 from pyasm.biz import *
 from pyasm.widget import BaseTableElementWdg, FilterSelectWdg, FilterCheckboxWdg, IconButtonWdg, IconWdg
 
-from input_wdg import HiddenWdg, CalendarInputWdg
-from layout_wdg import TableWdg
+from .input_wdg import HiddenWdg, CalendarInputWdg
+from .layout_wdg import TableWdg
 
 import datetime, re
 

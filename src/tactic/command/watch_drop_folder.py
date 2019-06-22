@@ -22,8 +22,7 @@ import sys
 
 from pyasm.common import Environment, Config, Common
 from pyasm.security import Batch
-from pyasm.biz import Project
-from pyasm.prod.biz import ProdSetting
+from pyasm.biz import Project, ProdSetting
 from pyasm.search import DbContainer
 from pyasm.search import Search, Transaction, SearchType
 from pyasm.command import Command, SendEmail
@@ -53,25 +52,25 @@ class TestLoggingEventHandler(LoggingEventHandler):
         super(LoggingEventHandler, self).on_moved(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Moved %s: from %s to %s" % (what, event.src_path, event.dest_path)
+        print("Moved %s: from %s to %s" % (what, event.src_path, event.dest_path))
 
     def on_created(self, event):
         super(LoggingEventHandler, self).on_created(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Created %s: %s" % (what, event.src_path)
+        print("Created %s: %s" % (what, event.src_path))
 
     def on_deleted(self, event):
         super(LoggingEventHandler, self).on_deleted(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Deleted %s: %s" % (what, event.src_path)
+        print("Deleted %s: %s" % (what, event.src_path))
 
     def on_modified(self, event):
         super(LoggingEventHandler, self).on_modified(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Modified %s: %s" % (what, event.src_path)
+        print("Modified %s: %s" % (what, event.src_path))
 
 
 
@@ -84,7 +83,7 @@ class WatchFolderFileActionThread(threading.Thread):
 
 
     def handle_disconnect(self, base_dir):
-        print "Watch Folder disconnected (%s)" % base_dir
+        print("Watch Folder disconnected (%s)" % base_dir)
 
         import time
         timeout = 0
@@ -122,7 +121,7 @@ Base directory: %s
                     email_cmd.execute()
             timeout += 1
 
-        print "Watch Folder reconnected (%s)" % base_dir
+        print("Watch Folder reconnected (%s)" % base_dir)
         # handle resumption
         if self.email_alert:
             subject = "Watch Folder Reconnected (%s)" % base_dir
@@ -231,12 +230,12 @@ Base directory: %s
             error_path = path.replace(".tactic/process", ".tactic/error")
 
             if not os.path.exists(path):
-                print "ERROR: path [%s] does not exist"
+                print("ERROR: path [%s] does not exist")
                 task.set_restart(True)
                 break
 
 
-            print "Processing [%s]" % path
+            print("Processing [%s]" % path)
 
             try:
 
@@ -268,7 +267,7 @@ Base directory: %s
                     #raise Exception
                     cmd = CheckinCmd(**kwargs)
 
-                #print "Process [%s] checking in [%s]" % (os.getpid(), path)
+                #print("Process [%s] checking in [%s]" % (os.getpid(), path))
                 if not test:
                     cmd.execute()
 
@@ -428,7 +427,7 @@ class TestCmd(Command):
         path = self.kwargs.get("path")
 
         # do something
-        print "path: ", path
+        print("path: ", path)
 
 
 
@@ -555,7 +554,7 @@ class CheckinCmd(object):
             #TEST: simulate different check-in duration
             from random import randint
             sec = randint(1, 5)
-            print "checking in for ", sec, "sec"
+            print("checking in for ", sec, "sec")
             server.eval("@SOBJECT(sthpw/login)")
             import shutil
             dir_name,base_name = os.path.split(file_path)
@@ -578,15 +577,15 @@ class CheckinCmd(object):
 
             
         except Exception as e:
-            print "Error occurred", e
+            print("Error occurred", e)
             error_message=str(e)
 
             import traceback
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
+            print("-"*50)
+            print(stacktrace_str)
 
 
             version_num='Error:'
@@ -629,13 +628,13 @@ class CheckinCmd(object):
             Trigger.call_all_triggers()
 
             # Delete the source file after check-in step.
-            print "File handled."
+            print("File handled.")
             if os.path.exists(file_path):
                 if os.path.isdir(file_path):
                     os.rmdirs(file_path)
                 else:
                     os.unlink(file_path)
-                print "Source file [%s] deleted: " %file_name
+                print("Source file [%s] deleted: " %file_name)
 
 
 
@@ -692,7 +691,7 @@ class WatchDropFolderTask(SchedulerTask):
         return self.in_restart_mode
 
     def handle_disconnect(self, base_dir):
-        print "Watch Folder disconnected (%s)" % base_dir
+        print("Watch Folder disconnected (%s)" % base_dir)
 
         import time
         timeout = 0
@@ -730,7 +729,7 @@ Base directory: %s
                     email_cmd.execute()
             timeout += 1
 
-        print "Watch Folder reconnected (%s)" % base_dir
+        print("Watch Folder reconnected (%s)" % base_dir)
         # handle resumption
         if self.email_alert:
             subject = "Watch Folder Reconnected (%s)" % base_dir
@@ -756,7 +755,7 @@ Base directory: %s
 
 
         if self.files_locked >= self.max_jobs:
-            #print "Max found ... done"
+            #print("Max found ... done")
             return
 
         base_dir = self.base_dir
@@ -812,7 +811,7 @@ Base directory: %s
         if not items:
             return
 
-        #print "Found: ", len(items)
+        #print("Found: ", len(items))
 
 
 
@@ -828,14 +827,14 @@ Base directory: %s
             thread.daemon = True
             thread.start()
 
-            #print "count: ", threading.active_count()
+            #print("count: ", threading.active_count())
 
 
     def execute(self):
 
         base_dir = self.base_dir
         if not base_dir:
-            print "WARNING: No base dir defined."
+            print("WARNING: No base dir defined.")
             return
 
         # Start action thread
@@ -874,7 +873,7 @@ Base directory: %s
                 observer.start()
 
             except Exception as e:
-                print "... skipping: ", e
+                print("... skipping: ", e)
                 raise
 
             try:
@@ -891,7 +890,7 @@ Base directory: %s
 
     def start(cls):
 
-        print "Running Watch Folder ..."
+        print("Running Watch Folder ...")
 
 
 
@@ -926,7 +925,7 @@ Base directory: %s
         else:
             tmp_dir = Environment.get_tmp_dir()
             drop_path = "%s/drop" % tmp_dir
-        print "    using [%s]" % drop_path
+        print("    using [%s]" % drop_path)
         if not os.path.exists(drop_path):
             try:
                 os.makedirs(drop_path)

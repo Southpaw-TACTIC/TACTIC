@@ -10,6 +10,8 @@
 #
 #
 
+import tacticenv
+
 from .container_wdg import *
 from .dialog_wdg import *
 from .context_menu_wdg import *

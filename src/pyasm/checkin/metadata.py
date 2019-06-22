@@ -351,7 +351,7 @@ class PILMetadataParser(BaseMetadataParser):
             im = Image.open(path)
             return self._get_data(im)
         except Exception as e:
-            print "WARNING: ", e
+            print("WARNING: ", e)
             return {}
 
  
@@ -577,7 +577,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
             parts = re.split(p, line)
             if len(parts) < 2:
-                print "WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line
+                print("WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line)
                 continue
             name = parts[0]
             value = parts[1]
@@ -590,7 +590,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
                 ret[name] = value
                 names.add(name)
             except Exception as e:
-                print "WARNING: Cannot handle line [%s] with error: " % line, e
+                print("WARNING: Cannot handle line [%s] with error: " % line, e)
 
 
         if names:
@@ -840,7 +840,7 @@ class IPTCMetadataParserX(BaseMetadataParser):
             exiftool_exists = find_executable("exiftool")
         
         if not exiftool_exists:
-            print "WARNING: exiftool does not exist at path %s" %(parser_path)
+            print("WARNING: exiftool does not exist at path %s" %(parser_path))
             return "WARNING: exiftool does not exist at path %s" %(parser_path)
 
         # get IPTC data from exiftool

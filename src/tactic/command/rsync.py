@@ -99,7 +99,7 @@ class RSync(object):
                 continue
 
             except Exception as e:
-                print "Failed on try [%s]..." % tries
+                print("Failed on try [%s]..." % tries)
                 raise
 
                 # ping the server to see
@@ -118,9 +118,9 @@ class RSync(object):
 
 
 
-        #print "success: ", success
-        #print time.time() - start, " seconds"
-        #print value
+        #print("success: ", success)
+        #print(time.time() - start, " seconds")
+        #print(value)
 
 
 
@@ -143,7 +143,7 @@ class RSync(object):
         if paths:
             for path in paths:
                 full_path = "%s/%s" % (base_dir, path)
-                print "full_path: ", full_path
+                print("full_path: ", full_path)
                 size = os.path.getsize(full_path)
                 paths_sizes.append(size)
 
@@ -208,7 +208,7 @@ class RSync(object):
 
         cmd_list.append('%s' % to_path)
 
-        print "exec: ", " ".join(cmd_list)
+        print("exec: ", " ".join(cmd_list))
 
         program = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         #program.wait()
@@ -271,8 +271,8 @@ class RSync(object):
                         "rate": parts[2],
                         "time_left": parts[3]
                     }
-                    #print self.current_data
-                    #print "status: ", line
+                    #print(self.current_data)
+                    #print("status: ", line)
 
                     if on_update:
                         on_update(path, self.current_data)
@@ -374,9 +374,9 @@ class RSyncProgress(object):
 
             total_size += self.paths_sizes[i]
 
-        #print "current_size: ", current_size
-        #print "total_size: ", total_size
-        #print "percent: ", (current_size*1000)/(total_size*10)
+        #print("current_size: ", current_size)
+        #print("total_size: ", total_size)
+        #print("percent: ", (current_size*1000)/(total_size*10))
         if total_size:
             total_percent = (current_size*1000)/(total_size*10)
         else:
@@ -408,7 +408,7 @@ if __name__ == '__main__':
     start = time.time()
 
     dir_info = Common.get_dir_info(from_path)
-    print "dir_info: ", dir_info
+    print("dir_info: ", dir_info)
     total_size = dir_info.get("size")
 
 
@@ -428,8 +428,8 @@ if __name__ == '__main__':
             bytes = data.get("bytes")
             self.total_sent += bytes
 
-            print "path: ", path
-            print "total: ", self.total_sent
+            print("path: ", path)
+            print("total: ", self.total_sent)
 
             server.log_message("wow", data)
     progress = Progress()

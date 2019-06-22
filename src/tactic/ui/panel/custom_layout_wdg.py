@@ -15,7 +15,14 @@ from __future__ import print_function
 __all__ = ["CustomLayoutWdg", "SObjectHeaderWdg"]
 
 import os, types, re
-import cStringIO
+try:
+    from cStringIO import StringIO as Buffer
+except:
+    from io import BytesIO as Buffer
+
+
+
+
 
 from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads, jsondumps
 from pyasm.biz import Schema, ExpressionParser, Project
@@ -263,7 +270,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     return div
 
                 # convert html tag to a div
-                html = cStringIO.StringIO()
+                html = Buffer()
                 for node in nodes:
                     # unfortunately, html does not recognize <textarea/>
                     # so we have to make sure it becomes <textarea></textarea>

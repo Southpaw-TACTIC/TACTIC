@@ -22,7 +22,7 @@ from pyasm.widget import WidgetConfigView, WidgetConfig
 
 import types
 
-from base_refresh_wdg import BaseRefreshWdg
+from .base_refresh_wdg import BaseRefreshWdg
 
 class BaseConfigWdg(BaseRefreshWdg):
 
@@ -255,6 +255,6 @@ class BaseConfigWdg(BaseRefreshWdg):
         try:
             self.widgets.remove(widget)
         except:
-            print "WARNING: cannot remove widget"
+            print("WARNING: cannot remove widget")
 
 

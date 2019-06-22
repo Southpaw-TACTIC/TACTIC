@@ -23,7 +23,10 @@ import codecs, re, weakref, os, time, operator
 
 try:
     import threading
-    import thread
+    try:
+        import thread
+    except:
+        import _thread as thread
 except ImportError:
     import dummy_threading as threading
     import dummy_thread as thread
@@ -51,7 +54,7 @@ def verify_directory(dir):
     while not os.path.exists(dir):
         try:
             tries += 1
-            os.makedirs(dir, 0775)
+            os.makedirs(dir, 0o775)
         except:
             if tries > 5:
                 raise
@@ -198,9 +201,9 @@ def parse_encoding(fp):
 
         if has_bom:
             if m:
-                raise SyntaxError, \
+                raise SyntaxError( \
                       "python refuses to compile code with both a UTF8" \
-                      " byte-order-mark and a magic encoding comment"
+                      " byte-order-mark and a magic encoding comment")
             return 'utf_8'
         elif m:
             return m.group(1)

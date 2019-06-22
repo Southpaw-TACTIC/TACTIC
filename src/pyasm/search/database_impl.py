@@ -599,7 +599,12 @@ class DatabaseImpl(DatabaseImplInterface):
         columns = []
         for description in sql.description:
             # convert to unicode
-            value = description[0].decode('utf-8')
+            value = description[0]
+            try:
+                value = value.decode('utf-8')
+            except:
+                # python 3 has no decode function on strings
+                pass
             columns.append(value)
 
         return columns

@@ -21,7 +21,8 @@ from pyasm.widget import IconWdg, TextWdg, TextAreaWdg, SelectWdg, CheckboxWdg
 from pyasm.biz import ExpressionParser
 from tactic.ui.common import BaseTableElementWdg, SimpleTableElementWdg
 
-from table_element_wdg import TypeTableElementWdg
+from .table_element_wdg import TypeTableElementWdg
+
 import datetime
 
 

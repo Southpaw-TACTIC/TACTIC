@@ -54,10 +54,11 @@ from pyasm.biz import Snapshot
 from pyasm.command import Command
 from pyasm.search import SearchType, Search, SObject, SearchException, SearchKey
 from pyasm.web import *
-from input_wdg import CheckboxWdg, HiddenWdg, TextWdg, PopupMenuWdg
-from web_wdg import *
-from icon_wdg import IconWdg, IconButtonWdg
-from input_wdg import FilterTextWdg
+
+from .input_wdg import CheckboxWdg, HiddenWdg, TextWdg, PopupMenuWdg
+from .web_wdg import *
+from .icon_wdg import IconWdg, IconButtonWdg
+from .input_wdg import FilterTextWdg
 
  
 class BaseTableElementWdg(HtmlElement):
@@ -670,10 +671,10 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
         #self.sobject = self.get_current_sobject()
         #self.attr = self.get_name()
 
-        #print self.name
-        #print "is_ajax: ", self.is_ajax()
-        #print "is_from_ajax: ", self.is_from_ajax()
-        #print "-"*20
+        #print(self.name)
+        #print("is_ajax: ", self.is_ajax())
+        #print("is_from_ajax: ", self.is_from_ajax())
+        #print("-"*20)
         if not self.is_ajax() or not self.is_from_ajax():
             self.sobject = self.get_current_sobject()
             self.attr = self.get_name()
@@ -1806,7 +1807,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                         Environment.add_warning(warning, warning)
                 except SearchException as e:
                     # skips unknown search_type/project
-                    print e.__str__()
+                    print(e.__str__())
                     pass
 
         else:
@@ -1816,7 +1817,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                 ref_sobjs = Search.get_by_id(search_type, search_ids)
             except SearchException as e:
                 # skips unknown search_type/project
-                print e.__str__()
+                print(e.__str__())
                 pass
 
         # TODO: None defaults to search_key, should be empty
@@ -2000,7 +2001,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                 if not ref_sobject:
                     return None
             except SearchException as e:
-                print e.__str__()
+                print(e.__str__())
                 return None
 
         return ref_sobject

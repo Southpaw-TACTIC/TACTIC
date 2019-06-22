@@ -28,7 +28,8 @@ from pyasm.common import Common, Marshaller, Date, SPTDate, TacticException
 from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser, PrefSetting
 from pyasm.web import *
 from pyasm.search import Search, SearchKey, SearchException
-from icon_wdg import IconButtonWdg, IconWdg
+
+from .icon_wdg import IconButtonWdg, IconWdg
 
 from operator import itemgetter
 
@@ -1246,7 +1247,7 @@ class SelectWdg(BaseInputWdg):
             #self.labels = string.split( labels_option, "|" )
             self.labels = labels_option.split("|")
             if len(self.values) != len(self.labels):
-                raise InputException("values [%s] does not have the same number of elements as [%s]" % (`self.values`, `self.labels`))
+                raise InputException("values [%s] does not have the same number of elements as [%s]" % (str(self.values), str(self.labels)))
 
         else:
             self.labels = self.values[:]

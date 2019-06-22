@@ -13,7 +13,7 @@
 
 __all__ = ['BaseAppInfo', 'TacticException', 'Common']
 
-import cStringIO, os, sys, urllib, xmlrpclib, re
+import os, sys, urllib, xmlrpclib, re
 from xml.dom.minidom import parseString
 
 from upload_multipart import UploadMultipart
@@ -253,39 +253,6 @@ class BaseAppInfo(object):
         upload.execute(from_path)
 
         return
-
-
-        '''
-        file = open(from_path, "rb")
-        buffer_size = 1024*1024
-        iteration = 0
-        while 1:
-            contents = file.read(buffer_size)
-            if contents == "":
-                break
-
-            # create a buffer with the contents
-            buffer = cStringIO.StringIO()
-            buffer.write("file=%s\n" % from_path)
-            if iteration == 0:
-                buffer.write("action=create\n")
-            else:
-                buffer.write("action=append\n")
-
-            ticket = self.get_ticket()
-            buffer.write("ticket=%s\n" % ticket)
-            buffer.write("EOF\n")
-            buffer.write(contents)
-
-            f = urllib.urlopen(upload_server, buffer.getvalue() )
-            response = f.readlines()
-            f.close()
-            print response
-
-            iteration += 1
-
-        file.close()
-        '''
 
 
 

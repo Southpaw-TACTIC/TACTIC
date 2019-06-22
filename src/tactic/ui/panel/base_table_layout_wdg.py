@@ -23,7 +23,8 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-from layout_wdg import SwitchLayoutMenu
+
+from .layout_wdg import SwitchLayoutMenu
 
 import random, types, re
 
@@ -730,7 +731,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         except SqlException as e:
             self.search_wdg.clear_search_data(search.get_base_search_type())
 
-    	self.element_process_sobjects(search)
+        self.element_process_sobjects(search)
 
 
 
@@ -969,7 +970,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             config_xml = config_sobj.get_xml_value("config")
             stmt = 'custom_gear_menus = %s' % config_xml.get_value("config/gear_menu_custom").strip()
             try:
-                exec stmt
+                exec(stmt)
             except:
                 custom_gear_menus = "CONFIG-ERROR"
 

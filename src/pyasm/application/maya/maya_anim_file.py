@@ -10,7 +10,6 @@
 #
 #
 
-import cStringIO
 
 from maya_environment import *
 
@@ -44,6 +43,7 @@ class MayaAnimFile:
 
                 index = line.index("=")
                 instance = line[index+1:]
+                import cStringIO
                 buffer = cStringIO.StringIO()
 
                 # maintain backwards compatibility with old maya instances

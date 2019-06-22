@@ -22,9 +22,9 @@ from pyasm.biz import *
 from pyasm.command import Command
 from pyasm.web import DivWdg, HtmlElement, Table, Html, SpanWdg, AjaxWdg, WebContainer, AjaxLoader, FloatDivWdg, Widget
 
-from table_element_wdg import BaseTableElementWdg
-from icon_wdg import *
-from clipboard_wdg import ClipboardAddWdg
+from .table_element_wdg import BaseTableElementWdg
+from .icon_wdg import *
+from .clipboard_wdg import ClipboardAddWdg
 
 class ThumbWdg(BaseTableElementWdg):
     '''standard widget that looks at a threesome of files, a main, icon

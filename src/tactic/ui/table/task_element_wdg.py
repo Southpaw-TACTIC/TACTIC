@@ -23,14 +23,15 @@ from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schem
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
-from button_wdg import ButtonElementWdg
+
+from .button_wdg import ButtonElementWdg
 
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
 from tactic.ui.widget import IconButtonWdg, RadialProgressWdg
 
-from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
+from .table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
 
 
 # sort the tasks by the processes

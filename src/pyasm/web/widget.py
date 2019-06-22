@@ -19,9 +19,8 @@ try:
 except:
     import urllib.parse
 
-#import cStringIO
 try:
-    from cStringIO import Buffer
+    from cStringIO import StringIO as Buffer
 except:
     from io import BytesIO as Buffer
 

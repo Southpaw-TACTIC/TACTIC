@@ -14,7 +14,6 @@
 __all__ = ['FileCheckin', 'FileAppendCheckin', 'FileGroupCheckin', 'FileGroupAppendCheckin','SingleSnapshotException']
 
 import sys, string, os, shutil, time, types
-from cStringIO import StringIO
 
 from pyasm.common import *
 from pyasm.biz import *

@@ -19,7 +19,7 @@ from pyasm.web import DivWdg, SpanWdg, HtmlElement, Table
 
 from tactic.ui.common import BaseRefreshWdg
 
-from panel_wdg import SideBarBookmarkMenuWdg, ViewPanelWdg
+from .panel_wdg import SideBarBookmarkMenuWdg, ViewPanelWdg
 
 
 class SObjectPanelWdg(BaseRefreshWdg):

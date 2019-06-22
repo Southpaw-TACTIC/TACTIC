@@ -2159,7 +2159,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
             if not value or not column or not relation or special_relation:
-	        begin_idx = GeneralFilterWdg.add_ops(search, values_list,  levels, ops, i, begin_idx)
+                begin_idx = GeneralFilterWdg.add_ops(search, values_list,  levels, ops, i, begin_idx)
                 continue
 
             if relation == "is":
@@ -2298,7 +2298,7 @@ class GeneralFilterWdg(BaseFilterWdg):
     def add_ops(search, values_list, levels, ops, i, begin_idx):
         '''add level 0 op if it is the end of the values list or if it encounters level 1 op'''
         if not levels:
-	    return begin_idx
+            return begin_idx
         op = None
         # this is the end of values_list
         if i+1 == len(values_list): 
