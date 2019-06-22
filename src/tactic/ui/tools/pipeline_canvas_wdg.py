@@ -119,8 +119,16 @@ class BaseNodeWdg(BaseRefreshWdg):
         border_color = self.get_border_color()
         box_shadow = self.get_box_shadow()
 
-        top.add_style("width", str(width)+"px")
-        top.add_style("height", str(height)+"px")
+        height_str = str(height)
+        if ("px" not in height_str) and ("%" not in height_str):
+            height_str += "px"
+        
+        width_str = str(width)
+        if ("px" not in width_str) and ("%" not in width_str):
+            width_str += "px"
+
+        top.add_style("width", width_str)
+        top.add_style("height", height_str)
         top.add_style("box-sizing", "border-box")
 
         top.add_attr("spt_border_color", border_color)
@@ -137,12 +145,12 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("border-radius: %spx" % (height/2))
 
         elif shape == "elipse":
-            top.add_style("width", str(height)+"px")
+            top.add_style("width", height_str)
             top.add_style("border-radius: %spx" % border_radius)
 
         elif shape == "diamond":
             top.add_style("transform: rotate(-45deg)")
-            top.add_style("width", str(height)+"px")
+            top.add_style("width", height_str)
 
         else:
             top.add_style("border-radius: %spx" % border_radius)
@@ -225,7 +233,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.top = DivWdg()
         self.set_as_panel(self.top)
         self.top.add_class("spt_pipeline_top")
-        self.unique_id = self.top.set_unique_id();
+        self.unique_id = self.top.set_unique_id()
 
         self.is_editable = self.kwargs.get("is_editable")
         if self.is_editable in ['false', False]:
@@ -373,17 +381,26 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if self.kwargs.get("show_border") not in [False, 'false']:
             outer.add_border()
 
+        
+        height_str = str(self.height)
+        if ("px" not in height_str) and ("%" not in height_str):
+            height_str += "px"
+        
+        width_str = str(self.width)
+        if ("px" not in width_str) and ("%" not in width_str):
+            width_str += "px"
+
         # set the size limit
-        outer.add_style("width: %s" % self.width)
-        outer.add_style("height: %s" % self.height)
+        outer.add_style("width: %s" % width_str)
+        outer.add_style("height: %s" % height_str)
 
 
 
         from tactic.ui.input import TextInputWdg
         hot_key_div = DivWdg()
         outer.add(hot_key_div)
-        hot_key_div.add_style("margin-left: -5000px");
-        hot_key_div.add_style("position: absolute");
+        hot_key_div.add_style("margin-left: -5000px")
+        hot_key_div.add_style("position: absolute")
 
         hot_key_input = TextInputWdg(name="hot_key_input")
         hot_key_div.add(hot_key_input)
@@ -579,9 +596,17 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas = DivWdg()
         inner.add(canvas)
 
+        height_str = str(self.height)
+        if ("px" not in height_str) and ("%" not in height_str):
+            height_str += "px"
+        
+        width_str = str(self.width)
+        if ("px" not in width_str) and ("%" not in width_str):
+            width_str += "px"
+
         canvas.add_class("spt_pipeline_canvas")
-        canvas.add_style("width: %spx" % self.width)
-        canvas.add_style("height: %spx" % self.height)
+        canvas.add_style("width: %s" % width_str)
+        canvas.add_style("height: %s" % height_str)
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
 
@@ -866,12 +891,17 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #canvas.add_style("float: left")
         canvas.add_style("position: relative")
 
-        height = str(self.height) + "px"
-        if 'px' in str(self.height) or "%" in str(self.height):
-            height = str(self.height)
-        canvas.add_style("margin-top: -%s" % height)
-        canvas.set_attr("width", self.width)
-        canvas.set_attr("height", self.height)
+        height_str = str(self.height)
+        if ("px" not in height_str) and ("%" not in height_str):
+            height_str += "px"
+        
+        width_str = str(self.width)
+        if ("px" not in width_str) and ("%" not in width_str):
+            width_str += "px"
+
+        canvas.add_style("margin-top: -%s" % height_str)
+        canvas.set_attr("width", width_str)
+        canvas.set_attr("height", height_str)
         canvas.set_attr("spt_background_color", self.background_color)
 
         canvas.add_style("z-index: 1")
@@ -1998,7 +2028,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_style("height: %spx" % height)
 
         label.add_style("top: %spx" % (height/4+7) )
-        label.add_class("spt_label");
+        label.add_class("spt_label")
         label.add(name)
         label.add_style("vertical-align: middle")
         label.add_style("overflow: hidden")
@@ -5055,30 +5085,19 @@ spt.pipeline.set_size = function(width, height) {
     var canvas = spt.pipeline.get_canvas();
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
-
-    heightStr = height.toString() + "px"
-    if ('px' in height.toString() || "%" in height.toString()){
-        heightStr = height.toString()
-    }
-
-    widthStr = width.toString() + "px"
-    if ('px' in width.toString || "%" in height.toString()){
-        widthStr = width.toString()
-    }
-
-    outer.setStyle("width", ""+ widthStr);
+    outer.setStyle("width", ""+width);
     if (height) {
-        outer.setStyle("height", ""+heightStr);
+        outer.setStyle("height", ""+height);
     }
 
-    paint.setAttribute("width", ""+ widthStr);
+    paint.setAttribute("width", ""+width);
     if (height) {
-        paint.setAttribute("height", ""+heightStr);
-        paint.setStyle("margin-top", "" +"-"+heightStr);
+        paint.setAttribute("height", ""+height);
+        paint.setStyle("margin-top", "" + (-height) + "px");
     }
-    canvas.setStyle("width", ""+widthStr);
+    canvas.setStyle("width", ""+width);
     if (height) {
-        canvas.setStyle("height", ""+heightStr);
+        canvas.setStyle("height", ""+height);
     }
     spt.pipeline.redraw_canvas();
 
@@ -5244,17 +5263,18 @@ spt.pipeline.resize_drag_motion = function(evt, bvr, mouse_411) {
     var height = canvas.getStyle("height");
     height = parseInt( height.replace("px", "") );
     height += dy;
+
     outer = top.getElement(".spt_pipeline_resize")
-    outer.setStyle("width", ""+width+"px");
-    outer.setStyle("height", ""+height+"px");
+    outer.setStyle("width", ""+width);
+    outer.setStyle("height", ""+height);
 
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
-    paint.setAttribute("width", ""+width+"px");
-    paint.setAttribute("height", ""+height+"px");
-    paint.setStyle("margin-top", "" + (-height)+"px");
-    canvas.setStyle("width", ""+width+"px");
-    canvas.setStyle("height", ""+height+"px");
+    paint.setAttribute("width", ""+width);
+    paint.setAttribute("height", ""+height);
+    paint.setStyle("margin-top", "" + (-height));
+    canvas.setStyle("width", ""+width);
+    canvas.setStyle("height", ""+height);
     spt.pipeline.redraw_canvas();
     spt.pipeline.last_mouse_pos = mouse_pos;
 }
