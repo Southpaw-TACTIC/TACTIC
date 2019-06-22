@@ -14,14 +14,15 @@
 __all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
-import os, sys, time, string, re, random, types, new, pprint, traceback
+import os, sys, time, string, re, types, new, pprint, traceback
 import thread, threading, zipfile
 import hashlib, StringIO, urllib
 import datetime
 import colorsys
 
-
 from base import *
+
+from random import SystemRandom
 
 try:
     #from cjson import encode as jsondumps
@@ -386,8 +387,11 @@ class Common(Base):
                 continue
             items.append(chr(idx))
 
+
         for i in range(0, num_digits):
-            idx = random.randint(0, len(items)-1)
+            upper = len(items) - 1
+            #idx = random.randint(0, upper)
+            idx = SystemRandom().randrange(upper)
             if i and delimit and i % delimit == 0:
                 key += "-"
             key += items[idx]
