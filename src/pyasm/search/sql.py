@@ -16,6 +16,8 @@ __all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResourc
 import os, types, sys
 import re, datetime
 
+from builtins import int
+
 try:
     import thread
 except:
@@ -25,6 +27,11 @@ from threading import Lock
 
 from pyasm.common import Config, TacticException, Environment
 from dateutil.tz import *
+
+import six
+basestring = six.string_types
+
+
 
 # import database libraries
 DATABASE_DICT = {}
@@ -947,7 +954,8 @@ class Sql(Base):
 
         # replace all single quotes with two single quotes
         value_type = type(value)
-        if value_type in [types.ListType, types.TupleType]:
+        #if value_type in [types.ListType, types.TupleType]:
+        if isinstance(value, (list, tuple)):
             if len(value) == 0:
                 # Previously no check if list is empty, which is an issue
                 # for trying to get 'value[0]' as it's not defined. Assuming
@@ -956,22 +964,26 @@ class Sql(Base):
             value = value[0]
             value_type = type(value)
 
-        if value_type == types.IntType or value_type == types.LongType:
+
+
+
+        # quote types
+        if isinstance(value, basestring):
+            value = value.replace("'", "''")
+        elif isinstance(value, int):
             value = str(value)
         elif value_type == types.BooleanType:
             if value == True:
                 value = "1"
             else:
                 value = "0"
-        elif value_type == types.ListType:
+        elif isintance(value, list):
             value = value[0]
             value = value.replace("'", "''")
         elif value_type == types.MethodType:
             raise SqlException("Value passed in was an <instancemethod>")
         elif value_type in [types.FloatType, types.IntType]:
             pass
-        elif isinstance(value, basestring) or value_type in [types.StringTypes]:
-            value = value.replace("'", "''")
         elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
             value = str(value)
         elif isinstance(value, object):
@@ -2180,7 +2192,8 @@ class Select(object):
         # This check added to handle cases where a list is empty,
         # as 'value[0]' is not defined in that case. We assume in this
         # case that the intended value is NULL
-        if type(value) == types.ListType and len(value) == 0:
+        #if type(value) == types.ListType and len(value) == 0:
+        if isinstance(value, list) and len(value) == 0:
             where = "\"%s\" is NULL" % column
             self.add_where(where)
             return

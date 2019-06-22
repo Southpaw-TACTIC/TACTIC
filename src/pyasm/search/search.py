@@ -24,6 +24,10 @@ from .transaction import Transaction
 from .sobject_mapping import *
 from .database_impl import DatabaseImpl
 
+import six
+basestring = six.string_types
+
+
 # Need to import this way because of how DbResource needs to get imported
 from pyasm.search.sql import SqlException, DatabaseException, Sql, DbResource, DbContainer, DbPasswordUtil, Select, Insert, Update, CreateTable, DropTable, AlterTable
 
@@ -82,7 +86,8 @@ class Search(Base):
         self.security_filter = False
 
         protocol = 'local'
-        if type(search_type) in types.StringTypes:
+        #if type(search_type) in types.StringTypes:
+        if isinstance(search_type, basestring):
             # project is *always* local.  This prevents an infinite loop
             from pyasm.biz import Project
             if search_type != "sthpw/project":
@@ -135,7 +140,8 @@ class Search(Base):
             search_type = search_type.SEARCH_TYPE
             self.search_type_obj = SearchType.get(search_type)
 
-        elif type(search_type) in types.StringTypes:
+        #elif type(search_type) in types.StringTypes:
+        elif isinstance(search_type, basestring):
             self.search_type_obj = SearchType.get(search_type)
         else:
             self.search_type_obj = search_type

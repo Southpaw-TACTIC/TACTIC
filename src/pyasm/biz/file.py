@@ -14,9 +14,9 @@ __all__ = ["FileException", "File", "FileAccess", "IconCreator", "FileGroup", "F
 
 from pyasm.common import Common, Xml, TacticException, Environment, System, Config, jsonloads
 from pyasm.search import *
-from project import Project
-from subprocess import Popen, PIPE
+from .project import Project
 
+from subprocess import Popen, PIPE
 import sys, os, string, re, stat, glob
 
 
@@ -502,7 +502,7 @@ class IconCreator(object):
         elif type in File.VIDEO_EXT:
             try:
                 self._process_video( file_name )
-            except IOError, e:
+            except IOError as e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print("WARNING: ", e.__str__())
@@ -511,7 +511,7 @@ class IconCreator(object):
             # assume it is an image
             try:
                 self._process_image( file_name )
-            except IOError, e:
+            except IOError as e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print("WARNING: ", e.__str__())
@@ -778,7 +778,7 @@ class IconCreator(object):
                 icon_path_size = os.stat(self.icon_path)[stat.ST_SIZE]
                 if not icon_path_size:
                     self.icon_path = None
-        except IOError, e:
+        except IOError as e:
             Environment.add_warning("Could not process file", \
                 "%s - %s" % (self.file_path, e.__str__()))
             self.web_path = None

@@ -24,7 +24,7 @@ from pyasm.common import TacticException, Environment, Container, FormatValue, C
 from pyasm.search import Search, SObject, SearchKey, SearchType
 from pyasm.security import Site
 
-from project import Project
+from .project import Project
 
 
 
@@ -134,7 +134,7 @@ class ExpressionParser(object):
         try:
             from pyasm.web import WebContainer
             web = WebContainer.get_web()
-        except Exception, e:
+        except Exception as e:
             web = None
         if web:
             url = web.get_base_url()
@@ -632,7 +632,7 @@ class StringMode(ExpressionParser):
                 if isinstance(result, datetime.datetime):
                     try:
                         result = result.strftime(str(format))
-                    except Exception, e:
+                    except Exception as e:
                         raise SyntaxError("Error when using format [%s] on datetime result [%s] in expression [%s]: [%s]" % (format, result, self.expression, str(e)))
 
                 # FIXME: does this make sense??
@@ -647,7 +647,7 @@ class StringMode(ExpressionParser):
                     else:
                         try:
                             result = format % result
-                        except Exception, e:
+                        except Exception as e:
                             # handle the case where an integer is expected
                             # in the string formatting
                             if str(e) == "an integer is required":
@@ -1056,7 +1056,7 @@ class ExpressionMode(ExpressionParser):
             except TypeError:
                 result = None
 
-            except Exception, e:
+            except Exception as e:
                 raise SyntaxError("Could not evaluate [%s] in expression [%s] due to error [%s]" % ( expression, self.expression, str(e) ) )
 
             # NOTE: not sure if this is correct.  If there is only one
@@ -1138,9 +1138,9 @@ class MethodMode(ExpressionParser):
             # call the method
             try:
                 self.result = self.execute_method(method_name, args)
-            except SyntaxError, e:
+            except SyntaxError as e:
                 raise
-            except Exception, e:
+            except Exception as e:
                 raise
                 #raise SyntaxError( "Error when calculating method [%s(%s)]: %s" % (method_name, args, str(e)))
 
@@ -1693,7 +1693,6 @@ class MethodMode(ExpressionParser):
                 #file_type = args[2]
 
                 if len(args) > 2:
-                    print args[2]
                     if args[2] == "web":
                         #base_dir = Environment.get_base_url().to_string()
                         base_dir = Environment.get_web_dir()
@@ -1995,7 +1994,7 @@ class MethodMode(ExpressionParser):
         else:
             key = "%s|%s|%s" % (self.expression, related_types, str(self.sobjects))
         if len(key) > 10240:
-            print "WARNING: huge key in get_sobjects in expression"
+            print("WARNING: huge key in get_sobjects in expression")
 
         if self.use_cache == True:
             results = Container.get_dict(get_expression_key(), key)
@@ -2015,8 +2014,8 @@ class MethodMode(ExpressionParser):
             if m:
                 path = m.groups()[0]
                 related_type = related_type[(len(path)+1):]
-                #print "path: ", path
-                #print "related_type: ", related_type
+                #print("path: ", path)
+                #print("related_type: ", related_type)
             else:
                 path = None
 

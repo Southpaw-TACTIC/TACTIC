@@ -2105,7 +2105,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     def get_column_info(cls, db_resource, table, use_cache=True):
         '''get column info like data types, is_nullable in a dict'''
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             prefix = "%s" % db_resource.get_db_resource()
         else:
