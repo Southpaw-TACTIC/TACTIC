@@ -74,7 +74,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
     def get(vendor=None):
         '''Get the current database implementation'''
-        from sql import Sql
+        from .sql import Sql
         if not vendor:
             vendor = Sql.get_default_database_type()
             return DatabaseImpl.get(vendor)

@@ -73,7 +73,8 @@ class CryptoKey(object):
     def encrypt(self, msg):
         k = 84744 # A random parameter (for compatibility only. This value will be ignored) 
         coded = self.key.encrypt(msg.encode(), k) # encode required for Python3
-        hex = binascii.hexlify(str(coded))
+        #hex = binascii.hexlify(str(coded))
+        hex = binascii.hexlify(coded[0])
         return hex
      
         #f = open("password", "w")
@@ -83,15 +84,9 @@ class CryptoKey(object):
 
 
     def decrypt(self, hex):
-        #f2 = open("password", "r")
-        #hex = f2.read()
         uncoded = binascii.unhexlify(hex)
-        try:
-            xx2 = eval(uncoded)
-        except:
-            return ""
-
-        decrypt = self.key.decrypt(xx2)
+        decrypt = self.key.decrypt(uncoded)
+        decrypt = decrypt.decode('ascii')
         return decrypt
 
 

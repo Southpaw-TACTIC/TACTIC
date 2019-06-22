@@ -1320,7 +1320,7 @@ class DbContainer(Base):
         '''
 
         # STRICT ENFORCEMENT to ensure that only DbResources come through
-        from sql import DbResource
+        from .sql import DbResource
         assert db_resource != None
         if db_resource != "sthpw":
             #print("DBCONTAINER what is", db_resource, type(db_resource))

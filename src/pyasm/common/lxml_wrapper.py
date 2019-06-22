@@ -123,7 +123,8 @@ class Xml(Base):
     count = 0
     def read_string(self, xml_string, print_error=True, remove_blank_text=True):
 
-        if type(xml_string) not in types.StringTypes:
+        #if type(xml_string) not in types.StringTypes:
+        if isinstance(xml_string, basestring):
             xml_string = str(xml_string)
         elif type(xml_string) == types.UnicodeType:
             xml_string = xml_string.replace('encoding="UTF-8"','')
@@ -361,7 +362,13 @@ class Xml(Base):
        
 
         value = etree.tostring(output, pretty_print=pretty, encoding='utf-8', method=method, xml_declaration=xml_declaration)
-        value = unicode( value, 'utf-8')
+
+        try:
+            value = unicode( value, 'utf-8')
+        except: # unicode does not exist in python 3
+            # this comes back as bypes in python3
+            value = value.decode('ascii')
+
         return value
 
 
