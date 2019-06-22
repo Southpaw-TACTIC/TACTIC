@@ -25,7 +25,7 @@ from tactic.ui.widget import ButtonNewWdg, IconButtonWdg, ActionButtonWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.input import LookAheadTextInputWdg
 
-from tool_layout_wdg import ToolLayoutWdg
+from .tool_layout_wdg import ToolLayoutWdg
 
 import re
 
@@ -1107,13 +1107,13 @@ class CollectionContentWdg(BaseRefreshWdg):
             title_div.add(asset_lib_span_div)
 
 	    # Asset Library folder access
-	    library_title = "Asset Library"
+            library_title = "Asset Library"
             icon = IconWdg(name=library_title, icon="BS_FOLDER_OPEN")
-            
+
             asset_lib_span_div.add(icon)
 
             asset_lib_span_div.add(" <a><b>Asset Library</b></a> ")
-            
+
             path = path.strip("/")
             parts = path.split("/")
 

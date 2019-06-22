@@ -15,7 +15,7 @@ __all__ = ['Dependency']
 
 import sys, types
 
-from base_app_info import BaseAppInfo
+from .base_app_info import BaseAppInfo
 
 
 class Dependency(object):
@@ -63,7 +63,7 @@ class Dependency(object):
             else:
                 self.texture_nodes, self.texture_paths, self.texture_attrs = \
                     self.impl.get_textures_from_session(self.node_name)
-                print self.texture_nodes, self.texture_paths, self.texture_attrs
+                print(self.texture_nodes, self.texture_paths, self.texture_attrs)
 
 
 

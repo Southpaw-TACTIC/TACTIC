@@ -142,7 +142,7 @@ class BaseRenderContext(Base):
 
 
     def set_camera(self, camera):
-        print "Overriding camera: ", camera
+        print("Overriding camera: ", camera)
         self.camera = camera
 
     def get_camera(self):

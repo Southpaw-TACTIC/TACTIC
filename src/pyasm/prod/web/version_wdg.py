@@ -210,7 +210,7 @@ class LatestVersionContextWdg(BaseTableElementWdg):
 
 class VersionWdg(Widget):
     '''Widget that displays the status/currency of a loaded object in the UI'''
-    MISMATCHED_CONTEXT, UPDATED, OUTDATED, NOT_CURRENT, NOT_LOADED = xrange(5)
+    MISMATCHED_CONTEXT, UPDATED, OUTDATED, NOT_CURRENT, NOT_LOADED = range(5)
     def get(cls, status):
         widget = Widget()
         if status == cls.MISMATCHED_CONTEXT:

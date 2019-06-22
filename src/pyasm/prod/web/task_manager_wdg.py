@@ -17,9 +17,10 @@ from pyasm.biz import Pipeline, Task, Project
 from pyasm.search import Search, SObject
 from pyasm.web import *
 from pyasm.widget import *
-from prod_input_wdg import *
-from asset_filter_wdg import SearchFilterWdg, UserFilterWdg
 from pyasm.prod.biz import ProdSetting
+
+from .prod_input_wdg import *
+from .asset_filter_wdg import SearchFilterWdg, UserFilterWdg
 
 class TaskManagerWdg(Widget):
     

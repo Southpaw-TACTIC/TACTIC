@@ -17,7 +17,7 @@ from pyasm.widget import *
 
 from pyasm.prod.biz import *
 from tactic.ui.common import BaseRefreshWdg
-from prod_context import *
+from .prod_context import *
 
 __all__ = ['ShotNavigatorWdg', 'SequenceNavigatorWdg', 'GeneralNavigatorWdg',
             'EpisodeNavigatorWdg', 'EpisodeShotNavigatorWdg',

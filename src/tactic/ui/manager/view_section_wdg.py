@@ -69,7 +69,7 @@ class SectionManagerWdg(BaseRefreshWdg):
         return section_div
 
 
-from base_section_wdg import BaseSectionWdg
+from .base_section_wdg import BaseSectionWdg
 class ViewSectionWdg(BaseSectionWdg):
 
     def get_config(cls, config_search_type, view,  default=False):

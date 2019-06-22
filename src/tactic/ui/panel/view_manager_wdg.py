@@ -267,7 +267,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-from panel_wdg import SideBarBookmarkMenuWdg
+from .panel_wdg import SideBarBookmarkMenuWdg
 class SectionListWdg(SideBarBookmarkMenuWdg):
 
     def get_config(cls, config_search_type, view,  default=False, personal=False):

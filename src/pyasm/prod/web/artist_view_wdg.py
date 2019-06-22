@@ -65,8 +65,8 @@ class ArtistViewWdg(SpanWdg):
 
 
 
-        print "is_artist: ", self.is_artist()
-        print "is_supervisor: ", self.is_supervisor()
+        print("is_artist: ", self.is_artist())
+        print("is_supervisor: ", self.is_supervisor())
 
 
         # do some filtering

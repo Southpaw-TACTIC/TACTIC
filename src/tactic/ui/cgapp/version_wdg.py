@@ -116,7 +116,7 @@ class CurrentVersionContextWdg(BaseTableElementWdg):
 
 class VersionWdg(Widget):
     '''Widget that displays the status/currency of a loaded object in the UI'''
-    MISMATCHED_CONTEXT, UPDATED, OUTDATED, NOT_CURRENT, NOT_LOADED = xrange(5)
+    MISMATCHED_CONTEXT, UPDATED, OUTDATED, NOT_CURRENT, NOT_LOADED = range(5)
     def get(cls, status):
         widget = Widget()
         if status == cls.MISMATCHED_CONTEXT:
@@ -182,7 +182,7 @@ class SubRefWdg(AjaxWdg):
             node_name = Xml.get_attribute(ref, "node_name")
             snapshot = Snapshot.get_ref_snapshot_by_node(ref, mode='current')
             if not snapshot:
-                print "WARNING: reference in snapshot [%s] does not exist" % self.snapshot.get_code()
+                print("WARNING: reference in snapshot [%s] does not exist" % self.snapshot.get_code())
                 wdg = UnknownVersionContextWdg()
                 context = Xml.get_attribute(ref, "context")
                 version = Xml.get_attribute(ref, "version")
@@ -215,7 +215,7 @@ class SubRefWdg(AjaxWdg):
                 parts = node_name.split(":")
                 parts.insert(1, instance)
                 node_name = ":".join(parts)
-                print "WARNING: node_name not given: using [%s]" % node_name
+                print("WARNING: node_name not given: using [%s]" % node_name)
 
 
             # Add the current namespace to the node 
@@ -243,7 +243,7 @@ class SubRefWdg(AjaxWdg):
             session_context = self.session.get_context(node_name, asset_code, current_snapshot_type)
             session_version = self.session.get_version(node_name, asset_code, current_snapshot_type)
             session_revision = self.session.get_revision(node_name, asset_code, current_snapshot_type)
-            #print "session: ", session_version, session_context, session_revision
+            #print("session: ", session_version, session_context, session_revision)
             # add to outdated ref list here, this is really current even though it's called current
 
             version_wdg = CurrentVersionContextWdg()

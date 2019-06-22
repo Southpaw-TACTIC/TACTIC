@@ -17,7 +17,6 @@ __all__ = [ 'TopWdg', 'TitleTopWdg']
 import types
 import os
 
-import js_includes
 
 from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
 from pyasm.biz import Project, ProjectSetting
@@ -31,6 +30,7 @@ from tactic.ui.container import PopupWdg
 from tactic.ui.app import TacticCopyrightNoticeWdg, GoogleAnalyticsWdg
 from tactic.ui.widget import IconButtonWdg
 
+from .js_includes import JSIncludes
 
 
 class TopWdg(Widget):
@@ -1044,7 +1044,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
         version = Environment.get_release_version()
 
         # add some third party libraries
-        third_party = js_includes.third_party
+        third_party = JSIncludes.third_party
         security = Environment.get_security()
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
@@ -1062,21 +1062,21 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/jquery.js" % spt_js_url)
 
 
-        for include in js_includes.third_party:
+        for include in JSIncludes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
 
-        all_js_path = js_includes.get_compact_js_filepath()
+        all_js_path = JSIncludes.get_compact_js_filepath()
 
         if os.path.exists( all_js_path ):
-            Container.append_seq("Page:js", "%s/%s" % (context_url, js_includes.get_compact_js_context_path_suffix()))
+            Container.append_seq("Page:js", "%s/%s" % (context_url, JSIncludes.get_compact_js_context_path_suffix()))
         else:
-            #for include in js_includes.legacy_core:
+            #for include in JSIncludes.legacy_core:
             #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
-            for include in js_includes.spt_js:
+            for include in JSIncludes.spt_js:
                 Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
 
-            #for include in js_includes.legacy_app:
+            #for include in JSIncludes.legacy_app:
             #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 

@@ -116,7 +116,7 @@ class LoaderCmd(Command):
 
     def add_warning(self, msg, label=""):
         '''add a warning to the execute xml'''
-        print msg
+        print(msg)
         root = self.execute_xml.get_root_node()
 
         warning_node = self.execute_xml.create_element("warning")
@@ -239,9 +239,9 @@ class LoaderCmd(Command):
         # clean up the execute xml
         if top_loader == self:
 
-            print "*"*20
+            print("*"*20)
             self.execute_xml.dump()
-            print "*"*20
+            print("*"*20)
 
             Container.remove(key)
 
@@ -1001,7 +1001,7 @@ class MayaGroupLoaderCmd(MayaAnimLoaderCmd):
 
             # if this instance is culled, then skip loading this
             if self.loader_context.is_instance_culled(ref_instance_name):
-                print "Culling [%s]" % ref_instance_name
+                print("Culling [%s]" % ref_instance_name)
                 continue
 
             context = self.loader_context.get_context()
@@ -1333,14 +1333,14 @@ class MayaGroupUpdaterCmd(MayaAssetUpdaterCmd):
             # backwards compatibility: for when sets contained full Maya
             # namespaces
             if ref_instance_name.find(":") != -1:
-                print "WARNING: snapshot '%s' has Maya namespaces in it" % \
-                    self.snapshot.get_code()
+                print("WARNING: snapshot '%s' has Maya namespaces in it" % \
+                    self.snapshot.get_code())
                 ref_instance_name, tmp = ref_instance_name.split(":", 1)
 
 
             # if this instance is culled, then skip loading this
             if self.loader_context.is_instance_culled(ref_instance_name):
-                print "Culling [%s]" % ref_instance_name
+                print("Culling [%s]" % ref_instance_name)
                 continue
 
             context = self.loader_context.get_context()
@@ -1420,9 +1420,9 @@ class CreateSetNodeCmd(MayaAssetLoaderCmd):
         # clean up the execute xml
         if top_loader == self:
 
-            print "*"*20
+            print("*"*20)
             self.execute_xml.dump()
-            print "*"*20
+            print("*"*20)
 
             Container.remove(key)
             

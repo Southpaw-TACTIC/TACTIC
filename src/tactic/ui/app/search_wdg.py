@@ -25,7 +25,7 @@ from tactic.ui.filter import FilterData
 from tactic.ui.widget import TextBtnSetWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
-from advanced_search import AdvancedSearchSaveWdg, AdvancedSearchSavedSearchesWdg, CustomSaveButtonsWdg
+from .advanced_search import AdvancedSearchSaveWdg, AdvancedSearchSavedSearchesWdg, CustomSaveButtonsWdg
 #from search_limit_wdg import SearchLimitWdg
 
 

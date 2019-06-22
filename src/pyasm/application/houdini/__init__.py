@@ -11,8 +11,8 @@
 #
 #
 
-from houdini_environment import *
-from houdini import *
-from houdini_builder import *
-from houdini_impl import *
+from .houdini_environment import *
+from .houdini import *
+from .houdini_builder import *
+from .houdini_impl import *
 

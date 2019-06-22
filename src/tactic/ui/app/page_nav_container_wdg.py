@@ -24,7 +24,7 @@ from tactic.ui.container import RoundedCornerDivWdg, PopupWdg, TabWdg
 from tactic.ui.panel import SideBarPanelWdg, ViewPanelWdg
 from tactic.ui.panel import TableLayoutWdg
 
-from help_wdg import HelpWdg
+from .help_wdg import HelpWdg
 
 
 class PageNavContainerWdg(BaseRefreshWdg):

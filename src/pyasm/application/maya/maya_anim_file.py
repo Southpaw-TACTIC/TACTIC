@@ -11,7 +11,7 @@
 #
 
 
-from maya_environment import *
+from .maya_environment import *
 
 
 class MayaAnimFile:
@@ -81,14 +81,14 @@ class MayaAnimFile:
 
         try:
             return self.buffers[instance].getvalue()
-        except KeyError, e:
+        except KeyError as e:
             return ""
 
     def get_static(self, instance):
 
         try:
             return self.static_buffers[instance].getvalue()
-        except KeyError, e:
+        except KeyError as e:
             return ""
          
        
@@ -101,6 +101,6 @@ if __name__ == '__main__':
     anim_file = MayaAnimFile("./set100_0000005349.anim")
     anim_file.parse()
 
-    print anim_file.get_anim( "alarm_clock_C:product202")
+    print(anim_file.get_anim( "alarm_clock_C:product202"))
 
 
