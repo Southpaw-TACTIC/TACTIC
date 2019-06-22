@@ -17,7 +17,7 @@ __all__ = ['Scheduler', 'SchedulerTask']
 
 import tacticenv
 
-from kronos import Scheduler as KronosScheduler
+from .kronos import Scheduler as KronosScheduler
 from pyasm.common import Container, Environment
 from pyasm.biz import Project
 from pyasm.command import Workflow, Command
@@ -43,7 +43,7 @@ class Scheduler(object):
 
         class CancelTask(SchedulerTask):
             def execute(self2):
-                print "Cancelling task [%s]" % name
+                print("Cancelling task [%s]" % name)
                 self.scheduler.cancel(task)
                 del(self.tasks[name])
         self.add_single_task( CancelTask(), delay=delay )
@@ -243,22 +243,22 @@ class SchedulerTask(object):
 
 
     def execute(self):
-        print self.kwargs
+        print(self.kwargs)
 
     def execute_test(self):
-        print self.kwargs
+        print(self.kwargs)
 
 
 class TestTask(SchedulerTask):
     def execute(self):
-        print "!!!! TestTask: ", self.get_name()
-        print "\ttime: ", datetime.datetime.now()
+        print("!!!! TestTask: ", self.get_name())
+        print("\ttime: ", datetime.datetime.now())
 
 
 
 class TestTask2(SchedulerTask):
     def execute(self):
-        print "time: ", datetime.datetime.now()
+        print("time: ", datetime.datetime.now())
         now = datetime.datetime.now()
         now, xx = str(now).split(".")
         date, timestamp = now.split(" ")
@@ -266,7 +266,7 @@ class TestTask2(SchedulerTask):
         timestamp = timestamp.replace(":", "")
 
         filename = "db_%s_%s.sql" % (date, timestamp)
-        print filename
+        print(filename)
 
         import os
         print("pg_dumpall -U postgres > %s" % filename)
@@ -313,7 +313,7 @@ def main():
         time.sleep(30)
 
     except KeyboardInterrupt as e:
-        print 'stopping'
+        print('stopping')
         #scheduler.stop()
     else:
         scheduler.stop()

@@ -1232,7 +1232,8 @@ class SelectWdg(BaseInputWdg):
             
             
         elif self.values != "":
-            self.values = string.split( self.get_option("values"), "|" )
+            #self.values = string.split( self.get_option("values"), "|" )
+            self.values = self.get_option("values").split("|")
         else:
             self.values = ["None"]
 
@@ -1242,7 +1243,8 @@ class SelectWdg(BaseInputWdg):
         if type(labels_option) == types.ListType:
             self.labels = labels_option[:]
         elif labels_option != "":
-            self.labels = string.split( labels_option, "|" )
+            #self.labels = string.split( labels_option, "|" )
+            self.labels = labels_option.split("|")
             if len(self.values) != len(self.labels):
                 raise InputException("values [%s] does not have the same number of elements as [%s]" % (`self.values`, `self.labels`))
 

@@ -632,7 +632,7 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
         if not self.view:
             self.view = self.parent_wdg.get_view()
         sobject = self.sobjects[0]
-        from widget_config import WidgetConfig, WidgetConfigView
+        from .widget_config import WidgetConfig, WidgetConfigView
         if sobject:
             self.config = WidgetConfigView.get_by_search_type(\
                 sobject.get_search_type_obj().get_base_key(), self.view)
@@ -722,7 +722,7 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
         script.append(self.get_refresh_script(show_progress=False))
         div.add_event('onclick', ';'.join(script))
 
-        from widget_config import WidgetConfig, WidgetConfigView
+        from .widget_config import WidgetConfig, WidgetConfigView
         if not self.config:
             self.config = WidgetConfigView.get_by_search_type(self.sobject.get_search_type_obj().get_base_key(), self.view)
 
@@ -755,7 +755,7 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
 
     def get_edit_wdg(self, display_id, value):
         ''' get the editing widget '''
-        from widget_config import WidgetConfig, WidgetConfigView
+        from .widget_config import WidgetConfig, WidgetConfigView
         config = WidgetConfigView.get_by_search_type(self.sobject.get_search_type_obj().get_base_key(), "edit")
         edit_handler = config.get_display_handler(self.element_name)
         element = Widget()

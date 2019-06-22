@@ -34,13 +34,13 @@ from pyasm.biz import Schema
 from pyasm.web import *
 
 from tactic.command import Scheduler, SchedulerTask
-from input_wdg import *
-from shadowbox_wdg import *
-from icon_wdg import *
+from .input_wdg import *
+from .shadowbox_wdg import *
+from .icon_wdg import *
 from pyasm.checkin import FileCheckin
 from pyasm.search import SObject, SearchType, TransactionLog, SearchKey, Search
 from pyasm.biz import Project, PrefSetting
-from widget_config import WidgetConfigView
+from .widget_config import WidgetConfigView
 from pyasm.search import ExceptionLog
 from pyasm.prod.biz import ProdSetting
 from pyasm.common import jsonloads
@@ -3100,7 +3100,7 @@ class FileUploadUpdateWdg(AjaxWdg):
         try:
             f = open(path, 'r')
             file_size = f.readline()
-            print "file size ",file_size
+            print("file size ",file_size)
             if file_size:
                 file_size = float(file_size)/ 1048576
                 file_size = '%.2f' %file_size

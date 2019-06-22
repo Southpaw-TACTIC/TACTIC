@@ -234,8 +234,9 @@ class Common(Base):
 
     def breakup_class_path(class_path):
         '''breaks up a class path into a module and class_name'''
-        parts = string.split(class_path,".")
-        module_name = string.join(parts[0:len(parts)-1],".")
+        parts = class_path.split(".")
+        #module_name = string.join(parts[0:len(parts)-1],".")
+        module_name = ".".join(parts[0:len(parts)-1])
         class_name = parts[len(parts)-1]
         return (module_name, class_name)
     breakup_class_path = staticmethod(breakup_class_path)

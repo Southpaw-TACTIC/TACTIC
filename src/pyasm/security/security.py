@@ -2128,8 +2128,6 @@ class License(object):
         # different dump and lxml and unfortunately, the license key is
         # dependent on the spacing.
         #print("data: [%s]" % data)
-        print("data: ", data)
-        print("data: ", type(data))
         data = data.replace("    ", "  ")
         data = data.replace("  </data>", "</data>")
         #print("data: [%s]" % data)
