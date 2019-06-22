@@ -198,7 +198,7 @@ class CacheStartup(object):
                 print(" ... stopping Schduler")
                 scheduler = Scheduler.get()
                 scheduler.stop()
-                print " ... stopping Cherrypy")
+                print(" ... stopping Cherrypy")
                 cherrypy.engine.stop()
                 cherrypy.engine.exit()
                 print(" ... closing DB connections")

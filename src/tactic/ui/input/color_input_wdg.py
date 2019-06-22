@@ -21,7 +21,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 import random
 
-from text_input_wdg import TextInputWdg
+from .text_input_wdg import TextInputWdg
 
 
 
