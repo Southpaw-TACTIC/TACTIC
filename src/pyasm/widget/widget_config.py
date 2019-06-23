@@ -467,7 +467,7 @@ class WidgetConfig(Base):
             display_options[name] = value
 
         widget = Common.create_from_class_path(display_handler, [], display_options)
-        from input_wdg import BaseInputWdg
+        from .input_wdg import BaseInputWdg
         if isinstance(widget, BaseInputWdg):
             widget.set_options(display_options)
 
@@ -1197,8 +1197,8 @@ class WidgetConfigView(Base):
             try:
                 widget = Common.create_from_class_path(display_handler, [], display_options)
                 # backward compatible
-                from input_wdg import BaseInputWdg
-                from file_wdg import ThumbWdg
+                from .input_wdg import BaseInputWdg
+                from .file_wdg import ThumbWdg
                 if isinstance(widget, BaseInputWdg) or isinstance(widget, ThumbWdg):
                     widget.set_options(display_options)
             except Exception as e:
@@ -1246,7 +1246,7 @@ class WidgetConfigView(Base):
             try:
                 widget = Common.create_from_class_path(handler, [], options)
                 # backward compatible
-                from input_wdg import BaseInputWdg
+                from .input_wdg import BaseInputWdg
                 if isinstance(widget, BaseInputWdg):
                     widget.set_options(options)
             except:

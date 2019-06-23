@@ -202,7 +202,7 @@ class SearchLimitWdg(Widget):
                 div.add( current_value )
             else:
                 # add a range selector using ItemsNavigatorWdg
-                from input_wdg import ItemsNavigatorWdg
+                from .input_wdg import ItemsNavigatorWdg
                 selector = ItemsNavigatorWdg(self.label, self.count, self.search_limit, refresh=self.refresh)
                 selector.set_style(self.style)
 

@@ -239,7 +239,7 @@ class BaseTableElementWdg(HtmlElement):
         value = sobject.get_value(self.name) 
    
         popup = PopupMenuWdg("edit_%s_%s" % (sobject.get_id(), value ) ) 
-        from input_wdg import TextAreaWdg 
+        from .input_wdg import TextAreaWdg 
         div = TextAreaWdg() 
         popup.add( div ) 
              
