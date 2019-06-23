@@ -32,8 +32,7 @@ class ColorInputWdgOLD(BaseInputWdg):
         color_div = DivWdg()
         color_div.add_style("z-index: 1000")
         #color_div.add_style("float: left")
-        import random
-        number = random.randint(1, 1000)
+        number = Common.randint(1, 1000)
         rainbow_id = "rainbow_%s" % number
 
         color_div.add('''

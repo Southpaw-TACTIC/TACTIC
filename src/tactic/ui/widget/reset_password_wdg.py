@@ -11,7 +11,6 @@
 #
 __all__ = ["CodeConfirmationWdg", "NewPasswordWdg", "NewPasswordCmd", "ResetOptionsWdg", "ResetOptionsCmd"]
 
-import random
 import hashlib
 
 from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget, WebContainer
@@ -368,7 +367,7 @@ class ResetOptionsCmd(Command):
 
         
             # auto pass generation
-            unique_code = ''.join([ random.choice('abcdefghijklmno12345') for i in xrange(0, 5)])
+            unique_code = ''.join([ Common.randchoice('abcdefghijklmno12345') for i in xrange(0, 5)])
             auto_password = unique_code
             
             msg = CodeConfirmationWdg.RESET_MSG

@@ -1699,8 +1699,7 @@ spt.tab.close = function(src_el) {
         for i, widget in enumerate(self.widgets):
             name = widget.get_name()
             if not name:
-                import random
-                num = random.randint(0, 10000)
+                num = Common.randint(0, 10000)
                 name = "noname%s" % num
                 widget.set_name(name)
                 title = "(Untitled)"

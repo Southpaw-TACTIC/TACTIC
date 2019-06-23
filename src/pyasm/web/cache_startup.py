@@ -215,10 +215,9 @@ class CacheStartup(object):
             task = KillTacticTask()
             config_delay = Config.get_value("services", "process_time_alive")
             if config_delay:
-                import random
                 # put in a randomizer so that not all processes die at once
                 delay = int(config_delay)
-                offset = random.random()*delay - delay/2
+                offset = Common.randint(0, delay) - delay/2
                 delay += offset
                 seconds = int(delay * 60)
                 print "Process will exit in [%s] seconds" % seconds
