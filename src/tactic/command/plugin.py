@@ -1657,11 +1657,15 @@ class PluginTools(PluginBase):
                 if not statement:
                     continue
                 # strip out a line feeds and add proper new lines
-                #statement_str = "\n".join([x.strip("\n") for x in statement])
+                statement.insert(0, "from pyasm.search import SearchType, CreateTable, Search, CreateView")
                 statement_str = "\n".join([x.rstrip("\r\n") for x in statement])
 
                 try:
-                    exec(statement_str)
+                    gc = {}
+                    lc = {}
+                    exec(statement_str, gc, lc)
+                    insert = lc.get("insert")
+                    table = lc.get("table")
                 except SqlException as e:
                     print("ERROR (SQLException): ", e)
                 except Exception as e:

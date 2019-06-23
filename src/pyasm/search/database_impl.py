@@ -1894,14 +1894,15 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         db_resource = DbResource.get_default(database)
 
         create = 'createdb %s -E UNICODE "%s"' % (self._get_db_info(db_resource), database)
+        print("create: ", create)
         cmd = os.popen(create)
         result = cmd.readlines()
+        cmd.close()
+
         # Psql 8.3 doesn't have outputs on creation
         if not result:
-            print("no output, assumed success")
             return
             #raise Exception("Error creating database '%s'" % database)
-        cmd.close()
         
         
 
