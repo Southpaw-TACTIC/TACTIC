@@ -26,6 +26,8 @@ from pyasm.security import Site
 
 from .project import Project
 
+import six
+basestring = six.string_types
 
 
 def get_expression_key():
@@ -67,6 +69,8 @@ class ExpressionParser(object):
         self.use_cache = True
 
 
+    # unfortunately, this function redefines list so, make a global
+    LIST = list
 
     def eval(self, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None, use_cache=None ):
 
@@ -92,8 +96,7 @@ class ExpressionParser(object):
             #self.is_single = False
             sobjects = []
      
-        elif type(sobjects) != types.ListType:
-            #self.is_single = True
+        elif not isinstance(sobjects, self.LIST):
             sobjects = [sobjects]
       
 
@@ -154,14 +157,13 @@ class ExpressionParser(object):
         keys = self.vars.keys()
         keys = sorted(keys)
         keys.reverse()
-        #for name, value in self.vars.items():
         for name in keys:
 
             value = self.vars.get(name)
             try:
                 new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
             except:
-                new_value = str(value) # python 3 
+                new_value = "'%s'" % str(value) # python 3 
 
             # HACK: replace with the single quotes first.  Not elegant, but
             # it works for now until we have real variables
@@ -208,13 +210,13 @@ class ExpressionParser(object):
 
         self.dive(new_parser)
         Container.put("Expression::extra_filters", None)
-        if self.is_single and type(self.result) == types.ListType: 
+        if self.is_single and isinstance(self.result, self.LIST):
             if self.result:
                 return self.result[0]
             else:
                 # for single, should return None
                 return None
-        elif list and type(self.result) != types.ListType:
+        elif list and not isinstance(self.result, self.LIST):
             return [self.result]
         else:
             return self.result
@@ -1262,7 +1264,7 @@ class MethodMode(ExpressionParser):
                     sobjects = self.get_flat_cache()
 
                 # it is possible that get_sobjects just returns a number
-                if type(sobjects) == types.IntType:
+                if isinstance(sobjects, int):
                     results = sobjects
                 else:
                     results = self.count(sobjects)
@@ -2316,24 +2318,29 @@ class MethodMode(ExpressionParser):
                         count = search.get_count()
                         return count
 
+                    if self.sobjects and len(related_types) == 1 and related_type == self.sobjects[0].get_base_search_type():
+                        # this handles the specific case where there is only
+                        # related type that is the same as the passed in sobjects
+                        list = self.sobjects
 
-                    tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=self.show_retired)
+                    else:
+                        tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=self.show_retired)
 
-                    # collapse the list and make it unique
-                    tmp_list = []
-                    for tmp_key, items in tmp_dict.items():
-                        tmp_list.extend(items)
-                        self.cache_sobjects(tmp_key, items)
+                        # collapse the list and make it unique
+                        tmp_list = []
+                        for tmp_key, items in tmp_dict.items():
+                            tmp_list.extend(items)
+                            self.cache_sobjects(tmp_key, items)
 
 
-                    list = []
-                    ids = set()
-                    for sobject in tmp_list:
-                        sobject_id = sobject.get_id()
-                        if unique and sobject_id in ids:
-                            continue
-                        list.append(sobject)
-                        ids.add(sobject_id)
+                        list = []
+                        ids = set()
+                        for sobject in tmp_list:
+                            sobject_id = sobject.get_id()
+                            if unique and sobject_id in ids:
+                                continue
+                            list.append(sobject)
+                            ids.add(sobject_id)
 
             """
             else:

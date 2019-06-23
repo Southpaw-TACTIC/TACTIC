@@ -25,7 +25,7 @@ except:
 
 from threading import Lock
 
-from pyasm.common import Config, TacticException, Environment
+from pyasm.common import Container, Config, TacticException, Environment
 from dateutil.tz import *
 
 import six
@@ -3320,8 +3320,8 @@ class Update(object):
 
 
         # quote the values
-        values = self.data.values()
-        cols = self.data.keys()
+        values = list(self.data.values())
+        cols = list(self.data.keys())
 
         quoted_values = []
 
@@ -3452,7 +3452,7 @@ class CreateTable(Base):
 
         from pyasm.biz import Project
         if search_type:
-            from search import SearchType
+            from .search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)
@@ -3683,7 +3683,7 @@ class DropTable(Base):
 
         self.search_type = search_type
         # derive db from search_type_obj
-        from search import SearchType
+        from .search import SearchType
         from pyasm.biz import Project
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
 
@@ -3748,7 +3748,7 @@ class AlterTable(CreateTable):
         """
         self.search_type = search_type
         # derive db from search_type_obj
-        from search import SearchType
+        from .search import SearchType
         search_type_obj = SearchType.get(search_type)
         self.database = search_type_obj.get_database()
         """
@@ -3761,7 +3761,7 @@ class AlterTable(CreateTable):
         self.drop_columns.append(name)
 
     def verify_table(self):
-        from search import SearchType
+        from .search import SearchType
         if not self.table and self.search_type:
             search_type_obj = SearchType.get(self.search_type)
             self.table = search_type_obj.get_table()
@@ -3870,12 +3870,11 @@ class CreateView(Base):
 
         from pyasm.biz import Project
         if search_type:
-            from search import SearchType
+            from .search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             self.view = search_type_sobj.get_table()
 
-            from search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)

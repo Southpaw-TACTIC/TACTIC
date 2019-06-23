@@ -893,7 +893,7 @@ class Common(Base):
     def process_unicode_string( in_string ):
 
         if not IS_Pv3:
-            return
+            return in_string
 
         # for Python 2.7
         if not isinstance(in_string, unicode):

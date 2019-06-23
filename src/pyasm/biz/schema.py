@@ -1343,7 +1343,7 @@ class Schema(SObject):
     def get(cls, reset_cache=False, project_code=None):
         
         if not project_code:
-            from project import Project
+            from .project import Project
             project_code = Project.get_project_code()
 
         if not reset_cache:

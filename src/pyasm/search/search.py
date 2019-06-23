@@ -500,7 +500,8 @@ class Search(Base):
         for filter in filters:
             if not filter:
                 continue
-            if type(filter) in types.StringTypes or len(filter) == 1:
+            #if type(filter) in types.StringTypes or len(filter) == 1:
+            if isinstance(filter, basestring) or len(filter) == 1:
                 # straight where clause not allowed
                 if isinstance(filter, basestring):
                     where = filter
@@ -6254,7 +6255,8 @@ class SearchType(SObject):
         triggers[base] = base_triggers
         if base == 'sthpw/task':
             if base_triggers.get(base) == None:
-                exec("from pyasm.biz import Task")
+                #exec("from pyasm.biz import Task")
+                from pyasm.biz import Task
                 Task.add_static_triggers()
                 base_triggers[base] = True
 

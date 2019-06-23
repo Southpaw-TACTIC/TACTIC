@@ -21,7 +21,13 @@ from pyasm.search import Search, SearchType, TableSchemaDumper, TableDataDumper,
 from pyasm.web import WebContainer
 from pyasm.command import Command, DatabaseAction
 
-import os, codecs, shutil, datetime
+import os, codecs, shutil, datetime, sys
+
+IS_Pv3 = sys.version_info[0] > 2
+
+
+
+
 
 class PluginBase(Command):
 
@@ -1611,7 +1617,12 @@ class PluginTools(PluginBase):
                         print("WARNING: ", e)
         else:
             #f = codecs.open(path, 'r', 'utf-8')
-            f = codecs.getreader('utf8')(open(path, 'r'))
+            if IS_Pv3:
+                f = open(path, 'r')
+            else:
+                f = codecs.getreader('utf8')(open(path, 'r'))
+
+
 
 
         statement = []

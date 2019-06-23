@@ -1208,7 +1208,7 @@ class WidgetConfigView(Base):
                 if display_handler in ['tactic.ui.panel.TableLayoutWdg','tactic.ui.panel.FastTableLayoutWdg', 'tactic.ui.panel.OldTableLayoutWdg']:
                     raise
                 widget = Common.create_from_class_path(display_handler)
-                from input_wdg import BaseInputWdg
+                from .input_wdg import BaseInputWdg
                 if isinstance(widget, BaseInputWdg):
                     widget.set_options(display_options)
 

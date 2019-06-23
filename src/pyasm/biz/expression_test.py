@@ -25,12 +25,11 @@ from pyasm.common import Environment, Date, Common
 from pyasm.security import Batch
 from pyasm.search import Transaction, SearchType, Search, SearchKey, SObject, SearchException
 from pyasm.unittest import Person
-from task import Task
-from project import Project
-
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
-from expression import *
+from .task import Task
+from .project import Project
+from .expression import *
 
 import calendar
 from datetime import datetime
@@ -732,7 +731,7 @@ class ExpressionTest(unittest.TestCase):
           @( @GET(sthpw/task.status) == 'Review' ), 'blue'
         )'''
         result = self.parser.eval(expression, self.country)
-        #print 'result: ', result
+        #print('result: ', result)
 
         
 
@@ -1148,13 +1147,13 @@ class ExpressionTest(unittest.TestCase):
 
         # test max and min
         result = self.parser.eval("@GET(unittest/person.age)")
-        #print "result: ", result
+        #print("result: ", result)
         
         result = self.parser.eval("@MAX(unittest/person.age)")
-        #print "result: ", result
+        #print("result: ", result)
 
         result = self.parser.eval("@MIN(unittest/person.age)")
-        #print "result: ", result
+        #print("result: ", result)
 
         result = self.parser.eval("abc")
         result = self.parser.eval("@GET(login.last_name)")
@@ -1178,7 +1177,7 @@ class ExpressionTest(unittest.TestCase):
             expression = "@GET(  unittest/person.age)* 12 12 "
             result = self.parser.eval(expression, person)
         except SyntaxError as e:
-            #print str(e)
+            #print(str(e))
             pass
         else:
             self.fail("Expression [%s] did not produce a syntax error" % expression)
@@ -1325,8 +1324,8 @@ class ExpressionTest(unittest.TestCase):
             'SOBJECT_CODE': u'\u30EBSOME CHINESE CHAR'
             }
 
-        #print "foo" , Search.eval("$VALUE == 'foo foo'", vars=vars)
-        #print "fo2", Search.eval("'foo fo2' == $VALUE", vars=vars) 
+        #print("foo" , Search.eval("$VALUE == 'foo foo'", vars=vars))
+        #print("fo2", Search.eval("'foo fo2' == $VALUE", vars=vars) )
 
         # ensure non-ascii characters work with eval and vars
         sobj_code = Search.eval("$SOBJECT_CODE", vars=vars) 
@@ -1465,7 +1464,7 @@ class ExpressionTest(unittest.TestCase):
         self.assertEquals("adm", login)
 
         #naming = self.parser.eval("v{version,%0.3d}")
-        #print naming
+        #print(naming)
 
         # test env
         login = Environment.get_login()
@@ -1556,12 +1555,6 @@ class ExpressionTest(unittest.TestCase):
         self.assertEquals(str(expected), result)
 
 
-	'''
-        result = self.parser.eval("$PREV_MONTH")
-        expected = today + relativedelta(months=-1)
-        print "prev month ", result, str(expected)
-        self.assertEquals(str(expected), result)
-	'''
         # FIXME: this doesn't work yet!!  Need to stop using dates as
         # strings!!!
         #result = self.parser.eval("@GET(date.today) > '2010-01-01'")
@@ -1688,20 +1681,20 @@ class ExpressionTest(unittest.TestCase):
         result = parser.eval(expression, person, mode='string')
         label = timestamp.strftime("%b-%m")
         self.assertEquals('%s/person2'%label, result)
-        #print "date: ", result
+        #print("date: ", result)
 
 
 
 
         from dateutil import parser as date_parser
         #today = parser.parse('yesterday')
-        #print "today: ", today
+        #print("today: ", today)
         #hour_ago = date_parser.parse('1 hour, 3 minutes 12 seconds')
 
         expression = "@GET(unittest/person.timestamp) - @GET(unittest/person.timestamp)}"
         result = parser.eval(expression, person)
-        #print "result: ", result, type(result)
-        #print "timestamp: ", timestamp
+        #print("result: ", result, type(result))
+        #print("timestamp: ", timestamp)
 
     
      
@@ -1794,7 +1787,7 @@ class ExpressionTest(unittest.TestCase):
         # Empty should return original sobject (for completion)
         #expr = "@SOBJECT()"
         #result = self.parser.eval(expr, person)
-        #print result
+        #print(result)
         #self.assertEquals(0, result)
 
 
@@ -1840,7 +1833,7 @@ class ExpressionTest(unittest.TestCase):
             parser = ExpressionParser()
             parser.eval(expression)
         except SyntaxError as e:
-            #print str(e)
+            #print(str(e))
             pass
         else:
             self.fail("Expression [%s] did not produce a syntax error" % expression)
@@ -1850,7 +1843,7 @@ class ExpressionTest(unittest.TestCase):
             parser = ExpressionParser()
             parser.eval(expression)
         except SyntaxError as e:
-            #print str(e)
+            #print(str(e))
             pass
         else:
             self.fail("Expression [%s] did not produce a syntax error" % expression)
@@ -1891,7 +1884,7 @@ class ExpressionTest(unittest.TestCase):
             parser = ExpressionParser()
             result = parser.eval(expression, person)
         except SyntaxError as e:
-            #print str(e)
+            #print(str(e))
             pass
         else:
             self.fail("Expression [%s] did not produce a syntax error" % expression)
@@ -2117,7 +2110,7 @@ class ExpressionTest(unittest.TestCase):
             parser = ExpressionParser()
             result = parser.eval(expression, [person, person1])
         except SyntaxError as e:
-            #print str(e)
+            #print(str(e))
             pass
         #else:
         #    self.fail("Expression [%s] did not produce a syntax error" % expression)
@@ -2128,7 +2121,7 @@ class ExpressionTest(unittest.TestCase):
             parser = ExpressionParser()
             result = parser.eval(expression, [person, person1])
         except SyntaxError as e:
-            #print str(e)
+            #print(str(e))
             pass
         else:
             self.fail("Expression [%s] did not produce a syntax error" % expression)
@@ -2402,7 +2395,7 @@ class ExpressionTest(unittest.TestCase):
             expect = 'green'
         elif age == 10:
             expect = 'yellow'
-        #print expect, result
+        #print(expect, result)
         self.assertEquals(expect, result)
 
         # try the case statement
@@ -2419,7 +2412,7 @@ class ExpressionTest(unittest.TestCase):
             expect = 'green'
         elif nationality == 'French French' :
             expect = 'yellow'
-        #print expect, result
+        #print(expect, result)
 
         
         # FIXME: this does not work yet
@@ -2447,7 +2440,7 @@ class ExpressionTest(unittest.TestCase):
         self.assertEquals(expect, result)
 	#
         vars = {'VALUE': 'foo Test'}
-	self.assertEquals(Search.eval("$VALUE == 'foo Test'", vars=vars), True)
+        self.assertEquals(Search.eval("$VALUE == 'foo Test'", vars=vars), True)
         self.assertEquals(Search.eval("'foo Test' == $VALUE", vars=vars) , True)
 
         # FIXME: This does not evaluate very well.  Not sure how to handle
@@ -2508,7 +2501,7 @@ class ExpressionTest(unittest.TestCase):
         #            ), '\n'
         #          )'''
         #result = parser.eval(expr)
-        #print result
+        #print(result)
         
 
 
@@ -2620,8 +2613,8 @@ class ExpressionTest(unittest.TestCase):
             rel_dir = file.get_value("relative_dir")
             file_name = file.get_value("file_name")
             path = "%s/%s/%s" % (base_dir, rel_dir, file_name)
-            print path
-            print file.get_value("checkin_dir")
+            print(path)
+            print(file.get_value("checkin_dir"))
 
     def _test_custom_layout(self):
         html= '''
@@ -2759,9 +2752,9 @@ class ExpressionTest(unittest.TestCase):
 
         Project.set_project('sample3d')
         shots = Search.eval("@SOBJECT(prod/shot)")
-        print "shots: ", len(shots)
+        print("shots: ", len(shots))
         assets = Search.eval("@SOBJECT(prod/asset)")
-        print "assets: ", len(assets)
+        print("assets: ", len(assets))
 
         Project.set_project("unittest")
 
@@ -2780,10 +2773,10 @@ class ExpressionTest(unittest.TestCase):
         """TODO: add a use_cache=False kwargs to eval()
         expr = '@SOBJECT( unittest/person)'
         search = Search('unittest/person')
-        print "LEN ", len(search.get_sobjects())
+        print("LEN ", len(search.get_sobjects()))
         parser = ExpressionParser()
         result = parser.eval(expr)
-        print "RES ", result
+        print("RES ", result)
         self.assertEquals(len(result), 9)
         """
 

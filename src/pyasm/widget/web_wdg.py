@@ -3247,7 +3247,7 @@ class ExceptionWdg(Widget):
         pat1 = re.compile('Errno 1|Errno 3|Errno 4')
         pat2 = re.compile('Errno 2')
         pat3 = re.compile('SELECT')
-        from icon_wdg import IconWdg
+        from .icon_wdg import IconWdg
         h3 = DivWdg()
         h3.add(IconWdg("Error: %s" % message, IconWdg.WARNING, False))
         h3.add("TACTIC has encountered an error.<br/><br/>")

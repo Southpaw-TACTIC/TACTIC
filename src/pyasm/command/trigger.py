@@ -23,6 +23,9 @@ from pyasm.security import Site
 
 from .command import Command, HandlerCmd
 
+import six
+basestring = six.string_types
+
 class TriggerException(Exception):
     pass
 

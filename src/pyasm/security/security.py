@@ -20,6 +20,8 @@ from pyasm.search import *
 from .access_manager import *
 from .access_rule import *
 
+IS_Pv3 = sys.version_info[0] > 2
+
 if Config.get_value("install", "shutil_fix") in ["enabled"]:
     # disabling copystat method for windows shared folder mounted on linux
     def copystat_dummy(src, dst):
@@ -2064,7 +2066,10 @@ class LicenseKey(object):
         msg = msg.replace("<EndPycrypto%s>" % key_type, "")
 
         # python3 requires bytes
-        binary = base64.decodestring(msg.encode())
+        if IS_Pv3:
+            binary = base64.decodebytes(msg.encode())
+        else:
+            binary = base64.decodestring(msg.encode())
         return binary
         
 

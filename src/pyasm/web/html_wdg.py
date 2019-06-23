@@ -1078,7 +1078,7 @@ class HtmlElement(Widget):
     
     def br(count=1, clear=None):
         widget = Widget()
-        for i in xrange(count):
+        for i in range(count):
             element = HtmlElement("br")
             widget.add(element)
             if clear:

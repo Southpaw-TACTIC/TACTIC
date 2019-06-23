@@ -17,11 +17,17 @@ import decimal
 import shutil, os, types, sys
 try:
     import _thread as thread
+    types.DictType = type({})
 except:
     # Python 2.7
     import thread
 import re, random
 import datetime, time
+
+import six
+basestring = six.string_types
+
+
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -181,7 +187,7 @@ def get_full_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
 
             debug = True
-            if meth.func_name == "execute_cmd":
+            if meth.__name__ == "execute_cmd":
                 #if len(args) > 1:
                 if isinstance(args, tuple) and len(args) > 1:
                     first_arg = args[1]
@@ -197,7 +203,7 @@ def get_full_cmd(self, meth, ticket, args):
                 print("user: ", Environment.get_user_name())
                 now = datetime.datetime.now()
                 print("timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S"))
-                print("method: ", meth.func_name)
+                print("method: ", meth.__name__)
                 print("ticket: ", ticket)
                 Common.pretty_print(args)
             
@@ -217,7 +223,7 @@ def get_full_cmd(self, meth, ticket, args):
 
             self2.sobjects = self.get_sobjects()
             self2.info = self.get_info()
-            self2.info['function_name'] = meth.func_name
+            self2.info['function_name'] = meth.__name__
             self2.info['args'] = args
 
 
@@ -348,10 +354,9 @@ def xmlrpc_decorator(meth):
                 """
 
 
-                #if meth.__name__ in QUERY_METHODS:
-                if QUERY_METHODS.has_key(meth.__name__):
+                if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
-                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
+                elif meth.__name__ in TRANS_OPTIONAL_METHODS:
                     idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
                     if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
                         cmd = get_simple_cmd(self, meth, ticket, args)
@@ -5245,7 +5250,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
-                if libraries.has_key("spt_help"):
+                if 'spt_help' in libraries:
                     from tactic.ui.app import HelpWdg
                     HelpWdg()
 
