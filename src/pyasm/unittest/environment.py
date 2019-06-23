@@ -84,7 +84,7 @@ class Sample3dEnvironment(UnittestEnvironment):
         installer.execute()
 
         # add 30 shots
-        for x in xrange(30):
+        for x in range(30):
             shot = SearchType.create("prod/shot")
             shot.set_value('name','shot%s'%x)
             shot.set_value('sequence_code','SEQ_01')

@@ -31,6 +31,7 @@ from dateutil.tz import *
 import six
 basestring = six.string_types
 
+IS_Pv3 = sys.version_info[0] > 2
 
 
 # import database libraries
@@ -2459,7 +2460,7 @@ class Select(object):
 
         count = 1
         for value in values:
-            if type(value) in types.StringTypes:
+            if isinstance(value, basestring):
                 value = "'%s'" % value
             expr.append( "WHEN %s THEN %d " % (value, count) )
             count += 1
@@ -3020,8 +3021,11 @@ class Insert(object):
         self.impl.preprocess_sql(self.data, self.unquoted_cols)
 
         # quote the values
-        values = list(self.data.values())
         cols = list(self.data.keys())
+        cols.sort()
+        values = []
+        for col in cols:
+            values.append(self.data.get(col))
 
         #if not cols:
         #    # add an empty row
@@ -3202,6 +3206,10 @@ class Update(object):
         if value == None:
             value = 'NULL'
             quoted = False
+
+        if IS_Pv3 and isinstance(value, bytes):
+            value = value.decode()
+
 
         if not column_type and self.sql:
             # get column type from database

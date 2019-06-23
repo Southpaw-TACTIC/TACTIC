@@ -1024,7 +1024,7 @@ class PluginInstaller(PluginBase):
             elif node_name == 'sobject':
                 path = self.xml.get_attribute(node, "path")
                 search_type = self.xml.get_attribute(node, "search_type")
-                seq_max = self.xml.get_attribute(node, "seq_max")
+                seq_max = self.xml.get_attribute(node, "seq_max") or 0
                 try:
                     if seq_max:
                         seq_max = int(seq_max)

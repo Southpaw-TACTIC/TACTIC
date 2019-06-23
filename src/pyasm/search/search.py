@@ -27,6 +27,7 @@ from .database_impl import DatabaseImpl
 import six
 basestring = six.string_types
 
+IS_Pv3 = sys.version_info[0] > 2
 
 # Need to import this way because of how DbResource needs to get imported
 from pyasm.search.sql import SqlException, DatabaseException, Sql, DbResource, DbContainer, DbPasswordUtil, Select, Insert, Update, CreateTable, DropTable, AlterTable
@@ -937,7 +938,7 @@ class Search(Base):
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
                     self.add_filter("%ssearch_type" % prefix, sobjects[0].get_search_type() )
-                    if isinstance(col_values[0], int) or isinstance(col_values[0], long):
+                    if isinstance(col_values[0], six.integer_types):
                         self.add_filters(from_col, col_values, op=op )
                     else:
                         self.add_filters("%ssearch_code" % prefix, col_values, op=op)
@@ -3364,8 +3365,10 @@ class SObject(object):
                 except UnicodeDecodeError as e:
                     value = value.decode('iso-8859-1', 'ignore')
                 except:
-                    pass # Python3 does not have decode
-        
+                    if IS_Pv3 and isinstance(value, bytes):
+                        value = value.decode()
+       
+
         self._set_value(name, value, quoted=quoted)
 
 
@@ -3373,7 +3376,6 @@ class SObject(object):
     def _set_value(self, name, value, quoted=True):
         '''called by set_value()'''
 
-        #if self.update_data.has_key(name) or not self.data.has_key(name) or value != self.data[name]:
         if name in self.update_data or name not in self.data or value != self.data[name]:
 
             self.update_data[name] = value
@@ -3634,7 +3636,7 @@ class SObject(object):
 
         search_type = self.get_base_search_type()
 
-        if type(sobject) in types.StringTypes:
+        if isinstance(sobject, basestring):
             tmp_sobject = SearchKey.get_by_search_key(sobject)
             if not tmp_sobject:
                 raise SearchException("Parent [%s] not found" %sobject) 
@@ -4683,6 +4685,7 @@ class SObject(object):
                     self.set_value(key, value)
         except Exception as e:
             print("Error: ", e.__str__())
+            #raise
 
 
 
@@ -6757,13 +6760,15 @@ class SObjectUndo:
                     from_data = ""
                 elif isinstance(from_data, str):
                     # this could be slow, but remove bad characters
-                    from_data = unicode(from_data, errors='ignore').encode('utf-8')
+                    if not IS_Pv3:
+                        from_data = unicode(from_data, errors='ignore').encode('utf-8')
                 to_data = new_data[key]
                 if to_data == None:
                     to_data = ""
                 elif isinstance(to_data, str):
                     # this could be slow, but remove bad characters
-                    to_data = unicode(to_data, errors='ignore').encode('utf-8')
+                    if not IS_Pv3:
+                        to_data = unicode(to_data, errors='ignore').encode('utf-8')
                 elif column_types.get(key) == 'timestamp':
                     to_data = SPTDate.add_gmt_timezone(to_data)
                     to_data = str(to_data)

@@ -80,6 +80,7 @@ class Container(object):
     get_all_instances = staticmethod(get_all_instances)
 
 
+
     def put(key, value):
         _get_instance().info[key] = value
     put = staticmethod(put)

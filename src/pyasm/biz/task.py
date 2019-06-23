@@ -25,6 +25,9 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
+import six
+basestring = six.string_types
+
 
 
 TASK_PIPELINE = '''

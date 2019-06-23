@@ -19,6 +19,9 @@ import os, time, codecs
 
 from pyasm.common import *
 
+import six
+basestring = six.string_types
+
 
 class TransactionException(Exception):
     pass
@@ -372,7 +375,7 @@ class Transaction(Base):
             self.transaction_log.set_value("description", self.description)
             self.transaction_log.commit()
         else:
-            from transaction_log import TransactionLog
+            from .transaction_log import TransactionLog
             self.transaction_log = TransactionLog.create( \
                 self.command_class, xml_string, self.description, self.title )
 
@@ -1473,7 +1476,7 @@ class AlterTableUndo(Base):
         Xml.set_attribute(sobject_node,"column",column)
 
        
-        from sql import DbContainer
+        from .sql import DbContainer
         from pyasm.biz import Project
         project = Project.get_by_code(database)
         # FIXME: for now, make database == project

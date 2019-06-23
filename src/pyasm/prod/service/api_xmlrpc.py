@@ -24,6 +24,8 @@ except:
 import re, random
 import datetime, time
 
+IS_Pv3 = sys.version_info[0] > 2
+
 import six
 basestring = six.string_types
 
@@ -724,7 +726,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         if not search_keys:
             raise ApiException("Search key [%s] is None" % search_keys)
 
-        if type(search_keys) != types.ListType:
+        if not isinstance(search_keys, list):
             search_keys = [search_keys]
 
         sobjects = []
@@ -891,11 +893,13 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
 
                     elif isinstance(value, str):
-                        # this could be slow, but remove bad characters
+                        if not IS_Pv3:
+                            # this could be slow, but remove bad characters
+                            value2 = unicode(value, errors='ignore')
+                        else:
+                            value2 = value
 
-                        value2 = unicode(value, errors='ignore')
-
-                    elif isinstance(value, unicode):
+                    elif not IS_Pv3 and isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
                             value2 = value.encode("utf-8")
