@@ -16,6 +16,7 @@ __all__ = ["SignOutCmd", "PasswordEditCmd"]
 from pyasm.common import Environment, UserException
 from command import *
 from pyasm.search import SearchKey
+from pyasm.security import Login
 
 import hashlib
 class SignOutCmd(Command):
@@ -79,7 +80,7 @@ class SignOutCmd(Command):
 
 
 class PasswordEditCmd(Command):
-    '''encrypts the entered password with md5 encryption'''
+    '''encrypts the entered password'''
 
     def get_title(self):
         return "Password Change"
@@ -99,8 +100,7 @@ class PasswordEditCmd(Command):
         self.old_password = web.get_form_value("old password")
         if isinstance(self.old_password, list):
             self.old_password = self.old_password[0]
-        #encrypted = md5.new(self.old_password).hexdigest()
-        encrypted = hashlib.md5(self.old_password).hexdigest()
+        encrypted = Login.encrypt_password(self.old_password)
         
         if encrypted != self.sobject.get_value('password'):
             raise UserException('Old password is incorrect.')
@@ -130,8 +130,7 @@ class PasswordEditCmd(Command):
                 return
         
         # encrypt the password
-        #encrypted = md5.new(self.password).hexdigest()
-        encrypted = hashlib.md5.new(self.password).hexdigest()
+        encrypted = Login.encrypt_password(self.password)
         self.sobject.set_value("password", encrypted)
 
         self.sobject.commit()

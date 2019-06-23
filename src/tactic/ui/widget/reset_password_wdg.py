@@ -44,7 +44,7 @@ class NewPasswordWdg(BaseSignInWdg):
 
 
     def get_content(self):
-        
+
         web = WebContainer.get_web()
         login_name = web.get_form_value('login')
         hidden = HiddenWdg('login', login_name)
@@ -129,10 +129,10 @@ class NewPasswordCmd(Command):
         if not login:
             web.set_form_value("is_err", "true")
             web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
-            return  
+            return
 
         if password == confirm_password:
-            encrypted = hashlib.md5(password).hexdigest()
+            encrypted = Login.encrypt_password(password)
             login.set_value('password', encrypted)
             login.commit()
         else:
@@ -182,7 +182,7 @@ class CodeConfirmationWdg(BaseSignInWdg):
 
 
     def get_content(self):
-        
+
         web = WebContainer.get_web()
         login_name = web.get_form_value('login')
         hidden = HiddenWdg('login', login_name)
@@ -200,7 +200,7 @@ class CodeConfirmationWdg(BaseSignInWdg):
         div.add_class("reset-container")
 
         div.add("<div class='code-msg-container'>A code was sent to <span class='msg-user'>%s</span>'s email. Please enter the code to reset your password:</div>" % login_name)
-        
+
         code_container = DivWdg()
         div.add(code_container)
         code_container.add_class("sign-in-input")
@@ -246,7 +246,7 @@ class CodeConfirmationWdg(BaseSignInWdg):
 
 
         div.add(self.get_content_styles())
-        
+
         return div
 
 
@@ -275,7 +275,7 @@ class ResetOptionsWdg(BaseSignInWdg):
 
 
     def get_content(self):
-        
+
         web = WebContainer.get_web()
         login_name = web.get_form_value('login')
 
@@ -322,9 +322,9 @@ class ResetOptionsWdg(BaseSignInWdg):
             err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
 
         div.add(self.get_content_styles())
-        
+
         return div
-     
+
 
 
 class ResetOptionsCmd(Command):
@@ -343,7 +343,7 @@ class ResetOptionsCmd(Command):
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
-              
+
     def execute(self):
         # Since this is not called with Command.execute_cmd
         self.check()
@@ -365,13 +365,13 @@ class ResetOptionsCmd(Command):
                 web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
                 return
 
-        
+
             # auto pass generation
             unique_code = ''.join([ Common.randchoice('abcdefghijklmno12345') for i in xrange(0, 5)])
             auto_password = unique_code
-            
+
             msg = CodeConfirmationWdg.RESET_MSG
-            
+
             # send the email
             try:
                 from pyasm.command import EmailTriggerTestCmd
@@ -399,8 +399,8 @@ class ResetOptionsCmd(Command):
                 msg = "Failed to send an email for your new password. Reset aborted."
                 web.set_form_value("is_err", "true")
                 web.set_form_value(CodeConfirmationWdg.MSG, msg)
-                raise 
-                
+                raise
+
             # handle windows domains
             #if self.domain:
             #    self.login = "%s\\%s" % (self.domain, self.login)
