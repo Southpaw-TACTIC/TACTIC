@@ -21,6 +21,9 @@ from pyasm.security import LoginGroup
 from .project import Project
 from .prod_setting import ProdSetting, ProjectSetting
 
+import six
+basestring = six.string_types
+
 class PipelineException(Exception):
     pass
 
@@ -810,7 +813,7 @@ class Pipeline(SObject):
 
     def get_process(self, name):
         '''returns a Process object'''
-        if type(name) not in types.StringTypes:
+        if not isinstance(name, basestring):
             name = name.get_name()
 
         # first try the top level

@@ -22,6 +22,10 @@ from pyasm.search import *
 from .checkin import *
 from .snapshot_builder import *
 
+import six
+basestring = six.string_types
+
+
 class SingleSnapshotException(Exception):
     pass
 
@@ -84,7 +88,7 @@ class FileCheckin(BaseCheckin):
         self.is_revision = is_revision
         self.version = version
 
-        if type(file_paths) in types.StringTypes:
+        if isinstance(file_paths, basestring):
             self.file_paths = [file_paths]
         else:
             self.file_paths = file_paths
@@ -138,7 +142,7 @@ class FileCheckin(BaseCheckin):
         self.base_dir = base_dir
        
 
-        if type(file_types) != types.StringType:
+        if not isinstance(file_types, basestring):
             self.file_types = file_types
         else:
             self.file_types = [file_types]

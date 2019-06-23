@@ -20,6 +20,7 @@ import random
 import types
 import math
 import re
+import sys
 
 from pyasm.common import Environment, Date, Common
 from pyasm.security import Batch
@@ -34,6 +35,8 @@ from .expression import *
 import calendar
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+
+IS_Pv3 = sys.version_info[0] > 2
 
 
 class ExpressionTest(unittest.TestCase):
@@ -135,7 +138,7 @@ class ExpressionTest(unittest.TestCase):
             self._test_new_parser()
             self._test_simple()
             self._test_single()
-            self._test_args()
+
 
             self._test_composite()
             self._test_dates()
@@ -151,6 +154,9 @@ class ExpressionTest(unittest.TestCase):
             self._test_connection()
             self._test_cache()
             self._test_cross_proj_count()
+
+            # Commenting out for now
+            self._test_args()
 
         finally:
             self.transaction.rollback()
@@ -186,8 +192,11 @@ class ExpressionTest(unittest.TestCase):
         desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
         expr3 = "@GET(.description)"
         actual_desc = self.parser.eval(expr3, sobjects=self.country_task, single=True)
-        
-        self.assertEqual(True, isinstance(actual_desc, unicode))
+
+        if not IS_Pv3:
+            self.assertEqual(True, isinstance(actual_desc, unicode))
+        else:
+            self.assertEqual(True, isinstance(actual_desc, str))
         # the returned unicode needs to be encoded as str
         actual_desc = actual_desc.encode('utf-8')
         self.assertEqual(desc, actual_desc)
@@ -1731,12 +1740,12 @@ class ExpressionTest(unittest.TestCase):
         # Full search with @GET should return list
         expr = "@GET(unittest/person.name_first)"
         result = self.parser.eval(expr, None)
-        self.assertEqual(types.ListType, type(result))
+        self.assertEqual(True, isinstance(result, list))
 
         # Full search with single result @GET should return list
         expr = "@GET(unittest/person['name_first','person0'].name_first)"
         result = self.parser.eval(expr, None)
-        self.assertEqual(types.ListType, type(result))
+        self.assertEqual(True, isinstance(result, list))
 
 
 
@@ -1767,12 +1776,12 @@ class ExpressionTest(unittest.TestCase):
         # Full search with @SUM should result in a value
         expr = "@SUM(unittest/person.age)"
         result = self.parser.eval(expr)
-        self.assertEqual(types.IntType, type(result))
+        self.assertEqual(True, isinstance(result, int))
 
         # Single search with @SUM should result in a value
         expr = "@SUM(unittest/person['name_first','person0'].age)"
         result = self.parser.eval(expr)
-        self.assertEqual(types.IntType, type(result))
+        self.assertEqual(True, isinstance(result, int))
 
         # Empty search with @SUM should result in 0
         expr = "@SUM(unittest/person['name_first','XXXX'].age)"
@@ -1794,7 +1803,7 @@ class ExpressionTest(unittest.TestCase):
         # Full search should return a list
         expr = "@SOBJECT(unittest/person)"
         result = self.parser.eval(expr)
-        self.assertEqual(types.ListType, type(result))
+        self.assertEqual(True, isinstance(result, list))
 
         # Empty search should return an empty list
         expr = "@SOBJECT(unittest/person['name_first','!!XXXX'])"
@@ -1826,7 +1835,7 @@ class ExpressionTest(unittest.TestCase):
         person1 = self.persons[1]
         age1 = person1.get_value("age")
 
-        from expression import ExpressionParser
+        from .expression import ExpressionParser
 
         try:
             expression = "@GET (unittest/person.age)"
@@ -2645,7 +2654,7 @@ class ExpressionTest(unittest.TestCase):
             expr = m.groups()[0]
             result = parser.eval(expr, single=True)
             result = Common.process_unicode_string(result)
-            html = html.replace(full_expr, result )
+            html = html.replace(full_expr, str(result) )
         try: 
             self.assertEqual( html, 
         '''

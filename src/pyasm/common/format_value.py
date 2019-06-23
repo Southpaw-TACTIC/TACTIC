@@ -21,6 +21,9 @@ from dateutil import parser
 
 from .timecode import TimeCode
 
+import six
+basestring = six.string_types
+
 
 try:
     locale.setlocale(locale.LC_ALL, '')

@@ -539,7 +539,7 @@ class Search(Base):
                         value = Search.eval(value, single=True)
                     self.add_filter(name, value, table=table)
                     #print('name: [%s],[%s]' % (name, value))
-                elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
+                elif isinstance(value, (int, float, bool)):
                     # <name> = '<value>'
                     self.add_filter(name, value, table=table)
                 else:
@@ -3689,7 +3689,7 @@ class SObject(object):
         '''add a related sobject.  This uses the style relationships'''
         search_type = self.get_base_search_type()
 
-        if type(sobject) in types.StringTypes:
+        if isinstance(sobject, basestring):
             sobject = SearchKey.get_by_search_key(sobject)
 
         search_type2 = sobject.get_base_search_type()

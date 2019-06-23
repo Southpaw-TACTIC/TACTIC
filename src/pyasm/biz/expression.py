@@ -619,8 +619,8 @@ class StringMode(ExpressionParser):
         if token == '{':
             mode = ExpressionMode()
             result = self.dive(mode)
-            # FIXME: for now, take the first element
-            if type(result) == types.ListType:
+            # NOTE:: for now, take the first element
+            if isinstance(result, list):
                 if not result:
                     result = ''
                 else:
@@ -641,7 +641,7 @@ class StringMode(ExpressionParser):
                     except Exception as e:
                         raise SyntaxError("Error when using format [%s] on datetime result [%s] in expression [%s]: [%s]" % (format, result, self.expression, str(e)))
 
-                # FIXME: does this make sense??
+                # NOTE: does this make sense??
                 # if it is a timedelta, convert to seconds for
                 # formatting
                 elif isinstance(result, datetime.timedelta):
@@ -917,7 +917,7 @@ class ExpressionMode(ExpressionParser):
         # build the expression for each element
         num_elements = 0
         for item in stack:
-            if type(item) == types.ListType:
+            if isinstance(item, list):
                 num_elements = len(item)
         if num_elements == 0:
             num_elements = 1
@@ -928,7 +928,7 @@ class ExpressionMode(ExpressionParser):
             if i % 2 == 1:
                 continue
 
-            if type(item) == types.ListType:
+            if isinstance(item, list):
                 if len(item) == 0:
                     continue
                 else:
@@ -937,10 +937,10 @@ class ExpressionMode(ExpressionParser):
             if item in [None, '']:
                 continue
 
-            if type(item) == types.FloatType:
+            if isinstance(item, float):
                 default = 0.0
                 break
-            elif type(item) == types.IntType:
+            elif isinstance(item, int):
                 default = 0
                 break
             elif isinstance(item, datetime.datetime):
@@ -976,7 +976,7 @@ class ExpressionMode(ExpressionParser):
             elements = []
             for item in stack:
 
-                if type(item) == types.ListType:
+                if isinstance(item, list):
                     if len(item) == 0:
                         value = default
                     else:
@@ -1005,7 +1005,7 @@ class ExpressionMode(ExpressionParser):
             for i, element in enumerate(elements):
                 if i % 2 == 1:
                     continue
-                if type(element) in types.StringTypes:
+                if isinstance(element, basestring):
                     has_string = True
                     break
  
@@ -1025,7 +1025,7 @@ class ExpressionMode(ExpressionParser):
                         continue
 
                     # some hacky process to make different types work.
-                    if type(element) == types.BooleanType:
+                    if isinstance(element, bool):
                         if element == True:
                             element = 'True'
                         elif element == False:
@@ -1296,7 +1296,7 @@ class MethodMode(ExpressionParser):
                     # evaluate expression
                     mode = ExpressionMode()
                     arg_results = self.dive(mode, expression=arg)
-                    if type(arg_results) == types.ListType:
+                    if isinstance(arg_results, list):
                         results = 0
                         for arg_result in arg_results:
                             if arg_result:
@@ -1402,7 +1402,7 @@ class MethodMode(ExpressionParser):
 
                 # FIXME: should this not always return an array
                 results = []
-                if type(arg_results) == types.ListType:
+                if isinstance(arg_results, list):
                     for arg_result in arg_results:
                         result = math.floor(arg_result)
                         results.append(result)
@@ -1472,7 +1472,7 @@ class MethodMode(ExpressionParser):
             expression = args[0]
             mode = self.get_mode(expression)
             result = self.dive(mode, expression=expression)
-            if type(result) == types.ListType and result:
+            if isinstance(result, list) and result:
                 result = result[0]
             if result:
                 expression = args[1]
@@ -1487,7 +1487,7 @@ class MethodMode(ExpressionParser):
                     results = None
 
         elif method == 'CASE':
-            for i in xrange(0, len(args), 2):
+            for i in range(0, len(args), 2):
                 expression = args[i]
                 value_expr = args[i+1]
                 mode = self.get_mode(expression)
@@ -1495,7 +1495,7 @@ class MethodMode(ExpressionParser):
 
                 # NOTE: single assumption
                 # if the returned value is a list, then take the first one
-                if type(result) == types.ListType:
+                if isinstance(result, list):
                     result = result[0]
 
                 if result:
@@ -2460,7 +2460,7 @@ class MethodMode(ExpressionParser):
             value = sobject.get_value(column, no_exception=True)
             if not value:
                 continue
-            if type(value) in types.StringTypes:
+            if isinstance(value, basestring):
                 try:
                     value = float(value)
                 except:

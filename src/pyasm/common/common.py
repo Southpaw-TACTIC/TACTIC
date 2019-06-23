@@ -892,7 +892,7 @@ class Common(Base):
 
     def process_unicode_string( in_string ):
 
-        if not IS_Pv3:
+        if IS_Pv3:
             return in_string
 
         # for Python 2.7
