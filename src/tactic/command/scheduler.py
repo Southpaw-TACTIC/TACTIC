@@ -312,7 +312,7 @@ def main():
 
         time.sleep(30)
 
-    except KeyboardInterrupt, e:
+    except KeyboardInterrupt as e:
         print 'stopping'
         #scheduler.stop()
     else:
@@ -322,7 +322,7 @@ def main():
     while 1:
         try:
             time.sleep(15)
-        except (KeyboardInterrupt, SystemExit), e:
+        except (KeyboardInterrupt, SystemExit) as e:
             scheduler.stop()
             break
         else:

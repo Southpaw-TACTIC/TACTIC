@@ -18,8 +18,8 @@ import re
 
 from pyasm.common import Container, Xml, Environment, Common, Config
 from pyasm.search import *
-from project import Project
-from file import File, FileRange, FileGroup
+from .project import Project
+from .file import File, FileRange, FileGroup
 
 class SObjectNotFoundException(Exception):
     pass
@@ -861,7 +861,7 @@ class Snapshot(SObject):
         # ensure that the number of file objects is the same as the number
         # of nodes
         if len(nodes) != len(file_objects):
-            print "ERROR: number of nodes does not match number of file objects for snapshot[%s]" % self.get_code()
+            print("ERROR: number of nodes does not match number of file objects for snapshot[%s]" % self.get_code())
             return {}
 
 
@@ -1013,7 +1013,7 @@ class Snapshot(SObject):
         from pyasm.command import Trigger
 
         if cls.integral_trigger_added:
-            #print "WARNING: snapshot.add_integral_trigger already run"
+            #print("WARNING: snapshot.add_integral_trigger already run")
             return
 
         events = ["change|sthpw/snapshot"]
@@ -2244,7 +2244,7 @@ class Snapshot(SObject):
             orig_file_object = File.get_by_code(file_code)
 
             if not orig_file_object:
-                print "WARNING: cannot find orig_file_object [%s]" % file_code
+                print("WARNING: cannot find orig_file_object [%s]" % file_code)
                 continue
 
             src_path = orig_file_object.get_value('source_path')

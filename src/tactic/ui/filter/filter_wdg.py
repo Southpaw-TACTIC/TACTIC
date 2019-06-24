@@ -22,7 +22,7 @@ from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.input import TextInputWdg
 
-from filter_data import FilterData
+from .filter_data import FilterData
 
 
 class BaseFilterWdg(BaseRefreshWdg):

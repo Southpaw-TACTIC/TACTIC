@@ -999,7 +999,7 @@ if __name__ == '__main__':
             if task.in_restart():
                 raise SystemExit("Exit")
             time.sleep(2)
-        except (KeyboardInterrupt, SystemExit), e:
+        except (KeyboardInterrupt, SystemExit) as e:
             scheduler = Scheduler.get()
             scheduler.stop()
             break

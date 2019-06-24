@@ -74,7 +74,7 @@ def _cp_on_http_error(status, message):
     try:
         eval("cherrypy.root.tactic.%s" % project_code)
     # if project_code is empty , it raises SyntaxError
-    except (AttributeError, SyntaxError), e:
+    except (AttributeError, SyntaxError) as e:
         has_project = False
     else:
         has_project = True
@@ -170,10 +170,10 @@ class CherryPyStartup(object):
             if sql.get_database_type() != "MongoDb":
                 # before batch, clean up the ticket with a NULL code
                 if os.getenv('TACTIC_MODE') != 'production':
-		    try:
+                    try:
                         sql.do_update('DELETE from "ticket" where "code" is NULL')
                     except SqlException as e:
-                        print "Sql error has occured."
+                        print("Sql error has occured.")
                 else:
                     start_port = Config.get_value("services", "start_port")
                     if start_port:
@@ -181,10 +181,10 @@ class CherryPyStartup(object):
                     else:
                         start_port = 8081
                     if port and int(port) == start_port:
-		        try:
+                        try:
                             sql.do_update('DELETE from "ticket" where "code" is NULL')
                         except SqlException as e:
-                            print "Sql error has occured."
+                            print("Sql error has occured.")
         except DatabaseException as e:
             # TODO: need to work on this
             print("ERROR: could not connect to [sthpw] database")
@@ -198,7 +198,7 @@ class CherryPyStartup(object):
             try:
                 sql = DbContainer.get("sthpw")
             except:
-                print "Could not connect to the database."
+                print("Could not connect to the database.")
                 raise
 
         # is it CherryPyStartup's responsibility to start batch?
@@ -474,9 +474,9 @@ class CherryPyStartup(object):
                 exec("from %s.%s.context.%s import %s" % (base,site,context,context))
                 exec("cherrypy.root.tactic.%s.%s = %s()" % (site,context,context) )
 
-            except ImportError, e:
+            except ImportError as e:
                 print(str(e))
-                print "... failed to import '%s.%s.%s'" % (base, site, context)
+                print("... failed to import '%s.%s.%s'" % (base, site, context))
                 raise
                 #return
 

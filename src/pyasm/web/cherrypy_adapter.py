@@ -15,7 +15,7 @@ __all__ = ['CherryPyException', 'CherryPyAdapter']
 import types, os, re
 
 from pyasm.common import TacticException
-from web_environment import *
+from .web_environment import *
 
 import cherrypy
 
@@ -273,7 +273,7 @@ class CherryPyAdapter(WebEnvironment):
         try:
             return cherrypy.request.simpleCookie[name].value
             
-        except KeyError, e:
+        except KeyError as e:
             return ""
 
 
@@ -282,7 +282,7 @@ class CherryPyAdapter(WebEnvironment):
         try:
             return cherrypy.request.simpleCookie
             
-        except KeyError, e:
+        except KeyError as e:
             return ""
 
 

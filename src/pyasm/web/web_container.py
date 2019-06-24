@@ -15,9 +15,12 @@ __all__ = ['WebContainer']
 
 from pyasm.common import *
 from pyasm.security import *
-from palette import Palette
+from .palette import Palette
 
-from thread import get_ident
+try:
+    from thread import get_ident
+except:
+    from _thread import get_ident
 buffers = {}
 
 

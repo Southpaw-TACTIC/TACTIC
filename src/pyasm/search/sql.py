@@ -13,13 +13,25 @@
 __all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "Delete", "CreateTable", "DropTable", "AlterTable", 'CreateView']
 
 
-import os, types, thread, sys
+import os, types, sys
 import re, datetime
+
+from builtins import int
+
+try:
+    import thread
+except:
+    import _thread as thread
 
 from threading import Lock
 
 from pyasm.common import Config, TacticException, Environment
 from dateutil.tz import *
+
+import six
+basestring = six.string_types
+
+
 
 # import database libraries
 DATABASE_DICT = {}
@@ -28,13 +40,13 @@ try:
     import pyodbc
     DATABASE_DICT["SQLServer"] = pyodbc
     #Config.set_value("database", "vendor", "SQLServer")
-except ImportError, e:
+except ImportError as e:
     pass
 
 try:
     try:
         import psycopg2
-    except ImportError, e:
+    except ImportError as e:
         # if psycopg2 is not installed we try to use psycopg2cffi (useful for pypy compatibility)
         from psycopg2cffi import compat
         compat.register()
@@ -43,7 +55,7 @@ try:
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
     #psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
     DATABASE_DICT["PostgreSQL"] = psycopg2
-except ImportError, e:
+except ImportError as e:
     pass
 
 try:
@@ -60,14 +72,14 @@ try:
 
     DATABASE_DICT["Oracle"] = cx_Oracle
 
-except ImportError, e:
+except ImportError as e:
     pass
 
 # MySQL
 try:
     import MySQLdb
     DATABASE_DICT["MySQL"] = MySQLdb
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -75,7 +87,7 @@ except ImportError, e:
 try:
     import sqlite3 as sqlite
     DATABASE_DICT["Sqlite"] = sqlite
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -84,7 +96,7 @@ try:
     import pymongo
     pymongo.ProgrammingError = Exception
     DATABASE_DICT["MongoDb"] = pymongo
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -93,7 +105,7 @@ except ImportError, e:
 try:
     import simple_salesforce
     DATABASE_DICT["Salesforce"] = simple_salesforce
-except ImportError, e:
+except ImportError as e:
     pass
 """
 
@@ -103,7 +115,7 @@ except ImportError, e:
 try:
     from database_impl import TacticImpl
     DATABASE_DICT["TACTIC"] = TacticImpl
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -141,8 +153,8 @@ except TacticException as e:
 
 from pyasm.common import *
 
-from database_impl import *
-from transaction import *
+from .database_impl import *
+from .transaction import *
 
 
 class SqlException(TacticException):
@@ -468,7 +480,7 @@ class Sql(Base):
                 database_name = self.get_database_name()
                 sql_dict[database_name] = self
 
-            except self.pgdb.OperationalError, e:
+            except self.pgdb.OperationalError as e:
                 raise SqlException(e.__str__())
 
 
@@ -663,7 +675,7 @@ class Sql(Base):
             self.description = self.cursor.description
             return
 
-        except pgdb.OperationalError, e:
+        except pgdb.OperationalError as e:
             # A reconnect will only be attempted on the first query.
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
@@ -691,7 +703,7 @@ class Sql(Base):
             self.connect()
             return self.do_query(query, num_attempts=num_attempts+1)
 
-        except pgdb.Error, e:
+        except pgdb.Error as e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error
@@ -753,7 +765,7 @@ class Sql(Base):
             return self.results
 
 
-        except self.pgdb.OperationalError, e:
+        except self.pgdb.OperationalError as e:
             # A reconnect will only be attempted on the first query.
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
@@ -782,7 +794,7 @@ class Sql(Base):
             self.connect()
             return self.do_query(query, num_attempts=num_attempts+1)
 
-        except self.pgdb.Error, e:
+        except self.pgdb.Error as e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error
@@ -848,7 +860,7 @@ class Sql(Base):
                 self.transaction_count = 1
                 self.commit()
 
-        except self.pgdb.ProgrammingError, e:
+        except self.pgdb.ProgrammingError as e:
             if str(e).find("already exists") != -1:
                 return
             if isinstance(query, unicode):
@@ -859,7 +871,7 @@ class Sql(Base):
             print("Error with query (ProgrammingError): ", self.database_name, wrong_query)
             print(str(e))
             raise SqlException(str(e))
-        except self.pgdb.Error, e:
+        except self.pgdb.Error as e:
             if not quiet:
                 if isinstance(query, unicode):
                     wrong_query = query.encode('utf-8')
@@ -942,7 +954,8 @@ class Sql(Base):
 
         # replace all single quotes with two single quotes
         value_type = type(value)
-        if value_type in [types.ListType, types.TupleType]:
+        #if value_type in [types.ListType, types.TupleType]:
+        if isinstance(value, (list, tuple)):
             if len(value) == 0:
                 # Previously no check if list is empty, which is an issue
                 # for trying to get 'value[0]' as it's not defined. Assuming
@@ -951,22 +964,26 @@ class Sql(Base):
             value = value[0]
             value_type = type(value)
 
-        if value_type == types.IntType or value_type == types.LongType:
+
+
+
+        # quote types
+        if isinstance(value, basestring):
+            value = value.replace("'", "''")
+        elif isinstance(value, int):
             value = str(value)
         elif value_type == types.BooleanType:
             if value == True:
                 value = "1"
             else:
                 value = "0"
-        elif value_type == types.ListType:
+        elif isinstance(value, list):
             value = value[0]
             value = value.replace("'", "''")
         elif value_type == types.MethodType:
             raise SqlException("Value passed in was an <instancemethod>")
         elif value_type in [types.FloatType, types.IntType]:
             pass
-        elif isinstance(value, basestring) or value_type in [types.StringTypes]:
-            value = value.replace("'", "''")
         elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
             value = str(value)
         elif isinstance(value, object):
@@ -1315,7 +1332,7 @@ class DbContainer(Base):
         '''
 
         # STRICT ENFORCEMENT to ensure that only DbResources come through
-        from sql import DbResource
+        from .sql import DbResource
         assert db_resource != None
         if db_resource != "sthpw":
             #print("DBCONTAINER what is", db_resource, type(db_resource))
@@ -1610,7 +1627,17 @@ class DbContainer(Base):
 
 
 class DbPasswordUtil(object):
-    PASSWORD_KEY = (95954739753557611717677953802022772164074845338566937775470833735856469435381956125590339095236470675423085325686058278198918822369603350495319710499101888408708913117761396293217495020971217519968381713929946123203701342525363284439548065832975303252596220333775984191691412558233438061248397074525660377441L, 65537L, 86459851563652350384550994520912595050627092587897749508172538776108095169113253171923656930465295425867586777734914833516983601607791279024819865791735409407082275562168885331872720365063141292194732294024919434643862338969598324336994436079024289458730635475133273691824108450263457154881428072573317615473L)
+    PASSWORD_KEY = (95954739753557611717677953802022772164074845338566937775470833735856469435381956125590339095236470675423085325686058278198918822369603350495319710499101888408708913117761396293217495020971217519968381713929946123203701342525363284439548065832975303252596220333775984191691412558233438061248397074525660377441, 65537, 86459851563652350384550994520912595050627092587897749508172538776108095169113253171923656930465295425867586777734914833516983601607791279024819865791735409407082275562168885331872720365063141292194732294024919434643862338969598324336994436079024289458730635475133273691824108450263457154881428072573317615473)
+    try:
+        # Python 2.7 convert to longs
+        PASSWORD_KEY = (
+            long(PASSWORD_KEY[0]),
+            long(PASSWORD_KEY[1]),
+            long(PASSWORD_KEY[2])
+        )
+    except:
+        pass
+
 
 
     def get_password(cls):
@@ -2165,7 +2192,8 @@ class Select(object):
         # This check added to handle cases where a list is empty,
         # as 'value[0]' is not defined in that case. We assume in this
         # case that the intended value is NULL
-        if type(value) == types.ListType and len(value) == 0:
+        #if type(value) == types.ListType and len(value) == 0:
+        if isinstance(value, list) and len(value) == 0:
             where = "\"%s\" is NULL" % column
             self.add_where(where)
             return
@@ -3052,7 +3080,7 @@ class Insert(object):
                 #if os.name != 'nt':
                 try:
                     x = x.decode('utf-8')
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     x = x.decode('iso-8859-1')
 
                 # this only works in Linux can causes error with windows xml parser down the road

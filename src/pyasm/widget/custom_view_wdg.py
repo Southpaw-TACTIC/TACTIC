@@ -821,7 +821,7 @@ class CsvDownloadWdg(BaseRefreshWdg):
         cmd.set_include_id(self.include_id)
         try:
             cmd.execute()
-        except Exception, e:
+        except Exception as e:
             raise
 
         asset_download_dir = "%s/temp/%s" % (asset_dir, ticket)
@@ -850,7 +850,7 @@ class CsvGenerator(Widget):
         content = self.get_content(file_path)
         try:
             os.unlink(file_path)
-        except IOError, e:
+        except IOError as e:
             print "Unable to remove the temp csv file [%s]" %file_path
 
         return content

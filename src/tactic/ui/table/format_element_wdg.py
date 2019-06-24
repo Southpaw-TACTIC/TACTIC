@@ -258,7 +258,7 @@ class FormatElementWdg(SimpleTableElementWdg):
         locale.setlocale(locale.LC_ALL, "")
         try:
             num = float(num)
-        except ValueError, e:
+        except ValueError as e:
             num = 0
         return locale.currency(num, True, grouping, monetary)
 

@@ -17,9 +17,9 @@ import os, re
 from pyasm.common import Xml, TacticException, Container, Environment, Common, Config
 from pyasm.search import *
 
-from project import Project
-from file import File
-from expression import ExpressionParser
+from .project import Project
+from .file import File
+from .expression import ExpressionParser
 
 class NamingException(TacticException):
     pass
@@ -118,7 +118,7 @@ class Naming(SObject):
                 try:
                     search = Search(Naming)
                     namings = search.get_sobjects()
-                except SearchException, e:
+                except SearchException as e:
                     # it is possible that there is no naming table
                     # in this project.  This is possible if the datbase
                     # is just a resource
@@ -745,7 +745,7 @@ class NamingUtil(object):
                 else:
                     try:
                         value = value[index]
-                    except IndexError, e:
+                    except IndexError as e:
                         value = ""
 
 

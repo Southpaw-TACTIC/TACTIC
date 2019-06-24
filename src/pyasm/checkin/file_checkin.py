@@ -20,8 +20,8 @@ from pyasm.common import *
 from pyasm.biz import *
 from pyasm.search import *
 
-from checkin import *
-from snapshot_builder import *
+from .checkin import *
+from .snapshot_builder import *
 
 class SingleSnapshotException(Exception):
     pass
@@ -444,7 +444,7 @@ class FileCheckin(BaseCheckin):
         if naming and self.checkin_type:
             checkin_type = naming.get_value('checkin_type')
             if checkin_type and self.checkin_type != checkin_type:
-                print "Mismatch checkin_type!"
+                print("Mismatch checkin_type!")
                 naming = None
             
         # find the path for each file
@@ -533,9 +533,9 @@ class FileCheckin(BaseCheckin):
                     for file in files:
                         #os.chown(file, uid, gid)
                         os.system('sudo chown %s.%s \"%s\"'%(uid, gid, file))
-                except OSError, e:
+                except OSError as e:
                     # apache should be made a sudoer for this to work
-                    print "Error changing owner. %s" %e.__str__()
+                    print("Error changing owner. %s" %e.__str__())
 
     def handle_system_commands(self, files, file_objects):
         '''delegate the system commands to the appropriate repo.'''
@@ -702,16 +702,16 @@ class PipelineEventCaller(threading.Thread):
             if pipeline:
                 self.command.set_pipeline_code(pipeline.get_code() )
                 self.command.notify_listeners()
-        except Exception, e:
+        except Exception as e:
             # print the stacktrace
             import traceback
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
-            print "-"*50
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
+            print("-"*50)
             #raise TacticException(e)
 
 

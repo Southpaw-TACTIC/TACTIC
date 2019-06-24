@@ -74,7 +74,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
     def get(vendor=None):
         '''Get the current database implementation'''
-        from sql import Sql
+        from .sql import Sql
         if not vendor:
             vendor = Sql.get_default_database_type()
             return DatabaseImpl.get(vendor)
@@ -586,7 +586,7 @@ class DatabaseImpl(DatabaseImplInterface):
     def get_columns(cls, db_resource, table):
         '''get ordered column names'''
          # do a dummy select to get the ordered columns
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         sql = DbContainer.get(db_resource)
 
         select = Select()
@@ -2105,7 +2105,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     def get_column_info(cls, db_resource, table, use_cache=True):
         '''get column info like data types, is_nullable in a dict'''
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             prefix = "%s" % db_resource.get_db_resource()
         else:

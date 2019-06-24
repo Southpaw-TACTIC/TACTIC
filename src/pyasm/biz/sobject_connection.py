@@ -15,7 +15,7 @@ __all__ = ["SObjectConnection"]
 from pyasm.common import Environment, Container, Common
 from pyasm.search import SearchType, SObject, Search
 
-from project import Project
+from .project import Project
 
 class SObjectConnection(SObject):
 
@@ -242,7 +242,7 @@ class SObjectConnection(SObject):
                 if src:
                     src_sobjects.append(src)
                 else:
-                    print "WARNING: connection sobject does not exist .. deleting"
+                    print("WARNING: connection sobject does not exist .. deleting")
                     connection.delete()
 
         cache[key] = connections, src_sobjects

@@ -15,8 +15,8 @@ __all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate']
 import hashlib
 
 from pyasm.common import SecurityException, Config, Common
-from security import Login
-from drupal_password_hasher import DrupalPasswordHasher
+from .security import Login
+from .drupal_password_hasher import DrupalPasswordHasher
 
 
 

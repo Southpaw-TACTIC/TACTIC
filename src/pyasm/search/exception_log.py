@@ -13,8 +13,8 @@
 __all__ = ['ExceptionLog']
 
 from pyasm.common import *
-from search import *
-from sql import DbContainer
+from .search import *
+from .sql import DbContainer
 
 import sys,traceback
 
@@ -30,12 +30,12 @@ class ExceptionLog(SObject):
         # replace crazy windows paths with normal paths
         stacktrace_str = stacktrace_str.replace("\\", "/")
 
-        print "-"*50
-        print "From ExceptionLog.log"
-        print "-"*50
-        print stacktrace_str
-        print str(exception)
-        print "-"*50
+        print("-"*50)
+        print("From ExceptionLog.log")
+        print("-"*50)
+        print(stacktrace_str)
+        print(str(exception))
+        print("-"*50)
 
         # make sure all of the databases are rolled back
         DbContainer.rollback_all()

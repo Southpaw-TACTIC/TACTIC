@@ -260,7 +260,7 @@ class CacheContainer(object):
 
         from pyasm.command import Trigger
         for event in events:
-            #print "registering: ", event
+            #print("registering: ", event)
             trigger = SearchType.create("sthpw/trigger")
             trigger.set_value("event", event)
             trigger.set_value("class_name", "pyasm.command.SearchTypeCacheTrigger")
@@ -286,7 +286,7 @@ class CacheContainer(object):
 
             cache = CacheContainer.get(key)
             if not cache:
-                print "WARNING: Cache [%s] does not exist in memory" % key
+                print("WARNING: Cache [%s] does not exist in memory" % key)
                 continue
 
             mtime = cache.get_mtime()

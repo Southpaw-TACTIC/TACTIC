@@ -340,7 +340,7 @@ class SessionBuilder(object):
                 try:
                     self.app.add_attr(node_name,attr,attr_type)
                     self.set_attr(node_name, node, current_node_name)
-                except AppException, e:
+                except AppException as e:
                     info.report_warning('MEL Script Error', str(e))
                     continue
 
@@ -379,7 +379,7 @@ class SessionBuilder(object):
                 try:
                     node_data.set_attr(name,attr,value)
                     node_data.commit()
-                except AppException, e:
+                except AppException as e:
                     info.report_warning('MEL Script Set TacticNodedata Error', str(e))
                     continue
 

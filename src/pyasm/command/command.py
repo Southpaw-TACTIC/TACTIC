@@ -253,7 +253,7 @@ class Command(Base):
             Container.put(cmd.TOP_CMD_KEY, None)
             raise
 
-        except KeyboardInterrupt, e:
+        except KeyboardInterrupt as e:
             # this is specifically for batch processes.  A keyboard interrupt
             # will commit the database and allow undo
             print("Keyboard interrupt...")

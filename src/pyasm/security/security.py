@@ -17,8 +17,8 @@ import hashlib, os, sys, types
 from pyasm.common import *
 from pyasm.search import *
 
-from access_manager import *
-from access_rule import *
+from .access_manager import *
+from .access_rule import *
 
 if Config.get_value("install", "shutil_fix") in ["enabled"]:
     # disabling copystat method for windows shared folder mounted on linux
@@ -281,9 +281,9 @@ class Login(SObject):
                     password = "39195b0707436a7ecb92565bf3411ab1"
                 login.set_value("password", password)
 
-	    if not login.get_value("email"):
+            if not login.get_value("email"):
                 default_admin_email = Config.get_value("services", "mail_default_admin_email")
-		login.set_value("email", default_admin_email)
+                login.set_value("email", default_admin_email)
 
         else:
             search = Search("sthpw/login")
@@ -1191,10 +1191,10 @@ class Ticket(SObject):
             ticket.set_value("expiry", expiry, quoted=0)
 
         if commit:
-	    try:
+            try:
                 ticket.commit(triggers="none")
             except SqlException as e:
-                print "Sql error has occured."
+                print("Sql error has occured.")
    
 
         return ticket
@@ -2035,7 +2035,7 @@ class LicenseKey(object):
         try:
             # get the size and key object
             haspass, self.size, keyobj = pickle.loads(unwrapped_key)
-            self.algorithm, self.keyobj = pickle.loads(keyobj)
+            self.algorithm, self.keyobj = pickle.loads(keyobj.encode())
         except Exception as e:
             raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
 
@@ -2051,7 +2051,7 @@ class LicenseKey(object):
 
         # MD5 the raw text
         m = MD5.new()
-        m.update(raw)
+        m.update(raw.encode())
         d = m.digest()
 
         if self.keyobj.verify(d, raw_signature):
@@ -2059,10 +2059,12 @@ class LicenseKey(object):
         else:
             return False
 
-    def unwrap(self, type, msg):
-        msg = msg.replace("<StartPycrypto%s>" % type, "")
-        msg = msg.replace("<EndPycrypto%s>" % type, "")
-        binary = base64.decodestring(msg)
+    def unwrap(self, key_type, msg):
+        msg = msg.replace("<StartPycrypto%s>" % key_type, "")
+        msg = msg.replace("<EndPycrypto%s>" % key_type, "")
+
+        # python3 requires bytes
+        binary = base64.decodestring(msg.encode())
         return binary
         
 
@@ -2126,6 +2128,8 @@ class License(object):
         # different dump and lxml and unfortunately, the license key is
         # dependent on the spacing.
         #print("data: [%s]" % data)
+        print("data: ", data)
+        print("data: ", type(data))
         data = data.replace("    ", "  ")
         data = data.replace("  </data>", "</data>")
         #print("data: [%s]" % data)

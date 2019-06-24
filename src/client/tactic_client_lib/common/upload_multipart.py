@@ -8,7 +8,19 @@
 
 __all__ = ['UploadMultipart', 'TacticUploadException']
 
-import httplib, urlparse, socket
+import socket
+
+try:
+    import urlparse
+except:
+    from urllib import parse as urlparse
+
+try:
+    import httplib
+except:
+    from http import client as httplib
+
+
 import os, sys
 
 class TacticUploadException(Exception):
@@ -100,11 +112,11 @@ class UploadMultipart(object):
                     ret_value = self.posturl(url,fields,files)
 
                     return ret_value
-                except socket.error, e:
-                    print "Error: ", e
+                except socket.error as e:
+                    print("Error: ", e)
 
                     # retry about 5 times
-                    print "... trying again"
+                    print("... trying again")
                     self.count += 1
                     if self.count == 5:
                         raise
@@ -118,7 +130,7 @@ class UploadMultipart(object):
     # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/146306
 
     def posturl(self, url, fields, files):
-        #print "URL ", url
+        #print("URL ", url)
         urlparts = urlparse.urlsplit(url)
         protocol = urlparts[0]
  
@@ -169,7 +181,7 @@ class UploadMultipart(object):
             L.append('')
             L.append(value)
         for (key, filename, value) in files:
-            #print "len of value: ", len(value)
+            #print("len of value: ", len(value))
             L.append('--' + BOUNDARY)
             L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
             L.append('')
@@ -190,7 +202,7 @@ class UploadMultipart(object):
         buf = cStringIO.StringIO()
         buf.writelines(M)
         body = buf.getvalue()
-        #print "len of body: ", len(body), type(body)
+        #print("len of body: ", len(body), type(body))
 
         content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
         return content_type, body 

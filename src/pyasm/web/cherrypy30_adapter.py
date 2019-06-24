@@ -16,7 +16,7 @@ __all__ = ['CherryPyException', 'CherryPyAdapter']
 import types, os, re
 
 from pyasm.common import TacticException
-from web_environment import *
+from .web_environment import *
 
 import cherrypy
 
@@ -29,13 +29,13 @@ def get_app_server():
 
     server_cls = os.environ.get("TACTIC_SERVER_CLS")
     if not server_cls:
-        from app_server import BaseAppServer
+        from .app_server import BaseAppServer
         base_cls = BaseAppServer
     elif server_cls == "pyasm.web.WidgetAppServer":
-        from widget_app_server import WidgetAppServer
+        from .widget_app_server import WidgetAppServer
         base_cls = WidgetAppServer
     else:
-        from simple_app_server import SimpleAppServer
+        from .simple_app_server import SimpleAppServer
         base_cls = SimpleAppServer
 
     class CherryPyAppServer(base_cls):
@@ -77,7 +77,7 @@ def get_xmlrpc_server():
 
 
 
-from cherrypy_adapter import CherryPyAdapter as CherryPyAdapter20
+from .cherrypy_adapter import CherryPyAdapter as CherryPyAdapter20
 class CherryPyAdapter(CherryPyAdapter20):
     """Encapsulates cherrypy environment. Implements the web interface"""
 
@@ -196,7 +196,7 @@ class CherryPyAdapter(CherryPyAdapter20):
         try:
             return cherrypy.request.cookie[name].value
             
-        except KeyError, e:
+        except KeyError as e:
             return ""
 
 

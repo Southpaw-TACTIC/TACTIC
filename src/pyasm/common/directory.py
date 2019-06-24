@@ -14,8 +14,8 @@ __all__ = ["Directory"]
 
 import sys, os
 
-from common import Common
-from config import Config
+from .common import Common
+from .config import Config
 
 class Directory(object):
     '''Implementation of a virtual directory'''

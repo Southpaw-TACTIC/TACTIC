@@ -18,11 +18,10 @@ __all__ = ["TriggerException", "Trigger", "SampleTrigger", "TimedTrigger", "Samp
 import sys, traceback
 
 from pyasm.common import *
-#from pyasm.biz import TriggerInCommand
 from pyasm.search import ExceptionLog, SearchKey
 from pyasm.security import Site
 
-from command import Command, HandlerCmd
+from .command import Command, HandlerCmd
 
 class TriggerException(Exception):
     pass
@@ -549,7 +548,7 @@ class Trigger(Command):
 
                 triggers.append(trigger)
 
-            except ImportError, e:
+            except ImportError as e:
                 Environment.add_warning("Trigger Not Defined", "Trigger [%s] does not exist" % trigger_class)
 
                 #log = ExceptionLog.log(e)
@@ -1042,7 +1041,7 @@ class SampleTimedTrigger(TimedTrigger):
 __all__.extend( ['BurnDownTimedTrigger', 'BurnDownEmailHandler'] )
 
 from pyasm.search import Search, SObject, SearchException
-from email_handler import EmailHandler
+from .email_handler import EmailHandler
 
 
 class BurnDownTimedTrigger(TimedTrigger):

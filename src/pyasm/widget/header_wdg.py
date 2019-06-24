@@ -39,7 +39,7 @@ class HeaderWdg(Widget):
 
         try:
             return self._get_display()
-        except TacticException, e:
+        except TacticException as e:
             from web_wdg import ExceptionWdg
             widget = ExceptionWdg(e)
             return widget

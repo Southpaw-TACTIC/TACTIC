@@ -29,7 +29,7 @@ from dateutil import parser
 try:
     from calendar import Calendar
     HAS_CALENDAR = True
-except ImportError, e:
+except ImportError as e:
     HAS_CALENDAR = False 
     
 import calendar

@@ -10,8 +10,8 @@
 #
 #
 
-from widget_class_handler import *
-from base_refresh_wdg import *
-from base_table_element_wdg import *
-from base_config_wdg import *
-from corner_generator import *
+from .widget_class_handler import *
+from .base_refresh_wdg import *
+from .base_table_element_wdg import *
+from .base_config_wdg import *
+from .corner_generator import *

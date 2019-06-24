@@ -350,7 +350,7 @@ class BaseAppInfo(object):
                 print "closing ...."
                 req.close()
                 file.close()
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             raise Exception('%s - %s' % (e,url))
 
         print "... done download"
@@ -398,10 +398,10 @@ class Common(object):
                 _winreg.SetValueEx(y, name ,0,_winreg.REG_EXPAND_SZ, value)
                 _winreg.CloseKey(y)
                 _winreg.CloseKey(x)
-            except OSError, e:
+            except OSError as e:
                 print "Registry Key not found."
                 return 
-            except WindowsError, e:
+            except WindowsError as e:
                 print str(e)
                 return
         
@@ -498,7 +498,7 @@ class Common(object):
             md5_checksum = m.hexdigest()
             f.close()
             return md5_checksum
-        except IOError, e:
+        except IOError as e:
             print "WARNING: error getting md5 on [%s]: " % path, e
             return None
     get_md5 = staticmethod(get_md5)  

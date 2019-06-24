@@ -17,7 +17,7 @@ import string, types
 from pyasm.common import *
 from pyasm.search import SObjectAttr
 
-from pipeline import Pipeline
+from .pipeline import Pipeline
 
 
 class StatusAttrException(Exception):

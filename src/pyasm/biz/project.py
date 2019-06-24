@@ -260,8 +260,8 @@ class Project(SObject):
             else:
                 # FIXME: why is a virtual project created?
                 raise TacticException("No project [%s] exists" % project_name)
-                #print "WARNING: No project entry exists for project '%s'" % project_name
-                #print "Creating virtual project"
+                #print("WARNING: No project entry exists for project '%s'" % project_name)
+                #print("Creating virtual project")
                 #project = SearchType.create(Project.SEARCH_TYPE)
                 #project.set_value("code", project_name)
 
@@ -364,9 +364,9 @@ class Project(SObject):
             sql = DbContainer.get(db_resource)
             tables = sql.get_tables()
             has_table = table in tables
-        except Exception, e:
-            print "WARNING: in Project.has_table(): table [%s] not found" % table
-            print "Message: ", e
+        except Exception as e:
+            print("WARNING: in Project.has_table(): table [%s] not found" % table)
+            print("Message: ", e)
             has_table = False
 
         return has_table
@@ -808,9 +808,9 @@ class Project(SObject):
             snapshot = sobject
             try:
                 sobject = snapshot.get_sobject()
-            except SObjectNotFoundException, e:
-                print "Error: ", e
-                print "snapshot: ", snapshot.get_code()
+            except SObjectNotFoundException as e:
+                print("Error: ", e)
+                print("snapshot: ", snapshot.get_code())
 
         dir_naming = Project.get_dir_naming(sobject)
         dir_naming.set_sobject(sobject)
@@ -837,7 +837,7 @@ class Project(SObject):
             from snapshot import SObjectNotFoundException
             try:
                 sobject = snapshot.get_sobject()
-            except SObjectNotFoundException, e:
+            except SObjectNotFoundException as e:
                 pass
         
         dir_naming = Project.get_dir_naming(sobject)

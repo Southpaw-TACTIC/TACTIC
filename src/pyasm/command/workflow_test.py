@@ -101,7 +101,7 @@ class WorkflowCmd(Command):
             self._test_dependency()
 
 
-        except Exception, e:
+        except Exception as e:
             print("Error: ", e)
             raise
 

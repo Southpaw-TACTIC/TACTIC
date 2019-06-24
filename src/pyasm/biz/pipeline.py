@@ -18,8 +18,8 @@ from pyasm.common import Container, Base, Xml, Environment, Common, XmlException
 from pyasm.search import SObject, Search, SearchType, Sql, DbContainer, SqlException
 from pyasm.security import LoginGroup
 
-from project import Project
-from prod_setting import ProdSetting, ProjectSetting
+from .project import Project
+from .prod_setting import ProdSetting, ProjectSetting
 
 class PipelineException(Exception):
     pass
@@ -540,7 +540,7 @@ class Pipeline(SObject):
 
 
         def handle_process(pipeline, process, branch):
-            print process, " -> ", branch
+            print(process, " -> ", branch)
             if process in branch:
                 raise CircularException()
 
@@ -557,7 +557,7 @@ class Pipeline(SObject):
         branch = []
         try:
             handle_process(self, first_process_name, branch)
-        except CircularException, e:
+        except CircularException as e:
             return True
 
         return False
@@ -954,41 +954,41 @@ class Pipeline(SObject):
 
     def get_dependent_processes(self, start, end):
 
-	process_names = self.get_process_names()
+        process_names = self.get_process_names()
 
 
-	if start not in process_names:
-	    print("process [%s] does not exist" % start)
-	    return
-	if end not in process_names:
-	    print("process [%s] does not exist" % end)
-	    return
+        if start not in process_names:
+            print("process [%s] does not exist" % start)
+            return
+        if end not in process_names:
+            print("process [%s] does not exist" % end)
+            return
 
-	process = end
+        process = end
 
 
-	handled = []
+        handled = []
 
-	def handle_process(process, start):
+        def handle_process(process, start):
 
-	    if process in handled:
-		return
+            if process in handled:
+                return
 
-	    handled.append(process)
-	    if process == start:
-		return
+            handled.append(process)
+            if process == start:
+                return
 
-	    input_processes = self.get_input_processes(process, to_attr="input")
-	    if not input_processes:
-		return
+            input_processes = self.get_input_processes(process, to_attr="input")
+            if not input_processes:
+                return
 
-	    for input_process in input_processes:
-		input_process_name = input_process.get_name()
-		handle_process(input_process_name, start)
+            for input_process in input_processes:
+                input_process_name = input_process.get_name()
+                handle_process(input_process_name, start)
 
-	handle_process(process, start)
+        handle_process(process, start)
 
-	return handled
+        return handled
 
 
 

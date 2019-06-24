@@ -1004,7 +1004,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                         existing_values.append(value)
 
                 existing_values.sort()
-        except (SObjectValueException, SqlException), e:
+        except (SObjectValueException, SqlException) as e:
             top.add("This widget cannot set colors")
             return top
 
@@ -3139,7 +3139,7 @@ class SimpleElementDefinitionCbk(Command):
                 project_code = Project.get_project_code()
                 full_st = Project.get_full_search_type(search_type, project_code=project_code)
                 widget.create_required_columns(full_st)
-            except (TacticException, AttributeError), e: # for add column sql error
+            except (TacticException, AttributeError) as e: # for add column sql error
                 if self.is_insert: # will be caught in AlterTableCmd
                     raise
                 else: # in edit mode, it's ok for now

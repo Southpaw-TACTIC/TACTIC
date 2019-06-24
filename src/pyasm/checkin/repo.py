@@ -127,7 +127,7 @@ class TacticRepo(BaseRepo):
                     FileUndo.create( src_path, to_path, io_action=io_action, extra={ "md5": md5, "st_size": st_size, "rel_path": rel_path } )
 
 
-            except IOError, e:
+            except IOError as e:
                 raise CheckinException('IO Error occurred. %s' %e.__str__())
 
             # check to see that the file exists.

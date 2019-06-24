@@ -836,7 +836,7 @@ class AssetCheckinWdg(CheckinWdg):
             # backwards compatible:
             try:
                 asset_code = asset_codes[i]
-            except IndexError, e:
+            except IndexError as e:
                 asset_code = instance_name
 
             # skip if this is a reference

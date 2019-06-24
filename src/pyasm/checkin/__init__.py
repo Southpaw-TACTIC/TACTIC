@@ -10,12 +10,12 @@
 #
 #
 
-from checkin import *
-from file_checkin import *
-from snapshot_checkin import *
-from snapshot_builder import *
-from repo import *
-from metadata import *
+from .checkin import *
+from .file_checkin import *
+from .snapshot_checkin import *
+from .snapshot_builder import *
+from .repo import *
+from .metadata import *
 
-from perforce import *
+from .perforce import *
 

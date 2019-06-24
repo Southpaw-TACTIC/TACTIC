@@ -17,9 +17,9 @@ import types, time
 
 from pyasm.common import *
 from pyasm.search import SearchType, Sql
-from widget import *
-from html_wdg import *
-from web_container import *
+from .widget import *
+from .html_wdg import *
+from .web_container import *
 
 
 

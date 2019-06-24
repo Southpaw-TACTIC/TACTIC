@@ -346,7 +346,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 from PIL import Image 
                 im = Image.open(path)
                 size = im.size
-            except IOError, e:
+            except IOError as e:
                 print("Error importing Image: ", e)
                 
             except:
