@@ -2114,11 +2114,29 @@ class Select(object):
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
 
-        if isinstance(value, datetime.datetime):
-            try:
-                value = SPTDate.convert_to_timezone(value, time.tzname[time.daylight])
-            except:
-                pass
+
+        # if isinstance(value, basestring) and value != "NOW":
+        #     try:
+        #         value = parser.parse(value)
+        #     except ValueError:
+        #         pass
+
+
+        # if value in ["NOW", "now", "NOW()", "now()"]:
+        #     info = self.impl.process_value(column, value, column_type)
+        #     if info:
+        #         value = info.get('value')
+        #         quoted = info.get('quoted')
+
+        # if isinstance(value, datetime.datetime):
+        #     value = SPTDate.convert_to_timezone(value, 'UTC')
+        #     value = SPTDate.convert_to_local(value)
+
+            # info = self.impl.process_value(column, value, column_type)
+            # if info:
+            #     value = info.get('value')
+            #     quoted = info.get('quoted')
+
 
         # store all the raw filter data
         self.raw_filters.append( {
@@ -2192,7 +2210,6 @@ class Select(object):
                 # get column type from database
                 column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
                 column_type = column_types.get(column)
-
 
             info = self.impl.process_value(column, value, column_type)
             if info:
@@ -2967,7 +2984,6 @@ class Insert(object):
             column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
 
-
             info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
@@ -3177,7 +3193,6 @@ class Update(object):
             # get column type from database
             column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
-
             info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")

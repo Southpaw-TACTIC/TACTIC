@@ -3243,7 +3243,7 @@ class SObject(object):
             if isinstance(value, basestring):
                 try:
                     value = parser.parse(value)
-                except:
+                except ValueError:
                     pass
 
             if isinstance(value, datetime.datetime):
@@ -4000,8 +4000,6 @@ class SObject(object):
                         value = SPTDate.convert_to_local(value)
                     else:
                         value = SPTDate.add_gmt_timezone(value)
-                    
-                    value = impl.process_date(value)
                     
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):

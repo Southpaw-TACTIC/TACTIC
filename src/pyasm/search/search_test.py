@@ -917,39 +917,31 @@ class SearchTest(unittest.TestCase):
 
         from pyasm.biz import Project
         database_type = Project.get_by_code("unittest").get_database_type()
-        if database_type == "MySQL":
-            print
-            print "WARNING: !!!!!!!"
-            print "test for NOW is disabled"
-            print "WARNING: !!!!!!!"
-            print
-            return
 
+        # time_dict = {'SQLServer': "convert(datetime2, '2012-12-25', 0)",
+        #             'Sqlite':"'2012-12-25'",
+        #             'PostgreSQL':"'2012-12-25'",
+        #             'MySQL': "'2012-12-25 00:00:00'"}
+        #             #'Oracle':"TO_DATE('2012-12-25','YYYY-MM-DD'"}
+        # #TODO: test with cx_Oracle installed
+        # #TODO: have another test with timezone considered
+        # for db_type in ['Sqlite','SQLServer','MySQL','PostgreSQL']:
+        #     sql_impl = DatabaseImpl.get(db_type)
+        #     update = Update()
+        #     update.set_database('sthpw')
+        #     update.set_table('task')
+        #     update.impl = sql_impl
+        #     value = '2012-12-25'
+        #     value = update.impl.process_date(value)
+        #     update.set_value('timestamp', value)
+        #     update.set_value('description','')
+        #     if db_type == 'SQLServer':
+        #         self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
+        #     else:
+        #         self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
 
-        time_dict = {'SQLServer': "convert(datetime2, '2012-12-25', 0)",
-                    'Sqlite':"'2012-12-25'",
-                    'PostgreSQL':"'2012-12-25'",
-                    'MySQL': "'2012-12-25 00:00:00'"}
-                    #'Oracle':"TO_DATE('2012-12-25','YYYY-MM-DD'"}
-        #TODO: test with cx_Oracle installed
-        #TODO: have another test with timezone considered
-        for db_type in ['Sqlite','SQLServer','MySQL','PostgreSQL']:
-            sql_impl = DatabaseImpl.get(db_type)
-            update = Update()
-            update.set_database('sthpw')
-            update.set_table('task')
-            update.impl = sql_impl
-            value = '2012-12-25'
-            value = update.impl.process_date(value)
-            update.set_value('timestamp', value)
-            update.set_value('description','')
-            if db_type == 'SQLServer':
-                self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
-            else:
-                self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
-
-            update.set_value('description',None)
-            self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (self.sthpw_prefix, time_dict.get(db_type)))
+        #     update.set_value('description',None)
+        #     self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (self.sthpw_prefix, time_dict.get(db_type)))
 
 
 
