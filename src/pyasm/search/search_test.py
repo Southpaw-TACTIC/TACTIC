@@ -971,7 +971,7 @@ class SearchTest(unittest.TestCase):
         # timestamp without timezone: set value with timezone conversion
 
         task1 = SearchType.create('sthpw/task')
-        input_time1 = datetime.utcnow().replace(microsecond=0)
+        input_time1 = input_time
         local_tz = pytz.timezone("Europe/Moscow")
         tz_input_time = input_time1.replace(tzinfo=pytz.utc).astimezone(local_tz)
 
@@ -1015,7 +1015,7 @@ class SearchTest(unittest.TestCase):
         # timestamp with timezone: set value with timezone conversion
 
         ticket1 = SearchType.create('sthpw/ticket')
-        input_time1 = datetime.utcnow().replace(microsecond=0)
+        input_time1 = input_time
         local_tz = pytz.timezone("Europe/Moscow")
         tz_input_time = input_time1.replace(tzinfo=pytz.utc).astimezone(local_tz)
 
