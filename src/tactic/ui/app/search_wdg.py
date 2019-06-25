@@ -1007,7 +1007,7 @@ spt.advanced_search.set_top = function(top) {
 }
 
 spt.advanced_search.generate_json = function() {
-    var search_top = bvr.src_el;
+    var search_top = spt.advanced_search.get_top();
     var new_values = [];
     if (search_top) {
         var search_containers = search_top.getElements('.spt_search_filter')
@@ -1050,7 +1050,9 @@ spt.advanced_search.keywords = spt.advanced_search.keywords || {};
 spt.advanced_search.keywords.recent_searches = bvr.recent_searches;
 
 spt.advanced_search.keywords.add_keyword = function(display) {
-    let tagsContainer = bvr.src_el.getElement(".spt_search_tags");
+    let search_top = spt.advanced_search.get_top();
+    
+    let tagsContainer = search_top.getElement(".spt_search_tags");
     let tagTemplate = tagsContainer.getElement(".spt_template");
 
     let clone = spt.behavior.clone(tagTemplate);
@@ -1063,8 +1065,8 @@ spt.advanced_search.keywords.add_keyword = function(display) {
 
     tagsContainer.removeClass("empty");
 
-    let textInput = bvr.src_el.getElement(".spt_text_input");
-    let validator = bvr.src_el.getElement(".spt_validation_indicator");
+    let textInput = search_top.getElement(".spt_text_input");
+    let validator = search_top.getElement(".spt_validation_indicator");
     textInput.value = "";
     validator.setStyle("display", "none");
 
@@ -1073,7 +1075,9 @@ spt.advanced_search.keywords.add_keyword = function(display) {
 }
 
 spt.advanced_search.keywords.extract_keywords = function() {
-    let tagsContainer = bvr.src_el.getElement(".spt_search_tags");
+    let search_top = spt.advanced_search.get_top();
+    
+    let tagsContainer = search_top.getElement(".spt_search_tags");
     let items = tagsContainer.getElements(".spt_search_tag_item");
     let keywords = [];
 
@@ -1086,12 +1090,16 @@ spt.advanced_search.keywords.extract_keywords = function() {
 }
 
 spt.advanced_search.keywords.set_keywords = function() {
+    let search_top = spt.advanced_search.get_top();
+    
     let keywords = spt.advanced_search.keywords.extract_keywords();
-    let keywordsStorage = bvr.src_el.getElement(".spt_keywords");
+    let keywordsStorage = search_top.getElement(".spt_keywords");
     keywordsStorage.value = keywords.join(",");
 }
 
 spt.advanced_search.keywords.add_recent = function(value) {
+    let search_top = spt.advanced_search.get_top();
+    
     let server = TacticServerStub.get();
     let classname = "tactic.ui.app.SaveCurrentSearchCmd";
     let kwargs = {
@@ -1103,7 +1111,7 @@ spt.advanced_search.keywords.add_recent = function(value) {
     .then(function(ret_val){
         spt.advanced_search.keywords.recent_searches.push(value);
 
-        let recents = bvr.src_el.getElement(".spt_recent_searches");
+        let recents = search_top.getElement(".spt_recent_searches");
         let template = recents.getElement(".spt_template");
 
         let clone = spt.behavior.clone(template);
@@ -1140,7 +1148,9 @@ spt.advanced_search.keywords.remove_recent = function(item) {
 spt.advanced_search.saved = spt.advanced_search.saved || {};
 
 spt.advanced_search.saved.add_item = function(key, label, value) {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
+    let search_top = spt.advanced_search.get_top();
+    
+    let container = search_top.getElement(".spt_saved_searches_container");
     let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
     let template = categoryContainer.getElement(".spt_saved_search_item.spt_template");
 
@@ -1166,17 +1176,9 @@ spt.advanced_search.saved.delete_item = function(key, label) {
 }
 
 spt.advanced_search.saved.load_items = function(key) {
-    /*let values = spt.advanced_search.saved.get_values(key);
-    let labels = spt.advanced_search.saved.get_labels(key);
+    let search_top = spt.advanced_search.get_top();
 
-    for (let i=0; i<values.length; i++) {
-        let label = labels[i];
-        let value = values[i];
-        
-        spt.advanced_search.saved.add_item(key, label, value);
-    }*/
-
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
+    let container = search_top.getElement(".spt_saved_searches_container");
     let selected = container.getElement(".spt_saved_searches_item.selected");
     let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
     if (selected) selected.removeClass("selected");
@@ -1184,7 +1186,9 @@ spt.advanced_search.saved.load_items = function(key) {
 }
 
 spt.advanced_search.saved.clear_items = function() {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
+    let search_top = spt.advanced_search.get_top();
+    
+    let container = search_top.getElement(".spt_saved_searches_container");
     let items = container.getElements(".spt_saved_search_item");
 
     items.forEach(function(item){
@@ -1195,7 +1199,8 @@ spt.advanced_search.saved.clear_items = function() {
 
 
 spt.advanced_search.saved.toggle_dropdown = function(display) {
-    let dropdown = bvr.src_el.getElement(".spt_search_categories_dropdown");
+    let search_top = spt.advanced_search.get_top();
+    let dropdown = search_top.getElement(".spt_search_categories_dropdown");
 
     if (display) 
         dropdown.setStyle("display", display);
@@ -1212,7 +1217,9 @@ spt.advanced_search.saved.get_labels = function(key) {
 }
 
 spt.advanced_search.saved.get_selected = function() {
-    return bvr.src_el.getElement(".spt_saved_search_item.selected");
+    let search_top = spt.advanced_search.get_top();
+    
+    return search_top.getElement(".spt_saved_search_item.selected");
 }
 
         '''
