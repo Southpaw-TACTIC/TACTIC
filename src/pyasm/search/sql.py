@@ -14,12 +14,13 @@ __all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResourc
 
 
 import os, types, thread, sys
-import re, datetime
+import re, datetime, time
 
 from threading import Lock
 
 from pyasm.common import Config, TacticException, Environment
 from dateutil.tz import *
+from dateutil import parser
 
 # import database libraries
 DATABASE_DICT = {}
@@ -2113,6 +2114,12 @@ class Select(object):
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
 
+        if isinstance(value, datetime.datetime):
+            try:
+                value = SPTDate.convert_to_timezone(value, time.tzname[time.daylight])
+            except:
+                pass
+
         # store all the raw filter data
         self.raw_filters.append( {
                 'column': column,
@@ -2124,12 +2131,10 @@ class Select(object):
         } )
 
 
-
         if self.quoted_mode == "none":
             where = "%s %s '%s'" % (column, op, value)
             self.add_where(where)
             return
-
 
 
         subcolumn = None
@@ -2756,6 +2761,7 @@ class Select(object):
                 return " AND ".join(cur_stack)
 
             item = wheres[self.stack_index]
+
             self.stack_index += 1
 
             if item == "begin":

@@ -14,6 +14,7 @@ import tacticenv
 
 from pyasm.security import *
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
+from pyasm.common.spt_date import SPTDate
 
 from sql import *
 from search import *
@@ -83,6 +84,8 @@ class SearchTest(unittest.TestCase):
             self.person = Person.create( "1", "e",
                     "ComputerWorld", "5")
 
+
+            
             self._test_no_id()
 
             self._test_order_by()
@@ -105,7 +108,7 @@ class SearchTest(unittest.TestCase):
             self._test_set_value()
             self._test_search_set_value()
             self._test_get_by_statement()
-            self._test_views()   
+            self._test_views() 
             self._test_timezone()
 
 
@@ -840,17 +843,24 @@ class SearchTest(unittest.TestCase):
         search2.add_search_filter("id", search)
 
     def _test_dates_search(self):
+        import time
+        timezone = time.tzname[time.daylight]
 
         search = Search("unittest/person")
         search.add_date_range_filter("start_date", "2010-01-01", "2010-02-01")
-        expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."start_date" >= '2010-01-01 00:00:00' AND "person"."start_date" < '2010-02-02 00:00:00'""".format(self.prefix)
+        start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
+        end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
+        expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."start_date" >= '{1}' AND "person"."start_date" < '{2}'""".format(self.prefix, start_range, end_range)
         self.assertEquals(expected, search.get_statement() )
-
 
         search = Search("unittest/person")
         search.add_dates_overlap_filter("start_date", "end_date", "2010-01-01", "2010-02-01")
-        expected = '''SELECT {0}"person".* FROM {0}"person" WHERE "person"."id" in (SELECT {0}"person"."id" FROM {0}"person" WHERE ( "person"."start_date" <= '2010-01-01 00:00:00' AND "person"."end_date" >= '2010-01-01 00:00:00' ) OR ( "person"."end_date" >= '2010-02-02 00:00:00' AND "person"."start_date" <= '2010-02-02 00:00:00' ) OR ( "person"."start_date" >= '2010-01-01 00:00:00' AND "person"."end_date" <= '2010-02-02 00:00:00' ))'''.format(self.prefix)
-
+        start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
+        end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
+        expected = '''SELECT {0}"person".* FROM {0}"person" WHERE "person"."id" in (SELECT {0}"person"."id" FROM {0}"person" '''.format(self.prefix)
+        expected += '''WHERE ( "person"."start_date" <= '{0}' AND "person"."end_date" >= '{0}' ) '''.format(start_range)
+        expected += '''OR ( "person"."end_date" >= '{0}' AND "person"."start_date" <= '{0}' ) '''.format(end_range)
+        expected += '''OR ( "person"."start_date" >= '{0}' AND "person"."end_date" <= '{1}' ))'''.format(start_range, end_range)
         self.assertEquals(expected, search.get_statement() )
 
     def _test_commit(self):
@@ -945,7 +955,6 @@ class SearchTest(unittest.TestCase):
 
     def _test_timezone(self):
 
-        from pyasm.common.spt_date import SPTDate
         # timestamp without timezone: set value without timezone conversion
 
         task = SearchType.create('sthpw/task')
@@ -975,17 +984,17 @@ class SearchTest(unittest.TestCase):
 
 	    # search for task using both timestamps
 
-        # search = Search('sthpw/task')
-        # search.add_filter('description', 'search_test')
-        # search.add_filter('timestamp', input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(task.get_code(), search_result.get_code())
+        search = Search('sthpw/task')
+        search.add_filter('description', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
 
-        # search = Search('sthpw/task')
-        # search.add_filter('description', 'search_test')
-        # search.add_filter('timestamp', tz_input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(task.get_code(), search_result.get_code())
+        search = Search('sthpw/task')
+        search.add_filter('description', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
 
         # timestamp with timezone: set value without timezone conversion
 
@@ -1022,17 +1031,17 @@ class SearchTest(unittest.TestCase):
 
 	    # search ticket using both timestamps
 
-        # search = Search('sthpw/ticket')
-        # search.add_filter('ticket', 'search_test')
-        # search.add_filter('timestamp', input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(ticket.get_code(), search_result.get_code())
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
 
-        # search = Search('sthpw/ticket')
-        # search.add_filter('ticket', 'search_test')
-        # search.add_filter('timestamp', tz_input_time)
-        # search_result = search.get_sobject()
-        # self.assertEquals(ticket.get_code(), search_result.get_code())
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
 
 
 

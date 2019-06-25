@@ -1796,6 +1796,7 @@ class Search(Base):
         # get columns that are datetime to be converted to strings in
         # SObject constructor
         column_info = self.get_column_info()
+
         datetime_cols = []
         boolean_cols = []
         skipped_cols = []
@@ -1864,9 +1865,6 @@ class Search(Base):
             'boolean_cols': boolean_cols,
             'skipped_cols': skipped_cols,
         }
-
-
-
 
         # Count number of sobjects
         num_sobjects = Container.get("NUM_SOBJECTS")
@@ -2370,6 +2368,7 @@ class RemoteSearch(Select):
     def add_filter(self, name, value, op='=', quoted=True):
         if not op:
             op = '='
+
         self.filters.append( [name, op, value] )
 
     def get_sobjects(self):
@@ -2378,7 +2377,6 @@ class RemoteSearch(Select):
         trys = 3
         import time
         start = time.time()
-
 
         for i in range(1, trys):
             try:
@@ -3236,6 +3234,30 @@ class SObject(object):
     def skip_invalid_column(self):
         self._skip_invalid_column = True
 
+
+    def process_value(self, name, value, column_type):
+        info = {}
+        info['quoted'] = False
+
+        if column_type == "timestamp":
+            if isinstance(value, basestring):
+                try:
+                    value = parser.parse(value)
+                except:
+                    pass
+
+            if isinstance(value, datetime.datetime):
+                if value.tzinfo:
+                    value = SPTDate.convert_to_timezone(value, 'UTC')
+                info['quoted'] = True
+
+            info['value'] = value
+        else:
+            info = self.get_database_impl().process_value(name, value, column_type)
+
+        return info
+
+
     def set_value(self, name, value, quoted=True, temp=False):
         '''set the value of this sobject. It is
         not commited to the database'''
@@ -3295,16 +3317,8 @@ class SObject(object):
 
         # NOTE: this should be pretty quick, but could use some optimization
         column_type = SearchType.get_column_type(self.full_search_type, name)
-        info = None
 
-        if column_type == "timestamp":
-            try:
-                if value.tzinfo:
-                    value = SPTDate.convert_to_timezone(value, 'UTC')
-            except:
-                pass
-        else:
-            info = self.get_database_impl().process_value(name, value, column_type)
+        info = self.process_value(name, value, column_type)
 
         if info:
             value = info.get("value")
