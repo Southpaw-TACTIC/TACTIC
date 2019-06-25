@@ -25,7 +25,7 @@ from tactic.ui.filter import FilterData
 from tactic.ui.widget import TextBtnSetWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
-from advanced_search import AdvancedSearchSaveWdg, AdvancedSearchSavedSearchesWdg, CustomSaveButtonsWdg
+from advanced_search import AdvancedSearchSaveWdg, AdvancedSearchSavedSearchesWdg, AdvancedSearchSaveButtonsWdg
 #from search_limit_wdg import SearchLimitWdg
 
 
@@ -840,7 +840,7 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         search_action = self.kwargs.get("search_action")
         save_mode = "save_as" if self.filter else "save"
-        search_wdg = CustomSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type)
+        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type)
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
