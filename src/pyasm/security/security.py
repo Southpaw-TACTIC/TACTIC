@@ -20,6 +20,8 @@ from pyasm.search import *
 from access_manager import *
 from access_rule import *
 
+from drupal_password_hasher import DrupalPasswordHasher
+
 if Config.get_value("install", "shutil_fix") in ["enabled"]:
     # disabling copystat method for windows shared folder mounted on linux
     def copystat_dummy(src, dst):
@@ -71,19 +73,19 @@ class Login(SObject):
 
     def get_primary_key(self):
         return "login"
-    
+
     def get_foreign_key(self):
         return "login"
-   
+
     def get_icon_context(self, context=None):
         return "icon"
-    
+
     def get_description(self):
         return self.get_full_name()
 
     def get_login(self):
         return self.get_value("login")
-   
+
     def get_full_name(self):
         return "%s %s" % (self.get_value("first_name"), self.get_value("last_name"))
 
@@ -116,7 +118,7 @@ class Login(SObject):
 
     def remove_from_group(self, group_name):
         '''removes the user from a specfied group'''
-        
+
         if type(group_name) in types.StringTypes:
             self.__validate_group(group_name)
         else:
@@ -131,7 +133,7 @@ class Login(SObject):
 
     def remove_all_groups(self, except_list=[]):
         '''Remove the user from a specfied group. Return a list of skipped login_in_group'''
-        connectors = LoginInGroup.get_by_login_name(self.get_value("login")) 
+        connectors = LoginInGroup.get_by_login_name(self.get_value("login"))
         remaining = []
         for login_in_group in connectors:
             if login_in_group.get_value("login_group") in except_list:
@@ -139,7 +141,7 @@ class Login(SObject):
                 continue
             login_in_group.delete()
         return remaining
-        
+
 
 
 
@@ -152,8 +154,8 @@ class Login(SObject):
     def get_sub_group_names(self):
         '''Returns all of the names as a list of strings
         of the sub_groups a group contains'''
-        
-        connectors = LoginInGroup.get_by_login_name(self.get_login() ) 
+
+        connectors = LoginInGroup.get_by_login_name(self.get_login() )
         group_names = [ x.get_value("login_group") for x in connectors ]
         return group_names
 
@@ -162,12 +164,12 @@ class Login(SObject):
         sub_group_names = self.get_sub_group_names()
         if not sub_group_names or sub_group_names == ['']:
             return []
-        
+
         tmp = ["'%s'" % x for x in sub_group_names ]
         # add the default group
         #tmp.append("'default'")
         tmp = ", ".join(tmp)
-        
+
         search = Search("sthpw/login_group")
         search.add_where("\"login_group\" in (%s)" % tmp )
         groups = search.get_sobjects()
@@ -183,9 +185,9 @@ class Login(SObject):
                 project_codes.add(project_code)
 
             group_access_level = LoginGroup.ACCESS_DICT.get(group_access_level)
-            if group_access_level == None:               
+            if group_access_level == None:
                 group_access_level = LoginGroup.LOW
-            
+
             if group_access_level > access_level:
                 access_level = group_access_level
         groups.append(self.get_security_level_group(access_level, project_codes))
@@ -198,11 +200,11 @@ class Login(SObject):
         return "low"
     get_default_security_level = staticmethod(get_default_security_level)
 
-        
+
     def get_security_level_group(access_level, project_codes=[]):
-        
+
         xml = LoginGroup.get_default_access_rule(access_level, project_codes, add_root=True)
-        
+
         default_group = SearchType.create("sthpw/login_group")
         default_group.set_value("login_group", "default")
         default_group.set_value("access_rules", xml)
@@ -211,7 +213,7 @@ class Login(SObject):
     get_security_level_group = staticmethod(get_security_level_group)
 
 
-   
+
 
     # static methods
 
@@ -223,11 +225,11 @@ class Login(SObject):
     def get_by_code(code):
         return  Login.get_by_login(code)
     get_by_code = staticmethod(get_by_code)
-    
+
     def get_by_login(login_name, namespace=None, use_upn=False):
         if not login_name:
             return None
-        
+
         # find the ticket in the database
         cached = Login.get_cached_obj(login_name)
         if cached:
@@ -301,12 +303,12 @@ class Login(SObject):
                     search.add_filter("upn", login_name)
             if use_upn:
                 search.add_op("or")
-            
+
             if namespace:
                 search.add_filter("namespace", namespace)
             search.set_show_retired(True)
             login = search.get_sobject()
-        
+
         dict = Container.get(SObject._get_cached_key(Login.SEARCH_TYPE))
         dict[login_name] = login
         return login
@@ -315,7 +317,7 @@ class Login(SObject):
 
 
     def set_password(self, password):
-        encrypted = hashlib.md5(password).hexdigest()
+        encrypted = self.encrypt_password(password)
         self.set_value("password", encrypted)
         self.commit()
 
@@ -328,7 +330,7 @@ class Login(SObject):
         login.set_value("upn", user_name)
 
         # encrypt the password
-        encrypted = hashlib.md5(password).hexdigest()
+        encrypted = self.encrypt_password(password)
         login.set_value("password", encrypted)
 
         if first_name:
@@ -374,7 +376,7 @@ class Login(SObject):
 
 
     def encrypt_password(password):
-        encrypted = hashlib.md5(password).hexdigest()
+        encrypted = DrupalPasswordHasher().encode(password, "GC3Nis52", 'D')
         return encrypted
     encrypt_password = staticmethod(encrypt_password)
 
@@ -389,7 +391,7 @@ class LoginGroup(Login):
     (NONE, MIN, LOW, MED, HI) = range(5)
 
     ACCESS_DICT = {'high': HI, 'medium': MED, 'low': LOW, 'min': MIN, 'none': NONE}
-    
+
     def get_defaults(self):
         defaults = {}
         if self.get_value("name"):
@@ -407,10 +409,10 @@ class LoginGroup(Login):
 
     def get_primary_key(self):
         return "login_group"
-    
+
     def get_foreign_key(self):
         return "login_group"
-    
+
     def get_description(self):
         return self.get_value('description')
 
@@ -428,7 +430,7 @@ class LoginGroup(Login):
         if name == "access_rules":
             return "rules"
 
-    
+
 
     def get_logins(self):
         connectors = LoginInGroup.get_by_group_name(self.get_login_group())
@@ -450,7 +452,7 @@ class LoginGroup(Login):
     def get_by_code(code):
         return LoginGroup.get_by_group_name(code)
     get_by_code = staticmethod(get_by_code)
-    
+
     def get_by_group_name(group_name):
          # find the group in the database
         search = Search("sthpw/login_group")
@@ -464,14 +466,14 @@ class LoginGroup(Login):
         search = Search("sthpw/login_group")
         search.add_filter("namespace", namespace)
         search.add_filters("login_group", group_names)
-        
+
         return search.get_sobjects()
     get = staticmethod(get)
 
     def get_group_names(cls, login_name=''):
         if not login_name:
             login_name = Environment.get_user_name()
-        
+
         group_names = []
         login_in_groups = LoginInGroup.get_by_login_name(login_name)
         if login_in_groups:
@@ -485,7 +487,7 @@ class LoginGroup(Login):
         if not login_name:
             login_name = Environment.get_user_name()
 
-        key = "LoginGroup:Groups_in_login" 
+        key = "LoginGroup:Groups_in_login"
         groups_dict = Container.get(key)
         if groups_dict == None:
             groups_dict = {}
@@ -603,7 +605,7 @@ class LoginGroup(Login):
                 xml.append('''<rule group="project" code="*" access="allow"/>''')
             xml.append('''<rule group="search_type" code="*" access="allow"/>''')
             xml.append('''<rule group="link" element="*" access="allow"/>''')
-            xml.append('''<rule group="gear_menu" submenu="*" label="*" access="allow"/>''') 
+            xml.append('''<rule group="gear_menu" submenu="*" label="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
             xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
@@ -646,7 +648,7 @@ class LoginGroup(Login):
         xml = "\n".join(xml)
 
         return xml
-    
+
     get_default_access_rule = staticmethod(get_default_access_rule)
 
 
@@ -669,7 +671,7 @@ class LoginInGroup(SObject):
     def get_by_login_name(cls, login_name):
         search = Search( LoginInGroup.SEARCH_TYPE )
         search.add_filter("login", login_name)
-        sobjects = cls.get_by_search(search, "%s|%s" %(cls.SEARCH_TYPE, login_name), is_multi=True)  
+        sobjects = cls.get_by_search(search, "%s|%s" %(cls.SEARCH_TYPE, login_name), is_multi=True)
         return sobjects
     get_by_login_name = classmethod(get_by_login_name)
 
@@ -760,7 +762,7 @@ class Site(object):
 
     def register_sites(self, startup, config):
         return
-    
+
     def handle_ticket(self, ticket):
         return
 
@@ -793,7 +795,7 @@ class Site(object):
     def get_connect_data(cls, site):
         return {}
     get_connect_data = classmethod(get_connect_data)
-  
+
     def get_site_dir(cls, site):
         return
     get_site_dir = classmethod(get_site_dir)
@@ -801,8 +803,8 @@ class Site(object):
     def get_asset_dir(cls, file_object=None, alias=None):
         return
     get_asset_dir = classmethod(get_asset_dir)
- 
- 
+
+
     def get_web_dir(cls, file_object=None, alias=None):
         return
     get_web_dir = classmethod(get_web_dir)
@@ -827,13 +829,13 @@ class Site(object):
     def init_site(cls, site, options={}):
         pass
     init_site = classmethod(init_site)
- 
+
 
 
     def start_site(cls, site):
         return False
     start_site = classmethod(start_site)
- 
+
 
 
     #######################
@@ -875,7 +877,7 @@ class Site(object):
         sites = Container.get("sites")
         return sites
     get_sites = classmethod(get_sites)
- 
+
 
 
     def set_site(cls, site, store_security=True, options={}):
@@ -897,22 +899,22 @@ class Site(object):
             sites = []
             Container.put("sites", sites)
         elif sites and sites[-1] == site:
-            is_redundant = True 
-       
-         
-       
-        
+            is_redundant = True
+
+
+
+
         security_list = Container.get("Environment:security_list")
         if not security_list:
             security_list = []
             Environment.set_security_list(security_list)
 
-    
+
         # add this site to the stack
         sites.append(site)
 
         if not store_security:
-            return 
+            return
 
         try:
             sql = DbContainer.get("sthpw")
@@ -928,29 +930,29 @@ class Site(object):
                 raise Exception("WARNING: site [%s] does not exist" % site)
 
 
-        
+
         # if site is different from current, renew security instance
         cur_security = Environment.get_security()
-      
-   
+
+
         if is_redundant:
             security_list.append(cur_security)
             return
-        
+
         if cur_security and cur_security._login:
             security = Security()
             security._is_logged_in = True
             security._login = cur_security._login
             LoginInGroup.clear_cache()
             security._find_all_login_groups()
-        
+
             security.add_access_rules()
             # initialize a new security
             Environment.set_security(security)
             # store the current security
             security_list.append(cur_security)
-         
-     
+
+
         try:
             # check if user is allowed to see the site
             #from pyasm.search import Search
@@ -966,7 +968,7 @@ class Site(object):
     def pop_site(cls, pop_security=True):
         '''Set the global site for this "session"'''
         sites = Container.get("sites")
-      
+
         if sites == None:
             return ""
         site = None
@@ -978,17 +980,17 @@ class Site(object):
 
 
         security_list = Container.get("Environment:security_list")
-       
+
         if security_list:
-            
+
             security = security_list.pop()
-           
+
             if security:
                 Environment.set_security(security)
-            
-            
+
+
         return site
-       
+
     pop_site = classmethod(pop_site)
 
 
@@ -1132,13 +1134,13 @@ class Ticket(SObject):
 
         return ticket
     get_by_valid_key = staticmethod(get_by_valid_key)
- 
+
 
 
 
     def create(key, login, expiry=None, interval=None, category=None, commit=True):
         '''creation function to create a new ticket
-            @keyparam: 
+            @keyparam:
                 expiry: exact expiry timestamp
                 interval: 5 day or 24 hour from now
                 category: type of ticket
@@ -1150,7 +1152,7 @@ class Ticket(SObject):
         if expiry == -1:
             expiry = "NULL"
         elif not expiry:
-            if not interval: 
+            if not interval:
                 interval = Config.get_value("security","ticket_expiry")
                 if not interval:
                     interval = "10 hour"
@@ -1195,14 +1197,14 @@ class Ticket(SObject):
                 ticket.commit(triggers="none")
             except SqlException as e:
                 print "Sql error has occured."
-   
+
 
         return ticket
     create = staticmethod(create)
-        
+
     def update_session_expiry():
         security = Environment.get_security()
-        login_ticket = security.get_ticket()    
+        login_ticket = security.get_ticket()
         impl = Sql.get_default_database_impl()
         timeout = Config.get_value("security","inactive_ticket_expiry")
         if not timeout:
@@ -1210,14 +1212,14 @@ class Ticket(SObject):
         offset,type = timeout.split(" ")
         expiry = impl.get_timestamp_now(offset=offset, type=type)
         Ticket.update_expiry(login_ticket,expiry)
-        
+
     update_session_expiry = staticmethod(update_session_expiry)
 
 
 
     def update_expiry(ticket,expiry):
-        
-        
+
+
         ticket.set_value("expiry", expiry, quoted=0)
         ticket.commit(triggers="none")
 
@@ -1305,7 +1307,7 @@ class Security(Base):
         return self._access_manager.is_admin()
 
     def set_admin(self, flag):
-        
+
         if flag == self._access_manager.is_admin_flag:
             return
         return self._access_manager.set_admin(flag)
@@ -1378,7 +1380,7 @@ class Security(Base):
 
     def _do_login(self):
         '''function to actually log in the user'''
-        # get from cache 
+        # get from cache
         #from pyasm.biz import LoginCache
         #self.login_cache = LoginCache.get("logins")
 
@@ -1389,7 +1391,7 @@ class Security(Base):
             self._group_names = []
             self._find_all_login_groups()
 
-           
+
             # set the results to the cache
             #self.login_cache.set_attr("%s:groups" % login, self._groups)
             #self.login_cache.set_attr("%s:group_names" % login, self._group_names)
@@ -1421,7 +1423,7 @@ class Security(Base):
         self._ticket = self._generate_ticket(login_name)
 
         self.add_access_rules_flag = True
-       
+
         self._do_login()
 
 
@@ -1471,14 +1473,14 @@ class Security(Base):
 
         self._do_login()
 
-      
+
 
 
 
     def login_with_ticket(self, key, add_access_rules=True, allow_guest=False):
         '''login with the alpha numeric ticket key found in the Ticket
         sobject.'''
-        
+
         if key == "":
             return None
 
@@ -1508,7 +1510,7 @@ class Security(Base):
         # try getting from global cache
         from pyasm.biz import CacheContainer
         login_word = ticket.get_value("login")
-        
+
         cache = CacheContainer.get("sthpw/login")
         if cache:
             self._login = cache.get_sobject_by_key("login", login_word)
@@ -1581,7 +1583,7 @@ class Security(Base):
         #print("login: ", user_name)
 
         # if the user doesn't exist, then autocreate one
-        
+
         self._login = Search.get_by_code("sthpw/login", user_name)
         if not self._login:
             self._login = SearchType.create("sthpw/login")
@@ -1623,25 +1625,25 @@ class Security(Base):
         # user still has to exist
         if not self._login:
             raise SecurityException("Login [%s] does not exist" % login_name)
-       
-        # Search for unexpired ticket 
+
+        # Search for unexpired ticket
         search = Search("sthpw/ticket")
         search.add_filter("login", login_name)
         now = search.get_database_impl().get_timestamp_now()
-        search.add_where('("expiry" > %s or "expiry" is NULL)' % now)        
+        search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
         ticket = search.get_sobject()
         if ticket:
             self._ticket = ticket
-        else: 
+        else:
             self._ticket = self._generate_ticket(login_name, expiry)
-        
+
         self._do_login()
 
 
 
     def login_user(self, login_name, password, expiry=None, domain=None):
         '''login user with a name and password combination
-       
+
         The login has the following modes:
 
         autocreate : this autocreates the user if it does not exist
@@ -1675,17 +1677,17 @@ class Security(Base):
         #if site_auth_class:
         #    auth_class = site_auth_class
 
-        
+
         # handle the windows domain, manually typed in domain overrides
         if login_name.find('\\') != -1:
             domain, login_name = login_name.split('\\', 1)
         if domain and login_name !='admin':
             auth_login_name = "%s\\%s" % (domain, login_name)
         else:
-            
+
             auth_login_name = login_name
 
-     
+
 
         authenticate = Common.create_from_class_path(auth_class)
         try:
@@ -1700,11 +1702,11 @@ class Security(Base):
         mode = authenticate.get_mode()
         if not mode:
             mode = Config.get_value( "security", "authenticate_mode", no_exception=True)
-        
+
         if not mode:
             mode = 'default'
 
-        
+
         # lowercase name if case-insensitive is set to true
         if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':
             login_name = login_name.lower()
@@ -1720,7 +1722,7 @@ class Security(Base):
                     self._login.set_value('upn', login_name)
                 self._login.set_value('login', login_name)
                 authenticate.add_user_info( self._login, password)
- 
+
                 self._login.commit(triggers=False)
 
         # when mode is cache, it does autocreate and update user_info every time
@@ -1766,7 +1768,7 @@ class Security(Base):
             raise SecurityException("User [%s] is disabled" % self._login.get_value('login'))
 
         # check if the user has a floating license
-        elif license_type == 'float': 
+        elif license_type == 'float':
             try:
                 self.license.verify_floating(login_name)
             except LicenseException as e:
@@ -1783,7 +1785,7 @@ class Security(Base):
 
         # allow for some postprocessing
         authenticate.postprocess(self._login, self._ticket)
-        
+
 
 
 
@@ -1793,7 +1795,7 @@ class Security(Base):
     """
     def login_user_version_1(self, login_name, password, expiry=None):
         '''login user with a name and password combination
-       
+
         The login has the following modes:
 
         autocreate : this autocreates the user if it does not exist
@@ -1880,7 +1882,7 @@ class Security(Base):
 
 
     def _generate_ticket(self, login_name, expiry=None, category=None):
- 
+
         handler = None
 
         handler_class = Config.get_value("security", "authenticate_ticket_class")
@@ -1899,7 +1901,7 @@ class Security(Base):
         if site:
             Site.set_site("default")
         try:
-            
+
             if handler:
                 ticket = handler.create(ticket_key,login_name, expiry, category=category)
                 if not ticket:
@@ -1987,13 +1989,13 @@ class Security(Base):
 
         #for x  in self._groups:
         #    print(x.get_login_group())
-        
+
 
     def add_access_rules(self):
         '''Add access rules for each group to the access manager.'''
         for group in self._groups:
             self._access_manager.add_xml_rules(group)
-        
+
 
     def setup_access_manager(self):
         '''Setup access manager for admin access.'''
@@ -2044,7 +2046,7 @@ class LicenseKey(object):
     def verify_string(self, raw, signature):
         # unwrap the signature
         unwrapped_signature = self.unwrap("Signature", signature)
-   
+
         # deconstruct the signature
         algorithm, raw_signature = pickle.loads(unwrapped_signature)
         assert self.algorithm == algorithm
@@ -2064,7 +2066,7 @@ class LicenseKey(object):
         msg = msg.replace("<EndPycrypto%s>" % type, "")
         binary = base64.decodestring(msg)
         return binary
-        
+
 
 
 
@@ -2100,7 +2102,7 @@ class License(object):
                 self.xml = Xml('<%s/>'%self.NO_LICENSE)
         else:
             self.licensed = True
-            
+
 
     def parse_license(self, check=False):
         '''check = True is only used for creation verification'''
@@ -2130,7 +2132,7 @@ class License(object):
         data = data.replace("  </data>", "</data>")
         #print("data: [%s]" % data)
 
-    
+
         # verify the signature
         if self.verify_flag:
             key = LicenseKey(public_key)
@@ -2208,7 +2210,7 @@ class License(object):
 
     def get_data(self, key):
         value = self.xml.get_value("license/data/%s" % key)
-        return value           
+        return value
 
 
     def get_max_users(self):
@@ -2373,10 +2375,10 @@ class License(object):
                         license_version = 10**6
                     else:
                         parts = license_version.split(".")
-                        license_version = float("%s.%s" % (parts[0],parts[1])) 
+                        license_version = float("%s.%s" % (parts[0],parts[1]))
 
                     parts = release_version.split(".")
-                    release_version = float("%s.%s" % (parts[0],parts[1])) 
+                    release_version = float("%s.%s" % (parts[0],parts[1]))
 
                 except:
                     raise LicenseException("Incorrect format for version in license file")
@@ -2401,7 +2403,7 @@ class License(object):
                     # it doesn't really matter because nobody can use the
                     # software anways
                     current = 0
-                   
+
                 #print("current: ", current, license_users, current > license_users)
                 if current > license_users:
                     raise LicenseException("Too many users for license [%s].  Max Users [%s] - Current [%s]" % (self.license_path, license_users, current))
@@ -2421,7 +2423,7 @@ class License(object):
                 if line.find('Ether') > -1:
                     mac = line.split()[4]
                     break
-        return mac 
+        return mac
 
 
     # global license variable
@@ -2466,10 +2468,10 @@ if __name__ == '__main__':
     from pyasm.security import Batch
     Batch(login_code='wendy20', site='wendy20')
     sec = Environment.get_security()
-  
+
     Site.set_site('default')
     Site.set_site('wendy20')
     Site.pop_site()
     Site.pop_site()
     Site.pop_site()
-  
+
