@@ -232,6 +232,11 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
             continue;
         }
         input.value = value;
+
+        if (input.type == "checkbox")
+            input.checked = value == "on" ? true : false;
+        if (input.type == "radio")
+            input.checked = value == input.value ? true : false;
     }
 
     /*

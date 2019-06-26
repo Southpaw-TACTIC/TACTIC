@@ -1419,7 +1419,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         text.add_behavior( {
             'type': 'keyup',
             'cbjs_action': '''
-            console.log("keyup");
             var key = evt.key;
             if (key == "enter") {
                 bvr.src_el.blur();
@@ -1441,7 +1440,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         'type': 'change',
         'filter_node_name': self.filter_node_name,
         'cbjs_action': '''
-        console.log("change");
         bvr.src_el.blur();
         '''
         } )
@@ -1450,7 +1448,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         'type': 'blur',
         'filter_node_name': self.filter_node_name,
         'cbjs_action': '''
-        console.log("blur");
         bvr.src_el.setStyle("display", "none");
 
         var node = bvr.src_el.getParent(".spt_pipeline_node");
@@ -3148,7 +3145,10 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
     // set any properties that might exist
     new_node.properties = kwargs.properties || {};
-    new_node[node_type] = { description: kwargs.description || "" };
+
+    // BACKWARDS COMPATIBILITY
+    if (new_node.properties.settings && new_node.properties.settings.version == 1) 
+        new_node[node_type] = { description: kwargs.description || "" }
 
 
     // add to a group
@@ -3430,6 +3430,7 @@ spt.pipeline.get_node_property = function(node, name) {
 
 spt.pipeline.set_node_properties = function(node, properties) {
     node.properties = properties;
+    node.has_changes = true;
 }
 
 spt.pipeline.get_node_properties = function(node) {
@@ -3464,11 +3465,15 @@ spt.pipeline.set_node_kwarg = function(node, name, value) {
 }
 
 spt.pipeline.add_node_on_save = function(node, name, value) {
-    var kwargs = spt.pipeline.get_node_kwargs(node);
+    /*var kwargs = spt.pipeline.get_node_kwargs(node);
     if (!kwargs) kwargs = {};
     if (!kwargs.on_saves) kwargs.on_saves = {};
     kwargs.on_saves[name] = value;
-    spt.pipeline.set_node_kwargs(node, kwargs);
+    spt.pipeline.set_node_kwargs(node, kwargs);*/
+
+    if (!node.on_saves) node.on_saves = {};
+    node.on_saves[name] = value;
+    node.has_changes = true;
 }
 
 // Supports both kwargs and multi kwargs

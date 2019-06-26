@@ -270,10 +270,94 @@ class ColorInputWdg(BaseInputWdg):
 class ColorContainerWdg(BaseRefreshWdg):
 
     def __init__(self, **kwargs):
-        super(ColorContainerWdg,self).__init__()
+        super(ColorContainerWdg,self).__init__(**kwargs)
 
         from pyasm.widget import ColorWdg
         self.color_wdg = ColorWdg(kwargs)
+
+        self.color_wdg.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            bvr.src_el.lightOrDark = function(color) {
+                // Variables for red, green, blue values
+                var r, g, b, hsp;
+                
+                // Check the format of the color, HEX or RGB?
+                if (color.match(/^rgb/)) {
+
+                    // If HEX --> store the red, green, blue values in separate variables
+                    color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+                    
+                    r = color[1];
+                    g = color[2];
+                    b = color[3];
+                } 
+                else {
+                    
+                    // If RGB --> Convert it to HEX: http://gist.github.com/983661
+                    color = +("0x" + color.slice(1).replace( 
+                    color.length < 5 && /./g, '$&$&'));
+
+                    r = color >> 16;
+                    g = color >> 8 & 255;
+                    b = color & 255;
+                }
+                
+                // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
+                hsp = Math.sqrt(
+                0.299 * (r * r) +
+                0.587 * (g * g) +
+                0.114 * (b * b)
+                );
+
+                // Using the HSP value, determine whether the color is light or dark
+                if (hsp>127.5) {
+
+                    return 'light';
+                } 
+                else {
+
+                    return 'dark';
+                }
+            }
+
+            bvr.src_el.oldValue = bvr.src_el.value;
+            var top = bvr.src_el.getParent(".spt_color_container");
+            var label = top.getElement(".spt_color_label");
+            
+            // init
+            var isLight = bvr.src_el.lightOrDark(bvr.src_el.value) == 'light';
+            var textColor = isLight ? '#000000' : '#ffffff';
+
+            label.innerText = bvr.src_el.value;
+            label.setStyle("color", textColor);
+
+
+            // update
+            var update = function() {
+                var oldHex = bvr.src_el.oldValue;
+                var hex = bvr.src_el.value;
+
+                if (hex == oldHex) return;
+
+                bvr.src_el.oldValue = hex;
+                //var complimentary = hexToComplimentary(hex);
+                var isLight = bvr.src_el.lightOrDark(hex) == 'light';
+                var textColor = isLight ? '#000000' : '#ffffff';
+
+                label.innerText = hex;
+                label.setStyle("color", textColor);
+            }
+
+            setInterval(update, 200);
+
+            '''
+        })
+
+
+    def get_color_wdg(self):
+        return self.color_wdg
 
 
     def get_styles(self):
@@ -289,6 +373,7 @@ class ColorContainerWdg(BaseRefreshWdg):
             .spt_color_value {
                 height: 100%;
                 width: 100%;
+                cursor: pointer;
             }
 
             .spt_color_label {
@@ -297,6 +382,7 @@ class ColorContainerWdg(BaseRefreshWdg):
                 left: 12px;
                 font-size: 14px;
                 color: white;
+                pointer-events: none;
             }
 
             ''')
@@ -311,8 +397,9 @@ class ColorContainerWdg(BaseRefreshWdg):
 
         top.add(self.color_wdg)
         self.color_wdg.add_class("spt_color_value")
+
         self.color_wdg.add_behavior({
-            'type': 'change',
+            'type': 'changeX',
             'cbjs_action': '''
 
             /* hexToComplimentary : Converts hex value to HSL, shifts
@@ -396,55 +483,10 @@ class ColorContainerWdg(BaseRefreshWdg):
                 return "#" + (0x1000000 | rgb).toString(16).substring(1);
             }
 
-            function lightOrDark(color) {
-                // Variables for red, green, blue values
-                var r, g, b, hsp;
-                
-                // Check the format of the color, HEX or RGB?
-                if (color.match(/^rgb/)) {
-
-                    // If HEX --> store the red, green, blue values in separate variables
-                    color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
-                    
-                    r = color[1];
-                    g = color[2];
-                    b = color[3];
-                } 
-                else {
-                    
-                    // If RGB --> Convert it to HEX: http://gist.github.com/983661
-                    color = +("0x" + color.slice(1).replace( 
-                    color.length < 5 && /./g, '$&$&'));
-
-                    r = color >> 16;
-                    g = color >> 8 & 255;
-                    b = color & 255;
-                }
-                
-                // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
-                hsp = Math.sqrt(
-                0.299 * (r * r) +
-                0.587 * (g * g) +
-                0.114 * (b * b)
-                );
-
-                // Using the HSP value, determine whether the color is light or dark
-                if (hsp>127.5) {
-
-                    return 'light';
-                } 
-                else {
-
-                    return 'dark';
-                }
-            }
-
             var hex = bvr.src_el.value;
             //var complimentary = hexToComplimentary(hex);
-            var isLight = lightOrDark(hex) == 'light';
+            var isLight = bvr.src_el.lightOrDark(hex) == 'light';
             var textColor = isLight ? '#000000' : '#ffffff';
-
-            console.log(hex, "hecks", isLight);
 
             var top = bvr.src_el.getParent(".spt_color_container");
             var label = top.getElement(".spt_color_label");
@@ -455,6 +497,7 @@ class ColorContainerWdg(BaseRefreshWdg):
             '''
         })
 
+        #color = self.color_wdg.get_value() or "#000000"
         color_label = DivWdg("#000000")
         top.add(color_label)
         color_label.add_class("spt_color_label")
