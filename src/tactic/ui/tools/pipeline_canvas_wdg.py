@@ -3572,7 +3572,9 @@ spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value)
     if (!kwargs) kwargs = {};
     kwargs[name] = value;
     multi_kwargs[kwargs_name] = kwargs;
-    spt.pipeline.set_node_property(node, type, multi_kwargs);
+    curr_kwargs = spt.pipeline.get_node_property(node, 'settings');
+    Object.assign(curr_kwargs, multi_kwargs);
+    spt.pipeline.set_node_kwargs(node, curr_kwargs);
 }
 
 
