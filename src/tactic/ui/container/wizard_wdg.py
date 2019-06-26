@@ -67,6 +67,8 @@ class WizardWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
+        if ("px" not in str(width)) or ("%" not in str(width)) or ("auto" not in str(width)):
+            width += "px"
         inner.add_style("width: %s" % width)
 
         inner.add_style("display: flex")
@@ -173,7 +175,10 @@ class WizardWdg(BaseRefreshWdg):
     def get_header_wdg(self):
         div = DivWdg()
         div.add_style("text-align: center")
-        div.add_style("width: %s" % self.width)
+        width = self.width
+        if ("px" not in str(width)) or ("%" not in str(width)) or ("auto" not in str(width)):
+            width += "px"
+        div.add_style("width: %s" % width)
 
         div.add("<hr/>")
 
@@ -185,7 +190,7 @@ class WizardWdg(BaseRefreshWdg):
         left = 50
         width = 50
 
-        dots_div.add_style("width", (left+width)*len(self.widgets)+left)
+        dots_div.add_style("width", str((left+width)*len(self.widgets)+left) + "px")
 
         for i, widget in enumerate(self.widgets):
             on_dot = DivWdg()
@@ -194,7 +199,7 @@ class WizardWdg(BaseRefreshWdg):
             on_dot.add_style("padding-top: 2px")
             on_dot.add_style("border-radius: 20px")
             on_dot.add_style("background: rgba(188,215,207,1.0)")
-            on_dot.add_style("margin: 6 auto")
+            on_dot.add_style("margin: 6px auto")
             #on_dot.add("&nbsp;")
             on_dot.add_border()
             #on_dot = IconWdg("", IconWdg.DOT_GREEN)
@@ -207,7 +212,7 @@ class WizardWdg(BaseRefreshWdg):
             off_dot.add_style("border-radius: 10px")
             #off_dot.add_style("background: rgba(215,188,207,1.0)")
             off_dot.add_style("background: #DDD")
-            off_dot.add_style("margin: 11 auto 12 auto")
+            off_dot.add_style("margin: 11px auto 12px auto")
             #off_dot.add("&nbsp;")
             off_dot.add_border()
             #off_dot = IconWdg("", IconWdg.DOT_GREY)

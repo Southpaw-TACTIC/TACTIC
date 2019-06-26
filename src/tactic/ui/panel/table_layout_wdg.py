@@ -929,7 +929,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             height = self.kwargs.get("height")
             if height:
-                scroll.add_style("height: %spx" % height)
+                scroll.add_style("height: %s" % height)
 
 
             window_resize_offset = self.kwargs.get("window_resize_offset")

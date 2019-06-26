@@ -547,7 +547,7 @@ class BaseInputWdg(HtmlElement):
     def get_save_script(self):
         '''get the js script to save the value to widget settings for persistence'''
         key = self.get_key()
-        return "spt.api.Utility.save_widget_setting('%s', bvr.src_el.value)" %key;
+        return "spt.api.Utility.save_widget_setting('%s', bvr.src_el.value)" %key
 
     def get_refresh_script(self):
         '''get a general refresh script. use this as a template if you need to pass in 
@@ -720,10 +720,14 @@ class TextAreaWdg(BaseTextWdg):
         # on OSX rows and cols flag are not respected
         width = kwargs.get("width")
         if width:
-            self.add_style("width", str(width) + "px")
+            if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
+                width += "px"
+            self.add_style("width", width)
         height = kwargs.get("height")
         if height:
-            self.add_style("height", str(height) + "px")
+            if "px" not in str(height) and "%" not in str(height) and "auto" not in str(height):
+                height += "px"
+            self.add_style("height", height)
 
     
         web = WebContainer.get_web()
@@ -1444,7 +1448,9 @@ class SelectWdg(BaseInputWdg):
 
         width = self.get_option("width")
         if width:
-            self.add_style("width: %spx" % width)
+            if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
+                width += "px"
+            self.add_style("width: %s" % width)
 
         border_mode = self.get_option("border_mode") or "box"
         if border_mode == "box":
@@ -2535,7 +2541,7 @@ class PopupWdg(BaseInputWdg):
         hidden_name = '%s_hidden' % self.name
         div.add(HiddenWdg(hidden_name))
         div.add_style("display: none")
-        div.add_style("margin", "15px 0 0 0px")
+        div.add_style("margin", "15px 0px 0px 0px")
         div.add_style("position", "absolute")
 
         from web_wdg import CloseWdg
@@ -2660,7 +2666,7 @@ class PopupMenuWdg(BaseInputWdg):
         div.add(HiddenWdg(hidden_name))
         """
         div.add_style("display: none")
-        div.add_style("margin", "5px 0 0 0px")
+        div.add_style("margin", "5px 0px 0px 0px")
         div.add_style("position", "absolute")
 
         from web_wdg import CloseWdg
@@ -2672,7 +2678,10 @@ class PopupMenuWdg(BaseInputWdg):
 
         content_div = FloatDivWdg()
         if self.height:
-            content_div.add_style('height', self.height)
+            height = self.height
+            if "px" not in str(height) and "%" not in str(height) and "auto" not in str(height):
+                height += "px"
+            content_div.add_style('height', height)
         content_div.add_style('clear', 'left')
         content_div.add_style('padding-top','8px')
         div.add(content_div)
@@ -2685,7 +2694,10 @@ class PopupMenuWdg(BaseInputWdg):
                 item = DivWdg(css='hand')
                 item.add(widget)
                 if self.menu_width:
-                    item.add_style('width', str(self.menu_width) + "px")
+                    width = self.menu_width
+                    if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
+                        width += "px"
+                    item.add_style('width', width)
                 content_div.add(item)
                 continue
             id='%s_%s' %(self.get_input_name(), widget.get_name())
@@ -2693,7 +2705,10 @@ class PopupMenuWdg(BaseInputWdg):
             item.set_attr('name', self.item_name)
             item.set_attr('tab', id)
             if self.menu_width:
-                item.add_style('width', str(self.menu_width) + "px")
+                width = self.menu_width
+                if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
+                    width += "px"
+                item.add_style('width', width)
             item.add_style('padding-left','3px')
             
             
@@ -2736,7 +2751,10 @@ class PopupMenuWdg(BaseInputWdg):
 
         if self.monitor:
             mon_div = FloatDivWdg(self.monitor, id='%s_monitor' %self.get_input_name(),float='left')
-            mon_div.add_style('height', self.height)
+            height = self.height
+            if "px" not in str(height) and "%" not in str(height) and "auto" not in str(height):
+                height += "px"
+            mon_div.add_style('height', height)
             mon_div.add_style('display', 'none')
             mon_div.add_class('monitor')
             div.add(mon_div)

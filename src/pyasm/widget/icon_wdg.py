@@ -429,6 +429,9 @@ class IconWdg(DivWdg):
             icon.add_class("glyphicon-%s" % part)
             if not self.size:
                 self.size = "16px"
+            size = str(self.size)
+            if "px" not in size and "%" not in size and "auto" not in size:
+                size += "px"
             icon.add_style("font-size: %s" % self.size)
             if not self.opacity:
                 self.opacity = 0.6
@@ -442,7 +445,11 @@ class IconWdg(DivWdg):
             icon.add_class("fa-%s" % part)
             if not self.size:
                 self.size = "16px"
-            icon.add_style("font-size: %s" % self.size)
+            
+            size = str(self.size)
+            if "px" not in size and "%" not in size and "auto" not in size:
+                size += "px"
+            icon.add_style("font-size: %s" % size)
             if not self.opacity:
                 self.opacity = 0.6
 
@@ -482,7 +489,7 @@ class IconWdg(DivWdg):
 
         if self.width:
             width = str(self.width) + "px"
-            if "px" in str(self.width) or "%" in str(self.width):
+            if "px" in str(self.width) or "%" in str(self.width) or "auto" in str(self.width):
                 width = self.width
             if self.icon_path.startswith("BS_"):
                 self.icon.add_style('font-size', width)

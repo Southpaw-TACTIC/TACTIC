@@ -1267,7 +1267,7 @@ spt.tab.close = function(src_el) {
             }
 
             .spt_add_tab_inner {
-                padding: 0 2px 0 2px;
+                padding: 0px 2px 0px 2px;
                 border-top-right-radius: 12px;
                 opacity: 0.5;
                 background: linear-gradient(180deg, #f2f2f2, #FFFFFF);
@@ -1460,8 +1460,8 @@ spt.tab.close = function(src_el) {
 
         gradient = top.get_gradient("background", -5, 5)
 
-        inner = DivWdg();
-        top.add(inner);
+        inner = DivWdg()
+        top.add(inner)
         inner.add_style("position: relative")
         inner.add_style("width: auto")
 
@@ -1517,7 +1517,10 @@ spt.tab.close = function(src_el) {
 
         offset = self.kwargs.get("tab_offset")
         if offset:
-            header_div.add_style("padding-left: %s" % offset)
+            offset_str = str(offset)
+            if "px" not in offset_str and "%" not in offset_str and "auto" not in offset_str:
+                offset_str += "px"
+            header_div.add_style("padding-left: %s" % offset_str)
 
 
         if self.mode == "hidden":
@@ -1536,7 +1539,10 @@ spt.tab.close = function(src_el) {
 
         min_width = self.kwargs.get("min_width")
         if min_width:
-            header_div.add_style("min-width", min_width)
+            min_width_str = str(min_width)
+            if "px" not in min_width_str and "%" not in min_width_str and "auto" not in min_width_str:
+                min_width_str += "px"
+            header_div.add_style("min-width", min_width_str)
 
 
         header_div.add_style("text-align: left")
@@ -1544,9 +1550,9 @@ spt.tab.close = function(src_el) {
 
         resize_headers = True
         if resize_headers:
-            header_div.add_style("white-space", "nowrap");
+            header_div.add_style("white-space", "nowrap")
 
-            offset = 120;
+            offset = 120
             header_div.add_behavior( { 
                 'type': 'load',
                 'offset': offset,
@@ -1791,11 +1797,17 @@ spt.tab.close = function(src_el) {
         if not width:
             content_top.add_style("min-width: 500px")
         else:
-            content_top.add_style("min-width: %s" % width)
+            width_str = str(width)
+            if "px" not in width_str and "%" not in width_str and "auto" not in width_str:
+                width_str += "px"
+            content_top.add_style("min-width: %s" % width_str)
 
         min_width = self.kwargs.get("min_width")
         if min_width:
-            content_top.add_style("min-width", min_width)
+            width_str = str(min_width)
+            if "px" not in width_str and "%" not in width_str and "auto" not in width_str:
+                width_str += "px"
+            content_top.add_style("min-width", width_str)
 
 
 
@@ -2059,7 +2071,7 @@ spt.tab.close = function(src_el) {
         div.add_style("margin-left: -2px")
 
         icon_div = DivWdg()
-        icon_div.add_style("padding: 0 2px 0 2px")
+        icon_div.add_style("padding: 0px 2px 0px 2px")
         icon_div.set_round_corners(3, corners=['TR','TL'])
         from tactic.ui.widget import IconButtonWdg
         icon = IconButtonWdg(title="New Tab", icon=IconWdg.EDIT)
