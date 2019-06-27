@@ -376,7 +376,9 @@ class Login(SObject):
 
 
     def encrypt_password(password):
-        encrypted = DrupalPasswordHasher().encode(password, "GC3Nis52", 'D')
+        salt = Common.generate_alphanum_key(num_digits=8, mode='alpha')
+        iter_code = 'D'
+        encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
         return encrypted
     encrypt_password = staticmethod(encrypt_password)
 
