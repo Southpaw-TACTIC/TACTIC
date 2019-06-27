@@ -6746,8 +6746,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 var on_saves = node.on_saves;
                 var version = kwargs.version;
 
-                console.log(name, node);
-
                 if (kwargs.multi) kwargs = spt.pipeline.get_node_multi_kwargs(node);
                 if (on_saves) {
                     for (var key in on_saves) {
@@ -8376,8 +8374,6 @@ class PipelineSaveCbk(Command):
 
                     version_str = kwargs.get('version') or 1
                     version = int(version_str)
-
-                    print (process_name, " is version: ", version)
 
                     if version is 1:
                         cmd = ProcessInfoCmd(**kwargs)

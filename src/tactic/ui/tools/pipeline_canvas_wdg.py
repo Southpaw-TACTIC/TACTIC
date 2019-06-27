@@ -3469,12 +3469,6 @@ spt.pipeline.set_node_kwarg = function(node, name, value) {
 }
 
 spt.pipeline.add_node_on_save = function(node, name, value) {
-    /*var kwargs = spt.pipeline.get_node_kwargs(node);
-    if (!kwargs) kwargs = {};
-    if (!kwargs.on_saves) kwargs.on_saves = {};
-    kwargs.on_saves[name] = value;
-    spt.pipeline.set_node_kwargs(node, kwargs);*/
-
     if (!node.on_saves) node.on_saves = {};
     node.on_saves[name] = value;
     node.has_changes = true;
@@ -3703,15 +3697,6 @@ spt.pipeline._rename_node = function(node, value) {
 
 
 spt.pipeline.set_rename_mode = function(node) {
-    /*
-    var input = node.getElement(".spt_input");
-    var label = node.getElement(".spt_label");
-    label.setStyle("display", "none");
-    input.setStyle("display", "");
-    input.focus();
-    //input.select();
-    */
-
     var name = spt.pipeline.get_node_name(node);
     var kwargs = {
         name: name
