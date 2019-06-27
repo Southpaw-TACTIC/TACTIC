@@ -14,6 +14,7 @@ __all__ = ['BaseNodeWdg', 'PipelineCanvasWdg', 'NodeRenameWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.biz import ProjectSetting
 from pyasm.common import Container, Common, jsondumps
 from pyasm.web import DivWdg, WebContainer, Table, Widget, HtmlElement
 from pyasm.search import Search, SearchType
@@ -353,6 +354,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         top.add_style("position: relative")
+
+        version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled")
+        top.add_attr("version_2_enabled", version_2_enabled)
 
         show_title = self.kwargs.get("show_title")
         if show_title not in ['false', False]:
@@ -4266,7 +4270,8 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
         // BACKWARDS COMPATIBILITY
-        spt.pipeline.set_node_kwarg(to_node, "version", 2);
+        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+            spt.pipeline.set_node_kwarg(to_node, "version", 2);
 
         // FIXME: hard coded
         var height = 40;

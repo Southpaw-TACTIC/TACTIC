@@ -6934,13 +6934,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
  
 
-
+        version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled") == "true"
 
         button = ButtonNewWdg(title="Add Process", icon="FA_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
+        'version_2_enabled': version_2_enabled,
         'cbjs_action': '''
 
         var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
@@ -6948,7 +6949,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         spt.pipeline.init_cbk(wrapper);
         var node = spt.pipeline.add_node();
         // BACKWARDS COMPATIBILITY
-        spt.pipeline.set_node_kwarg(node, "version", 2);
+        if (bvr.version_2_enabled)
+            spt.pipeline.set_node_kwarg(node, "version", 2);
 
         // Add edited flag
         spt.named_events.fire_event('pipeline|change', {});
@@ -6965,6 +6967,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Add Action')
         menu.add(menu_item)
         menu_item.add_behavior( {
+            'version_2_enabled': version_2_enabled,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
             var top = act.getParent(".spt_pipeline_editor_top");
@@ -6972,7 +6975,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.pipeline.init_cbk(wrapper);
             var node = spt.pipeline.add_node(null, null, null, {node_type: 'action'});
             // BACKWARDS COMPATIBILITY
-            spt.pipeline.set_node_kwarg(node, "version", 2);
+            if (bvr.version_2_enabled)
+                spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -6981,6 +6985,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Add Condition')
         menu.add(menu_item)
         menu_item.add_behavior( {
+            'version_2_enabled': version_2_enabled,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
             var top = act.getParent(".spt_pipeline_editor_top");
@@ -6988,7 +6993,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.pipeline.init_cbk(wrapper);
             var node = spt.pipeline.add_node(null, null, null, {node_type: 'condition'});
             // BACKWARDS COMPATIBILITY
-            spt.pipeline.set_node_kwarg(node, "version", 2);
+            if (bvr.version_2_enabled)
+                spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -6998,6 +7004,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Add Approval')
         menu.add(menu_item)
         menu_item.add_behavior( {
+            'version_2_enabled': version_2_enabled,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
             var top = act.getParent(".spt_pipeline_editor_top");
@@ -7005,7 +7012,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.pipeline.init_cbk(wrapper);
             var node = spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
             // BACKWARDS COMPATIBILITY
-            spt.pipeline.set_node_kwarg(node, "version", 2);
+            if (bvr.version_2_enabled)
+                spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -7016,6 +7024,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Add Sub-workflow')
         menu.add(menu_item)
         menu_item.add_behavior( {
+            'version_2_enabled': version_2_enabled,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
             var top = act.getParent(".spt_pipeline_editor_top");
@@ -7023,7 +7032,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.pipeline.init_cbk(wrapper);
             var node = spt.pipeline.add_node(null, null, null, {node_type: 'hierarchy'});
             // BACKWARDS COMPATIBILITY
-            spt.pipeline.set_node_kwarg(node, "version", 2);
+            if (bvr.version_2_enabled)
+                spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -7046,6 +7056,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             menu.add(menu_item)
             menu_item.add_behavior( {
             'process': process,
+            'version_2_enabled': version_2_enabled,
             'cbjs_action': '''
             var act = spt.smenu.get_activator(bvr);
             // Add edited flag
@@ -7058,10 +7069,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var process = bvr.process;
             var node = spt.pipeline.add_node(process);
             // BACKWARDS COMPATIBILITY
-            spt.pipeline.set_node_kwarg(node, "version", 2);
+            if (bvr.version_2_enabled)
+                spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
-     
+
 
             '''
             } )
@@ -8117,11 +8129,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         var version = spt.pipeline.get_node_kwarg(node, 'version');
         if (version && version != 1)
             return;
-
-        var popup = bvr.src_el.getParent(".spt_popup");
-        var activator = popup.activator;
-        var toolTop = activator.getParent(".spt_pipeline_tool_top");
-        spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
         '''
 
