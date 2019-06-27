@@ -6760,8 +6760,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 return;
             }
 
-            return;
-
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
                 var args = {
@@ -8336,6 +8334,8 @@ class PipelineSaveCbk(Command):
 
                     version_str = kwargs.get('version') or 2
                     version = int(version_str)
+
+                    print (process_name, " is version: ", version)
 
                     if version is 1:
                         cmd = ProcessInfoCmd(**kwargs)
