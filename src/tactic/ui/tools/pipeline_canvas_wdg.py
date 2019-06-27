@@ -4265,6 +4265,8 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
 
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
+        // BACKWARDS COMPATIBILITY
+        spt.pipeline.set_node_kwarg(to_node, "version", 2);
 
         // FIXME: hard coded
         var height = 40;

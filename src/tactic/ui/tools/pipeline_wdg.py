@@ -2723,12 +2723,6 @@ class BaseInfoWdg(BaseRefreshWdg):
 
     def initialize_session_behavior(self, info):
 
-        # BACKWARDS COMPATIBILITY
-        workflow = self.workflow or {}
-        version = workflow.get("version") or 2
-        if int(version) != 1:
-            return
-
         kwargs = self.get_default_kwargs()
         properties = self.get_default_properties()
 
@@ -2738,6 +2732,9 @@ class BaseInfoWdg(BaseRefreshWdg):
             'properties': properties,
             'cbjs_action': '''
             var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
 
             var properties = spt.pipeline.get_node_properties(node);
             Object.assign(bvr.properties, properties);
@@ -2753,35 +2750,38 @@ class BaseInfoWdg(BaseRefreshWdg):
 
     def add_session_behavior(self, input_wdg, input_type, top_class, arg_name):
 
-        # BACKWARDS COMPATIBILITY
-        workflow = self.workflow or {}
-        version = workflow.get("version") or 2
-        if int(version) != 1:
-            return
-
         # On load behavior, displays sessional value
         load_behavior = {
             'type': 'load',
-            'arg_name': arg_name,
-            'cbjs_action': '''
-            var node = spt.pipeline.get_info_node();
-            spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
-            '''
+            'arg_name': arg_name
         }
 
+        cbjs_action_default = '''
+
+        var node = spt.pipeline.get_info_node();
+        var version = spt.pipeline.get_node_kwarg(node, 'version');
+        if (version && version != 1)
+            return;
+
+        var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+        '''
+
+        load_behavior['cbjs_action'] = cbjs_action_default + '''
+        spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+        '''
+
         if input_type == "select":
-            load_behavior['cbjs_action'] = '''
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         elif input_type == "radio":
-            load_behavior['cbjs_action'] = '''
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         elif input_type == "checkbox":
-            load_behavior['cbjs_action'] = '''
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
 
@@ -2793,15 +2793,17 @@ class BaseInfoWdg(BaseRefreshWdg):
             'top_class': top_class,
             'arg_name': arg_name,
             'cbjs_action': '''
-            var popup = bvr.src_el.getParent(".spt_popup");
-            var activator = popup.activator;
-            var toolTop = activator.getParent(".spt_pipeline_tool_top");
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
             var top = bvr.src_el.getParent("."+bvr.top_class);
             var input = spt.api.get_input_values(top, null, false);
 
-            var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
 
             node.has_changes = true;
@@ -2817,9 +2819,12 @@ class BaseInfoWdg(BaseRefreshWdg):
         elif input_type == "checkbox":
             change_behavior['type'] = 'change'
             change_behavior['cbjs_action'] = '''
-            var popup = bvr.src_el.getParent(".spt_popup");
-            var activator = popup.activator;
-            var toolTop = activator.getParent(".spt_pipeline_tool_top");
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
             var top = bvr.src_el.getParent("."+bvr.top_class);
@@ -2828,7 +2833,6 @@ class BaseInfoWdg(BaseRefreshWdg):
             var value = true;
             if (input[bvr.arg_name] != "on") value = false;
 
-            var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, value);
 
             node.has_changes = true;
@@ -3580,9 +3584,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         inner = DivWdg()
         div.add(inner)
 
-        version = self.kwargs.get("version") or 2
-        if int(version) == 2:
-            SessionalProcess.add_relay_session_behavior(inner)
+        SessionalProcess.add_relay_session_behavior(inner)
 
         if action == "command":
             on_action_class = self.kwargs.get("on_action_class")
@@ -3926,46 +3928,38 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
     def add_session_behavior(self, input_wdg, input_type, top_class, arg_name):
 
-        # BACKWARDS COMPATIBILITY
-        version = self.kwargs.get("version") or "2"
-        if version != "1":
-            return
-
         # On load behavior, displays sessional value
         load_behavior = {
             'type': 'load',
-            'arg_name': arg_name,
-            'cbjs_action': '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
-            var node = spt.pipeline.get_info_node();
-            spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
-            '''
+            'arg_name': arg_name
         }
 
-        if input_type == "select":
-            load_behavior['cbjs_action'] = '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+        cbjs_action_default = '''
 
-            var node = spt.pipeline.get_info_node();
+        var node = spt.pipeline.get_info_node();
+        var version = spt.pipeline.get_node_kwarg(node, 'version');
+        if (version && version != 1)
+            return;
+
+        var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+        '''
+
+        load_behavior['cbjs_action'] = cbjs_action_default + '''
+        spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+        '''
+
+        if input_type == "select":
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         elif input_type == "radio":
-            load_behavior['cbjs_action'] = '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         elif input_type == "checkbox":
-            load_behavior['cbjs_action'] = '''
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
 
@@ -3977,13 +3971,17 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             'top_class': top_class,
             'arg_name': arg_name,
             'cbjs_action': '''
-            var top = bvr.src_el.getParent("."+bvr.top_class);
-            var input = spt.api.get_input_values(top, null, false);
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
 
             var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
-            var node = spt.pipeline.get_info_node();
+            var top = bvr.src_el.getParent("."+bvr.top_class);
+            var input = spt.api.get_input_values(top, null, false);
+
             spt.pipeline.set_node_multi_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
 
             spt.named_events.fire_event('pipeline|change', {});
@@ -4135,54 +4133,51 @@ class ActionInfoWdg(BaseInfoWdg):
         form_wdg.add(select_container)
         form_wdg.add_class("spt_section_top")
 
-        # BACKWARDS COMPATIBILITY
-        version = self.workflow.get("version") or 2
-        if int(version) == 2:
-            SessionalProcess.add_relay_session_behavior(select_container, post_processing='''
+        SessionalProcess.add_relay_session_behavior(select_container, post_processing='''
 
-                var top = bvr.src_el.getParent(".spt_form_top");
-                var script_el = top.getElement(".spt_script_edit");
+            var top = bvr.src_el.getParent(".spt_form_top");
+            var script_el = top.getElement(".spt_script_edit");
 
-                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
-                var value = data.action || "create_new";
+            var value = data.action || "create_new";
 
-                if (value == "script_path" || value == "create_new") {
-                    var on_save = function(kwargs) {
-                        if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
+            if (value == "script_path" || value == "create_new") {
+                var on_save = function(kwargs) {
+                    if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
 
-                        var script_path_folder = kwargs.script_path_folder;
-                        var script_path_title = kwargs.script_path_title;
-                        var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
+                    var script_path_folder = kwargs.script_path_folder;
+                    var script_path_title = kwargs.script_path_title;
+                    var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
 
-                        var popup = false
-                        var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
-                        if (!test) {
-                            spt.error('Invalid script path [' + script_path + '] is specified.');
-                            return;
-                        }
-
-                        // either (script_path && script) or script_new
-                        var script = kwargs.script;
-                        if (script_path && !script) {
-                            spt.error('You have most likely specified an invalid script path since the script content is empty.');
-                            return;
-                        }
-
-                        kwargs.script_path = script_path;
-                        kwargs.script = script;
-
-                        return kwargs;
+                    var popup = false
+                    var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
+                    if (!test) {
+                        spt.error('Invalid script path [' + script_path + '] is specified.');
+                        return;
                     }
 
-                    bvr.src_el.on_save = on_save;
-                    spt.pipeline.add_node_on_save(node, "script", on_save);
+                    // either (script_path && script) or script_new
+                    var script = kwargs.script;
+                    if (script_path && !script) {
+                        spt.error('You have most likely specified an invalid script path since the script content is empty.');
+                        return;
+                    }
+
+                    kwargs.script_path = script_path;
+                    kwargs.script = script;
+
+                    return kwargs;
                 }
 
-                spt.panel.refresh_element(script_el, {action: value});
+                bvr.src_el.on_save = on_save;
+                spt.pipeline.add_node_on_save(node, "script", on_save);
+            }
 
-                ''')
+            spt.panel.refresh_element(script_el, {action: value});
+
+            ''')
 
         select = SelectWdg("action")
         select_container.add(select)
@@ -4208,56 +4203,60 @@ class ActionInfoWdg(BaseInfoWdg):
             select.set_value(self.action)
         form_wdg.add("<br/>")
 
-        if int(version) == 1:
-            select.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                var top = bvr.src_el.getParent(".spt_form_top");
-                var script_el = top.getElement(".spt_script_edit");
+        select.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
 
-                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            var top = bvr.src_el.getParent(".spt_form_top");
+            var script_el = top.getElement(".spt_script_edit");
 
-                var node = spt.pipeline.get_info_node();
-                spt.pipeline.set_input_value_from_kwargs(node, "action", bvr.src_el);
-                var value = bvr.src_el.value;
-                spt.pipeline.select_node_multi_kwargs(node, value, "action", value);
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
-                if (value == "script_path" || value == "create_new") {
-                    var on_save = function(kwargs) {
-                        if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
+            var node = spt.pipeline.get_info_node();
+            spt.pipeline.set_input_value_from_kwargs(node, "action", bvr.src_el);
+            var value = bvr.src_el.value;
+            spt.pipeline.select_node_multi_kwargs(node, value, "action", value);
 
-                        var script_path_folder = kwargs.script_path_folder;
-                        var script_path_title = kwargs.script_path_title;
-                        var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
+            if (value == "script_path" || value == "create_new") {
+                var on_save = function(kwargs) {
+                    if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
 
-                        var popup = false
-                        var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
-                        if (!test) {
-                            spt.error('Invalid script path [' + script_path + '] is specified.');
-                            return;
-                        }
+                    var script_path_folder = kwargs.script_path_folder;
+                    var script_path_title = kwargs.script_path_title;
+                    var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
 
-                        // either (script_path && script) or script_new
-                        var script = kwargs.script;
-                        if (script_path && !script) {
-                            spt.error('You have most likely specified an invalid script path since the script content is empty.');
-                            return;
-                        }
-
-                        kwargs.script_path = script_path;
-                        kwargs.script = script;
-
-                        return kwargs;
+                    var popup = false
+                    var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
+                    if (!test) {
+                        spt.error('Invalid script path [' + script_path + '] is specified.');
+                        return;
                     }
 
-                    bvr.src_el.on_save = on_save;
-                    spt.pipeline.add_node_on_save(node, "script", on_save);
+                    // either (script_path && script) or script_new
+                    var script = kwargs.script;
+                    if (script_path && !script) {
+                        spt.error('You have most likely specified an invalid script path since the script content is empty.');
+                        return;
+                    }
+
+                    kwargs.script_path = script_path;
+                    kwargs.script = script;
+
+                    return kwargs;
                 }
 
-                spt.panel.refresh_element(script_el, {action: bvr.src_el.value});
-                '''
-                })
+                bvr.src_el.on_save = on_save;
+                spt.pipeline.add_node_on_save(node, "script", on_save);
+            }
+
+            spt.panel.refresh_element(script_el, {action: bvr.src_el.value});
+            '''
+            })
 
         select_container.add_relay_behavior( {
             'type': 'change',
@@ -4276,7 +4275,11 @@ class ActionInfoWdg(BaseInfoWdg):
                 spt.pipeline.select_node_multi_kwargs(node, value, "action", value);
 
             if (value == "script_path" || value == "create_new") {
-                var on_save = bvr.src_el.on_save;
+                if (version == 2)
+                    var on_save = bvr.src_el.getParent(".spt_section_top").on_save;
+                else
+                    var on_save = bvr.src_el.on_save;
+                    
                 spt.pipeline.add_node_on_save(node, "script", on_save);
 
                 spt.named_events.fire_event('pipeline|change', {});
@@ -4293,8 +4296,7 @@ class ActionInfoWdg(BaseInfoWdg):
             script_path=self.script_path,
             script=self.script,
             language=self.language,
-            execute_mode=self.execute_mode,
-            version = self.workflow.get("version")
+            execute_mode=self.execute_mode
         )
         form_wdg.add(script_wdg)
 
@@ -4490,9 +4492,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
 
         top.add_class("spt_section_top")
 
-        version = self.workflow.get("version") or 2
-        if int(version) == 2:
-            SessionalProcess.add_relay_session_behavior(top)
+        SessionalProcess.add_relay_session_behavior(top)
 
 
         pipeline = Pipeline.get_by_code(pipeline_code)
@@ -4648,9 +4648,7 @@ class HierarchyInfoWdg(BaseInfoWdg):
 
         top.add_class("spt_section_top")
 
-        version = self.workflow.get("version") or 2
-        if int(version) == 2:
-            SessionalProcess.add_relay_session_behavior(top)
+        SessionalProcess.add_relay_session_behavior(top)
 
 
         pipeline = Pipeline.get_by_code(pipeline_code)
@@ -4778,9 +4776,7 @@ class DependencyInfoWdg(BaseInfoWdg):
         self.initialize_session_behavior(top)
 
         top.add_class("spt_section_top")
-        version = self.workflow.get("version") or 2
-        if int(version) == 2:
-            SessionalProcess.add_relay_session_behavior(top)
+        SessionalProcess.add_relay_session_behavior(top)
 
 
         title_wdg = self.get_title_wdg(process, node_type)
@@ -4976,175 +4972,184 @@ class ProgressInfoWdg(BaseInfoWdg):
         self.initialize_session_behavior(top)
 
 
-        version = self.workflow.get("version") or 2
+        top.add_behavior({
+            'type': 'load',
+            'project_code': project_code,
+            'related_pipeline_code': related_pipeline_code,
+            'related_process': related_process,
+            'cbjs_action': '''
 
-        if int(version) == 1:
-            top.add_behavior({
-                'type': 'load',
-                'project_code': project_code,
-                'related_pipeline_code': related_pipeline_code,
-                'related_process': related_process,
-                'cbjs_action': '''
-                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-                bvr.src_el.build_option = function(value, label) {
-                    var option = document.createElement("option")
-                    option.value = value;
-                    option.innerText = label;
-                    return option;
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            bvr.src_el.build_option = function(value, label) {
+                var option = document.createElement("option")
+                option.value = value;
+                option.innerText = label;
+                return option;
+            }
+            bvr.src_el.add_options = function(select, values, labels) {
+                if (values.length != labels.length) {
+                    spt.alert("value and label lists must have the same length");
+                    return;
                 }
-                bvr.src_el.add_options = function(select, values, labels) {
-                    if (values.length != labels.length) {
-                        spt.alert("value and label lists must have the same length");
-                        return;
-                    }
-                    for (var i=0; i<values.length; i++) {
-                        var value = values[i];
-                        var label = labels[i];
-                        var option = bvr.src_el.build_option(value, label);
-                        select.appendChild(option);
-                    }
+                for (var i=0; i<values.length; i++) {
+                    var value = values[i];
+                    var label = labels[i];
+                    var option = bvr.src_el.build_option(value, label);
+                    select.appendChild(option);
                 }
-                bvr.src_el.load_pipeline_options = function(src_el) {
-                    var node = spt.pipeline.get_info_node();
-                    var related_search_type = src_el.value || spt.pipeline.get_node_kwarg(node, "related_search_type");
-                    var related_pipeline_code = spt.pipeline.get_node_kwarg(node, "related_pipeline_code") || bvr.related_pipeline_code;
-                    var server = TacticServerStub.get();
-                    var expression = "@SOBJECT(sthpw/pipeline['search_type', '" + related_search_type + "']['project_code', '" + bvr.project_code + "'])"
-                    var pipeline_sobjs = server.eval(expression);
-                    var top = src_el.getParent(".spt_progress_top");
-                    var select = top.querySelectorAll("select[name='related_pipeline_code']")[0];
-                    select.innerHTML = "<option value=''>-- any --</option>";
-                    for (var i=0; i<pipeline_sobjs.length; i++) {
-                        var pipeline_sobj = pipeline_sobjs[i];
-                        var value = pipeline_sobj.code;
-                        var label = pipeline_sobj.name + " (" + pipeline_sobj.search_type + ")";
-                        var option = top.build_option(value, label);
-                        select.appendChild(option);
-                        if (value == related_pipeline_code) select.value = related_pipeline_code;
-                    }
-                    bvr.src_el.load_process_options(select);
+            }
+            bvr.src_el.load_pipeline_options = function(src_el) {
+                var node = spt.pipeline.get_info_node();
+                var related_search_type = src_el.value || spt.pipeline.get_node_kwarg(node, "related_search_type");
+                var related_pipeline_code = spt.pipeline.get_node_kwarg(node, "related_pipeline_code") || bvr.related_pipeline_code;
+                var server = TacticServerStub.get();
+                var expression = "@SOBJECT(sthpw/pipeline['search_type', '" + related_search_type + "']['project_code', '" + bvr.project_code + "'])"
+                var pipeline_sobjs = server.eval(expression);
+                var top = src_el.getParent(".spt_progress_top");
+                var select = top.querySelectorAll("select[name='related_pipeline_code']")[0];
+                select.innerHTML = "<option value=''>-- any --</option>";
+                for (var i=0; i<pipeline_sobjs.length; i++) {
+                    var pipeline_sobj = pipeline_sobjs[i];
+                    var value = pipeline_sobj.code;
+                    var label = pipeline_sobj.name + " (" + pipeline_sobj.search_type + ")";
+                    var option = top.build_option(value, label);
+                    select.appendChild(option);
+                    if (value == related_pipeline_code) select.value = related_pipeline_code;
                 }
-                bvr.src_el.load_process_options = function(src_el) {
-                    var node = spt.pipeline.get_info_node();
-                    var related_pipeline_code = src_el.value || spt.pipeline.get_node_kwarg(node, "related_pipeline_code");
-                    var related_process = spt.pipeline.get_node_kwarg(node, "related_process") || bvr.related_process;
-                    var server = TacticServerStub.get();
-                    var expression = "@SOBJECT(config/process['pipeline_code', '" + related_pipeline_code + "'])";
-                    var process_sobjs = server.eval(expression);
-                    var top = src_el.getParent(".spt_progress_top");
-                    var select = top.querySelectorAll("select[name='related_process']")[0];
-                    select.innerHTML = "<option value=''>-- any --</option>";
-                    for (var i=0; i<process_sobjs.length; i++) {
-                        var process_sobj = process_sobjs[i];
-                        var value = process_sobj.code;
-                        var label = process_sobj.process;
-                        var option = top.build_option(value, label);
-                        select.appendChild(option);
-                        if (value == related_process) select.value = related_process;
-                    }
+                bvr.src_el.load_process_options(select);
+            }
+            bvr.src_el.load_process_options = function(src_el) {
+                var node = spt.pipeline.get_info_node();
+                var related_pipeline_code = src_el.value || spt.pipeline.get_node_kwarg(node, "related_pipeline_code");
+                var related_process = spt.pipeline.get_node_kwarg(node, "related_process") || bvr.related_process;
+                var server = TacticServerStub.get();
+                var expression = "@SOBJECT(config/process['pipeline_code', '" + related_pipeline_code + "'])";
+                var process_sobjs = server.eval(expression);
+                var top = src_el.getParent(".spt_progress_top");
+                var select = top.querySelectorAll("select[name='related_process']")[0];
+                select.innerHTML = "<option value=''>-- any --</option>";
+                for (var i=0; i<process_sobjs.length; i++) {
+                    var process_sobj = process_sobjs[i];
+                    var value = process_sobj.code;
+                    var label = process_sobj.process;
+                    var option = top.build_option(value, label);
+                    select.appendChild(option);
+                    if (value == related_process) select.value = related_process;
                 }
-                '''
-                })
-        elif int(version) == 2:
-            top.add_behavior({
-                'type': 'load',
-                'project_code': project_code,
-                'related_pipeline_code': related_pipeline_code,
-                'related_process': related_process,
-                'cbjs_action': '''
+            }
+            '''
+            })
 
-                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
-                bvr.src_el.build_option = function(value, label) {
-                    var option = document.createElement("option")
-                    option.value = value;
-                    option.innerText = label;
-                    return option;
-                }
+        top.add_behavior({
+            'type': 'load',
+            'project_code': project_code,
+            'related_pipeline_code': related_pipeline_code,
+            'related_process': related_process,
+            'cbjs_action': '''
 
-                bvr.src_el.add_options = function(select, values, labels) {
-                    if (values.length != labels.length) {
-                        spt.alert("value and label lists must have the same length");
-                        return;
-                    }
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version != 2)
+                return;
 
-                    for (var i=0; i<values.length; i++) {
-                        var value = values[i];
-                        var label = labels[i];
-                        var option = bvr.src_el.build_option(value, label);
-                        select.appendChild(option);
-                    }
-                }
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
-                bvr.src_el.load_pipeline_options = function(src_el) {
-                    var node = spt.pipeline.get_info_node();
-                    var data = spt.pipeline.get_node_kwarg(node, "progress") || {};
-                    var related_search_type = src_el.value || data.related_search_type;
-                    var related_pipeline_code = data.related_pipeline_code || bvr.related_pipeline_code;
+            bvr.src_el.build_option = function(value, label) {
+                var option = document.createElement("option")
+                option.value = value;
+                option.innerText = label;
+                return option;
+            }
 
-                    var server = TacticServerStub.get();
-                    var expression = "@SOBJECT(sthpw/pipeline['search_type', '" + related_search_type + "']['project_code', '" + bvr.project_code + "'])"
-                    var pipeline_sobjs = server.eval(expression);
-
-                    var top = src_el.getParent(".spt_progress_top");
-                    var select = top.querySelectorAll("select[name='related_pipeline_code']")[0];
-                    select.innerHTML = "<option value=''>-- any --</option>";
-
-                    for (var i=0; i<pipeline_sobjs.length; i++) {
-                        var pipeline_sobj = pipeline_sobjs[i];
-                        var value = pipeline_sobj.code;
-                        var label = pipeline_sobj.name + " (" + pipeline_sobj.search_type + ")";
-                        var option = top.build_option(value, label);
-                        select.appendChild(option);
-
-                        if (value == related_pipeline_code) select.value = related_pipeline_code;
-                    }
-                    bvr.src_el.load_process_options(select);
+            bvr.src_el.add_options = function(select, values, labels) {
+                if (values.length != labels.length) {
+                    spt.alert("value and label lists must have the same length");
+                    return;
                 }
 
-                bvr.src_el.load_process_options = function(src_el) {
-                    var node = spt.pipeline.get_info_node();
-                    var data = spt.pipeline.get_node_kwarg(node, "progress") || {};
-                    var related_pipeline_code = src_el.value || data.related_pipeline_code;
-                    var related_process = data.related_process || bvr.related_process;
-
-                    var server = TacticServerStub.get();
-                    var expression = "@SOBJECT(config/process['pipeline_code', '" + related_pipeline_code + "'])";
-                    var process_sobjs = server.eval(expression);
-
-                    var top = src_el.getParent(".spt_progress_top");
-                    var select = top.querySelectorAll("select[name='related_process']")[0];
-                    select.innerHTML = "<option value=''>-- any --</option>";
-
-                    for (var i=0; i<process_sobjs.length; i++) {
-                        var process_sobj = process_sobjs[i];
-                        var value = process_sobj.code;
-                        var label = process_sobj.process;
-                        var option = top.build_option(value, label);
-                        select.appendChild(option);
-
-                        if (value == related_process) select.value = related_process;
-                    }
+                for (var i=0; i<values.length; i++) {
+                    var value = values[i];
+                    var label = labels[i];
+                    var option = bvr.src_el.build_option(value, label);
+                    select.appendChild(option);
                 }
+            }
+
+            bvr.src_el.load_pipeline_options = function(src_el) {
+                var node = spt.pipeline.get_info_node();
+                var data = spt.pipeline.get_node_kwarg(node, "progress") || {};
+                var related_search_type = src_el.value || data.related_search_type;
+                var related_pipeline_code = data.related_pipeline_code || bvr.related_pipeline_code;
+
+                var server = TacticServerStub.get();
+                var expression = "@SOBJECT(sthpw/pipeline['search_type', '" + related_search_type + "']['project_code', '" + bvr.project_code + "'])"
+                var pipeline_sobjs = server.eval(expression);
+
+                var top = src_el.getParent(".spt_progress_top");
+                var select = top.querySelectorAll("select[name='related_pipeline_code']")[0];
+                select.innerHTML = "<option value=''>-- any --</option>";
+
+                for (var i=0; i<pipeline_sobjs.length; i++) {
+                    var pipeline_sobj = pipeline_sobjs[i];
+                    var value = pipeline_sobj.code;
+                    var label = pipeline_sobj.name + " (" + pipeline_sobj.search_type + ")";
+                    var option = top.build_option(value, label);
+                    select.appendChild(option);
+
+                    if (value == related_pipeline_code) select.value = related_pipeline_code;
+                }
+                bvr.src_el.load_process_options(select);
+            }
+
+            bvr.src_el.load_process_options = function(src_el) {
+                var node = spt.pipeline.get_info_node();
+                var data = spt.pipeline.get_node_kwarg(node, "progress") || {};
+                var related_pipeline_code = src_el.value || data.related_pipeline_code;
+                var related_process = data.related_process || bvr.related_process;
+
+                var server = TacticServerStub.get();
+                var expression = "@SOBJECT(config/process['pipeline_code', '" + related_pipeline_code + "'])";
+                var process_sobjs = server.eval(expression);
+
+                var top = src_el.getParent(".spt_progress_top");
+                var select = top.querySelectorAll("select[name='related_process']")[0];
+                select.innerHTML = "<option value=''>-- any --</option>";
+
+                for (var i=0; i<process_sobjs.length; i++) {
+                    var process_sobj = process_sobjs[i];
+                    var value = process_sobj.code;
+                    var label = process_sobj.process;
+                    var option = top.build_option(value, label);
+                    select.appendChild(option);
+
+                    if (value == related_process) select.value = related_process;
+                }
+            }
 
 
 
 
-                '''
-                })
+            '''
+            })
 
-            top.add_class("spt_section_top")
+        top.add_class("spt_section_top")
 
-            SessionalProcess.add_relay_session_behavior(top, pre_processing='''
+        SessionalProcess.add_relay_session_behavior(top, pre_processing='''
 
-                var searchTypeSelect = bvr.src_el.getElement("select[name='related_search_type']")
-                bvr.src_el.load_pipeline_options(searchTypeSelect);
-                var pipelineSelect = bvr.src_el.getElement("select[name='related_pipeline_code']")
-                bvr.src_el.load_process_options(pipelineSelect);
+            var searchTypeSelect = bvr.src_el.getElement("select[name='related_search_type']")
+            bvr.src_el.load_pipeline_options(searchTypeSelect);
+            var pipelineSelect = bvr.src_el.getElement("select[name='related_pipeline_code']")
+            bvr.src_el.load_process_options(pipelineSelect);
 
-                ''')
+            ''')
 
  
         title_wdg = self.get_title_wdg(process, node_type)
@@ -5195,17 +5200,21 @@ class ProgressInfoWdg(BaseInfoWdg):
 
         self.add_session_behavior(select, "select", "spt_progress_top", "related_search_type")
 
-        if int(version) == 1:
-            select.add_behavior( {  
-                'type': 'load', 
-                'project_code': project_code,   
-                'cbjs_action': '''  
-                
-                var top = bvr.src_el.getParent(".spt_progress_top");   
-                top.load_pipeline_options(bvr.src_el);  
+        select.add_behavior( {  
+            'type': 'load', 
+            'project_code': project_code,   
+            'cbjs_action': '''
 
-                '''    
-            } )
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+            
+            var top = bvr.src_el.getParent(".spt_progress_top");   
+            top.load_pipeline_options(bvr.src_el);  
+
+            '''    
+        } )
 
         select.add_behavior( {
             'type': 'change',
@@ -6737,6 +6746,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 var on_saves = node.on_saves;
                 var version = kwargs.version;
 
+                console.log(name, node);
+
                 if (kwargs.multi) kwargs = spt.pipeline.get_node_multi_kwargs(node);
                 if (on_saves) {
                     for (var key in on_saves) {
@@ -6935,7 +6946,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
         var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
-        spt.pipeline.add_node();
+        var node = spt.pipeline.add_node();
+        // BACKWARDS COMPATIBILITY
+        spt.pipeline.set_node_kwarg(node, "version", 2);
 
         // Add edited flag
         spt.named_events.fire_event('pipeline|change', {});
@@ -6957,7 +6970,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var top = act.getParent(".spt_pipeline_editor_top");
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
-            spt.pipeline.add_node(null, null, null, {node_type: 'action'});
+            var node = spt.pipeline.add_node(null, null, null, {node_type: 'action'});
+            // BACKWARDS COMPATIBILITY
+            spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -6971,7 +6986,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var top = act.getParent(".spt_pipeline_editor_top");
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
-            spt.pipeline.add_node(null, null, null, {node_type: 'condition'});
+            var node = spt.pipeline.add_node(null, null, null, {node_type: 'condition'});
+            // BACKWARDS COMPATIBILITY
+            spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -6986,7 +7003,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var top = act.getParent(".spt_pipeline_editor_top");
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
-            spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
+            var node = spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
+            // BACKWARDS COMPATIBILITY
+            spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -7002,7 +7021,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var top = act.getParent(".spt_pipeline_editor_top");
             var wrapper = top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
-            spt.pipeline.add_node(null, null, null, {node_type: 'hierarchy'});
+            var node = spt.pipeline.add_node(null, null, null, {node_type: 'hierarchy'});
+            // BACKWARDS COMPATIBILITY
+            spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
             '''
@@ -7035,7 +7056,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.pipeline.init_cbk(wrapper);
 
             var process = bvr.process;
-            spt.pipeline.add_node(process);
+            var node = spt.pipeline.add_node(process);
+            // BACKWARDS COMPATIBILITY
+            spt.pipeline.set_node_kwarg(node, "version", 2);
 
             top.addClass("spt_has_changes");
      
@@ -7681,9 +7704,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         div.add_class("spt_pipeline_properties_top")
         div.add_class("spt_section_top")
 
-        version = self.workflow.get("version") or 2
-        if int(version) == 2:
-            SessionalProcess.add_relay_session_behavior(div, "properties")
+        SessionalProcess.add_relay_session_behavior(div, "properties")
 
         div.add_style("min-width: 500px")
         self.initialize_session_behavior(div)
@@ -8033,12 +8054,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
     def initialize_session_behavior(self, info):
-        
-        # BACKWARDS COMPATIBILITY
-        workflow = self.workflow or {}
-        version = workflow.get("version") or "2"
-        if version != "1":
-            return
 
         kwargs = self.get_default_kwargs()
 
@@ -8047,6 +8062,9 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             'kwargs': kwargs,
             'cbjs_action': '''
             var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
 
             var kwargs = spt.pipeline.get_node_kwargs(node);
             //kwargs.task_creation = bvr.kwargs.task_creation;
@@ -8083,12 +8101,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
     def add_session_behavior(self, input_wdg, input_type, top_class, arg_name):
 
-        # BACKWARDS COMPATIBILITY
-        workflow = self.workflow or {}
-        version = workflow.get("version") or "2"
-        if version != "1":
-            return
-
         # On load behavior, displays sessional value
         load_behavior = {
             'type': 'load',
@@ -8099,19 +8111,34 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             '''
         }
 
+        cbjs_action_default = '''
+
+        var node = spt.pipeline.get_info_node();
+        var version = spt.pipeline.get_node_kwarg(node, 'version');
+        if (version && version != 1)
+            return;
+
+        var popup = bvr.src_el.getParent(".spt_popup");
+        var activator = popup.activator;
+        var toolTop = activator.getParent(".spt_pipeline_tool_top");
+        spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+        '''
+
+        load_behavior['cbjs_action'] = cbjs_action_default + '''
+        spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+        '''
+
         if input_type == "select":
-            load_behavior['cbjs_action'] = '''
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         elif input_type == "radio":
-            load_behavior['cbjs_action'] = '''
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
         elif input_type == "checkbox":
-            load_behavior['cbjs_action'] = '''
-            var node = spt.pipeline.get_info_node();
+            load_behavior['cbjs_action'] = cbjs_action_default + '''
             spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
             '''
 
@@ -8123,6 +8150,11 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             'top_class': top_class,
             'arg_name': arg_name,
             'cbjs_action': '''
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+
             var popup = bvr.src_el.getParent(".spt_popup");
             var activator = popup.activator;
             var toolTop = activator.getParent(".spt_pipeline_tool_top");
@@ -8131,7 +8163,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent("."+bvr.top_class);
             var input = spt.api.get_input_values(top, null, false);
 
-            var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
 
             node.has_changes = true;
@@ -8147,6 +8178,11 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         elif input_type == "checkbox":
             change_behavior['type'] = 'change'
             change_behavior['cbjs_action'] = '''
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+
             var popup = bvr.src_el.getParent(".spt_popup");
             var activator = popup.activator;
             var toolTop = activator.getParent(".spt_pipeline_tool_top");
@@ -8158,7 +8194,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var value = true;
             if (input[bvr.arg_name] != "on") value = false;
 
-            var node = spt.pipeline.get_info_node();
             spt.pipeline.set_node_kwarg(node, bvr.arg_name, value);
 
             node.has_changes = true;
@@ -8332,7 +8367,7 @@ class PipelineSaveCbk(Command):
                     kwargs['node_type'] = node_type
                     kwargs['pipeline_code'] = pipeline_code
 
-                    version_str = kwargs.get('version') or 2
+                    version_str = kwargs.get('version') or 1
                     version = int(version_str)
 
                     print (process_name, " is version: ", version)
@@ -9575,14 +9610,15 @@ class SessionalProcess:
             let node = spt.pipeline.get_info_node();
 
             top.update_section = function() {
+                var version = spt.pipeline.get_node_kwarg(node, 'version');
+                if (version != 2)
+                    return;
+
                 node.has_changes = true;
                 var inputs = spt.api.get_input_values(top, null, false);
                 // for refreshed panels (shouldn't need this but just in this case)
                 var section_name = top.getAttribute("section_name") || bvr.section_name;
                 spt.pipeline.set_node_kwarg(node, section_name, inputs);
-
-                // BACKWARDS COMPATIBILITY
-                spt.pipeline.set_node_kwarg(node, "version", 2);
 
                 spt.named_events.fire_event('pipeline|change', {});
             }
@@ -9596,10 +9632,13 @@ class SessionalProcess:
             'section_name': section_name,
             'cbjs_action': '''
 
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version != 2)
+                return;
+
             var top = bvr.src_el.hasClass("spt_section_top") ? bvr.src_el : bvr.src_el.getParent(".spt_section_top");
             if (!top) return;
-
-            let node = spt.pipeline.get_info_node();
 
             %s
 
