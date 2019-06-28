@@ -1126,7 +1126,7 @@ spt.mouse.smart_drag_motion = function( evt, bvr, mouse_411 )
 spt.mouse._smart_default_drag_motion = function( evt, bvr, mouse_411 )
 {
     var drag_el = bvr.drag_el;
-    if( ! drag_el ) {``
+    if( ! drag_el ) {
         drag_el = spt.behavior.get_bvr_src( bvr );
     }
     if( bvr.cbjs_pre_motion_setup && ! bvr._pre_motion_setup_done ) {

@@ -972,7 +972,7 @@ class ActionButtonWdgOld(DivWdg):
             width = len(title)/8.0 * 60
             if width < top_width:
                 width = top_width
-            img.add_style('width', str(width)+"px")
+            img.add_style('width', width)
             img.add_style('height', '28px')
         if not title:
             title = "(No title)"
@@ -1189,7 +1189,7 @@ class ActionButtonWdg(DivWdg):
             width = len(title)/8.0 * 60
             if width < top_width:
                 width = top_width
-            td.add_style('width', str(width)+"px")
+            td.add_style('width', width)
             td.add_style('height', '28px')
         if not title:
             title = "(No title)"

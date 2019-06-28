@@ -7706,7 +7706,7 @@ spt.table.expand_table = function(mode) {
                         cell.setStyle("width", layout_width-total_width)
                     }
                     else if (last_width && last_width != "-1") {
-                        cell.setStyle("width", last_width + 'px');
+                        cell.setStyle("width", last_width);
                     }
                     else {
                         var size = cell.getSize();

@@ -369,7 +369,6 @@ class PopupWdg(BaseRefreshWdg):
             'options': {'z_sort': 'bring_forward'},
             'ignore_default_motion': 'true',
             "cbjs_setup": '''
-              console.log("smart drag pop");
               if (spt.popup.is_minimized(bvr.src_el)) {
                 return;
               }
@@ -1238,15 +1237,12 @@ spt.popup.release_focus = function( popup_el )
 spt.popup.get_popup = function( src_el )
 {
     if (src_el == null) {
-        console.log("no popup");
         return null;
     }
 
     if( src_el.hasClass('spt_popup') ) {
-        console.log("has popup");
         return src_el;
     }
-    console.log("parent popup");
     return src_el.getParent('.spt_popup');
 }
 
