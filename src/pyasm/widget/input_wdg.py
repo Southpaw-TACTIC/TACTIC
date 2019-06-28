@@ -720,13 +720,9 @@ class TextAreaWdg(BaseTextWdg):
         # on OSX rows and cols flag are not respected
         width = kwargs.get("width")
         if width:
-            if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
-                width += "px"
             self.add_style("width", width)
         height = kwargs.get("height")
         if height:
-            if "px" not in str(height) and "%" not in str(height) and "auto" not in str(height):
-                height += "px"
             self.add_style("height", height)
 
     
@@ -1448,8 +1444,6 @@ class SelectWdg(BaseInputWdg):
 
         width = self.get_option("width")
         if width:
-            if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
-                width += "px"
             self.add_style("width: %s" % width)
 
         border_mode = self.get_option("border_mode") or "box"
@@ -2678,10 +2672,7 @@ class PopupMenuWdg(BaseInputWdg):
 
         content_div = FloatDivWdg()
         if self.height:
-            height = self.height
-            if "px" not in str(height) and "%" not in str(height) and "auto" not in str(height):
-                height += "px"
-            content_div.add_style('height', height)
+            content_div.add_style('height', self.height)
         content_div.add_style('clear', 'left')
         content_div.add_style('padding-top','8px')
         div.add(content_div)
@@ -2694,10 +2685,7 @@ class PopupMenuWdg(BaseInputWdg):
                 item = DivWdg(css='hand')
                 item.add(widget)
                 if self.menu_width:
-                    width = self.menu_width
-                    if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
-                        width += "px"
-                    item.add_style('width', width)
+                    item.add_style('width', self.menu_width)
                 content_div.add(item)
                 continue
             id='%s_%s' %(self.get_input_name(), widget.get_name())
@@ -2705,10 +2693,7 @@ class PopupMenuWdg(BaseInputWdg):
             item.set_attr('name', self.item_name)
             item.set_attr('tab', id)
             if self.menu_width:
-                width = self.menu_width
-                if "px" not in str(width) and "%" not in str(width) and "auto" not in str(width):
-                    width += "px"
-                item.add_style('width', width)
+                item.add_style('width', self.menu_width)
             item.add_style('padding-left','3px')
             
             
@@ -2751,10 +2736,7 @@ class PopupMenuWdg(BaseInputWdg):
 
         if self.monitor:
             mon_div = FloatDivWdg(self.monitor, id='%s_monitor' %self.get_input_name(),float='left')
-            height = self.height
-            if "px" not in str(height) and "%" not in str(height) and "auto" not in str(height):
-                height += "px"
-            mon_div.add_style('height', height)
+            mon_div.add_style('height', self.height)
             mon_div.add_style('display', 'none')
             mon_div.add_class('monitor')
             div.add(mon_div)

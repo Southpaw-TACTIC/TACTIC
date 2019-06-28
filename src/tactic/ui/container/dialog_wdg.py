@@ -71,7 +71,7 @@ class TestDialogWdg(BaseRefreshWdg):
 
         save_button = ProdIconButtonWdg("Save")
         td.add(save_button)
-        cancel_script = dialog.get_cancel_script();
+        cancel_script = dialog.get_cancel_script()
         save_button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -184,7 +184,6 @@ class DialogWdg(BaseRefreshWdg):
                 x: pos.x + bvr.offset.x,
                 y: pos.y + size.y + bvr.offset.y + 10
             };
-            
             var dialog = document.id(bvr.dialog_id);
             if (dialog) {
                 var target = evt.target;
@@ -205,8 +204,6 @@ class DialogWdg(BaseRefreshWdg):
                 var size = dialog.getSize();
                 var pos = dialog.getPosition();
                 var win_size = document.id(document.body).getSize();
-
-
               
                 var dx = pos.x + size.x - (win_size.x + scroll_left);
                 if (dx > 0) {
@@ -289,7 +286,7 @@ class DialogWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
 
         widget.set_id(self.name)
-        widget.add_attr("spt_dialog_id", self.name);
+        widget.add_attr("spt_dialog_id", self.name)
         if self.kwargs.get("display") not in [True, "true"]:
             widget.add_style("display: none")
 
@@ -416,17 +413,17 @@ class DialogWdg(BaseRefreshWdg):
 
 
         # add the drag capability
-        drag_handle_div.add_behavior( {
+        drag_div.add_behavior( {
         'type':'smart_drag',
         'drag_el': 'spt.popup.get_popup(@);',
         'options': {'z_sort': 'bring_forward'},
         'ignore_default_motion': 'false',
-        'cbjs_setup': '''
-            var pointer = bvr.drag_el.getElement(".spt_popup_pointer");
-            if (pointer) {
-                spt.hide(pointer);
-            }
-        '''
+        "cbjs_setup": '''
+              var pointer = bvr.drag_el.getElement(".spt_popup_pointer");
+              if (pointer) {
+                  spt.hide(pointer);
+              }
+            '''
         } )
 
 

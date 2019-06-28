@@ -271,7 +271,6 @@ class PopupWdg(BaseRefreshWdg):
 
         var content = popup.getElement(".spt_popup_content");
         content.setStyle("max-height", window_size.y - 100);
-        content.setStyle("overflow-y", "auto");
 
         '''
         } )
@@ -329,7 +328,7 @@ class PopupWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'cbjs_action': "spt.popup.toggle_minimize( bvr.src_el );"
             }
-            minimize_wdg.add_behavior( behavior );
+            minimize_wdg.add_behavior( behavior )
             drag_div.add(minimize_wdg)
 
 
@@ -370,10 +369,10 @@ class PopupWdg(BaseRefreshWdg):
             'options': {'z_sort': 'bring_forward'},
             'ignore_default_motion': 'true',
             "cbjs_setup": '''
+              console.log("smart drag pop");
               if (spt.popup.is_minimized(bvr.src_el)) {
                 return;
               }
-
               if (spt.popup.is_background_visible) {
                   spt.popup.offset_x = document.body.scrollLeft;
                   spt.popup.offset_y = document.body.scrollTop;
@@ -428,13 +427,12 @@ class PopupWdg(BaseRefreshWdg):
         content_div.add_color("color", "color2")
         content_div.add_color("background", "background2")
 
-        content_div.add_style("margin", "0px, -1px -0px -1px")
+        content_div.add_style("margin", "0px -1px 0px -1px")
 
         content_div.set_id("%s_content" % self.name)
         content_div.add_class("spt_popup_content")
         content_div.add_style("width: 100%")
-        content_div.add_style("overflow-x: hidden")
-        content_div.add_style("overflow-y: auto")
+        content_div.add_style("overflow: hidden")
         content_div.add_style("display: block")
         #content_div.add_style("padding: 10px")
         if not self.content_wdg:
@@ -1141,13 +1139,12 @@ spt.popup.get_widget = function( evt, bvr )
         }
 
         var window_size = document.id(window).getSize();
-        content_wdg.setStyle("overflow-x","hidden");
-        content_wdg.setStyle("overflow-y","auto");
+        content_wdg.setStyle("overflow","hidden");
         content_wdg.setStyle("max-height", "auto");
         popup_body.setStyle("overflow-y","auto");
         popup_body.setStyle("overflow-x", "hidden");
 
-        var max_height = window_size.y - 100 - popup_header_height - popup_footer_height;
+        var max_height = window_size.y - 150 - popup_header_height - popup_footer_height;
         popup_body.setStyle("max-height", max_height);
     }
     else {
@@ -1241,12 +1238,15 @@ spt.popup.release_focus = function( popup_el )
 spt.popup.get_popup = function( src_el )
 {
     if (src_el == null) {
+        console.log("no popup");
         return null;
     }
 
     if( src_el.hasClass('spt_popup') ) {
+        console.log("has popup");
         return src_el;
     }
+    console.log("parent popup");
     return src_el.getParent('.spt_popup');
 }
 

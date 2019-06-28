@@ -975,7 +975,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     'type': 'load',
                     'cbjs_action': '''
                     var y = window.getSize().y;
-                    bvr.src_el.setStyle('height', y + "px");
+                    bvr.src_el.setStyle('height', y);
                     '''
                     } )
 
@@ -3233,9 +3233,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                                     }
                                 }
                                 for (var j = 0; j < table_els.length; j++) {
-                                    table_els[j].setStyle("height", height + "px");
+                                    table_els[j].setStyle("height", height);
                                 }
-                                rows[i].setStyle("height", height + "px");
+                                rows[i].setStyle("height", height);
                             }
                         }
                         resize_heights();
@@ -3251,7 +3251,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         header_els.forEach( function(el) {
                             el.setStyle("position", "absolute");
                             //var height = "35px";
-                            //el.setStyle("height", height + "px");
+                            //el.setStyle("height", height);
                             
                         } );
 
@@ -3283,11 +3283,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                         setTimeout( function() {
                             var size = table_scroll.getSize().x;
-                            scroll.setStyle("width", size + "px");
+                            scroll.setStyle("width", size);
 
                             var size2 = table_scroll.scrollWidth;
                             var size2 = header_table.getSize().x;
-                            scroll_content.setStyle("width", size2+offset+100 + "px");
+                            scroll_content.setStyle("width", size2+offset+100);
 
                             if (size2 <= size) {
                                 //scroll.setStyle("display", "none");
@@ -3310,9 +3310,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         /*
                         var callback = function() {
                             var size = header_table.getSize();
-                            scroll_content.setStyle("width", (size.x+120) + "px");
+                            scroll_content.setStyle("width", size.x+120);
                             //var size = layout.getSize();
-                            //scroll.setStyle("width", size.x + "px");
+                            //scroll.setStyle("width", size.x);
                         }
                         var observer = new ResizeObserver(callback);
                         observer.observe(header_table);
@@ -4587,7 +4587,7 @@ spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
                 spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
-            fx.start('margin-top', -size.y-100+"px");
+            fx.start('margin-top', -size.y-100);
         }
         else {
             spt.table.remove_hidden_row(sibling);
@@ -4909,7 +4909,7 @@ spt.table.add_new_item = function(kwargs) {
             var header = headers[i];
             var clone_cell = clone_cells[i];
             var size = header.getSize();
-            clone_cell.setStyle("width", size.x + "px");
+            clone_cell.setStyle("width", size.x);
         }
         */
 
@@ -4924,7 +4924,7 @@ spt.table.add_new_item = function(kwargs) {
             var clone_cell = clone_cells[i];
             var size = cell.getSize();
             if (clone_cell)
-                clone_cell.setStyle("width", size.x + "px");
+                clone_cell.setStyle("width", size.x);
         }
 
         clone.inject(row, position);
@@ -5018,7 +5018,7 @@ spt.table.add_new_group = function(kwargs) {
             var clone_cell = clone_cells[i];
             var size = cell.getSize();
             if (clone_cell)
-                clone_cell.setStyle("width", size.x + ""px);
+                clone_cell.setStyle("width", size.x);
         }
         */
 
@@ -5228,7 +5228,7 @@ spt.table.show_edit = function(cell) {
     var dummy = document.id(document.createElement("div"));
     if (typeof(size) != 'undefined') {
         // the offset takes into account the padding (3px) and border (1px) x2
-        dummy.setStyle("height", size.y-8 + 'px');
+        dummy.setStyle("height", size.y-8);
     }
     dummy.innerHTML = "&nbsp;";
     cell.appendChild(dummy);
@@ -7490,7 +7490,7 @@ spt.table.set_column_width = function(element_name, width) {
         var els = row.getElements(".spt_table_hidden_group_td");
         for (var i = 0; i < els.length; i++) {
             if (element_name == els[i].getAttribute("spt_element_name")) {
-                els[i].setStyle("width", width + "px");
+                els[i].setStyle("width", width);
                 continue;
             }
             
@@ -7531,26 +7531,26 @@ spt.table.set_column_width = function(element_name, width) {
     var curr_header = spt.table.get_header_by_cell(cell);
     if (total_width) {
         /*
-        header_table.setStyle("width", total_width + "px");
-        table.setStyle("width", total_width + "px");
+        header_table.setStyle("width", total_width);
+        table.setStyle("width", total_width);
         subtable = table.getElement(".spt_table_table");
         if (subtable) {
-            subtable.setStyle("width", total_width + "px");
+            subtable.setStyle("width", total_width);
             
         }
         */
     }
 
-    curr_header.setStyle("width", width + "px");
+    curr_header.setStyle("width", width);
     curr_header.setAttribute("last_width", width);
-    cell.setStyle("width", width + "px");
+    cell.setStyle("width", width);
     cell.setAttribute("last_width", width);
 
 
 
     var insert_cell = spt.table.get_insert_row_cell(element_name); 
     if (insert_cell)
-        insert_cell.setStyle("width", width + "px");
+        insert_cell.setStyle("width", width);
    
 }
 
@@ -7610,7 +7610,7 @@ spt.table.align_column_widths = function() {
     // set the row widths to that of the header
     for (var i = 0; i < cells.length; i++) {
         var width = headers[i].getStyle("width");
-        cells[i].setStyle("width", width + "px");
+        cells[i].setStyle("width", width);
     }
 }
 
@@ -7661,16 +7661,16 @@ spt.table.expand_table = function(mode) {
 
                 // if this is the last cell
                 if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                    cell.setStyle("width", layout_width-total_width + "px")
+                    cell.setStyle("width", layout_width-total_width)
                 }
 
                 else if (last_width && last_width != "-1") {
-                    cell.setStyle("width", last_width + "px");
+                    cell.setStyle("width", last_width);
                 }
                 else {
                     var size = cell.getSize();
                     if (size.x) {
-                        cell.setStyle("width", size.x + "px");
+                        cell.setStyle("width", size.x);
                     }
                     else {
                         cell.setStyle("width", "100px");
@@ -7703,7 +7703,7 @@ spt.table.expand_table = function(mode) {
 
                     // if this is the last cell
                     if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                        cell.setStyle("width", layout_width-total_width + "px")
+                        cell.setStyle("width", layout_width-total_width)
                     }
                     else if (last_width && last_width != "-1") {
                         cell.setStyle("width", last_width + 'px');
@@ -7711,7 +7711,7 @@ spt.table.expand_table = function(mode) {
                     else {
                         var size = cell.getSize();
                         if (size.x) {
-                            cell.setStyle("width", size.x + "px");
+                            cell.setStyle("width", size.x);
                         }
                         else {
                             cell.setStyle("width", "100px");
@@ -7812,7 +7812,7 @@ spt.table.expand_table = function(mode) {
             div.addClass("spt_header_padding");
 
             var height = header_parent.getStyle("height");
-            div.setStyle("height", height + "px");
+            div.setStyle("height", height);
             div.setStyle("background", "#F5F5F5");
             div.setStyle("float", "right");
 
@@ -7936,7 +7936,7 @@ spt.table.drag_reorder_header_setup = function(evt, bvr, mouse_411)
     clone.setStyle("z-index", "100");
     clone.setStyle("left", mouse_411.curr_x-layout_pos.x+5);
     clone.setStyle("top", mouse_411.curr_y-layout_pos.y+5);
-    clone.setStyle("width", size.x + "px");
+    clone.setStyle("width", size.x);
     clone.setStyle("max-width", "200px");
     clone.setStyle("min-height", "30px");
     clone.setStyle("background", "#CCC");

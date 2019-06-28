@@ -119,16 +119,9 @@ class BaseNodeWdg(BaseRefreshWdg):
         border_color = self.get_border_color()
         box_shadow = self.get_box_shadow()
 
-        height_str = str(height)
-        if ("px" not in height_str) and ("%" not in height_str):
-            height_str += "px"
-        
-        width_str = str(width)
-        if ("px" not in width_str) and ("%" not in width_str):
-            width_str += "px"
 
-        top.add_style("width", width_str)
-        top.add_style("height", height_str)
+        top.add_style("width", width)
+        top.add_style("height", height)
         top.add_style("box-sizing", "border-box")
 
         top.add_attr("spt_border_color", border_color)
@@ -145,12 +138,12 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("border-radius: %spx" % (height/2))
 
         elif shape == "elipse":
-            top.add_style("width", height_str)
+            top.add_style("width", height)
             top.add_style("border-radius: %spx" % border_radius)
 
         elif shape == "diamond":
             top.add_style("transform: rotate(-45deg)")
-            top.add_style("width", height_str)
+            top.add_style("width", height)
 
         else:
             top.add_style("border-radius: %spx" % border_radius)
@@ -382,17 +375,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             outer.add_border()
 
         
-        height_str = str(self.height)
-        if ("px" not in height_str) and ("%" not in height_str):
-            height_str += "px"
-        
-        width_str = str(self.width)
-        if ("px" not in width_str) and ("%" not in width_str):
-            width_str += "px"
 
         # set the size limit
-        outer.add_style("width: %s" % width_str)
-        outer.add_style("height: %s" % height_str)
+        outer.add_style("width: %s" % self.width)
+        outer.add_style("height: %s" % self.height)
 
 
 
@@ -546,8 +532,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             'SIMPLE_NODE_CTX': simple_menus
         }
 
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.attach_smart_context_menu( outer, menus_in, False )
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.attach_smart_context_menu( outer, menus_in, False )
 
         # inner is used to scale
         inner = DivWdg()
@@ -596,17 +583,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas = DivWdg()
         inner.add(canvas)
 
-        height_str = str(self.height)
-        if ("px" not in height_str) and ("%" not in height_str):
-            height_str += "px"
-        
-        width_str = str(self.width)
-        if ("px" not in width_str) and ("%" not in width_str):
-            width_str += "px"
-
         canvas.add_class("spt_pipeline_canvas")
-        canvas.add_style("width: %s" % width_str)
-        canvas.add_style("height: %s" % height_str)
+        canvas.add_style("width: %s" % self.width)
+        canvas.add_style("height: %s" % self.height)
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
 
@@ -891,17 +870,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #canvas.add_style("float: left")
         canvas.add_style("position: relative")
 
-        height_str = str(self.height)
-        if ("px" not in height_str) and ("%" not in height_str):
-            height_str += "px"
-        
-        width_str = str(self.width)
-        if ("px" not in width_str) and ("%" not in width_str):
-            width_str += "px"
 
-        canvas.add_style("margin-top: -%s" % height_str)
-        canvas.set_attr("width", width_str)
-        canvas.set_attr("height", height_str)
+        canvas.add_style("margin-top: -%s" % self.height)
+        canvas.set_attr("width", self.width)
+        canvas.set_attr("height", self.height)
         canvas.set_attr("spt_background_color", self.background_color)
 
         canvas.add_style("z-index: 1")
@@ -1073,9 +1045,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'NODE_CTX' )
-
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         offset = 0
 
@@ -1671,7 +1643,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
         node.add_style("position: absolute")
 
         width = custom_wdg.get_width()
@@ -1679,7 +1651,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         enable_context_menu = self.kwargs.get("enable_context_menu")
 
-        if enable_context_menu not in ['false', False]:
+        if self.is_editable == True:
             from tactic.ui.container.smart_menu_wdg import SmartMenu
             SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
@@ -1809,7 +1781,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("title", name)
 
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
 
         width = 60
         height = 60
@@ -1820,9 +1792,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("width: auto")
         node.add_style("height: auto")
 
+        enable_context_menu = self.kwargs.get("enable_context_menu")
 
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         # add custom node behaviors
         node_behaviors = self.get_node_behaviors()
@@ -1894,7 +1868,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("title", name)
 
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
 
 
         width = 65
@@ -1906,9 +1880,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("width: auto")
         node.add_style("height: auto")
 
-
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         # add custom node behaviors
         node_behaviors = self.get_node_behaviors()
@@ -5093,7 +5067,7 @@ spt.pipeline.set_size = function(width, height) {
     paint.setAttribute("width", ""+width);
     if (height) {
         paint.setAttribute("height", ""+height);
-        paint.setStyle("margin-top", "" + (-height) + "px");
+        paint.setStyle("margin-top", "" + (-height));
     }
     canvas.setStyle("width", ""+width);
     if (height) {

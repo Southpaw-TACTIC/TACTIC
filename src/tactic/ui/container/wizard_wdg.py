@@ -67,8 +67,6 @@ class WizardWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        if ("px" not in str(width)) or ("%" not in str(width)) or ("auto" not in str(width)):
-            width += "px"
         inner.add_style("width: %s" % width)
 
         inner.add_style("display: flex")
@@ -175,10 +173,7 @@ class WizardWdg(BaseRefreshWdg):
     def get_header_wdg(self):
         div = DivWdg()
         div.add_style("text-align: center")
-        width = self.width
-        if ("px" not in str(width)) or ("%" not in str(width)) or ("auto" not in str(width)):
-            width += "px"
-        div.add_style("width: %s" % width)
+        div.add_style("width: %s" % self.width)
 
         div.add("<hr/>")
 
@@ -190,7 +185,7 @@ class WizardWdg(BaseRefreshWdg):
         left = 50
         width = 50
 
-        dots_div.add_style("width", str((left+width)*len(self.widgets)+left) + "px")
+        dots_div.add_style("width", (left+width)*len(self.widgets)+left)
 
         for i, widget in enumerate(self.widgets):
             on_dot = DivWdg()

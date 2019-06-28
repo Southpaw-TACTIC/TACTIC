@@ -1126,7 +1126,7 @@ spt.mouse.smart_drag_motion = function( evt, bvr, mouse_411 )
 spt.mouse._smart_default_drag_motion = function( evt, bvr, mouse_411 )
 {
     var drag_el = bvr.drag_el;
-    if( ! drag_el ) {
+    if( ! drag_el ) {``
         drag_el = spt.behavior.get_bvr_src( bvr );
     }
     if( bvr.cbjs_pre_motion_setup && ! bvr._pre_motion_setup_done ) {
@@ -1200,7 +1200,8 @@ spt.mouse._smart_default_drag_motion = function( evt, bvr, mouse_411 )
     }
 
 
-    var body = spt.mouse._get_body(); 
+    var body = spt.mouse._get_body();
+    
     var scroll_top = body.scrollTop; 
     var scroll_left = body.scrollLeft; 
     offset.y = offset.y - scroll_top; 

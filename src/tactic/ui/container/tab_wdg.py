@@ -1517,10 +1517,7 @@ spt.tab.close = function(src_el) {
 
         offset = self.kwargs.get("tab_offset")
         if offset:
-            offset_str = str(offset)
-            if "px" not in offset_str and "%" not in offset_str and "auto" not in offset_str:
-                offset_str += "px"
-            header_div.add_style("padding-left: %s" % offset_str)
+            header_div.add_style("padding-left: %s" % offset)
 
 
         if self.mode == "hidden":
@@ -1539,10 +1536,7 @@ spt.tab.close = function(src_el) {
 
         min_width = self.kwargs.get("min_width")
         if min_width:
-            min_width_str = str(min_width)
-            if "px" not in min_width_str and "%" not in min_width_str and "auto" not in min_width_str:
-                min_width_str += "px"
-            header_div.add_style("min-width", min_width_str)
+            header_div.add_style("min-width", min_width)
 
 
         header_div.add_style("text-align: left")
@@ -1797,17 +1791,11 @@ spt.tab.close = function(src_el) {
         if not width:
             content_top.add_style("min-width: 500px")
         else:
-            width_str = str(width)
-            if "px" not in width_str and "%" not in width_str and "auto" not in width_str:
-                width_str += "px"
-            content_top.add_style("min-width: %s" % width_str)
+            content_top.add_style("min-width: %s" % width)
 
         min_width = self.kwargs.get("min_width")
         if min_width:
-            width_str = str(min_width)
-            if "px" not in width_str and "%" not in width_str and "auto" not in width_str:
-                width_str += "px"
-            content_top.add_style("min-width", width_str)
+            content_top.add_style("min-width", min_width)
 
 
 
