@@ -30,6 +30,17 @@ class CryptoKey(object):
         self.private_key = (self.key.n, self.key.e, self.key.d)
         self.public_key = (self.key.n, self.key.e)
 
+    def import_key(self, key_location='mykey.pem', passphrase=None):
+        f = open(key_location, 'r')
+        self.key = RSA.importKey(f.read(), passphrase)
+        self.private_key = (self.key.n, self.key.e, self.key.d)
+        self.public_key = (self.key.n, self.key.e)
+
+    def export_key(self, key_location='mykey.pem', key_format='PEM', passphrase=None, pkcs=1):
+        f = open(key_location, 'w')
+        f.write(self.key.exportKey(key_format, passphrase, pkcs))
+        f.close()
+
     def get_private_key(self):
         return self.private_key
 
@@ -63,7 +74,7 @@ class CryptoKey(object):
         coded = self.key.encrypt(msg, "x1y2y3")
         hex = binascii.hexlify(str(coded))
         return hex
-     
+
         #f = open("password", "w")
         #f.write(hex)
         #f.close()
