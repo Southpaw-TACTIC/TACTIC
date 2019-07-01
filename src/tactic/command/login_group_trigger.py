@@ -14,6 +14,7 @@ __all__ = ['LoginGroupTrigger']
 import tacticenv
 import re
 
+from pyasm.common import TacticException
 from pyasm.search import Search, SearchKey
 from pyasm.command import Trigger
 from pyasm.biz import Project
