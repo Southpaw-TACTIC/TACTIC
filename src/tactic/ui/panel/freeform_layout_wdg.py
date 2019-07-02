@@ -19,8 +19,6 @@ from pyasm.widget import WidgetConfig
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg
 
-import random
-
 
 
 class FreeFormLayoutWdg(BaseRefreshWdg):

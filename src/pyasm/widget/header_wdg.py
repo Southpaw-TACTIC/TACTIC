@@ -11,7 +11,7 @@
 #
 __all__ = ["HeaderWdg", "DocMapping", "ProjectSwitchWdg"]
 
-from pyasm.common import Environment, TacticException
+from pyasm.common import Environment, TacticException, Common
 from pyasm.web import *
 from pyasm.widget import *
 from pyasm.biz import *
@@ -212,9 +212,9 @@ class HeaderWdg(Widget):
         color = '#e4e7eb'
         for j in xrange(1,6):
             box = None
-            length = random.randint(20, 30)
+            length = Common.randint(20, 30)
             for i in xrange(1, length):
-                width = 9 - random.randint(1, j)
+                width = 9 - Common.randint(1, j)
                 box = FloatDivWdg('&nbsp;', width=width)
                 #box.add_style('height','0.5em')
                 if random.random() > 0.5 * i/12:

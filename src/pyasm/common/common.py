@@ -364,6 +364,20 @@ class Common(Base):
     generate_random_key = staticmethod(generate_random_key)
 
 
+    def randint(lower, upper):
+        # a cryptographically "secure" random integer
+        integer = SystemRandom().randrange(upper-lower)
+        integer += lower
+        return integer
+    randint = staticmethod(randint)
+
+    def randchoice(key):
+        num = len(key)
+        index = Common.randint(0, num)
+        return key[index]
+    randchoice = staticmethod(randchoice)
+
+
 
     def generate_alphanum_key(num_digits=10, mode="alpha", delimit=0):
         if mode == "alpha":
@@ -390,7 +404,6 @@ class Common(Base):
 
         for i in range(0, num_digits):
             upper = len(items) - 1
-            #idx = random.randint(0, upper)
             idx = SystemRandom().randrange(upper)
             if i and delimit and i % delimit == 0:
                 key += "-"

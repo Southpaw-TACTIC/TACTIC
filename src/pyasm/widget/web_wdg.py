@@ -44,7 +44,7 @@ from widget_config import WidgetConfigView
 from pyasm.search import ExceptionLog
 from pyasm.prod.biz import ProdSetting
 from pyasm.common import jsonloads
-import random, os, re
+import os, re
 
 
 class PyMayaInit(Widget):
@@ -735,7 +735,7 @@ class SwapDisplayWdg(HtmlElement):
         self.add(self.off_wdg,"div2")
 
         # generate a random reference number
-        ref_count = random.randint(0,10000)
+        ref_count = Common.randint(0,10000)
         self.swap1_id = "swap_%s" % str(ref_count)
         self.swap2_id = "swap_%s" % str(ref_count+1)
 

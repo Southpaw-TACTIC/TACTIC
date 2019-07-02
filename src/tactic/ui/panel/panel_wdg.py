@@ -12,7 +12,6 @@
 __all__ = ["SideBarPanelWdg", "SideBarBookmarkMenuWdg", "ViewPanelWdg", "ViewPanelSaveWdg", "ViewPanelSaveCbk"]
 
 import os, types
-import random
 from pyasm.common import Xml, Common, Environment, Container, XmlException, jsonloads, jsondumps, Config, SetupException
 from pyasm.command import Command
 from pyasm.biz import Project, Schema
@@ -3263,7 +3262,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # create a table widget and set the sobjects to it
-        table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
+        table_id = "%s_table_%s" % (target_id, Common.randint(0,10000))
 
         # this can be used to relate a View Panel to a table in order to 
         # tell if a table is embedded or not in js

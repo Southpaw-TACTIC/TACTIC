@@ -14,7 +14,7 @@ __all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
 
 import decimal
 import shutil, os, types, sys, thread
-import re, random
+import re
 import datetime, time
 
 from pyasm.common import jsonloads, jsondumps
@@ -6039,8 +6039,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             pat = re.compile('[\$\s,@#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
             name = pat.sub('', name)
             
-            import random
-            suffix = random.randint(0, 100)
+            suffix = Common.randint(0, 100)
             existing_names = config.get_element_names()
             if name in existing_names:
                 new_name = '%s%0.3d' %(name, suffix)
