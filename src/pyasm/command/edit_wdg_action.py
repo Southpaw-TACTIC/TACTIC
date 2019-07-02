@@ -19,7 +19,8 @@ import os, shutil, string, types, hashlib, re, zipfile
 
 from pyasm.common import *
 from pyasm.biz import *
-from pyasm.search import Search, DatabaseImpl, Sql, SearchKey, SearchType, Login
+from pyasm.search import Search, DatabaseImpl, Sql, SearchKey, SearchType
+from pyasm.security import Login
 from pyasm.prod.biz import *
 
 from .command import *

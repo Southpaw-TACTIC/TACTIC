@@ -12,7 +12,6 @@
 
 __all__ = [ 'WidgetException', 'Widget', 'WidgetSettings', 'StringWdg', 'Html', 'Url', 'ClassWdg', 'MethodWdg', 'WidgetSettingSaveCbk' ]
 
-<<<<<<< HEAD
 import types, string, urllib, random
 
 try:
@@ -28,9 +27,6 @@ except:
 import six
 basestring = six.string_types
 
-=======
-import types, string, urllib, cStringIO, urlparse
->>>>>>> 4.7
 
 from pyasm.common import *
 from pyasm.biz import Project
