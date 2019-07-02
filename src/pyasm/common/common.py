@@ -40,9 +40,6 @@ basestring = six.string_types
 
 
 from .base import Base
-=======
-from base import *
->>>>>>> 4.7
 
 from random import SystemRandom
 
