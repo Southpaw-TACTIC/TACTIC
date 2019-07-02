@@ -72,8 +72,7 @@ class ChartWdgOld(BaseRefreshWdg):
         inner.add_style("padding: 15px")
 
 
-        import random
-        number = random.randint(0, 1000000)
+        number = Common.randint(0, 1000000)
         chart_id = 'my_chart%s' % number
         div.set_id(chart_id)
 

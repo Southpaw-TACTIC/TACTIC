@@ -14,7 +14,6 @@ __all__ = ["XmlException", "Xml"]
 
 
 import time, string, types, thread, os
-import random
 
 from cStringIO import StringIO
 
@@ -251,7 +250,7 @@ class Xml(Base):
             Container.put("XML:xpath_cache", cache)
 
         #key = "%s|%s" % (str(self.doc), xpath)
-        num = random.randint(0, 500000)
+        num = Common.randint(0, 500000)
         key = "%s_%s|%s" % (str(self.doc), num, xpath)
         result = cache.get(key)
         if result == None:

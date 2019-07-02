@@ -22,7 +22,7 @@ from input_wdg import CheckboxWdg, BaseInputWdg
 from icon_wdg import *
 from table_element_wdg import BaseTableElementWdg
 from pyasm.common import UserException
-import math, random, types, cgi
+import math, types, cgi
 
 
 

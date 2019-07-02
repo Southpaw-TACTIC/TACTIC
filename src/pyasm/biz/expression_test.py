@@ -16,7 +16,6 @@ __all__ = ["ExpressionTest"]
 import tacticenv
 
 import unittest
-import random
 import types
 import math
 import re
@@ -100,7 +99,7 @@ class ExpressionTest(unittest.TestCase):
             self.persons = []
             for i in range(0, 8):
 
-                age = random.randint(20, 70)
+                age = Common.randint(20, 70)
 
                 person = Person.create( "person%s" % i, "Joe",
                         "Smith%s" % i, "Fake Unittest Person")

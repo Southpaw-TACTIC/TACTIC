@@ -1080,7 +1080,7 @@ class SelectWdg(BaseInputWdg):
         bs = kwargs.get('bs')
 
         if not name:
-            name = "select%s" % random.randint(0, 1000000)
+            name = "select%s" % Common.randint(0, 1000000)
 
         self.sobjects_for_options = None
         self.empty_option_flag = False

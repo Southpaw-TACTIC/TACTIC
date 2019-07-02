@@ -30,6 +30,10 @@
     <element name='checkin_options_view'/>
     <element name='subcontext_options'/>
     <element name="color"/>
+    <element name='workflow'>
+        <display class="tactic.ui.table.JsonElementWdg">
+        </display>
+    </element>
 
 </definition>
 
@@ -144,6 +148,9 @@
     </element>
     <element name='color'>
         <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+    <element name='workflow'>
+        <display class="TextAreaWdg"/>
     </element>
 </edit_definition>
 

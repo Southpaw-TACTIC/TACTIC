@@ -9,7 +9,7 @@
 #
 #
 # Description: Actions executed when an element of an EditWdg is called to
-# update an sobject.  
+# update an sobject.
 
 __all__ = ["DatabaseAction", "DefaultValueDatabaseAction", "MultiDatabaseAction", 'NonEmptyAction', 'RegexAction', "NullAction", "PasswordAction", "IsCurrentAction", "NamespaceAction", 'UniqueValueAction', 'LoginAction', 'GroupNameAction', "UploadAction", "AddToBinAction", "PerforceUploadAction", "FileUploadException", "MultiUploadAction", "MultiZipUploadAction",  "CommandNameAction", "RepoPathAction", "RepoPathPerAssetAction", 'ProjectCreateAction', 'DateAction', 'TimeAction', 'TaskDateAction','XmlAction' ]
 
@@ -24,6 +24,7 @@ from command import *
 from trigger import *
 from file_upload import *
 from pyasm.prod.biz import *
+from pyasm.security import Login
 
 
 def get_web_container():
@@ -60,10 +61,10 @@ class DatabaseAction(Command):
 
 
     def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         #value = self.web.get_form_value(self.get_input_name())
-        
-        value = self.get_value(self.name) 
+
+        value = self.get_value(self.name)
         # check for save option == false, equivalent to the old NulllAction
         no_action = self.get_option('save') == 'false'
         if no_action:
@@ -80,20 +81,20 @@ class DatabaseAction(Command):
         regexm = self.get_option('regexm')
         regexs = self.get_option('regexs')
         if regexm and value:
-            m = re.match(r'%s' % regexm, value) 
+            m = re.match(r'%s' % regexm, value)
             if not m:
                 name = self._get_name()
                 raise UserException("The input for [%s] is invalid for expression [%s]" \
-                        % (name.capitalize(), regexm)) 
+                        % (name.capitalize(), regexm))
 
         if regexs and value:
-            m = re.search(r'%s' % regexs, value) 
+            m = re.search(r'%s' % regexs, value)
             if m:
                 name = self._get_name()
                 raise UserException("The input for [%s] contains invalid characters [%s]" \
-                        % (name.capitalize(), regexs)) 
+                        % (name.capitalize(), regexs))
 
-        
+
         if not value:
             default = self.get_option('default_col')
             if default:
@@ -120,7 +121,7 @@ class DatabaseAction(Command):
 
     def set_option(self, key, value):
         self.options[key] = value
-        
+
     def get_option(self, key):
         '''gets the value of the specified option'''
         if self.options.has_key(key):
@@ -171,7 +172,7 @@ class DatabaseAction(Command):
 
         if not name:
             name = self.name
-            
+
         if self.input_prefix:
             input_name = "%s|%s" % (self.input_prefix, name)
         else:
@@ -225,9 +226,9 @@ class DatabaseAction(Command):
                 'VALUE': value
             }
             Search.eval(expr, self.sobject, vars=vars)
-       
-        
-        else:     
+
+
+        else:
 
             search_type = self.sobject.get_search_type()
             col_type = SearchType.get_tactic_type(search_type, column)
@@ -236,7 +237,7 @@ class DatabaseAction(Command):
             value = self.convert_value(col_type, value)
 
             if value == None:
-                pass 
+                pass
             elif parent_key_action:
                 self.sobject.add_relationship(value)
             else:
@@ -317,7 +318,7 @@ class ForeignKeyDatabaseAction(DatabaseAction):
 
         value = self.get_value(self.name)
 
-        
+
         sobject = self.sobject
 
         search = Search(search_type)
@@ -327,7 +328,7 @@ class ForeignKeyDatabaseAction(DatabaseAction):
         if not related:
             related = SearchType.create(search_type)
             related.set_parent(sobject)
-            
+
         if not value:
             related.delete()
         else:
@@ -349,7 +350,7 @@ class DefaultValueDatabaseAction(DatabaseAction):
             cur_value = self.sobject.get_value(column, value)
             if not cur_value:
                 self.sobject.set_value(column, value)
-            
+
 
 
 
@@ -379,34 +380,34 @@ class MultiDatabaseAction(DatabaseAction):
 class NonEmptyAction(DatabaseAction):
     ''' Make sure the value is not empty '''
     def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         #value = self.web.get_form_value(self.get_input_name())
         value = self.get_value()
-        
+
         if not value:
             name = self.get_input_name()
             if '|' in name:
                 name = name.split('|')[1]
-            raise UserException("[%s] cannot be empty." % name.capitalize()) 
+            raise UserException("[%s] cannot be empty." % name.capitalize())
 
         return True
 
 class RegexAction(DatabaseAction):
     ''' Make sure the value matches the given expression defined in the option <regex> '''
-    
+
     def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         value = self.web.get_form_value(self.get_input_name())
-       
+
         regex = self.get_option('regex')
         if value and regex:
             name = self.get_input_name()
             if '|' in name:
                 name = name.split('|', 1)[1]
-            m = re.match(r'%s' % regex, value) 
+            m = re.match(r'%s' % regex, value)
             if not m:
                 raise UserException("The input for [%s] is invalid for expression [%s]" \
-                        % (name.capitalize(), regex)) 
+                        % (name.capitalize(), regex))
 
         return True
 
@@ -419,7 +420,7 @@ class NullAction(DatabaseAction):
 
 
 class PasswordAction(DatabaseAction):
-    '''encrypts the entered password with md5 encryption'''
+    '''encrypts the entered password'''
 
     def get_title(self):
         return "Password Change"
@@ -452,10 +453,10 @@ class PasswordAction(DatabaseAction):
                 raise UserException("Empty password.  Go back and re-enter")
             else:
                 return
-        
+
         # encrypt the password
         password = self.password.encode('utf8')
-        encrypted = hashlib.md5(password).hexdigest()
+        encrypted = Login.encrypt_password(password)
         self.sobject.set_value("password", encrypted)
 
         if self.commit_flag == True:
@@ -503,7 +504,7 @@ class NamespaceAction(DatabaseAction):
 class UniqueValueAction(DatabaseAction):
     ''' Ensure the value entered does not violate the Unique Constraint for a column '''
     def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         name = self.web.get_form_value(self.get_input_name())
         search_type = self.sobject.get_search_type()
 
@@ -514,17 +515,17 @@ class UniqueValueAction(DatabaseAction):
         sobject = search.get_sobject()
         if sobject:
             raise UserException("%s [%s] has been taken!" \
-                %(column.capitalize(), name)) 
+                %(column.capitalize(), name))
 
         super(UniqueValueAction, self).check()
         return True
-            
+
 
 class LoginAction(DatabaseAction):
-    
+
     def check(self):
-        self.web = get_web_container() 
-        
+        self.web = get_web_container()
+
         license = Environment.get_security().get_license()
         max_users = license.get_max_users()
         active_users = license.get_current_users()
@@ -532,28 +533,28 @@ class LoginAction(DatabaseAction):
         # this action is used for both edit and insert
         if self.sobject.is_insert():
             active_users += 1
-        
+
         # allow disabled and float type login user addition
         if active_users > max_users and self.web.get_form_value('license_type') not in ['disabled','float']:
-            raise UserException("Max active users [%s] reached for your license"%max_users) 
+            raise UserException("Max active users [%s] reached for your license"%max_users)
 
         super(LoginAction, self).check()
         return True
-            
-        
+
+
 
 class GroupNameAction(DatabaseAction):
-    
+
     def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         self.group = self.web.get_form_value(self.get_input_name())
         if not self.group:
-            raise CommandException("Login Group cannot be empty!") 
+            raise CommandException("Login Group cannot be empty!")
 
         return True
-            
+
     def execute(self):
-        
+
         if self.sobject.is_insert():
             #namespace = self.web.get_context_name()
             #if namespace == "admin":
@@ -576,7 +577,7 @@ class UploadAction(DatabaseAction):
     def __init__(self):
         self.checkin = None
         super(UploadAction, self).__init__()
-        
+
     def get_title(self):
         return "Upload"
 
@@ -601,15 +602,15 @@ class UploadAction(DatabaseAction):
         column = self.get_value("%s|column" % self.name)
         if column == "":
             column = self.name
-       
+
         # NOTE: why did this change?
         #prefix = self.get_input_name()
         prefix = self.get_name()
-        
-        
+
+
         context = self.get_value("%s|context" % prefix)
         description = self.get_value("%s|description" % prefix)
-        
+
         field_storage = self.get_value(prefix)
         handoff_path = self.get_value("%s|path" % prefix )
         custom_ticket = self.get_value("%s|ticket" % prefix )
@@ -697,9 +698,9 @@ class UploadAction(DatabaseAction):
             if os.path.exists(file):
                 os.unlink(file)
 
-        
 
-        
+
+
 
 class AddToBinAction(NonEmptyAction):
 
@@ -759,7 +760,7 @@ class AddToBinAction(NonEmptyAction):
 
         self.sobjects.append(submit)
         Trigger.call(self, 'email')
-        
+
 
 
 
@@ -830,7 +831,7 @@ class MultiUploadAction(DatabaseAction):
         from pyasm.widget import CheckboxWdg
         cb = CheckboxWdg("%s|is_revision" % self.get_input_name())
         is_rev = cb.is_checked(False)
-        
+
         # let checkin take care of moving files to the lib
         from pyasm.checkin import FileCheckin
         self.checkin = FileCheckin.get( self.sobject, self.files, self.file_types,  \
@@ -869,7 +870,7 @@ class MultiUploadAction(DatabaseAction):
         # if no files have been uploaded, don't do anything
         if not field_storage_list:
             return
-        
+
         for field_storage in field_storage_list:
             create_icon = False
             upload = FileUpload()
@@ -895,7 +896,7 @@ class MultiUploadAction(DatabaseAction):
             if not files:
                 continue
 
-            
+
             self.files.extend(files)
             file_types = upload.get_file_types()
             self.file_types.extend(file_types)
@@ -904,11 +905,11 @@ class MultiUploadAction(DatabaseAction):
     def _upload_specified_files(self):
         ''' upload predefined file types specified in the conf.xml file'''
         upload_names = self._get_option('names')
-        
+
         # check for uniqueness in upload_names
         if len(set(upload_names)) != len(upload_names):
             raise TacticException('[names] in the config file must be unique')
-        
+
         upload_types = self._get_option('types')
 
         assert len(upload_names) == len(upload_types)
@@ -920,7 +921,7 @@ class MultiUploadAction(DatabaseAction):
         for idx, name in enumerate(upload_names):
             field_storage = self.get_value(name)
             # if no files have been uploaded, don't do anything
-            
+
             if field_storage == None or field_storage.filename == '':
                 continue
             field_storage_dict[name] = field_storage
@@ -930,28 +931,28 @@ class MultiUploadAction(DatabaseAction):
         # process and get the uploaded files
         icon_created = False
         has_icon = "icon_main" in valid_upload_names
-        
+
         # if no files or only icon_main is supplied, raise Exception
         if not valid_upload_types or valid_upload_types==['icon_main']:
             raise UserException('You need to browse for a valid main file.')
-        
+
         for idx, name  in enumerate(valid_upload_names):
             upload_type = valid_upload_types[idx]
             create_icon = upload_type == 'icon_main'
             field_storage = field_storage_dict.get(name)
-             
+
             # icon field is optional
             if field_storage == None and create_icon:
                 continue
 
             upload = FileUpload()
             upload.set_default_type(upload_type)
-           
+
             # this ensures icon_main takes precedence for icon creation
             if icon_created or (has_icon and not create_icon):
                 upload.set_create_icon_flag(False)
-                
-            
+
+
             upload.set_field_storage(field_storage)
             upload.execute()
             files = upload.get_files()
@@ -966,7 +967,7 @@ class MultiUploadAction(DatabaseAction):
                 icon_created = True
             self.file_types.extend(file_types)
 
-        
+
 
     def _get_option(self, attr):
         ''' get option delimited by | '''
@@ -994,7 +995,7 @@ class MultiZipUploadAction(MultiUploadAction):
         web = get_web_container()
         self.files = []
         self.file_types = []
-        
+
         self._upload_zipped_files()
 
         context = self.get_value("%s|context" % self.name)
@@ -1009,8 +1010,8 @@ class MultiZipUploadAction(MultiUploadAction):
             self.checkin.set_description(description)
             self.checkin.execute()
 
-           
-       
+
+
         # remove the files in upload area
         for key in self.sobject_dict.keys():
             files, file_types = self.sobject_dict.get(key)
@@ -1036,19 +1037,19 @@ class MultiZipUploadAction(MultiUploadAction):
         # if no files have been uploaded, don't do anything
         if not field_storage_list:
             return
-        
+
         for field_storage in field_storage_list:
             upload = FileUpload()
-            
+
             if field_storage == None:
                 continue
             upload.set_field_storage(field_storage)
 
-            
+
             file_path = upload.get_file_path()
-            root, ext = os.path.splitext(file_path) 
+            root, ext = os.path.splitext(file_path)
             upload.set_default_type(ext)
-            
+
             if self._create_icon(file_path):
                 upload.set_create_icon_flag(True)
 
@@ -1061,9 +1062,9 @@ class MultiZipUploadAction(MultiUploadAction):
                     self._process_file(None, unzipped_file)
             else:
                 self._process_file(upload, file_path)
-            
 
-        
+
+
 
 
     def _create_icon(self, file_path):
@@ -1079,7 +1080,7 @@ class MultiZipUploadAction(MultiUploadAction):
 
         return create_icon
 
-   
+
 
     def _process_file(self, upload, file_path):
         ''' sort the files, file_types to the corresponding sobject'''
@@ -1113,9 +1114,9 @@ class MultiZipUploadAction(MultiUploadAction):
                 if icon_path:
                     file_types.append("icon")
                     files.append(icon_path)
-       
+
         head, file_name = os.path.split(file_path)
-        
+
 
         sobject = self.naming.get_sobject_by_filename(file_name)
         if sobject:
@@ -1127,14 +1128,14 @@ class MultiZipUploadAction(MultiUploadAction):
             self.add_description("Published [%s] for [%s] " %(file_name, sobject.get_code()))
         else:
             raise UserException('Unrecognized uploaded file name [%s]' %file_name)
-           
+
 
 class CommandNameAction(DatabaseAction):
-    
+
     def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         class_name = self.web.get_form_value(self.get_input_name())
-        
+
         if not class_name:
             raise UserException("class name cannot be empty!")
         if "." in class_name:
@@ -1142,11 +1143,11 @@ class CommandNameAction(DatabaseAction):
         return True
 
 class RepoPathAction(DatabaseAction):
-    
+
      def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         repo_path = self.web.get_form_value(self.get_input_name())
-        
+
         if not repo_path:
             raise UserException("Repo path cannot be empty! <br/> \
                 A valid example: 'characters/nonplayer'")
@@ -1154,17 +1155,17 @@ class RepoPathAction(DatabaseAction):
             raise UserException("Repo path should not start or end with '/'.<br/> \
                 A valid example: 'characters/nonplayer'")
         return True
-    
+
 class RepoPathPerAssetAction(DatabaseAction):
-    
+
      def check(self):
-        self.web = get_web_container() 
+        self.web = get_web_container()
         repo_path = self.web.get_form_value(self.get_input_name())
-        
+
         if repo_path.startswith('/') or repo_path.endswith('/'):
             raise UserException("Perforce path should not start or end with '/'.<br/> \
                 A valid example: 'characters/nonplayer/dragon'")
-  
+
         return True
 
 
@@ -1215,7 +1216,7 @@ class ProjectCreateAction(DatabaseAction):
         print("Creating project directories [%s]..." % project_dir)
         if not os.path.exists(template_dir):
             print("... skipping: template dir [%s] does not exist" % template_dir)
-            return 
+            return
 
         if not os.path.exists(project_dir):
             for root, dirs, files in os.walk(template_dir):
@@ -1258,7 +1259,7 @@ class DateAction(DatabaseAction):
 
 
 
-        super(DateAction, self).execute() 
+        super(DateAction, self).execute()
 
 
 
@@ -1292,7 +1293,7 @@ class TimeAction(DatabaseAction):
         date = datetime(date.year, date.month, date.day, hour_value, min_value)
         self.set_value(date)
 
-        super(TimeAction, self).execute() 
+        super(TimeAction, self).execute()
 
 
 
@@ -1309,9 +1310,9 @@ class TaskDateAction(DatabaseAction):
         bid_end_date = self.get_value()
         self.sobject.update_dependent_tasks()
 
-        super(TaskDateAction, self).execute() 
+        super(TaskDateAction, self).execute()
 
-        
+
 __all__.append("InitialTaskCreateAction")
 class InitialTaskCreateAction(DatabaseAction):
     '''simple class to update the task dependencies'''
@@ -1340,5 +1341,5 @@ class XmlAction(DatabaseAction):
         except XmlException, e:
             error =  e.__str__()
             raise TacticException("Invalid XML: %s" %error)
-        
+
         return True

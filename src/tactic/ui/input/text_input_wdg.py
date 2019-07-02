@@ -21,7 +21,7 @@ from pyasm.widget import IconWdg, TextWdg, BaseInputWdg, PasswordWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 from pyasm.command import Command
 
-import random, re, string
+import re, string
 
 try:
     import numbers

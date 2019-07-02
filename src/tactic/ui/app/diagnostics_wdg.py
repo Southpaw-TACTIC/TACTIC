@@ -11,7 +11,7 @@
 
 __all__ = ['DiagnosticsWdg', 'DiagnosticsHandoffDirTestCmd']
 
-import os, random
+import os
 
 from pyasm.common import Environment, Config, TacticException
 from pyasm.command import Command

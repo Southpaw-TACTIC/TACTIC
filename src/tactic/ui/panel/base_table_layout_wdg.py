@@ -25,7 +25,7 @@ from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
 from layout_wdg import SwitchLayoutMenu
 
-import random, types, re
+import types, re
 
 
 
@@ -75,7 +75,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not self.table_id:
             self.table_id = kwargs.get('id')
         if not self.table_id:
-            num = random.randint(0,10000)
+            num = Common.randint(0,10000)
             self.table_id = "main_body_table_%s"%num
         if mode == 'insert':
             self.table_id = "%s_insert" %self.table_id
@@ -432,10 +432,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.kwargs.get('op_filters'):
             search.add_op_filters(self.kwargs.get("op_filters"))
 
-
+        values = filter_data.get_values_by_prefix("group")
+        order = WebContainer.get_web().get_form_value('order')
 
         # user-chosen order has top priority
-        order = WebContainer.get_web().get_form_value('order')
         if order:
             self.order_element = order
             if not values:
@@ -450,7 +450,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # passed in filter overrides
-        values = filter_data.get_values_by_prefix("group")
         if values:
 
             group_values = values[0]
