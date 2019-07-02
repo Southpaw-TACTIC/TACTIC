@@ -12,12 +12,17 @@
 __all__ = ['CherryPyException', 'CherryPyAdapter']
 
 
-import types, os, re
+import types, os, re, sys
 
 from pyasm.common import TacticException
 from .web_environment import *
 
 import cherrypy
+
+IS_Pv3 = sys.version_info[0] > 2
+
+import six
+basestring = six.string_types
 
 
 class CherryPyException(Exception):
@@ -191,12 +196,12 @@ class CherryPyAdapter(WebEnvironment):
         If raw is True, then a nonexistant value returns None'''
         try:
             values = self.request.params[name]
-            if type(values) == types.UnicodeType:
+            if not IS_Pv3 and type(values) == types.UnicodeType:
                 values = self._process_unicode(values)
                 return [values]
             elif isinstance(values,basestring):
                 return [values]
-            elif type(values) in (types.IntType, types.FloatType, types.TypeType, types.BooleanType):
+            elif isinstance(values, (int, float, bool, type)):
                 return [values]
             elif values.__class__.__name__ in ["FieldStorage", "datetime"]:
                 return [values]

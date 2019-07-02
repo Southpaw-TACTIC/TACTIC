@@ -644,7 +644,7 @@ class WidgetConfigView(Base):
                 node_attrs = Xml.get_attributes(node)
                 for name, value in node_attrs.items():
                     # only add if the name is not already set
-                    if not attrs.has_key(name):
+                    if name not in attrs:
                         attrs[name] = value
 
         return attrs
@@ -1066,7 +1066,7 @@ class WidgetConfigView(Base):
                 node_attrs = Xml.get_attributes(node)
                 for name, value in node_attrs.items():
                     # only add if the name is not already set
-                    if not attrs.has_key(name):
+                    if name not in attrs:
                         attrs[name] = value
 
         return attrs

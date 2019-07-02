@@ -812,6 +812,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                         print("WARNING: Value [%s] can't be processed" % value)
                         continue
                 elif isinstance(value, long) and value > MAXINT:
+                elif isinstance(value, six.integer_types) and value > MAXINT:
                     value = str(value)
                 elif isinstance(value, basestring):
                     try:
@@ -918,9 +919,10 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
                     elif isinstance(value, float):
                         continue
-                    elif isinstance(value, long) and value > MAXINT:
+                    elif isinstance(value, six.integer_types) and value > MAXINT:
+
                         value2 = str(value)
-                    elif isinstance(value, long):
+                    elif isinstance(value, six.integer_types):
                         continue
                     elif isinstance(value, decimal.Decimal):
                         # use str to avoid loss of precision
@@ -2234,7 +2236,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         parser = ExpressionParser()
         results = parser.eval(expression, sobjects, mode=mode, single=single, vars=vars, show_retired=show_retired)
         import pyasm
-        if type(results) == types.ListType:
+        if isinstance(results, list):
             if not results:
                 pass
             elif isinstance(results[0], pyasm.search.SObject):

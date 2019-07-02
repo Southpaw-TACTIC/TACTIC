@@ -1681,18 +1681,18 @@ class Snapshot(SObject):
             search.add_where(" or ".join(filters))
 
         if context:
-            if type(context) == types.ListType:
+            if isinstance(context, list):
                 search.add_filters("context", context)
             else:
                 search.add_filter("context", context)
         if process:
-            if type(process) == types.ListType:
+            if isinstance(process, list):
                 search.add_filters("process", process)
             else:
                 search.add_filter("process", process)
 
         if status:
-            if type(status) == types.ListType:
+            if isinstance(status, list):
                 search.add_filters("status", status)
             else:
                 search.add_filter("status", status)

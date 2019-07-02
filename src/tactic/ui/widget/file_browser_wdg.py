@@ -26,6 +26,9 @@ from .button_new_wdg import ActionButtonWdg, IconButtonWdg, SingleButtonWdg
 
 import os
 
+import six
+basestring = six.string_types
+
 
 
 class DirListWdg(BaseRefreshWdg):

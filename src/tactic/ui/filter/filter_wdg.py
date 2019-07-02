@@ -467,7 +467,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             filter_type = filter_data_map.get("filter_type")
             # some backwards compatibility
-            if not filter_type and filter_data_map.has_key("chldren_search_type"):
+            if not filter_type and "children_search_type" in filter_data_map:
                 filter_type = "_related"
 
             if not filter_type:
@@ -530,7 +530,11 @@ class GeneralFilterWdg(BaseFilterWdg):
 
                 child_column_indexes = self.get_column_indexes(related_type)
 
-                column_indexes = dict(column_indexes.items() + child_column_indexes.items() )
+                column_indexes = {}
+                for n, v in column_indexes.items():
+                    column_indexes[n] = v
+                for n, v in child_column_indexes.items():
+                    column_indexes[n] = v
 
             top_wdg.add(column_types)
 
@@ -1625,8 +1629,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         for i, values in enumerate(values_list):
 
             # check to see if this is right "prefix"
-            #if not values.has_key("%s_column" % self.prefix):
-            if not values.has_key("%s_enabled" % self.prefix):
+            if "%s_enabled" % self.prefix not in values:
                 continue
 
            # check if this filter is enabled

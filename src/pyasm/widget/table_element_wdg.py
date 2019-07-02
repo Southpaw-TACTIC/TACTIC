@@ -60,6 +60,9 @@ from .web_wdg import *
 from .icon_wdg import IconWdg, IconButtonWdg
 from .input_wdg import FilterTextWdg
 
+import six
+basestring = six.string_types
+
  
 class BaseTableElementWdg(HtmlElement):
     def __init__(self, name=None, value=None, **kwargs):
@@ -519,7 +522,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
     def get_display(self):
         value = self.get_value()
-        if type(value) in types.StringTypes:
+        if isinstance(value, basestring):
             wiki = WikiUtil()
             value = wiki.convert(value) 
         if self.name == "timestamp":

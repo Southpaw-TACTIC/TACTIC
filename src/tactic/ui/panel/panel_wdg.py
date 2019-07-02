@@ -3419,7 +3419,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout in ['fast_table', 'table']:
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
-            from table_layout_wdg import FastTableLayoutWdg
+            from .table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
 
@@ -3459,23 +3459,23 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = self.kwargs.get("upload_mode")
             kwargs['process'] = self.kwargs.get("process")
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
-            from collection_wdg import CollectionLayoutWdg
+            from .collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
-            from tool_layout_wdg import CustomLayoutWithSearchWdg
+            from .tool_layout_wdg import CustomLayoutWithSearchWdg
             layout_table = CustomLayoutWithSearchWdg(**kwargs)
 
         elif layout == 'aggregate':
-            from tool_layout_wdg import CustomAggregateWdg
+            from .tool_layout_wdg import CustomAggregateWdg
             layout_table = CustomAggregateWdg(**kwargs)
 
         elif layout == 'custom_item':
-            from tool_layout_wdg import CustomItemLayoutWithSearchWdg
+            from .tool_layout_wdg import CustomItemLayoutWithSearchWdg
             layout_table = CustomItemLayoutWithSearchWdg(**kwargs)
 
         elif layout == 'old_table':
-            from layout_wdg import OldTableLayoutWdg
+            from .layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
 
         elif layout and layout != "default":
@@ -3493,7 +3493,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
         else:
-            from table_layout_wdg import TableLayoutWdg
+            from .table_layout_wdg import TableLayoutWdg
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['show_border'] = self.kwargs.get("show_border")
             kwargs['edit'] = self.kwargs.get("edit")
@@ -3571,7 +3571,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         if title_view:
-            from custom_layout_wdg import CustomLayoutWdg
+            from .custom_layout_wdg import CustomLayoutWdg
             title_wdg = CustomLayoutWdg(view=title_view)
             title_box_wdg.add(title_wdg)
 

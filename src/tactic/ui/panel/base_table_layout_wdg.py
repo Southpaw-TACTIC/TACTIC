@@ -28,6 +28,8 @@ from .layout_wdg import SwitchLayoutMenu
 
 import types, re
 
+import six
+basestring = six.string_types
 
 
 
@@ -169,7 +171,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.element_names = self.kwargs.get("element_names")
             if self.element_names:
                 config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
-                if type(self.element_names) in types.StringTypes:
+                if isinstance(self.element_names, basestring):
                     self.element_names = self.element_names.split(",")
                     self.element_names = [x.strip() for x in self.element_names]
                 

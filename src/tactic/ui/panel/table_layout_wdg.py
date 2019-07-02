@@ -875,6 +875,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         min_width = 45
         #expand_full_width = False
         for i, item_width in enumerate(reversed(column_widths)):
+
+            if isinstance(item_width, str):
+                item_width = item_width.replace("px", "")
+                item_width = int(item_width)
+
+
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -3716,7 +3722,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     editable = False
 
                 if editable == True:
-                    from layout_wdg import CellEditWdg
+                    from .layout_wdg import CellEditWdg
                     edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version())
                     edit_wdgs[name] = edit
                     # now set up any validations on this edit cell,

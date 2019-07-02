@@ -26,6 +26,10 @@ from .table_element_wdg import BaseTableElementWdg
 from .icon_wdg import *
 from .clipboard_wdg import ClipboardAddWdg
 
+import six
+basestring = six.string_types
+
+
 class ThumbWdg(BaseTableElementWdg):
     '''standard widget that looks at a threesome of files, a main, icon
     and a web file in the snapshot'''

@@ -192,7 +192,7 @@ class SwitchLayoutMenu(object):
             '''
 
 
-        from layout_util import LayoutUtil
+        from .layout_util import LayoutUtil
 
         for i, view in enumerate(views):
             #data = LayoutUtil.get_layout_data(search_type=self.search_type, layout=view)

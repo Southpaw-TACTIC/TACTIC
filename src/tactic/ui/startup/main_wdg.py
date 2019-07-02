@@ -626,7 +626,7 @@ class MainWdg(BaseRefreshWdg):
         td.add_style("font-size: 14px")
         td.add("<br/>")
 
-        from misc_wdg import QuickLinksWdg
+        from .misc_wdg import QuickLinksWdg
         quick_links_wdg = QuickLinksWdg()
         td.add(quick_links_wdg)
         
