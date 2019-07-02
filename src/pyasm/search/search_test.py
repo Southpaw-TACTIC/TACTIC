@@ -847,20 +847,20 @@ class SearchTest(unittest.TestCase):
         timezone = time.tzname[time.daylight]
 
         search = Search("unittest/person")
-        search.add_date_range_filter("start_date", "2010-01-01", "2010-02-01")
+        search.add_date_range_filter("birth_date", "2010-01-01", "2010-02-01")
         start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
         end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
-        expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."start_date" >= '{1}' AND "person"."start_date" < '{2}'""".format(self.prefix, start_range, end_range)
+        expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."birth_date" >= '{1}' AND "person"."birth_date" < '{2}'""".format(self.prefix, start_range, end_range)
         self.assertEquals(expected, search.get_statement() )
 
         search = Search("unittest/person")
-        search.add_dates_overlap_filter("start_date", "end_date", "2010-01-01", "2010-02-01")
+        search.add_dates_overlap_filter("birth_date", "birth_date", "2010-01-01", "2010-02-01")
         start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
         end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
         expected = '''SELECT {0}"person".* FROM {0}"person" WHERE "person"."id" in (SELECT {0}"person"."id" FROM {0}"person" '''.format(self.prefix)
-        expected += '''WHERE ( "person"."start_date" <= '{0}' AND "person"."end_date" >= '{0}' ) '''.format(start_range)
-        expected += '''OR ( "person"."end_date" >= '{0}' AND "person"."start_date" <= '{0}' ) '''.format(end_range)
-        expected += '''OR ( "person"."start_date" >= '{0}' AND "person"."end_date" <= '{1}' ))'''.format(start_range, end_range)
+        expected += '''WHERE ( "person"."birth_date" <= '{0}' AND "person"."birth_date" >= '{0}' ) '''.format(start_range)
+        expected += '''OR ( "person"."birth_date" >= '{0}' AND "person"."birth_date" <= '{0}' ) '''.format(end_range)
+        expected += '''OR ( "person"."birth_date" >= '{0}' AND "person"."birth_date" <= '{1}' ))'''.format(start_range, end_range)
         self.assertEquals(expected, search.get_statement() )
 
     def _test_commit(self):

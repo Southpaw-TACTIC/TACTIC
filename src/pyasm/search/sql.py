@@ -2113,29 +2113,32 @@ class Select(object):
 
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
+        from search import SearchType
 
+        column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
+        column_type = column_types.get(column)
 
-        # if isinstance(value, basestring) and value != "NOW":
-        #     try:
-        #         value = parser.parse(value)
-        #     except ValueError:
-        #         pass
+        if column_type in ['timestamp', 'datetime', 'datetime2']:
+            if isinstance(value, basestring):
+                if value in ["NOW", "now", "NOW()", "now()"]:
+                    info = self.impl.process_value(column, value, column_type)
+                    if info:
+                        value = info.get('value')
+                        quoted = info.get('quoted')
+                else:
+                    try:
+                        value = parser.parse(value)
+                    except ValueError:
+                        pass
 
+            if isinstance(value, datetime.datetime):
+                value = SPTDate.convert_to_timezone(value, 'UTC')
+                value = SPTDate.convert_to_local(value)
 
-        # if value in ["NOW", "now", "NOW()", "now()"]:
-        #     info = self.impl.process_value(column, value, column_type)
-        #     if info:
-        #         value = info.get('value')
-        #         quoted = info.get('quoted')
-
-        # if isinstance(value, datetime.datetime):
-        #     value = SPTDate.convert_to_timezone(value, 'UTC')
-        #     value = SPTDate.convert_to_local(value)
-
-            # info = self.impl.process_value(column, value, column_type)
-            # if info:
-            #     value = info.get('value')
-            #     quoted = info.get('quoted')
+                info = self.impl.process_value(column, value, column_type)
+                if info:
+                    value = info.get('value')
+                    quoted = info.get('quoted')
 
 
         # store all the raw filter data
