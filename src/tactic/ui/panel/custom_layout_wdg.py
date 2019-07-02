@@ -1266,8 +1266,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         if not element_name:
-            import random
-            num = random.randint(0, 1000000)
+            num = Common.randint(0, 1000000)
             element_name = "element%s" % num
             xml.set_attribute(element_node, "name", element_name)
 

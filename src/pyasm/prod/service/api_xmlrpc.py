@@ -6052,8 +6052,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             pat = re.compile('[\$\s,@#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
             name = pat.sub('', name)
             
-            import random
-            suffix = random.randint(0, 100)
+            suffix = Common.randint(0, 100)
             existing_names = config.get_element_names()
             if name in existing_names:
                 new_name = '%s%0.3d' %(name, suffix)

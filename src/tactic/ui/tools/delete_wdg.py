@@ -23,8 +23,6 @@ from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, ButtonRowWdg, But
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import ResizableTableWdg
 
-import random
-
 
 
 class DeleteToolWdg(BaseRefreshWdg):

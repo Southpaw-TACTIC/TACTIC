@@ -651,8 +651,7 @@ class ReportsWdg(BaseRefreshWdg):
             else:
                 div = DivWdg()
                 """
-                import random
-                num = random.randint(0,3)
+                num = Common.randint(0,3)
                 if num == 1:
                     image = IconWdg("Bar Chart", IconWdg.GRAPH_BAR_01)
                 elif num == 2:

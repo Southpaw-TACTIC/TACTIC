@@ -12,6 +12,7 @@
 
 __all__ = [ 'WidgetException', 'Widget', 'WidgetSettings', 'StringWdg', 'Html', 'Url', 'ClassWdg', 'MethodWdg', 'WidgetSettingSaveCbk' ]
 
+<<<<<<< HEAD
 import types, string, urllib, random
 
 try:
@@ -27,6 +28,9 @@ except:
 import six
 basestring = six.string_types
 
+=======
+import types, string, urllib, cStringIO, urlparse
+>>>>>>> 4.7
 
 from pyasm.common import *
 from pyasm.biz import Project
@@ -578,7 +582,7 @@ class Widget(object):
         unique_code = Container.get("%s:unique_code" %wdg)
         if ref_count == None:
             ref_count = 0
-            unique_code = ''.join([ random.choice('abcdefghijklmno') for i in range(0, 6)])
+            unique_code = ''.join([ Common.randchoice('abcdefghijklmno') for i in xrange(0, 6)])
             Container.put("%s:unique_code" %wdg, unique_code)
       
         Container.put("%s:ref_count" %wdg, ref_count+1)

@@ -1725,8 +1725,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                     #flat ui color
                     colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
-                    import random
-                    color = colors[random.randint(0,7)]
+                    color = colors[Common.randint(0,7)]
                     
                     tile_data['ext'] = ext
                     tile_data['color'] = color
@@ -3263,8 +3262,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
                 #flat ui color
                 colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
-                import random
-                color = colors[random.randint(0,7)]
+                color = colors[Common.randint(0,7)]
 
                 img = DivWdg()
                 img.add_style("padding-top: 10px")

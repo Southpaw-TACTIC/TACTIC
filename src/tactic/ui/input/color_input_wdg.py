@@ -19,10 +19,7 @@ from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
 
-import random
-
 from .text_input_wdg import TextInputWdg
-
 
 
 class ColorWdg(Widget):
@@ -38,8 +35,7 @@ class ColorWdg(Widget):
         inner.add_style('top: 100')
         inner.add_style('left: 100')
         inner.add_style("z-index: 1000")
-        import random
-        number = random.randint(1, 1000)
+        number = Common.randint(1, 1000)
         rainbow_id = "rainbow_%s" % number
         inner.set_id(rainbow_id);
 
@@ -171,8 +167,7 @@ class ColorInputWdg(BaseInputWdg):
                     '#cfd7bc',
                 ]
 
-            import random
-            num = random.randint(0,len(colors)-1)
+            num = Common.randint(0,len(colors)-1)
             start_color = colors[num]
             #start_color = top.get_color(start_color, -10)
 

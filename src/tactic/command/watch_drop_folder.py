@@ -254,8 +254,7 @@ Base directory: %s
                 if test:
                     cmd = None
                     print("Path [%s]" % path)
-                    import random
-                    t = random.randint(0, 10)
+                    t = Common.randint(0, 10)
                     print("random: ", t)
                     if t >= 9:
                         foo()
@@ -552,9 +551,8 @@ class CheckinCmd(object):
             
             """
             #TEST: simulate different check-in duration
-            from random import randint
-            sec = randint(1, 5)
-            print("checking in for ", sec, "sec")
+            sec = Common.randint(1, 5)
+            print "checking in for ", sec, "sec"
             server.eval("@SOBJECT(sthpw/login)")
             import shutil
             dir_name,base_name = os.path.split(file_path)

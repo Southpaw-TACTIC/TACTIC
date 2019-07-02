@@ -765,7 +765,7 @@ class SObjectCalendarWdg(CalendarWdg):
 
             # for each day in the sobject's timeline, add it to the appropriate
             # day list
-            days = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date+timedelta(days=1)))
+            days = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date))
             for date in days:
 
                 date_str = date.strftime("%Y-%m-%d")

@@ -14,7 +14,7 @@
 __all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
-import os, sys, time, string, re, random, types, pprint, traceback
+import os, sys, time, string, re, types, pprint, traceback
 
 IS_Pv3 = sys.version_info[0] > 2
 
@@ -30,6 +30,7 @@ except:
 
 import threading, zipfile
 import hashlib, urllib
+
 import datetime
 import colorsys
 import codecs
@@ -39,6 +40,11 @@ basestring = six.string_types
 
 
 from .base import Base
+=======
+from base import *
+>>>>>>> 4.7
+
+from random import SystemRandom
 
 try:
     #from cjson import encode as jsondumps
@@ -391,6 +397,20 @@ class Common(Base):
     generate_random_key = staticmethod(generate_random_key)
 
 
+    def randint(lower, upper):
+        # a cryptographically "secure" random integer
+        integer = SystemRandom().randrange(upper-lower)
+        integer += lower
+        return integer
+    randint = staticmethod(randint)
+
+    def randchoice(key):
+        num = len(key)
+        index = Common.randint(0, num)
+        return key[index]
+    randchoice = staticmethod(randchoice)
+
+
 
     def generate_alphanum_key(num_digits=10, mode="alpha", delimit=0):
         if mode == "alpha":
@@ -414,8 +434,10 @@ class Common(Base):
                 continue
             items.append(chr(idx))
 
+
         for i in range(0, num_digits):
-            idx = random.randint(0, len(items)-1)
+            upper = len(items) - 1
+            idx = SystemRandom().randrange(upper)
             if i and delimit and i % delimit == 0:
                 key += "-"
             key += items[idx]

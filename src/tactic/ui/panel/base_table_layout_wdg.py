@@ -26,7 +26,7 @@ from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
 
 from .layout_wdg import SwitchLayoutMenu
 
-import random, types, re
+import types, re
 
 
 
@@ -76,7 +76,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not self.table_id:
             self.table_id = kwargs.get('id')
         if not self.table_id:
-            num = random.randint(0,10000)
+            num = Common.randint(0,10000)
             self.table_id = "main_body_table_%s"%num
         if mode == 'insert':
             self.table_id = "%s_insert" %self.table_id

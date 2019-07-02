@@ -16,7 +16,7 @@ __all__ = ["ThumbWdg", "ThumbCmd", "FileInfoWdg"]
 import re, time, types, string, os
 import urllib
 
-from pyasm.common import Xml, Container, Environment, Config
+from pyasm.common import Xml, Container, Environment, Config, Common
 from pyasm.search import Search, SearchException, SearchKey, SqlException, DbContainer
 from pyasm.biz import *
 from pyasm.command import Command
@@ -1080,8 +1080,8 @@ class ThumbWdg(BaseTableElementWdg):
 
             #flat ui color
             colors = ['#1ABC9C', '#2ECC71', '#3498DB','#9B59B6','#34495E','#E67E22','#E74C3C','#95A5A6']
-            import random
-            color = colors[random.randint(0,7)]
+            color = colors[Common.randint(0,7)]
+
 
 
 

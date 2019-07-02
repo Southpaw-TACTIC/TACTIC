@@ -1531,12 +1531,6 @@ class CalendarTimeWdg(BaseRefreshWdg):
 
 
         name = self.kwargs.get("name")
-        """
-        if not name:
-            # generate a random name
-            name = button.generate_unique_id()
-        evt_name = 'time_%s'%name
-        """
         interval = 5
        
         top.add_behavior( {

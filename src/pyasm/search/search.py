@@ -3032,7 +3032,8 @@ class SObject(object):
         # This will fail most often, so we don't use the try/except clause
         if self.has_updates and name in self.update_data:
             if is_data:
-                return self.update_data.get(name).get(attr)
+                attr_data = self.update_data.get(name) or {}
+                return attr_data.get(attr)
             else:
                 return self.update_data[name]
 

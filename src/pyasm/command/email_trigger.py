@@ -428,6 +428,8 @@ class SendEmail(Command):
         sender_name = self.kwargs.get('sender_name')
         paths = self.kwargs.get("paths") or []
 
+        log_exception = self.kwargs.get("log_exception")
+
         if not sender_email:
             sender_email = Environment.get_login().get_full_email()
             if not sender_email:
@@ -503,7 +505,15 @@ class SendEmail(Command):
 
         site = Site.get_site()
         project_code = Project.get_project_code()
-        email = EmailTriggerThread(sender_email, recipients, "%s" %msg.as_string(), site=site, project_code=project_code)
+        
+        email = EmailTriggerThread(
+            sender_email, 
+            recipients, 
+            "%s" %msg.as_string(), 
+            site=site, 
+            project_code=project_code,
+            log_exception=log_exception
+        )
         email.start()
 
     def is_undoable(cls):
@@ -790,7 +800,7 @@ class EmailTrigger2(EmailTrigger):
 
 class EmailTriggerThread(threading.Thread):
     '''Sending email as a separate thread'''
-    def __init__(self, sender_email, recipient_emails, msg, site=None, project_code=None):
+    def __init__(self, sender_email, recipient_emails, msg, site=None, project_code=None, log_exception=True):
         super(EmailTriggerThread,self).__init__()
         self.sender_email = sender_email
         self.recipient_emails = recipient_emails
@@ -814,6 +824,8 @@ class EmailTriggerThread(threading.Thread):
 
         self.site = site
         self.project_code = project_code
+
+        self.log_exception = log_exception
 
 
     def set_mailserver(self, mailserver):
@@ -853,9 +865,11 @@ class EmailTriggerThread(threading.Thread):
             message += "sender: %s" % self.sender_email 
             message += "recipients: %s" % self.recipient_emails
            
-            if self.project_code and self.site:
+            if self.project_code and self.site and self.log_exception:
                 Batch(site=self.site, project_code=self.project_code)
                 ExceptionLog.log(e, message=message)
+            else:
+                print(message)
                 
 
 class EmailTriggerTestCmd(Command):
