@@ -2113,14 +2113,13 @@ class Select(object):
 
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
-        from search import SearchType
 
         column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
         column_type = column_types.get(column)
 
         if column_type in ['timestamp', 'datetime', 'datetime2']:
             if isinstance(value, basestring):
-                if value in ["NOW", "now", "NOW()", "now()"]:
+                if value.lower() == 'now':
                     info = self.impl.process_value(column, value, column_type)
                     if info:
                         value = info.get('value')
@@ -2132,9 +2131,7 @@ class Select(object):
                         pass
 
             if isinstance(value, datetime.datetime):
-                value = SPTDate.convert_to_timezone(value, 'UTC')
                 value = SPTDate.convert_to_local(value)
-
                 info = self.impl.process_value(column, value, column_type)
                 if info:
                     value = info.get('value')
@@ -2200,19 +2197,10 @@ class Select(object):
         # on simple building of select statements, db_resource could be null
         if not self.db_resource:
             column_type = "varchar"
-        elif not column_type:
-            column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
-            column_type = column_types.get(column)
-
 
         # if quoted is not explicitly set
         if quoted == None:
             quoted = True
-
-            if not column_type and self.sql:
-                # get column type from database
-                column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
-                column_type = column_types.get(column)
 
             info = self.impl.process_value(column, value, column_type)
             if info:

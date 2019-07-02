@@ -24,6 +24,7 @@ from pyasm.unittest import *
 from pyasm.biz import Project
 import unittest
 from datetime import datetime
+from dateutil import parser
 import pytz
 
 class SearchTest(unittest.TestCase):
@@ -846,17 +847,22 @@ class SearchTest(unittest.TestCase):
         import time
         timezone = time.tzname[time.daylight]
 
-        search = Search("unittest/person")
-        search.add_date_range_filter("birth_date", "2010-01-01", "2010-02-01")
+        from pyasm.biz import Project
+        database_type = Project.get_by_code("unittest").get_database_type()
         start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
         end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
+
+        if database_type == "MySQL":
+            start_range = start_range.replace(tzinfo=None)
+            end_range = end_range.replace(tzinfo=None)
+
+        search = Search("unittest/person")
+        search.add_date_range_filter("birth_date", "2010-01-01", "2010-02-01")
         expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."birth_date" >= '{1}' AND "person"."birth_date" < '{2}'""".format(self.prefix, start_range, end_range)
         self.assertEquals(expected, search.get_statement() )
 
         search = Search("unittest/person")
         search.add_dates_overlap_filter("birth_date", "birth_date", "2010-01-01", "2010-02-01")
-        start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
-        end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
         expected = '''SELECT {0}"person".* FROM {0}"person" WHERE "person"."id" in (SELECT {0}"person"."id" FROM {0}"person" '''.format(self.prefix)
         expected += '''WHERE ( "person"."birth_date" <= '{0}' AND "person"."birth_date" >= '{0}' ) '''.format(start_range)
         expected += '''OR ( "person"."birth_date" >= '{0}' AND "person"."birth_date" <= '{0}' ) '''.format(end_range)
@@ -1035,6 +1041,38 @@ class SearchTest(unittest.TestCase):
         search_result = search.get_sobject()
         self.assertEquals(ticket.get_code(), search_result.get_code())
 
+        # test set_value, get_value with string date
+
+        input_time_string = "2019-07-02 18:17:42"
+        input_time_date = parser.parse(input_time_string)
+
+        ticket = SearchType.create('sthpw/ticket')
+        ticket.set_value('timestamp', input_time_string)
+        ticket.set_value('login', 'admin')
+        ticket.set_value('ticket', 'set_test')
+        ticket.set_value('expiry', input_time_string)
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time_date, output_time)
+        ticket.commit()
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time_date, output_time)
+
+        #Test set_value, get_value with timezoned string date
+
+        input_time_string_tz = "2019-07-02 18:17:42+03:00"
+        input_time_date_tz = parser.parse(input_time_string_tz)
+        input_time_date_utc = SPTDate.convert_to_timezone(input_time_date_tz, 'UTC').replace(tzinfo=None)
+
+        ticket = SearchType.create('sthpw/ticket')
+        ticket.set_value('timestamp', input_time_string_tz)
+        ticket.set_value('login', 'admin')
+        ticket.set_value('ticket', 'set_test_tz')
+        ticket.set_value('expiry', input_time_string_tz)
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time_date_tz, output_time)
+        ticket.commit()
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time_date_utc, output_time)
 
 
     def _test_multi_db_subselect(self):
