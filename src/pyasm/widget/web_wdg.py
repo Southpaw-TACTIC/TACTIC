@@ -1683,6 +1683,7 @@ class BaseSignInWdg(Widget):
             display: flex;
             align-self: start;
             color: red;
+            margin-top: 5px;
         }
 
         .msg-container i {
@@ -1938,7 +1939,6 @@ class WebLoginWdg2(BaseSignInWdg):
         host = web.get_http_host()
         if host.find(':') != -1:
             host = host.split(':')[0]
-        
         if domains:
             
             domain_container = DivWdg()

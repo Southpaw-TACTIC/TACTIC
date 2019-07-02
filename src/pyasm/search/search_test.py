@@ -14,6 +14,7 @@ import tacticenv
 
 from pyasm.security import *
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
+from pyasm.common.spt_date import SPTDate
 
 from sql import *
 from search import *
@@ -22,9 +23,15 @@ from database_impl import *
 from pyasm.unittest import *
 from pyasm.biz import Project
 import unittest
+from datetime import datetime
+import pytz
 
 class SearchTest(unittest.TestCase):
 
+
+    def _commit(self, impl):
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
 
     def test_all(self):
         # start batch environment
@@ -78,7 +85,7 @@ class SearchTest(unittest.TestCase):
                     "ComputerWorld", "5")
 
 
-
+            
             self._test_no_id()
 
             self._test_order_by()
@@ -101,13 +108,15 @@ class SearchTest(unittest.TestCase):
             self._test_set_value()
             self._test_search_set_value()
             self._test_get_by_statement()
-
-            self._test_views()
+            self._test_views() 
+            self._test_timezone()
 
 
         finally:
             self.transaction.rollback()
             Project.set_project('unittest')
+
+            self._commit(impl)            
 
             test_env.delete()
             sample3d_test_env.delete()
@@ -834,17 +843,24 @@ class SearchTest(unittest.TestCase):
         search2.add_search_filter("id", search)
 
     def _test_dates_search(self):
+        import time
+        timezone = time.tzname[time.daylight]
 
         search = Search("unittest/person")
-        search.add_date_range_filter("start_date", "2010-01-01", "2010-02-01")
-        expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."start_date" >= '2010-01-01 00:00:00' AND "person"."start_date" < '2010-02-02 00:00:00'""".format(self.prefix)
+        search.add_date_range_filter("birth_date", "2010-01-01", "2010-02-01")
+        start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
+        end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
+        expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."birth_date" >= '{1}' AND "person"."birth_date" < '{2}'""".format(self.prefix, start_range, end_range)
         self.assertEquals(expected, search.get_statement() )
 
-
         search = Search("unittest/person")
-        search.add_dates_overlap_filter("start_date", "end_date", "2010-01-01", "2010-02-01")
-        expected = '''SELECT {0}"person".* FROM {0}"person" WHERE "person"."id" in (SELECT {0}"person"."id" FROM {0}"person" WHERE ( "person"."start_date" <= '2010-01-01 00:00:00' AND "person"."end_date" >= '2010-01-01 00:00:00' ) OR ( "person"."end_date" >= '2010-02-02 00:00:00' AND "person"."start_date" <= '2010-02-02 00:00:00' ) OR ( "person"."start_date" >= '2010-01-01 00:00:00' AND "person"."end_date" <= '2010-02-02 00:00:00' ))'''.format(self.prefix)
-
+        search.add_dates_overlap_filter("birth_date", "birth_date", "2010-01-01", "2010-02-01")
+        start_range = SPTDate.convert_to_timezone("2010-01-01", timezone)
+        end_range = SPTDate.convert_to_timezone("2010-02-02", timezone)
+        expected = '''SELECT {0}"person".* FROM {0}"person" WHERE "person"."id" in (SELECT {0}"person"."id" FROM {0}"person" '''.format(self.prefix)
+        expected += '''WHERE ( "person"."birth_date" <= '{0}' AND "person"."birth_date" >= '{0}' ) '''.format(start_range)
+        expected += '''OR ( "person"."birth_date" >= '{0}' AND "person"."birth_date" <= '{0}' ) '''.format(end_range)
+        expected += '''OR ( "person"."birth_date" >= '{0}' AND "person"."birth_date" <= '{1}' ))'''.format(start_range, end_range)
         self.assertEquals(expected, search.get_statement() )
 
     def _test_commit(self):
@@ -901,39 +917,124 @@ class SearchTest(unittest.TestCase):
 
         from pyasm.biz import Project
         database_type = Project.get_by_code("unittest").get_database_type()
-        if database_type == "MySQL":
-            print
-            print "WARNING: !!!!!!!"
-            print "test for NOW is disabled"
-            print "WARNING: !!!!!!!"
-            print
-            return
+
+        # time_dict = {'SQLServer': "convert(datetime2, '2012-12-25', 0)",
+        #             'Sqlite':"'2012-12-25'",
+        #             'PostgreSQL':"'2012-12-25'",
+        #             'MySQL': "'2012-12-25 00:00:00'"}
+        #             #'Oracle':"TO_DATE('2012-12-25','YYYY-MM-DD'"}
+        # #TODO: test with cx_Oracle installed
+        # #TODO: have another test with timezone considered
+        # for db_type in ['Sqlite','SQLServer','MySQL','PostgreSQL']:
+        #     sql_impl = DatabaseImpl.get(db_type)
+        #     update = Update()
+        #     update.set_database('sthpw')
+        #     update.set_table('task')
+        #     update.impl = sql_impl
+        #     value = '2012-12-25'
+        #     value = update.impl.process_date(value)
+        #     update.set_value('timestamp', value)
+        #     update.set_value('description','')
+        #     if db_type == 'SQLServer':
+        #         self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
+        #     else:
+        #         self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
+
+        #     update.set_value('description',None)
+        #     self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (self.sthpw_prefix, time_dict.get(db_type)))
 
 
-        time_dict = {'SQLServer': "convert(datetime2, '2012-12-25', 0)",
-                    'Sqlite':"'2012-12-25'",
-                    'PostgreSQL':"'2012-12-25'",
-                    'MySQL': "'2012-12-25 00:00:00'"}
-                    #'Oracle':"TO_DATE('2012-12-25','YYYY-MM-DD'"}
-        #TODO: test with cx_Oracle installed
-        #TODO: have another test with timezone considered
-        for db_type in ['Sqlite','SQLServer','MySQL','PostgreSQL']:
-            sql_impl = DatabaseImpl.get(db_type)
-            update = Update()
-            update.set_database('sthpw')
-            update.set_table('task')
-            update.impl = sql_impl
-            value = '2012-12-25'
-            value = update.impl.process_date(value)
-            update.set_value('timestamp', value)
-            update.set_value('description','')
-            if db_type == 'SQLServer':
-                self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
-            else:
-                self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
 
-            update.set_value('description',None)
-            self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (self.sthpw_prefix, time_dict.get(db_type)))
+    def _test_timezone(self):
+
+        # timestamp without timezone: set value without timezone conversion
+
+        task = SearchType.create('sthpw/task')
+        input_time = datetime.utcnow().replace(microsecond=0)
+
+        task.set_value('timestamp', input_time)
+        task.set_value('description', 'search_test')
+        output_time = task.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+        task.commit()
+        output_time = task.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+
+        # timestamp without timezone: set value with timezone conversion
+
+        task1 = SearchType.create('sthpw/task')
+        input_time1 = input_time
+        local_tz = pytz.timezone("Europe/Moscow")
+        tz_input_time = input_time1.replace(tzinfo=pytz.utc).astimezone(local_tz)
+
+        task1.set_value('timestamp', tz_input_time)
+        output_time = task1.get_datetime_value('timestamp')
+        self.assertEquals(SPTDate.convert_to_timezone(tz_input_time, 'UTC'), output_time)
+        task1.commit()
+        output_time = task1.get_datetime_value('timestamp')
+        self.assertEquals(input_time1, output_time)
+
+	    # search for task using both timestamps
+
+        search = Search('sthpw/task')
+        search.add_filter('description', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
+
+        search = Search('sthpw/task')
+        search.add_filter('description', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(task.get_code(), search_result.get_code())
+
+        # timestamp with timezone: set value without timezone conversion
+
+        ticket = SearchType.create('sthpw/ticket')
+        input_time = datetime.utcnow().replace(microsecond=0)
+
+        ticket.set_value('timestamp', input_time)
+        ticket.set_value('login', 'admin')
+        ticket.set_value('ticket', 'search_test')
+        ticket.set_value('expiry', input_time)
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+        ticket.commit()
+        output_time = ticket.get_datetime_value('timestamp')
+        self.assertEquals(input_time, output_time)
+
+
+        # timestamp with timezone: set value with timezone conversion
+
+        ticket1 = SearchType.create('sthpw/ticket')
+        input_time1 = input_time
+        local_tz = pytz.timezone("Europe/Moscow")
+        tz_input_time = input_time1.replace(tzinfo=pytz.utc).astimezone(local_tz)
+
+        ticket1.set_value('timestamp', tz_input_time)
+        ticket1.set_value('login', 'admin')
+        ticket1.set_value('ticket', 'test2')
+        ticket1.set_value('expiry', tz_input_time)
+        output_time = ticket1.get_datetime_value('timestamp')
+        self.assertEquals(SPTDate.convert_to_timezone(tz_input_time, 'UTC'), output_time)
+        ticket1.commit()
+        output_time = ticket1.get_datetime_value('timestamp')
+        self.assertEquals(input_time1, output_time)
+
+	    # search ticket using both timestamps
+
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
+
+        search = Search('sthpw/ticket')
+        search.add_filter('ticket', 'search_test')
+        search.add_filter('timestamp', tz_input_time)
+        search_result = search.get_sobject()
+        self.assertEquals(ticket.get_code(), search_result.get_code())
+
 
 
     def _test_multi_db_subselect(self):

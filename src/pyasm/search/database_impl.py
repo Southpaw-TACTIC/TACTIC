@@ -3201,11 +3201,6 @@ class MySQLImpl(PostgresImpl):
                 value = value
 
         if isinstance(value, datetime.datetime):
-            # We need to convert the time to UTC, and strip the timezone info.
-            if value.tzinfo is not None:
-                # Convert to UTC
-                if value.utcoffset() is not None:
-                    value = value - value.utcoffset()
             # Strip the timezone info.
             value = value.replace(tzinfo=None)
             # We now have a datetime obj without timezone info.
