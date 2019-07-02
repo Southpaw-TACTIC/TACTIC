@@ -2610,7 +2610,6 @@ spt.tab.close = function(src_el) {
                 count_wdg.add_update( {
                     'expression': count,
                     'search_key': search_key,
-                    'interval': 10,
                 } )
 
 
