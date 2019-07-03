@@ -98,6 +98,7 @@ class TacticAuthenticate(Authenticate):
             #iter_code = 'D'
             encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
         else:
+            # kept here for backwards compatibility
             encrypted = hashlib.md5(password).hexdigest()
 
         # encrypt and check the password

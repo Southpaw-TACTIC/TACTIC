@@ -1327,27 +1327,34 @@ class Common(Base):
     kill = staticmethod(kill)
 
 
+    # Make into a tuple which is immutable
+    EXECUTABLE = (sys.executable, sys.argv[:])
 
-    def restart():
+    def restart(cls):
         '''Restarts the current program.'''
         import sys
-        python = sys.executable
-        # for windows
+        #python = sys.executable
         print("Restarting the process. . .")
         print("\n")
+
+        python = cls.EXECUTABLE[0]
+        args = cls.EXECUTABLE[1]
+
         python = python.replace('\\','/')
+
+        # for windows
         if os.name =='nt':
             import subprocess
             cmd_list = [python]
-            cmd_list.extend(sys.argv)
+            cmd_list.extend(args)
             subprocess.Popen(cmd_list)
  
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()
         else:
-            os.execl(python, python, * sys.argv)
-    restart = staticmethod(restart)
+            os.execl(python, python, *args )
+    restart = classmethod(restart)
 
 
 
