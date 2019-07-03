@@ -1026,7 +1026,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
             }
 
-            .spt_saved_searches_top .spt_template {
+            .spt_saved_searches_top .spt_saved_search_item_template {
                 display: none !important;
             }
 
@@ -1142,6 +1142,10 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                 border-radius: 3px;
                 background: white;
             }
+            
+            .spt_saved_searches_top .spt_search_category_template {
+                display: none;
+            }
 
             .spt_saved_searches_top .spt_search_category {
                 padding: 8px 20px;
@@ -1240,6 +1244,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         saved_search_item = DivWdg()
         saved_search_item_container.add(saved_search_item)
         saved_search_item.add_class("spt_saved_search_item")
+        saved_search_item.add_class("spt_saved_search_item_template")
         saved_search_item.add_class("spt_template hand")
 
         saved_search_label = DivWdg("")
@@ -1328,7 +1333,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
             'cbjs_action': '''
 
             let template = bvr.src_el.getElement(".spt_saved_searches_item");
-            let itemTemplate = template.getElement(".spt_saved_search_item");
+            let itemTemplate = template.getElement(".spt_saved_search_item_template");
             let allValues = spt.advanced_search.saved.values;
             let allLabels = spt.advanced_search.saved.labels;
             let categories = spt.advanced_search.saved.categories;
@@ -1355,7 +1360,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                     itemClone.setAttribute("spt_value", value);
                     itemClone.setAttribute("spt_category", key);
 
-                    itemClone.removeClass("spt_template");
+                    itemClone.removeClass("spt_saved_search_item_template");
                     container.appendChild(itemClone);
                 }
 
@@ -1384,76 +1389,12 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
         return '''
 
-if (typeof(spt.advanced_search) == "undefined") spt.advanced_search = {}; 
-
-if (typeof(spt.advanced_search.saved) == "undefined") spt.advanced_search.saved = {}; 
-
+spt.advanced_search = spt.advanced_search || {};
+spt.advanced_search.saved = spt.advanced_search.saved || {};
 spt.advanced_search.saved.categories = bvr.categories;
 spt.advanced_search.saved.values = bvr.values;
 spt.advanced_search.saved.labels = bvr.labels;
-
-
-spt.advanced_search.saved.add_item = function(key, label, value) {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    let template = categoryContainer.getElement(".spt_saved_search_item.spt_template");
-    let clone = spt.behavior.clone(template);
-    let labelDiv = clone.getElement(".spt_saved_search_label");
-    labelDiv.innerText = label;
-    clone.setAttribute("spt_category", key);
-    clone.setAttribute("spt_value", value);
-    clone.removeClass("spt_template");
-    categoryContainer.appendChild(clone);
-}
-spt.advanced_search.saved.create_item = function(key, label, value) {
-    spt.advanced_search.saved.labels[key].push(label);
-    spt.advanced_search.saved.values[key].push(value);
-}
-spt.advanced_search.saved.delete_item = function(key, label) {
-    let index = spt.advanced_search.saved.labels[key].indexOf(label);
-    spt.advanced_search.saved.labels[key].splice(index, 1);
-    spt.advanced_search.saved.values[key].splice(index, 1);
-}
-spt.advanced_search.saved.load_items = function(key) {
-    /*let values = spt.advanced_search.saved.get_values(key);
-    let labels = spt.advanced_search.saved.get_labels(key);
-    for (let i=0; i<values.length; i++) {
-        let label = labels[i];
-        let value = values[i];
         
-        spt.advanced_search.saved.add_item(key, label, value);
-    }*/
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let selected = container.getElement(".spt_saved_searches_item.selected");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    if (selected) selected.removeClass("selected");
-    categoryContainer.addClass("selected");
-}
-spt.advanced_search.saved.clear_items = function() {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let items = container.getElements(".spt_saved_search_item");
-    items.forEach(function(item){
-        if (item.hasClass("spt_template")) return;
-        item.remove();
-    });
-}
-spt.advanced_search.saved.toggle_dropdown = function(display) {
-    let dropdown = bvr.src_el.getElement(".spt_search_categories_dropdown");
-    if (display) 
-        dropdown.setStyle("display", display);
-    else
-        spt.toggle_show_hide(dropdown);
-}
-spt.advanced_search.saved.get_values = function(key) {
-    return spt.advanced_search.saved.values[key];
-}
-spt.advanced_search.saved.get_labels = function(key) {
-    return spt.advanced_search.saved.labels[key];
-}
-spt.advanced_search.saved.get_selected = function() {
-    return bvr.src_el.getElement(".spt_saved_search_item.selected");
-}
-
         '''
 
     # TODO: make categories!!
@@ -1507,7 +1448,7 @@ spt.advanced_search.saved.get_selected = function() {
                 let clone = spt.behavior.clone(template);
                 clone.innerText = label;
                 clone.setAttribute("spt_value", value);
-                clone.removeClass("spt_template");
+                clone.removeClass("spt_search_category_template");
 
                 dropdown.appendChild(clone);
             }
@@ -1518,6 +1459,7 @@ spt.advanced_search.saved.get_selected = function() {
         searches_dropdown_item = DivWdg()
         searches_dropdown.add(searches_dropdown_item)
         searches_dropdown_item.add_class("spt_search_category")
+        searches_dropdown_item.add_class("spt_search_category_template")
         searches_dropdown_item.add_class("spt_template hand")
         searches_dropdown_item.add_behavior({
             'type': 'click',
