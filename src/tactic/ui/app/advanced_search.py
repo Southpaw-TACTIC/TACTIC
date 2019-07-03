@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg",
+__all__ = ["AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "AdvancedSearchSaveButtonsWdg",
 "DeleteSavedSearchCmd", "SaveSearchCmd", "GetSavedSearchCmd", "SaveCurrentSearchCmd", "DeleteRecentSearchCmd"]
 
 from pyasm.common import Environment, Xml, jsonloads, jsondumps
@@ -1708,7 +1708,7 @@ class DeleteSavedSearchCmd(Command):
 
 
 
-class CustomSaveButtonsWdg(BaseRefreshWdg):
+class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
 
     def get_styles(self):
 
@@ -1810,11 +1810,13 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
             'bvr_match_class': 'spt_save_button',
             'search_type': self.kwargs.get("search_type"),
             'cbjs_action': '''
+                
+            let top = bvr.src_el.getParent(".spt_search_top");
+            spt.advanced_search.set_top(top);
 
             let action = bvr.src_el.getAttribute("spt_action");
 
             if (action == "save_as") {
-                let top = bvr.src_el.getParent(".spt_search_top");
                 let overlay = top.getElement(".overlay");
                 let saveTop = top.getElement(".spt_save_top");
 
@@ -1823,7 +1825,6 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 saveTop.addClass("visible");
                 saveTop.getElement(".spt_save_title").innerText = bvr.src_el.innerText;
             } else if (action == "save") {
-                let top = bvr.src_el.getParent(".spt_search_top");
                 if (!top.hasClass("spt_has_changes")) return;
 
                 var selected = spt.advanced_search.saved.get_selected();
@@ -1854,7 +1855,6 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 let on_complete = function(ret_val) {
                     spt.notify.show_message("Search saved");
 
-                    let top = bvr.src_el.getParent('.spt_search_top');
                     top.removeClass("spt_has_changes");
                 }
 
