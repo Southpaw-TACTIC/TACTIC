@@ -916,7 +916,7 @@ class Common(Base):
 
         # for Python 2.7
         if not isinstance(in_string, unicode):
-            return
+            return in_string
 
         if isinstance(in_string, unicode):
             return in_string.encode('utf-8')

@@ -14,7 +14,7 @@ from __future__ import print_function
 
 __all__ = ["CustomLayoutWdg", "SObjectHeaderWdg"]
 
-import os, types, re
+import os, types, re, sys
 try:
     from cStringIO import StringIO as Buffer
 except:
@@ -22,6 +22,8 @@ except:
 
 import six
 basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
 
 
 
@@ -376,11 +378,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
             full_expr = m.group()
             expr = m.groups()[0]
             result = parser.eval(expr, sobjects, single=True, state=self.state)
-            if isinstance(result, basestring):
-                result = Common.process_unicode_string(result)
-            else:
-                result = str(result)
-            html = html.replace(full_expr, result )
+            if result:
+                if isinstance(result, basestring):
+                    result = Common.process_unicode_string(result)
+                else:
+                    result = str(result)
+                html = html.replace(full_expr, result )
 
 
         # use absolute expressions - [expr]xxx[/expr]
