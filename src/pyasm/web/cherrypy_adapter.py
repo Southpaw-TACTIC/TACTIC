@@ -207,10 +207,11 @@ class CherryPyAdapter(WebEnvironment):
                 return [values]
             elif not values:
                 return []
-            elif type(values) == types.ListType:
+            elif not IS_Pv3 and isinstance(values, list):
+                # Only needed in python 2
                 new_values = []
                 for value in values:
-                    if type(value) == types.UnicodeType:
+                    if isinstance(value, unicode):
                         value = self._process_unicode(value)
                     new_values.append(value)
                 return new_values
