@@ -19,7 +19,7 @@ import datetime
 
 from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException, SPTDate
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
-from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
+from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema, ProjectSetting
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
@@ -1862,7 +1862,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 process_sobj = search.get_sobject()
                 if process_sobj:
                     workflow = process_sobj.get_json_value("workflow", {})
-                    if workflow:
+                    version = workflow.get("version") or 1
+                    version_2 = version in [2, "2"]
+                    default = workflow.get("default") or {}
+
+                    if version_2 and default:
+                        related_type = default.get("search_type")
+                        related_pipeline_code = default.get("pipeline_code")
+                        related_process = default.get("process")
+                        related_scope = default.get("scope")
+                    elif not version_2 and workflow:
                         related_type = workflow.get("search_type")
                         related_pipeline_code = workflow.get("pipeline_code")
                         related_process = workflow.get("process")

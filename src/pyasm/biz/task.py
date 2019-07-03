@@ -1090,7 +1090,6 @@ class Task(SObject):
             old_generator_processes = process_names
 
 
-
         # create tasks when processes are explicitly specified
         for process_name in old_generator_processes:
 
@@ -1118,9 +1117,12 @@ class Task(SObject):
             assigned_login_group = attrs.get("assigned_login_group") or None
 
             workflow = process_sobject.get_json_value("workflow") or {}
+            version = workflow.get("version") or 1
+            version_2 = version in [2, '2']
 
+            properties = workflow.get("properties") or {}
 
-            task_creation = workflow.get("task_creation")
+            task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
             if task_creation == "none":
                 continue
 
@@ -1208,7 +1210,7 @@ class Task(SObject):
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-            pipe_code = workflow.get("task_pipeline") or process_obj.get_task_pipeline()
+            pipe_code = (properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")) or process_obj.get_task_pipeline()
 
             #start_date_str = start_date.get_db_date()
             #end_date_str = end_date.get_db_date()
@@ -1652,10 +1654,14 @@ class TaskGenerator(object):
         process_obj = pipeline.get_process(process_name)
 
         workflow = process_sobject.get_json_value("workflow") or {}
+        version = workflow.get("version") or 1
+        version_2 = version in [2, '2']
+
+        properties = workflow.get("properties") or {}
         process_type = process_obj.get_type()
         attrs = process_obj.get_attributes()
 
-        task_creation = workflow.get("task_creation")
+        task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
 
 
 
@@ -1707,7 +1713,7 @@ class TaskGenerator(object):
 
 
         # task that are autocreated should not be created here
-        autocreate_task = workflow.get('autocreate_task')
+        autocreate_task = properties.get('autocreate_task') if version_2 else workflow.get("autocreate_task")
         if autocreate_task in ['true', True]:
             return
 
@@ -1751,21 +1757,23 @@ class TaskGenerator(object):
 
 
             workflow = process_sobject.get_json_value("workflow") or {}
-
+            properties = workflow.get("properties") or {}
 
             duration = attrs.get("duration")
+            duration_property = properties.get("duration") if version_2 else workflow.get("duration")
             if duration:
                 duration = int(duration)
-            elif workflow.get("duration") and workflow.get("duration").isdigit():
-                duration = int(workflow.get("duration"))
+            elif duration_property and duration_property.isdigit():
+                duration = int(duration_property)
             else:
                 duration = default_duration
 
             bid_duration = attrs.get("bid_duration")
+            bid_duration_property = properties.get("bid_duration") if version_2 else workflow.get("bid_duration")
             if bid_duration:
                 bid_duration = int(bid_duration)
-            elif workflow.get("bid_duration") and workflow.get("bid_duration").isdigit():
-                bid_duration = int(workflow.get("bid_duration"))
+            elif bid_duration_property and bid_duration_property.isdigit():
+                bid_duration = int(bid_duration_property)
             else:
                 bid_duration = default_bid_duration
 
@@ -1810,7 +1818,7 @@ class TaskGenerator(object):
                 end_date = self.start_date + timedelta(days=1)
 
             # get from XML data
-            assigned_group = workflow.get("assigned_group")
+            assigned_group = properties.get("assigned_group") if version_2 else workflow.get("assigned_group")
             if not assigned_group: # backwards compatibility
                 assigned_group = attrs.get("assigned_group") or None
 
@@ -1820,7 +1828,7 @@ class TaskGenerator(object):
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-            pipeline_code = workflow.get("task_pipeline") or process_obj.get_task_pipeline()
+            pipeline_code = (properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")) or process_obj.get_task_pipeline()
 
 
             for context in output_contexts:

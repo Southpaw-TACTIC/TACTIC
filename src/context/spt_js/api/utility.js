@@ -223,6 +223,7 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
     	return;
     }
     var input_list = element.getElements(filter);
+    var extras = {};
 
     for ( var i = 0; i < input_list.length; i++ ) {
         var input = input_list[i];
@@ -231,8 +232,26 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
         if (typeof(value) == 'undefined') {
             continue;
         }
-        input.value = value;
 
+        // if array assign values one by one
+        if (Array.isArray(value)) {
+            var index = extras[name+"set_input_values2_index"] || 0;
+            var length = value.length;
+
+            console.log(value, index, input);
+
+            if (index > length-1)
+                continue
+
+            value = value[index]
+
+            input.value = value
+            extras[name+"set_input_values2_index"] = index+1;
+        } else {
+            input.value = value;
+        }
+
+        // behavior for different input types
         if (input.type == "checkbox")
             input.checked = value == "on" ? true : false;
         if (input.type == "radio")

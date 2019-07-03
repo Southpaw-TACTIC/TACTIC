@@ -6061,11 +6061,11 @@ class NewProcessInfoCmd(Command):
 
         # set node workflow data
         workflow = {}
-        filtered_keys = set(['process', 'pipeline_code', 'node_type'])
+        filtered_keys = set(['process', 'pipeline_code'])
         for key in self.kwargs:
             if key.startswith('_') or key in filtered_keys:
                 continue
-            elif key == node_type:
+            elif key == "default":
                 inner = self.kwargs.get(key)
                 inner_workflow = {}
                 for key2 in inner:
@@ -9597,10 +9597,6 @@ class SessionalProcess:
 
     def add_relay_session_behavior(section, section_name='default', pre_processing='', post_processing=''):
 
-        new_session = ProjectSetting.get_value_by_key("new_session")
-        if new_session not in [True, "true"]:
-            return
-
         # session api
         section.add_behavior({
             'type': 'load',
@@ -9612,7 +9608,7 @@ class SessionalProcess:
 
             let node = spt.pipeline.get_info_node();
 
-            top.update_section = function() {
+            top.update_data = function() {
                 var version = spt.pipeline.get_node_kwarg(node, 'version');
                 if (version != 2)
                     return;
@@ -9643,14 +9639,25 @@ class SessionalProcess:
             var top = bvr.src_el.hasClass("spt_section_top") ? bvr.src_el : bvr.src_el.getParent(".spt_section_top");
             if (!top) return;
 
-            %s
-
             // for refreshed panels (shouldn't need this but just in this case)
             var section_name = top.getAttribute("section_name") || bvr.section_name;
             let data = spt.pipeline.get_node_kwarg(node, section_name) || {};
-            spt.api.Utility.set_input_values2(top, data);
 
-            %s
+            top.pre_processing = function() {
+                %s
+            }
+
+            top.load_section = function() {
+                spt.api.Utility.set_input_values2(top, data);
+            }
+
+            top.post_processing = function() {
+                %s
+            }
+
+            top.pre_processing();
+            top.load_section();
+            top.post_processing();
 
             ''' % (pre_processing, post_processing)
             })
@@ -9662,7 +9669,7 @@ class SessionalProcess:
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_section_top");
-            top.update_section();
+            top.update_data();
 
             '''
             })
@@ -9674,7 +9681,7 @@ class SessionalProcess:
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_section_top");
-            top.update_section();
+            top.update_data();
 
             '''
             })
