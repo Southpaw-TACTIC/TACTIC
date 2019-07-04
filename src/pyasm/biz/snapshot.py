@@ -2218,9 +2218,6 @@ class Snapshot(SObject):
 
         builder.add_root_attr('ref_snapshot_code', self.get_code() )
         
-        # get all of the files from this snapshot
-        lib_dir = self.get_lib_dir()
-
         file_objects = []
 
         paths = {}
@@ -2236,7 +2233,6 @@ class Snapshot(SObject):
 
             file_name = self._get_file_name(node)
 
-            file_path = "%s/%s" % (lib_dir,file_name)
             file_code = self._get_file_code(node)
             file_type = self._get_file_type(node)
             node_name = self._get_node_name(node)
@@ -2284,7 +2280,11 @@ class Snapshot(SObject):
             else: # otherwise make use of the updated file name from the original file object
                 file_object.set_value("file_name", file_name)
 
-        
+            # get all of the files from this snapshot
+            lib_dir = self.get_lib_dir(file_type=file_type, file_object=file_object)
+
+            file_path = "%s/%s" % (lib_dir, file_name)
+
             # build the file name
             # if there is a versionless naming, use it
             if checkin_type == 'strict' or has_versionless:

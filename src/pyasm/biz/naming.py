@@ -546,6 +546,7 @@ class NamingUtil(object):
 
 
         from pyasm.biz import ExpressionParser
+        ExpressionParser.clear_cache()
         xp = ExpressionParser()
         ''' 
         # if nothing is found, then just return parse through an expression
