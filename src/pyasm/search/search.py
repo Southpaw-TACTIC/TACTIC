@@ -252,27 +252,31 @@ class Search(Base):
         search_type = self.get_base_search_type()
 
         user = Environment.get_user_name()
+        if user == 'admin':
+            return
 
         from pyasm.security import Sudo
         if Sudo.is_sudo():
             return
 
 
-        if user != 'admin':
-            allowed = {
-                    'sthpw/note',
-                    'sthpw/task',
-                    'sthpw/snapshot',
-                    'sthpw/file'
-            }
+        allowed = {
+                'sthpw/note',
+                'sthpw/task',
+                'sthpw/snapshot',
+                'sthpw/file'
+        }
 
-            if search_type in {
-                    'sthpw/login',
-                    'sthpw/login_in_group',
-                    'sthpw/login_group',
-                    'sthpw/transaction',
-            }:
-                raise Exception("Search Permission Denied [%s]" % search_type)
+        if search_type in {
+                'sthpw/login',
+                'sthpw/login_in_group',
+                'sthpw/login_group',
+                'sthpw/transaction',
+                'sthpw/change_timestamp',
+                'sthpw/exception_log',
+                'sthpw/ticket',
+        }:
+            raise Exception("Search Permission Denied [%s]" % search_type)
 
 
 
