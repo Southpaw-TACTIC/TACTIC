@@ -3103,7 +3103,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
             from tactic.ui.container import DialogWdg
-            search_dialog = DialogWdg(width=770, offset={'x':-250,'y':0})
+            search_dialog = DialogWdg(offset={'x':-250,'y':0})
             search_dialog_id = search_dialog.get_id()
             # Comment out the above. 
             # Needs to draw the search_dialog for pre-saved parameters to go thru
