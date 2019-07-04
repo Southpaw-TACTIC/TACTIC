@@ -14,8 +14,8 @@ __all__ = ['AccessManager', 'Sudo']
 
 import types
 
-from pyasm.common import Base, Xml, Environment, Common
-from pyasm.search import Search
+from pyasm.common import Base, Xml, Environment, Common, Container
+from pyasm.search import Search, SearchType
 
 
 class AccessException(Exception):
@@ -42,18 +42,28 @@ class Sudo(object):
             self.was_admin = self.access_manager.was_admin
      
         self.access_manager.set_admin(True)
-    
+
+        Container.put("Sudo::is_sudo", True)
+
+
+    def is_sudo():
+        is_sudo = Container.get("Sudo::is_sudo")
+        if not is_sudo:
+            return False
+        else:
+            return True
+    is_sudo = staticmethod(is_sudo)
             
 
     def __del__(self):
-        
+        Container.put("Sudo::is_sudo", False)
+
         # remove if I m not in admin group
         if self.was_admin == False:
             self.access_manager.set_admin(False)
 
 
     def exit(self):
-        
         # remove if I m not in admin group
         if self.was_admin == False:
             self.access_manager.set_admin(False)
@@ -713,7 +723,6 @@ class AccessManager(Base):
                 v = values[0]
             else:
                 v = values
-            print "xml_rule: ", rule, " is ", v
         
 
 

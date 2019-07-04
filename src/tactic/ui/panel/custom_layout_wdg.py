@@ -1477,6 +1477,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
 __all__.append("CustomLayoutCbk")
 class CustomLayoutCbk(Command):
 
+    def can_run(self, source="api"):
+        return True
+
     def execute(self):
 
         view = self.kwargs.get("view")

@@ -227,6 +227,7 @@ class Login(SObject):
     get_by_code = staticmethod(get_by_code)
 
     def get_by_login(login_name, namespace=None, use_upn=False):
+
         if not login_name:
             return None
 
@@ -235,79 +236,94 @@ class Login(SObject):
         if cached:
             return cached
 
-        case_insensitive = False
-        # handle admin as a special virtual user
-        if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':
-            login_name = login_name.lower()
-            case_insensitive = True
-        if login_name == "admin":
-            search = Search("sthpw/login")
-            search.set_show_retired(True)
-            if case_insensitive:
-                search.add_regex_filter("login", '^%s'%login_name, op='EQI')
-                search.add_regex_filter("login", '%s$'%login_name, op='EQI')
+        # This function runs as Sudo
+        sudo = Sudo()
+        user = Environment.get_user_name()
+        try:
+
+            case_insensitive = False
+            # handle admin as a special virtual user
+            if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':
+                login_name = login_name.lower()
+                case_insensitive = True
+
+            if login_name == "admin":
+
+                # get the admin user
+                search = Search("sthpw/login")
+                search.set_show_retired(True)
+                if case_insensitive:
+                    search.add_regex_filter("login", '^%s'%login_name, op='EQI')
+                    search.add_regex_filter("login", '%s$'%login_name, op='EQI')
+                else:
+                    search.add_filter("login", login_name)
+
+                login = search.get_sobject()
+
+                # otherwise build one dynamically
+                if not login:
+                    login = SearchType.create("sthpw/login")
+                    login.set_force_insert()
+
+                    # MySQL does not support table ID's at 0
+                    if Sql.get_default_database_type() != 'MySQL':
+                        login.set_value("id", 0)
+                        login.set_id(0)
+
+                    columns = SearchType.get_columns("sthpw/login")
+
+                    login.set_value("login", "admin")
+                    login.set_value("code", "admin")
+                    login.set_value("first_name", "Adminstrator")
+                    login.set_value("last_name", "")
+                    login.set_value("display_name", "Administrator")
+
+                    data = login.get_data()
+                    for column in columns:
+                        if data.get(column) == None:
+                            login.set_value(column, "")
+
+                    password = Config.get_value("security", "password")
+                    if not password:
+                        password = "39195b0707436a7ecb92565bf3411ab1"
+                    login.set_value("password", password)
+
+
+                elif not login.get("password"):
+                    password = Config.get_value("security", "password")
+                    if not password:
+                        password = "39195b0707436a7ecb92565bf3411ab1"
+                    login.set_value("password", password)
+
+                if not login.get_value("email"):
+                    default_admin_email = Config.get_value("services", "mail_default_admin_email")
+                    login.set_value("email", default_admin_email)
+
             else:
-                search.add_filter("login", login_name)
-            login = search.get_sobject()
-            if not login:
-                login = SearchType.create("sthpw/login")
-                login.set_force_insert()
-
-                # MySQL does not support table ID's at 0
-                if Sql.get_default_database_type() != 'MySQL':
-                    login.set_value("id", 0)
-                    login.set_id(0)
-
-                columns = SearchType.get_columns("sthpw/login")
-
-                login.set_value("login", "admin")
-                login.set_value("code", "admin")
-                login.set_value("first_name", "Adminstrator")
-                login.set_value("last_name", "")
-                login.set_value("display_name", "Administrator")
-
-                data = login.get_data()
-                for column in columns:
-                    if data.get(column) == None:
-                        login.set_value(column, "")
-
-                password = Config.get_value("security", "password")
-                if not password:
-                    password = "39195b0707436a7ecb92565bf3411ab1"
-                login.set_value("password", password)
-
-
-            elif not login.get("password"):
-                password = Config.get_value("security", "password")
-                if not password:
-                    password = "39195b0707436a7ecb92565bf3411ab1"
-                login.set_value("password", password)
-
-	    if not login.get_value("email"):
-                default_admin_email = Config.get_value("services", "mail_default_admin_email")
-		login.set_value("email", default_admin_email)
-
-        else:
-            search = Search("sthpw/login")
-            # make sure it's case insensitive
-            if use_upn:
-                search.add_op("begin")
-            if case_insensitive:
-                search.add_op("begin")
-                search.add_regex_filter("login", '^%s'%login_name, op='EQI')
-                search.add_regex_filter("login", '%s$'%login_name, op='EQI')
-                search.add_op("and")
-            else:
-                search.add_filter("login", login_name)
+                search = Search("sthpw/login")
+                # make sure it's case insensitive
                 if use_upn:
-                    search.add_filter("upn", login_name)
-            if use_upn:
-                search.add_op("or")
+                    search.add_op("begin")
+                if case_insensitive:
+                    search.add_op("begin")
+                    search.add_regex_filter("login", '^%s'%login_name, op='EQI')
+                    search.add_regex_filter("login", '%s$'%login_name, op='EQI')
+                    search.add_op("and")
+                else:
+                    search.add_filter("login", login_name)
+                    if use_upn:
+                        search.add_filter("upn", login_name)
+                if use_upn:
+                    search.add_op("or")
 
-            if namespace:
-                search.add_filter("namespace", namespace)
-            search.set_show_retired(True)
-            login = search.get_sobject()
+                if namespace:
+                    search.add_filter("namespace", namespace)
+                search.set_show_retired(True)
+                login = search.get_sobject()
+
+        finally:
+            sudo.exit()
+
 
         dict = Container.get(SObject._get_cached_key(Login.SEARCH_TYPE))
         dict[login_name] = login
@@ -942,17 +958,23 @@ class Site(object):
             return
 
         if cur_security and cur_security._login:
-            security = Security()
-            security._is_logged_in = True
-            security._login = cur_security._login
-            LoginInGroup.clear_cache()
-            security._find_all_login_groups()
 
-            security.add_access_rules()
-            # initialize a new security
-            Environment.set_security(security)
-            # store the current security
-            security_list.append(cur_security)
+            sudo = Sudo()
+            try:
+
+                security = Security()
+                security._is_logged_in = True
+                security._login = cur_security._login
+                LoginInGroup.clear_cache()
+                security._find_all_login_groups()
+
+                security.add_access_rules()
+                # initialize a new security
+                Environment.set_security(security)
+                # store the current security
+                security_list.append(cur_security)
+            finally:
+                sudo.exit()
 
 
         try:
@@ -1391,7 +1413,12 @@ class Security(Base):
         if self._groups == None:
             self._groups = []
             self._group_names = []
-            self._find_all_login_groups()
+
+            sudo = Sudo()
+            try:
+                self._find_all_login_groups()
+            finally:
+                sudo.exit()
 
 
             # set the results to the cache
@@ -1436,35 +1463,40 @@ class Security(Base):
         login_name = "guest"
         group_name = "guest"
 
-        search = Search("sthpw/login")
-        search.add_filter("login", login_name)
-        search.set_show_retired(True)
-        self._login = search.get_sobject()
-        if not self._login:
-            # login must exist in the database
-            self._login = SearchType.create("sthpw/login")
-            self._login.set_value("code", login_name)
-            self._login.set_value("login", login_name)
-            self._login.set_value("upn", login_name)
-            self._login.set_value("first_name", "Guest")
-            self._login.set_value("last_name", "User")
-            self._login.set_value("display_name", "Guest")
-            self._login.commit()
+        sudo = Sudo()
+        try:
 
-        # create a login group
-        search = Search("sthpw/login_group")
-        search.add_filter("login_group", login_name)
-        group = search.get_sobject()
-        if not group:
-            group = SearchType.create("sthpw/login_group")
-            group.set_value("login_group", group_name)
-            group.commit()
+            search = Search("sthpw/login")
+            search.add_filter("login", login_name)
+            search.set_show_retired(True)
+            self._login = search.get_sobject()
+            if not self._login:
+                # login must exist in the database
+                self._login = SearchType.create("sthpw/login")
+                self._login.set_value("code", login_name)
+                self._login.set_value("login", login_name)
+                self._login.set_value("upn", login_name)
+                self._login.set_value("first_name", "Guest")
+                self._login.set_value("last_name", "User")
+                self._login.set_value("display_name", "Guest")
+                self._login.commit()
 
-            login_in_group = SearchType.create("sthpw/login_in_group")
-            login_in_group.set_value("login", login_name)
-            login_in_group.set_value("login_group", group_name)
-            login_in_group.commit()
+            # create a login group
+            search = Search("sthpw/login_group")
+            search.add_filter("login_group", login_name)
+            group = search.get_sobject()
+            if not group:
+                group = SearchType.create("sthpw/login_group")
+                group.set_value("login_group", group_name)
+                group.commit()
 
+                login_in_group = SearchType.create("sthpw/login_in_group")
+                login_in_group.set_value("login", login_name)
+                login_in_group.set_value("login_group", group_name)
+                login_in_group.commit()
+
+        finally:
+            sudo.exit()
 
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
@@ -1486,6 +1518,7 @@ class Security(Base):
         if key == "":
             return None
 
+        sudo = Sudo()
 
         # set the site if the key has one
         #site = Site.get().get_by_ticket(key)
@@ -1620,6 +1653,9 @@ class Security(Base):
     def login_user_without_password(self, login_name, expiry=None):
         '''login a user without a password.  This should be used sparingly'''
 
+        # Probably should never be called
+        raise Exception("login_user_without password")
+
         search = Search("sthpw/login")
         search.add_filter("login", login_name)
         self._login = search.get_sobject()
@@ -1652,6 +1688,8 @@ class Security(Base):
         cache : this caches the user in the login table, but information
             is always pulled from the source when thes method is called
         '''
+
+
         # check for backwards compatibility
         authenticate_version = Config.get_value(
             "security", "authenticate_version", no_exception=True)
@@ -1690,6 +1728,8 @@ class Security(Base):
             auth_login_name = login_name
 
 
+        print("wowowwo")
+        sudo = Sudo()
 
         authenticate = Common.create_from_class_path(auth_class)
         try:
@@ -1783,7 +1823,6 @@ class Security(Base):
         LoginInGroup.clear_cache()
 
         self._do_login()
-
 
         # allow for some postprocessing
         authenticate.postprocess(self._login, self._ticket)

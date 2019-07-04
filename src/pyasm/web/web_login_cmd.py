@@ -117,6 +117,7 @@ class WebLoginCmd(Command):
             login_sobject = search2.get_sobject()
 
 
+
         # FIXME: need to only be able to do this if admin password is empty
         if verify_password:
             if login_sobject and login_sobject.get_value("login") == "admin":

@@ -60,6 +60,12 @@ class Command(Base):
     def is_undoable(self):
         return True
     '''
+
+    def can_run(self, source="api"):
+        # Should be this
+        #if source == "api":
+        #    return False
+        return True
     
     def get_errors(self):
         return self.errors
@@ -178,6 +184,9 @@ class Command(Base):
 
         Usage: Command.execute_cmd(cmd)
         '''
+
+        if not isinstance(cmd, Command):
+            raise Exception("Cannot execute command.  Must be derived from Command class.")
 
         if not cmd.check_security():
             raise SecurityException()

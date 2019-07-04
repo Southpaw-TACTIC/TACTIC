@@ -121,9 +121,15 @@ class ExpressionParser(object):
             self.vars['LOGIN'] = login.get_value("login")
             self.vars['LOGIN_ID'] = login.get_id()
 
-            # add users in login group
-            from pyasm.security import LoginGroup
-            login_codes = LoginGroup.get_login_codes_in_group()
+            # add users in current login group
+            from pyasm.security import LoginGroup, Sudo
+            sudo = Sudo()
+            try:
+                login_codes = LoginGroup.get_login_codes_in_group()
+            finally:
+                sudo.exit()
+
+
             login_codes = "|".join(login_codes)
             self.vars['LOGINS_IN_GROUP'] = login_codes
 

@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
+__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', "API_MODE"]
 
 import decimal
 import shutil, os, types, sys, thread
@@ -282,6 +282,27 @@ TRANS_OPTIONAL_METHODS = {
     'execute_cmd': 3
 }
 
+
+
+API_MODE = {
+    "closed": {
+        "execute_cmd",
+        "get_widget",
+        "get_ticket",
+        "ping",
+    },
+    "query": {
+        "get_by_search_key",
+        "get_by_code",
+        "query",
+        "eval",
+
+        "get_task_status_colors",
+    }
+} 
+
+
+
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
     '''
@@ -313,13 +334,40 @@ def xmlrpc_decorator(meth):
         try:
             ticket = self.init(original_ticket)
 
+            # These modes disable a good chunk of the API for a more secure
+            # environment.
 
-            # These lines disable a good chunk of the API.  This will need to
-            # have rules specified ... like a specific API ticket or an access
-            # rule that allows this.
-            #if self.get_protocol() != 'local':
-            #    if meth.__name__ not in ["execute_cmd", "get_widget", "ping"]:
-            #        raise Exception("Permission Denied")
+            if self.get_protocol() != 'local':
+
+
+                api_mode = Config.get_value("security", "api_mode")
+
+                api_mode = "query"
+
+                allowed = False
+
+
+                security = Environment.get_security()
+                user_name = security.get_user_name()
+                #if user_name == "admin":
+                #    allowed = True
+
+                meth_name = meth.__name__
+                if api_mode == "open":
+                    allowed = True
+
+                if api_mode in ["closed", "query"]:
+                    if meth_name in API_MODE.get("closed"):
+                        allowed = True
+
+                if api_mode == "query":
+                    if meth_name in API_MODE.get("query"):
+                        allowed = True
+
+                if not allowed:
+                    raise Exception("Permission Denied [%s] [%s]" % (meth.__name__, args))
+
+
 
 
             try:
@@ -5458,27 +5506,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             args_array = []
             cmd = Common.create_from_class_path(class_name, args_array, args)
+
+            if not isinstance(cmd, Command):
+                raise Exception("Cannot run command [%s].  Must be derived from Command." % class_name)
+
+            if not cmd.can_run(source="api"):
+                raise Exception("Cannot run command [%s] from API." % class_name)
+
+
             if use_transaction:
                 Command.execute_cmd(cmd)
             else:
                 cmd.execute()
 
         except Exception, e:
-            '''
-            import traceback
-            tb = sys.exc_info()[2]
-            stacktrace = traceback.format_tb(tb)
-            stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
-            print "-"*50
-            
-            ret_val['status'] = 'ERROR'
-            ret_val['stack'] = stacktrace_str
-            ret_val['message'] = str(e)
-            '''
-
             # NOTE: we can do one or the other (not both).  Either we
             # reraise the exception and let the API command handle it
             # or we have to rollback here.  Using raise for now because

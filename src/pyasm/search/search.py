@@ -129,6 +129,7 @@ class Search(Base):
 
         if search_type == None:
             raise SearchException("search_type is None")
+
         # get the search type sobject for the search
         if type(search_type) == types.TypeType:
             # get search defined in the class
@@ -148,6 +149,9 @@ class Search(Base):
             self.project_code = Project.extract_project_code(search_type)
 
         base_search_type = SearchKey.extract_base_search_type(search_type)
+
+
+        self.check_security()
        
         # Put in a security check for search types that are not sthpw
         # or config.
@@ -197,7 +201,6 @@ class Search(Base):
                 self.set_null_filter()
 
 
-
  
        
         # provide the project_code kwarg here
@@ -242,6 +245,35 @@ class Search(Base):
         self.order_bys = []
         # order_by is applied by default if available
         self.order_by = True
+
+
+
+    def check_security(self):
+        search_type = self.get_base_search_type()
+
+        user = Environment.get_user_name()
+
+        from pyasm.security import Sudo
+        if Sudo.is_sudo():
+            return
+
+
+        if user != 'admin':
+            allowed = {
+                    'sthpw/note',
+                    'sthpw/task',
+                    'sthpw/snapshot',
+                    'sthpw/file'
+            }
+
+            if search_type in {
+                    'sthpw/login',
+                    'sthpw/login_in_group',
+                    'sthpw/login_group',
+                    'sthpw/transaction',
+            }:
+                raise Exception("Search Permission Denied [%s]" % search_type)
+
 
 
 

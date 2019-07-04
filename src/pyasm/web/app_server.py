@@ -781,7 +781,6 @@ class BaseAppServer(Base):
         else:
             site = web.get_form_value("site")
 
-
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
@@ -789,7 +788,12 @@ class BaseAppServer(Base):
         elif login and password:
 
             # get the site for this user
-            login_site = site_obj.get_by_login(login)
+            sudo = Sudo()
+            try:
+                login_site = site_obj.get_by_login(login)
+            finally:
+                sudo.exit()
+
             if login_site:
                 site = login_site
 
@@ -808,7 +812,6 @@ class BaseAppServer(Base):
                     if site:
                         site_obj.pop_site()
                     return security
-
 
         elif ticket_key:
           
