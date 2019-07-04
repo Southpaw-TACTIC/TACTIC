@@ -227,6 +227,8 @@ class BaseInputWdg(HtmlElement):
         return key in self.options
  
     def set_option(self, key, value):
+        if isinstance(value, type( {}.keys() )):
+            value = list(value)
         self.options[key] = value
         
     def get_option(self, key):
@@ -1237,7 +1239,6 @@ class SelectWdg(BaseInputWdg):
             
             
         elif self.values != "":
-            #self.values = string.split( self.get_option("values"), "|" )
             self.values = self.get_option("values").split("|")
         else:
             self.values = ["None"]

@@ -1074,18 +1074,18 @@ class CollectionContentWdg(BaseRefreshWdg):
         # remove the sobjects from the kwargs so on refresh, the stringified sobjects
         # don't cause a stack trace
         sobjects = self.kwargs.get("sobjects")
-        if self.kwargs.has_key("sobjects"):
+        if "sobjects" in self.kwargs:
             del(self.kwargs["sobjects"])
         if sobjects is None:
             self.kwargs["do_search"] = 'true'
 
         if mode == "table":
-            from table_layout_wdg import TableLayoutWdg
+            from .table_layout_wdg import TableLayoutWdg
             tile = TableLayoutWdg(
                 **self.kwargs
             )
         else:
-            from tile_layout_wdg import TileLayoutWdg
+            from .tile_layout_wdg import TileLayoutWdg
             tile = TileLayoutWdg(
                 **self.kwargs
             )

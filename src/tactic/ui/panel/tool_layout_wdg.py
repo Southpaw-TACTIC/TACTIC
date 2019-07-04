@@ -128,7 +128,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         #self.kwargs['show_gear'] = 'false'
 
-        from tile_layout_wdg import TileLayoutWdg
+        from .tile_layout_wdg import TileLayoutWdg
         self.tile_layout = TileLayoutWdg(search_type=self.search_type, expand_mode=self.expand_mode, process=self.process)
 
 

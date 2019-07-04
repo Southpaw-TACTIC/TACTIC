@@ -20,6 +20,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types, sys, re, os
 
+import six
+basestring = six.string_types
+
+
+
 class TabWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {

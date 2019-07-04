@@ -1772,12 +1772,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobjects = self._get_sobjects(search_key)
         results = []
         for i, sobject in enumerate(sobjects):
-            if type(data) == types.ListType:
+            if isinstance(data, list):
                 cur_data = data[i]
             else:
                 cur_data = data
 
-            if type(metadata) == types.ListType:
+            if isinstance(metadata, list):
                 cur_metadata = metadata[i]
             else:
                 cur_metadata = metadata
@@ -1819,7 +1819,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         self.set_sobjects(sobjects)
         self.update_info(info)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             return results
         else:
             return results[0]
@@ -2372,7 +2372,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if not sobjects:
             raise ApiException("SObject [%s] does not exist" % search_key)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             sobject_dicts = []
             for sobject in sobjects:
                 sobject_dict = self._get_sobject_dict(sobject)

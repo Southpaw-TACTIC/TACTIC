@@ -14,6 +14,9 @@ __all__ = ["TileLayoutWdg"]
 import re, os
 import urllib
 
+import six
+basestring = six.string_types
+
 from pyasm.common import Common, Environment, jsonloads, jsondumps
 from pyasm.biz import CustomScript, Project, Snapshot, File, ProjectSetting, FileGroup
 from pyasm.command import Command
@@ -1731,7 +1734,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     tile_data['color'] = color
                  
                 
-                if isinstance(path, unicode):
+                if not Common.is_python3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
 
             
@@ -3288,7 +3291,7 @@ class ThumbWdg2(BaseRefreshWdg):
                 inner.add_style("background: %s" % color)
 
             else:
-                if isinstance(path, unicode):
+                if not Common.IS_Pv3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
 
                 if path.endswith("indicator_snake.gif"):
@@ -3320,7 +3323,7 @@ class ThumbWdg2(BaseRefreshWdg):
                         path = thumb_cmd.get_path()
 
 
-                path = urllib.pathname2url(path)
+                path = Common.pathname2url(path)
                 img = HtmlElement.img(src=path)
 
                 div.add_attr("spt_main_path", self.get_main_path())
@@ -3334,7 +3337,7 @@ class ThumbWdg2(BaseRefreshWdg):
             if path:
                 if isinstance(path, unicode):
                     path = path.encode("utf-8")
-                path = urllib.pathname2url(path)
+                path = Common.pathname2url(path)
 
                 img = DivWdg()
                 img.add_style("opacity: 0.3")

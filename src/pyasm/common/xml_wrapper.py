@@ -21,7 +21,7 @@ try:
 except:
     import thread
 
-import time, string, types, thread, os
+import time, string, types, os
 
 try:
     from cStringIO import StringIO

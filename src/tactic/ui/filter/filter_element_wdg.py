@@ -27,6 +27,7 @@ __all__ = [
 ]
 import re
 import datetime
+import sys
 from dateutil.relativedelta import relativedelta
 
 from pyasm.common import Common, TacticException, SetupException, Date
@@ -39,6 +40,10 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
 
 from .filter_data import FilterData
+
+import six
+basestring = six.string_types
+
 
 
 class BaseFilterElementWdg(BaseRefreshWdg):
@@ -171,10 +176,11 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
 
         value = self.values.get("value")
-        if isinstance(value, unicode):
-            value = value.encode('utf-8','ignore')
-        elif isinstance(value, basestring):
-            value = unicode(value, errors='ignore').encode('utf-8')
+        if not Common.is_python3:
+            if isinstance(value, unicode):
+                value = value.encode('utf-8','ignore')
+            elif isinstance(value, basestring):
+                value = unicode(value, errors='ignore').encode('utf-8')
 
         #print "value: ", value, type(value)
         if not value:

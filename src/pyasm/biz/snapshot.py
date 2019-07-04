@@ -21,6 +21,9 @@ from pyasm.search import *
 from .project import Project
 from .file import File, FileRange, FileGroup
 
+import six
+basestring = six.string_types
+
 class SObjectNotFoundException(Exception):
     pass
 
@@ -1733,7 +1736,7 @@ class Snapshot(SObject):
             # sort reversely to get the latest for each search key
             for key, value in data.items():
                 latest_snap_list = Common.sort_dict(value, reverse=True)
-                data[key] = latest_snap_list[0]
+                data[key] = list(latest_snap_list)[0]
             
             return data
 

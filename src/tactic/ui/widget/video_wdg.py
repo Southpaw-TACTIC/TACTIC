@@ -16,6 +16,8 @@ __all__ = ['VideoWdg', 'VideoJsWdg']
 from tactic.ui.common import BaseRefreshWdg
 from pyasm.web import Video, HtmlElement, DivWdg
 
+import six
+basestring = six.string_types
 
 
 class VideoWdg(BaseRefreshWdg):

@@ -3383,7 +3383,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         if layout == 'tile':
-            from tile_layout_wdg import TileLayoutWdg
+            from .tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = self.kwargs.get("top_view")
             kwargs['bottom_view'] = self.kwargs.get("bottom_view")
             kwargs['sticky_scale'] = self.kwargs.get("sticky_scale")

@@ -27,6 +27,9 @@ from tactic.ui.widget import ButtonRowWdg, ButtonNewWdg, ActionButtonWdg, SwapDi
 
 import re
 
+import six
+basestring = six.string_types
+
 class CustomLayoutHelpWdg(BaseRefreshWdg):
     '''Showing sample code when clicking on the Show hint button'''
     def get_display(self):
@@ -512,7 +515,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         left_div.add_relay_behavior( { 
-            'type': 'click',
+            'type': 'mouseup',
             'bvr_match_class': 'spt_custom_layout_item',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
@@ -523,7 +526,19 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             top.setAttribute("spt_view", view);
             top.setAttribute("spt_search_key", search_key);
             spt.app_busy.show("Loading view ["+view+"]");
-            spt.panel.refresh(top);
+
+
+            var top = bvr.src_el.getParent(".spt_views_top");
+            var states_el = top.getElement(".spt_folder_states");
+            var state_value = states_el.value
+            if (state_value) {
+                state_value = JSON.parse(state_value);
+            }
+            else {
+                state_value = {}
+            }
+
+            spt.panel.refresh_element(top, {folder_state: state_value});
             spt.app_busy.hide();
             '''
         } )
@@ -568,9 +583,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         web = WebContainer.get_web();
         folder_states = web.get_form_value("folder_states")
+        folder_states = self.kwargs.get("folder_state")
         if folder_states:
             try:
-                folder_states = jsonloads(folder_states)
+                if isinstance(folder_states, basestring):
+                    folder_states = jsonloads(folder_states)
             except Exception as e:
                 print("WARNINIG: can't parse json string [%s]" % folder_states)
                 folder_states = {}
@@ -584,7 +601,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         folder_text.add_class("spt_folder_states")
 
         left_div.add_relay_behavior( {
-            'type': 'mouseup',
+            'type': 'click',
             'bvr_match_class': 'spt_folder',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_views_top");
@@ -596,7 +613,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var state = swap_top.getAttribute("spt_state");
             var folder = bvr.src_el.getAttribute("spt_folder");
 
-            if (state == "on") {
+            if (state == "off") {
                 states[folder] = "closed";
             }
             else {
@@ -1062,9 +1079,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             hidden = HiddenWdg("selected")
             view_wdg.add(hidden)
-            selected = web.get_form_value("selected")
-            if not selected:
-                selected = self.kwargs.get("selected")
+            #selected = web.get_form_value("selected")
+            #if not selected:
+            selected = self.kwargs.get("selected")
             if not selected:
                 selected = "HTML"
 

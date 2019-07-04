@@ -22,6 +22,8 @@ from pyasm.biz import File
 convert_exe = "convert"
 ffprobe_exe = "ffprobe"
 
+IS_Pv3 = sys.version_info[0] > 2
+
 if os.name == "nt":
     convert_exe+= ".exe"
     ffprobe_exe+= ".exe"
@@ -271,6 +273,9 @@ class BaseMetadataParser(object):
     
     def sanitize_data(self, data):
         # sanitize output
+        if IS_Pv3:
+            return data
+
         RE_ILLEGAL_XML = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                  u'|' + u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
                   (unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
@@ -675,6 +680,7 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
         metadata = {}
 
+        out = out.decode()
 
         for line in out.split("\n"):
             if line.find("STREAM") != -1:

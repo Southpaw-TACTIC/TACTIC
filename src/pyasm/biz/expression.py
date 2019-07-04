@@ -1083,13 +1083,13 @@ class ExpressionMode(ExpressionParser):
         left = stack[0]
         right = stack[2]
 
-        if type(left) != types.ListType:
+        if not isinstance(left, list):
             value = left
             left = []
             for i in range(0, len(right)):
                 left.append(value)
 
-        if type(right) != types.ListType:
+        if not isinstance(right, list):
             value = right
             right = []
             for i in range(0, len(left)):

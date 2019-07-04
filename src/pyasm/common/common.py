@@ -16,7 +16,6 @@ __all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 import os, sys, time, string, re, types, pprint, traceback
 
-IS_Pv3 = sys.version_info[0] > 2
 
 try:
     import thread
@@ -38,6 +37,7 @@ import codecs
 import six
 basestring = six.string_types
 
+IS_Pv3 = sys.version_info[0] > 2
 
 from .base import Base
 
@@ -84,6 +84,14 @@ except ImportError:
 
 
 class Common(Base):
+
+    IS_Pv3 = sys.version_info[0] > 2
+
+    def is_python3(cls):
+        return IS_Pv3
+    is_python3 = classmethod(is_python3)
+
+
 
     def get_next_sobject_code(sobject, column):
         '''Get the next code. When given an sobject, and a column, it gets the value of that
@@ -545,6 +553,22 @@ class Common(Base):
     is_ascii = staticmethod(is_ascii)
 
 
+
+    def pathname2url(cls, path):
+        if not IS_Pv3:
+            if isinstance(path, unicode):
+                path = path.encode("utf-8")
+                path = urllib.pathname2url(path)
+        else:
+            path = urllib.request.pathname2url(path)
+
+        return path
+    pathname2url = classmethod(pathname2url)
+
+
+
+
+
     def download(url, to_dir=".", filename='', md5_checksum=""):
         '''Download a file from a given url
 
@@ -640,7 +664,7 @@ class Common(Base):
     def sort_dict(dct, reverse=False):
         ''' sort a dictionary based on its keys, 
             a list of sorted values is returned '''
-        keys = dct.keys()
+        keys = list(dct.keys())
         keys.sort(reverse=reverse)
         return map(dct.get, keys)
     sort_dict = staticmethod(sort_dict)
@@ -733,7 +757,11 @@ class Common(Base):
         elif os.path.isdir(dir):
             # this part is too slow
             if not skip_dir_details:
-                for (path, dirs, files) in os.walk(unicode(dir)):
+                if not Common.is_python3():
+                    walk = os.walk(unicode(dir))
+                else:
+                    walk = os.walk(dir)
+                for (path, dirs, files) in walk:
                     for file in files:
                         filename = os.path.join(path, file)
                         if os.path.islink(filename):
@@ -1371,14 +1399,15 @@ class Common(Base):
         text = text.replace("]]>", "")
         #text = text.decode('utf-8')
 
-        encoding = "UTF8"
-        template = Template(text, output_encoding=encoding, input_encoding=encoding)
 
-
+        if IS_Pv3:
+            template = Template(text)
+        else:
+            encoding = "UTF-8"
+            template = Template(text, output_encoding=encoding, input_encoding=encoding)
 
         try:
             text = template.render(**kwargs)
-
 
             # we have to replace all & signs to &amp; for it be proper text
             text = text.replace("&", "&amp;")

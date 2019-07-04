@@ -25,7 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 import types
 
 
-from chart_data import ChartData, ChartElement
+from .chart_data import ChartData, ChartElement
 
 class BarChartWdg(BaseRefreshWdg):
     ''' '''
@@ -219,8 +219,8 @@ class BarChartWdg(BaseRefreshWdg):
                 element_values.append(value)
 
 
-        print "chart_labels: ", chart_labels
-        print "element: ", element_values
+        print("chart_labels: ", chart_labels)
+        print("element: ", element_values)
 
         from chart_wdg import ChartWdg as XXChartWdg
         from chart_wdg import ChartData as XXChartData

@@ -808,7 +808,7 @@ class Project(SObject):
 
         dir_naming_expr = dir_naming
 
-        from snapshot import Snapshot, SObjectNotFoundException
+        from .snapshot import Snapshot, SObjectNotFoundException
         if isinstance(sobject,Snapshot):
             snapshot = sobject
             try:

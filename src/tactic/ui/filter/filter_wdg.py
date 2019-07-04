@@ -65,7 +65,7 @@ class BaseFilterWdg(BaseRefreshWdg):
         for i, values in enumerate(values_list):
             # hacky
             
-            if not values.has_key("%s_column" % prefix):
+            if "%s_column" % prefix in values:
                 continue
 
             # filter out provided search_type
