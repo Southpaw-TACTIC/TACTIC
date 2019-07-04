@@ -18,8 +18,11 @@ import re
 
 from pyasm.common import Container, Xml, Environment, Common, Config
 from pyasm.search import *
-from project import Project
-from file import File, FileRange, FileGroup
+from .project import Project
+from .file import File, FileRange, FileGroup
+
+import six
+basestring = six.string_types
 
 class SObjectNotFoundException(Exception):
     pass
@@ -861,7 +864,7 @@ class Snapshot(SObject):
         # ensure that the number of file objects is the same as the number
         # of nodes
         if len(nodes) != len(file_objects):
-            print "ERROR: number of nodes does not match number of file objects for snapshot[%s]" % self.get_code()
+            print("ERROR: number of nodes does not match number of file objects for snapshot[%s]" % self.get_code())
             return {}
 
 
@@ -1013,7 +1016,7 @@ class Snapshot(SObject):
         from pyasm.command import Trigger
 
         if cls.integral_trigger_added:
-            #print "WARNING: snapshot.add_integral_trigger already run"
+            #print("WARNING: snapshot.add_integral_trigger already run")
             return
 
         events = ["change|sthpw/snapshot"]
@@ -1681,18 +1684,18 @@ class Snapshot(SObject):
             search.add_where(" or ".join(filters))
 
         if context:
-            if type(context) == types.ListType:
+            if isinstance(context, list):
                 search.add_filters("context", context)
             else:
                 search.add_filter("context", context)
         if process:
-            if type(process) == types.ListType:
+            if isinstance(process, list):
                 search.add_filters("process", process)
             else:
                 search.add_filter("process", process)
 
         if status:
-            if type(status) == types.ListType:
+            if isinstance(status, list):
                 search.add_filters("status", status)
             else:
                 search.add_filter("status", status)
@@ -1733,7 +1736,7 @@ class Snapshot(SObject):
             # sort reversely to get the latest for each search key
             for key, value in data.items():
                 latest_snap_list = Common.sort_dict(value, reverse=True)
-                data[key] = latest_snap_list[0]
+                data[key] = list(latest_snap_list)[0]
             
             return data
 
@@ -2240,7 +2243,7 @@ class Snapshot(SObject):
             orig_file_object = File.get_by_code(file_code)
 
             if not orig_file_object:
-                print "WARNING: cannot find orig_file_object [%s]" % file_code
+                print("WARNING: cannot find orig_file_object [%s]" % file_code)
                 continue
 
             src_path = orig_file_object.get_value('source_path')

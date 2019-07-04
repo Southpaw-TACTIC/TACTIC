@@ -329,7 +329,7 @@ class MayaAssetCheckin(MayaCheckin):
             path_list = value
             # if there is only 1 cache file, simplify it and just call the context 'cache'
             if len(node_cache_dict) == 1:
-	        cache_context = "cache"
+                cache_context = "cache"
             else:
                 cache_context = "cache/%s" %node_name
          
@@ -768,8 +768,8 @@ class MayaAssetCheckin(MayaCheckin):
 
 
                 if not snapshot:
-                    print "Warning: instance '%s' has no snapshot '%s'" % \
-                        (instance, snapshot_code)
+                    print("Warning: instance '%s' has no snapshot '%s'" % \
+                        (instance, snapshot_code))
                     continue
 
                 builder.add_ref_by_snapshot(snapshot, instance, parent=node, node_name=node_name)
@@ -949,7 +949,7 @@ class MayaRemoveNamespaceFilter(MayaParserFilter):
             line = line.replace('"%s:' % self.instance, '"')
             line = line.replace('|%s:' % self.instance, '|')
             return line
-        except Exception, e:
+        except Exception as e:
             raise TacticException(line + " - " + e.__str__())
 
 

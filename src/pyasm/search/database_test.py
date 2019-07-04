@@ -12,10 +12,14 @@
 #
 import tacticenv
 
+__package__ = "pyasm.search"
+
+
 from pyasm.security import *
-from transaction import *
-from search import *
-from sql import *
+
+from .transaction import *
+from .search import *
+from .sql import *
 
 import unittest
 
@@ -31,19 +35,19 @@ class DatabaseTest(unittest.TestCase):
     def _test_get_connect(self):
         self.sql1 = Sql("sthpw", vendor="Sqlite")
         self.sql1.connect()
-        print self.sql1
+        print(self.sql1)
         results1 = self.sql1.do_query("select * from login")
 
         self.sql2 = Sql("sthpw", user="postgres", vendor="PostgreSQL")
         self.sql2.connect()
-        print self.sql2
+        print(self.sql2)
         results2 = self.sql2.do_query("select * from login")
 
         self.assertNotEquals(results1, results2)
 
         self.sql3 = Sql("sthpw", user="postgres", vendor="MySQL")
         self.sql3.connect()
-        print self.sql3
+        print(self.sql3)
         results2 = self.sql2.do_query("select * from login")
 
         self.assertNotEquals(results1, results2)
@@ -57,11 +61,11 @@ class DatabaseTest(unittest.TestCase):
         # This will fail because get_tables uses the default database to
         # get the table information
         tables1 = self.sql1.get_tables()
-        print "tables1: ", len(tables1)
+        print("tables1: ", len(tables1))
 
         tables2 = self.sql2.get_tables()
-        print "tables2: ", len(tables2)
-        print tables1 == tables2
+        print("tables2: ", len(tables2))
+        print(tables1 == tables2)
 
         sobject = SearchType.create("unittest/city")
         sobject.set_value("name", "Miami")

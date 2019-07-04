@@ -71,8 +71,8 @@ class ApiDelegator(PyV8.JSClass):
 
         try:
             ret_val = eval(call)
-        except Exception, e:
-            print "ERROR: ", e
+        except Exception as e:
+            print("ERROR: ", e)
             raise
 
 
@@ -83,8 +83,8 @@ class ApiDelegator(PyV8.JSClass):
 class JSFile(object):
 
     def copy(self, src, dst):
-        print "src: ", src
-        print "dst: ", dst
+        print("src: ", src)
+        print("dst: ", dst)
 
     def move(self, src, dst):
         pass
@@ -235,7 +235,7 @@ def test():
     }
     '''
     cmd.execute(js)
-    print time.time() - start
+    print(time.time() - start)
 
 
     js = '''
@@ -254,22 +254,22 @@ def test():
     cmd.execute(js)
 
 
-    print "---"
+    print("---")
     js = '''
     return ['stream1','stream2'];
     ''';
     ret_val = cmd.execute_func(js)
-    print "ret_val: ", ret_val
+    print("ret_val: ", ret_val)
 
 
-    print "---"
+    print("---")
     js = '''
     spt_file.copy("tactic.png", "tactic2.png"); 
     ''';
     cmd.execute_func(js)
 
 
-    print "---"
+    print("---")
     kwargs = {
         'a': 123,
         'b': 234,

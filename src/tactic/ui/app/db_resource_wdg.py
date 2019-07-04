@@ -14,8 +14,6 @@ __all__ = [ 'DbResourceWdg']
 import types
 import os
 
-import js_includes
-
 from pyasm.common import Container, Environment
 from pyasm.biz import Project
 from pyasm.search import Sql, Search, SearchType, DbResource, DbContainer

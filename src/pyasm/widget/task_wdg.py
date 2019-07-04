@@ -26,14 +26,14 @@ from pyasm.biz import Task, Pipeline, SimpleStatusAttr
 
 from pyasm.web import HtmlElement, WidgetSettings 
 
-from table_element_wdg import ExpandableTextWdg, DateWdg, SimpleTableElementWdg
-from input_wdg import BaseInputWdg, SelectWdg, HiddenWdg, FilterCheckboxWdg, FilterSelectWdg, MultiSelectWdg 
-from serial_status import SimpleStatusWdg
-from icon_wdg import IconWdg, IconButtonWdg
-from web_wdg import *
-from timecard_wdg import *
-from statistic_wdg import CalendarBarWdg
-from creator_wdg import CreateSelectWdg
+from .table_element_wdg import ExpandableTextWdg, DateWdg, SimpleTableElementWdg
+from .input_wdg import BaseInputWdg, SelectWdg, HiddenWdg, FilterCheckboxWdg, FilterSelectWdg, MultiSelectWdg 
+from .serial_status import SimpleStatusWdg
+from .icon_wdg import IconWdg, IconButtonWdg
+from .web_wdg import *
+from .timecard_wdg import *
+from .statistic_wdg import CalendarBarWdg
+from .creator_wdg import CreateSelectWdg
 
 # FIXME: this is a circular import which fails on batch scripts.
 # In order to fix, we have to move the classes that use the new
@@ -43,7 +43,7 @@ from creator_wdg import CreateSelectWdg
 try:
     from tactic.ui.common import BaseTableElementWdg
 except:
-    from table_element_wdg import BaseTableElementWdg
+    from .table_element_wdg import BaseTableElementWdg
 
 def get_search_type():
     web = WebContainer.get_web()

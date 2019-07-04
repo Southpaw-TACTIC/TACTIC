@@ -16,15 +16,17 @@ import types
 import re
 from pyasm.common import Xml, Environment, Common, SPTDate, Config, Container
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
-from prod_setting import ProdSetting, ProjectSetting
-from pipeline import Pipeline
-from pyasm.common import Environment
-from project import Project
-from status import StatusLog
+from .prod_setting import ProdSetting, ProjectSetting
+from .pipeline import Pipeline
+from .project import Project
+from .status import StatusLog
 
 from datetime import datetime, timedelta
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
+
+import six
+basestring = six.string_types
 
 
 
@@ -486,8 +488,8 @@ class Task(SObject):
         else:
             try:
                 parent = self.get_parent()
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 parent = Project.get()
             if not parent:
                 msg = "%s in %s: %s" % (action, process, description)
@@ -894,10 +896,9 @@ class Task(SObject):
     def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[],
             skip_duplicate=True, mode='standard',start_offset=0,assigned=None,
             start_date=None, schedule_mode=None, parent_process=None, status=None
-
         ):
         '''add initial tasks based on the pipeline of the sobject'''
-        from pipeline import Pipeline
+        from .pipeline import Pipeline
 
         def _get_context(existing_task_dict, process_name, context=None):
             existed = False
@@ -954,7 +955,7 @@ class Task(SObject):
             pipeline = Pipeline.get_by_code(pipeline_code)
 
         if not pipeline:
-            print "WARNING: pipeline '%s' does not exist" %  pipeline_code
+            print("WARNING: pipeline '%s' does not exist" %  pipeline_code)
             return []
 
         # remember which ones already exist
@@ -1371,8 +1372,8 @@ class TaskAutoSchedule(object):
 
             tmp_end_date = tmp_start_date + relativedelta(seconds=interval)
 
-            #print tmp_start_date, tmp_end_date
-            #print round_second(tmp_start_date), round_second(tmp_end_date)
+            #print(tmp_start_date, tmp_end_date)
+            #print(round_second(tmp_start_date), round_second(tmp_end_date))
             start = self.round_second(tmp_start_date)
             end = self.round_second(tmp_end_date)
 
@@ -1651,7 +1652,10 @@ class TaskGenerator(object):
         process_sobject = process_sobjects.get(process_name)
         process_obj = pipeline.get_process(process_name)
 
-        workflow = process_sobject.get_json_value("workflow") or {}
+        if process_sobject:
+            workflow = process_sobject.get_json_value("workflow") or {}
+        else:
+            workflow = {}
         process_type = process_obj.get_type()
         attrs = process_obj.get_attributes()
 
@@ -1750,7 +1754,10 @@ class TaskGenerator(object):
             attrs = process_obj.get_attributes()
 
 
-            workflow = process_sobject.get_json_value("workflow") or {}
+            if process_sobject:
+                workflow = process_sobject.get_json_value("workflow") or {}
+            else:
+                workflow = {}
 
 
             duration = attrs.get("duration")
@@ -1852,8 +1859,8 @@ class TaskGenerator(object):
                 #start = time.time()
                 triggers = "none"
                 new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_group)
-                #print "process: ", full_process_name
-                #print "time: ", time.time() - start
+                #print("process: ", full_process_name)
+                #print("time: ", time.time() - start)
 
                 # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )

@@ -63,9 +63,9 @@ class PublisherCmd(LoaderCmd):
         # clean up the execute xml
         if top_publisher == self:
 
-            print "*"*20
+            print("*"*20)
             self.execute_xml.dump()
-            print "*"*20
+            print("*"*20)
 
             Container.remove(key)
 

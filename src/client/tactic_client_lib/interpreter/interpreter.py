@@ -17,7 +17,7 @@ from xml.dom.minidom import parseString
 
 from tactic_client_lib.common import Common
 
-from handler import Handler
+from .handler import Handler
 
 
 class PipelineInterpreter(object):
@@ -55,7 +55,7 @@ class PipelineInterpreter(object):
             if not self.first_process:
                 self.first_process = self.pipeline.get_first_process_name()
             self.handle_process(self.first_process)
-        except Exception, e:
+        except Exception as e:
             if not self.handlers:
                 raise
             print("Failed at handler: ", self.handlers[-1])
@@ -65,7 +65,7 @@ class PipelineInterpreter(object):
                 handlers.reverse()
                 for handler in handlers:
                     handler.undo()
-            except Exception, e:
+            except Exception as e:
                 print("Could not undo:", str(e) )
                 raise
 
@@ -163,7 +163,7 @@ class PipelineInterpreter(object):
                     self.handle_process(node)
                 elif node_name == "package":
                     self.handle_package(node)
-        except Exception, e:
+        except Exception as e:
             if not self.handlers:
                 raise
             print("Failed at handler: ", self.handlers[-1])
@@ -173,7 +173,7 @@ class PipelineInterpreter(object):
                 handlers.reverse()
                 for handler in handlers:
                     handler.undo()
-            except Exception, e:
+            except Exception as e:
                 print("Could not undo:", e.__str())
                 raise
 

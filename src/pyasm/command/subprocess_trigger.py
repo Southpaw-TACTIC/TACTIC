@@ -22,8 +22,8 @@ from pyasm.security import Site
 from tactic_client_lib import TacticServerStub
 from tactic_client_lib.interpreter import Handler
 
-from trigger import Trigger
-from command import Command
+from .trigger import Trigger
+from .command import Command
 
 
 

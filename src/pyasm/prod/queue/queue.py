@@ -22,7 +22,11 @@ from pyasm.security import Batch
 from pyasm.command import Command
 from pyasm.search import *
 from pyasm.biz import Project
-import pickle, time, thread
+import pickle, time
+try:
+    import thread
+except:
+    import _thread as thread
 
 
 # dormant time between checking requests, in seconds
@@ -54,18 +58,18 @@ class Queue(SObject):
             #exec("reload(%s)" % class_name)
 
             self.command = pickle.loads( self.get_value("serialized") )
-        except Exception, e:
-            print "Error: ", e.__str__()
+        except Exception as e:
+            print("Error: ", e.__str__())
             DbContainer.remove("sthpw")
         else:
             # execute the command
-            print "executing: ", self.get_id(), self.command
+            print("executing: ", self.get_id(), self.command)
             try:
                 # refresh the environment and execute
                 Command.execute_cmd(self.command)
-            except Exception, e:
+            except Exception as e:
                 ExceptionLog.log(e)
-                print "Error: ", e.__str__()
+                print("Error: ", e.__str__())
                 self.set_value("state", "error")
 
                 description = self.get_value("description")
@@ -73,7 +77,7 @@ class Queue(SObject):
                     (description, e.__str__()) )
                 self.commit()
             else:
-                print "setting to done"
+                print("setting to done")
                 self.set_value("state", "done")
                 self.commit()
 
@@ -150,7 +154,7 @@ class Queue(SObject):
         if first_status in ['locked']:
             return
         if first_status in ['error']:
-            #print "Found error on next job, cannot proceed ..."
+            #print("Found error on next job, cannot proceed ...")
             return
 
 
@@ -183,7 +187,7 @@ class Queue(SObject):
 
 
     def start(self):
-        print "starting thread: ", thread.get_ident()
+        print("starting thread: ", thread.get_ident())
         thread.start_new_thread(Queue._start, ("Queue", 1))
 
 
@@ -200,7 +204,7 @@ class Queue(SObject):
                 queue.execute()
 
             else:
-                print "Queue: No jobs available"
+                print("Queue: No jobs available")
 
                 # go to sleep for a while
                 DbContainer.remove("sthpw")

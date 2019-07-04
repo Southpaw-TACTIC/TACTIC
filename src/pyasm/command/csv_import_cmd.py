@@ -20,7 +20,7 @@ from pyasm.search import SObjectFactory, SearchType, Search, SqlException
 from pyasm.biz import CsvParser
 from pyasm.common import UserException
 
-from command import *
+from .command import *
 
 class CsvImportCmd(Command):
 
@@ -281,7 +281,7 @@ class CsvImportCmd(Command):
                     note_obj.set_parent(sobject)
                     note_obj.commit()
 
-            except SqlException, e:
+            except SqlException as e:
                 msg = "%s [%s]: %s, %s" % (self.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
                 if self.test_run:
                     error = True
@@ -488,7 +488,7 @@ class SimpleCsvImportCmd(Command):
                     note_obj.set_parent(sobject)
                     note_obj.commit()
 
-            except SqlException, e:
+            except SqlException as e:
                 msg = "Error creating new entry for row [%s]: %s, %s" % (row_count, str(row), e.__str__() )
                 if self.test_run:
                     error = True

@@ -39,13 +39,13 @@ class NamingMigratorCmd(Command):
         assert search_type or search_keys
 
         if search_type:
-            print "@SOBJECT(%s)" % search_type
+            print("@SOBJECT(%s)" % search_type)
             sobjects = Search.eval("@SOBJECT(%s)" % search_type)
         else:
             sobjects = Search.get_by_search_keys(search_keys)
 
         if not sobjects:
-            print "No sobjects to process"
+            print("No sobjects to process")
             return
         snapshots = Search.eval("@SOBJECT(sthpw/snapshot)", sobjects)
 
@@ -59,7 +59,7 @@ class NamingMigratorCmd(Command):
         for i, snapshot in enumerate(snapshots):
             if i > limit:
                 break
-            print "Processing: %s of %s" % (i, len(snapshots) )
+            print("Processing: %s of %s" % (i, len(snapshots) ))
 
             file_types = snapshot.get_all_file_types()
             for file_type in file_types:
@@ -152,7 +152,7 @@ class NamingMigratorCmd(Command):
                     exists = os.path.exists(old_path)
 
                 if not exists:
-                    print '... old does not exist'
+                    print('... old does not exist')
                     continue
 
 
@@ -171,11 +171,11 @@ class NamingMigratorCmd(Command):
                         break
 
         if errors:
-            print "Errors:"
+            print("Errors:")
             for error in errors:
-                print error
-            print "-"*20
-        print "Found %s of %s snapshots which have paths different from naming" % (num_found, len(snapshots) )
+                print(error)
+            print("-"*20)
+        print("Found %s of %s snapshots which have paths different from naming" % (num_found, len(snapshots) ))
 
 
 

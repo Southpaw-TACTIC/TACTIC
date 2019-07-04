@@ -252,7 +252,7 @@ class Palette(object):
                 value = value.replace(" ", "_")
                 self.colors = eval("self.%s" % value)
             except:
-                print "WARNING: palette [%s] does not exist.  Using default" % value
+                print("WARNING: palette [%s] does not exist.  Using default" % value)
 
                
 

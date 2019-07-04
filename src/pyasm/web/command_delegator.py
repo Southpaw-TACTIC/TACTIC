@@ -20,9 +20,9 @@ __all__ = ['CommandDelegator']
 from pyasm.common import Marshaller, TacticException
 from pyasm.command import Command
 
-from widget import *
-from html_wdg import *
-from web_container import *
+from .widget import *
+from .html_wdg import *
+from .web_container import *
 
 
 
@@ -104,11 +104,11 @@ class CommandDelegator(Widget):
             # we want to allow the page to draw, CmdReport will display the error
             try:
                 Command.execute_cmd(cmd)
-            except TacticException, e:
+            except TacticException as e:
                 pass
-            except OSError, (errno, strerror):
+            except OSError:
                 pass
-            except IOError, (errno, strerror):
+            except IOError:
                 pass
 
             # store the commands that we executed

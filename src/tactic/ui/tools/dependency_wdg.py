@@ -20,8 +20,8 @@ from pyasm.search import Search
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import DirListWdg
 
-from pipeline_canvas_wdg import *
-from pipeline_wdg import *
+from .pipeline_canvas_wdg import *
+from .pipeline_wdg import *
 
 
 

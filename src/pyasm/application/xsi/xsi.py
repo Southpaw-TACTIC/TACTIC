@@ -14,7 +14,7 @@ __all__ = ['XSIException', 'XSI', 'XSINodeNaming', 'XSINodeData']
 
 
 import sys, types, re, os
-from xsi_environment import *
+from .xsi_environment import *
 from pyasm.application.common import NodeData, Common, Application, AppException, BaseAppInfo
 
 

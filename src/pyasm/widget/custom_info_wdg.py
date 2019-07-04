@@ -112,7 +112,7 @@ class CustomInfoInputWdg(BaseInputWdg):
             base = CustomConfigWdg(search_type, view, \
                 config=widget_config_view, input_prefix="edit")
             
-        except TacticException, e:
+        except TacticException as e:
             span = SpanWdg("None")
             span.add_style("color: #ccc")
             return span

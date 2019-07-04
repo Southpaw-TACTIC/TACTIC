@@ -919,7 +919,7 @@ class SingleNoteViewerWdg(BaseRefreshWdg):
         self.checkbox_name = self.kwargs.get('checkbox_name')
         self.orig_parent = None
         self.show_context = self.kwargs.get('show_context') 
-	if not self.show_context:
+        if not self.show_context:
             self.show_context = web.get_form_value('show_context')
   
         self.show_context = self.show_context =='true'
@@ -1058,12 +1058,12 @@ class SingleNoteViewerWdg(BaseRefreshWdg):
     
         table = TableLayoutWdg(table_id=table_id, search_type='sthpw/note', view=self.view,\
              show_row_select=True, show_insert=False, state={'parent_key': self.parent_key}, inline_search=False, show_refresh=True, expression=expression )
-	if self.resize:
-	    from tactic.ui.container import ResizeScrollWdg
-	    inner_wdg = ResizeScrollWdg( width='500px', height='500px', scroll_bar_size_str='thick', scroll_expansion='inside' )
-	    inner_wdg.add(table)
+        if self.resize:
+            from tactic.ui.container import ResizeScrollWdg
+            inner_wdg = ResizeScrollWdg( width='500px', height='500px', scroll_bar_size_str='thick', scroll_expansion='inside' )
+            inner_wdg.add(table)
             table_top.add(inner_wdg)
-	else:
+        else:
             table_top.add(table)
 
         self.set_as_panel(table_top)
@@ -1085,7 +1085,7 @@ class SingleNoteViewerWdg(BaseRefreshWdg):
             top = self.get_viewer()
             
        
-	self.process_names = [x  for x in self.process_names if x ]
+        self.process_names = [x  for x in self.process_names if x ]
         if self.is_refresh:
             if self.process_names:
                 table = Table()
@@ -1097,12 +1097,12 @@ class SingleNoteViewerWdg(BaseRefreshWdg):
                 left_table = TableLayoutWdg(table_id=table_id, search_type='sthpw/note', view=self.view,\
                     show_row_select=True, show_insert=False, state={'parent_key': self.parent_key}, inline_search=False, show_refresh=True, expression=expression )
                 if self.resize:
-  	 	    from tactic.ui.container import ResizeScrollWdg
+                    from tactic.ui.container import ResizeScrollWdg
                     inner_wdg = ResizeScrollWdg( width='500px', height='500px', scroll_bar_size_str='thick', scroll_expansion='inside' )
                     inner_wdg.add(left_table)
                     td.add(inner_wdg)
-		else:
+                else:
                     td.add(left_table)
-		top.add(table)
+                top.add(table)
 		
         return top

@@ -34,7 +34,7 @@ def get_temp_dir():
     return temp_dir
 
 # Defualt Tactic Installations
-from tactic_paths import *
+from .tactic_paths import *
 
 # give a chance for the user to override Tactic location
 if not os.environ.has_key('TACTIC_INSTALL_DIR'):

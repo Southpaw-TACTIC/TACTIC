@@ -10,8 +10,8 @@
 #
 #
 
-from xsi_parser import * 
-from xsi_environment import *
-from xsi import *
-from xsi_impl import *
-from xsi_builder import *
+from .xsi_parser import * 
+from .xsi_environment import *
+from .xsi import *
+from .xsi_impl import *
+from .xsi_builder import *

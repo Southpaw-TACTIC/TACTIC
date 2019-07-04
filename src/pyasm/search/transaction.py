@@ -19,6 +19,9 @@ import os, time, codecs
 
 from pyasm.common import *
 
+import six
+basestring = six.string_types
+
 
 class TransactionException(Exception):
     pass
@@ -162,7 +165,7 @@ class Transaction(Base):
         assert self.counter == 0
 
         # commit all of the transaction items
-        from sql import SqlException
+        from .sql import SqlException
         for transaction_obj in self.transaction_objs:
             try:
                 transaction_obj.commit()
@@ -249,7 +252,8 @@ class Transaction(Base):
         db_name = database.get_database_name()
 
         # if the database is listed, then ignore it
-        if self.databases.has_key(db_name):
+        #if self.databases.has_key(db_name):
+        if db_name in self.databases:
             return
 
         # start a transaction in the database
@@ -371,7 +375,7 @@ class Transaction(Base):
             self.transaction_log.set_value("description", self.description)
             self.transaction_log.commit()
         else:
-            from transaction_log import TransactionLog
+            from .transaction_log import TransactionLog
             self.transaction_log = TransactionLog.create( \
                 self.command_class, xml_string, self.description, self.title )
 
@@ -844,7 +848,7 @@ class FileUndo:
                 # remove directory
                 try:
                     os.rmdir(src)
-                except OSError, e:
+                except OSError as e:
                     if 'Directory not empty' in e.__str__():
                         # can consider removing the contents first and then rmdir
                         raise TransactionException(e)
@@ -939,10 +943,10 @@ class FileUndo:
                             raise IOError(str(e))
 
 
-        except IOError, e:
+        except IOError as e:
             print( e.__str__())
             print("Failed to undo %s %s" % (type, src))
-        except OSError, e:
+        except OSError as e:
             raise TransactionException("Failed to undo due to OS Error during %s. %s" % (type, e.__str__()))
         except Exception as e:
             print("Error: %s" %e)
@@ -1261,7 +1265,7 @@ class TableUndo(Base):
                      SearchType.sequence_setval(search_type, seq_max)
 
 
-            except IOError, e:
+            except IOError as e:
                  print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             """
@@ -1339,7 +1343,7 @@ class TableDropUndo(Base):
                  st_obj = SearchType.get(search_type)
                  if seq_max:
                      SearchType.sequence_setval(search_type, seq_max)
-            except IOError, e:
+            except IOError as e:
                  print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             except SqlException as e:
@@ -1472,7 +1476,7 @@ class AlterTableUndo(Base):
         Xml.set_attribute(sobject_node,"column",column)
 
        
-        from sql import DbContainer
+        from .sql import DbContainer
         from pyasm.biz import Project
         project = Project.get_by_code(database)
         # FIXME: for now, make database == project

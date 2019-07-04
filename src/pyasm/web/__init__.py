@@ -11,35 +11,35 @@
 #
 
 # web framework interface and implementations
-from web_environment import *
-from palette import *
+from .web_environment import *
+from .palette import *
 
-from callback import *
+from .callback import *
 
 # security for redirects
-from url_security import *
+from .url_security import *
 
 # global web container
-from web_container import *
-from web_state import *
+from .web_container import *
+from .web_state import *
 
 # basic widget classes
-from widget import *
-from html_wdg import *
-from web_tools import *
+from .widget import *
+from .html_wdg import *
+from .web_tools import *
 
 #from command_delegator import *
 #from event_container import *
 
 # the web application widget
-from web_app import *
+from .web_app import *
 
-from web_login_cmd import *
+from .web_login_cmd import *
 
-from app_server import *
-from simple_app_server import *
-from widget_app_server import *
-from web_init import *
+from .app_server import *
+from .simple_app_server import *
+from .widget_app_server import *
+from .web_init import *
 
-from monitor import *
+from .monitor import *
 

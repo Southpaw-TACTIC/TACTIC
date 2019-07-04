@@ -16,9 +16,9 @@ from pyasm.command import *
 from pyasm.web import *
 from pyasm.widget import *
 from pyasm.prod.biz import *
-from shot_navigator_wdg import ItemsNavigatorWdg
-from prod_wdg import *
-from prod_checkin_wdg import *
+from .shot_navigator_wdg import ItemsNavigatorWdg
+from .prod_wdg import *
+from .prod_checkin_wdg import *
 
 import re
 

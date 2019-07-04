@@ -12,13 +12,14 @@
 
 __all__ = ["Date", "Calendar"]
 
-from base import *
-from common import *
-from environment import Environment
-from calendar import *
+from .base import *
+from .common import *
+from .environment import Environment
+
 from time import *
 import _strptime
 from datetime import date
+from calendar import *
 
 
 # DEPRECATED: datetime and dateutil are far better
@@ -70,7 +71,7 @@ class Date(Base):
                 db_date, tm = db_date.split(" ", 1)
             try:
                 self.struct_time = strptime(db_date, r'%Y-%m-%d')
-            except ValueError, e:
+            except ValueError as e:
                 self.struct_time = localtime()
                 if self.show_warning:
                     Environment.add_warning('invalid time format', "bad time format [%s]" %db_date)

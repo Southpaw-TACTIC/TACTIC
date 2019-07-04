@@ -16,7 +16,7 @@ from pyasm.common import *
 from pyasm.web import *
 from pyasm.widget import *
 
-from shot_navigator_wdg import *
+from .shot_navigator_wdg import *
 
 
 class AssetDataLink(BaseTableElementWdg):

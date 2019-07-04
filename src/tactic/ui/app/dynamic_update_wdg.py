@@ -28,6 +28,9 @@ from dateutil import parser
 
 from tactic.ui.common import BaseRefreshWdg
 
+import six
+basestring = six.string_types
+
 
 class DynamicUpdateWdg(BaseRefreshWdg):
 

@@ -10,9 +10,9 @@
 #
 #
 
-from maya_checkin import *
-from comp_checkin import *
-from publisher import *
-from submission_checkin import *
+from .maya_checkin import *
+from .comp_checkin import *
+from .publisher import *
+from .submission_checkin import *
 
 

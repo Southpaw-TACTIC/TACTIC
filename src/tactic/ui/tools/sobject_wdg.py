@@ -27,6 +27,9 @@ from tactic.ui.container import TabWdg, Menu, MenuItem
 from tactic.ui.tools import PipelineCanvasWdg
 from tactic.ui.widget import SingleButtonWdg, IconButtonWdg, ActionButtonWdg
 
+import six
+basestring = six.string_types
+
 
 class SObjectDetailWdg(BaseRefreshWdg):
     '''Single SObject Widget'''

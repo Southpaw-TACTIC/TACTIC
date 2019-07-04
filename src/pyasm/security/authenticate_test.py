@@ -53,7 +53,7 @@ class AuthenticateTest(unittest.TestCase):
         # should fail
         try:
             self.security.login_user("foofoo", "tactic")
-        except Exception, e:
+        except Exception as e:
             if str(e).find("Login/Password") == -1:
                 self.fail()
 

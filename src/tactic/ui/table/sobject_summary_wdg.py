@@ -19,7 +19,8 @@ from tactic.ui.common import SimpleTableElementWdg
 from pyasm.web import DivWdg
 from pyasm.widget import IconWdg
 
-from button_wdg import ButtonElementWdg
+from .button_wdg import ButtonElementWdg
+
 from pyasm.biz import Project
 from pyasm.search import Search
 

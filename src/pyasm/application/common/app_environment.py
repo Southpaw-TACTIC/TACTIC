@@ -39,8 +39,8 @@ lc = locals()
 
 
 
-from upload_multipart import UploadMultipart
-from base_app_info import TacticException
+from .upload_multipart import UploadMultipart
+from .base_app_info import TacticException
 
 
 class AppException(Exception):
@@ -118,7 +118,7 @@ class AppEnvironment(object):
         if not os.path.exists(self.sandbox_dir):
             try:
                 os.makedirs(self.sandbox_dir)
-            except Exception, e:
+            except Exception as e:
                 raise Exception("Cannot create directory '%s'" % self.sandbox_dir)
 
 
@@ -145,7 +145,7 @@ class AppEnvironment(object):
 
     def upload(self, from_path):
 
-        print "uploading: ", from_path
+        print("uploading: ", from_path)
 
         ticket = self.get_ticket()
         upload_server = self.get_upload_server()
@@ -180,7 +180,7 @@ class AppEnvironment(object):
             if HAS_MD5:
                 if md5_checksum:
                     if self._md5_check(to_path, md5_checksum):
-                        print "skipping '%s', already exists" % to_path
+                        print("skipping '%s', already exists" % to_path)
                         return to_path
                 else:
                     # always download if no md5_checksum available
@@ -188,7 +188,7 @@ class AppEnvironment(object):
 
             else:
                 # if no md5 library is available, then existence is enough
-                print "skipping '%s', already exists" % to_path
+                print("skipping '%s', already exists" % to_path)
                 return to_path
 
         f = urllib.urlopen(url)
@@ -203,7 +203,7 @@ class AppEnvironment(object):
         #    raise TacticException('Downloaded file [%s] in local repo failed md5 check. This file may be missing on the server or corrupted.'%to_path)
 
         """
-        print "starting download"
+        print("starting download")
         try:
             import urllib2
             file = open(to_path, "wb")
@@ -211,18 +211,18 @@ class AppEnvironment(object):
             try:
                 while True:
                     buffer = req.read(1024*100)
-                    print "read: ", len(buffer)
+                    print("read: ", len(buffer))
                     if not buffer:
                         break
                     file.write( buffer )
             finally:
-                print "closing ...."
+                print("closing ....")
                 req.close()
                 file.close()
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             raise Exception('%s - %s' % (e,url))
 
-        print "... done download"
+        print("... done download")
         """
 
 

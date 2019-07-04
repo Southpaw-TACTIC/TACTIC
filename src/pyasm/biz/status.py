@@ -12,11 +12,11 @@
 
 __all__ = ["StatusLog"]
 
+from pyasm.common import Environment, Date
 from pyasm.search import SearchType, SObject, Search
 
-from pipeline import Pipeline
-from pyasm.common import Environment, Date
-from project import Project
+from .pipeline import Pipeline
+from .project import Project
 
 class StatusLog(SObject):
 

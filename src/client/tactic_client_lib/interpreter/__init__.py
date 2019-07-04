@@ -10,7 +10,7 @@
 #
 #
 
-from interpreter import *
-from handler import *
-from examples import *
-from pipeline import *
+from .interpreter import *
+from .handler import *
+from .examples import *
+from .pipeline import *

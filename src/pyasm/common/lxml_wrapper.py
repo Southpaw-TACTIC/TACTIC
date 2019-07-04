@@ -13,15 +13,28 @@
 __all__ = ["XmlException", "Xml"]
 
 
-import time, string, types, thread, os
+import time, string, types, os
 
-from cStringIO import StringIO
+try:
+    import _thread as thread
+except:
+    import thread
 
-from base import *
-from common import *
-from common_exception import TacticException
+
+try:
+    from cStringIO import StringIO
+except:
+    from io import StringIO
+
+
+from .base import *
+from .common import *
+from .common_exception import TacticException
 
 import lxml.etree as etree
+
+import six
+basestring = six.string_types
 
 
 class XmlException(TacticException):
@@ -86,8 +99,8 @@ class Xml(Base):
 
 
 
-        except Exception, e:
-            #print "Error in xml file: ", file_path
+        except Exception as e:
+            #print("Error in xml file: ", file_path)
             raise XmlException(e)
 
 
@@ -110,13 +123,15 @@ class Xml(Base):
     count = 0
     def read_string(self, xml_string, print_error=True, remove_blank_text=True):
 
-        if type(xml_string) not in types.StringTypes:
+        #if type(xml_string) not in types.StringTypes:
+        if not isinstance(xml_string, basestring):
             xml_string = str(xml_string)
-        elif type(xml_string) == types.UnicodeType:
+        #elif type(xml_string) == types.UnicodeType:
+        elif isinstance(xml_string, basestring):
             xml_string = xml_string.replace('encoding="UTF-8"','')
             xml_string = xml_string.replace("encoding='UTF-8'",'')
             if xml_string.startswith('<?xml version="1.0" encoding="UTF-8"?>'):
-                #print "STRING ", xml_string
+                #print("STRING ", xml_string)
                 #xml_string = xml_string.encode('UTF-8')
                 pass
 
@@ -126,10 +141,10 @@ class Xml(Base):
             if not xml_string:
                 raise XmlException('The input XML is empty.')
             self.doc = etree.fromstring(xml_string, parser)
-        except Exception, e:
+        except Exception as e:
             if print_error:
-                print "Error in xml: ", xml_string
-                print e
+                print("Error in xml: ", xml_string)
+                print(e)
             raise XmlException(e)
 
 
@@ -270,7 +285,7 @@ class Xml(Base):
             result = self.doc.xpath(xpath, namespaces=namespaces)
         else:
             result = node.xpath(xpath, namespaces=namespaces)
-            print "xpath: ", xpath
+            print("xpath: ", xpath)
         self.cache_xpath[xpath] = result
 
         return result
@@ -280,7 +295,7 @@ class Xml(Base):
         '''get all of the nodes within the given xpath string'''
         try:
             nodes = self._evaluate(xpath)
-        except Exception, e:
+        except Exception as e:
             raise XmlException('XPath Error for [%s]: %s'% (xpath, e.message))
         return nodes
     
@@ -329,7 +344,10 @@ class Xml(Base):
 
     def get_xml(self):
         '''returns a stringified version of the document'''
-        return etree.tostring(self.doc, pretty_print=True)
+        value = etree.tostring(self.doc, pretty_print=True)
+        if isinstance(value, bytes):
+            value = value.decode()
+        return value
 
 
     def to_string(self, node=None, pretty=True, tree=False, method='xml', xml_declaration=False):
@@ -348,13 +366,19 @@ class Xml(Base):
        
 
         value = etree.tostring(output, pretty_print=pretty, encoding='utf-8', method=method, xml_declaration=xml_declaration)
-        value = unicode( value, 'utf-8')
+
+        try:
+            value = unicode( value, 'utf-8')
+        except: # unicode does not exist in python 3
+            # this comes back as bypes in python3
+            value = value.decode('ascii')
+
         return value
 
 
     def dump(self):
         '''print out the stringafied version'''
-        print self.to_string()
+        print(self.to_string())
 
 
 
@@ -499,9 +523,6 @@ class Xml(Base):
     # FIXME
     def get_node_xml(node):
         '''returns a stringified version of the node'''
-        #xml = StringIO()
-        #PrettyPrint(node,xml)
-        #return xml.getvalue()
         xml = Xml()
         return xml.to_string(node)
     get_node_xml = staticmethod(get_node_xml)
@@ -537,8 +558,6 @@ class Xml(Base):
 
 
 
-
-    import StringIO
     def parse_html(html, encoding='utf-8'):
         parser = etree.HTMLParser(remove_blank_text=False, encoding=encoding)
         tree = etree.parse(StringIO(html), parser)

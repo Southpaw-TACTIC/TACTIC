@@ -13,8 +13,8 @@
 __all__ = ['ExceptionLog']
 
 from pyasm.common import *
-from search import *
-from sql import DbContainer
+from .search import *
+from .sql import DbContainer
 
 import sys,traceback
 

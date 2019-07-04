@@ -19,8 +19,7 @@ from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
 
-from text_input_wdg import TextInputWdg
-
+from .text_input_wdg import TextInputWdg
 
 
 class ColorWdg(Widget):

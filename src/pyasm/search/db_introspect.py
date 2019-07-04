@@ -54,7 +54,7 @@ class DbIntrospect(object):
             table_info = sql.get_table_info()
 
             if table_info.get("spt_search_type"):
-                print "has search_type"
+                print("has search_type")
 
             tables = table_info.keys()
 
@@ -87,7 +87,7 @@ def execute(db_resource):
     search_type_obj = SearchType.get(search_type)
     search = Search(search_type)
     sobjects = search.get_sobjects()
-    print "length: ", len(sobjects)
+    print("length: ", len(sobjects))
 
 
     # or (note that there is no project here).  The two arguments
@@ -96,17 +96,17 @@ def execute(db_resource):
     table = 'foofoo'
     search = db_resource.get_search(table)
     sobjects = search.get_sobjects()
-    print "length: ", len(sobjects)
+    print("length: ", len(sobjects))
     for sobject in sobjects:
-        print sobject.get_code(), sobject.get_value("description")
+        print(sobject.get_code(), sobject.get_value("description"))
 
 
     table = 'widget_config'
     search = db_resource.get_search(table)
     sobjects = search.get_sobjects()
-    print "length: ", len(sobjects)
+    print("length: ", len(sobjects))
     for sobject in sobjects:
-        print sobject.get_code(), sobject.get_value("config")
+        print(sobject.get_code(), sobject.get_value("config"))
 
 
 
@@ -116,35 +116,35 @@ def execute(db_resource):
     table = 'cards'
     search = db_resource.get_search(table)
     sobjects = search.get_sobjects()
-    print "length: ", len(sobjects)
+    print("length: ", len(sobjects))
     for sobject in sobjects:
-        print sobject.get_code(), sobject.get_value("description")
+        print(sobject.get_code(), sobject.get_value("description"))
 
 
-    print "sqlite: transaction_log"
+    print("sqlite: transaction_log")
     db_resource = DbResource.get_by_code('sqlite','sthpw')
     introspect = DbIntrospect()
     introspect.register("sqlite", db_resource)
     search = db_resource.get_search("transaction_log")
     sobjects = search.get_sobjects()
-    print "length: ", len(sobjects)
+    print("length: ", len(sobjects))
 
 
 
-    print "selfsql: fifi"
+    print("selfsql: fifi")
     db_resource = DbResource.get_by_code('mysql','fifi')
     introspect = DbIntrospect()
     introspect.register("fifi", db_resource)
     search = db_resource.get_search("cards")
     sobjects = search.get_sobjects()
-    print "length: ", len(sobjects)
+    print("length: ", len(sobjects))
 
 
-    print "selfsql: fifi"
+    print("selfsql: fifi")
     search_type = "table/node0?project=db3_test"
     search = Search(search_type)
     sobjects = search.get_sobjects()
-    print "length: ", len(sobjects)
+    print("length: ", len(sobjects))
 
 
 
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     import time
     start = time.time()
     introspect.register("db2_test", db_resource)
-    print "time: ", time.time() - start
+    print("time: ", time.time() - start)
 
     execute(db_resource)
 

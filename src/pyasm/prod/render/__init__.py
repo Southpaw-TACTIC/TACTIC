@@ -11,13 +11,13 @@
 #
 
 
-from render_cmd_builder import *
-from render_package import *
-from render_cmd import *
+from .render_cmd_builder import *
+from .render_package import *
+from .render_cmd import *
 
 # DEPRECATED
-from render_context import *
+from .render_context import *
 
 
-from qube_render_submit import *
+from .qube_render_submit import *
 
