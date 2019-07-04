@@ -1610,7 +1610,6 @@ class DbContainer(Base):
 
 
 class DbPasswordUtil(object):
-    PASSWORD_KEY = (95954739753557611717677953802022772164074845338566937775470833735856469435381956125590339095236470675423085325686058278198918822369603350495319710499101888408708913117761396293217495020971217519968381713929946123203701342525363284439548065832975303252596220333775984191691412558233438061248397074525660377441L, 65537L, 86459851563652350384550994520912595050627092587897749508172538776108095169113253171923656930465295425867586777734914833516983601607791279024819865791735409407082275562168885331872720365063141292194732294024919434643862338969598324336994436079024289458730635475133273691824108450263457154881428072573317615473L)
 
 
     def get_password(cls):
@@ -1620,15 +1619,12 @@ class DbPasswordUtil(object):
             return ""
 
         if len(coded) < 128:
+            # clear text
             return coded
 
-        from pyasm.security import CryptoKey
-        key = CryptoKey()
-        key.set_private_key(cls.PASSWORD_KEY)
+        # anything bigger is encrypted
+        return Common.unencrypt_password(coded)
 
-        password = key.decrypt(coded)
-
-        return password
     get_password = classmethod(get_password)
 
 
@@ -1638,11 +1634,7 @@ class DbPasswordUtil(object):
         if password == "__EMPTY__":
             coded = ""
         else:
-            from pyasm.security import CryptoKey
-            key = CryptoKey()
-            key.set_private_key(cls.PASSWORD_KEY)
-
-            coded = key.encrypt(password)
+            coded = Common.encrypt_password(password)
 
         Config.set_value("database", "password", coded)
 
