@@ -16,8 +16,6 @@ __all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResourc
 import os, types, sys
 import re, datetime
 
-from builtins import int
-
 try:
     import thread
 except:
