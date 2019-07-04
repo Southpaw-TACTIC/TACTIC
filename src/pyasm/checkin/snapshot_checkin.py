@@ -13,9 +13,9 @@
 
 __all__= ['SnapshotCheckin','SnapshotAppendCheckin']
 
-from file_checkin import *
 from pyasm.search import Search
-from checkin import CheckinException
+from .checkin import CheckinException
+from .file_checkin import *
 
 class SnapshotCheckin(FileCheckin):
     '''simple class to checkin a snapshot without files'''

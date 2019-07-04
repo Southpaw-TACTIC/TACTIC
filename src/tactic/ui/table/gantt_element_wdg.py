@@ -22,9 +22,10 @@ from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import Widget, DivWdg, SpanWdg, HtmlElement, WebContainer, Table
 from pyasm.widget import HiddenWdg, TextWdg, IconWdg
 from pyasm.biz import ExpressionParser
-
 from tactic.ui.widget import IconButtonWdg
-from subcontext_wdg import ProcessElementWdg
+
+from .subcontext_wdg import ProcessElementWdg
+
 import datetime
 from dateutil import rrule
 from dateutil import parser

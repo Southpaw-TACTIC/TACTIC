@@ -75,7 +75,7 @@ class WebContainer(Base):
 
     def push_buffer():
         # create a new buffer
-        from widget import Html
+        from .widget import Html
         buffer = Html()
         buffer_list = buffers[get_ident()]
         buffer_list.insert(0, buffer)

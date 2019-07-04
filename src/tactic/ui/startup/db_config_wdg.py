@@ -713,25 +713,13 @@ class DbConfigSaveCbk(Command):
 
     def restart_program(self):
         '''Restarts the current program.'''
-        import sys
-        python = sys.executable
-        # for windows
-        python = python.replace('\\','/')
-        if os.name =='nt':
-            import subprocess
-            subprocess.Popen([python, sys.argv])
-            pid = os.getpid()
-            kill = KillProcessThread(pid)
-            kill.start()
-        else:
-            os.execl(python, python, * sys.argv)
+        return Common.restart()
 
 
 
     def load_bootstrap(self):
         impl = DatabaseImpl.get()
         exists = impl.database_exists("sthpw")
-        print("exists: ", exists)
 
         vendor = impl.get_database_type()
 

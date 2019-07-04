@@ -17,7 +17,6 @@ __all__ = ["AddPredefinedColumnWdg", "SwitchLayoutMenu", "CellEditWdg", "CellWdg
 
 
 import types
-import random
 import re
 from pyasm.common import Environment, TacticException, Common, Container, Xml, Date, UserException, Config, jsonloads, jsondumps
 from pyasm.command import Command
@@ -41,7 +40,7 @@ from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.common import BaseConfigWdg
 
 
-import random, sys, traceback
+import sys, traceback
 
 
 
@@ -193,7 +192,7 @@ class SwitchLayoutMenu(object):
             '''
 
 
-        from layout_util import LayoutUtil
+        from .layout_util import LayoutUtil
 
         for i, view in enumerate(views):
             #data = LayoutUtil.get_layout_data(search_type=self.search_type, layout=view)

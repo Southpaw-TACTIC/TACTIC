@@ -15,9 +15,9 @@ __all__ = ['SessionBuilder']
 import os, sys
 from xml.dom.minidom import parseString
 
-from base_app_info import *
-from app_environment import AppEnvironment
-from application import AppException
+from .base_app_info import *
+from .app_environment import AppEnvironment
+from .application import AppException
 
 class SessionBuilder(object):
     '''builds a session from an execute xml document'''

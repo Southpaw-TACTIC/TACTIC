@@ -12,7 +12,7 @@
 __all__ = [ 'SimpleUploadWdg', 'UploadWdg', 'UploadProgressWdg' ]
 
 
-import os, shutil, string, types, random
+import os, shutil, string, types
 
 from pyasm.common import Container
 from pyasm.web import HtmlElement, DivWdg, SpanWdg, WebContainer, Widget, Table, WebContainer, StringWdg
@@ -385,7 +385,7 @@ class UploadProgressWdg(Widget):
 # TEST TEST TEST
 # Yet another uploader ... sigh
 
-from button_new_wdg import ActionButtonWdg
+from .button_new_wdg import ActionButtonWdg
 __all__.extend(["AppletUploader", "HtmlUploader"])
 
 

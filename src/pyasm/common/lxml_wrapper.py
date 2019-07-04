@@ -344,7 +344,10 @@ class Xml(Base):
 
     def get_xml(self):
         '''returns a stringified version of the document'''
-        return etree.tostring(self.doc, pretty_print=True)
+        value = etree.tostring(self.doc, pretty_print=True)
+        if isinstance(value, bytes):
+            value = value.decode()
+        return value
 
 
     def to_string(self, node=None, pretty=True, tree=False, method='xml', xml_declaration=False):

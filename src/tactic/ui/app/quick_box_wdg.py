@@ -14,8 +14,6 @@ __all__ = [ 'QuickBoxWdg', 'CustomQuickBoxWdg']
 import types
 import os
 
-import js_includes
-
 from pyasm.common import Container, Environment
 from pyasm.biz import Project
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer

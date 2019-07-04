@@ -14,7 +14,9 @@
 __all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
-import os, sys, time, string, re, random, types, pprint, traceback
+import os, sys, time, string, re, types, pprint, traceback
+
+
 try:
     import thread
 except:
@@ -27,14 +29,19 @@ except:
 
 import threading, zipfile
 import hashlib, urllib
+
 import datetime
 import colorsys
+import codecs
 
 import six
 basestring = six.string_types
 
+IS_Pv3 = sys.version_info[0] > 2
 
 from .base import Base
+
+from random import SystemRandom
 
 try:
     #from cjson import encode as jsondumps
@@ -77,6 +84,14 @@ except ImportError:
 
 
 class Common(Base):
+
+    IS_Pv3 = sys.version_info[0] > 2
+
+    def is_python3(cls):
+        return IS_Pv3
+    is_python3 = classmethod(is_python3)
+
+
 
     def get_next_sobject_code(sobject, column):
         '''Get the next code. When given an sobject, and a column, it gets the value of that
@@ -234,8 +249,9 @@ class Common(Base):
 
     def breakup_class_path(class_path):
         '''breaks up a class path into a module and class_name'''
-        parts = string.split(class_path,".")
-        module_name = string.join(parts[0:len(parts)-1],".")
+        parts = class_path.split(".")
+        #module_name = string.join(parts[0:len(parts)-1],".")
+        module_name = ".".join(parts[0:len(parts)-1])
         class_name = parts[len(parts)-1]
         return (module_name, class_name)
     breakup_class_path = staticmethod(breakup_class_path)
@@ -375,9 +391,29 @@ class Common(Base):
         if not digits:
             digits = 19
         num_digits = digits
-        key = os.urandom(num_digits / 2).encode('hex')
+        key = os.urandom(num_digits)
+        key = codecs.encode(key, "hex")
+        key = key[:num_digits]
+        try:
+            key = str(key, 'utf-8')
+        except:
+            pass
         return key
     generate_random_key = staticmethod(generate_random_key)
+
+
+    def randint(lower, upper):
+        # a cryptographically "secure" random integer
+        integer = SystemRandom().randrange(upper-lower)
+        integer += lower
+        return integer
+    randint = staticmethod(randint)
+
+    def randchoice(key):
+        num = len(key)
+        index = Common.randint(0, num)
+        return key[index]
+    randchoice = staticmethod(randchoice)
 
 
 
@@ -403,8 +439,10 @@ class Common(Base):
                 continue
             items.append(chr(idx))
 
+
         for i in range(0, num_digits):
-            idx = random.randint(0, len(items)-1)
+            upper = len(items) - 1
+            idx = SystemRandom().randrange(upper)
             if i and delimit and i % delimit == 0:
                 key += "-"
             key += items[idx]
@@ -515,6 +553,22 @@ class Common(Base):
     is_ascii = staticmethod(is_ascii)
 
 
+
+    def pathname2url(cls, path):
+        if not IS_Pv3:
+            if isinstance(path, unicode):
+                path = path.encode("utf-8")
+                path = urllib.pathname2url(path)
+        else:
+            path = urllib.request.pathname2url(path)
+
+        return path
+    pathname2url = classmethod(pathname2url)
+
+
+
+
+
     def download(url, to_dir=".", filename='', md5_checksum=""):
         '''Download a file from a given url
 
@@ -610,7 +664,7 @@ class Common(Base):
     def sort_dict(dct, reverse=False):
         ''' sort a dictionary based on its keys, 
             a list of sorted values is returned '''
-        keys = dct.keys()
+        keys = list(dct.keys())
         keys.sort(reverse=reverse)
         return map(dct.get, keys)
     sort_dict = staticmethod(sort_dict)
@@ -618,7 +672,7 @@ class Common(Base):
     def get_dict_list(dct):
         '''get a tuple sorted list given a dictionary'''
         keys = dct.keys()
-        keys.sort()
+        keys = sorted(keys)
         # value is str() to remove the u' in front of unicode str
         return [(x, dct[x]) for x in keys]
     get_dict_list = staticmethod(get_dict_list)
@@ -703,7 +757,11 @@ class Common(Base):
         elif os.path.isdir(dir):
             # this part is too slow
             if not skip_dir_details:
-                for (path, dirs, files) in os.walk(unicode(dir)):
+                if not Common.is_python3():
+                    walk = os.walk(unicode(dir))
+                else:
+                    walk = os.walk(dir)
+                for (path, dirs, files) in walk:
                     for file in files:
                         filename = os.path.join(path, file)
                         if os.path.islink(filename):
@@ -880,6 +938,14 @@ class Common(Base):
 
 
     def process_unicode_string( in_string ):
+
+        if IS_Pv3:
+            return in_string
+
+        # for Python 2.7
+        if not isinstance(in_string, unicode):
+            return in_string
+
         if isinstance(in_string, unicode):
             return in_string.encode('utf-8')
         elif isinstance(in_string, basestring):
@@ -954,7 +1020,8 @@ class Common(Base):
         second = float(int(second, 16) ) / 256
         third =  float(int(third, 16) ) / 256
 
-        if type(modifier) == types.ListType:
+        #if type(modifier) == types.ListType:
+        if isinstance(modifier, list):
             rgb = []
             rgb.append( 0.01*modifier[0] + first )
             rgb.append( 0.01*modifier[1] + second )
@@ -1288,27 +1355,34 @@ class Common(Base):
     kill = staticmethod(kill)
 
 
+    # Make into a tuple which is immutable
+    EXECUTABLE = (sys.executable, sys.argv[:])
 
-    def restart():
+    def restart(cls):
         '''Restarts the current program.'''
         import sys
-        python = sys.executable
-        # for windows
+        #python = sys.executable
         print("Restarting the process. . .")
         print("\n")
+
+        python = cls.EXECUTABLE[0]
+        args = cls.EXECUTABLE[1]
+
         python = python.replace('\\','/')
+
+        # for windows
         if os.name =='nt':
             import subprocess
             cmd_list = [python]
-            cmd_list.extend(sys.argv)
+            cmd_list.extend(args)
             subprocess.Popen(cmd_list)
  
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()
         else:
-            os.execl(python, python, * sys.argv)
-    restart = staticmethod(restart)
+            os.execl(python, python, *args )
+    restart = classmethod(restart)
 
 
 
@@ -1325,14 +1399,15 @@ class Common(Base):
         text = text.replace("]]>", "")
         #text = text.decode('utf-8')
 
-        encoding = "UTF8"
-        template = Template(text, output_encoding=encoding, input_encoding=encoding)
 
-
+        if IS_Pv3:
+            template = Template(text)
+        else:
+            encoding = "UTF-8"
+            template = Template(text, output_encoding=encoding, input_encoding=encoding)
 
         try:
             text = template.render(**kwargs)
-
 
             # we have to replace all & signs to &amp; for it be proper text
             text = text.replace("&", "&amp;")
@@ -1354,6 +1429,7 @@ class Common(Base):
     # any at all
     #
     PASSWORD_KEY = (95954739753557611717677953802022772164074845338566937775470833735856469435381956125590339095236470675423085325686058278198918822369603350495319710499101888408708913117761396293217495020971217519968381713929946123203701342525363284439548065832975303252596220333775984191691412558233438061248397074525660377441, 65537, 86459851563652350384550994520912595050627092587897749508172538776108095169113253171923656930465295425867586777734914833516983601607791279024819865791735409407082275562168885331872720365063141292194732294024919434643862338969598324336994436079024289458730635475133273691824108450263457154881428072573317615473)
+
     try:
         # Python 2.7 convert to longs
         PASSWORD_KEY = (

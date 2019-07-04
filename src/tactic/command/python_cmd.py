@@ -203,7 +203,7 @@ if __name__ == '__main__':
     cmd = PythonCmd(script_path='trigger/note')
     
     cmd.execute()
-    print time.time() - start
+    print(time.time() - start)
 
 
 

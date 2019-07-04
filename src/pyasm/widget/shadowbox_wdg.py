@@ -16,7 +16,7 @@ __all__ = ['ShadowBoxWdg', 'ModalBoxWdg', 'LayerWdg', 'OverlayWdg',
 
 from pyasm.web import Widget, DivWdg, SpanWdg, HtmlElement, StringWdg, WebContainer, BaseAppServer
 from pyasm.common import Container
-from icon_wdg import *
+from .icon_wdg import *
 
 
 

@@ -27,10 +27,10 @@ from pyasm.common import Common, Environment, TacticException
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 
-from misc_input_wdg import SearchTypeSelectWdg
-from upload_wdg import SimpleUploadWdg
-from button_new_wdg import ActionButtonWdg
-from swap_display_wdg import SwapDisplayWdg
+from .misc_input_wdg import SearchTypeSelectWdg
+from .upload_wdg import SimpleUploadWdg
+from .button_new_wdg import ActionButtonWdg
+from .swap_display_wdg import SwapDisplayWdg
 
 class CsvExportWdg(BaseRefreshWdg):
 

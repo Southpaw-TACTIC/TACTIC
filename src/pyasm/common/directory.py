@@ -17,6 +17,11 @@ import sys, os
 from .common import Common
 from .config import Config
 
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
+
 class Directory(object):
     '''Implementation of a virtual directory'''
 
@@ -94,7 +99,12 @@ class Directory(object):
         #### FIXME: HARD CODED
         ignore_dirs = ['.svn', 'backup']
 
-        for root, xdirs, files in os.walk(unicode(self.base_dir)):
+        if not IS_Pv3:
+            iteration = os.walk(unicode(self.base_dir))
+        else:
+            iteration = os.walk(self.base_dir)
+
+        for root, xdirs, files in iteration:
 
             if self.depth != -1:
                 test = root.replace(self.base_dir, "")

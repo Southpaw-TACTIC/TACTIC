@@ -26,6 +26,8 @@ from pyasm.security import Site
 
 from .project import Project
 
+import six
+basestring = six.string_types
 
 
 def get_expression_key():
@@ -67,6 +69,8 @@ class ExpressionParser(object):
         self.use_cache = True
 
 
+    # unfortunately, this function redefines list so, make a global
+    LIST = list
 
     def eval(self, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None, use_cache=None ):
 
@@ -92,8 +96,7 @@ class ExpressionParser(object):
             #self.is_single = False
             sobjects = []
      
-        elif type(sobjects) != types.ListType:
-            #self.is_single = True
+        elif not isinstance(sobjects, self.LIST):
             sobjects = [sobjects]
       
 
@@ -152,13 +155,16 @@ class ExpressionParser(object):
         # replace all of the variables: Note that this replaces even in the
         # string area ... not sure if this is what we want
         keys = self.vars.keys()
-        keys.sort()
+        keys = sorted(keys)
         keys.reverse()
-        #for name, value in self.vars.items():
         for name in keys:
 
             value = self.vars.get(name)
-            new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
+            try:
+                new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
+            except:
+                new_value = "'%s'" % str(value) # python 3 
+
             # HACK: replace with the single quotes first.  Not elegant, but
             # it works for now until we have real variables
             self.expression = re.sub("'\$%s'"%name, new_value, self.expression)
@@ -204,13 +210,13 @@ class ExpressionParser(object):
 
         self.dive(new_parser)
         Container.put("Expression::extra_filters", None)
-        if self.is_single and type(self.result) == types.ListType: 
+        if self.is_single and isinstance(self.result, self.LIST):
             if self.result:
                 return self.result[0]
             else:
                 # for single, should return None
                 return None
-        elif list and type(self.result) != types.ListType:
+        elif list and not isinstance(self.result, self.LIST):
             return [self.result]
         else:
             return self.result
@@ -613,8 +619,8 @@ class StringMode(ExpressionParser):
         if token == '{':
             mode = ExpressionMode()
             result = self.dive(mode)
-            # FIXME: for now, take the first element
-            if type(result) == types.ListType:
+            # NOTE:: for now, take the first element
+            if isinstance(result, list):
                 if not result:
                     result = ''
                 else:
@@ -635,7 +641,7 @@ class StringMode(ExpressionParser):
                     except Exception as e:
                         raise SyntaxError("Error when using format [%s] on datetime result [%s] in expression [%s]: [%s]" % (format, result, self.expression, str(e)))
 
-                # FIXME: does this make sense??
+                # NOTE: does this make sense??
                 # if it is a timedelta, convert to seconds for
                 # formatting
                 elif isinstance(result, datetime.timedelta):
@@ -911,7 +917,7 @@ class ExpressionMode(ExpressionParser):
         # build the expression for each element
         num_elements = 0
         for item in stack:
-            if type(item) == types.ListType:
+            if isinstance(item, list):
                 num_elements = len(item)
         if num_elements == 0:
             num_elements = 1
@@ -922,7 +928,7 @@ class ExpressionMode(ExpressionParser):
             if i % 2 == 1:
                 continue
 
-            if type(item) == types.ListType:
+            if isinstance(item, list):
                 if len(item) == 0:
                     continue
                 else:
@@ -931,10 +937,10 @@ class ExpressionMode(ExpressionParser):
             if item in [None, '']:
                 continue
 
-            if type(item) == types.FloatType:
+            if isinstance(item, float):
                 default = 0.0
                 break
-            elif type(item) == types.IntType:
+            elif isinstance(item, int):
                 default = 0
                 break
             elif isinstance(item, datetime.datetime):
@@ -970,7 +976,7 @@ class ExpressionMode(ExpressionParser):
             elements = []
             for item in stack:
 
-                if type(item) == types.ListType:
+                if isinstance(item, list):
                     if len(item) == 0:
                         value = default
                     else:
@@ -999,7 +1005,7 @@ class ExpressionMode(ExpressionParser):
             for i, element in enumerate(elements):
                 if i % 2 == 1:
                     continue
-                if type(element) in types.StringTypes:
+                if isinstance(element, basestring):
                     has_string = True
                     break
  
@@ -1019,7 +1025,7 @@ class ExpressionMode(ExpressionParser):
                         continue
 
                     # some hacky process to make different types work.
-                    if type(element) == types.BooleanType:
+                    if isinstance(element, bool):
                         if element == True:
                             element = 'True'
                         elif element == False:
@@ -1077,13 +1083,13 @@ class ExpressionMode(ExpressionParser):
         left = stack[0]
         right = stack[2]
 
-        if type(left) != types.ListType:
+        if not isinstance(left, list):
             value = left
             left = []
             for i in range(0, len(right)):
                 left.append(value)
 
-        if type(right) != types.ListType:
+        if not isinstance(right, list):
             value = right
             right = []
             for i in range(0, len(left)):
@@ -1258,7 +1264,7 @@ class MethodMode(ExpressionParser):
                     sobjects = self.get_flat_cache()
 
                 # it is possible that get_sobjects just returns a number
-                if type(sobjects) == types.IntType:
+                if isinstance(sobjects, int):
                     results = sobjects
                 else:
                     results = self.count(sobjects)
@@ -1290,7 +1296,7 @@ class MethodMode(ExpressionParser):
                     # evaluate expression
                     mode = ExpressionMode()
                     arg_results = self.dive(mode, expression=arg)
-                    if type(arg_results) == types.ListType:
+                    if isinstance(arg_results, list):
                         results = 0
                         for arg_result in arg_results:
                             if arg_result:
@@ -1396,7 +1402,7 @@ class MethodMode(ExpressionParser):
 
                 # FIXME: should this not always return an array
                 results = []
-                if type(arg_results) == types.ListType:
+                if isinstance(arg_results, list):
                     for arg_result in arg_results:
                         result = math.floor(arg_result)
                         results.append(result)
@@ -1466,7 +1472,7 @@ class MethodMode(ExpressionParser):
             expression = args[0]
             mode = self.get_mode(expression)
             result = self.dive(mode, expression=expression)
-            if type(result) == types.ListType and result:
+            if isinstance(result, list) and result:
                 result = result[0]
             if result:
                 expression = args[1]
@@ -1481,7 +1487,7 @@ class MethodMode(ExpressionParser):
                     results = None
 
         elif method == 'CASE':
-            for i in xrange(0, len(args), 2):
+            for i in range(0, len(args), 2):
                 expression = args[i]
                 value_expr = args[i+1]
                 mode = self.get_mode(expression)
@@ -1489,7 +1495,7 @@ class MethodMode(ExpressionParser):
 
                 # NOTE: single assumption
                 # if the returned value is a list, then take the first one
-                if type(result) == types.ListType:
+                if isinstance(result, list):
                     result = result[0]
 
                 if result:
@@ -2312,24 +2318,29 @@ class MethodMode(ExpressionParser):
                         count = search.get_count()
                         return count
 
+                    if self.sobjects and len(related_types) == 1 and related_type == self.sobjects[0].get_base_search_type():
+                        # this handles the specific case where there is only
+                        # related type that is the same as the passed in sobjects
+                        list = self.sobjects
 
-                    tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=self.show_retired)
+                    else:
+                        tmp_dict = Search.get_related_by_sobjects(related_sobjects, related_type, filters=filters, path=path, show_retired=self.show_retired)
 
-                    # collapse the list and make it unique
-                    tmp_list = []
-                    for tmp_key, items in tmp_dict.items():
-                        tmp_list.extend(items)
-                        self.cache_sobjects(tmp_key, items)
+                        # collapse the list and make it unique
+                        tmp_list = []
+                        for tmp_key, items in tmp_dict.items():
+                            tmp_list.extend(items)
+                            self.cache_sobjects(tmp_key, items)
 
 
-                    list = []
-                    ids = set()
-                    for sobject in tmp_list:
-                        sobject_id = sobject.get_id()
-                        if unique and sobject_id in ids:
-                            continue
-                        list.append(sobject)
-                        ids.add(sobject_id)
+                        list = []
+                        ids = set()
+                        for sobject in tmp_list:
+                            sobject_id = sobject.get_id()
+                            if unique and sobject_id in ids:
+                                continue
+                            list.append(sobject)
+                            ids.add(sobject_id)
 
             """
             else:
@@ -2449,7 +2460,7 @@ class MethodMode(ExpressionParser):
             value = sobject.get_value(column, no_exception=True)
             if not value:
                 continue
-            if type(value) in types.StringTypes:
+            if isinstance(value, basestring):
                 try:
                     value = float(value)
                 except:

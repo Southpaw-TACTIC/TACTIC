@@ -23,6 +23,10 @@ TZLOCAL = tzlocal()
 TZUTC = tzutc()
 TZGMT = gettz('GMT')
 
+import six
+basestring = six.string_types
+
+
 class SPTDate(object):
 
     def now(cls):

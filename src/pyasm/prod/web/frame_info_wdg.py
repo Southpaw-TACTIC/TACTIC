@@ -22,8 +22,6 @@ from pyasm.biz import Snapshot, File, FileGroup
 import os
 
 
-from version_history_wdg import *
-
 
 class IFrameLink(BaseTableElementWdg):
 
@@ -201,7 +199,7 @@ class FrameRangeWdg(BaseTableElementWdg):
         frame_start = sobject.get_value(attr)
         try:
             return int(frame_start)
-        except ValueError, e:
+        except ValueError as e:
             return 1     
     
     def _get_frame_handles(self, sobject):

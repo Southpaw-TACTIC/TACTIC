@@ -17,7 +17,7 @@ import os, sys, re
 from pyasm.common import Environment, System
 from pyasm.biz import File
 from pyasm.search import FileUndo
-from checkin import CheckinException
+from .checkin import CheckinException
 
 class BaseRepo(object):
     '''abstract class defining repositories'''

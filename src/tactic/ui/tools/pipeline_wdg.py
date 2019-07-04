@@ -34,8 +34,10 @@ from tactic.ui.container import DialogWdg, TabWdg, SmartMenu, Menu, MenuItem, Re
 from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
 from tactic.ui.input import TextInputWdg, ColorInputWdg, LookAheadTextInputWdg
 from tactic.ui.panel import DocumentWdg, DocumentItemWdg, DocumentSaveCmd
-from pipeline_canvas_wdg import PipelineCanvasWdg
+
 from client.tactic_client_lib import TacticServerStub
+
+from .pipeline_canvas_wdg import PipelineCanvasWdg
 
 class PipelineToolWdg(BaseRefreshWdg):
     '''This is the entire tool, including the sidebar and tabs, used to

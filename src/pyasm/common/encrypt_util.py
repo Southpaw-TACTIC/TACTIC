@@ -12,7 +12,7 @@
 from __future__ import with_statement
 __all__ = ['EncryptUtil']
 
-import os, random, struct, hashlib
+import os, struct, hashlib
 from Crypto.Cipher import AES
 
 # Repurposed from:
@@ -52,7 +52,7 @@ class EncryptUtil(object):
         if not out_filename:
             out_filename = in_filename + '.enc'
 
-        iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
+        iv = ''.join(chr(Common.randint(0, 0xFF)) for i in range(16))
         encryptor = AES.new(key, AES.MODE_CBC, iv)
         filesize = os.path.getsize(in_filename)
 

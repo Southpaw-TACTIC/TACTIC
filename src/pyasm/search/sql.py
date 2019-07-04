@@ -25,12 +25,13 @@ except:
 
 from threading import Lock
 
-from pyasm.common import Config, TacticException, Environment
+from pyasm.common import Container, Config, TacticException, Environment
 from dateutil.tz import *
 
 import six
 basestring = six.string_types
 
+IS_Pv3 = sys.version_info[0] > 2
 
 
 # import database libraries
@@ -863,10 +864,15 @@ class Sql(Base):
         except self.pgdb.ProgrammingError as e:
             if str(e).find("already exists") != -1:
                 return
-            if isinstance(query, unicode):
-                wrong_query = query.encode('utf-8')
+
+            if sys.version_info[0] < 3:
+                if isinstance(query, unicode):
+                    wrong_query = query.encode('utf-8')
+                else:
+                    wrong_query = unicode(query, errors='ignore').encode('utf-8')
             else:
-                wrong_query = unicode(query, errors='ignore').encode('utf-8')
+                # python 3 does not need to do any encodeing
+                wrong_query = query
 
             print("Error with query (ProgrammingError): ", self.database_name, wrong_query)
             print(str(e))
@@ -972,7 +978,8 @@ class Sql(Base):
             value = value.replace("'", "''")
         elif isinstance(value, int):
             value = str(value)
-        elif value_type == types.BooleanType:
+        #elif value_type == types.BooleanType:
+        elif isinstance(value_type, bool):
             if value == True:
                 value = "1"
             else:
@@ -982,7 +989,8 @@ class Sql(Base):
             value = value.replace("'", "''")
         elif value_type == types.MethodType:
             raise SqlException("Value passed in was an <instancemethod>")
-        elif value_type in [types.FloatType, types.IntType]:
+        #elif value_type in [types.FloatType, types.IntType]:
+        elif isinstance(value_type, (float, int)):
             pass
         elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
             value = str(value)
@@ -1578,7 +1586,7 @@ class DbContainer(Base):
     def remove(database_name):
         '''remove a connection to the database'''
         sql_dict = DbContainer._get_sql_dict()
-        if sql_dict.has_key(database_name):
+        if database_name in sql_dict:
             sql_dict[database_name].close()
             del sql_dict[database_name]
     remove = staticmethod(remove)
@@ -2452,7 +2460,7 @@ class Select(object):
 
         count = 1
         for value in values:
-            if type(value) in types.StringTypes:
+            if isinstance(value, basestring):
                 value = "'%s'" % value
             expr.append( "WHEN %s THEN %d " % (value, count) )
             count += 1
@@ -3013,8 +3021,11 @@ class Insert(object):
         self.impl.preprocess_sql(self.data, self.unquoted_cols)
 
         # quote the values
-        values = self.data.values()
-        cols = self.data.keys()
+        cols = list(self.data.keys())
+        cols.sort()
+        values = []
+        for col in cols:
+            values.append(self.data.get(col))
 
         #if not cols:
         #    # add an empty row
@@ -3075,13 +3086,14 @@ class Insert(object):
 
         for x in statement:
             if isinstance(x, str):
-                x = x.decode('string_escape')
-
                 #if os.name != 'nt':
                 try:
+                    x = x.decode('string_escape')
                     x = x.decode('utf-8')
                 except UnicodeDecodeError as e:
                     x = x.decode('iso-8859-1')
+                except:
+                    pass # python 3 does need not decode
 
                 # this only works in Linux can causes error with windows xml parser down the road
                 #x = unicode(x, encoding='utf-8')
@@ -3194,6 +3206,10 @@ class Update(object):
         if value == None:
             value = 'NULL'
             quoted = False
+
+        if IS_Pv3 and isinstance(value, bytes):
+            value = value.decode()
+
 
         if not column_type and self.sql:
             # get column type from database
@@ -3312,8 +3328,8 @@ class Update(object):
 
 
         # quote the values
-        values = self.data.values()
-        cols = self.data.keys()
+        values = list(self.data.values())
+        cols = list(self.data.keys())
 
         quoted_values = []
 
@@ -3444,7 +3460,7 @@ class CreateTable(Base):
 
         from pyasm.biz import Project
         if search_type:
-            from search import SearchType
+            from .search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)
@@ -3675,7 +3691,7 @@ class DropTable(Base):
 
         self.search_type = search_type
         # derive db from search_type_obj
-        from search import SearchType
+        from .search import SearchType
         from pyasm.biz import Project
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
 
@@ -3740,7 +3756,7 @@ class AlterTable(CreateTable):
         """
         self.search_type = search_type
         # derive db from search_type_obj
-        from search import SearchType
+        from .search import SearchType
         search_type_obj = SearchType.get(search_type)
         self.database = search_type_obj.get_database()
         """
@@ -3753,7 +3769,7 @@ class AlterTable(CreateTable):
         self.drop_columns.append(name)
 
     def verify_table(self):
-        from search import SearchType
+        from .search import SearchType
         if not self.table and self.search_type:
             search_type_obj = SearchType.get(self.search_type)
             self.table = search_type_obj.get_table()
@@ -3862,12 +3878,11 @@ class CreateView(Base):
 
         from pyasm.biz import Project
         if search_type:
-            from search import SearchType
+            from .search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             self.view = search_type_sobj.get_table()
 
-            from search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)

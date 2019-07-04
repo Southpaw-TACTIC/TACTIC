@@ -13,10 +13,16 @@
 
 __all__ = ['BaseAppInfo', 'TacticException', 'Common']
 
-import cStringIO, os, sys, urllib, xmlrpclib, re
+import os, sys, urllib, re
 from xml.dom.minidom import parseString
 
-from upload_multipart import UploadMultipart
+try:
+    import xmlrpclib
+except:
+    from xmlrpc import client as xmlrpclib
+
+
+from .upload_multipart import UploadMultipart
 
 HAS_MD5 = True
 try:
@@ -210,7 +216,7 @@ class BaseAppInfo(object):
         file.close()
 
     def report_error(self, exception):
-        print "Error: ", exception
+        print("Error: ", exception)
         path = "%s/error.txt" % self.get_tmpdir()
         file = open(path, "w")
         
@@ -221,7 +227,7 @@ class BaseAppInfo(object):
         self.upload(path)
         
     def report_warning(self, label, warning, upload=False, type=''):
-        print "warning: ", warning
+        print("warning: ", warning)
         path = "%s/warning.txt" % self.get_tmpdir()
         if label and warning:
             file = open(path, "a")
@@ -241,8 +247,8 @@ class BaseAppInfo(object):
 
     def upload(self, from_path):
 
-        print "DEPRECATED"
-        print "uploading: ", from_path
+        print("DEPRECATED")
+        print("uploading: ", from_path)
 
         ticket = self.get_ticket()
         upload_server = self.get_upload_server()
@@ -255,45 +261,12 @@ class BaseAppInfo(object):
         return
 
 
-        '''
-        file = open(from_path, "rb")
-        buffer_size = 1024*1024
-        iteration = 0
-        while 1:
-            contents = file.read(buffer_size)
-            if contents == "":
-                break
-
-            # create a buffer with the contents
-            buffer = cStringIO.StringIO()
-            buffer.write("file=%s\n" % from_path)
-            if iteration == 0:
-                buffer.write("action=create\n")
-            else:
-                buffer.write("action=append\n")
-
-            ticket = self.get_ticket()
-            buffer.write("ticket=%s\n" % ticket)
-            buffer.write("EOF\n")
-            buffer.write(contents)
-
-            f = urllib.urlopen(upload_server, buffer.getvalue() )
-            response = f.readlines()
-            f.close()
-            print response
-
-            iteration += 1
-
-        file.close()
-        '''
-
-
 
 
 
     def download(self, url, to_dir="", md5_checksum=""):
 
-        print "DEPRECATED"
+        print("DEPRECATED")
 
         filename = os.path.basename(url)
 
@@ -325,7 +298,7 @@ class BaseAppInfo(object):
 
                 # only return if the md5 checksums are the same
                 if md5_checksum == md5_local:
-                    print "skipping '%s', already exists" % to_path
+                    print("skipping '%s', already exists" % to_path)
                     return to_path
 
         f = urllib.urlopen(url)
@@ -335,25 +308,25 @@ class BaseAppInfo(object):
         f.close()
 
         """
-        print "starting download"
+        print("starting download")
         try:
             file = open(to_path, "wb")
             req = urllib2.urlopen(url)
             try:
                 while True:
                     buffer = req.read(1024*100)
-                    print "read: ", len(buffer)
+                    print("read: ", len(buffer))
                     if not buffer:
                         break
                     file.write( buffer )
             finally:
-                print "closing ...."
+                print("closing ....")
                 req.close()
                 file.close()
         except urllib2.URLError as e:
             raise Exception('%s - %s' % (e,url))
 
-        print "... done download"
+        print("... done download")
         """
 
 
@@ -399,10 +372,10 @@ class Common(object):
                 _winreg.CloseKey(y)
                 _winreg.CloseKey(x)
             except OSError as e:
-                print "Registry Key not found."
+                print("Registry Key not found.")
                 return 
             except WindowsError as e:
-                print str(e)
+                print(str(e))
                 return
         
             # This part is too error-prone, like fail to import win32gui
@@ -417,7 +390,7 @@ class Common(object):
             res1, res2 = win32gui.SendMessageTimeout(HWND_BROADCAST,\
                     WM_SETTINGCHANGE, 0, sParam, SMTO_ABORTIFHUNG, 100)
             if  not res1:
-                print ("result %s, %s from SendMessageTimeout" % (bool(res1), res2))
+                print("result %s, %s from SendMessageTimeout" % (bool(res1), res2))
             '''
     set_sys_env = staticmethod(set_sys_env)
 
@@ -499,7 +472,7 @@ class Common(object):
             f.close()
             return md5_checksum
         except IOError as e:
-            print "WARNING: error getting md5 on [%s]: " % path, e
+            print("WARNING: error getting md5 on [%s]: " % path, e)
             return None
     get_md5 = staticmethod(get_md5)  
 

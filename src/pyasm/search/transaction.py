@@ -19,6 +19,9 @@ import os, time, codecs
 
 from pyasm.common import *
 
+import six
+basestring = six.string_types
+
 
 class TransactionException(Exception):
     pass
@@ -162,7 +165,7 @@ class Transaction(Base):
         assert self.counter == 0
 
         # commit all of the transaction items
-        from sql import SqlException
+        from .sql import SqlException
         for transaction_obj in self.transaction_objs:
             try:
                 transaction_obj.commit()
@@ -249,7 +252,8 @@ class Transaction(Base):
         db_name = database.get_database_name()
 
         # if the database is listed, then ignore it
-        if self.databases.has_key(db_name):
+        #if self.databases.has_key(db_name):
+        if db_name in self.databases:
             return
 
         # start a transaction in the database
@@ -371,7 +375,7 @@ class Transaction(Base):
             self.transaction_log.set_value("description", self.description)
             self.transaction_log.commit()
         else:
-            from transaction_log import TransactionLog
+            from .transaction_log import TransactionLog
             self.transaction_log = TransactionLog.create( \
                 self.command_class, xml_string, self.description, self.title )
 
@@ -1472,7 +1476,7 @@ class AlterTableUndo(Base):
         Xml.set_attribute(sobject_node,"column",column)
 
        
-        from sql import DbContainer
+        from .sql import DbContainer
         from pyasm.biz import Project
         project = Project.get_by_code(database)
         # FIXME: for now, make database == project

@@ -34,17 +34,17 @@ from pyasm.biz import Schema
 from pyasm.web import *
 
 from tactic.command import Scheduler, SchedulerTask
-from input_wdg import *
-from shadowbox_wdg import *
-from icon_wdg import *
+from .input_wdg import *
+from .shadowbox_wdg import *
+from .icon_wdg import *
 from pyasm.checkin import FileCheckin
 from pyasm.search import SObject, SearchType, TransactionLog, SearchKey, Search
 from pyasm.biz import Project, PrefSetting
-from widget_config import WidgetConfigView
+from .widget_config import WidgetConfigView
 from pyasm.search import ExceptionLog
 from pyasm.prod.biz import ProdSetting
 from pyasm.common import jsonloads
-import random, os, re
+import os, re
 
 
 class PyMayaInit(Widget):
@@ -735,7 +735,7 @@ class SwapDisplayWdg(HtmlElement):
         self.add(self.off_wdg,"div2")
 
         # generate a random reference number
-        ref_count = random.randint(0,10000)
+        ref_count = Common.randint(0,10000)
         self.swap1_id = "swap_%s" % str(ref_count)
         self.swap2_id = "swap_%s" % str(ref_count+1)
 
@@ -3100,7 +3100,7 @@ class FileUploadUpdateWdg(AjaxWdg):
         try:
             f = open(path, 'r')
             file_size = f.readline()
-            print "file size ",file_size
+            print("file size ",file_size)
             if file_size:
                 file_size = float(file_size)/ 1048576
                 file_size = '%.2f' %file_size
@@ -3247,7 +3247,7 @@ class ExceptionWdg(Widget):
         pat1 = re.compile('Errno 1|Errno 3|Errno 4')
         pat2 = re.compile('Errno 2')
         pat3 = re.compile('SELECT')
-        from icon_wdg import IconWdg
+        from .icon_wdg import IconWdg
         h3 = DivWdg()
         h3.add(IconWdg("Error: %s" % message, IconWdg.WARNING, False))
         h3.add("TACTIC has encountered an error.<br/><br/>")

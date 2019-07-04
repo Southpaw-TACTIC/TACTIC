@@ -18,6 +18,9 @@ import datetime
 
 from pyasm.common import Environment, SetupException, Config, Container, TacticException, SPTDate
 
+import six
+basestring = six.string_types
+
 
 class DatabaseImplException(TacticException):
     pass
@@ -278,7 +281,7 @@ class DatabaseImpl(DatabaseImplInterface):
         try:
             db_resource = database
             #from pyasm.search import DbContainer, DbResource
-            from sql import DbContainer, DbResource
+            from .sql import DbContainer, DbResource
             if isinstance(database, basestring):
                 if host == None:
                     vendor = Config.get_value("database", "vendor")
@@ -334,7 +337,7 @@ class DatabaseImpl(DatabaseImplInterface):
             return cached
 
         table_info = self.get_table_info(db_resource)
-        if table_info.has_key(table):
+        if table in table_info:
             exists = True
         else:
             exists = False
@@ -599,7 +602,12 @@ class DatabaseImpl(DatabaseImplInterface):
         columns = []
         for description in sql.description:
             # convert to unicode
-            value = description[0].decode('utf-8')
+            value = description[0]
+            try:
+                value = value.decode('utf-8')
+            except:
+                # python 3 has no decode function on strings
+                pass
             columns.append(value)
 
         return columns
@@ -643,7 +651,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
     def can_search_types_join(search_type1, search_type2):
-        from search import SearchType
+        from .search import SearchType
         db_resource = SearchType.get_db_resource_by_search_type(search_type1)
         db_resource2 = SearchType.get_db_resource_by_search_type(search_type2)
         can_join = DatabaseImpl.can_join(db_resource, db_resource2)
@@ -671,7 +679,7 @@ class BaseSQLDatabaseImpl(DatabaseImpl):
             parts = column.split("->")
             column = parts[0]
 
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get(db_resource)
         columns = sql.get_columns(table)
         if column in columns:
@@ -700,7 +708,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
     def get_version(self):
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get("sthpw")
         result = sql.do_query("select @@version")
 
@@ -934,7 +942,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     # in the table to provide a MAX id value from.  TODO: provide handling for a table with no data rows.
     def get_reset_table_sequence_statement(self, table, database=None):
 
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get(database)
 
         query = "SELECT MAX(id) + 1 FROM %s ;" % table
@@ -1258,7 +1266,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         # if the database does not exist, do nothing
         #if not database_exists(database):
         #    return
-        from sql import DbResource, DbContainer
+        from .sql import DbResource, DbContainer
         if DbResource.is_instance(db_resource):
             database = db_resource.get_database()
         else:
@@ -1353,7 +1361,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def import_default_data(self, db_resource, type):
         '''import the data of certain type to the given database'''
 
-        from sql import DbResource, DbContainer
+        from .sql import DbResource, DbContainer
         if isinstance(db_resource, DbResource):
             database = db_resource.get_database()
         else:
@@ -1386,7 +1394,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             cache_dict = {}
             Container.put(key, cache_dict)
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             key2 = "%s" % (db_resource.get_db_resource())
         else:
@@ -1396,7 +1404,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             return cache
 
 
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         sql = DbContainer.get(db_resource)
 
         statement = 'SELECT * from sys.Tables'
@@ -1414,7 +1422,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def get_column_info(cls, db_resource, table, use_cache=True):
         '''SQLServer: get column info like data types, is_nullable in a dict'''
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             prefix = "%s" % db_resource.get_db_resource()
         else:
@@ -1454,7 +1462,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
         # get directly from the database
-        from sql import DbContainer
+        from .sql import DbContainer
         # get directly from the database
         if isinstance(db_resource, Sql):
             sql = db_resource
@@ -1540,7 +1548,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         stmt = 'if @@TRANCOUNT > 0 SAVE TRANSACTION %s'%name
         return stmt
         """
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get(database)
         query = 'SAVE TRANSACTION %s'%name
         sql.execute(query)
@@ -1560,7 +1568,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def get_columns(cls, db_resource, table):
         '''SQLServer get ordered column names'''
         
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get(db_resource)
 
         statement = "EXEC sp_columns @table_name = '%s'"%table
@@ -1603,7 +1611,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return "PostgreSQL"
 
     def get_version(self):
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get("sthpw")
         result = sql.do_query("select version()")
         version_str = result[0][0]
@@ -1774,7 +1782,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     # in the table to provide a MAX id value from.  TODO: provide handling for a table with no data rows.
     def get_reset_table_sequence_statement(self, table, database=None):
 
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get(database)
 
         query = "SELECT MAX(id) + 1 FROM %s ;" % table
@@ -1838,7 +1846,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     # 
     def _get_db_info(self, db_resource, host=None, port=None):
         ''' get the database info from the config file if db_resource object is not given. e.g. during install'''
-        from sql import DbResource
+        from .sql import DbResource
         if isinstance(db_resource, DbResource):
             host = db_resource.get_host()
             user = db_resource.get_user()
@@ -1886,14 +1894,15 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         db_resource = DbResource.get_default(database)
 
         create = 'createdb %s -E UNICODE "%s"' % (self._get_db_info(db_resource), database)
+        print("create: ", create)
         cmd = os.popen(create)
         result = cmd.readlines()
+        cmd.close()
+
         # Psql 8.3 doesn't have outputs on creation
         if not result:
-            print("no output, assumed success")
             return
             #raise Exception("Error creating database '%s'" % database)
-        cmd.close()
         
         
 
@@ -1913,7 +1922,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         # if the database already exists, do nothing
         if not self.database_exists(db_resource):
             return
-        from sql import DbResource, DbContainer, Sql
+        from .sql import DbResource, DbContainer, Sql
 
         if isinstance(db_resource, DbResource):
             database = db_resource.get_database()
@@ -1997,7 +2006,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     def import_default_data(self, db_resource, type):
         '''import the data of certain type to the given database'''
 
-        from sql import DbResource, DbContainer
+        from .sql import DbResource, DbContainer
         if isinstance(db_resource, DbResource):
             database = db_resource.get_database()
         else:
@@ -2019,7 +2028,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
     def get_constraints(self, db_resource, table):
         '''Get contraints primarily UNIQUE for PostgreSQL'''
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         constraints = []
         try:
             db = DbContainer.get(db_resource)
@@ -2063,7 +2072,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             Container.put(key, cache_dict)
 
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             key2 = "%s" % (db_resource.get_db_resource())
         else:
@@ -2076,7 +2085,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         cache_dict[key2] = info
 
 
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         sql = DbContainer.get(db_resource)
 
         statement = '''SELECT tablename FROM pg_tables
@@ -2469,7 +2478,7 @@ class OracleImpl(PostgresImpl):
             else:
                 database_name = database.get_database()
 
-            from sql import Select, DbContainer
+            from .sql import Select, DbContainer
             sql = DbContainer.get(database)
             select = Select()
             select.set_database(sql)
@@ -2500,7 +2509,7 @@ class OracleImpl(PostgresImpl):
     def get_column_description(self, database, table):
         '''NOTE: this is not very useful in postgres, use get_column_info()
            instead'''
-        from sql import DbContainer, Sql, Select
+        from .sql import DbContainer, Sql, Select
         sql = DbContainer.get(database)
 
         select = Select()
@@ -2609,7 +2618,7 @@ class OracleImpl(PostgresImpl):
 
 
     def postprocess_sql(self, statement):
-        from sql import Sql
+        from .sql import Sql
         if not self.plsql_vars:
             return statement
 
@@ -2766,7 +2775,7 @@ class SqliteImpl(PostgresImpl):
 
     """
     def get_version(self):
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get("sthpw")
         result = sql.do_query("select version()")
         version_str = result[0][0]
@@ -3011,7 +3020,7 @@ class SqliteImpl(PostgresImpl):
             Container.put(key, cache_dict)
 
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             key2 = "%s:%s" % (db_resource.get_db_resource(), table)
         else:
@@ -3081,7 +3090,7 @@ class SqliteImpl(PostgresImpl):
             Container.put(key, cache_dict)
 
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             key2 = "%s" % (db_resource.get_db_resource())
         else:
@@ -3116,7 +3125,7 @@ class SqliteImpl(PostgresImpl):
         # FIXME: this only works with Sqlite!!!
         # FIXME: this only works with Sqlite!!!
 
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         db = DbContainer.get(db_resource)
         statement = '''SELECT sql FROM sqlite_master where name='%s';''' % table
         results = db.do_query(statement)
@@ -3166,7 +3175,7 @@ class MySQLImpl(PostgresImpl):
 
 
     def get_version(self):
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get("sthpw")
 
         # eg. result is (('5.1.47',),)
@@ -3221,7 +3230,7 @@ class MySQLImpl(PostgresImpl):
             cache_dict = {}
             Container.put(key, cache_dict)
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             key2 = "%s" % (db_resource.get_db_resource())
         else:
@@ -3239,7 +3248,7 @@ class MySQLImpl(PostgresImpl):
         else:
             database_name = db_resource
 
-        from sql import Select, DbContainer
+        from .sql import Select, DbContainer
         sql = DbContainer.get(db_resource)
         statement = '''SHOW TABLES FROM "%s"''' % database_name
         results = sql.do_query(statement)
@@ -3259,7 +3268,7 @@ class MySQLImpl(PostgresImpl):
             Container.put(key, cache_dict)
 
 
-        from sql import DbContainer, Sql
+        from .sql import DbContainer, Sql
         if isinstance(db_resource, Sql):
             key2 = "%s:%s" % (db_resource.get_db_resource(), table)
         else:
@@ -3272,7 +3281,7 @@ class MySQLImpl(PostgresImpl):
         cache_dict[key2] = dict
 
         # get directly from the database
-        from sql import DbContainer
+        from .sql import DbContainer
         sql = DbContainer.get(db_resource)
         query = '''SHOW COLUMNS FROM "%s"''' % table
         results = sql.do_query(query)
@@ -3518,7 +3527,7 @@ class MySQLImpl(PostgresImpl):
     # 
     def create_database(self, database):
         '''create a database'''
-        from sql import DbContainer, DbResource
+        from .sql import DbContainer, DbResource
         db_resource = DbResource.get_default("")
 
         if not isinstance(database, basestring):

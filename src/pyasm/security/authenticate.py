@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate']
+__all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate', 'LdapADAuthenticate']
 
 import hashlib
 
@@ -98,6 +98,7 @@ class TacticAuthenticate(Authenticate):
             #iter_code = 'D'
             encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
         else:
+            # kept here for backwards compatibility
             encrypted = hashlib.md5(password).hexdigest()
 
         # encrypt and check the password
@@ -117,12 +118,12 @@ class TacticAuthenticate(Authenticate):
             encrypted = hashlib.md5(password).hexdigest()
 
         login.set_value("password", encrypted)
-        
+
 
     # DEPRECATED
     def authenticate(self, login, password):
         raise Exception("TacticAuthenticate.authenticate() is DEPRECATED")
-        
+
         # encrypt and check the password
         encrypted = hashlib.md5(password).hexdigest()
 
@@ -162,4 +163,43 @@ class LdapAuthenticate(Authenticate):
 
 
 
+class LdapADAuthenticate(Authenticate):
+    '''Authenticate using LDAP Active Directory logins'''
+
+    def verify(self, login_name, password):
+
+        import ldap
+
+        server = Config.get_value("security", "ldap_server")
+        bind_dn = Config.get_value("security", "bind_dn")
+        bind_password = Config.get_value("security", "bind_password")
+        base_dn = Config.get_value("security", "base_dn")
+
+        scope = ldap.SCOPE_SUBTREE
+        filter = "(&(objectClass=*)(sAMAccountName=%s))" % login_name
+        attrs = ['*']
+
+
+        try:
+            l = ldap.initialize(server)
+            l.protocol_version = 3
+            l.set_option(ldap.OPT_REFERRALS, 0)
+            l.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, 0)
+
+            l.simple_bind_s(bind_dn, bind_password) # we are going to bind with a service account
+
+            r = l.search(base_dn, scope, filter)
+
+            Type, user = l.result(r,60)
+
+            name, attrs = user[0]
+
+            if hasattr(attrs, 'has_key') and attrs.has_key('distinguishedName'):
+                distinguishedName = attrs['distinguishedName'][0]
+                l.simple_bind_s(distinguishedName, password)
+
+            return True
+
+        except Exception as e:
+            raise SecurityException("Login/Password combination incorrect: 203")
 

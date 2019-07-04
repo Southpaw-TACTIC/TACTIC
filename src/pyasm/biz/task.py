@@ -25,6 +25,9 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
+import six
+basestring = six.string_types
+
 
 
 TASK_PIPELINE = '''
@@ -893,10 +896,9 @@ class Task(SObject):
     def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[],
             skip_duplicate=True, mode='standard',start_offset=0,assigned=None,
             start_date=None, schedule_mode=None, parent_process=None, status=None
-
         ):
         '''add initial tasks based on the pipeline of the sobject'''
-        from pipeline import Pipeline
+        from .pipeline import Pipeline
 
         def _get_context(existing_task_dict, process_name, context=None):
             existed = False
@@ -1650,7 +1652,10 @@ class TaskGenerator(object):
         process_sobject = process_sobjects.get(process_name)
         process_obj = pipeline.get_process(process_name)
 
-        workflow = process_sobject.get_json_value("workflow") or {}
+        if process_sobject:
+            workflow = process_sobject.get_json_value("workflow") or {}
+        else:
+            workflow = {}
         process_type = process_obj.get_type()
         attrs = process_obj.get_attributes()
 
@@ -1749,7 +1754,10 @@ class TaskGenerator(object):
             attrs = process_obj.get_attributes()
 
 
-            workflow = process_sobject.get_json_value("workflow") or {}
+            if process_sobject:
+                workflow = process_sobject.get_json_value("workflow") or {}
+            else:
+                workflow = {}
 
 
             duration = attrs.get("duration")

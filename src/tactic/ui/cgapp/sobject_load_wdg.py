@@ -20,7 +20,7 @@ from pyasm.widget import HiddenWdg
 from pyasm.prod.web import ProcessFilterWdg
 
 
-from load_options_wdg import LoadOptionsWdg, AnimLoadOptionsWdg, ShotLoadOptionsWdg
+from .load_options_wdg import LoadOptionsWdg, AnimLoadOptionsWdg, ShotLoadOptionsWdg
 
 from tactic.ui.panel import TableLayoutWdg
 from tactic.ui.common import BaseRefreshWdg

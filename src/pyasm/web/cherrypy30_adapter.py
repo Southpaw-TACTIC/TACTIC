@@ -166,7 +166,7 @@ class CherryPyAdapter(CherryPyAdapter20):
         return self.request.params.keys()
 
     def has_form_key(self, key):
-        return self.request.params.has_key(key)
+        return key in self.request.params
 
     def set_form_value(self, name, value):
         '''Set the form value to appear like it was submitted'''

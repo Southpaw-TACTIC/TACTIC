@@ -21,6 +21,9 @@ from pyasm.search import *
 from .project import Project
 from .file import File, FileRange, FileGroup
 
+import six
+basestring = six.string_types
+
 class SObjectNotFoundException(Exception):
     pass
 
@@ -1681,18 +1684,18 @@ class Snapshot(SObject):
             search.add_where(" or ".join(filters))
 
         if context:
-            if type(context) == types.ListType:
+            if isinstance(context, list):
                 search.add_filters("context", context)
             else:
                 search.add_filter("context", context)
         if process:
-            if type(process) == types.ListType:
+            if isinstance(process, list):
                 search.add_filters("process", process)
             else:
                 search.add_filter("process", process)
 
         if status:
-            if type(status) == types.ListType:
+            if isinstance(status, list):
                 search.add_filters("status", status)
             else:
                 search.add_filter("status", status)
@@ -1733,7 +1736,7 @@ class Snapshot(SObject):
             # sort reversely to get the latest for each search key
             for key, value in data.items():
                 latest_snap_list = Common.sort_dict(value, reverse=True)
-                data[key] = latest_snap_list[0]
+                data[key] = list(latest_snap_list)[0]
             
             return data
 

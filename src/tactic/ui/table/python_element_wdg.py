@@ -19,7 +19,7 @@ from pyasm.common import TacticException, Container, jsonloads, jsondumps
 from pyasm.search import Search
 from tactic.command import PythonCmd
 
-from table_element_wdg import TypeTableElementWdg
+from .table_element_wdg import TypeTableElementWdg
 
 class PythonElementWdg(TypeTableElementWdg):
     '''General purpose element widget for expressions'''

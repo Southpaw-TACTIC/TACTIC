@@ -80,6 +80,7 @@ class Container(object):
     get_all_instances = staticmethod(get_all_instances)
 
 
+
     def put(key, value):
         _get_instance().info[key] = value
     put = staticmethod(put)
@@ -105,13 +106,15 @@ class Container(object):
 
 
     def has(key):
-        return _get_instance().info.has_key(key)
+        #return _get_instance().info.has_key(key)
+        return key in _get_instance().info
     has = staticmethod(has)
 
 
     def remove(key):
         instance = _get_instance()
-        if instance.info.has_key(key):
+        #if instance.info.has_key(key):
+        if key in instance.info:
             del(instance.info[key])
     remove = staticmethod(remove)
 
@@ -264,7 +267,8 @@ class GlobalContainer(object):
 
     def remove(key):
         instance = GLOBAL_CONTAINER
-        if instance.has_key(key):
+        #if instance.has_key(key):
+        if key in instance:
             del(instance[key])
     remove = staticmethod(remove)
 

@@ -17,11 +17,19 @@ import decimal
 import shutil, os, types, sys
 try:
     import _thread as thread
+    types.DictType = type({})
 except:
     # Python 2.7
     import thread
 import re, random
 import datetime, time
+
+IS_Pv3 = sys.version_info[0] > 2
+
+import six
+basestring = six.string_types
+
+
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -105,10 +113,12 @@ def get_simple_cmd(self, meth, ticket, args):
                 
                 
             try:
+
                 # Do a security check
                 if Config.get_value("security", "api_method_restricted") == "true":
                     security = Environment.get_security()
                     #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_methods
+
                     access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                     if not access:
                        raise ApiException("Access denied")
@@ -179,7 +189,7 @@ def get_full_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
 
             debug = True
-            if meth.func_name == "execute_cmd":
+            if meth.__name__ == "execute_cmd":
                 #if len(args) > 1:
                 if isinstance(args, tuple) and len(args) > 1:
                     first_arg = args[1]
@@ -195,7 +205,7 @@ def get_full_cmd(self, meth, ticket, args):
                 print("user: ", Environment.get_user_name())
                 now = datetime.datetime.now()
                 print("timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S"))
-                print("method: ", meth.func_name)
+                print("method: ", meth.__name__)
                 print("ticket: ", ticket)
                 Common.pretty_print(args)
             
@@ -215,7 +225,7 @@ def get_full_cmd(self, meth, ticket, args):
 
             self2.sobjects = self.get_sobjects()
             self2.info = self.get_info()
-            self2.info['function_name'] = meth.func_name
+            self2.info['function_name'] = meth.__name__
             self2.info['args'] = args
 
 
@@ -329,10 +339,26 @@ def xmlrpc_decorator(meth):
 
 
             try:
-                #if meth.__name__ in QUERY_METHODS:
-                if QUERY_METHODS.has_key(meth.__name__):
+
+                """
+                if meth.__name__ not in [
+                        'get_widget',
+                        'execute_cmd',
+                        
+                        'eval',
+                        'get_by_search_key',
+                        'query',
+                        'get_task_status_colors'
+                        ]:
+                    print("----------------")
+                    print(meth.__name__)
+                    print("----------------")
+                """
+
+
+                if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
-                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
+                elif meth.__name__ in TRANS_OPTIONAL_METHODS:
                     idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
                     if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
                         cmd = get_simple_cmd(self, meth, ticket, args)
@@ -700,7 +726,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         if not search_keys:
             raise ApiException("Search key [%s] is None" % search_keys)
 
-        if type(search_keys) != types.ListType:
+        if not isinstance(search_keys, list):
             search_keys = [search_keys]
 
         sobjects = []
@@ -786,6 +812,7 @@ class BaseApiXMLRPC(XmlrpcServer):
                         print("WARNING: Value [%s] can't be processed" % value)
                         continue
                 elif isinstance(value, long) and value > MAXINT:
+                elif isinstance(value, six.integer_types) and value > MAXINT:
                     value = str(value)
                 elif isinstance(value, basestring):
                     try:
@@ -867,11 +894,13 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
 
                     elif isinstance(value, str):
-                        # this could be slow, but remove bad characters
+                        if not IS_Pv3:
+                            # this could be slow, but remove bad characters
+                            value2 = unicode(value, errors='ignore')
+                        else:
+                            value2 = value
 
-                        value2 = unicode(value, errors='ignore')
-
-                    elif isinstance(value, unicode):
+                    elif not IS_Pv3 and isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
                             value2 = value.encode("utf-8")
@@ -890,9 +919,10 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
                     elif isinstance(value, float):
                         continue
-                    elif isinstance(value, long) and value > MAXINT:
+                    elif isinstance(value, six.integer_types) and value > MAXINT:
+
                         value2 = str(value)
-                    elif isinstance(value, long):
+                    elif isinstance(value, six.integer_types):
                         continue
                     elif isinstance(value, decimal.Decimal):
                         # use str to avoid loss of precision
@@ -1742,12 +1772,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobjects = self._get_sobjects(search_key)
         results = []
         for i, sobject in enumerate(sobjects):
-            if type(data) == types.ListType:
+            if isinstance(data, list):
                 cur_data = data[i]
             else:
                 cur_data = data
 
-            if type(metadata) == types.ListType:
+            if isinstance(metadata, list):
                 cur_metadata = metadata[i]
             else:
                 cur_metadata = metadata
@@ -1789,7 +1819,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         self.set_sobjects(sobjects)
         self.update_info(info)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             return results
         else:
             return results[0]
@@ -2206,7 +2236,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         parser = ExpressionParser()
         results = parser.eval(expression, sobjects, mode=mode, single=single, vars=vars, show_retired=show_retired)
         import pyasm
-        if type(results) == types.ListType:
+        if isinstance(results, list):
             if not results:
                 pass
             elif isinstance(results[0], pyasm.search.SObject):
@@ -2342,7 +2372,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if not sobjects:
             raise ApiException("SObject [%s] does not exist" % search_key)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             sobject_dicts = []
             for sobject in sobjects:
                 sobject_dict = self._get_sobject_dict(sobject)
@@ -5226,7 +5256,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
-                if libraries.has_key("spt_help"):
+                if 'spt_help' in libraries:
                     from tactic.ui.app import HelpWdg
                     HelpWdg()
 
@@ -6024,8 +6054,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             pat = re.compile('[\$\s,@#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
             name = pat.sub('', name)
             
-            import random
-            suffix = random.randint(0, 100)
+            suffix = Common.randint(0, 100)
             existing_names = config.get_element_names()
             if name in existing_names:
                 new_name = '%s%0.3d' %(name, suffix)

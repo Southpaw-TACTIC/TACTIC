@@ -10,6 +10,6 @@
 #
 #
 
-from click_activate_menu_wdg import *
+from .click_activate_menu_wdg import *
 
 

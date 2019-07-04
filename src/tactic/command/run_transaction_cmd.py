@@ -14,12 +14,12 @@ __all__ = ['RunTransactionCmd', 'TransactionFilesCmd', 'TransactionQueueManager'
 
 import tacticenv
 
-from pyasm.common import Environment, Xml, TacticException, Config, Container
+from pyasm.common import Environment, Xml, TacticException, Config, Container, Common
 from pyasm.biz import Project
 from pyasm.command import Command, Trigger
 from pyasm.search import SearchType, Search, SObject, DbContainer
 
-from scheduler import Scheduler
+from .scheduler import Scheduler
 
 import os, codecs, sys, shutil
 from dateutil import parser
@@ -167,7 +167,7 @@ class TransactionQueueAppendCmd(Trigger):
 
 
 # create a task from the job
-from queue import JobTask
+from .queue import JobTask
 class TransactionQueueManager(JobTask):
 
     def __init__(self, **kwargs):
@@ -204,7 +204,6 @@ class TransactionQueueManager(JobTask):
 
     def get_next_job(self, queue_type=None):
         from queue import Queue
-        import random
         import time
         interval = 0.05
         time.sleep(interval)
@@ -228,7 +227,7 @@ class TransactionQueueManager(JobTask):
                 break
 
 
-            server_index = random.randint(0, len(self.servers)-1)
+            server_index = Common.randint(0, len(self.servers)-1)
             if server_index in servers_tried:
                 continue
 
@@ -920,7 +919,7 @@ class TransactionLogCompareCmd(Command):
 __all__.extend( ['TransactionPluginCreateCmd', 'TransactionPluginInstallCmd'])
 
 from pyasm.common import ZipUtil
-from plugin import PluginCreator, PluginInstaller
+from .plugin import PluginCreator, PluginInstaller
 
 
 class TransactionPluginCreateCmd(Command):

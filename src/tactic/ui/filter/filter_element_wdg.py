@@ -27,6 +27,7 @@ __all__ = [
 ]
 import re
 import datetime
+import sys
 from dateutil.relativedelta import relativedelta
 
 from pyasm.common import Common, TacticException, SetupException, Date
@@ -38,7 +39,11 @@ from pyasm.search import Search, SearchException, SearchType
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
 
-from filter_data import FilterData
+from .filter_data import FilterData
+
+import six
+basestring = six.string_types
+
 
 
 class BaseFilterElementWdg(BaseRefreshWdg):
@@ -171,10 +176,11 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
 
         value = self.values.get("value")
-        if isinstance(value, unicode):
-            value = value.encode('utf-8','ignore')
-        elif isinstance(value, basestring):
-            value = unicode(value, errors='ignore').encode('utf-8')
+        if not Common.is_python3:
+            if isinstance(value, unicode):
+                value = value.encode('utf-8','ignore')
+            elif isinstance(value, basestring):
+                value = unicode(value, errors='ignore').encode('utf-8')
 
         #print "value: ", value, type(value)
         if not value:
@@ -1867,7 +1873,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
 
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             return
 
@@ -1888,7 +1894,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
                         # assume casting to other value besides string ...
                         stmt = 'value = %s(value)' % to
                     try:
-                        exec stmt
+                        exec(stmt)
                     except:
                         # TODO ... proper error message here?
                         continue
@@ -1915,7 +1921,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
         top.add("&nbsp; matches &nbsp;")
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             self.set_configuration_error( top, "badly formed 'field_list' option" )
             return top
@@ -1984,17 +1990,17 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
 
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             return
 
         column = self.get_option("column")
         if not column:
-            print
-            print
-            print "*** ERROR: no column specified for CompoundValueFilterElementWdg"
-            print
-            print
+            print("\n")
+            print("\n")
+            print("*** ERROR: no column specified for CompoundValueFilterElementWdg")
+            print("\n")
+            print("\n")
             return
 
         field_map = {}
@@ -2012,7 +2018,7 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
                         # assume casting to other value besides string ...
                         stmt = 'value = %s(value)' % to
                     try:
-                        exec stmt
+                        exec(stmt)
                     except:
                         # TODO ... proper error message here?
                         continue
@@ -2051,7 +2057,7 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
         top.add("&nbsp; matches")
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             self.set_configuration_error( top, "badly formed 'field_list' option" )
             return top

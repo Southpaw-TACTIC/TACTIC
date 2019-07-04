@@ -15,7 +15,7 @@ __all__ = ['AssetInfoWdg', 'CondensedAssetInfoWdg', 'ShotInfoWdg', 'CondensedSho
 from pyasm.web import *
 from pyasm.widget import BaseTableElementWdg, ExpandableTextWdg, PublishLinkWdg, ThumbWdg
 
-from frame_info_wdg import FrameRangeWdg
+from .frame_info_wdg import FrameRangeWdg
 
 
 class AssetInfoWdg(BaseTableElementWdg):

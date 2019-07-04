@@ -82,7 +82,7 @@ class PyMayaInit(Widget):
 
         handoff_dir = web.get_client_handoff_dir(no_exception=True)
         if not handoff_dir:
-            print "WARNING: handoff_dir is empty in the TACTIC config file"
+            print("WARNING: handoff_dir is empty in the TACTIC config file")
         server = web.get_http_host()
         application = "maya"
 

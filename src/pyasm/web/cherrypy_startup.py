@@ -222,7 +222,7 @@ class CherryPyStartup(object):
 
         # this initializes the web.
         # - sets up virtual implied tiggers
-        from web_init import WebInit
+        from .web_init import WebInit
         WebInit().execute()
 
         # Windows should handle fine
@@ -233,7 +233,7 @@ class CherryPyStartup(object):
             if os.name == 'nt':
                 cache_mode = 'basic'
 
-        from cache_startup import CacheStartup
+        from .cache_startup import CacheStartup
         cmd = CacheStartup(mode=cache_mode)
         cmd.execute()
         cmd.init_scheduler()

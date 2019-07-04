@@ -17,13 +17,15 @@ import types, string, urllib, random
 try:
     import urlparse
 except:
-    import urllib.parse
+    from urllib import parse as urlparse
 
-#import cStringIO
 try:
-    from cStringIO import Buffer
+    from cStringIO import StringIO as Buffer
 except:
-    from io import BytesIO as Buffer
+    from io import StringIO as Buffer
+
+import six
+basestring = six.string_types
 
 
 from pyasm.common import *
@@ -33,6 +35,13 @@ from pyasm.search import *
 
 from .web_container import *
 from .web_state import *
+
+import sys
+
+if sys.version_info[0] < 3:
+    IS_Pv3 = False
+else:
+    IS_Pv3 = True
 
 
 class WidgetException(Exception):
@@ -110,7 +119,7 @@ class Widget(object):
                     Container.put("Widget:class_init", inits )
 
                 class_name = Common.get_full_class_name(self)
-                if not inits.has_key(class_name):
+                if class_name not in inits:
                     inits[class_name] = ""
                     self.class_init()
             """
@@ -231,9 +240,11 @@ class Widget(object):
 
         assert widget != None
 
-        if type(widget) in types.StringTypes:
+        #if type(widget) in types.StringTypes:
+        if isinstance(widget, basestring):
             widget = StringWdg(widget)
-        elif type(widget)==types.IntType or type(widget)==types.FloatType:
+        #elif type(widget)==types.IntType or type(widget)==types.FloatType:
+        elif isinstance(widget, (int, float)):
             widget = StringWdg(str(widget))
         elif not isinstance(widget,Widget):
             widget = StringWdg(str(widget))
@@ -245,7 +256,7 @@ class Widget(object):
                 self.named_widgets = {}
 
 
-            if self.named_widgets.has_key(name):
+            if name in self.named_widgets:
 
                 # replace the old widget with the new one
                 self.__replace_widget(widget, name)
@@ -274,7 +285,7 @@ class Widget(object):
             if self.typed_widgets == None:
                 self.typed_widgets = {}
 
-            if not self.typed_widgets.has_key(wdgtype):
+            if wdgtype not in self.typed_widgets:
                 self.typed_widgets[wdgtype] = []
             self.typed_widgets[wdgtype].append(widget)
 
@@ -302,7 +313,7 @@ class Widget(object):
 
 
     def get_widgets_by_type(self,wdgtype):
-        if self.typed_widgets.has_key(wdgtype):
+        if wdgtype in self.typed_widgets:
             return self.typed_widgets[wdgtype]
         else:
             return []
@@ -567,7 +578,7 @@ class Widget(object):
         unique_code = Container.get("%s:unique_code" %wdg)
         if ref_count == None:
             ref_count = 0
-            unique_code = ''.join([ random.choice('abcdefghijklmno') for i in xrange(0, 6)])
+            unique_code = ''.join([ Common.randchoice('abcdefghijklmno') for i in range(0, 6)])
             Container.put("%s:unique_code" %wdg, unique_code)
       
         Container.put("%s:ref_count" %wdg, ref_count+1)
@@ -811,8 +822,9 @@ class StringWdg(Widget):
         html = WebContainer.get_buffer()
 
         # write directly to the StringIO
-        if type(self.string) == types.UnicodeType:
-            self.string = Common.process_unicode_string(self.string)
+        if not IS_Pv3:
+            if type(self.string) == types.UnicodeType:
+                self.string = Common.process_unicode_string(self.string)
         html.get_buffer().write(self.string)
     
 class ClassWdg(Widget):
@@ -866,7 +878,8 @@ class Html(Base):
     def write(self, html):
         if isinstance(html, basestring):
             self._buffer.write(html)
-        elif type(html) == types.IntType:
+        #elif type(html) == types.IntType:
+        elif isinstance(html, (int, float)):
             self._buffer.write( str(html) )
         elif isinstance(html,Html):
             self._buffer.write(html.getvalue())
@@ -958,7 +971,7 @@ class Url(Base):
                 encoded = urllib.quote_plus(value.encode('utf'))
                 options_list.append("%s=%s" % (name,encoded) )
 
-        options_str = string.join( options_list, "&" )
+        options_str = "&".join(options_list)
 
         if options_str != "":
             url = "%s?%s" % (self.base, options_str)

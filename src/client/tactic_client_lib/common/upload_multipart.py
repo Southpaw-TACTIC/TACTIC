@@ -172,7 +172,11 @@ class UploadMultipart(object):
         CRLF = '\r\n'
         L = []
 
-        import cStringIO
+        try:
+            from cStringIO import StringIO as Buffer
+        except:
+            from io import StringIO as Buffer
+
 
         import sys
         for (key, value) in fields:
@@ -198,8 +202,7 @@ class UploadMultipart(object):
         # This fails
         #body = "".join(M)
 
-        import cStringIO 
-        buf = cStringIO.StringIO()
+        buf = Buffer()
         buf.writelines(M)
         body = buf.getvalue()
         #print("len of body: ", len(body), type(body))
