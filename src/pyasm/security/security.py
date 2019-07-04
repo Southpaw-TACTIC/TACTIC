@@ -332,7 +332,7 @@ class Login(SObject):
         login.set_value("upn", user_name)
 
         # encrypt the password
-        encrypted = self.encrypt_password(password)
+        encrypted = cls.encrypt_password(password)
         login.set_value("password", encrypted)
 
         if first_name:
