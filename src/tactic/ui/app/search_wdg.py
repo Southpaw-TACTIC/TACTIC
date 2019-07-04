@@ -639,7 +639,6 @@ class SearchWdg(BaseRefreshWdg):
         filter_top = DivWdg()
         container.add(filter_top)
         filter_top.add_color("color", "color")
-        filter_top.add_style("min-width: 800px")
         self.set_as_panel(filter_top)
 
         # Saved Searches

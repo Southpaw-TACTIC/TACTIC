@@ -8214,6 +8214,9 @@ class PipelinePropertyCbk(Command):
 
     def execute(self):
 
+        if self.kwargs.get('version') == 2:
+            return
+
         process = self.kwargs.get("process")
         pipeline_code = self.kwargs.get("pipeline_code")
         pipeline = Search.get_by_code("sthpw/pipeline", pipeline_code)
@@ -8227,7 +8230,7 @@ class PipelinePropertyCbk(Command):
 
         workflow = process_sobj.get_json_value("workflow") or {}
 
-        values = self.kwargs.get("pipeline_properties") or {}
+        values = self.kwargs or {}
 
         for name, value in values.items():
             workflow[name] = value
