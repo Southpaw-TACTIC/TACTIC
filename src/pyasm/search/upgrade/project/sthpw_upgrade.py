@@ -17,6 +17,18 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+
+
+    #
+    # 4.7.0.a05
+    #
+
+    def upgrade_v4_7_0_a05_001(self):
+        self.run_sql('''
+        UPDATE search_object SET title = 'Notification Login' WHERE search_type = 'sthpw/notification_login';
+        ''')
+    
+        
     #
     # 4.7.0.a01
     #

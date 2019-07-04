@@ -22,8 +22,6 @@ from pyasm.search import Search, SearchType
 from tactic.ui.common import BaseRefreshWdg
 
 import types
-import random
-
 
 from bar_chart_wdg import BarChartWdg
 
