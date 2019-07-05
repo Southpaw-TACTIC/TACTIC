@@ -341,11 +341,16 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         inner.add_style("margin: -1px")
         inner.add_class("spt_custom_layout_inner")
             
-        self.separate_behaviors = ProjectSetting.get_value_by_key("custom_layout_editor/behavior_separation") \
-            in ['true', 'True', True]
         
-        self.ace_editor_style = ProjectSetting.get_value_by_key("custom_layout_editor/ace_editor_style") \
-            in ['true', 'True', True]
+        self.separate_behaviors = True
+        key = "custom_layout_editor/behavior_separation"
+        if ProjectSetting.get_value_by_key(key) in ['false', 'False', False]:
+            self.seperate_behaviors = False
+        
+        self.ace_editor_style = True
+        key = "custom_layout_editor/ace_editor_style"
+        if ProjectSetting.get_value_by_key(key) in ['false', 'False', False]:
+            self.ace_editor_style = False
     
 
         self.plugin = None
@@ -1210,6 +1215,25 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 text.set_value(behavior_str)
 
             else:
+                behavior_div.add_relay_behavior({
+                    'bvr_match_class': 'spt_event_select',
+                    'type': 'change',
+                    'cbjs_action': '''
+                        var behavior_top = bvr.src_el.getParent(".spt_behavior_item");
+                        var event_name_input_top = behavior_top.getElement(".spt_event_name_input");
+                        var event_name_input = event_name_input_top.getElement("input");
+
+                        var select = bvr.src_el.getElement("select");
+                        var event_type = select.value;
+                        if (event_type == "listen") {
+                            event_name_input_top.setStyle("display", "flex");
+                        } else {
+                            event_name_input_top.setStyle("display", "none");
+                            event_name_input.value = "";
+                        }
+
+                    '''
+                })
 
                 add_button = ButtonNewWdg(title="", icon="FA_PLUS")
                 behavior_div.add(add_button)
@@ -1304,10 +1328,13 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     swap.set_title_wdg(bvr_name_text)
                     if class_name:
                         bvr_name_text.set_value(class_name)
+                    elif relay_class:
+                        bvr_name_text.set_value(relay_class)
                     
                     # Event type 
                     event_div = DivWdg()
                     header_div.add(event_div)
+                    event_div.add_class("spt_event_select")
                     event_div.add("<div style='margin-right: 5px;'>Event: </div>")
                     event_div.add_style("display: flex")
                     event_div.add_style("align-items: center")
@@ -1321,22 +1348,27 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     event_select.add_style("width: 120px")
                     event_select.add_style("height: 25px")
 
+
                     # Event name (for listen events)
                     event_name_div = DivWdg()
                     header_div.add(event_name_div)
                     event_name_div.add("<div style='margin: auto 5px;'>Event name: </div>")
-                    event_name_div.add_style("display: flex")
-                    event_div.add_style("align-items: center")
+                    event_name_div.add_class("spt_event_name_input")
                     bvr_event_name = TextInputWdg(name="behavior_event_name")
                     bvr_event_name.add_attr("spt_is_multiple", "true")
                     event_name_div.add(bvr_event_name)
                     if event_name:
+                        event_name_div.add_style("display", "flex")
                         bvr_event_name.set_value(event_name)
+                    else:
+                        event_name_div.add_style("display", "none")
 
                     # Modkeys TODO
                     # Mouse keys TODO
 
-                    # Relay class
+                    # Relay class has been removed from Custom Layout Editor
+                    # because the cle behaviors are relay behaviors.
+                    """
                     relay_class_div = DivWdg()
                     header_div.add(relay_class_div)
                     relay_class_div.add("<div style='margin: auto 5px;'>Relay class: </div>")
@@ -1347,8 +1379,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     relay_class_div.add(bvr_relay_class)
                     if relay_class:
                         bvr_relay_class.set_value(relay_class)
-
-
+                    """
+    
                     remove_div = DivWdg()
                     header_div.add(remove_div)
                     remove_div.add("<i class='fa fa-remove'/>")
@@ -1543,7 +1575,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         var behavior_name = inputs.behavior_name[0];
                         var behavior_event = inputs.behavior_event[0];
                         var behavior_event_name = inputs.behavior_event_name[0];
-                        var behavior_relay_class = inputs.behavior_relay_class[0];
 
                         try {
                             spt.ace_editor.set_editor_top(item);
@@ -1554,7 +1585,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
                         behavior += '<behavior '
                         if (behavior_name) behavior += 'class="'+behavior_name+'" ';
-                        if (behavior_relay_class) behavior += 'relay_class="'+behavior_relay_class+'" ';
                         if (behavior_event) behavior += 'event="'+behavior_event+'" ';
                         if (behavior_event_name) behavior += 'event_name="'+behavior_event_name+'" ';
                         
