@@ -429,7 +429,14 @@ class IconWdg(DivWdg):
             icon.add_class("glyphicon-%s" % part)
             if not self.size:
                 self.size = "16px"
-            icon.add_style("font-size: %s" % self.size)
+            
+            size = self.size
+            try:
+                size = int(size)
+                size = str(size) + "px"
+            except ValueError:
+                pass
+            icon.add_style("font-size: %s" % size)
             if not self.opacity:
                 self.opacity = 0.6
 
@@ -442,8 +449,13 @@ class IconWdg(DivWdg):
             icon.add_class("fa-%s" % part)
             if not self.size:
                 self.size = "16px"
-            
-            icon.add_style("font-size: %s" % self.size)
+            size = self.size
+            try:
+                size = int(size)
+                size = str(size) + "px"
+            except ValueError:
+                pass
+            icon.add_style("font-size: %s" % size)
             if not self.opacity:
                 self.opacity = 0.6
 
@@ -482,10 +494,16 @@ class IconWdg(DivWdg):
             self.add(self.text)
 
         if self.width:
+            width = self.width
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
             if self.icon_path.startswith("BS_"):
-                self.icon.add_style('font-size', self.width)
+                self.icon.add_style('font-size', width)
             else:
-                self.icon.add_style('width', self.width)
+                self.icon.add_style('width', width)
         return super(IconWdg,self).get_display()
 
     def get_icon(self):
