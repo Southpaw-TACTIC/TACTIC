@@ -4271,7 +4271,7 @@ class ActionInfoWdg(BaseInfoWdg):
 
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
-            if (version == '1')
+            if (!version || version == '1')
                 spt.pipeline.select_node_multi_kwargs(node, value, "action", value);
 
             if (value == "script_path" || value == "create_new") {
@@ -4558,7 +4558,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
 
                 var nodes = spt.pipeline.get_selected_nodes();
                 var node = nodes[0];
-                spt.pipeline_properties.show_properties2(popup, node);
+                //spt.pipeline_properties.show_properties2(popup, node);
                 '''
             } )
 
@@ -5874,6 +5874,16 @@ class ProcessInfoCmd(Command):
         process_sobj.set_json_value("workflow", workflow)
         self.set_description(process_sobj)
         process_sobj.commit()
+
+        cbk_classes = self.kwargs.get("_cbk_classes") or []
+
+        handled = set()
+        for cbk_class in cbk_classes:
+            if cbk_class in handled:
+                continue
+            cmd = Common.create_from_class_path(cbk_class, {}, self.kwargs)
+            cmd.execute()
+            handled.add(cbk_class)
 
 
     def handle_status(self):
@@ -7989,6 +7999,36 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         color = ColorContainerWdg(name=text_name)
         color_wdg = color.get_color_wdg()
         self.add_session_behavior(color_wdg, "color", "spt_pipeline_properties_top", text_name)
+
+        color_wdg.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var node = spt.pipeline.get_info_node();
+            var toolTop = node.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var color = spt.pipeline.get_node_property(node, "color");
+            bvr.src_el.value = color;
+
+            '''
+        } )
+
+        color_wdg.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+
+            var node = spt.pipeline.get_info_node();
+            var toolTop = node.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var color = bvr.src_el.value;
+            spt.pipeline.set_node_property(node, "color", color);
+
+            spt.named_events.fire_event('pipeline|change', {});
+ 
+            '''
+        } )
 
         # text = TextWdg(text_name)
         # color = ColorInputWdg(text_name)

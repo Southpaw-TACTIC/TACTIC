@@ -966,8 +966,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         //node_name = parts[parts.length-1];
 
         node_name = "node0";
-        spt.pipeline.add_node(node_name);
+        var node = spt.pipeline.add_node(node_name);
 
+        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+            spt.pipeline.set_node_kwarg(node, 'version', 2);
 
         var top = bvr.src_el.getParent(".spt_pipeline_folder")
         spt.behavior.destroy_element(top);
