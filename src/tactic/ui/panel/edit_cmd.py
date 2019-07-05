@@ -21,6 +21,9 @@ from pyasm.search import Search, SearchType, SearchKey, SqlException
 from pyasm.command import Command
 from pyasm.common import TacticException
 
+import six
+basestring = six.string_types
+
 class EditCmdException(Exception):
     pass
 

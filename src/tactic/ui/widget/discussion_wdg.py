@@ -30,6 +30,10 @@ import dateutil, os
 
 from tactic.ui.widget.button_new_wdg import ActionButtonWdg, IconButtonWdg
 
+import six
+basestring = six.string_types
+
+
 class DiscussionElementWdg(BaseTableElementWdg):
 
     ARGS_KEYS = {
