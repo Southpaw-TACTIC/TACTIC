@@ -24,7 +24,7 @@ import sys
 from dateutil import parser
 
 
-from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue
+from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue, Environment
 from pyasm.search import Search, SObject, SearchType
 from pyasm.biz import PrefSetting
 from pyasm.common import SPTDate
@@ -1029,6 +1029,40 @@ class HtmlElement(Widget):
     def get_updates(self):
         return {self.get_id(): self.updates}
 
+
+
+    #
+    # Command key generation
+    #
+    def generate_command_key(self, cmd, ticket=None):
+        if ticket and not ticket.isalnum():
+            raise Exception("No a valid ticket")
+
+        from pyasm.common import jsondumps
+        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+        #tmp_dir = "/tmp"
+
+        #if not ticket:
+        #    ticket = Environment.get_security().get_ticket_key()
+        #tmp_dir = "%s/%s" % (tmp_dir, ticket)
+        #if not os.path.exist(tmp_dir):
+        #    os.makedirs(tmp_dir)
+
+        login = Environment.get_user_name()
+        key = "$"+Common.generate_random_key()
+        filename = "key_" + key.lstrip("$")
+        f = open("%s/%s" % (tmp_dir, filename), "w")
+        data = {
+            "class_name": cmd,
+            "login": login,
+            "ticket": ticket,
+        }
+        f.write(jsondumps(data))
+        f.close()
+
+        self.add_attr("SPT_CMD_KEY", key)
+
+        return key
 
 
 

@@ -698,7 +698,7 @@ class TaskElementWdg(BaseTableElementWdg):
                 key = "%s|%s" % (pipeline.get_code(), process.get_name())
                 exists = self.assigned_login_groups.get(key)
                 if exists is None:
-                    search = Search("sthpw/login_in_group")
+                    search = Search("sthpw/login_in_group", sudo=True)
                     search.add_filter("login_group", assigned_login_group)
                     users = search.get_sobjects()
                     if users:

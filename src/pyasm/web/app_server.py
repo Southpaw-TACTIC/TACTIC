@@ -31,6 +31,9 @@ from .web_login_cmd import WebLoginCmd
 
 import os
 
+import six
+basestring = six.string_types
+
 
 try:
     from cStringIO import StringIO as Buffer
@@ -391,6 +394,7 @@ class BaseAppServer(Base):
             is_logged_in = security.is_logged_in()
         except Exception as e:
             print("AppServer Exception: ", e)
+            raise
             return self.handle_not_logged_in()
 
 

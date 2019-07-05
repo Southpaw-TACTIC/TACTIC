@@ -71,11 +71,11 @@ class DrupalPasswordHasher(object):
 
         while i < l:
 
-            num = hash[i]
             if IS_Pv3:
                 value = hash[i] # python 3
             else:
                 value = ord(hash[i])
+            num = value
 
             i = i + 1
 

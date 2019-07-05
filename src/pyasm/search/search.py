@@ -71,7 +71,7 @@ class Search(Base):
     serach.add_filter("asset_library", "chr")
     sobjects = search.get_sobjects()
     '''
-    def __init__(self, search_type, project_code=None):
+    def __init__(self, search_type, project_code=None, sudo=False):
         # storage for result
         self.is_search_done = False
         self.sobjects = []
@@ -159,8 +159,8 @@ class Search(Base):
 
         base_search_type = SearchKey.extract_base_search_type(search_type)
 
-
-        self.check_security()
+        if not sudo:
+            self.check_security()
        
         # Put in a security check for search types that are not sthpw
         # or config.
@@ -258,23 +258,21 @@ class Search(Base):
 
 
     def check_security(self):
-        search_type = self.get_base_search_type()
-
+        from pyasm.security import Sudo
         user = Environment.get_user_name()
-        if user in ['admin']:
+
+        search_type = self.get_base_search_type()
+        api_mode = Config.get_value("security", "api_mode")
+
+        if api_mode in ['open', '']:
             return
 
-        from pyasm.security import Sudo
+        #if user in ['admin']:
+        #    return
+
         if Sudo.is_sudo():
             return
 
-
-        allowed = {
-                'sthpw/note',
-                'sthpw/task',
-                'sthpw/snapshot',
-                'sthpw/file'
-        }
 
         if search_type in {
                 'sthpw/login',
@@ -284,6 +282,8 @@ class Search(Base):
                 'sthpw/change_timestamp',
                 'sthpw/exception_log',
                 'sthpw/ticket',
+                #'sthpw/search_object'
+                #'config/project_settings',
         }:
             raise Exception("Search Permission Denied [%s]" % search_type)
 
@@ -4139,7 +4139,13 @@ class SObject(object):
         # auto updated values in the database
         sobject = None
         if not is_search_type:
-            search = Search(self.full_search_type)
+
+            from pyasm.security import Sudo
+            sudo = Sudo()
+            try:
+                search = Search(self.full_search_type)
+            finally:
+                sudo.exit()
             search.set_show_retired_flag(True)
             # trick the search to believe that security filter has been applied
             search.set_security_filter()

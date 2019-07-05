@@ -30,6 +30,8 @@ class AccessException(Exception):
 class Sudo(object):
 
     def __init__(self):
+        count = Container.increment("Sudo::is_sudo")
+
         self.security = Environment.get_security()
 
         # if not already logged in, login as a safe user (guest)
@@ -46,11 +48,13 @@ class Sudo(object):
      
         self.access_manager.set_admin(True)
 
-        Container.put("Sudo::is_sudo", True)
+        self.already_exited = False
+
 
 
     def is_sudo():
-        is_sudo = Container.get("Sudo::is_sudo") == True
+        count = Container.get("Sudo::is_sudo") or 0
+        is_sudo = count > 0
         if not is_sudo:
             return False
         else:
@@ -63,7 +67,13 @@ class Sudo(object):
 
 
     def exit(self):
-        Container.put("Sudo::is_sudo", False)
+        if self.already_exited == True:
+            return
+        self.already_exited = True
+
+        count = Container.decrement("Sudo::is_sudo")
+        if count < 0:
+            raise Exception("count of sudo: ", count)
 
         # remove if I m not in admin group
         if self.was_admin == False:

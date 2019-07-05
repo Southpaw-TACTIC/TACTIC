@@ -18,8 +18,9 @@ import sys
 import types
 import datetime
 import codecs
+import six
 
-from pyasm.common import TacticException, jsondumps, jsonloads
+from pyasm.common import TacticException, jsondumps, jsonloads, Common
 
 from .sql import SqlException
 
@@ -414,11 +415,10 @@ class TableDataDumper(object):
                     # This is not strong enough
                     #if value.startswith("{") and value.endswith("}"):
                     #    f.write("insert.set_expr_value('%s', \"\"\"%s\"\"\")\n" % (name, value))
-                    if type(value) == types.IntType or \
-                            type(value) == types.FloatType or \
-                            type(value) == types.BooleanType or \
-                            type(value) == types.LongType:
+                    if isinstance(value, (int, float, bool)):
+                        f.write("insert.set_value('%s', %s)\n" % (name, value))
 
+                    elif not Common.IS_Pv3 and type(value) == types.LongType:
                         f.write("insert.set_value('%s', %s)\n" % (name, value))
                     else:
 
@@ -430,12 +430,11 @@ class TableDataDumper(object):
                         # triple quotes
                         if isinstance(value, datetime.datetime):
                             value = str(value)
-                        elif isinstance(value, unicode):
-                            #value = str(value)
+                        elif not Common.IS_Pv3 and isinstance(value, unicode):
                             value = value.encode("UTF-8")
 
                         # this fixes a problem with non-ascii characters
-                        if isinstance(value, basestring):
+                        if isinstance(value, six.string_types):
                             quoted = value.startswith('"') and value.endswith('"')
                             value = repr(value)
                             quoted2 = value.startswith('"') and value.endswith('"')

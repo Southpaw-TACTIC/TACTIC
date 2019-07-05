@@ -17,6 +17,7 @@ import tacticenv
 
 from pyasm.common import Xml, Config, TacticException, Environment, jsonloads, ZipUtil
 from pyasm.biz import Project, Schema
+from pyasm.security import Sudo
 from pyasm.search import Search, SearchType, TableSchemaDumper, TableDataDumper, DbContainer, Insert, DropTable, CreateTable, CreateView, SearchKey, TableUndo, SqlException, SearchException
 from pyasm.web import WebContainer
 from pyasm.command import Command, DatabaseAction
@@ -256,7 +257,12 @@ class PluginBase(Command):
 
 
         if expr:
-            sobjects = Search.eval(expr)
+            sudo = Sudo()
+            try:
+                print("expr: ", expr)
+                sobjects = Search.eval(expr)
+            finally:
+                sudo.exit()
 
             # order by id
             def sort_sobjects(a, b):

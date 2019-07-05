@@ -1045,13 +1045,28 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 if Xml.get_value(xml, "config/tmp/element/@enabled") == "false":
                     continue
 
+                use_sudo = False
+                if Xml.get_value(xml, "config/tmp/element/@sudo") == "true":
+                    use_sudo = True
 
-                element_wdg = self.get_element_wdg(xml, self.def_config)
-                if element_wdg:
-                    element_html = element_wdg.get_buffer_display()
-                else:
-                    element_html = ''
+                if use_sudo:
+                    from pyasm.security import Sudo
+                    sudo = Sudo()
+
+                try:
+                    element_wdg = self.get_element_wdg(xml, self.def_config)
+
+                    if element_wdg:
+                        element_html = element_wdg.get_buffer_display()
+                    else:
+                        element_html = ''
+                finally:
+                    if use_sudo:
+                        sudo.exit()
+
+
             except Exception as e:
+                print("Error in view [%s]" % self.view)
                 from pyasm.widget import ExceptionWdg
                 element_html = ExceptionWdg(e).get_buffer_display()
 

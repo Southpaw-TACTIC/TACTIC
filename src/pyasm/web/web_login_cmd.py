@@ -15,6 +15,7 @@ __all__ = ['WebLoginCmd']
 
 from pyasm.common import Config, SecurityException
 from pyasm.command import Command
+from pyasm.security import Security, Sudo
 from pyasm.web import WebContainer
 from pyasm.search import Search, SearchType
 
@@ -103,18 +104,22 @@ class WebLoginCmd(Command):
 
         # check to see if the login exists in the database
         login_sobject = None
-        if SearchType.column_exists("sthpw/login", "upn"):
-            search = Search("sthpw/login")
-            search.add_filter('upn',self.login)
-            login_sobject = search.get_sobject()
-        if not login_sobject:
-            search2 = Search("sthpw/login")              
-            search2.add_filter('login',self.login)
-            login_sobject = search2.get_sobject()
-        if not login_sobject:
-            search2 = Search("sthpw/login")              
-            search2.add_filter('email',self.login)
-            login_sobject = search2.get_sobject()
+        sudo = Sudo()
+        try:
+            if SearchType.column_exists("sthpw/login", "upn"):
+                search = Search("sthpw/login")
+                search.add_filter('upn',self.login)
+                login_sobject = search.get_sobject()
+            if not login_sobject:
+                search2 = Search("sthpw/login")              
+                search2.add_filter('login',self.login)
+                login_sobject = search2.get_sobject()
+            if not login_sobject:
+                search2 = Search("sthpw/login")              
+                search2.add_filter('email',self.login)
+                login_sobject = search2.get_sobject()
+        except:
+            sudo.exit()
 
 
 

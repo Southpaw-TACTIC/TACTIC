@@ -38,7 +38,7 @@ from pyasm.command import Command, UndoCmd, RedoCmd, Trigger, CommandExitExcepti
 from pyasm.checkin import FileCheckin, FileGroupCheckin, SnapshotBuilder, FileAppendCheckin, FileGroupAppendCheckin
 from pyasm.biz import IconCreator, Project, FileRange, Pipeline, Snapshot, DebugLog, File, FileGroup, Schema, ExpressionParser
 from pyasm.search import *
-from pyasm.security import XmlRpcInit, XmlRpcLogin, Ticket, LicenseException, Security
+from pyasm.security import XmlRpcInit, XmlRpcLogin, Ticket, LicenseException, Security, Sudo
 
 from pyasm.web import WebContainer, Palette, Widget
 from pyasm.widget import WidgetConfigView
@@ -164,6 +164,8 @@ def get_full_cmd(self, meth, ticket, args):
             if self.get_protocol() == "local":
                 transaction = super(ApiClientCmd,self2).get_transaction()
                 return transaction
+
+            sudo = Sudo()
 
             state = TransactionState.get_by_ticket(ticket)
             transaction_id = state.get_state("transaction")
@@ -5501,22 +5503,23 @@ class ApiXMLRPC(BaseApiXMLRPC):
             key = None
             if class_name.startswith("$"):
                 key = class_name.lstrip("$")
-                f = open("/tmp/key_%s" % key, 'r')
+                tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                f = open("%s/key_%s" % (tmp_dir,key), 'r')
                 data = f.read()
                 f.close()
                 data = jsonloads(data)
                 class_name = data.get("class_name")
                 login = data.get("login")
                 current_login = Environment.get_user_name()
-                if not login != current_login:
+                if login != current_login:
                     raise Exception("Permission Denied: wrong user")
 
 
             args_array = []
             cmd = Common.create_from_class_path(class_name, args_array, args)
 
-            if cmd.requires_key() and key is None:
-                raise Exception("Permission Denied: requires key")
+            if cmd.requires_key() and not key:
+                raise Exception("Permission Denied: command requires key")
 
 
 

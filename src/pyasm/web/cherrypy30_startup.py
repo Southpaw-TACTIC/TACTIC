@@ -185,6 +185,15 @@ class CherryPyStartup(CherryPyStartup20):
                 project = Project.get_by_code(project_code)
             except Exception as e:
                 print("WARNING: ", e)
+                """
+                import sys,traceback
+                tb = sys.exc_info()[2]
+                stacktrace = traceback.format_tb(tb)
+                stacktrace_str = "".join(stacktrace)
+                print("-"*50)
+                print(stacktrace_str)
+                print("-"*50)
+                """
                 raise
 
 

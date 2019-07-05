@@ -12,7 +12,7 @@
 
 __all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "TicketHandler", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
-import hashlib, os, sys, types
+import hashlib, os, sys, types, six
 #import tacticenv
 from pyasm.common import *
 from pyasm.search import *
@@ -1132,7 +1132,7 @@ class Ticket(SObject):
                 if handler_class:
                     handler = Common.create_from_class_path(handler_class)
                     ticket = handler.validate_key(key)
-                    if isinstance(ticket, basestring):
+                    if isinstance(ticket, six.string_types):
                         ticket = Ticket.create(ticket, commit=None)
 
         finally:
@@ -1445,7 +1445,11 @@ class Security(Base):
             raise SecurityException("Security failed: Unrecognized user: '%s'" % login_name)
 
         # create a new ticket for the user
-        self._ticket = self._generate_ticket(login_name)
+        sudo = Sudo()
+        try:
+            self._ticket = self._generate_ticket(login_name)
+        except:
+            sudo.exit()
 
         self.add_access_rules_flag = True
 
@@ -1724,7 +1728,6 @@ class Security(Base):
             auth_login_name = login_name
 
 
-        print("wowowwo")
         sudo = Sudo()
 
         authenticate = Common.create_from_class_path(auth_class)

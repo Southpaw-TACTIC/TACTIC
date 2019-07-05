@@ -11,7 +11,7 @@
 #
 __all__ = ["SimpleSideBarWdg", "TabSideBarWdg"]
 
-import os, types
+import os, types, six
 
 from pyasm.common import Environment, Common, Container, Xml, XmlException
 from pyasm.web import DivWdg, HtmlElement, WebContainer, SpanWdg
@@ -84,7 +84,7 @@ class BaseSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         self.default = self.kwargs.get('default') == 'True'
 
         self.view = self.kwargs.get("view")
-        if type(self.view) in types.StringTypes:
+        if isinstance(self.view, six.string_types):
             self.view = [self.view]
 
         web = WebContainer.get_web()

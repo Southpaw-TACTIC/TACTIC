@@ -361,7 +361,7 @@ class TransactionLog(SObject):
     def delete_all_redo():
         user_name = Environment.get_user_name()
 
-        search = Search("sthpw/transaction_log")
+        search = Search("sthpw/transaction_log", sudo=True)
         search.add_order_by("timestamp")
         search.add_filter("type", "redo")
         search.add_filter("login", user_name)
