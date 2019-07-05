@@ -929,7 +929,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             height = self.kwargs.get("height")
             if height:
-                height = self.height
                 try:
                     height = int(height)
                     height = str(height) + "px"
