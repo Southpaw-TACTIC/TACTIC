@@ -6490,8 +6490,6 @@ class SearchType(SObject):
         sobject = search_object_data.get(search_type)
         if sobject:
             return sobject
-        #if search_object_data.has_key(search_type):
-        #    return search_object_data[search_type]
 
 
         # get it from the global cache

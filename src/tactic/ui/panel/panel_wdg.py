@@ -3430,7 +3430,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
-            from tool_layout_wdg import RepoBrowserLayoutWdg
+            from .tool_layout_wdg import RepoBrowserLayoutWdg
             kwargs['parent_mode'] = self.kwargs.get('parent_mode')
             kwargs['file_system_edit'] = self.kwargs.get('file_system_edit')
             kwargs['base_dir'] = self.kwargs.get('base_dir')
@@ -3439,7 +3439,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout == 'card':
             kwargs['preview_width'] = self.kwargs.get("preview_width")
             kwargs['process'] = self.kwargs.get("process")
-            from tool_layout_wdg import CardLayoutWdg
+            from .tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':

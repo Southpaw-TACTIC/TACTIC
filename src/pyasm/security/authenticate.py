@@ -203,3 +203,6 @@ class LdapADAuthenticate(Authenticate):
         except Exception as e:
             raise SecurityException("Login/Password combination incorrect: 203")
 
+
+
+

@@ -331,7 +331,7 @@ class AccessManager(Base):
             group_type = Xml.get_attribute( group_node, "type" )
 
             # get an existing rule set or create a new one
-            if self.groups.has_key(group_type):
+            if group_type in self.groups:
                 rules = self.groups[group_type]
             else:
                 rules = {}
