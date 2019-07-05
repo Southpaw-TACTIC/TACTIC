@@ -121,7 +121,7 @@ class BaseNodeWdg(BaseRefreshWdg):
 
 
         top.add_style("width", width)
-        top.add_style("height", height)
+        top.add_style("height", str(height)+"px")
         top.add_style("box-sizing", "border-box")
 
         top.add_attr("spt_border_color", border_color)
@@ -138,12 +138,12 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("border-radius: %spx" % (height/2))
 
         elif shape == "elipse":
-            top.add_style("width", height)
+            top.add_style("width", str(height)+"px")
             top.add_style("border-radius: %spx" % border_radius)
 
         elif shape == "diamond":
             top.add_style("transform: rotate(-45deg)")
-            top.add_style("width", height)
+            top.add_style("width", str(height)+"px")
 
         else:
             top.add_style("border-radius: %spx" % border_radius)
@@ -377,8 +377,20 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         
 
         # set the size limit
-        outer.add_style("width: %s" % self.width)
-        outer.add_style("height: %s" % self.height)
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        outer.add_style("width: %s" % width)
+        outer.add_style("height: %s" % height)
 
 
 
@@ -583,9 +595,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas = DivWdg()
         inner.add(canvas)
 
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+
         canvas.add_class("spt_pipeline_canvas")
-        canvas.add_style("width: %s" % self.width)
-        canvas.add_style("height: %s" % self.height)
+        canvas.add_style("width: %s" % width)
+        canvas.add_style("height: %s" % height)
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
 
@@ -870,8 +895,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #canvas.add_style("float: left")
         canvas.add_style("position: relative")
 
-
-        canvas.add_style("margin-top: -%s" % self.height)
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        canvas.add_style("margin-top: -%s" % height)
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
         canvas.set_attr("spt_background_color", self.background_color)
@@ -1012,7 +1042,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             height = 55
             width = 55
         elif node_type == "unknown":
-            border_radius = 50;
+            border_radius = 50
             width = 50
             height = 50
             border_radius =  5
@@ -1158,8 +1188,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             icon_div.add_style("position: absolute")
             icon_div.add_style("z-index: 300")
             icon_div.add_style("border: solid 1px transparent")
-            icon_div.add_style("width: 24px");
-            icon_div.add_style("text-align: center");
+            icon_div.add_style("width: 24px")
+            icon_div.add_style("text-align: center")
 
             icon_div.add_behavior( {
             'type': 'click_up',
@@ -1561,7 +1591,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("title", name)
 
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
         node.add_style("position: absolute")
 
         node.add_style("width: auto")
@@ -1956,7 +1986,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
 
 
         width = 30

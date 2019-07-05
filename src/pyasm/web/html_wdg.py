@@ -285,15 +285,6 @@ class HtmlElement(Widget):
 
         elif not override and self.styles.has_key(name):
             return
-        
-        px_required = ['width', 'height', 'max-width', 'max-height', 'min-width', 'min-height', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom', 'margin', 'padding', 'font-size', 'border-width', 'top', 'bottom', 'left', 'right']
-        if name in px_required:
-            try:
-                value = int(value)
-                value = str(value) + "px"
-            except ValueError:
-                pass
-
         self.styles[name] = value
 
 
@@ -311,13 +302,6 @@ class HtmlElement(Widget):
                 self.add_style( s.strip() )
         elif type(styles) == dict:
             for s_name,s_value in styles.iteritems():
-                px_required = ['width', 'height', 'max-width', 'max-height', 'min-width', 'min-height', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom', 'margin', 'padding', 'font-size', 'border-width']
-                if s_name in px_required:
-                    try:
-                        s_value = int(s_value)
-                        s_value = str(s_value) + "px"
-                    except ValueError:
-                        pass
                 self.add_style( s_name, str(s_value) )
 
 

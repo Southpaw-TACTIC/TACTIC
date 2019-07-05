@@ -97,8 +97,20 @@ class TextInputWdg(BaseInputWdg):
 
     def get_input_group_wdg(self):
         input_group = DivWdg()
-        input_group.add_style("width: %s" % self.width)
-        input_group.add_style("height: %s" % self.height)
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        input_group.add_style("width: %s" % width)
+        input_group.add_style("height: %s" % height)
         input_group.add_style("margin-right: 5px")
 
         return input_group
@@ -253,8 +265,13 @@ class TextInputWdg(BaseInputWdg):
             self.width = str(self.width).replace("px", "")
             if not self.width.endswith("%"):
                 self.width = int(self.width)
-
-        self.text.add_style("width: %s" % self.width)
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        self.text.add_style("width: %s" % width)
 
 
     def add_style(self, name, value=None):
@@ -263,14 +280,6 @@ class TextInputWdg(BaseInputWdg):
 
         if not value:
             name, value = re.split(":\ ?", name)
-        
-        px_required = ['width', 'height', 'max-width', 'max-height', 'min-width', 'min-height', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom', 'margin', 'padding', 'font-size', 'border-width', 'left', 'right', 'top', 'bottom']
-        if name in px_required:
-            try:
-                value = int(value)
-                value = str(value) + "px"
-            except ValueError:
-                pass
         
         if name == 'width':
             self.width = value
@@ -430,7 +439,14 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            edit_div.add_style("margin-left: %s" % self.width)
+            
+            width = self.width
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
+            edit_div.add_style("margin-left: %s" % width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -475,7 +491,14 @@ class TextInputWdg(BaseInputWdg):
         input_group = self.get_input_group_wdg()
 
         div.add(input_group)
-        self.text.add_style("height: %s" % self.height)
+       
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        self.text.add_style("height: %s" % height)
 
         icon_styles = self.kwargs.get("icon_styles")
         icon_class = self.kwargs.get("icon_class")

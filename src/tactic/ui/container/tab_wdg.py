@@ -150,9 +150,9 @@ spt.tab.resize_headers = function() {
     }
 
     for (var i = 0; i < els.length; i++) {
-        els[i].setStyle("width", width);
+        els[i].setStyle("width", width + 'px');
         var title_el = els[i].getElement(".spt_tab_header_label");
-        title_el.setStyle("width", width);
+        title_el.setStyle("width", width + 'px');
     }
 }
 
@@ -1536,6 +1536,11 @@ spt.tab.close = function(src_el) {
 
         min_width = self.kwargs.get("min_width")
         if min_width:
+            try:
+                min_width = int(min_width)
+                min_width = str(min_width) + "px"
+            except ValueError:
+                pass
             header_div.add_style("min-width", min_width)
 
 
@@ -1583,7 +1588,7 @@ spt.tab.close = function(src_el) {
                     }
 
                     for (var i = 0; i < els.length; i++) {
-                        els[i].setStyle("width", width);
+                        els[i].setStyle("width", width + "px");
                     }
 
 
@@ -1775,6 +1780,11 @@ spt.tab.close = function(src_el) {
 
             height = self.kwargs.get("height")
             if height:
+                try:
+                    height = int(height)
+                    height = str(height) + "px"
+                except ValueError:
+                    pass
                 content_top.add_style("height: %s" % height)
                 content_top.add_style("overflow-y: auto")
 
@@ -1791,10 +1801,20 @@ spt.tab.close = function(src_el) {
         if not width:
             content_top.add_style("min-width: 500px")
         else:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
             content_top.add_style("min-width: %s" % width)
 
         min_width = self.kwargs.get("min_width")
         if min_width:
+            try:
+                min_width = int(min_width)
+                min_width = str(min_width) + "px"
+            except ValueError:
+                pass
             content_top.add_style("min-width", min_width)
 
 
@@ -2046,7 +2066,7 @@ spt.tab.close = function(src_el) {
             icon_div.add_border()
             icon_div.add_style("text-align: center")
             icon_div.add_style("opacity: 0.5")
-            div.add(icon_div);
+            div.add(icon_div)
 
 
         return div
@@ -2086,7 +2106,7 @@ spt.tab.close = function(src_el) {
         icon_div.add_gradient("background", "background", -5, 5)
         icon_div.add_border()
         icon_div.add_style("text-align: center")
-        div.add(icon_div);
+        div.add(icon_div)
 
         return div
 
