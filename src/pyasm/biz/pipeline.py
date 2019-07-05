@@ -143,7 +143,7 @@ class Process(Base):
 
         if process:
             workflow_data = process.get_json_value("workflow", {})
-            version = workflow.get("version") or 1
+            version = workflow_data.get("version") or 1
             version_2 = version in [2, '2']
             
             properties = workflow_data.get("properties") or {}
