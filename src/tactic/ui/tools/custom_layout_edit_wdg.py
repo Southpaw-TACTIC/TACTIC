@@ -16,7 +16,7 @@ from pyasm.search import Search, SearchType
 from pyasm.biz import Project, ProjectSetting
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg, Widget, WebContainer
 from pyasm.widget import IconWdg
-from pyasm.widget import TextWdg, TextAreaWdg, XmlWdg, HiddenWdg, SelectWdg
+from pyasm.widget import TextWdg, TextAreaWdg, XmlWdg, HiddenWdg, SelectWdg, CheckboxWdg
 from pyasm.command import Command
 from pyasm.common import XmlException, Xml,  TacticException
 from tactic.ui.container import Menu, MenuItem, SmartMenu
@@ -345,7 +345,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         self.separate_behaviors = True
         key = "custom_layout_editor/behavior_separation"
         if ProjectSetting.get_value_by_key(key) in ['false', 'False', False]:
-            self.seperate_behaviors = False
+            self.separate_behaviors = False
         
         self.ace_editor_style = True
         key = "custom_layout_editor/ace_editor_style"
@@ -1215,6 +1215,26 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 text.set_value(behavior_str)
 
             else:
+                behavior_styles = HtmlElement.style()
+                behavior_div.add(behavior_styles)
+                css = """
+                    .spt_behavior_item .spt_swap_top {
+                        margin: 5px 0px;
+                    }
+
+                    .spt_behavior_name {
+                        border: none;
+                        height: 20px;
+                        background: transparent;
+                        box-shadow: none;
+                    }
+
+                    .spt_behavior_is_relay {
+                        margin: 0px 20px 0px 5px;
+                    }
+                """
+                behavior_styles.add(css)
+
                 behavior_div.add_relay_behavior({
                     'bvr_match_class': 'spt_event_select',
                     'type': 'change',
@@ -1319,17 +1339,22 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     bvr_name_text = TextInputWdg(name="behavior_name")
                     bvr_name_text.add_class("spt_behavior_name")
                     bvr_name_text.add_attr("spt_is_multiple", "true")
-                    #td.add(bvr_name_text)
-                    bvr_name_text.add_style("border: none")
-                    bvr_name_text.add_style("height: 20px")
-                    bvr_name_text.add_style("background: transparent")
-                    bvr_name_text.add_style("box-shadow: none")
                     bvr_name_text.add_attr("placeholder", placeholder)
                     swap.set_title_wdg(bvr_name_text)
                     if class_name:
                         bvr_name_text.set_value(class_name)
                     elif relay_class:
                         bvr_name_text.set_value(relay_class)
+                    
+                    bvr_relay_div = DivWdg()
+                    header_div.add(bvr_relay_div)
+                    bvr_relay_div.add_class("spt_behavior_is_relay")
+                    bvr_relay_input = CheckboxWdg(name="behavior_is_relay")
+                    bvr_relay_div.add(bvr_relay_input)
+                    if relay_class:
+                        bvr_relay_input.set_checked()
+                    bvr_relay_div.add("Use Relay")
+
                     
                     # Event type 
                     event_div = DivWdg()
@@ -1366,21 +1391,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     # Modkeys TODO
                     # Mouse keys TODO
 
-                    # Relay class has been removed from Custom Layout Editor
-                    # because the cle behaviors are relay behaviors.
-                    """
-                    relay_class_div = DivWdg()
-                    header_div.add(relay_class_div)
-                    relay_class_div.add("<div style='margin: auto 5px;'>Relay class: </div>")
-                    relay_class_div.add_style("display: flex")
-                    relay_class_div.add_style("align-items: center")
-                    bvr_relay_class = TextInputWdg(name="behavior_relay_class")
-                    bvr_relay_class.add_attr("spt_is_multiple", "true")
-                    relay_class_div.add(bvr_relay_class)
-                    if relay_class:
-                        bvr_relay_class.set_value(relay_class)
-                    """
-    
                     remove_div = DivWdg()
                     header_div.add(remove_div)
                     remove_div.add("<i class='fa fa-remove'/>")
@@ -1573,6 +1583,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         var item = behavior_elements[i];
                         var inputs = spt.api.get_input_values(item);
                         var behavior_name = inputs.behavior_name[0];
+                        var behavior_is_relay = inputs.behavior_is_relay[0];
                         var behavior_event = inputs.behavior_event[0];
                         var behavior_event_name = inputs.behavior_event_name[0];
 
@@ -1584,7 +1595,15 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         }
 
                         behavior += '<behavior '
-                        if (behavior_name) behavior += 'class="'+behavior_name+'" ';
+                        
+                        if (behavior_name && behavior_is_relay == 'on') {
+                            behavior += 'relay_class="'+behavior_name+'" ';
+                        } else if (behavior_name) {
+                            behavior += 'class="'+behavior_name+'" ';
+                        } else {
+                            //TODO: Should raise exception of some kind.
+                        }
+                        
                         if (behavior_event) behavior += 'event="'+behavior_event+'" ';
                         if (behavior_event_name) behavior += 'event_name="'+behavior_event_name+'" ';
                         
