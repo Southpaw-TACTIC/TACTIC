@@ -10,12 +10,13 @@
 #
 #
 
-__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg']
+__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg', 'NodeRenameWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.biz import ProjectSetting
 from pyasm.common import Container, Common, jsondumps
-from pyasm.web import DivWdg, WebContainer, Table, Widget
+from pyasm.web import DivWdg, WebContainer, Table, Widget, HtmlElement
 from pyasm.search import Search, SearchType
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
@@ -354,6 +355,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         top.add_style("position: relative")
+
+        version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled")
+        top.add_attr("version_2_enabled", version_2_enabled)
 
         show_title = self.kwargs.get("show_title")
         if show_title not in ['false', False]:
@@ -997,8 +1001,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         //node_name = parts[parts.length-1];
 
         node_name = "node0";
-        spt.pipeline.add_node(node_name);
+        var node = spt.pipeline.add_node(node_name);
 
+        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+            spt.pipeline.set_node_kwarg(node, 'version', 2);
 
         var top = bvr.src_el.getParent(".spt_pipeline_folder")
         spt.behavior.destroy_element(top);
@@ -3182,7 +3188,10 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
     // set any properties that might exist
     new_node.properties = kwargs.properties || {};
-    new_node[node_type] = { description: kwargs.description || "" };
+
+    // BACKWARDS COMPATIBILITY
+    if (new_node.properties.settings && new_node.properties.settings.version == 1) 
+        new_node[node_type] = { description: kwargs.description || "" }
 
 
     // add to a group
@@ -3464,6 +3473,7 @@ spt.pipeline.get_node_property = function(node, name) {
 
 spt.pipeline.set_node_properties = function(node, properties) {
     node.properties = properties;
+    node.has_changes = true;
 }
 
 spt.pipeline.get_node_properties = function(node) {
@@ -3498,11 +3508,9 @@ spt.pipeline.set_node_kwarg = function(node, name, value) {
 }
 
 spt.pipeline.add_node_on_save = function(node, name, value) {
-    var kwargs = spt.pipeline.get_node_kwargs(node);
-    if (!kwargs) kwargs = {};
-    if (!kwargs.on_saves) kwargs.on_saves = {};
-    kwargs.on_saves[name] = value;
-    spt.pipeline.set_node_kwargs(node, kwargs);
+    if (!node.on_saves) node.on_saves = {};
+    node.on_saves[name] = value;
+    node.has_changes = true;
 }
 
 // Supports both kwargs and multi kwargs
@@ -3592,8 +3600,7 @@ spt.pipeline.set_node_multi_kwarg = function(node, name, value) {
 }
 
 spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value) {
-    var type = spt.pipeline.get_node_type(node);
-    var multi_kwargs = spt.pipeline.get_node_property(node, type);
+    var multi_kwargs = spt.pipeline.get_node_property(node, 'settings');
     if (!multi_kwargs) multi_kwargs = {};
     multi_kwargs.multi = true;
     multi_kwargs.selected = kwargs_name;
@@ -3601,7 +3608,9 @@ spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value)
     if (!kwargs) kwargs = {};
     kwargs[name] = value;
     multi_kwargs[kwargs_name] = kwargs;
-    spt.pipeline.set_node_property(node, type, multi_kwargs);
+    curr_kwargs = spt.pipeline.get_node_property(node, 'settings');
+    Object.assign(curr_kwargs, multi_kwargs);
+    spt.pipeline.set_node_kwargs(node, curr_kwargs);
 }
 
 
@@ -3726,12 +3735,15 @@ spt.pipeline._rename_node = function(node, value) {
 
 
 spt.pipeline.set_rename_mode = function(node) {
-    var input = node.getElement(".spt_input");
-    var label = node.getElement(".spt_label");
-    label.setStyle("display", "none");
-    input.setStyle("display", "");
-    input.focus();
-    input.select();
+    var name = spt.pipeline.get_node_name(node);
+    var kwargs = {
+        name: name
+    };
+
+    var class_name = "tactic.ui.tools.NodeRenameWdg"
+
+    var popup = spt.panel.load_popup("Rename Node", class_name, kwargs);
+    popup.activator = node;
 }
 
 
@@ -4280,6 +4292,9 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
 
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
+        // BACKWARDS COMPATIBILITY
+        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+            spt.pipeline.set_node_kwarg(to_node, "version", 2);
 
         // FIXME: hard coded
         var height = 40;
@@ -6791,6 +6806,101 @@ spt.pipeline.get_connectors_to_node = function(to_name) {
 }
 
     '''
+
+
+class NodeRenameWdg(BaseRefreshWdg):
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_rename_node {
+                display: flex;
+                height: 40px;
+            }
+
+            .spt_node_name_input {
+                padding: 10px;
+            }
+
+            .spt_node_name_submit {
+                background: #ccc;
+                cursor: hand;
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                text-transform: uppercase;
+                color: white;
+            }
+
+            .spt_node_name_submit:hover {
+                background: #999;
+            }
+
+            ''')
+
+        return styles
+
+
+    def get_display(self):
+
+        top = DivWdg()
+        top.add_class("spt_rename_node")
+
+        name = self.kwargs.get("name") or ""
+
+        name_input = HtmlElement.text()
+        top.add(name_input)
+        name_input.add_class("spt_node_name_input")
+        name_input.add_attr("value", name)
+        name_input.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var node = popup.activator;
+
+            var top = node.getParent(".spt_pipeline_top");
+
+            if (!top.hot_key_state) return;
+            
+            top.hot_key_state = false;
+            document.activeElement.blur();
+            bvr.src_el.focus();
+
+            '''
+            })
+
+        btn = DivWdg("Rename")
+        top.add(btn)
+        btn.add_class("spt_node_name_submit")
+        btn.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_rename_node");
+            var inp = top.getElement(".spt_node_name_input");
+            var name = inp.value;
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var node = popup.activator;
+            spt.pipeline.set_node_name(node, name);
+
+            spt.popup.close(popup);
+
+            var top = nodex.getParent(".spt_pipeline_top");
+            top.hot_key_state = true;
+
+            '''
+            })
+
+        top.add(self.get_styles())
+
+        return top
+
+
+
 
 
 
