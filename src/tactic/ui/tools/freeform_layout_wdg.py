@@ -21,7 +21,6 @@ from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, ButtonRowWdg, But
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import ResizableTableWdg
 
-import random
 
 
 class FreeFormLayoutToolWdg(BaseRefreshWdg):
@@ -737,7 +736,7 @@ class FreeFormCanvasWdg(BaseRefreshWdg):
                 is_resizable = False
 
 
-            number = random.randint(0, 10000)
+            number = Common.randint(0, 10000)
             element_id = "element%s" % number
             widget_div.set_attr("spt_element_id", element_id)
 

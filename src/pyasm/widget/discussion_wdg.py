@@ -603,8 +603,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         if not name:
             name = "notes"
         
-        import random
-        rand = random.randint(1, 100)
+        rand = Common.randint(1, 100)
         self.base_name = "notes|%s|%s|%s" % (search_type, id, rand)
         
         self.status_id = '%s_sign' %self.base_name

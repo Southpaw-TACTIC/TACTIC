@@ -63,13 +63,16 @@ class ExceptionLog(SObject):
        
         sender_email = Config.get_value("services", "notify_user")
         if sender_email:
-            from pyasm.command import SendEmail
+            
+            from pyasm.security import Site
+            site = Site.get_site()
 
             sender_name = Config.get_value("services", "notify_user_name")
             recipient_emails = [sender_email]
             message = """
 An exception has been reported in the TACTIC Exception Log.
            
+Site: %s
 Login: %s
 Class: %s
 Message: 
@@ -79,9 +82,12 @@ Message:
 Stack trace: 
             
 %s
-            """ % (user_name, class_name, message, stacktrace_str)
-
-            subject = "New TACTIC Exception Log"
+            """ % (site, user_name, class_name, message, stacktrace_str)
+            
+            exception_code = exception_log.get_code()
+            subject = "New TACTIC Exception Log from %s [%s]" % (user_name, exception_code)
+            
+            from pyasm.command import SendEmail
             email_cmd = SendEmail(
                 sender_email=sender_email,
                 recipient_emails=recipient_emails,

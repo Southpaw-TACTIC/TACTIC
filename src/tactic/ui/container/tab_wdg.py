@@ -1699,8 +1699,7 @@ spt.tab.close = function(src_el) {
         for i, widget in enumerate(self.widgets):
             name = widget.get_name()
             if not name:
-                import random
-                num = random.randint(0, 10000)
+                num = Common.randint(0, 10000)
                 name = "noname%s" % num
                 widget.set_name(name)
                 title = "(Untitled)"
@@ -2603,14 +2602,13 @@ spt.tab.close = function(src_el) {
                 title_div.add(count_wdg)
                 count_wdg.add_style("float: right")
                 count_wdg.add_style("font-size: 0.7em")
-                count_wdg.add_style("margin-right: 10px")
+                count_wdg.add_style("margin-left: 10px")
                 if count_color:
                     count_wdg.add_style("background", count_color)
 
                 count_wdg.add_update( {
                     'expression': count,
                     'search_key': search_key,
-                    'interval': 10,
                 } )
 
 

@@ -15,7 +15,7 @@
 __all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'ASyncThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, random, subprocess, re
+import os, sys, threading, time, urllib, subprocess, re
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
@@ -47,7 +47,7 @@ class BaseProcessThread(threading.Thread):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.num_checks = 0
-        self.kill_interval = 30 + random.randint(0,30)
+        self.kill_interval = 30 + Common.randint(0,30)
         self.kill_interval = 1
         self.end = False
         self.port = None
