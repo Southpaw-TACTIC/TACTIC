@@ -107,7 +107,7 @@ class File(SObject):
                 'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb', 'gif']
 
     #IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
-    IMAGE_EXT = ['jpg','jpeg', 'png','tif','tiff','dds','dcm']
+    IMAGE_EXT = ['jpg','jpeg', 'png','tif','tiff','dds','dcm', 'bmp']
 
 
 
