@@ -38,9 +38,11 @@ S$<hash>
 So you must cut off the first character of each password when migrating.
 """
 
-import hashlib
+import hashlib, sys
 
 _ITOA64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+IS_Pv3 = sys.version_info[0] > 2
 
 
 class DrupalPasswordHasher(object):
@@ -68,12 +70,18 @@ class DrupalPasswordHasher(object):
         i = 0
 
         while i < l:
-            value = ord(hash[i])
+
+            num = hash[i]
+            if IS_Pv3:
+                value = hash[i] # python 3
+            else:
+                value = ord(hash[i])
+
             i = i + 1
 
             output += _ITOA64[value & 0x3f]
             if i < l:
-                value |= ord(hash[i]) << 8
+                value |= num << 8
 
             output += _ITOA64[(value >> 6) & 0x3f]
             if i >= l:
@@ -81,7 +89,7 @@ class DrupalPasswordHasher(object):
             i += 1
 
             if i < l:
-                value |= ord(hash[i]) << 16
+                value |= num << 16
 
             output += _ITOA64[(value >> 12) & 0x3f]
             if i >= l:

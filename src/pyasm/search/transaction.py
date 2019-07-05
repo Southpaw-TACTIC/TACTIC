@@ -701,10 +701,12 @@ class FileUndo:
             dst_dir = os.path.dirname(dst)
             os.chdir(dst_dir)
             # while it seems like you can join any 2 paths, it is based on working directory
-            if isinstance(prev, unicode):
-                prev = prev.encode('utf-8')
-            if isinstance(dst_dir, unicode):
-                dst_dir = dst_dir.encode('utf-8')
+            if not Common.IS_Pv3:
+                if isinstance(prev, unicode):
+                    prev = prev.encode('utf-8')
+                if isinstance(dst_dir, unicode):
+                    dst_dir = dst_dir.encode('utf-8')
+
             prev = os.path.join(dst_dir, os.path.abspath(prev))
             extra['prev'] = prev
             os.unlink(dst)
@@ -803,7 +805,7 @@ class FileUndo:
         Xml.set_attribute(file_node,"src",src)
         Xml.set_attribute(file_node,"dst",dst)
         for name,value in extra.items():
-            if isinstance(value, str):
+            if not Common.IS_Pv3 and isinstance(value, str):
                 value = unicode(value, errors='ignore').encode('utf-8')
             Xml.set_attribute(file_node,name,value)
 
@@ -1091,7 +1093,7 @@ class TableUndo(Base):
         Xml.set_attribute(sobject_node,"database",database)
         Xml.set_attribute(sobject_node,"action", "create")
 
-        from search import SearchType, Sql, DbContainer
+        from .search import SearchType, Sql, DbContainer
         search_type = SearchType.build_search_type(search_type, project_code=database)
 
         column_info = SearchType.get_column_info(search_type)

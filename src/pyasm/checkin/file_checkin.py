@@ -231,14 +231,14 @@ class FileCheckin(BaseCheckin):
             assert len(md5s) == len(file_paths)
         else:
             # Checkin may not provide md5s, make a None list
-            md5s = [ None for x in xrange(len(file_paths))]
+            md5s = [ None for x in range(len(file_paths))]
         self.md5s = md5s
         
         if file_sizes:
             assert len(file_sizes) == len(file_sizes)
         else:
             # Checkin may not provide md5s, make a None list
-            file_sizes = [ None for x in xrange(len(file_paths))]
+            file_sizes = [ None for x in range(len(file_paths))]
         self.file_sizes = file_sizes
         
         self.single_snapshot = single_snapshot

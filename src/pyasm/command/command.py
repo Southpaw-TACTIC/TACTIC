@@ -71,6 +71,10 @@ class Command(Base):
         #if source == "api":
         #    return False
         return True
+
+    def requires_key(self):
+        return False
+
     
     def get_errors(self):
         return self.errors

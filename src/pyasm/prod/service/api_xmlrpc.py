@@ -40,9 +40,7 @@ from pyasm.biz import IconCreator, Project, FileRange, Pipeline, Snapshot, Debug
 from pyasm.search import *
 from pyasm.security import XmlRpcInit, XmlRpcLogin, Ticket, LicenseException, Security
 
-from pyasm.web import WebContainer, Palette
-#from pyasm.web import EventContainer, CommandDelegator
-#from pyasm.widget import IframeWdg, IframePlainWdg, WidgetConfigView
+from pyasm.web import WebContainer, Palette, Widget
 from pyasm.widget import WidgetConfigView
 from pyasm.web.app_server import XmlrpcServer
 
@@ -5280,6 +5278,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
+                if not isinstance(widget, Widget):
+                    raise Exception("Must be derived from Widget")
+
+
                 if 'spt_help' in libraries:
                     from tactic.ui.app import HelpWdg
                     HelpWdg()
@@ -5496,6 +5498,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
             # TEST: look up class name use in a key
+            key = None
             if class_name.startswith("$"):
                 key = class_name.lstrip("$")
                 f = open("/tmp/key_%s" % key, 'r')
@@ -5511,6 +5514,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             args_array = []
             cmd = Common.create_from_class_path(class_name, args_array, args)
+
+            if cmd.requires_key() and key is None:
+                raise Exception("Permission Denied: requires key")
+
+
 
             if not isinstance(cmd, Command):
                 raise Exception("Cannot run command [%s].  Must be derived from Command." % class_name)
