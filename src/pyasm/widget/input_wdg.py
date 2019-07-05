@@ -18,7 +18,7 @@ __all__ = [
 'ResetWdg', 'PasswordWdg', 'HiddenWdg', 'NoneWdg', 'ThumbInputWdg',
 'SimpleUploadWdg', 'UploadWdg', 'MultiUploadWdg', 
 'CalendarWdg', 'CalendarInputWdg',
-"PopupWdg", "PopupMenuWdg"
+"PopupWdg", "PopupMenuWdg", "ColorWdg"
 ]
 
 
@@ -2814,3 +2814,35 @@ class PopupMenuWdg(BaseInputWdg):
     def get_clear_css_script(self):
         ''' clears the css of the menu buttons, make them inactive'''
         return "$$('div[name=%s]').each(function(elem) {elem.className='inactive_menu_item';})" %self.item_name
+
+
+
+class ColorWdg(BaseInputWdg):
+
+    def __init__(self,name=None, label=None, css=None):
+        super(ColorWdg,self).__init__(name,"input", label)
+        self.set_attr("type", "color")
+        self.label = label
+        self.css = css
+
+        self.add_class("spt_input")
+
+
+    def get_display(self):
+        self.set_attr("name", self.get_input_name())
+
+        if self.is_read_only():
+            self.set_attr('disabled', 'disabled')
+
+        if not self.label:
+            color_wdg = super(ColorWdg, self).get_display()
+            return color_wdg
+        else:
+            color_wdg = BaseInputWdg.get_class_display(self)
+            span = SpanWdg(color_wdg, css=self.css)
+            span.add(self.label)
+            return span
+
+
+
+

@@ -832,6 +832,8 @@ class TopWdg(Widget):
     
         from pyasm.security import Site
         from pyasm.prod.biz import ProdSetting
+        from pyasm.biz import PrefSetting
+
         site = Site.get_site()
 
         master_enabled = Config.get_value("master", "enabled")
@@ -845,6 +847,7 @@ class TopWdg(Widget):
         else:
             master_login_ticket = ""
         master_project_code = Config.get_value("master", "project_code")
+        user_timezone = PrefSetting.get_value_by_key('timezone')
 
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
@@ -866,8 +869,9 @@ class TopWdg(Widget):
         env.set_master_login_ticket('%s');
         env.set_master_project_code('%s');
         env.set_master_site('%s');
+        env.set_user_timezone('%s');
         ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
-		master_enabled, master_url, master_login_ticket, master_project_code, master_site))
+		master_enabled, master_url, master_login_ticket, master_project_code, master_site, user_timezone))
         top.add(script)
 
 

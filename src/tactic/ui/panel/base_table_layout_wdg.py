@@ -1339,7 +1339,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         
 
         badge_view = self.kwargs.get("badge_view")
-        if badge_view:
+        if badge_view and badge_view.strip():
             from tactic.ui.panel import CustomLayoutWdg
             widget = CustomLayoutWdg(view=badge_view, panel_kwargs=self.kwargs)
             if widget:
@@ -1455,7 +1455,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add a custom layout widget
         custom_shelf_view = self.kwargs.get("shelf_view")
-        if custom_shelf_view:
+        if custom_shelf_view and custom_shelf_view.strip():
             from tactic.ui.panel import CustomLayoutWdg
             widget = CustomLayoutWdg(view=custom_shelf_view, panel_kwargs=self.kwargs)
             if widget:

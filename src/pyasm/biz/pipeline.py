@@ -146,7 +146,11 @@ class Process(Base):
 
         if process:
             workflow_data = process.get_json_value("workflow", {})
-            task_pipeline_code = workflow_data.get("task_pipeline")
+            version = workflow_data.get("version") or 1
+            version_2 = version in [2, '2']
+            
+            properties = workflow_data.get("properties") or {}
+            task_pipeline_code = properties.get("task_pipeline") if version_2 else workflow_data.get("task_pipeline")
             node_type = workflow_data.get("node_type")
 
 

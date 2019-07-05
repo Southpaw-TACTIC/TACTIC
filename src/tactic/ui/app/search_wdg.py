@@ -639,7 +639,6 @@ class SearchWdg(BaseRefreshWdg):
         filter_top = DivWdg()
         container.add(filter_top)
         filter_top.add_color("color", "color")
-        filter_top.add_style("min-width: 800px")
         self.set_as_panel(filter_top)
 
         # Saved Searches
@@ -1127,14 +1126,14 @@ spt.advanced_search.keywords.add_keyword = function(display) {
     let search_top = spt.advanced_search.get_top();
     
     let tagsContainer = search_top.getElement(".spt_search_tags");
-    let tagTemplate = tagsContainer.getElement(".spt_template");
+    let tagTemplate = tagsContainer.getElement(".spt_template_item");
 
     let clone = spt.behavior.clone(tagTemplate);
     let textDiv = clone.getElement(".spt_search_tag_label");
     textDiv.innerText = "#"+display;
     textDiv.setAttribute("spt_value", display);
     clone.setAttribute("spt_value", display);
-    clone.removeClass("spt_template");
+    clone.removeClass("spt_template_item");
     tagsContainer.appendChild(clone);
 
     tagsContainer.removeClass("empty");
@@ -1156,7 +1155,7 @@ spt.advanced_search.keywords.extract_keywords = function() {
     let keywords = [];
 
     items.forEach(function(item){
-        if (item.hasClass("spt_template")) return;
+        if (item.hasClass("spt_template_item")) return;
         keywords.push(item.getAttribute("spt_value"));
     })
 
@@ -1186,13 +1185,13 @@ spt.advanced_search.keywords.add_recent = function(value) {
         spt.advanced_search.keywords.recent_searches.push(value);
 
         let recents = search_top.getElement(".spt_recent_searches");
-        let template = recents.getElement(".spt_template");
+        let template = recents.getElement(".spt_template_item");
 
         let clone = spt.behavior.clone(template);
         let labelDiv = clone.getElement(".spt_recent_search_label");
         clone.setAttribute("spt_value", value)
         labelDiv.innerText = value;
-        clone.removeClass("spt_template");
+        clone.removeClass("spt_template_item");
 
         recents.appendChild(clone);
     });
@@ -1226,7 +1225,7 @@ spt.advanced_search.saved.add_item = function(key, label, value) {
     
     let container = search_top.getElement(".spt_saved_searches_container");
     let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    let template = categoryContainer.getElement(".spt_saved_search_item.spt_template");
+    let template = categoryContainer.getElement(".spt_saved_search_item.spt_template_item");
 
     let clone = spt.behavior.clone(template);
     let labelDiv = clone.getElement(".spt_saved_search_label");
@@ -1234,7 +1233,7 @@ spt.advanced_search.saved.add_item = function(key, label, value) {
 
     clone.setAttribute("spt_category", key);
     clone.setAttribute("spt_value", value);
-    clone.removeClass("spt_template");
+    clone.removeClass("spt_template_item");
     categoryContainer.appendChild(clone);
 }
 
@@ -1266,7 +1265,7 @@ spt.advanced_search.saved.clear_items = function() {
     let items = container.getElements(".spt_saved_search_item");
 
     items.forEach(function(item){
-        if (item.hasClass("spt_template")) return;
+        if (item.hasClass("spt_template_item")) return;
         item.remove();
     });
 }
