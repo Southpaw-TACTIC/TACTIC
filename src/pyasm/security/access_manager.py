@@ -50,7 +50,7 @@ class Sudo(object):
 
 
     def is_sudo():
-        is_sudo = Container.get("Sudo::is_sudo")
+        is_sudo = Container.get("Sudo::is_sudo") == True
         if not is_sudo:
             return False
         else:
@@ -59,14 +59,12 @@ class Sudo(object):
             
 
     def __del__(self):
-        Container.put("Sudo::is_sudo", False)
-
-        # remove if I m not in admin group
-        if self.was_admin == False:
-            self.access_manager.set_admin(False)
+        return self.exit()
 
 
     def exit(self):
+        Container.put("Sudo::is_sudo", False)
+
         # remove if I m not in admin group
         if self.was_admin == False:
             self.access_manager.set_admin(False)

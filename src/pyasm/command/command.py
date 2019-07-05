@@ -255,6 +255,8 @@ class Command(Base):
             cmd.preprocess()
             cmd.get_data()
             ret_val = cmd.execute()
+            if ret_val is not None:
+                cmd.info = ret_val
             cmd.postprocess()
 
         except CommandExitException as e:
@@ -385,7 +387,6 @@ class Command(Base):
                 # call all registered triggers 
                 from .trigger import Trigger
                 Trigger.call_all_triggers()
-
 
         return ret_val
 

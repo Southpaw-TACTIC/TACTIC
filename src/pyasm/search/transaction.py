@@ -392,71 +392,76 @@ class Transaction(Base):
 
     def update_change_timestamps(self, transaction_log):
 
-        # commit all of the changes logs
-	    # NOTE: this does not get executed on undo/redo
-        timestamp = transaction_log.get_value("timestamp")
+        from pyasm.security import Sudo
+        sudo = Sudo()
+        try:
 
-        from pyasm.biz import PrefSetting
-        # get the local time since timestamp column is tz-naive
-        timezone = PrefSetting.get_value_by_key('timezone')
-        
-        if timezone in ["local", '']:
-            timestamp = SPTDate.convert_to_local(timestamp)
-        else:
-            timestamp = SPTDate.convert_to_timezone(timestamp, timezone)
+            # commit all of the changes logs
+                # NOTE: this does not get executed on undo/redo
+            timestamp = transaction_log.get_value("timestamp")
 
-        if timestamp and not isinstance(timestamp, basestring):
-            timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-
-        code = transaction_log.get_value("code")
-
-        from pyasm.biz import Project
-        from pyasm.security import Site
-        from pyasm.search import Search
-        project_code = Project.get_project_code()
-
-        for key, change_timestamp in self.change_timestamps.items():
-            new_changed_on = change_timestamp.get_json_value("changed_on", {})
-
-            search_type = change_timestamp.get_value("search_type")
-            search_code = change_timestamp.get_value("search_code")
-            search = Search("sthpw/change_timestamp")
-            search.add_filter("search_type", search_type)
-            search.add_filter("search_code", search_code)
-            ct = search.get_sobject()
-            if ct:
-                changed_on = ct.get_json_value("changed_on", {})
-                change_timestamp = ct
+            from pyasm.biz import PrefSetting
+            # get the local time since timestamp column is tz-naive
+            timezone = PrefSetting.get_value_by_key('timezone')
+            
+            if timezone in ["local", '']:
+                timestamp = SPTDate.convert_to_local(timestamp)
             else:
-                changed_on = change_timestamp.get_json_value("changed_on", {})
+                timestamp = SPTDate.convert_to_timezone(timestamp, timezone)
 
-            for column, value in new_changed_on.items():
-                if value == "CHANGED":
-                    changed_on[column] = timestamp
+            if timestamp and not isinstance(timestamp, basestring):
+                timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
-            change_timestamp.set_json_value("changed_on", changed_on)
-            change_timestamp.set_value("transaction_code", code)
-            change_timestamp.set_value("project_code", project_code)
-            change_timestamp.set_now("timestamp")
+            code = transaction_log.get_value("code")
 
-            # it is possible that this commit will fail under heavy load
-            # because per chance, the same search_type/search_type combo
-            # was created in another transaction
-            from pyasm.search import SqlException, DbContainer
-            try:
-                # triggers are "ingest" which basically runs nothing execpt the
-                # update
-                change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
-            except SqlException as e:
-                print("WARNING: ", str(e))
-                if change_timestamp.is_insert:
-                    action = "insert"
+            from pyasm.biz import Project
+            from pyasm.security import Site
+            from pyasm.search import Search
+            project_code = Project.get_project_code()
+
+            for key, change_timestamp in self.change_timestamps.items():
+                new_changed_on = change_timestamp.get_json_value("changed_on", {})
+
+                search_type = change_timestamp.get_value("search_type")
+                search_code = change_timestamp.get_value("search_code")
+                search = Search("sthpw/change_timestamp")
+                search.add_filter("search_type", search_type)
+                search.add_filter("search_code", search_code)
+                ct = search.get_sobject()
+                if ct:
+                    changed_on = ct.get_json_value("changed_on", {})
+                    change_timestamp = ct
                 else:
-                    action = "update"
-                print("Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code))
-                DbContainer.commit_thread_sql()
+                    changed_on = change_timestamp.get_json_value("changed_on", {})
 
+                for column, value in new_changed_on.items():
+                    if value == "CHANGED":
+                        changed_on[column] = timestamp
 
+                change_timestamp.set_json_value("changed_on", changed_on)
+                change_timestamp.set_value("transaction_code", code)
+                change_timestamp.set_value("project_code", project_code)
+                change_timestamp.set_now("timestamp")
+
+                # it is possible that this commit will fail under heavy load
+                # because per chance, the same search_type/search_type combo
+                # was created in another transaction
+                from pyasm.search import SqlException, DbContainer
+                try:
+                    # triggers are "ingest" which basically runs nothing execpt the
+                    # update
+                    change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
+                except SqlException as e:
+                    print("WARNING: ", str(e))
+                    if change_timestamp.is_insert:
+                        action = "insert"
+                    else:
+                        action = "update"
+                    print("Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code))
+                    DbContainer.commit_thread_sql()
+
+        finally:
+            sudo.exit()
 
 
 

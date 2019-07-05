@@ -239,6 +239,7 @@ class Login(SObject):
             return cached
 
         # This function runs as Sudo
+        from pyasm.security import Sudo
         sudo = Sudo()
         user = Environment.get_user_name()
         try:
@@ -1849,6 +1850,7 @@ class Security(Base):
         site = Site.get_site()
         if site:
             Site.set_site("default")
+        sudo = Sudo()
         try:
 
             if handler:
@@ -1860,6 +1862,7 @@ class Security(Base):
                 ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
 
         finally:
+            sudo.exit()
             if site:
                 Site.pop_site()
 

@@ -2862,6 +2862,11 @@ class AddImageElementWdg(ButtonElementWdg):
 class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
     def get_display(self):
+        security = Environment.get_security()
+        if not security.is_admin():
+            div = DivWdg()
+            div.add("Only Admin can execute this")
+            return div
 
         html = self.kwargs.get("html")
         style = self.kwargs.get("style")

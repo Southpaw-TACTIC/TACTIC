@@ -354,14 +354,9 @@ def xmlrpc_decorator(meth):
             # environment.
 
             if self.get_protocol() != 'local':
-
-
-                api_mode = Config.get_value("security", "api_mode")
-
-                api_mode = "query"
+                api_mode = Config.get_value("security", "api_mode") or "open"
 
                 allowed = False
-
 
                 security = Environment.get_security()
                 user_name = security.get_user_name()
@@ -384,26 +379,7 @@ def xmlrpc_decorator(meth):
                     raise Exception("Permission Denied [%s] [%s]" % (meth.__name__, args))
 
 
-
-
             try:
-
-                """
-                if meth.__name__ not in [
-                        'get_widget',
-                        'execute_cmd',
-                        
-                        'eval',
-                        'get_by_search_key',
-                        'query',
-                        'get_task_status_colors'
-                        ]:
-                    print("----------------")
-                    print(meth.__name__)
-                    print("----------------")
-                """
-
-
                 if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif meth.__name__ in TRANS_OPTIONAL_METHODS:
@@ -5517,6 +5493,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
             # args can come in as a string from REST
             if isinstance(args, basestring):
                 args = jsonloads(args)
+
+
+            # TEST: look up class name use in a key
+            if class_name.startswith("$"):
+                key = class_name.lstrip("$")
+                f = open("/tmp/key_%s" % key, 'r')
+                data = f.read()
+                f.close()
+                data = jsonloads(data)
+                class_name = data.get("class_name")
+                login = data.get("login")
+                current_login = Environment.get_user_name()
+                if not login != current_login:
+                    raise Exception("Permission Denied: wrong user")
 
 
             args_array = []
