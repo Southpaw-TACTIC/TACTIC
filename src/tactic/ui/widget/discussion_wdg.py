@@ -553,6 +553,9 @@ class DiscussionWdg(BaseRefreshWdg):
                 server.abort();
             }
 
+            attach_top.files = [];
+            var attach_list = attach_top.getElement(".spt_attachment_list");
+            attach_list.innerHTML = "";
             spt.discussion.refresh(top);
 
             spt.app_busy.hide();
