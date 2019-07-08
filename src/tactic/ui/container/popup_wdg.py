@@ -271,6 +271,7 @@ class PopupWdg(BaseRefreshWdg):
 
         var content = popup.getElement(".spt_popup_content");
         content.setStyle("max-height", window_size.y - 100);
+        content.setStyle("overflow-y", "auto");
 
         '''
         } )
@@ -431,7 +432,8 @@ class PopupWdg(BaseRefreshWdg):
         content_div.set_id("%s_content" % self.name)
         content_div.add_class("spt_popup_content")
         content_div.add_style("width: 100%")
-        content_div.add_style("overflow: hidden")
+        content_div.add_style("overflow-x: hidden")
+        content_div.add_style("overflow-y: auto")
         content_div.add_style("display: block")
         #content_div.add_style("padding: 10px")
         if not self.content_wdg:

@@ -2952,7 +2952,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         closed_div = IconWdg("CLOSED", closed_icon) 
         swap.set_display_wdgs(open_div, closed_div)
         swap.add_style("margin-left: 5px")
-        swap.add_style("line-height: %spx" % height)
+        swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
         title_div.add_style("width: 100%")
