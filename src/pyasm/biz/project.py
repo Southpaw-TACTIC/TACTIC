@@ -17,6 +17,10 @@ import types
 from pyasm.common import Common, TacticException, SecurityException, Container, Environment, Xml, Config, jsonloads, jsondumps
 from pyasm.search import SObjectFactory, SObject, SearchType, DatabaseImpl, Search, SearchKey, Sql, DbContainer, DbResource
 
+import six
+basestring = six.string_types
+
+
 
 class Project(SObject):
 
@@ -260,8 +264,8 @@ class Project(SObject):
             else:
                 # FIXME: why is a virtual project created?
                 raise TacticException("No project [%s] exists" % project_name)
-                #print "WARNING: No project entry exists for project '%s'" % project_name
-                #print "Creating virtual project"
+                #print("WARNING: No project entry exists for project '%s'" % project_name)
+                #print("Creating virtual project")
                 #project = SearchType.create(Project.SEARCH_TYPE)
                 #project.set_value("code", project_name)
 
@@ -364,9 +368,9 @@ class Project(SObject):
             sql = DbContainer.get(db_resource)
             tables = sql.get_tables()
             has_table = table in tables
-        except Exception, e:
-            print "WARNING: in Project.has_table(): table [%s] not found" % table
-            print "Message: ", e
+        except Exception as e:
+            print("WARNING: in Project.has_table(): table [%s] not found" % table)
+            print("Message: ", e)
             has_table = False
 
         return has_table
@@ -512,7 +516,8 @@ class Project(SObject):
 
 
     def get_full_search_type(cls, search_type, project_code=None, project=None):
-        if type(search_type) in types.StringTypes:
+        #if type(search_type) in types.StringTypes:
+        if isinstance(search_type, basestring):
             if search_type.find("?") == -1:
                 base_key = search_type
             else:
@@ -803,14 +808,14 @@ class Project(SObject):
 
         dir_naming_expr = dir_naming
 
-        from snapshot import Snapshot, SObjectNotFoundException
+        from .snapshot import Snapshot, SObjectNotFoundException
         if isinstance(sobject,Snapshot):
             snapshot = sobject
             try:
                 sobject = snapshot.get_sobject()
-            except SObjectNotFoundException, e:
-                print "Error: ", e
-                print "snapshot: ", snapshot.get_code()
+            except SObjectNotFoundException as e:
+                print("Error: ", e)
+                print("snapshot: ", snapshot.get_code())
 
         dir_naming = Project.get_dir_naming(sobject)
         dir_naming.set_sobject(sobject)
@@ -837,7 +842,7 @@ class Project(SObject):
             from snapshot import SObjectNotFoundException
             try:
                 sobject = snapshot.get_sobject()
-            except SObjectNotFoundException, e:
+            except SObjectNotFoundException as e:
                 pass
         
         dir_naming = Project.get_dir_naming(sobject)

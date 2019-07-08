@@ -114,7 +114,7 @@ class CacheStartup(object):
             self.start_cache_tasks(scheduler)
             self.start_basic_tasks(scheduler)
 
-        print "Starting Scheduler ...."
+        print("Starting Scheduler ....")
         scheduler.start_thread()
 
     def start_cache_tasks(self, scheduler):
@@ -128,10 +128,10 @@ class CacheStartup(object):
                 dirty_caches = CacheContainer.get_dirty()
                 for dirty_cache in dirty_caches:
                     key = dirty_cache.get_value("key")
-                    #print "... caching: ", key
+                    #print("... caching: ", key)
                     cache = CacheContainer.get(key)
                     if not cache:
-                        print "WARNING: cache [%s] does not exist in memory" % key
+                        print("WARNING: cache [%s] does not exist in memory" % key)
                         continue
 
                     cache.init_cache()
@@ -149,12 +149,12 @@ class CacheStartup(object):
                 start = time.time()
                 #Batch()
 
-                #print "refresh caches ..."
+                #print("refresh caches ...")
                 caches = CacheContainer.get_all_caches()
                 for key, cache in caches.items():
-                    #print "... %s" % key, cache
+                    #print("... %s" % key, cache)
                     cache.init_cache()
-                #print "... %s seconds" % (time.time() - start)
+                #print("... %s seconds" % (time.time() - start))
 
                 DbContainer.commit_thread_sql()
                 DbContainer.close_all()
@@ -169,7 +169,7 @@ class CacheStartup(object):
         # close all extraneous database connections 15 minutes
         class DatabaseCloseTask(SchedulerTask):
             def execute(self):
-                #print "Closing all connections"
+                #print("Closing all connections")
                 DbContainer.close_all_global_connections()
 
         task = DatabaseCloseTask()
@@ -187,29 +187,29 @@ class CacheStartup(object):
             def execute(self):
                 # wait until KillThread is premitted
                 while GlobalContainer.get("KillThreadCmd:allow") == "false":
-                    print "Kill locked ... waiting 5 seconds"
+                    print("Kill locked ... waiting 5 seconds")
                     time.sleep(5)
                     continue
 
                 import cherrypy
-                print
-                print "Stopping TACTIC ..."
-                print 
-                print " ... stopping Schduler"
+                print("\n")
+                print("Stopping TACTIC ...")
+                print("\n")
+                print(" ... stopping Schduler")
                 scheduler = Scheduler.get()
                 scheduler.stop()
-                print " ... stopping Cherrypy"
+                print(" ... stopping Cherrypy")
                 cherrypy.engine.stop()
                 cherrypy.engine.exit()
-                print " ... closing DB connections"
+                print(" ... closing DB connections")
                 DbContainer.close_all_global_connections()
-                print " ... kill current process"
+                print(" ... kill current process")
                 Common.kill()
-                print "Done."
+                print("Done.")
 
 
 
-        from web_container import WebContainer
+        from .web_container import WebContainer
 
         if not WebContainer.is_dev_mode():
             task = KillTacticTask()
@@ -220,7 +220,7 @@ class CacheStartup(object):
                 offset = Common.randint(0, delay) - delay/2
                 delay += offset
                 seconds = int(delay * 60)
-                print "Process will exit in [%s] seconds" % seconds
+                print("Process will exit in [%s] seconds" % seconds)
                 scheduler.add_single_task(task, mode='sequential', delay=seconds)
 
 
@@ -240,7 +240,7 @@ if __name__ == '__main__':
         scheduler.stop()
 
     cache = CacheContainer.get("sthpw_column_info")
-    print "cache value: ", cache.get_value_by_key('data', 'login')
+    print("cache value: ", cache.get_value_by_key('data', 'login'))
 
 
 

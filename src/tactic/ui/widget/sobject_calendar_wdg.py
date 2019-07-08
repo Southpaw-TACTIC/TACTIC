@@ -20,7 +20,8 @@ from pyasm.search import Search, SearchType
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
 from pyasm.widget import IconWdg, IconButtonWdg, BaseInputWdg, TextWdg
 from tactic.ui.common import BaseRefreshWdg
-from calendar_wdg import CalendarWdg
+
+from .calendar_wdg import CalendarWdg
 
 from dateutil import parser, rrule
 from datetime import datetime, timedelta

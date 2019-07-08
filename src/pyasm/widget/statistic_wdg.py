@@ -18,8 +18,8 @@ from pyasm.web import *
 from pyasm.biz import *
 from pyasm.widget import FilterSelectWdg, FilterCheckboxWdg, IconButtonWdg, IconWdg
 
-from input_wdg import HiddenWdg, CalendarInputWdg
-from layout_wdg import TableWdg
+from .input_wdg import HiddenWdg, CalendarInputWdg
+from .layout_wdg import TableWdg
 
 import datetime, re
 from pyasm.widget import BaseTableElementWdg
@@ -334,7 +334,7 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
             completed_summary = self.total_completion_dict.get(group_label)
             if not completed_summary:
                 completed_summary = 0
-	    self.total_completion_dict[group_label] = completion + completed_summary
+            self.total_completion_dict[group_label] = completion + completed_summary
         self.num_sobjects += 1
 
         return table

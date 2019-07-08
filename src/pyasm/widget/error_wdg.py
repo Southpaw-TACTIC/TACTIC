@@ -12,9 +12,9 @@
 __all__ = ['Error403Wdg', 'Error404Wdg' ]
 
 from pyasm.web import Widget, DivWdg, HtmlElement, Table, SpanWdg, WebContainer
-from input_wdg import HiddenWdg, TextWdg, PasswordWdg
-from web_wdg import SignOutLinkWdg
-from header_wdg import ProjectSwitchWdg
+from .input_wdg import HiddenWdg, TextWdg, PasswordWdg
+from .web_wdg import SignOutLinkWdg
+from .header_wdg import ProjectSwitchWdg
 
 
 class ErrorWdg(Widget):

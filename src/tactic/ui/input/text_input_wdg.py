@@ -23,6 +23,11 @@ from pyasm.command import Command
 
 import re, string
 
+import six
+basestring = six.string_types
+
+
+
 try:
     import numbers
     has_numbers_module = True

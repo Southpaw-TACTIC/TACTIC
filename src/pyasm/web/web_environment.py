@@ -16,10 +16,10 @@ import os
 
 from pyasm.common import Environment, Config, Marshaller, System, Container
 from pyasm.biz import PrefSetting, Project
-from web_container import WebContainer
 
-from widget import Url, WidgetSettings
-from palette import Palette
+from .web_container import WebContainer
+from .widget import Url, WidgetSettings
+from .palette import Palette
 
 class WebEnvironmentException(Exception):
     pass

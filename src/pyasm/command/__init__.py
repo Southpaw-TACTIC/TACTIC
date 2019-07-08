@@ -11,30 +11,30 @@
 #
 
 
-from file_upload import *
-from command import *
-from delete_cmd import *
-from sign_out_cmd import *
-from edit_wdg_action import *
-from edit_cmd import *
-from undo_cmd import *
-from csv_import_cmd import *
-from csv_export_cmd import *
+from .file_upload import *
+from .command import *
+from .delete_cmd import *
+from .sign_out_cmd import *
+from .edit_wdg_action import *
+from .edit_cmd import *
+from .undo_cmd import *
+from .csv_import_cmd import *
+from .csv_export_cmd import *
 
-from trigger import *
-from email_trigger import *
-from pickup_trigger import *
-from status_trigger import *
+from .trigger import *
+from .email_trigger import *
+from .pickup_trigger import *
+from .status_trigger import *
 
-from email_handler import *
+from .email_handler import *
 
-from add_user_to_group_cmd import *
-from widget_settings_cmd import *
+from .add_user_to_group_cmd import *
+from .widget_settings_cmd import *
 
-from database_cmd import *
+from .database_cmd import *
 
-from workflow import *
+from .workflow import *
 
-from subprocess_trigger import *
+from .subprocess_trigger import *
 
 

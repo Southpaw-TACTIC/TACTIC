@@ -21,8 +21,7 @@ from pyasm.common import Environment, Container, Config
 from pyasm.web import WebEnvironment
 from pyasm.biz import Project
 
-#from cherrypy_startup import TacticIndex, _cp_on_http_error
-from cherrypy_startup import CherryPyStartup as CherryPyStartup20
+from .cherrypy_startup import CherryPyStartup as CherryPyStartup20
 
 
 
@@ -126,7 +125,7 @@ class CherryPyStartup(CherryPyStartup20):
             else:
                 eval("cherrypy.root.tactic.%s" % project_code)
         # if project_code is empty , it raises SyntaxError
-        except (AttributeError, SyntaxError), e:
+        except (AttributeError, SyntaxError) as e:
             print("WARNING: ", e)
             has_project = False
             has_site = True
@@ -479,7 +478,7 @@ class CherryPyStartup(CherryPyStartup20):
             #print("... WARNING: SitePage not found")
             exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
-        except SyntaxError, e:
+        except SyntaxError as e:
             print(e.__str__())
             print("WARNING: skipping project [%s]" % project)
 
@@ -534,7 +533,7 @@ class CherryPyStartup(CherryPyStartup20):
                 else:
                     exec("cherrypy.root.tactic.%s.%s = %s()" % (project,context,context) )
 
-            except ImportError, e:
+            except ImportError as e:
                 print(str(e))
                 print("... failed to import '%s.%s.%s'" % (base, project, context))
                 raise

@@ -23,10 +23,13 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-from layout_wdg import SwitchLayoutMenu
+
+from .layout_wdg import SwitchLayoutMenu
 
 import types, re
 
+import six
+basestring = six.string_types
 
 
 
@@ -168,7 +171,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.element_names = self.kwargs.get("element_names")
             if self.element_names:
                 config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
-                if type(self.element_names) in types.StringTypes:
+                if isinstance(self.element_names, basestring):
                     self.element_names = self.element_names.split(",")
                     self.element_names = [x.strip() for x in self.element_names]
                 
@@ -395,7 +398,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #args_keys = self.get_args_keys()
         args_keys = self.ARGS_KEYS
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            #if not args_keys.has_key(key):
+            if key not in args_keys:
                 #raise TacticException("Key [%s] not in accepted arguments" % key)
                 pass
 
@@ -502,7 +506,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     try:
                         limit = int(limit)
                         self.search_limit.set_limit(limit)
-                    except ValueError, e:
+                    except ValueError as e:
                         pass
                 stated_limit = self.search_limit.get_stated_limit()
                 if stated_limit:
@@ -730,7 +734,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         except SqlException as e:
             self.search_wdg.clear_search_data(search.get_base_search_type())
 
-    	self.element_process_sobjects(search)
+        self.element_process_sobjects(search)
 
 
 
@@ -850,7 +854,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 new_settings[item] = True
             settings = new_settings
 
-        if settings.has_key("gear") and settings.get("gear") == True:
+        #if settings.has_key("gear") and settings.get("gear") == True:
+        if 'gear' in settings and settings.get("gear") == True:
             gear_settings = self.kwargs.get("gear_settings")
             if isinstance(gear_settings, basestring):
                 if gear_settings.startswith("{") and gear_settings.endswith("}"):
@@ -885,7 +890,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if settings.get(name) in [None, False, "false"]:
                 # if not in settings, then the default is false
                 default = False
-            if not settings.has_key(name):
+            #if not settings.has_key(name):
+            if name not in settings:
                 value = settings_default.get(name)
             else:
                 value = settings.get(name)
@@ -969,7 +975,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             config_xml = config_sobj.get_xml_value("config")
             stmt = 'custom_gear_menus = %s' % config_xml.get_value("config/gear_menu_custom").strip()
             try:
-                exec stmt
+                exec(stmt)
             except:
                 custom_gear_menus = "CONFIG-ERROR"
 
@@ -1381,7 +1387,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         show_collection_tool = self.kwargs.get("show_collection_tool")
 
         if show_collection_tool not in ["false", False] and SearchType.column_exists(self.search_type, "_is_collection"):
-            from collection_wdg import CollectionAddWdg
+            from .collection_wdg import CollectionAddWdg
             collection_div = CollectionAddWdg(search_type=self.search_type, parent_key=self.parent_key)
             wdg_list.append( {'wdg': collection_div} )
         

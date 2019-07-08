@@ -19,7 +19,7 @@ from pyasm.search import DbContainer, Search
 from pyasm.web import Widget, Table, HtmlElement, WebContainer
 from pyasm.widget import IconWdg, ButtonWdg
 
-from table_element_wdg import BaseTableElementWdg
+from .table_element_wdg import BaseTableElementWdg
 
 #TODO: to be replaced by the same file in tactic.ui.table
 
@@ -49,7 +49,7 @@ class ProjectWdg(BaseTableElementWdg):
         try:
             exists = project.database_exists()
         except:
-            #print "Error checking if database exists for project [%s]" % project.get_code()
+            #print("Error checking if database exists for project [%s]" % project.get_code())
             exists = False
 
         if exists:
@@ -146,7 +146,7 @@ class ProjectSummaryWdg(BaseTableElementWdg):
             data_exec = "%s/src/pyasm/search/upgrade/data_summary.py" % install_dir
             for table in ['search_object', 'notification']:
                 cmd = 'python "%s" %s %s %s' % (data_exec, project_code, project_type, table)
-                print cmd
+                print(cmd)
                 pre = self.get_results_wdg(cmd)
                 widget.add(pre)
 

@@ -17,8 +17,8 @@ __all__ = ['DynamicLoaderException', 'DynamicLoaderReceiverWdg', 'DynamicLoaderW
 
 from pyasm.common import Container, Common
 from pyasm.web import *
-from web_wdg import *
-from layout_wdg import *
+from .web_wdg import *
+from .layout_wdg import *
 
 
 class DynamicLoaderException(Exception):

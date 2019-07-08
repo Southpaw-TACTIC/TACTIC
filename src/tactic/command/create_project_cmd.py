@@ -217,13 +217,13 @@ class CreateProjectCmd(Command):
 
 
         # creating project database
-        print "Creating database '%s' ..." % project_code
+        print("Creating database '%s' ..." % project_code)
         try:
             # create the datbase
             database.create_database(db_resource)
         except Exception as e:
-            print str(e)
-            print "WARNING: Error creating database [%s]" % project_code
+            print(str(e))
+            print("WARNING: Error creating database [%s]" % project_code)
 
 
 
@@ -275,7 +275,7 @@ class CreateProjectCmd(Command):
 
         self.info['result'] = "Finished creating project [%s]."%project_code
 
-        print "Done."
+        print("Done.")
 
 
 
@@ -295,7 +295,7 @@ class CreateProjectCmd(Command):
     def import_default_side_bar(self):
         code = Search.eval("@GET(config/widget_config['code','WIDGET_CONFIG000000'].code)", single=True)
         if code:
-            print "Default side bar already exists!"
+            print("Default side bar already exists!")
             return
 
         
@@ -566,7 +566,7 @@ class CopyProjectCmd(Command):
         cmd_list = cmd.split(' ')
         cmd_list.append(project_title)
 
-        print ' '.join(cmd_list)
+        print(' '.join(cmd_list))
         program = subprocess.Popen(cmd_list, shell=False, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         program.wait()
         value = program.communicate()

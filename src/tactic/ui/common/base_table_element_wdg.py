@@ -15,14 +15,19 @@ __all__ = ['BaseTableElementWdg', 'RawTableElementWdg', 'SimpleTableElementWdg',
 
 import types
 import locale
+from pyasm.biz import PrefSetting
 from pyasm.widget import BaseTableElementWdg as FormerBaseTableElementWdg
 from pyasm.web import WikiUtil, DivWdg, Widget
 from pyasm.common import Date, SPTDate, Common, TacticException
 from pyasm.search import Search, SearchType, SObject
 
 from pyasm.command import Command, ColumnDropCmd, ColumnAlterCmd, ColumnAddCmd, ColumnAddIndexCmd
-from base_refresh_wdg import BaseRefreshWdg
-from pyasm.biz import PrefSetting
+
+import six
+basestring = six.string_types
+
+from .base_refresh_wdg import BaseRefreshWdg
+
 from dateutil import parser
 
 class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
@@ -487,7 +492,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         try:
             result = Search.eval(expression, sobjects=sobjects, vars=self.vars)
         except Exception as e:
-            print "WARNING: ", e.message
+            print("WARNING: ", e.message)
             result = 0
             title = ''
 
@@ -629,7 +634,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
         else:
             data_type = 'text'
 
-        if type(value) in types.StringTypes:
+        if isinstance(value, basestring):
             wiki = WikiUtil()
             value = wiki.convert(value) 
         if name == 'id' and value == -1:

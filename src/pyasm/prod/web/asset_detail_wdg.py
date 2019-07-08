@@ -17,10 +17,10 @@ from pyasm.prod.biz import Shot
 from pyasm.search import Search, SearchType, SearchKey
 from pyasm.web import Widget, Table, WebContainer, DivWdg, SpanWdg, HtmlElement, AjaxLoader
 from pyasm.widget import ThumbWdg, TableWdg, FilterSelectWdg, SimpleStatusWdg, SwapDisplayWdg, IconWdg
-
-from layout_summary_wdg import AssignedShotWdg, AssetsInShotWdg
 from pyasm.common import Common
 from tactic.ui.common import BaseRefreshWdg
+
+from .layout_summary_wdg import AssignedShotWdg, AssetsInShotWdg
 
 class SObjectDetailWrapperWdg(Widget):
     '''wrapper widget that determines which detail widget to use'''
@@ -758,7 +758,7 @@ class ShotDetailWdg(AssetDetailWdg):
 class LayerDetailWdg(AssetDetailWdg):
 
     def get_display(self):
-	'''
+        '''
         # get the args in the URL
         args = WebContainer.get_web().get_form_args()
         search_type = args['search_type']

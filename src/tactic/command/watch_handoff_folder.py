@@ -23,7 +23,7 @@ from pyasm.search import DbContainer
 from pyasm.search import Search, Transaction, SearchType, DbContainer
 from pyasm.command import Command
 
-from scheduler import SchedulerTask, Scheduler
+from .scheduler import SchedulerTask, Scheduler
 
 
 
@@ -68,11 +68,11 @@ class WatchServerFolderTask(SchedulerTask):
                 try:
                     task.execute()
                 except Exception as e:
-                    print "WARNING: error executing task:"
-                    print "Reported Error: ", str(e)
+                    print("WARNING: error executing task:")
+                    print("Reported Error: ", str(e))
 
 
-            #print time.time() - start
+            #print(time.time() - start)
             # catch a breather?
             time.sleep(2)
             count += 1
@@ -171,7 +171,7 @@ class WatchFolderTask(SchedulerTask):
 
             # FIXME: there is a memory growth problem.  Batch clears it
             if total > 1:
-                print "Processing file [%s] (%s of %s): " % (dirname, count+1,total+1)
+                print("Processing file [%s] (%s of %s): " % (dirname, count+1,total+1))
             if count % 10 == 0:
                 Batch()
 
@@ -200,12 +200,12 @@ class WatchFolderTask(SchedulerTask):
                     base_dir = os.path.dirname(path)
                     self.handle_encrypted(base_dir, transaction_code, dirname)
                 else:
-                    print "Running transaction: [%s]" % transaction_code
+                    print("Running transaction: [%s]" % transaction_code)
                     self.handle_transaction(base_dir, transaction_code, transaction_code)
             except Exception as e:
-                print "... ERROR: could not process transaction [%s]" % transaction_code
-                print str(e)
-                print
+                print("... ERROR: could not process transaction [%s]" % transaction_code)
+                print(str(e))
+                print("\n")
 
             interval = 0.1
             time.sleep(interval)
@@ -215,7 +215,7 @@ class WatchFolderTask(SchedulerTask):
 
         base_dir = self.base_dir
         if not base_dir:
-            print "WARNING: No base dir defined."
+            print("WARNING: No base dir defined.")
             return
 
         # every 10 iterations, compare to the database and rerun
@@ -230,9 +230,9 @@ class WatchFolderTask(SchedulerTask):
     def handle_base_dir(self, base_dir):
 
         #md5 = self.get_folder_md5(base_dir)
-        #print md5
+        #print(md5)
         #if self.last_md5 != None and md5 != self.last_md5:
-        #    print "There is a change"
+        #    print("There is a change")
         #self.last_md5 = md5
 
         diff = self.get_new_dirs(base_dir)
@@ -285,7 +285,7 @@ class WatchFolderTask(SchedulerTask):
         dirname = encrypted.replace(".enc", "")
         dirname = dirname.replace(".zip", "")
 
-        print "Running transaction: [%s]" % transaction_code
+        print("Running transaction: [%s]" % transaction_code)
         self.handle_transaction(to_dir, transaction_code, dirname)
 
 
@@ -300,7 +300,7 @@ class WatchFolderTask(SchedulerTask):
         # check to see if the transaction exists already
         log = Search.get_by_code("sthpw/transaction_log", transaction_code)
         if log:
-            print "Transaction [%s] already exists. Skipping ..." % log.get_code()
+            print("Transaction [%s] already exists. Skipping ..." % log.get_code())
             return
 
 
@@ -322,7 +322,7 @@ class WatchFolderTask(SchedulerTask):
         search.add_filter("transaction_code", transaction_code)
         sync_log = search.get_sobject()
         #if sync_log:
-        #    print "Already processed [%s]" % transaction_code
+        #    print("Already processed [%s]" % transaction_code)
         #    return
 
         try:
@@ -348,15 +348,15 @@ class WatchFolderTask(SchedulerTask):
 
         # May need special handing
         #except MissingItemException as e:
-        #    print "WARNING: Could not run transaction [%s]" % transaction_code
-        #    print "Error reported: ", str(e)
+        #    print("WARNING: Could not run transaction [%s]" % transaction_code)
+        #    print("Error reported: ", str(e))
         #    search = SearchType.create("sthpw/sync_error")
 
 
 
         except Exception as e:
-            print "WARNING: Could not run transaction [%s]" % transaction_code
-            print "Error reported: ", str(e)
+            print("WARNING: Could not run transaction [%s]" % transaction_code)
+            print("Error reported: ", str(e))
             status = "error"
             error = str(e)
         else:
@@ -391,9 +391,9 @@ class WatchFolderTask(SchedulerTask):
     def get_folder_md5(self, base):
         m = hashlib.md5()
         for root, dirs, files in os.walk(base):
-            #print root
+            #print(root)
             #if dirs:
-            #    print dirs
+            #    print(dirs)
             for filename in files:
                 path = "%s/%s" % (root, filename)
                 try:
@@ -401,7 +401,7 @@ class WatchFolderTask(SchedulerTask):
                     m.update(path)
                     m.update(str(stat))
                 except Exception as e:
-                    print e
+                    print(e)
         md5 = m.hexdigest()
         return md5
 
@@ -432,7 +432,7 @@ class WatchFolderTask(SchedulerTask):
                     dir_set.remove(dirname)
 
             if diff:
-                print "... found new files: ", diff
+                print("... found new files: ", diff)
 
             removed_diff = self.last_dir_set.difference(dir_set)
 
@@ -445,9 +445,9 @@ class WatchFolderTask(SchedulerTask):
         # once
         self.last_dir_set = set(dirs)
 
-        #print "time: ", time.time() - start
+        #print("time: ", time.time() - start)
         if removed_diff:
-            print "removed files: ", removed_diff
+            print("removed files: ", removed_diff)
 
         diff = list(diff)
         diff.sort()
@@ -499,7 +499,7 @@ class WatchFolderTask(SchedulerTask):
 
             src_path = "%s/%s" % (base, rel_path)
             if not os.path.exists(src_path):
-                print "[%s] has not arrived" % src_path
+                print("[%s] has not arrived" % src_path)
                 return False
 
 
@@ -513,7 +513,7 @@ class WatchFolderTask(SchedulerTask):
             if st_size != -1:
                 # check that the size is the same
                 if st_size != os.path.getsize(src_path):
-                    print "[%s] size does not match" % src_path
+                    print("[%s] size does not match" % src_path)
                     return False
 
 
@@ -534,7 +534,7 @@ class WatchFolderTask(SchedulerTask):
         while 1:
             start = time.time()
             task.execute()
-            #print time.time() - start
+            #print(time.time() - start)
             # catch a breather?
             time.sleep(1)
 
@@ -576,7 +576,7 @@ if __name__ == '__main__':
     while 1:
         try:
             time.sleep(15)
-        except (KeyboardInterrupt, SystemExit), e:
+        except (KeyboardInterrupt, SystemExit) as e:
             scheduler.stop()
             break
 

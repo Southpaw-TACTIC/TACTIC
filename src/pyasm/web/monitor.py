@@ -135,7 +135,7 @@ class BaseProcessThread(threading.Thread):
         start = time.clock()
         try:
             response = self.check()
-        except IOError, e:
+        except IOError as e:
 
             pid = self._get_pid() 
             if pid:
@@ -146,7 +146,7 @@ class BaseProcessThread(threading.Thread):
                 if pid:
                     try:
                         Common.kill(pid)
-                    except Exception, e:
+                    except Exception as e:
                         print("WARNING: process [%s] does not exist" % pid)
 
                 pid_path = self.get_pid_path()
@@ -333,7 +333,7 @@ class JobQueueThread(BaseProcessThread):
                 try:
                     #os.kill(self.pid, 9)
                     Common.kill(self.pid)
-                except Exception, e:
+                except Exception as e:
                     print("WARNING for pid [%s]: " % self.pid, e)
 
                 break
@@ -996,7 +996,7 @@ class TacticMonitor(object):
                     # any more.  
                     break
 
-            except KeyboardInterrupt, e:
+            except KeyboardInterrupt as e:
                 #print("Keyboard interrupt ... exiting Tactic")
                 for tactic_thread in self.tactic_threads:
                     tactic_thread.end = True
@@ -1035,7 +1035,7 @@ class TacticMonitor(object):
                 pid = file.readline().strip()
                 file.close()
                 Common.kill(pid)
-            except IOError, e:
+            except IOError as e:
                 continue
 
         # kill watch folder processes
@@ -1046,7 +1046,7 @@ class TacticMonitor(object):
                 pid = f.readline()
                 f.close()
                 Common.kill(pid)
-            except IOError, e:
+            except IOError as e:
                 continue
         for idx, queue in enumerate(queues):
             try:
@@ -1055,7 +1055,7 @@ class TacticMonitor(object):
                 pid = f.readline()
                 f.close()
                 Common.kill(pid)
-            except IOError, e:
+            except IOError as e:
                 continue
 
 if __name__ == '__main__':

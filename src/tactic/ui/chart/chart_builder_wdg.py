@@ -23,7 +23,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types
 
-from bar_chart_wdg import BarChartWdg
+from .bar_chart_wdg import BarChartWdg
 
 # DEPRECATED
 

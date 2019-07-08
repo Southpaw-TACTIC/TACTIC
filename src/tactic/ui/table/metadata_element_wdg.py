@@ -22,7 +22,8 @@ from pyasm.biz import Project, NamingUtil, ExpressionParser, Snapshot
 from tactic.ui.common import BaseTableElementWdg, SimpleTableElementWdg
 from tactic.ui.widget import ActionButtonWdg
 
-from button_wdg import ButtonElementWdg
+from .button_wdg import ButtonElementWdg
+
 class MetadataElementWdg(ButtonElementWdg):
     '''The element widget that displays according to type'''
 

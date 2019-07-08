@@ -20,6 +20,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types, sys, re, os
 
+import six
+basestring = six.string_types
+
+
+
 class TabWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
@@ -2114,7 +2119,7 @@ spt.tab.close = function(src_el) {
 
     def add_context_menu(self, header_div):
 
-        from menu_wdg import Menu, MenuItem
+        from .menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         #menu.set_allow_icons(False)
         #menu.set_setup_cbfn( 'spt.tab.smenu_ctx.setup_cbk' )
@@ -2492,7 +2497,7 @@ spt.tab.close = function(src_el) {
             menus_in = {
                 'DG_HEADER_CTX': menus,
             }
-            from smart_menu_wdg import SmartMenu
+            from .smart_menu_wdg import SmartMenu
             SmartMenu.attach_smart_context_menu( header_div, menus_in, False )
 
 
@@ -2589,7 +2594,7 @@ spt.tab.close = function(src_el) {
         '''
         } )
 
-        from smart_menu_wdg import SmartMenu
+        from .smart_menu_wdg import SmartMenu
         SmartMenu.assign_as_local_activator( header, 'DG_HEADER_CTX' )
 
 

@@ -17,6 +17,10 @@ from pyasm.common import Common, Xml, jsondumps
 from pyasm.search import Search, SObject
 from pyasm.web import Widget, WebContainer, WidgetException, HtmlElement, DivWdg, WidgetSettings
 
+import six
+basestring = six.string_types
+
+
 class BaseRefreshWdg(Widget):
     def __init__(self, **kwargs):
         # get the them from cgi
@@ -67,7 +71,8 @@ class BaseRefreshWdg(Widget):
         else:
             args_keys = self.get_args_keys()
             for key in args_keys.keys():
-                if not kwargs.has_key(key):
+                #if not kwargs.has_key(key):
+                if key not in kwargs:
                     kwargs[key] = ''
         self.kwargs = kwargs
 

@@ -13,7 +13,7 @@ __all__ = ['Event', 'EventContainer']
 
 from pyasm.common import Base, Container
 from pyasm.web import WebContainer
-from widget import *
+from .widget import *
 
 import time, random
 
@@ -68,7 +68,7 @@ class EventContainer(Widget):
     def __init__(self):
         super(EventContainer,self).__init__()
  
-        from html_wdg import HtmlElement
+        from .html_wdg import HtmlElement
         self.script = HtmlElement.script()
         self.add_widget(self.script)
 

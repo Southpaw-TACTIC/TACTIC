@@ -79,7 +79,7 @@ class MayaRenderCmdBuilder(RenderCmdBuilder):
         self.options['naming_convention'] = "-im %s -fnc name.ext.#" % image_name
 
         # set the output type
-	type = self.render_package.get_option("output_ext", no_exception=True)
+        type = self.render_package.get_option("output_ext", no_exception=True)
         if type:
             self.options['type'] = "-of %s" % type
 
@@ -138,7 +138,7 @@ class XsiRenderCmdBuilder(RenderCmdBuilder):
 
 
         # set up all of the paths
-	type = "tif"
+        type = "tif"
         self.options['type'] = "-file_type %s" % type
         self.options['render_dir'] = "-file_dir %s" % render_dir
 
@@ -154,7 +154,7 @@ class XsiRenderCmdBuilder(RenderCmdBuilder):
         self.options_str = " ".join( self.options.values() )
         cmd = "xsibatch -render %s %s" % (self.options_str, input_path)
 
-        print cmd
+        print(cmd)
         return cmd
  
 

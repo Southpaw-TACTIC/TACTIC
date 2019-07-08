@@ -120,7 +120,7 @@ class SObjectConfig(Base):
             config_list = {}
             Container.put(cache_name, config_list)
 
-        if config_list.has_key(search_type):
+        if search_type in config_list:
             return config_list[search_type]
 
 

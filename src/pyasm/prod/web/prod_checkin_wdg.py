@@ -21,13 +21,13 @@ from pyasm.prod.biz import *
 from pyasm.prod.load import *
 from pyasm.web import *
 from pyasm.search import SObject
-from shot_navigator_wdg import *
-from prod_wdg import *
 from pyasm.biz import Project, Snapshot
-from asset_filter_wdg import ContextFilterWdg, ProcessFilterWdg
-from prod_input_wdg import ProcessSelectWdg
-#from tactic.ui.panel import ConnectorSelectWdg
 from tactic.ui.common import BaseRefreshWdg
+
+from .shot_navigator_wdg import *
+from .asset_filter_wdg import ContextFilterWdg, ProcessFilterWdg
+from .prod_wdg import *
+from .prod_input_wdg import ProcessSelectWdg
 
 class MayaCheckinWdg(BaseRefreshWdg):
 
@@ -677,7 +677,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
             # backwards compatible:
             try:
                 asset_code = asset_codes[i]
-            except IndexError, e:
+            except IndexError as e:
                 asset_code = instance_name
 
             # skip if this is a reference
@@ -909,7 +909,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
             # backwards compatible:
             tmp_set_instance = set_instance
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             # make sure the set_instance comes from this set
@@ -934,7 +934,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
 
             # backwards compatible
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             self.handle_instance(table, set_instance, ref_asset, publish=False)
@@ -955,7 +955,7 @@ class MayaAssetCheckinWdg(MayaCheckinWdg):
 
             # backwards compatible
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             self.handle_missing_instance(table, set_instance, ref_asset)
@@ -1287,7 +1287,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
                     # backwards compatible:
                     tmp_set_instance = set_instance
                     if set_instance.find(":") != -1:
-                        print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                        print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                         set_instance, tmp = set_instance.split(":")
 
                     # make sure the set_instance comes from this set
@@ -1322,7 +1322,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
 
                     # backwards compatible
                     if set_instance.find(":") != -1:
-                        print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                        print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                         set_instance, tmp = set_instance.split(":")
 
                     self.handle_instance(table, set_instance, ref_asset, allow_ref_checkin=True)
@@ -1343,7 +1343,7 @@ class MayaAnimCheckinWdg(MayaAssetCheckinWdg):
 
                     # backwards compatible
                     if set_instance.find(":") != -1:
-                        print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                        print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                         set_instance, tmp = set_instance.split(":")
 
                     self.handle_missing_instance(table, set_instance, ref_asset)

@@ -27,7 +27,7 @@ class Pipeline(object):
 
     def __init__(self, pipeline_xml):
         if IMPORT_ERROR:
-            print IMPORT_ERROR
+            print(IMPORT_ERROR)
             return
         self.doc = Sax2.FromXml(pipeline_xml)
 
@@ -45,7 +45,7 @@ class Pipeline(object):
             return {}
         process = processes[0]
 
-        #print "get_process_info: ", process_name
+        #print("get_process_info: ", process_name)
         return process_name
 
         

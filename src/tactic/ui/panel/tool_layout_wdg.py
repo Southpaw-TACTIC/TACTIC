@@ -17,8 +17,9 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import ThumbWdg, IconWdg
 from tactic.ui.container import SmartMenu
 
-from table_layout_wdg import FastTableLayoutWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg
+
+from .table_layout_wdg import FastTableLayoutWdg
 
 class ToolLayoutWdg(FastTableLayoutWdg):
 
@@ -127,7 +128,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         #self.kwargs['show_gear'] = 'false'
 
-        from tile_layout_wdg import TileLayoutWdg
+        from .tile_layout_wdg import TileLayoutWdg
         self.tile_layout = TileLayoutWdg(search_type=self.search_type, expand_mode=self.expand_mode, process=self.process)
 
 
@@ -439,7 +440,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
 
-from custom_layout_wdg import CustomLayoutWdg
+from .custom_layout_wdg import CustomLayoutWdg
 class CustomLayoutWithSearchWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()

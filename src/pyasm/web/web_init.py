@@ -77,11 +77,11 @@ class SidebarTrigger(Trigger):
             #filenames = os.listdir(tmp_dir)
         for filename in filenames:
             #if not filename.startswith("%s__" % project_code):
-            #    print "skip filename ", filename
+            #    print("skip filename ", filename)
             
             path = "%s/%s" % (tmp_dir, filename)
             if os.path.exists(path):
-                print "Deleting: ", path
+                print("Deleting: ", path)
                 os.unlink(path)
 
 class StatusLogTrigger(Trigger):

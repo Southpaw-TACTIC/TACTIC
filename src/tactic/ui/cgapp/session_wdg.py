@@ -18,7 +18,7 @@ from pyasm.prod.biz import SessionContents
 from pyasm.widget import ThumbWdg
 from pyasm.prod.web import LatestVersionContextWdg
 from tactic.ui.common import BaseRefreshWdg
-from loader_wdg import IntrospectWdg
+from .loader_wdg import IntrospectWdg
 
 class SessionWdg(BaseRefreshWdg):
     

@@ -15,8 +15,8 @@ __all__ = ["System"]
 import sys, os, platform
 import errno
 
-from common import Common
-from config import Config
+from .common import Common
+from .config import Config
 
 
 def System():
@@ -52,7 +52,7 @@ class _System(object):
                     os.makedirs(dir, mode)
                 else:
                     os.makedirs(dir)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise
     makedirs = classmethod(makedirs)
@@ -101,8 +101,8 @@ class _System(object):
                     key = parts[0][2:-1].lower()
                     if key in result:
                         result[key] = int(parts[1])
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
         finally:
             if status is not None:
                 status.close()

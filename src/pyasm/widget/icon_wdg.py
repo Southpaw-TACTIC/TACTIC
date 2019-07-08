@@ -635,7 +635,7 @@ class IconSubmitWdg(IconButtonWdg):
         super(IconSubmitWdg,self).__init__(name,icon,long,icon_pos)
     
     def init(self):
-        from input_wdg import HiddenWdg
+        from .input_wdg import HiddenWdg
         if self.add_hidden:
             self.hidden = HiddenWdg(self.value,"")
             self.add( self.hidden )

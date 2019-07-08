@@ -10,5 +10,5 @@
 #
 #
 
-from index_wdg import *
+from .index_wdg import *
 

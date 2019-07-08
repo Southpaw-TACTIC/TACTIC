@@ -19,12 +19,21 @@ import smtplib
 import types
 import datetime
 from dateutil.relativedelta import relativedelta
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
-from email.mime.application import MIMEApplication
-from email.MIMEImage import MIMEImage
-from email.Utils import formatdate
-from command import CommandException
+
+try:
+    from email.MIMEMultipart import MIMEMultipart
+    from email.MIMEText import MIMEText
+    from email.mime.application import MIMEApplication
+    from email.MIMEImage import MIMEImage
+    from email.Utils import formatdate
+except:
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+    from email.mime.image import MIMEImage
+    from email.utils import formatdate
+
+
 
 from pyasm.common import *
 from pyasm.biz import Project, GroupNotification, Notification, CommandSObj, ProdSetting
@@ -32,7 +41,10 @@ from pyasm.biz import ExpressionParser
 from pyasm.security import *
 from pyasm.search import SObject, Search, SearchType, SObjectValueException, ExceptionLog
 from pyasm.command import Command
-from trigger import *
+
+
+from .command import CommandException
+from .trigger import *
 
 class EmailTrigger(Trigger):
 
@@ -185,7 +197,7 @@ class EmailTrigger(Trigger):
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
-            except SObjectValueException, e:
+            except SObjectValueException as e:
                 raise Exception("Error in running Email handler [%s]. %s" \
                         %(handler.__class__.__name__, e.__str__()))
 
@@ -660,7 +672,7 @@ class EmailTrigger2(EmailTrigger):
             cc_users = handler.get_cc()
             bcc_users = handler.get_bcc()
 
-        except SObjectValueException, e:
+        except SObjectValueException as e:
             raise Exception("Error in running Email handler [%s]. %s" \
                     %(handler.__class__.__name__, e.__str__()))
 
@@ -673,7 +685,7 @@ class EmailTrigger2(EmailTrigger):
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
-            except SObjectValueException, e:
+            except SObjectValueException as e:
                 raise Exception("Error in running Email handler [%s]. %s" \
                         %(handler.__class__.__name__, e.__str__()))
 
@@ -845,9 +857,8 @@ class EmailTriggerThread(threading.Thread):
             s.sendmail(self.sender_email, self.recipient_emails, self.msg)
             s.quit()
 
-        except Exception, e:
-
-
+        except Exception as e:
+            
             message = "-"*20
             message += "\n"
             message += "WARNING: Error sending email:"
@@ -946,7 +957,7 @@ class EmailTriggerTestCmd(Command):
             s.sendmail(self.sender_email, self.recipient_emails, self.msg.as_string())
             s.quit()
 
-        except Exception, e:
+        except Exception as e:
             msg = []
             msg.append( "-"*60)
             msg.append( "WARNING: Error sending email:")

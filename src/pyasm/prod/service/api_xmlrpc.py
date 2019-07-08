@@ -9,13 +9,27 @@
 #
 #
 #
+from __future__ import print_function
 
 __all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
 
 import decimal
-import shutil, os, types, sys, thread
-import re
+import shutil, os, types, sys
+try:
+    import _thread as thread
+    types.DictType = type({})
+except:
+    # Python 2.7
+    import thread
+import re, random
 import datetime, time
+
+IS_Pv3 = sys.version_info[0] > 2
+
+import six
+basestring = six.string_types
+
+
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -32,7 +46,7 @@ from pyasm.web import WebContainer, Palette
 from pyasm.widget import WidgetConfigView
 from pyasm.web.app_server import XmlrpcServer
 
-MAXINT =  2L**31-1
+MAXINT =  2**31-1
 
 class ApiClientCmd(Command):
     def get_title(self):
@@ -61,7 +75,7 @@ def get_simple_cmd(self, meth, ticket, args):
 
         def check(self):
             duration = time.time() - self.start_time
-            print "Checking ... (%0.3f)" % duration
+            print("Checking ... (%0.3f)" % duration)
 
         def execute(self2):
             self2.start_time = time.time()
@@ -69,17 +83,17 @@ def get_simple_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
            
             if self.get_protocol() != "local":
-                print "request_id: ", request_id
+                print("request_id: ", request_id)
                 now = datetime.datetime.now()
                 
                 def print_info(self2, args):
                     from pyasm.security import Site
                     if Site.get_site():
-                        print "site: ", Site.get_site()
-                    print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
-                    print "user: ", Environment.get_user_name()
-                    print "simple method: ", meth
-                    print "ticket: ", ticket
+                        print("site: ", Site.get_site())
+                    print("timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S"))
+                    print("user: ", Environment.get_user_name())
+                    print("simple method: ", meth)
+                    print("ticket: ", ticket)
                     Container.put("CHECK", self2.check)
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
@@ -99,10 +113,12 @@ def get_simple_cmd(self, meth, ticket, args):
                 
                 
             try:
+
                 # Do a security check
                 if Config.get_value("security", "api_method_restricted") == "true":
                     security = Environment.get_security()
                     #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_methods
+
                     access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                     if not access:
                        raise ApiException("Access denied")
@@ -112,13 +128,13 @@ def get_simple_cmd(self, meth, ticket, args):
             finally:
                 if self.get_protocol() != "local":
                     duration = time.time() - self2.start_time
-                    print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
+                    print("Duration: %0.3f seconds (request_id: %s)" % (duration, request_id))
                     REQUEST_COUNT += 1
                     rss = System().memory_usage().get("rss")
                     increment = rss - LAST_RSS
-                    print "Memory: %s KB" % rss
-                    print "Increment: %s KB" % increment
-                    #print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+                    print("Memory: %s KB" % rss)
+                    print("Increment: %s KB" % increment)
+                    #print("Num SObjects: %s" % Container.get("NUM_SOBJECTS"))
                     LAST_RSS = rss
 
 
@@ -173,7 +189,7 @@ def get_full_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
 
             debug = True
-            if meth.func_name == "execute_cmd":
+            if meth.__name__ == "execute_cmd":
                 #if len(args) > 1:
                 if isinstance(args, tuple) and len(args) > 1:
                     first_arg = args[1]
@@ -185,12 +201,12 @@ def get_full_cmd(self, meth, ticket, args):
                         debug = False
 
             if self.get_protocol() != "local" and debug:
-                print "---"
-                print "user: ", Environment.get_user_name()
+                print("---")
+                print("user: ", Environment.get_user_name())
                 now = datetime.datetime.now()
-                print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
-                print "method: ", meth.func_name
-                print "ticket: ", ticket
+                print("timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S"))
+                print("method: ", meth.__name__)
+                print("ticket: ", ticket)
                 Common.pretty_print(args)
             
             #self2.results = meth(self, ticket, *args)
@@ -209,13 +225,13 @@ def get_full_cmd(self, meth, ticket, args):
 
             self2.sobjects = self.get_sobjects()
             self2.info = self.get_info()
-            self2.info['function_name'] = meth.func_name
+            self2.info['function_name'] = meth.__name__
             self2.info['args'] = args
 
 
             if self.get_protocol() != "local" and debug:
                 duration = time.time() - start
-                print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
+                print("Duration: %0.3f seconds (request_id: %s)" % (duration, request_id))
 
 
 
@@ -225,7 +241,7 @@ def get_full_cmd(self, meth, ticket, args):
 
 def exec_meth(self, ticket, meth, args):
 
-    #print "Server Port: ", WebContainer.get_web().get_env("SERVER_PORT")
+    #print("Server Port: ", WebContainer.get_web().get_env("SERVER_PORT"))
 
     if self.get_language() == "javascript":
         # the last argument is always kwargs
@@ -323,10 +339,26 @@ def xmlrpc_decorator(meth):
 
 
             try:
-                #if meth.__name__ in QUERY_METHODS:
-                if QUERY_METHODS.has_key(meth.__name__):
+
+                """
+                if meth.__name__ not in [
+                        'get_widget',
+                        'execute_cmd',
+                        
+                        'eval',
+                        'get_by_search_key',
+                        'query',
+                        'get_task_status_colors'
+                        ]:
+                    print("----------------")
+                    print(meth.__name__)
+                    print("----------------")
+                """
+
+
+                if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
-                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
+                elif meth.__name__ in TRANS_OPTIONAL_METHODS:
                     idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
                     if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
                         cmd = get_simple_cmd(self, meth, ticket, args)
@@ -354,7 +386,7 @@ def xmlrpc_decorator(meth):
                     profile.run( "from pyasm.prod.service import profile_execute; profile_execute()", path)
                     p = pstats.Stats(path)
                     p.sort_stats('cumulative').print_stats(30)
-                    print "*"*30
+                    print("*"*30)
                     p.sort_stats('time').print_stats(30)
 
                 else:
@@ -373,20 +405,20 @@ def xmlrpc_decorator(meth):
                 #postprocess(original_ticket)
                 results = cmd.results
 
-            except Exception, e:
+            except Exception as e:
 
                 # make sure all sqls are aborted
                 if not self.get_protocol() == "local":
                     DbContainer.abort_thread_sql(force=True)
 
 
-                #print "Error: ", e.message
+                #print("Error: ", e.message)
                 import traceback
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
+                print("-"*50)
+                print(stacktrace_str)
                 message = e.message
            
                 if not message:
@@ -398,8 +430,8 @@ def xmlrpc_decorator(meth):
                     error_msg = unicode(message, errors='ignore').encode('utf-8')
                 else:
                     error_msg = message
-                print "Error: ", error_msg  
-                print "-"*50
+                print("Error: ", error_msg)
+                print("-"*50)
                 raise
 
         finally:
@@ -422,8 +454,8 @@ def xmlrpc_decorator(meth):
             #    results = jsondumps(results)
 
 
-        except Exception, e:
-            print e.__str__()
+        except Exception as e:
+            print(e.__str__())
 
         return results
 
@@ -440,7 +472,7 @@ def profile_execute():
 def trace_decorator(meth):
     def new(self, *args):
         
-        print "method: ", meth.__name__, args
+        print("method: ", meth.__name__, args)
 
         try:
             #self.language = 'python'
@@ -462,21 +494,21 @@ def trace_decorator(meth):
                     DbContainer.release_thread_sql()
 
             return results
-        except Exception, e:
+        except Exception as e:
 
             # make sure all sqls are aborted. 
             DbContainer.abort_thread_sql(force=True) 
 
-            print "Exception: ", e.__str__()
+            print("Exception: ", e.__str__())
             import traceback
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
             
-            print "-"*50
+            print("-"*50)
             raise
     new.exposed = True
     
@@ -590,12 +622,7 @@ class BaseApiXMLRPC(XmlrpcServer):
 
     # gets called if there is a method missing
     def missing_method(self, func, args):
-        # FIXME: makes no sense at all!!!  If an exception occurs
-        # in this function, then the Container is cleared?????
-        print "No such function [%s]" % func
-        # abort on missing method
-        #ticket = args[0]
-        #self.abort(ticket)
+        print("No such function [%s]" % func)
         return False
     missing_method.exposed = True
 
@@ -605,17 +632,17 @@ class BaseApiXMLRPC(XmlrpcServer):
             return True
             custom = CustomApi()
             expr = "custom.%s(*args)" % func
-            print expr
-            print "custom: ", custom.__dict__
-            print dir(custom)
+            print(expr)
+            print("custom: ", custom.__dict__)
+            print(dir(custom))
             if func in dir(custom):
                 retval = eval(expr)
             else:
                 raise ApiException("Cannot execute [%s]" % expr)
                 retval = None
             return retval
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             msg = e.__str__()
             expr = "custom.%s(%s)" % (func, args)
             # remap useless error
@@ -699,7 +726,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         if not search_keys:
             raise ApiException("Search key [%s] is None" % search_keys)
 
-        if type(search_keys) != types.ListType:
+        if not isinstance(search_keys, list):
             search_keys = [search_keys]
 
         sobjects = []
@@ -781,16 +808,17 @@ class BaseApiXMLRPC(XmlrpcServer):
                 elif isinstance(value, datetime.datetime):
                     try:
                         value = str(value)
-                    except Exception, e:
-                        print "WARNING: Value [%s] can't be processed" % value
+                    except Exception as e:
+                        print("WARNING: Value [%s] can't be processed" % value)
                         continue
                 elif isinstance(value, long) and value > MAXINT:
+                elif isinstance(value, six.integer_types) and value > MAXINT:
                     value = str(value)
                 elif isinstance(value, basestring):
                     try:
                         value = value.encode("UTF8")
-                    except Exception, e:
-                        print "WARNING: Value [%s] can't be processed" % value
+                    except Exception as e:
+                        print("WARNING: Value [%s] can't be processed" % value)
                         continue
 
             result[column] = value
@@ -866,32 +894,35 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
 
                     elif isinstance(value, str):
-                        # this could be slow, but remove bad characters
+                        if not IS_Pv3:
+                            # this could be slow, but remove bad characters
+                            value2 = unicode(value, errors='ignore')
+                        else:
+                            value2 = value
 
-                        value2 = unicode(value, errors='ignore')
-
-                    elif isinstance(value, unicode):
+                    elif not IS_Pv3 and isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
                             value2 = value.encode("utf-8")
 
-                        except Exception, e:
-                            print "WARNING: Value [%s] can't be encoded in utf-8" % value
+                        except Exception as e:
+                            print("WARNING: Value [%s] can't be encoded in utf-8" % value)
                             raise 
                     elif isinstance(value, datetime.datetime):
                         try:
                             value2 = str(value)
-                        except Exception, e:
-                            print "WARNING: Value [%s] can't be processed" % value
+                        except Exception as e:
+                            print("WARNING: Value [%s] can't be processed" % value)
                             continue
 
                     elif isinstance(value, int):
                         continue
                     elif isinstance(value, float):
                         continue
-                    elif isinstance(value, long) and value > MAXINT:
+                    elif isinstance(value, six.integer_types) and value > MAXINT:
+
                         value2 = str(value)
-                    elif isinstance(value, long):
+                    elif isinstance(value, six.integer_types):
                         continue
                     elif isinstance(value, decimal.Decimal):
                         # use str to avoid loss of precision
@@ -1488,7 +1519,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         for thread_id, cont in containers.items():
             thread_pool = cont.info.get("DbContainer::thread_pool")
             if thread_pool:
-                #print "thread: ", thread_id, thread_pool, thread_id == thread.get_ident()
+                #print("thread: ", thread_id, thread_pool, thread_id == thread.get_ident())
                 thread_databases = thread_pool.keys()
                 data['thread_pool'] = global_databases
                 num_db_connections += len(thread_databases)
@@ -1504,7 +1535,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         data['num_database_connections'] = num_db_connections
         data['databases'] = databases
 
-        print data
+        print(data)
 
         return data
 
@@ -1741,12 +1772,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobjects = self._get_sobjects(search_key)
         results = []
         for i, sobject in enumerate(sobjects):
-            if type(data) == types.ListType:
+            if isinstance(data, list):
                 cur_data = data[i]
             else:
                 cur_data = data
 
-            if type(metadata) == types.ListType:
+            if isinstance(metadata, list):
                 cur_metadata = metadata[i]
             else:
                 cur_metadata = metadata
@@ -1788,7 +1819,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         self.set_sobjects(sobjects)
         self.update_info(info)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             return results
         else:
             return results[0]
@@ -1848,7 +1879,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             search_key = sobject.get_search_key(use_id=use_id_list[idx])
             sobject_data = data.get(search_key)
             if not sobject_data:
-                print "search key [%s] does not exist in the system." %search_key
+                print("search key [%s] does not exist in the system." %search_key)
                 continue
             for key, value in sobject_data.items():
                 sobject.set_value(key, value)
@@ -2205,7 +2236,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         parser = ExpressionParser()
         results = parser.eval(expression, sobjects, mode=mode, single=single, vars=vars, show_retired=show_retired)
         import pyasm
-        if type(results) == types.ListType:
+        if isinstance(results, list):
             if not results:
                 pass
             elif isinstance(results[0], pyasm.search.SObject):
@@ -2341,7 +2372,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if not sobjects:
             raise ApiException("SObject [%s] does not exist" % search_key)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             sobject_dicts = []
             for sobject in sobjects:
                 sobject_dict = self._get_sobject_dict(sobject)
@@ -3450,15 +3481,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
         handoff_dir = env.get_server_handoff_dir()
         if handoff_dir:
             handoff_path = "%s/%s" % (handoff_dir, filename)
-            print "FIXME: check handoff_path: ", handoff_path
+            print("FIXME: check handoff_path: ", handoff_path)
 
 
         upload_dir = Environment.get_upload_dir()
         upload_path = "%s/%s" % (upload_dir, filename)
-        print "Upload path: [%s]" % upload_path
+        print("Upload path: [%s]" % upload_path)
         if not os.path.exists(upload_path):
 
-            print "WARNING: does not exist."
+            print("WARNING: does not exist.")
             return 0
         return os.path.getsize(upload_path)
 
@@ -3680,7 +3711,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             local_paths = snapshot.get_all_local_repo_paths()
             snapshot_dict['__paths__'] = local_paths
 
-        #print "SQL Commit Count: ", Container.get('Search:sql_commit')
+        #print("SQL Commit Count: ", Container.get('Search:sql_commit'))
         return snapshot_dict
 
 
@@ -4344,7 +4375,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         file_dict = self._get_sobject_dict(file)
                         file_dict_list.append(file_dict)
                 else:
-                    print "Files not found for snapshot [%s]" %snapshot_code
+                    print("Files not found for snapshot [%s]" %snapshot_code)
                 snapshot_dict['__files__'] = file_dict_list
 
 
@@ -5225,7 +5256,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
-                if libraries.has_key("spt_help"):
+                if 'spt_help' in libraries:
                     from tactic.ui.app import HelpWdg
                     HelpWdg()
 
@@ -5234,10 +5265,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 html = widget.get_buffer_display()
                 if class_name.find('tactic.ui.app.message_wdg.Subscription') == -1:
-                    print "SQL Query Count: ", Container.get('Search:sql_query')
-                    print "BVR Count: ", Container.get('Widget:bvr_count')
-                    print "Sending: %s KB" % (len(html)/1024)
-                    print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+                    print("SQL Query Count: ", Container.get('Search:sql_query'))
+                    print("BVR Count: ", Container.get('Widget:bvr_count'))
+                    print("Sending: %s KB" % (len(html)/1024))
+                    print("Num SObjects: %s" % Container.get("NUM_SOBJECTS"))
 
 
                 # add interaction, if any
@@ -5247,7 +5278,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 return html
 
-            except LicenseException, e:
+            except LicenseException as e:
                 # make sure all sqls are aborted
                 DbContainer.abort_thread_sql(force=True)
 
@@ -5259,7 +5290,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 license_manager = LicenseManagerWdg()
                 widget.add(license_manager)
                 return widget.get_buffer_display()
-            except SecurityException, e:
+            except SecurityException as e:
                 # make sure all sqls are aborted
                 DbContainer.abort_thread_sql(force=True)
 
@@ -5277,7 +5308,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
                
-            except Exception, e:
+            except Exception as e:
                 # make sure all sqls are aborted
                 DbContainer.abort_thread_sql(force=True)
 
@@ -5291,22 +5322,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             WebContainer.clear_buffer()
             Container.delete()
-
-            '''
-            h = hp.heap()
-
-            byrcs = h.byrcs
-            byclodo = byrcs[0].byclodo
-            print byclodo
-            bysize = byrcs[0].bysize
-            print bysize
-            byid = byrcs[0].byid
-            print byid
-            byvia = byrcs[0].byvia
-            print byvia
-            #theone = byvia[0].theone
-            #print len(theone)
-            '''
 
 
         
@@ -5329,7 +5344,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         try:
             exec("import %s" % module_path)
-        except Exception, e:
+        except Exception as e:
             return False
 
         module = eval(module_path)
@@ -5338,7 +5353,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         try:
             check = eval(class_path)
-        except Exception, e:
+        except Exception as e:
             return False
 
 
@@ -5364,7 +5379,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             cmd = PythonCmd(script_path=script_path, **kwargs)
             Command.execute_cmd(cmd)
         
-        except Exception, e:
+        except Exception as e:
             raise
         else:
             ret_val['status'] = 'OK'
@@ -5395,7 +5410,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             cmd = JsCmd(script_path=script_path, **kwargs)
             Command.execute_cmd(cmd)
         
-        except Exception, e:
+        except Exception as e:
             raise
         else:
             ret_val['status'] = 'OK'
@@ -5463,16 +5478,16 @@ class ApiXMLRPC(BaseApiXMLRPC):
             else:
                 cmd.execute()
 
-        except Exception, e:
+        except Exception as e:
             '''
             import traceback
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
-            print "-"*50
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
+            print("-"*50)
             
             ret_val['status'] = 'ERROR'
             ret_val['stack'] = stacktrace_str
@@ -5576,7 +5591,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             info = {
                 'status': 'OK'
             }
-        except Exception, e:
+        except Exception as e:
             raise
 
         return info
@@ -5622,7 +5637,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 cmd = RunTransactionCmd(transaction_xml=transaction_xml, file_mode=None)
                 Command.execute_cmd()
 
-        except Exception, e:
+        except Exception as e:
             failed.append(index)
             errors.append(str(e))
 
@@ -5745,7 +5760,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 widgets.append(row_widgets)
             return widgets
 
-        except Exception, e:
+        except Exception as e:
             # make sure all sqls are aborted
             DbContainer.abort_thread_sql(force=True)
             raise
@@ -5820,7 +5835,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             config.commit_config()
 
 
-        except Exception, e:
+        except Exception as e:
             # make sure all sqls are aborted
             DbContainer.abort_thread_sql(force=True)
 
@@ -5866,7 +5881,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             return config_string
 
 
-        except Exception, e:
+        except Exception as e:
             # make sure all sqls are aborted
             DbContainer.abort_thread_sql(force=True)
 
@@ -6243,8 +6258,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     info['repo_file_range'] = file_objects[0].get_file_range()
                     #info['file_sobj'] = file_objects[0]
                     if len(file_objects) > 1:
-                        print "WARNING: duplicated file groups \
-                            for [%s]" %( parent_code)
+                        print("WARNING: duplicated file groups for [%s]" %( parent_code))
                 else:
                     info['is_match'] = False
 
@@ -6502,16 +6516,16 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 state.set_state("project", project_code)
 
                 state.commit()
-            except Exception, e:
-                print "Exception: ", e.__str__()
+            except Exception as e:
+                print("Exception: ", e.__str__())
                 import traceback
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
                 raise
 
 

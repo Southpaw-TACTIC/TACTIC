@@ -16,8 +16,8 @@ __all__ = ["SObjectInstance"]
 from pyasm.common import Xml
 from pyasm.search import SearchType, Search, SObject
 
-from schema import Schema
-from project import Project
+from .schema import Schema
+from .project import Project
 
 
 class SObjectInstance(SObject):
