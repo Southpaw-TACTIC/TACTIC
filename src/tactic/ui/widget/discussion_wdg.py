@@ -1169,6 +1169,7 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
+            no_notes_msg.add_style("display: flex")
             no_notes_div.add(no_notes_msg)
 
 

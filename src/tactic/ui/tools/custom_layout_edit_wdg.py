@@ -1408,7 +1408,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         )
                         content_div.add(editor)
 
-
             # callbacks
             callback_div = DivWdg()
             tab.add(callback_div)

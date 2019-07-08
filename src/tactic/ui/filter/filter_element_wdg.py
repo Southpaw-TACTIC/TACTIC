@@ -324,7 +324,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         #div.add_style("width: 350px")
 
         select = SelectWdg("value")
-        select.add_style("width: 190")
+        select.add_style("width: 190px")
 
         default_value = self.kwargs.get("default")
 
@@ -418,7 +418,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
         select = SelectWdg("value")
         parent_div.add(select)
-        select.add_style("width: 150")
+        select.add_style("width: 150px")
         select.add_color("background", "background")
 
         value = self.values.get("value")
@@ -1166,7 +1166,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         # search_type is a list matching the column for potential join
         width = self.kwargs.get("width")
         if not width:
-            width = "230"
+            width = "230px"
 
 
         show_toggle = self.get_option("show_toggle")
@@ -2185,7 +2185,7 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
                     div.add_style("height: 30px")
                     #div.add("&nbsp;")
                     div.add_style("border-style: solid")
-                    div.add_style("border-width: 0 1 0 0")
+                    div.add_style("border-width: 0px 1px 0px 0px")
                     div.add_style("margin-right: 15px")
                     div.add_style("border-color: %s" % div.get_color("border"))
 

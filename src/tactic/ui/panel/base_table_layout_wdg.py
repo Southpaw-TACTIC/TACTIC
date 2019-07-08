@@ -1926,7 +1926,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var scroll_left = body.scrollLeft;
                 offset.y = offset.y - scroll_top;
                 offset.x = offset.x - scroll_left;
-
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
                 
                 spt.toggle_show_hide(dialog);
