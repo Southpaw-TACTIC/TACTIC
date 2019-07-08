@@ -9528,6 +9528,8 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         top.add_style("min-width: 200px")
         top.add_style("max-width: 300px")
 
+        top.add_class("spt_process_select_top")
+
         # get all of the custom process node types
         search = Search("config/widget_config")
         search.add_filter("category", "workflow")
@@ -9557,19 +9559,69 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         custom_div.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
+
+spt.pipeline.item_clone = null;
+spt.pipeline.item_pos = null;
+spt.pipeline.mouse_pos = null;
+spt.pipeline.item_top = null;
+
 spt.pipeline.item_drag_setup = function(evt, bvr, mouse_411) {
     console.log("setup");
+    var el = bvr.src_el.getElement(".spt_custom_node");
+    var clone = spt.behavior.clone(el);
+    clone.setStyle("position", "absolute");
+    clone.setStyle("background", "#FFF");
+    clone.setStyle("z-index", "1000");
+    clone.setStyle("pointer-events", "none");
+    clone.inject(bvr.src_el);
+
+    var top = bvr.src_el.getParent(".spt_process_select_top")
+    spt.pipeline.item_top = top;
+
+    spt.pipeline.mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+    spt.pipeline.item_pos = clone.getPosition(top);
+
+    spt.pipeline.item_clone = clone;
+}
+
+spt.pipeline.item_drag_motion = function(evt, bvr, mouse_411) {
+    var orig_pos = spt.pipeline.mouse_pos;
+    var item_pos = spt.pipeline.item_pos;
+    var top = spt.pipeline.item_top;
+
+    var dx = mouse_411.curr_x - orig_pos.x;
+    var dy = mouse_411.curr_y - orig_pos.y;
+
+    var scroll_el = top.getParent(".spt_popup_content");
+    if (scroll_el) {
+        var scroll = {x: 0, y: scroll_el.scrollTop};
+    }
+    else {
+        var scroll = {x: 0, y: 0};
+    }
+
+    var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-2*scroll.y};
+    console.log(new_pos);
+    spt.pipeline.item_clone.position( new_pos, {relativeTo: top} );
+    //spt.pipeline.item_clone.setStyle("top", item_pos.x+dx);
+    //spt.pipeline.item_clone.setStyle("left", item_pos.y+dy);
 }
 
 spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
-    console.log("motion");
-}
 
-spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
-    console.log("action");
+    spt.behavior.destroy( spt.pipeline.item_clone );
+    spt.pipeline.item_top = null;
+
+    var orig_pos = spt.pipeline.mouse_pos;
+    var dx = mouse_411.curr_x - orig_pos.x;
+    var dy = mouse_411.curr_y - orig_pos.y;
+    if (Math.abs(dx) < 5 || Math.abs(dy) < 5) {
+        return;
+    }
+
+
     var drop_on_el = spt.get_event_target(evt);
     if (! drop_on_el.hasClass(".spt_pipeoine_top") ) {
-        console.log(drop_on_el);
         var parent = drop_on_el.getParent(".spt_pipeline_top");
         if (!parent) {
             return;
@@ -9580,16 +9632,60 @@ spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
     var node_type = bvr.src_el.getAttribute("spt_node_type");
 
     var pos = spt.pipeline.get_mouse_position(mouse_411);
-    console.log(pos);
+    var new_node = spt.pipeline.add_node(null, pos.x, pos.y, {node_type: node_type});
+    var new_pos = spt.pipeline.get_position(new_node);
+
+    var selected = spt.pipeline.get_selected_nodes();
+    for (var i = 0; i < selected.length; i++) {
+        var pos = selected[i].getPosition();
+        var pos = spt.pipeline.get_position(selected[i]);
+
+        if (pos.x < new_pos.x) {
+            spt.pipeline.connect_nodes(selected[i], new_node);
+        }
+        else {
+            spt.pipeline.connect_nodes(new_node, selected[i]);
+        }
+    }
+
+    spt.pipeline.unselect_all_nodes();
+    spt.pipeline.select_node(new_node);
 
 
-    spt.pipeline.add_node(null, pos.x, pos.y, {node_type: node_type});
 }
 
             '''
         } )
 
         for i, custom_node in enumerate(custom_nodes):
+
+            view = custom_node.get_value("view")
+            element_names = custom_node.get_element_names()
+            display_options = {
+                    'node_type': view
+            }
+            description = custom_node.get("description") or ""
+
+            node_container = DivWdg()
+            node_scale = DivWdg()
+            node_container.add(node_scale)
+
+            node_container.add_style("width: 120px")
+            node_container.add_style("height: 60px")
+            node_container.add_style("overflow: hidden")
+
+
+
+            node_scale.add_style("transform-origin: top left")
+            node_scale.add_style("transform: scale(0.5, 0.5)")
+            node_scale.add_style("margin-top: 10px")
+            node_scale.add_style("margin-left: 15px")
+
+            node_wdg = custom_node.get_display_widget("node", display_options)
+            node_scale.add(node_wdg)
+            node_wdg.add_style("z-index: 0")
+
+            
 
             item_div = DivWdg()
             custom_div.add(item_div)
@@ -9599,35 +9695,46 @@ spt.pipeline.item_drag_action = function(evt, bvr, mouse_411) {
             item_div.add_style("border-radius: 3px")
             item_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.1)")
 
-            view = custom_node.get_value("view")
             item_div.add_attr("spt_node_type", view)
 
+
+            content_div = DivWdg()
+            item_div.add(content_div)
+            content_div.add_style("display: flex")
+            content_div.add_style("align-items: middle")
+
+            content_div.add(node_container)
+
+            data_div = DivWdg()
+            content_div.add(data_div)
+            data_div.add_style("width: 180px")
+            data_div.add_style("overflow-y: auto")
+
             title_div = DivWdg()
-            item_div.add(title_div)
+            #item_div.add(title_div)
+            data_div.add(title_div)
             title_div.add(Common.get_display_title(view))
             title_div.add_style("padding: 3px 10px")
             title_div.add_style("background: #EEE")
             title_div.add_style("text-align: center")
             title_div.add_style("border-bottom: solid 1px #DDD")
 
-            content_div = DivWdg()
-            item_div.add(content_div)
-            content_div.add_style("font-size: 0.8em")
-            content_div.add("This node is used to interact with Salesforce")
-            content_div.add_style("padding: 3px")
+
+            data_div.add_style("font-size: 0.8em")
+
+            data_div.add("<div style='padding: 3px'>%s</div>" % description)
+            #data_div.add_style("padding: 3px")
 
             item_div.add_class("hand")
             item_div.add_class("tactic_hover")
 
-            item_div.add_style("width: 200px")
-            item_div.add_style("height: 60px")
+            item_div.add_style("width: 240px")
             item_div.add_style("border: solid 1px #DDD")
             item_div.add_style("margin: 3px 5px")
 
             item_div.add_behavior( {
             "type": 'drag',
             "mouse_btn": 'LMB',
-            "drag_el": '@',
             "cb_set_prefix": 'spt.pipeline.item_drag'
             } )
 

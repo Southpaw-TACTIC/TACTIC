@@ -1942,6 +1942,10 @@ class WorkflowOutputNodeHandler(BaseWorkflowNodeHandler):
 class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(self):
+
+        if not self.check_inputs():
+            return
+
         # fast track to complete - no tasks
         Trigger.call(self, "process|action", output=self.input)
 

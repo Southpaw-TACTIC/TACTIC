@@ -25,10 +25,11 @@ class CryptoKey(object):
         self.private_key = None
         self.public_key = None
 
-    def generate(self, size=1024):
+    def generate(self, size=2048):
         self.key = RSA.generate(size, os.urandom)
         self.private_key = (self.key.n, self.key.e, self.key.d)
         self.public_key = (self.key.n, self.key.e)
+        return self.key
 
     def import_key(self, key_location='mykey.pem', passphrase=None):
         f = open(key_location, 'r')
@@ -36,7 +37,10 @@ class CryptoKey(object):
         self.private_key = (self.key.n, self.key.e, self.key.d)
         self.public_key = (self.key.n, self.key.e)
 
-    def export_key(self, key_location='mykey.pem', key_format='PEM', passphrase=None, pkcs=1):
+    def export_key(self, key_location='mykey.pem', key_format='PEM', passphrase=None, pkcs=1, size=2048):
+        if not self.key:
+            self.generate(size=size) 
+
         f = open(key_location, 'w')
         f.write(self.key.exportKey(key_format, passphrase, pkcs))
         f.close()
