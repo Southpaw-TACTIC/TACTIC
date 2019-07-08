@@ -285,8 +285,6 @@ class HtmlElement(Widget):
 
         elif not override and self.styles.has_key(name):
             return
-
-
         self.styles[name] = value
 
 

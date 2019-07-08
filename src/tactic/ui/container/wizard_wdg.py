@@ -65,6 +65,12 @@ class WizardWdg(BaseRefreshWdg):
             width = ""
         self.width = width
 
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+
         inner = DivWdg()
         top.add(inner)
         inner.add_style("width: %s" % width)
@@ -145,7 +151,13 @@ class WizardWdg(BaseRefreshWdg):
 
             page_div.add_style("min-height: 300px")
             if self.height:
-                page_div.add_style("height: %s" % self.height)
+                height = self.height
+                try:
+                    height = int(height)
+                    height = str(height) + "px"
+                except ValueError:
+                    pass
+                page_div.add_style("height: %s" % height)
 
             page_div.add_style("overflow-y: auto")
 
@@ -173,7 +185,13 @@ class WizardWdg(BaseRefreshWdg):
     def get_header_wdg(self):
         div = DivWdg()
         div.add_style("text-align: center")
-        div.add_style("width: %s" % self.width)
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        div.add_style("width: %s" % width)
 
         div.add("<hr/>")
 
@@ -185,7 +203,7 @@ class WizardWdg(BaseRefreshWdg):
         left = 50
         width = 50
 
-        dots_div.add_style("width", (left+width)*len(self.widgets)+left)
+        dots_div.add_style("width", str((left+width)*len(self.widgets)+left) + "px" )
 
         for i, widget in enumerate(self.widgets):
             on_dot = DivWdg()
@@ -194,7 +212,7 @@ class WizardWdg(BaseRefreshWdg):
             on_dot.add_style("padding-top: 2px")
             on_dot.add_style("border-radius: 20px")
             on_dot.add_style("background: rgba(188,215,207,1.0)")
-            on_dot.add_style("margin: 6 auto")
+            on_dot.add_style("margin: 6px auto")
             #on_dot.add("&nbsp;")
             on_dot.add_border()
             #on_dot = IconWdg("", IconWdg.DOT_GREEN)
@@ -207,7 +225,7 @@ class WizardWdg(BaseRefreshWdg):
             off_dot.add_style("border-radius: 10px")
             #off_dot.add_style("background: rgba(215,188,207,1.0)")
             off_dot.add_style("background: #DDD")
-            off_dot.add_style("margin: 11 auto 12 auto")
+            off_dot.add_style("margin: 11px auto 12px auto")
             #off_dot.add("&nbsp;")
             off_dot.add_border()
             #off_dot = IconWdg("", IconWdg.DOT_GREY)

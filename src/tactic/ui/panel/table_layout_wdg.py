@@ -628,7 +628,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout_inner")
 
-        inner.add_style("postion: relative")
+        inner.add_style("position: relative")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px")
         inner.add_style("border-color", inner.get_color("border"))
@@ -929,6 +929,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             height = self.kwargs.get("height")
             if height:
+                try:
+                    height = int(height)
+                    height = str(height) + "px"
+                except ValueError:
+                    pass
                 scroll.add_style("height: %s" % height)
 
 
@@ -2947,7 +2952,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         closed_div = IconWdg("CLOSED", closed_icon) 
         swap.set_display_wdgs(open_div, closed_div)
         swap.add_style("margin-left: 5px")
-        swap.add_style("line-height: %spx" % height)
+        swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
         title_div.add_style("width: 100%")
@@ -4587,7 +4592,7 @@ spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
                 spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
-            fx.start('margin-top', -size.y-100+"px");
+            fx.start('margin-top', -size.y-100);
         }
         else {
             spt.table.remove_hidden_row(sibling);
@@ -8787,7 +8792,7 @@ spt.table.open_ingest_tool = function(search_type) {
 
                 if not level_sobjects_dict:
                     done = True
-                    break;
+                    break
 
 
                 current_sobjects = []

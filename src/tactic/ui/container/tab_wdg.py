@@ -150,9 +150,9 @@ spt.tab.resize_headers = function() {
     }
 
     for (var i = 0; i < els.length; i++) {
-        els[i].setStyle("width", width);
+        els[i].setStyle("width", width + 'px');
         var title_el = els[i].getElement(".spt_tab_header_label");
-        title_el.setStyle("width", width);
+        title_el.setStyle("width", width + 'px');
     }
 }
 
@@ -1267,7 +1267,7 @@ spt.tab.close = function(src_el) {
             }
 
             .spt_add_tab_inner {
-                padding: 0 2px 0 2px;
+                padding: 0px 2px 0px 2px;
                 border-top-right-radius: 12px;
                 opacity: 0.5;
                 background: linear-gradient(180deg, #f2f2f2, #FFFFFF);
@@ -1460,8 +1460,8 @@ spt.tab.close = function(src_el) {
 
         gradient = top.get_gradient("background", -5, 5)
 
-        inner = DivWdg();
-        top.add(inner);
+        inner = DivWdg()
+        top.add(inner)
         inner.add_style("position: relative")
         inner.add_style("width: auto")
 
@@ -1536,6 +1536,11 @@ spt.tab.close = function(src_el) {
 
         min_width = self.kwargs.get("min_width")
         if min_width:
+            try:
+                min_width = int(min_width)
+                min_width = str(min_width) + "px"
+            except ValueError:
+                pass
             header_div.add_style("min-width", min_width)
 
 
@@ -1544,9 +1549,9 @@ spt.tab.close = function(src_el) {
 
         resize_headers = True
         if resize_headers:
-            header_div.add_style("white-space", "nowrap");
+            header_div.add_style("white-space", "nowrap")
 
-            offset = 120;
+            offset = 120
             header_div.add_behavior( { 
                 'type': 'load',
                 'offset': offset,
@@ -1583,7 +1588,7 @@ spt.tab.close = function(src_el) {
                     }
 
                     for (var i = 0; i < els.length; i++) {
-                        els[i].setStyle("width", width);
+                        els[i].setStyle("width", width + "px");
                     }
 
 
@@ -1768,12 +1773,17 @@ spt.tab.close = function(src_el) {
             content_top.add_attr("spt_window_resize_offset", resize_offset)
             content_top.add_attr("spt_window_resize_attr", resize_attr)
             #content_top.add_style("overflow: auto")
-            content_top.add_style("overflow: none")
+            content_top.add_style("overflow: auto")
 
         else:
 
             height = self.kwargs.get("height")
             if height:
+                try:
+                    height = int(height)
+                    height = str(height) + "px"
+                except ValueError:
+                    pass
                 content_top.add_style("height: %s" % height)
                 content_top.add_style("overflow-y: auto")
 
@@ -1790,10 +1800,20 @@ spt.tab.close = function(src_el) {
         if not width:
             content_top.add_style("min-width: 500px")
         else:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
             content_top.add_style("min-width: %s" % width)
 
         min_width = self.kwargs.get("min_width")
         if min_width:
+            try:
+                min_width = int(min_width)
+                min_width = str(min_width) + "px"
+            except ValueError:
+                pass
             content_top.add_style("min-width", min_width)
 
 
@@ -2045,7 +2065,7 @@ spt.tab.close = function(src_el) {
             icon_div.add_border()
             icon_div.add_style("text-align: center")
             icon_div.add_style("opacity: 0.5")
-            div.add(icon_div);
+            div.add(icon_div)
 
 
         return div
@@ -2058,7 +2078,7 @@ spt.tab.close = function(src_el) {
         div.add_style("margin-left: -2px")
 
         icon_div = DivWdg()
-        icon_div.add_style("padding: 0 2px 0 2px")
+        icon_div.add_style("padding: 0px 2px 0px 2px")
         icon_div.set_round_corners(3, corners=['TR','TL'])
         from tactic.ui.widget import IconButtonWdg
         icon = IconButtonWdg(title="New Tab", icon=IconWdg.EDIT)
@@ -2085,7 +2105,7 @@ spt.tab.close = function(src_el) {
         icon_div.add_gradient("background", "background", -5, 5)
         icon_div.add_border()
         icon_div.add_style("text-align: center")
-        div.add(icon_div);
+        div.add(icon_div)
 
         return div
 
