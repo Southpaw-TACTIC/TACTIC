@@ -1913,8 +1913,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 var offset = bvr.src_el.getPosition();
                 var size = bvr.src_el.getSize();
-                var wrapper = bvr.src_el.getParent(".wrapper");
-                var top = wrapper.getElement(".web_header");
                 offset = {x:offset.x-265, y:offset.y+size.y+10};
 
                 var body = document.id(document.body);
@@ -1922,7 +1920,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var scroll_left = body.scrollLeft;
                 offset.y = offset.y - scroll_top;
                 offset.x = offset.x - scroll_left;
-                dialog.position({position: 'upperleft', relativeTo: top, offset: offset});
+                dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
                 
                 spt.toggle_show_hide(dialog);
 
