@@ -400,7 +400,7 @@ class DynamicUpdateCmd(Command):
         from pyasm.common import SPTDate
         timestamp = SPTDate.now()
         timestamp = SPTDate.add_gmt_timezone(timestamp)
-        timestamp = SPTDate.convert_to_local(timestamp)
+        #timestamp = SPTDate.convert_to_local(timestamp)
         format = '%Y-%m-%d %H:%M:%S'
         timestamp = timestamp.strftime(format)
         
