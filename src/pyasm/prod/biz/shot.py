@@ -18,7 +18,7 @@ from pyasm.common import TacticException
 from pyasm.search import *
 from pyasm.biz import Snapshot, Task, FileRange
 
-from asset import *
+from .asset import *
 
 
 class Shot(SObject):
@@ -55,14 +55,14 @@ class Shot(SObject):
         frame_start = self.get_value("tc_frame_start")
         try:
             return int(frame_start)
-        except Exception, e:
+        except Exception as e:
             return 1
 
     def get_frame_end(self):
         frame_end = self.get_value("tc_frame_end")
         try:
             return int(frame_end)
-        except Exception, e:
+        except Exception as e:
             return 1
 
 

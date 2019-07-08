@@ -23,7 +23,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import LabeledHidableWdg, PopupWdg
 from tactic.ui.panel import TableLayoutWdg
 
-from action_wdg import TableActionWdg, ViewActionWdg
+from .action_wdg import TableActionWdg, ViewActionWdg
 
 
 
@@ -48,14 +48,14 @@ class SwfWdg(BaseRefreshWdg):
         title = self.kwargs.get("title")
         swf_url = self.kwargs.get("swf_url")
         flash_vars = self.kwargs.get("flash_vars")
-	title = self.kwargs.get("title")
+        title = self.kwargs.get("title")
         height = self.kwargs.get("height")
         width = self.kwargs.get("width")
         
-	#Get the value for the swf id
-	swf_file = swf_url.split("/")[-1]
-	id = swf_file.split(".")[0]
-    
+        #Get the value for the swf id
+        swf_file = swf_url.split("/")[-1]
+        id = swf_file.split(".")[0]
+
 
         # define the top widget
         div = DivWdg()
@@ -65,7 +65,7 @@ class SwfWdg(BaseRefreshWdg):
             return div
 
         div.add( search_key )
-        
+                
         swf = '''
         <object 
 	    classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" 
@@ -92,8 +92,8 @@ class SwfWdg(BaseRefreshWdg):
         </object>
         ''' % (width, height, id, id, flash_vars, swf_url, flash_vars, width, height, id)
 
-	swfDiv = DivWdg( swf )
-	div.add( swfDiv )
+        swfDiv = DivWdg( swf )
+        div.add( swfDiv )
 
         return div
 

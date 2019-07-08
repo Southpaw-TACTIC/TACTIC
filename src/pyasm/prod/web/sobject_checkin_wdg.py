@@ -18,11 +18,11 @@ from pyasm.search import *
 from pyasm.web import *
 from pyasm.widget import *
 from pyasm.prod.biz import *
-from prod_wdg import *
-from shot_navigator_wdg import *
 from pyasm.prod.web import *
 from pyasm.prod.checkin import *
 
+from .prod_wdg import *
+from .shot_navigator_wdg import *
 
 
 class SObjectCheckinException(Exception):

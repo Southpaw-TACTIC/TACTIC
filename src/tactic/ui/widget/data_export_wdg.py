@@ -27,10 +27,10 @@ from pyasm.common import Common, Environment, TacticException
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 
-from misc_input_wdg import SearchTypeSelectWdg
-from upload_wdg import SimpleUploadWdg
-from button_new_wdg import ActionButtonWdg
-from swap_display_wdg import SwapDisplayWdg
+from .misc_input_wdg import SearchTypeSelectWdg
+from .upload_wdg import SimpleUploadWdg
+from .button_new_wdg import ActionButtonWdg
+from .swap_display_wdg import SwapDisplayWdg
 
 class CsvExportWdg(BaseRefreshWdg):
 
@@ -1650,7 +1650,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         try:
             int(data)
             column_type = 'integer'
-        except ValueError, e:
+        except ValueError as e:
             pass
        
         return column_type
@@ -1660,7 +1660,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         try:
             float(data)
             column_type = 'float'
-        except ValueError, e:
+        except ValueError as e:
             pass
         
         return column_type

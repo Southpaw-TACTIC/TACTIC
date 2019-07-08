@@ -19,7 +19,8 @@ from pyasm.common import *
 from pyasm.biz import CommandSObj, Task
 from pyasm.security import *
 from pyasm.search import SObject, Search
-from trigger import *
+
+from .trigger import *
 
 class StatusTrigger(Trigger):
     ''' A trigger for changing the compositing task status to Pending when

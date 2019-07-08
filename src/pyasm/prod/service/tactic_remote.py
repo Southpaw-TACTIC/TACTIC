@@ -80,7 +80,7 @@ class RemoteXmlRpcServer:
         import sys
         sys.path.append(local_dir+"/download/sthpw.zip")
 
-        print execute_xml
+        print(execute_xml)
 
         from maya import MayaEnvironment
         from maya import Maya

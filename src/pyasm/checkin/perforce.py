@@ -20,8 +20,8 @@ from pyasm.search import Search
 
 from pyasm.application.perforce import Perforce
 
-from file_checkin import *
-from repo import BaseRepo
+from .file_checkin import *
+from .repo import BaseRepo
 
 
 # DEPRECATED
@@ -192,7 +192,7 @@ class PerforceRepo(BaseRepo):
 
         result = transaction.commit()
 
-        print result
+        print(result)
 
         # get the version of the first file
         files = result.get("files")
@@ -200,7 +200,7 @@ class PerforceRepo(BaseRepo):
             raise PerforceException("No files checked in")
 
         version = files[0]['version']
-        print "setting snapshot to version: %s" % version
+        print("setting snapshot to version: %s" % version)
 
         snapshot.set_value("version", version)
         snapshot.commit()
@@ -237,7 +237,7 @@ class Perforce:
 
     def execute(self, cmd, input=None):
         cmd = '%s %s' % (self.get_exec_path(), cmd)
-        print "--> %s" % cmd
+        print("--> %s" % cmd)
 
         # use popen3
         # TODO: Simple implementation, will have problems with buffering
@@ -245,7 +245,7 @@ class Perforce:
         #stdin, stdout, stderr = os.popen3(cmd)
         #error = stderr.readlines()
         #if error:
-        #    print error
+        #    print(error)
         #else:
         #    if input != None:
         #        stdin.write(input)
@@ -266,7 +266,7 @@ class Perforce:
         if output and output[0] == "Perforce client error:\n":
             raise PerforceException( "".join(output) )
 
-        print output
+        print(output)
         return output
 
 
@@ -274,19 +274,19 @@ class Perforce:
         path = path.replace("//", "/")
         cmd = 'add "%s"' % path
         ret_val = self.execute(cmd)
-        print ret_val
+        print(ret_val)
 
 
     def edit_file(self, path):
         path = path.replace("//", "/")
         cmd = 'edit "%s"' % path
         ret_val = self.execute(cmd)
-        print ret_val
+        print(ret_val)
 
     def delete_file(self, path):
         cmd = 'delete "%s"' % path
         ret_val = self.execute(cmd)
-        print ret_val
+        print(ret_val)
 
 
 

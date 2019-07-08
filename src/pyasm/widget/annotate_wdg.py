@@ -18,10 +18,10 @@ from pyasm.search import Search, SObject
 from pyasm.biz import Snapshot, File
 from pyasm.widget import BaseTableElementWdg, IconButtonWdg
 
-from input_wdg import *
-from dynamic_loader_page import *
-from layout_wdg import TableWdg
-from icon_wdg import *
+from .input_wdg import *
+from .dynamic_loader_page import *
+from .layout_wdg import TableWdg
+from .icon_wdg import *
 
 
 

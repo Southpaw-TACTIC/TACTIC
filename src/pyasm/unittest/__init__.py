@@ -10,6 +10,6 @@
 #
 #
 
-from environment import *
-from person import *
-from test_trigger import *
+from .environment import *
+from .person import *
+from .test_trigger import *

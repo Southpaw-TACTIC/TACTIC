@@ -28,9 +28,14 @@ from pyasm.common import Common, Marshaller, Date, SPTDate, TacticException
 from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser, PrefSetting
 from pyasm.web import *
 from pyasm.search import Search, SearchKey, SearchException
-from icon_wdg import IconButtonWdg, IconWdg
+
+from .icon_wdg import IconButtonWdg, IconWdg
 
 from operator import itemgetter
+
+import six
+basestring = six.string_types
+
 
 class InputException(Exception):
     pass
@@ -219,14 +224,16 @@ class BaseInputWdg(HtmlElement):
     
 
     def has_option(self, key):
-        return self.options.has_key(key)
+        return key in self.options
  
     def set_option(self, key, value):
+        if isinstance(value, type( {}.keys() )):
+            value = list(value)
         self.options[key] = value
         
     def get_option(self, key):
         '''gets the value of the specified option'''
-        if self.options.has_key(key):
+        if key in self.options:
             return self.options[key]
         else:
             return ""
@@ -547,7 +554,7 @@ class BaseInputWdg(HtmlElement):
     def get_save_script(self):
         '''get the js script to save the value to widget settings for persistence'''
         key = self.get_key()
-        return "spt.api.Utility.save_widget_setting('%s', bvr.src_el.value)" %key;
+        return "spt.api.Utility.save_widget_setting('%s', bvr.src_el.value)" %key
 
     def get_refresh_script(self):
         '''get a general refresh script. use this as a template if you need to pass in 
@@ -721,9 +728,20 @@ class TextAreaWdg(BaseTextWdg):
         width = kwargs.get("width")
         if width:
             self.add_style("width", width)
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
         height = kwargs.get("height")
         if height:
+            try:
+                height = int(height)
+                height = str(height) + "px"
+            except ValueError:
+                pass
             self.add_style("height", height)
+            
 
     
         web = WebContainer.get_web()
@@ -741,7 +759,7 @@ class TextAreaWdg(BaseTextWdg):
 
         browser = web.get_browser()
         if not width and not cols:
-            width = 300
+            width = "300px"
             self.add_style("width", width)
 
 
@@ -848,7 +866,7 @@ class CheckboxWdg(BaseInputWdg):
 
         self.add_style("display: inline-block")
         self.add_style("vertical-align: middle")
-        self.add_style("margin: 0")
+        self.add_style("margin: 0px")
 
 
 
@@ -1227,24 +1245,25 @@ class SelectWdg(BaseInputWdg):
         if not values_option:
             values_option, labels_option = self._get_setting()
         
-        if type(values_option) == types.ListType:
+        if isinstance(values_option, list):
             self.values.extend(values_option)
             
             
         elif self.values != "":
-            self.values = string.split( self.get_option("values"), "|" )
+            self.values = self.get_option("values").split("|")
         else:
             self.values = ["None"]
 
         # get the labels for the select options
         
         self.labels = []
-        if type(labels_option) == types.ListType:
+        if isinstance(labels_option, list):
             self.labels = labels_option[:]
         elif labels_option != "":
-            self.labels = string.split( labels_option, "|" )
+            #self.labels = string.split( labels_option, "|" )
+            self.labels = labels_option.split("|")
             if len(self.values) != len(self.labels):
-                raise InputException("values [%s] does not have the same number of elements as [%s]" % (`self.values`, `self.labels`))
+                raise InputException("values [%s] does not have the same number of elements as [%s]" % (str(self.values), str(self.labels)))
 
         else:
             self.labels = self.values[:]
@@ -1345,7 +1364,7 @@ class SelectWdg(BaseInputWdg):
             if self.values:
                 zipped = zip(self.values, self.labels)
                 zipped = sorted(zipped, key=itemgetter(1))
-                unzipped = zip(*zipped)
+                unzipped = list(zip(*zipped))
                 self.values = list(unzipped[0])
                 self.labels = list(unzipped[1])
            
@@ -1444,6 +1463,11 @@ class SelectWdg(BaseInputWdg):
 
         width = self.get_option("width")
         if width:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
             self.add_style("width: %s" % width)
 
         border_mode = self.get_option("border_mode") or "box"
@@ -1681,7 +1705,7 @@ class ItemsNavigatorWdg(HtmlElement):
         else:
             past_max = 0
        
-        for x in xrange(list_num):
+        for x in range(list_num):
             value_list.append("%s - %s" %(x* self.step + 1, (x+1) * self.step))
 
         # handle the last item
@@ -2117,8 +2141,8 @@ class MultiUploadWdg(BaseInputWdg):
         applet.set_attr("code", "upload.UploadApplet")
         applet.set_attr("codebase", "%s/java" % context_url.get_url() )
         applet.set_attr("archive", "Upload-latest.jar")
-        applet.set_attr("width", "450")
-        applet.set_attr("height", "120")
+        applet.set_attr("width", "450px")
+        applet.set_attr("height", "120px")
         applet.set_attr("id", self.UPLOAD_ID)
         
         # create param for applet
@@ -2157,8 +2181,8 @@ class DownloadWdg(BaseInputWdg):
         applet.set_attr("code", "upload.DownloadApplet")
         applet.set_attr("codebase", "%s/java" % context_url.get_url() )
         applet.set_attr("archive", "Upload-latest.jar")
-        applet.set_attr("width", "1")
-        applet.set_attr("height", "1")
+        applet.set_attr("width", "1px")
+        applet.set_attr("height", "1px")
         applet.set_attr("id", download_id)
     
         # create param for applet
@@ -2535,7 +2559,7 @@ class PopupWdg(BaseInputWdg):
         hidden_name = '%s_hidden' % self.name
         div.add(HiddenWdg(hidden_name))
         div.add_style("display: none")
-        div.add_style("margin", "15px 0 0 0px")
+        div.add_style("margin", "15px 0px 0px 0px")
         div.add_style("position", "absolute")
 
         from web_wdg import CloseWdg
@@ -2660,7 +2684,7 @@ class PopupMenuWdg(BaseInputWdg):
         div.add(HiddenWdg(hidden_name))
         """
         div.add_style("display: none")
-        div.add_style("margin", "5px 0 0 0px")
+        div.add_style("margin", "5px 0px 0px 0px")
         div.add_style("position", "absolute")
 
         from web_wdg import CloseWdg
@@ -2672,7 +2696,13 @@ class PopupMenuWdg(BaseInputWdg):
 
         content_div = FloatDivWdg()
         if self.height:
-            content_div.add_style('height', self.height)
+            height = self.height
+            try:
+                height = int(height)
+                height = str(height) + "px"
+            except ValueError:
+                pass
+            content_div.add_style('height', height)
         content_div.add_style('clear', 'left')
         content_div.add_style('padding-top','8px')
         div.add(content_div)
@@ -2685,7 +2715,13 @@ class PopupMenuWdg(BaseInputWdg):
                 item = DivWdg(css='hand')
                 item.add(widget)
                 if self.menu_width:
-                    item.add_style('width', self.menu_width)
+                    menu_width = self.menu_width
+                    try:
+                        menu_width = int(menu_width)
+                        menu_width = str(menu_width) + "px"
+                    except ValueError:
+                        pass
+                    item.add_style('width', menu_width)
                 content_div.add(item)
                 continue
             id='%s_%s' %(self.get_input_name(), widget.get_name())
@@ -2693,7 +2729,13 @@ class PopupMenuWdg(BaseInputWdg):
             item.set_attr('name', self.item_name)
             item.set_attr('tab', id)
             if self.menu_width:
-                item.add_style('width', self.menu_width)
+                menu_width = self.menu_width
+                try:
+                    menu_width = int(menu_width)
+                    menu_width = str(menu_width) + "px"
+                except ValueError:
+                    pass
+                item.add_style('width', menu_width)
             item.add_style('padding-left','3px')
             
             
@@ -2736,7 +2778,13 @@ class PopupMenuWdg(BaseInputWdg):
 
         if self.monitor:
             mon_div = FloatDivWdg(self.monitor, id='%s_monitor' %self.get_input_name(),float='left')
-            mon_div.add_style('height', self.height)
+            height = self.height
+            try:
+                height = int(height)
+                height = str(height) + "px"
+            except ValueError:
+                pass
+            mon_div.add_style('height', height)
             mon_div.add_style('display', 'none')
             mon_div.add_class('monitor')
             div.add(mon_div)

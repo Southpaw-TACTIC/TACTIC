@@ -10,7 +10,8 @@
 	left: 50%;
 	z-index: 50000;
 
-	background: #eef5f8;
+	//background: #eef5f8;
+    background: #FFF;
 	color: black;
 	padding: 10px;
         /*tactic*/ 
@@ -39,7 +40,8 @@
 	left: 0;
 	right: 0;
 	padding: 3px 10px;
-	background: #b7c4dc;
+	//background: #b7c4dc;
+    background: #EEE;
 	border-bottom: 1px solid #a1aec5;
 	font-weight: bold;
 	text-shadow: 1px 1px 0 #fff;
@@ -69,6 +71,10 @@
 	padding: 0;
 	border: 0;
 	background: none;
+}
+
+.MooDialog input {
+	margin: 0 5px;
 }
 
 .MooDialog .iframe {

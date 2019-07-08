@@ -145,7 +145,7 @@ class SObjectRenderCbk(DatabaseAction):
 
 
 
-	self.description = "Submitted: %s" % ", ".join(search_keys)
+        self.description = "Submitted: %s" % ", ".join(search_keys)
 
 
 

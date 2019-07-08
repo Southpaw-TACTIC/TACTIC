@@ -18,7 +18,7 @@ from pyasm.common import TacticException
 from pyasm.biz import Project
 from pyasm.search import SearchType, DbContainer, AlterTableUndo, AlterTable, Sql
 
-from command import Command
+from .command import Command
 
 class ColumnAddCmd(Command):
     '''Add a column'''

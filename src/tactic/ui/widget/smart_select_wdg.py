@@ -30,26 +30,31 @@ class DynByFoundValueSmartSelectWdg(BaseRefreshWdg):
 
         list_item_table = ''
         self.full_item_list = []
-        if self.kwargs.has_key( 'list_item_table' ):
+        #if self.kwargs.has_key( 'list_item_table' ):
+        if 'list_item_table' in self.kwargs:
             list_item_table = self.kwargs.get( 'list_item_table' )
             expr = '@SOBJECT(MMS/%s)' % list_item_table
             parser = ExpressionParser()
             self.full_item_list = parser.eval(expr)
 
         self.el_name = ''
-        if self.kwargs.has_key( 'element_name' ):
+        #if self.kwargs.has_key( 'element_name' ):
+        if 'element_name' in self.kwargs:
             self.el_name = self.kwargs.get( 'element_name' )
 
         self.input_el_name = ''
-        if self.kwargs.has_key( 'input_element_to_find' ):
+        #if self.kwargs.has_key( 'input_element_to_find' ):
+        if 'imput_elent_to_find' in self.kwargs:
             self.input_el_name = self.kwargs.get( 'input_element_to_find' )
 
         self.col_to_match = ''
-        if self.kwargs.has_key( 'column_to_match_value' ):
+        #if self.kwargs.has_key( 'column_to_match_value' ):
+        if 'column_to_match_value' in self.kwargs:
             self.col_to_match = self.kwargs.get( 'column_to_match_value' )
 
         self.col_for_label = ''
-        if self.kwargs.has_key( 'column_for_label' ):
+        #if self.kwargs.has_key( 'column_for_label' ):
+        if 'column_for_label' in self.kwargs:
             self.col_for_label = self.kwargs.get( 'column_for_label' )
 
         self.select_element = HtmlElement('select')

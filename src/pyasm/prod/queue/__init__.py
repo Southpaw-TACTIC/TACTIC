@@ -10,5 +10,5 @@
 #
 #
 
-from queue import *
-from queue_wdg import *
+from .queue import *
+from .queue_wdg import *

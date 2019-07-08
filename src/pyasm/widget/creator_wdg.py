@@ -16,9 +16,10 @@ from pyasm.common import UserException
 from pyasm.web import *
 from pyasm.search import Search
 from pyasm.command import DatabaseAction
-from input_wdg import *
-from icon_wdg import IconWdg
-from web_wdg import HintWdg
+
+from .input_wdg import *
+from .icon_wdg import IconWdg
+from .web_wdg import HintWdg
 
 
 class CreateSelectWdg(AjaxWdg, BaseInputWdg):

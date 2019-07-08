@@ -475,13 +475,13 @@ class LinkLoadTestWdg(BaseRefreshWdg):
         config_search_type = "config/widget_config"
          
         configs = []
-	all_element_names = []
+        all_element_names = []
         from tactic.ui.panel import SideBarBookmarkMenuWdg
         SideBarBookmarkMenuWdg.add_internal_config(configs, ['definition'])
         for internal_config in configs:
             all_element_names = internal_config.get_element_names()
 
-	search = Search(config_search_type)
+        search = Search(config_search_type)
         search.add_filter("search_type", 'SideBarWdg')
         search.add_filter("view", 'definition')
         search.add_filter("login", None)
@@ -494,16 +494,16 @@ class LinkLoadTestWdg(BaseRefreshWdg):
                 if 'separator' in name:
                     element_names.remove(name)
 
-	all_element_names.extend(element_names)
+        all_element_names.extend(element_names)
 
 	
         all_element_names = [str(name) for name in all_element_names] 
-	all_element_names = Common.get_unique_list(all_element_names)
+        all_element_names = Common.get_unique_list(all_element_names)
         widget = DivWdg(css='spt_load_test_top')
 	
-	span =SpanWdg('This loads all the pages defined in the Project views in popups. It will take a few minutes.')
-	widget.add(span)
-	widget.add('<br/>')
+        span = SpanWdg('This loads all the pages defined in the Project views in popups. It will take a few minutes.')
+        widget.add(span)
+        widget.add('<br/>')
         div = ActionButtonWdg(title='Run')
         web = WebContainer.get_web()
         base_url = web.get_base_url().to_string()

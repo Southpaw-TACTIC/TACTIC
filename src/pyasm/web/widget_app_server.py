@@ -14,11 +14,9 @@ __all__ = ['WidgetAppServer']
 
 # DEPRECATED
 
-import cStringIO, os, re
-
 from pyasm.common import Container
-from web_container import WebContainer
-from app_server import BaseAppServer
+from .web_container import WebContainer
+from .app_server import BaseAppServer
 
 class AppServerException(Exception):
     pass

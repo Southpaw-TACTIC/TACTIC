@@ -212,16 +212,19 @@ class TextBtnSetWdg(BaseRefreshWdg):
 
         for btn_map in self.buttons:
             width = 0
-            if btn_map.has_key("width"):
+            #if btn_map.has_key("width"):
+            if 'width' in btn_map:
                 width = btn_map.get("width")
             txt_btn = TextBtnWdg( label = btn_map.get("label"),
                                   tip = btn_map.get("tip"),
                                   size = self.size,
                                   width = width,
                                   side_padding = self.side_padding )
-            if btn_map.has_key("bvr"):
+            #if btn_map.has_key("bvr"):
+            if bvr in btn_map:
                 bvr = {}
-                if not bvr.has_key("type"):
+                #if not bvr.has_key("type"):
+                if 'type' not in bvr:
                     bvr = {'type':'click_up'}
                 bvr.update( btn_map.get("bvr") )
                 txt_btn.add_behavior( bvr )

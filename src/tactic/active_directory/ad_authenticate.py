@@ -74,7 +74,7 @@ class ADAuthenticate(Authenticate):
                 cmd = PythonCmd(script_path=script_path, **kwargs)
                 #flag = Command.execute_cmd(cmd)
                 flag = cmd.execute()
-            except Exception, e:
+            except Exception as e:
                 print e
                 raise
             if flag != True:

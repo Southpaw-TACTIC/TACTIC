@@ -16,6 +16,12 @@ from pyasm.common import *
 from pyasm.web import Widget, WebContainer, DivWdg, WebEnvironment, HtmlElement, SpanWdg
 import re, types
 
+
+import six
+basestring = six.string_types
+
+
+
 class AjaxLoaderException(Exception):
     pass
 
@@ -352,7 +358,7 @@ class WikiUtil(object):
     xxx = 0
         
     def convert(self, text):
-        if not type(text) in types.StringTypes:
+        if not isinstance(text, basestring):
             text = str(text)
       
         text = self._replace_tag(text)

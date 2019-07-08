@@ -94,7 +94,7 @@ class IntrospectFilterWdg(BaseRefreshWdg):
 
 
     def alter_search(self, search):
-        print "Introspect alter_search"
+        print("Introspect alter_search")
 
         # see if any of the filters have a class handler defined
         from tactic.ui.filter import FilterData
@@ -128,14 +128,14 @@ class IntrospectFilterWdg(BaseRefreshWdg):
             if state_search_type:
                 search_type_obj = SearchType.get(search_type)
                 key = search_type_obj.get_base_key()
-                print "compare: ", key, state_search_type
+                print("compare: ", key, state_search_type)
                 if key != state_search_type:
                     continue
 
             id = snapshot.get_value("search_id")
             ids.append(id)
 
-        print "ids: ", ids
+        print("ids: ", ids)
         if ids:
             search.add_filters("id", ids)
 

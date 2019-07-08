@@ -11,6 +11,7 @@
 #
 #
 
+import tacticenv
 
 import unittest
 

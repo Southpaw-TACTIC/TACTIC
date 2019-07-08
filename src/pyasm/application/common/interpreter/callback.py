@@ -57,7 +57,7 @@ class BaseClientCbk(object):
         try:
             self.execute()
 
-        except Exception, e:
+        except Exception as e:
             self.server.abort()
             raise
         else:

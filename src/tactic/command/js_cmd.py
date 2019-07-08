@@ -17,7 +17,8 @@ from pyasm.common import TacticException, Environment, Config, jsondumps, jsonlo
 from pyasm.command import Command, CommandExitException
 from pyasm.biz import Project
 from pyasm.search import Search
-from python_cmd import PythonCmd, PythonTrigger
+
+from .python_cmd import PythonCmd, PythonTrigger
 
 from tactic_client_lib import TacticServerStub
 
@@ -122,8 +123,8 @@ if __name__ == '__main__':
     Command.execute_cmd(cmd)
 
     ret_val = cmd.info.get("spt_ret_val")
-    print "~"*20
-    print ret_val
+    print("~"*20)
+    print(ret_val)
 
 
 

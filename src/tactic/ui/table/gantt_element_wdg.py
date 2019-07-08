@@ -22,9 +22,10 @@ from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import Widget, DivWdg, SpanWdg, HtmlElement, WebContainer, Table
 from pyasm.widget import HiddenWdg, TextWdg, IconWdg
 from pyasm.biz import ExpressionParser
-
 from tactic.ui.widget import IconButtonWdg
-from subcontext_wdg import ProcessElementWdg
+
+from .subcontext_wdg import ProcessElementWdg
+
 import datetime
 from dateutil import rrule
 from dateutil import parser
@@ -1872,7 +1873,7 @@ class GanttCbk(DatabaseAction):
                 index = 0
             try:
                 options = options_list[index]
-            except IndexError, e:
+            except IndexError as e:
                 raise TacticException('Missing option in the action class GanttCbk. Please check the Column Definition. The number of action options should match the number of editable bars.')
             
             expression = options.get("sobjects")

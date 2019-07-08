@@ -25,6 +25,9 @@ from tactic.ui.container.smart_menu_wdg import SmartMenu
 from tactic.ui.widget import ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
+import six
+basestring = six.string_types
+
 
 class SideBarPanelWdg(BaseRefreshWdg):
 
@@ -1502,7 +1505,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-        if type(view) in types.StringTypes:
+        if isinstance(view, basestring):
             view = [view]
 
         # draw each view
@@ -2923,7 +2926,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             # take the search filter structure from search_view
             # if filter is a non-xml string, then it is in JSON format
             
-            if type(filter) in types.StringTypes and filter != '':
+            if isinstance(filter, basestring) and filter != '':
                 try:
                     filter = jsonloads(filter)
                 except Exception:
@@ -2964,7 +2967,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         self.state = self.kwargs.get('state')
         if not self.state:
             self.state = {}
-        if type(self.state) in types.StringTypes:
+        if isinstance(self.state, basestring):
             try:
                 self.state = eval(self.state)
             except Exception as e:
@@ -3380,7 +3383,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         if layout == 'tile':
-            from tile_layout_wdg import TileLayoutWdg
+            from .tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = self.kwargs.get("top_view")
             kwargs['bottom_view'] = self.kwargs.get("bottom_view")
             kwargs['sticky_scale'] = self.kwargs.get("sticky_scale")
@@ -3416,7 +3419,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout in ['fast_table', 'table']:
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
-            from table_layout_wdg import FastTableLayoutWdg
+            from .table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
 
@@ -3456,23 +3459,23 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = self.kwargs.get("upload_mode")
             kwargs['process'] = self.kwargs.get("process")
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
-            from collection_wdg import CollectionLayoutWdg
+            from .collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
-            from tool_layout_wdg import CustomLayoutWithSearchWdg
+            from .tool_layout_wdg import CustomLayoutWithSearchWdg
             layout_table = CustomLayoutWithSearchWdg(**kwargs)
 
         elif layout == 'aggregate':
-            from tool_layout_wdg import CustomAggregateWdg
+            from .tool_layout_wdg import CustomAggregateWdg
             layout_table = CustomAggregateWdg(**kwargs)
 
         elif layout == 'custom_item':
-            from tool_layout_wdg import CustomItemLayoutWithSearchWdg
+            from .tool_layout_wdg import CustomItemLayoutWithSearchWdg
             layout_table = CustomItemLayoutWithSearchWdg(**kwargs)
 
         elif layout == 'old_table':
-            from layout_wdg import OldTableLayoutWdg
+            from .layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
 
         elif layout and layout != "default":
@@ -3490,7 +3493,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
         else:
-            from table_layout_wdg import TableLayoutWdg
+            from .table_layout_wdg import TableLayoutWdg
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['show_border'] = self.kwargs.get("show_border")
             kwargs['edit'] = self.kwargs.get("edit")
@@ -3568,7 +3571,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         if title_view:
-            from custom_layout_wdg import CustomLayoutWdg
+            from .custom_layout_wdg import CustomLayoutWdg
             title_wdg = CustomLayoutWdg(view=title_view)
             title_box_wdg.add(title_wdg)
 
