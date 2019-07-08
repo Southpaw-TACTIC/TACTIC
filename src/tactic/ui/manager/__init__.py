@@ -10,12 +10,12 @@
 #
 #
 
-from element_definition_wdg import *
-from format_definition_wdg import *
+from .element_definition_wdg import *
+from .format_definition_wdg import *
 
-from base_section_wdg import *
-from view_section_wdg import *
+from .base_section_wdg import *
+from .view_section_wdg import *
 
-from view_manager_wdg import *
+from .view_manager_wdg import *
 
 

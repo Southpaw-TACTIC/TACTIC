@@ -17,10 +17,10 @@ from pyasm.web import *
 from pyasm.widget import TableWdg
 from pyasm.biz import *
 from pyasm.common import Environment
-
-from asset_filter_wdg import *
-from prod_input_wdg import *
 from tactic.ui.common import BaseRefreshWdg
+
+from .asset_filter_wdg import *
+from .prod_input_wdg import *
 
 class PublishLogWdg(BaseRefreshWdg):
     ''' A widget used to display publish/checkin log '''

@@ -101,7 +101,7 @@ class IngestionCmd(Command):
             self.kwargs = data
         """
 
-        print self.kwargs
+        print(self.kwargs)
 
         scan_type = self.kwargs.get('scan_type')
         action_type = self.kwargs.get('action_type')
@@ -113,8 +113,8 @@ class IngestionCmd(Command):
         rule_code = self.kwargs.get("rule_code")
         mode = self.kwargs.get("mode")
 
-        print "scan: ", scan_type
-        print "mode: ", mode
+        print("scan: ", scan_type)
+        print("mode: ", mode)
 
 
 
@@ -122,7 +122,7 @@ class IngestionCmd(Command):
             file_list = self.kwargs.get("file_list")
             file_list = file_list.split("\n")
             for path in file_list:
-                print "found: ", path
+                print("found: ", path)
 
                 # use some simple rules to checkin the files
                 return
@@ -155,8 +155,8 @@ class IngestionCmd(Command):
         else:
             raise Exception("No session found")
 
-        print "base_dir: ", base_dir
-        print "pattern: ", pattern
+        print("base_dir: ", base_dir)
+        print("pattern: ", pattern)
 
 
 
@@ -274,7 +274,7 @@ class IngestionCmd(Command):
 
                         path = "%s/%s/" % (root, dir)
                         parts_depth = len(path.split("/"))
-                        #print path, parts_depth
+                        #print(path, parts_depth)
 
                         if not parts_depth - start_depth == depth:
                             self.paths_not_matched.append(path)
@@ -345,7 +345,7 @@ class IngestionCmd(Command):
                                 'snapshot': self.snapshot_tags,
                             }
 
-        print "length: ", len(self.data.keys())
+        print("length: ", len(self.data.keys()))
 
         self.info["paths_matched"] = self.paths_matched
         self.info["paths_not_matched"] = self.paths_not_matched
@@ -382,7 +382,7 @@ class IngestionCmd(Command):
 
 
         # see if there are any non-acii characters
-        #print path
+        #print(path)
         
 
     def scan_path(self, path, pattern):
@@ -410,7 +410,7 @@ class IngestionCmd(Command):
         status = self.kwargs.get("mode")
         action_type = self.kwargs.get("action_type")
         if action_type == 'ignore':
-            print "ignoring: ", path
+            print("ignoring: ", path)
             (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(path)
             self.data[path] = {
                 'size': size,
@@ -500,10 +500,10 @@ class IngestionCmd(Command):
             try:
                 result = validation_cmd.execute()
             except IngestException as e:
-                print e.message
+                print(e.message)
                 result = None
             except Exception as e:
-                print "ERROR: ", e.message
+                print("ERROR: ", e.message)
                 result = None
 
 
@@ -566,7 +566,7 @@ class IngestionCmd(Command):
 
 
 
-        #print "keywords: ", keywords
+        #print("keywords: ", keywords)
 
         #
         # action
@@ -587,7 +587,7 @@ class IngestionCmd(Command):
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get(protocol='local')
         if checkin_type == "directory":
-            print "dir checkin: ", self.sobject_tags.get("code"), context, path
+            print("dir checkin: ", self.sobject_tags.get("code"), context, path)
             server.directory_checkin( self.sobject.get_search_key(), context, path, mode='copy')
  
 
@@ -759,9 +759,9 @@ class IngestCreateSObjectCmd(Command):
         #checkin = FileCheckin(self.sobject, ... )
         #checkin.execute()
         if checkin_type == "dir":
-            print "dir checkin: ", self.sobject_tags.get("code"), context, path
+            print("dir checkin: ", self.sobject_tags.get("code"), context, path)
         elif checkin_type == "file":
-            print "checkin: ", self.sobject_tags.get("code"), context, path
+            print("checkin: ", self.sobject_tags.get("code"), context, path)
 
 
 

@@ -9,6 +9,6 @@
 #
 #
 #
-from api_xmlrpc import *
-from base_xmlrpc import *
-from base_sthpw_wdg import *
+from .api_xmlrpc import *
+from .base_xmlrpc import *
+from .base_sthpw_wdg import *

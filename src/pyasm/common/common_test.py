@@ -36,91 +36,91 @@ class CommonTest(unittest.TestCase):
         # remove -
         name = 'chr001_.jpg'
         exp  = 'chr001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # remove -_
         name = 'chr001-_.jpg'
         exp  = 'chr001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # remove double ..
         name = 'chr001..jpg'
         exp  = 'chr001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # remove triple ...
         name = 'chr001...jpg'
         exp  = 'chr001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # remove -
         name = 'chr001-_model.jpg'
         exp  = 'chr001_model.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # keep double --, keep double __
         name = 'chr001--model__v001.jpg'
         exp = 'chr001--model__v001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # change space to underscore
         name = 'chr001 model_v001.jpg'
         exp = 'chr001_model_v001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
 
         # change space to underscore, but keep .
         name = 'chr001_model_v001 .jpg'
         exp = 'chr001_model_v001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # remove bad characters
         name = 'ch%r001_model_v001?! .jpg'
         exp = 'chr001_model_v001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # allow %0.4d convention 
         name = 'chr001_model.%0.4d.jpg'
         exp = 'chr001_model.%0.4d.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # start with a .
         name = '.chr001.jpg'
         exp = '.chr001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
         
         # ends with a .
         name = 'chr001.jpg.'
         exp = 'chr001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
 
         # start with a -
         name = '-!chr001.jpg'
         exp = '-chr001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001_!_v001.jpg'
         exp = 'chr001_v001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001_!!_v001.jpg'
         exp = 'chr001_v001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
         # use a naming convention ! replacement
         name = 'chr001__!v001.jpg'
         exp = 'chr001__v001.jpg'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
 
 
         # handle python special naming
         name = '__init__.py'
         exp = '__init__.py'
-        self.assertEquals(exp, Common.clean_filesystem_name(name))
+        self.assertEqual(exp, Common.clean_filesystem_name(name))
 
 
 
@@ -141,18 +141,18 @@ class CommonTest(unittest.TestCase):
         KEY = "CoreTest:counter"
         Container.start_counter(KEY)
         count = Container.get(KEY)
-        self.assertEquals(count, 0)
+        self.assertEqual(count, 0)
 
         Container.increment(KEY)
         Container.increment(KEY)
 
         count = Container.get(KEY)
-        self.assertEquals(count, 2)
+        self.assertEqual(count, 2)
 
         Container.decrement(KEY)
 
         count = Container.get(KEY)
-        self.assertEquals(count, 1)
+        self.assertEqual(count, 1)
 
 
 
@@ -174,9 +174,9 @@ class CommonTest(unittest.TestCase):
 
         # test get_node
         nodes = xml.get_nodes("snapshot/a")
-        self.assertEquals(3, len(nodes) )
+        self.assertEqual(3, len(nodes) )
         node = xml.get_node("snapshot/b")
-        self.assertEquals(1, node != None)
+        self.assertEqual(1, node != None)
 
 
         xpath = "snapshot/a"
@@ -223,7 +223,7 @@ class CommonTest(unittest.TestCase):
         pickle2 = pickle.dumps(marshaller)
 
 
-        self.assertEquals(pickle1, pickle2)
+        self.assertEqual(pickle1, pickle2)
 
 
     def _test_relative_dir(self):
@@ -232,46 +232,46 @@ class CommonTest(unittest.TestCase):
         a = "/data/home/apache/assets/prod/textures"
         rel = Common.relative_dir(a,b)
         exp = "."
-        self.assertEquals(exp,rel)
+        self.assertEqual(exp,rel)
 
 
         a = "/data/home/apache/assets/prod/textures"
         b = "/data/home/apache/assets/prod/textures/prod/product100/final"
         rel = Common.relative_dir(a,b)
         exp = "prod/product100/final"
-        self.assertEquals(exp,rel)
+        self.assertEqual(exp,rel)
 
         a = "/data/home/apache/assets/prod/textures/prod/product100/final"
         b = "/data/home/apache/assets/prod/textures"
         rel = Common.relative_dir(a,b)
         exp = "../../.."
-        self.assertEquals(exp,rel)
+        self.assertEqual(exp,rel)
 
         a = "/data/home/apache/assets/prod/textures/prod/product100/final"
         b = "/data/home/apache/assets/prod/assets/product100/final"
         rel = Common.relative_dir(a,b)
         exp = "../../../../assets/product100/final"
-        self.assertEquals(exp,rel)
+        self.assertEqual(exp,rel)
 
         a = "/data/home/apache/assets/prod/"
         b = "/data/home/apache/assets/prod"
         rel = Common.relative_dir(a,b)
         exp = ""
-        self.assertEquals(exp,rel)
+        self.assertEqual(exp,rel)
 
         # real example
         a = "/home/apache/html/sthpw/assets/prod2/asset/product/product300/final"
         b = "/home/apache/html/sthpw/assets/prod2/asset/product/product300/texture/torus"
         rel = Common.relative_dir(a,b)
         exp = "../texture/torus"
-        self.assertEquals(exp,rel)
+        self.assertEqual(exp,rel)
 
         # real example
         a = "/home/apache/html/sthpw/assets/mainframe/asset/bar/bar0002/rig"
         b = "/home/apache/html/sthpw/assets/mainframe/asset/bar/bar0001/model"
         rel = Common.relative_dir(a,b)
         exp = "../../bar0001/model"
-        self.assertEquals(exp,rel)
+        self.assertEqual(exp,rel)
 
 
 
@@ -280,30 +280,30 @@ class CommonTest(unittest.TestCase):
         path = "/theLongAndWindingRoad.jpg"
         keywords = Common.extract_keywords_from_path(path)
         for item in ['the', 'long', 'and', 'winding', 'road', 'jpg']:
-            self.assertEquals(True, item in keywords)
+            self.assertEqual(True, item in keywords)
 
 
         path = "/bigUglyDog-dangerous_black.jpg"
         keywords = Common.extract_keywords_from_path(path)
         for item in ['big','ugly','dog','dangerous','black','jpg']:
-            self.assertEquals(True, item in keywords)
+            self.assertEqual(True, item in keywords)
 
         path = "/BOBtheMan.jpg"
         keywords = Common.extract_keywords_from_path(path)
         for item in ['bob', 'the', 'man']:
-            self.assertEquals(True, item in keywords)
+            self.assertEqual(True, item in keywords)
 
 
         path = "/BOB123.jpg"
         keywords = Common.extract_keywords_from_path(path)
         for item in ['bob', 'jpg']:
-            self.assertEquals(True, item in keywords)
+            self.assertEqual(True, item in keywords)
 
 
         path = "/testURLagain-main.txt"
         keywords = Common.extract_keywords_from_path(path)
         for item in ['test', 'url', 'again', 'main', 'txt']:
-            self.assertEquals(True, item in keywords)
+            self.assertEqual(True, item in keywords)
 
 
 if __name__ == '__main__':

@@ -14,4 +14,7 @@ import tacticenv
 import sys
 tactic_install_dir = tacticenv.get_install_dir()
 
-sys.path.insert(0, "%s/3rd_party/site-packages" %tactic_install_dir)
+if sys.version_info[0] < 3:
+    sys.path.insert(0, "%s/3rd_party/site-packages" %tactic_install_dir)
+else:
+    sys.path.insert(0, "%s/3rd_party/site-packages3" %tactic_install_dir)

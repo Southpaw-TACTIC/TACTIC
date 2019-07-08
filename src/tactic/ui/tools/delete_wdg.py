@@ -684,7 +684,7 @@ class DeleteSearchTypeCmd(Command):
             for sobject in sobjects:
                 cmd = DeleteCmd(sobject=sobject, values=self.values)
                 cmd.execute()
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -692,7 +692,7 @@ class DeleteSearchTypeCmd(Command):
             table_name = search_type_obj.get_table()
             # must log first
             TableDropUndo.log(search_type, database, table_name)
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -701,7 +701,7 @@ class DeleteSearchTypeCmd(Command):
             from pyasm.search import DropTable
             cmd = DropTable(search_type)
             cmd.commit()
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -1169,7 +1169,15 @@ class DeleteProjectCmd(DeleteCmd):
         impl = sthpw_db_resource.get_database_impl()
         deleted_impl = db_resource.get_database_impl()
 
-        if not impl.database_exists(db_resource):
+        try:
+            database_exists = impl.database_exists(db_resource)
+        except Exception as e:
+            print("Error: ", e)
+            project.delete()
+            raise
+
+
+        if not database_exists:
             # remove the project entry
             project.delete()
             return
@@ -1188,8 +1196,6 @@ class DeleteProjectCmd(DeleteCmd):
 
 
         Container.put("Sql:database_exists:%s"%db_resource.get_key(), None)
-
-
 
 
         sql = DbContainer.get(db_resource, connect=True)

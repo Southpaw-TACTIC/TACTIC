@@ -14,6 +14,9 @@ __all__ = ["TileLayoutWdg"]
 import re, os
 import urllib
 
+import six
+basestring = six.string_types
+
 from pyasm.common import Common, Environment, jsonloads, jsondumps
 from pyasm.biz import CustomScript, Project, Snapshot, File, ProjectSetting, FileGroup
 from pyasm.command import Command
@@ -23,10 +26,11 @@ from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
 
-from table_layout_wdg import FastTableLayoutWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 from tactic.ui.input import UploadButtonWdg
-from tool_layout_wdg import ToolLayoutWdg
+
+from .table_layout_wdg import FastTableLayoutWdg
+from .tool_layout_wdg import ToolLayoutWdg
 
 class TileLayoutWdg(ToolLayoutWdg):
 
@@ -409,11 +413,11 @@ class TileLayoutWdg(ToolLayoutWdg):
                 start = time.time()
                 self.sobject_data = self.get_sobject_data(self.sobjects)
                 end = time.time()
-                print
+                print("\n")
                 print("TILE LAYOUT PREPROCESSING TOOK [%s] SECONDS" % (end-start))
-                print
-		style = self.get_styles()
-		inner.add(style)
+                print("\n")
+                style = self.get_styles()
+                inner.add(style)
             
             inner.add( self.get_scale_wdg())
             if self.upload_mode in ['button','both']:
@@ -599,7 +603,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 		'''
 	    })
 
-	return content_wdg
+        return content_wdg
 
 
 
@@ -644,8 +648,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         data_list = filter_data.get_values_by_prefix("tile_layout")
         if data_list:
             data = data_list[0]
-	else:
-	    data = {}
+        else:
+            data = {}
 	    
 
         self.scale = data.get("scale")
@@ -1656,8 +1660,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 # need new snapshot, file sobjects to get new paths
                                 new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
                                 paths = new_paths_by_key.get(sobject.get_search_key())
-                            except Exception, e:
-                                print "ThumbCmd failed on [%s]: %s" % (snapshot.get_code(), e)
+                            except Exception as e:
+                                print("ThumbCmd failed on [%s]: %s" % (snapshot.get_code(), e))
 
                
             paths_by_key[search_key] = paths
@@ -1730,7 +1734,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     tile_data['color'] = color
                  
                 
-                if isinstance(path, unicode):
+                if not Common.is_python3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
 
             
@@ -1994,14 +1998,14 @@ class TileLayoutWdg(ToolLayoutWdg):
         size_div.add_class("spt_tile_size")
 
         # Download button
-	href = HtmlElement.href()
-	href.add_attr("href", "")
-	tool_div.add(href)
+        href = HtmlElement.href()
+        href.add_attr("href", "")
+        tool_div.add(href)
         href.add_attr("download", "")
 
-	icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
-	icon.add_class("hand")
-	href.add(icon)
+        icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+        icon.add_class("hand")
+        href.add(icon)
 
         """
         # TODO: Dynamically preprocess bottom wdg
@@ -3287,7 +3291,7 @@ class ThumbWdg2(BaseRefreshWdg):
                 inner.add_style("background: %s" % color)
 
             else:
-                if isinstance(path, unicode):
+                if not Common.IS_Pv3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
 
                 if path.endswith("indicator_snake.gif"):
@@ -3319,7 +3323,7 @@ class ThumbWdg2(BaseRefreshWdg):
                         path = thumb_cmd.get_path()
 
 
-                path = urllib.pathname2url(path)
+                path = Common.pathname2url(path)
                 img = HtmlElement.img(src=path)
 
                 div.add_attr("spt_main_path", self.get_main_path())
@@ -3333,7 +3337,7 @@ class ThumbWdg2(BaseRefreshWdg):
             if path:
                 if isinstance(path, unicode):
                     path = path.encode("utf-8")
-                path = urllib.pathname2url(path)
+                path = Common.pathname2url(path)
 
                 img = DivWdg()
                 img.add_style("opacity: 0.3")

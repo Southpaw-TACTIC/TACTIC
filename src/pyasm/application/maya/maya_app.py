@@ -15,7 +15,7 @@ __all__ = ['MayaException', 'Maya', 'Maya85', 'MayaNodeNaming']
 
 import sys, types, re, os
 
-from maya_environment import *
+from .maya_environment import *
 from pyasm.application.common import NodeData, Common, Application, AppException
 
 class MayaException(AppException):
@@ -183,7 +183,7 @@ class Maya(Application):
         full_path_switch = ''
         recurse_switch = ''
         if full_path:
-	    full_path_switch = '-fullPath'
+            full_path_switch = '-fullPath'
         if recurse:
             recurse_switch = '-ad'
         children = mel('listRelatives %s %s -type %s "%s"' %(full_path_switch, recurse_switch, type, node_name))

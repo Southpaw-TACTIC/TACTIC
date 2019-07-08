@@ -22,11 +22,14 @@ from tactic.ui.panel import TableLayoutWdg
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, SelectWdg, HiddenWdg, CheckboxWdg
 from tactic.ui.container import MenuItem, Menu, ResizableTableWdg, TabWdg, DialogWdg, SmartMenu
+
+# FIXME: remove this dependency (move class to tactic.ui.app)
 from tactic.ui.app import SearchTypeCreatorWdg
+
 from tactic.ui.widget import ActionButtonWdg
 
-from pipeline_canvas_wdg import *
-from pipeline_wdg import *
+from .pipeline_canvas_wdg import *
+from .pipeline_wdg import *
 
 from tactic_client_lib import TacticServerStub
 
@@ -2350,7 +2353,6 @@ class SchemaSaveCmd(Command):
         to_search_type_obj = SearchType.get(to_search_type, no_exception=True)
 
         # register the search types
-        from tactic.ui.app import SearchTypeCreatorCmd
         if not from_search_type_obj:
             creator = SearchTypeCreatorCmd(search_type_name=from_search_type, sobject_parent=to_search_type)
             creator.execute()

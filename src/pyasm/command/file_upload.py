@@ -90,9 +90,9 @@ class FileUpload(Base):
             # step would be necessary
             try:
                 filename = filename.decode('unicode-escape')
-            except UnicodeEncodeError, e:
+            except UnicodeEncodeError as e:
                 pass
-            except UnicodeError,e:
+            except UnicodeError as e:
                 pass
             if filename == "":
                 return None
@@ -262,7 +262,7 @@ class FileUpload(Base):
 
         try:
             data.close()
-        except Exception, e:
+        except Exception as e:
             print(str(e))
 
         # when upload is running in append mode f_progress could be None

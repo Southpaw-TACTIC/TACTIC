@@ -17,9 +17,6 @@ from pyasm.web import *
 from pyasm.widget import *
 from pyasm.prod.biz import *
 from pyasm.prod.load import *
-from version_wdg import *
-from prod_wdg import ProdIconButtonWdg
-from prod_context import *
 from pyasm.application.maya import MayaNodeNaming
 from pyasm.application.houdini import HoudiniNodeNaming
 from pyasm.application.xsi import XSINodeNaming
@@ -28,6 +25,10 @@ from tactic.ui.filter import FilterData
 from tactic.ui.container import SmartMenu
 from tactic.ui.widget import TextOptionBtnWdg
 from pyasm.biz import Snapshot, Project
+
+from .version_wdg import *
+from .prod_wdg import ProdIconButtonWdg
+from .prod_context import *
 
 class SnapshotLoaderButtonWdg(Widget):
 
@@ -845,7 +846,7 @@ class SubRefWdg(AjaxWdg):
             node_name = Xml.get_attribute(ref, "node_name")
             snapshot = Snapshot.get_ref_snapshot_by_node(ref, mode='current')
             if not snapshot:
-                print "WARNING: reference in snapshot [%s] does not exist" % self.snapshot.get_code()
+                print("WARNING: reference in snapshot [%s] does not exist" % self.snapshot.get_code())
                 continue
 
             #checkin_snapshot = Snapshot.get_ref_snapshot_by_node(ref)
@@ -866,7 +867,7 @@ class SubRefWdg(AjaxWdg):
                 parts = node_name.split(":")
                 parts.insert(1, instance)
                 node_name = ":".join(parts)
-                print "WARNING: node_name not given: using [%s]" % node_name
+                print("WARNING: node_name not given: using [%s]" % node_name)
 
 
             # Add the current namespace to the node 
@@ -894,7 +895,7 @@ class SubRefWdg(AjaxWdg):
             session_context = self.session.get_context(node_name, asset_code, latest_snapshot_type)
             session_version = self.session.get_version(node_name, asset_code, latest_snapshot_type)
             session_revision = self.session.get_revision(node_name, asset_code, latest_snapshot_type)
-            #print "session: ", session_version, session_context, session_revision
+            #print("session: ", session_version, session_context, session_revision)
             # add to outdated ref list here
             version_wdg = LatestVersionContextWdg()
             data = {'session_version': session_version, \

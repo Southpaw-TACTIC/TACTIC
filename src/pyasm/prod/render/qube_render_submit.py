@@ -20,8 +20,8 @@ from pyasm.biz import Snapshot
 from pyasm.prod.biz import FrameRange
 from pyasm.prod.queue import Queue
 
-from render_cmd_builder import *
-from render_package import RenderPackage
+from .render_cmd_builder import *
+from .render_package import RenderPackage
 
 
 class RenderSubmitException(TacticException):
@@ -63,7 +63,7 @@ class RenderSubmit(Command):
 
 
     def get_input_path(self):
-        print self.snapshot.get_value("snapshot")
+        print(self.snapshot.get_value("snapshot"))
         for type in ['main', 'maya', 'xsi', 'houdini']:
             input_path = self.snapshot.get_client_lib_path_by_type(type)
             if input_path:
@@ -179,7 +179,7 @@ class QubeRenderSubmit(RenderSubmit):
         # get the job from 
         self.job_list.append( qube_job.get_job() )
 
-        print "job_list: ", self.job_list
+        print("job_list: ", self.job_list)
 
         # append the checkin job as a callback
         #checkin_job = QubeCheckinJob(self.render_package, queue)

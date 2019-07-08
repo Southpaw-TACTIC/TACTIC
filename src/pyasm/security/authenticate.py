@@ -15,8 +15,8 @@ __all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate', 'LdapADAuth
 import hashlib
 
 from pyasm.common import SecurityException, Config, Common
-from security import Login
-from drupal_password_hasher import DrupalPasswordHasher
+from .security import Login
+from .drupal_password_hasher import DrupalPasswordHasher
 
 
 
@@ -98,6 +98,7 @@ class TacticAuthenticate(Authenticate):
             #iter_code = 'D'
             encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
         else:
+            # kept here for backwards compatibility
             encrypted = hashlib.md5(password).hexdigest()
 
         # encrypt and check the password

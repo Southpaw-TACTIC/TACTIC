@@ -13,13 +13,12 @@
 __all__ = ['CheckinException', 'BaseCheckin']
 
 import sys, string, os, time, shutil
-from cStringIO import *
 
 from pyasm.common import *
 from pyasm.search import *
 from pyasm.command import *
 from pyasm.biz import *
-from pyasm.prod.biz import ProdSetting
+
 
 class CheckinException(TacticException):
     pass

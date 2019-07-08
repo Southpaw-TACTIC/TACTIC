@@ -37,7 +37,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
         #section_wdg.add_style("height: 200px")
-	section_wdg.add_style("height: 310px")
+        section_wdg.add_style("height: 310px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
 
@@ -70,7 +70,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         div.add_style("width: 210px")
         #div.add_style("height: 64px")
         div.add_style("height: 170px")
-	div.add_style("text-align: center")
+        div.add_style("text-align: center")
         div.add(image)
         section_wdg.add(desc_div)
         div.add_style("overflow: hidden")
@@ -178,7 +178,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         button = SingleButtonWdg(title="Project Startup", icon="FA_HOME")
         button_div.add(button)
         button_div.add_style("float: left")
-	button_div.add_style("margin-top: -10px")
+        button_div.add_style("margin-top: -10px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -210,7 +210,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         description = '''The schema is a collection of nodes that layout the basic components of a project. Each node represents a separate list of items (sType) used in this project: ie Assets, Shots, Artwork, etc.'''
 
 	#image = "<img src='/context/icons/64x64/schema_64.png'/>"
-	image = "<img src='/context/images/getting_started_schema.png'/>"
+        image = "<img src='/context/images/getting_started_schema.png'/>"
         behavior = {
         'type': 'click_up',
         'cbjs_action': '''
@@ -259,7 +259,7 @@ class ProjectStartWdg(BaseRefreshWdg):
 	#image = "<img src='/context/icons/64x64/sidebar_64.png'/>"
         image = "<img src='/context/images/getting_started_sidebar.png'/>"
 
-	description = "The Side Bar can be easily configured to show specific views of your project to each user."
+        description = "The Side Bar can be easily configured to show specific views of your project to each user."
         behavior = {
         'type': 'click_up',
         'cbjs_action': '''

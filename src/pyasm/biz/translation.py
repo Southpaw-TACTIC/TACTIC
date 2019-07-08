@@ -57,8 +57,12 @@ class Translation(SObject):
         #lang.install()
 
         # override the _ function
-        import __builtin__
-        __builtin__._ = Translation._translate
+        try:
+            import __builtin__ as builtins
+        except:
+            import builtins
+
+        builtins._ = Translation._translate
 
     install = staticmethod(install)
 
@@ -116,7 +120,7 @@ class Translation(SObject):
         main_key = '%s|%s' %(language, msg)
 
         sobject = None
-        if dictionary.has_key("__loaded__"):
+        if '__loaded__' in dictionary:
             sobject = dictionary.get(main_key)
         else:
 

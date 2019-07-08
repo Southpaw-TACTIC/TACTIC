@@ -22,8 +22,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types
 
-from chart_wdg import ChartWdg as ChartWdg
-from chart_wdg import ChartData as ChartData
+from .chart_wdg import ChartWdg as ChartWdg
+from .chart_wdg import ChartData as ChartData
+
+import six
+basestring = six.string_types
 
 
 class BaseChartWdg(BaseRefreshWdg):
@@ -676,7 +679,7 @@ class CalendarChartWdg(BaseChartWdg):
 
         # draw a legend
         legend = None
-        from chart_wdg import ChartLegend
+        from .chart_wdg import ChartLegend
         labels = self.kwargs.get("labels")
         if labels:
             legend = ChartLegend()

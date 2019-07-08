@@ -10,6 +10,8 @@
 #
 #
 
+__all__ = ['ZipUtil']
+
 import zipfile, os, codecs, datetime
 
 class ZipUtil(object):
@@ -19,7 +21,7 @@ class ZipUtil(object):
         if not zip_path:
             zip_path = "./%s.zip" % os.path.basename(dir)
 
-        print "zip_path: ", zip_path
+        print("zip_path: ", zip_path)
         if os.path.exists(zip_path):
             os.unlink(zip_path)
 
@@ -55,7 +57,11 @@ class ZipUtil(object):
                     if os.path.islink(path):
                         zip_info = zipfile.ZipInfo(root)
                         zip_info.create_system = 3
-                        zip_info.external_attr = 271663808L
+                        try:
+                            zip_info.external_attr = long(271663808)
+                        except:
+                            zip_info.external_attr = 271663808
+
                         zip_info.filename = relpath
                         zip.writestr(zip_info, os.readlink(path) )
                     else:
@@ -112,7 +118,11 @@ class ZipUtil(object):
                         zipInfo.create_system = 3
                         # long type of hex val of '0xA1ED0000L',
                         # say, symlink attr magic...
-                        zipInfo.external_attr = 2716663808L
+                        try:
+                            zip_info.external_attr = long(271663808)
+                        except:
+                            zip_info.external_attr = 271663808
+
                         zipOut.writestr(zipInfo, os.readlink(fullPath))
                     else:
                         zipOut.write(fullPath, archiveRoot, zipfile.ZIP_DEFLATED)
@@ -151,8 +161,8 @@ class ZipUtil(object):
         if hasattr(zf, 'extractall'):
             try:
                 zf.extractall(path=base_dir)
-            except Exception, e:
-                print "WARNING extracting zip: ", e
+            except Exception as e:
+                print("WARNING extracting zip: ", e)
             return paths            # This does not fill in the paths
 
         name_list = zf.namelist()
@@ -162,7 +172,7 @@ class ZipUtil(object):
             try:
                 data = zf.read(file_path)
             except KeyError:
-                print 'ERROR: Did not find %s in zip file' % filename
+                print('ERROR: Did not find %s in zip file' % filename)
             else:
                 new_path = "%s/%s" % (base_dir, file_path)
                 new_dir = os.path.dirname(new_path)
@@ -193,14 +203,14 @@ class ZipUtil(object):
     def print_info(cls, path):
         zf = zipfile.ZipFile(path)
         for info in zf.infolist():
-            print info.filename
-        print '\tComment:\t', info.comment
-        print '\tModified:\t', datetime.datetime(*info.date_time)
-        print '\tSystem:\t\t', info.create_system, '(0 = Windows, 3 = Unix)'
-        print '\tZIP version:\t', info.create_version
-        print '\tCompressed:\t', info.compress_size, 'bytes'
-        print '\tUncompressed:\t', info.file_size, 'bytes'
-        print
+            print(info.filename)
+        print('\tComment:\t', info.comment)
+        print('\tModified:\t', datetime.datetime(*info.date_time))
+        print('\tSystem:\t\t', info.create_system, '(0 = Windows, 3 = Unix)')
+        print('\tZIP version:\t', info.create_version)
+        print('\tCompressed:\t', info.compress_size, 'bytes')
+        print('\tUncompressed:\t', info.file_size, 'bytes')
+        print('\n')
     print_info = classmethod(print_info)
 
 

@@ -85,7 +85,7 @@ class NotificationTestCmd(Command):
                     self.add_description('%s. %s' %(idx+1, trigger.get_description()))
             else:
                 raise TacticException('No notification trigger is fired. Possible mismatched project_code for this notification entry.')
-        except Exception, e:
+        except Exception as e:
             raise
             raise Exception(e.__str__())
     

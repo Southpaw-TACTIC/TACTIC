@@ -23,7 +23,7 @@ ERROR = ""
 try:
     import win32security, pywintypes
     import active_directory
-except ImportError, e:
+except ImportError as e:
     if os.name != 'nt':
         ERROR = "Active directory libraries only work on a Windows platform"
     else:
@@ -75,7 +75,7 @@ class ADConnect(object):
         try: 
             account=win32security.LookupAccountName(None, self.username)
             return account
-        except pywintypes.error, e:
+        except pywintypes.error as e:
             return False
     
     def logon(self):
@@ -89,7 +89,7 @@ class ADConnect(object):
              # We're not going to use the handle, just seeing if we can get it.
              handle.Close()
              return True
-        except pywintypes.error, e:
+        except pywintypes.error as e:
              # Because of the sheer number of Windows-specific errors that can
              # occur here, we have to assume any of them mean that the
              # credentials were not valid.

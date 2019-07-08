@@ -10,5 +10,5 @@
 #
 #
 
-from common import *
-from upload_multipart import *
+from .common import *
+from .upload_multipart import *

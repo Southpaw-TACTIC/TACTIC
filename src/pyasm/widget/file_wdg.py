@@ -13,7 +13,7 @@
 
 __all__ = ["ThumbWdg", "ThumbCmd", "FileInfoWdg"]
 
-import re, time, types, string, os
+import re, time, types, string, os, sys
 import urllib
 
 from pyasm.common import Xml, Container, Environment, Config, Common
@@ -22,9 +22,15 @@ from pyasm.biz import *
 from pyasm.command import Command
 from pyasm.web import DivWdg, HtmlElement, Table, Html, SpanWdg, AjaxWdg, WebContainer, AjaxLoader, FloatDivWdg, Widget
 
-from table_element_wdg import BaseTableElementWdg
-from icon_wdg import *
-from clipboard_wdg import ClipboardAddWdg
+from .table_element_wdg import BaseTableElementWdg
+from .icon_wdg import *
+from .clipboard_wdg import ClipboardAddWdg
+
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
+
 
 class ThumbWdg(BaseTableElementWdg):
     '''standard widget that looks at a threesome of files, a main, icon
@@ -1273,7 +1279,7 @@ class ThumbWdg(BaseTableElementWdg):
 
 
         for item in default_image_link_order:
-            if info.has_key(item):
+            if item in info:
                 image_link = info[item]
                 break
         else:
@@ -1301,7 +1307,7 @@ class ThumbWdg(BaseTableElementWdg):
 
         icon_size = self.get_icon_size()
         icon_link = None
-        if self.info.has_key(icon_type):
+        if icon_type in self.info:
             icon_link = self.info[icon_type]
             if not os.path.exists(repo_path):
                 icon_link = ThumbWdg.get_no_image()
@@ -1500,9 +1506,12 @@ class ThumbWdg(BaseTableElementWdg):
             path = "%s/%s" % (web_dir, file_name)
 
             if protocol != "file":
-                if isinstance(path, unicode):
-                    path = path.encode("utf-8")
-                path = urllib.pathname2url(path)
+                if not IS_Pv3:
+                    if isinstance(path, unicode):
+                        path = path.encode("utf-8")
+                        path = urllib.pathname2url(path)
+                else:
+                    path = urllib.request.pathname2url(path)
 
             if isinstance(info, dict):
                 info[type] = path

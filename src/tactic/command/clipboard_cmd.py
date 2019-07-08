@@ -39,7 +39,7 @@ class ClipboardConnectCmd(Command):
 
     def execute(self):
         search_keys = self.kwargs.get("search_keys")
-        print "search_keys: ", search_keys
+        print("search_keys: ", search_keys)
         for search_key in search_keys:
             sobject = Search.get_by_search_key(search_key)
             Clipboard.reference_selected(sobject)

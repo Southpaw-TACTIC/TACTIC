@@ -111,7 +111,7 @@ class BaseUpgrade(Command):
             elif not (self.version_update < method_version <= self.to_version):
                     continue
             if not self.quiet:
-                print "Running upgrade for [%s]..." %name
+                print("Running upgrade for [%s]..." %name)
 
             self.run_method(name, method)
 
@@ -126,7 +126,7 @@ class BaseUpgrade(Command):
                 #upgrade = eval( '%s()' %self.__class__.__name__)
                 upgrade = BaseUpgrade()
             except NameError:
-                print "Failed to import upgrade script for %s" %self.__class__.__name__ 
+                print("Failed to import upgrade script for %s" %self.__class__.__name__ )
                 return
             # substitute the function of 'execute' method with the
             # upgrade script
@@ -158,7 +158,7 @@ class BaseUpgrade(Command):
         db_resource = project.get_project_db_resource()
         db = DbContainer.get(db_resource)
         #if not self.quiet:
-        #    print sql
+        #    print(sql)
 
         # Warnings from MySQL.
         from warnings import filterwarnings
@@ -167,8 +167,8 @@ class BaseUpgrade(Command):
 
         try:
             db.do_update(sql, quiet=self.quiet)
-        except SqlException, e:
-            #print "Error: ", e
+        except SqlException as e:
+            #print("Error: ", e)
             # TEST for Sqlite
             if str(e).startswith("duplicate column name:"):
                 pass
@@ -181,9 +181,9 @@ class BaseUpgrade(Command):
                 pass
 
             elif not self.quiet:
-                print
-                print "WARNING: Skipping due to SqlException..."
-                print "Message: ", e
+                print("\n")
+                print("WARNING: Skipping due to SqlException...")
+                print("Message: ", e)
                 print
             members = inspect.getmembers(self, predicate=inspect.ismethod)
             key = '%s|%s' %(self.project_code, self.upgrade_class)

@@ -23,7 +23,7 @@ try:
     import pymongo
     pymongo.OperationalError = Exception
     pymongo.Error = Exception
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -206,8 +206,8 @@ class MongoDbImpl(DatabaseImpl):
                         try:
                             tmp = bson.ObjectId(str(x))
                             values.append(tmp)
-                        except Exception, e:
-                            print "WARNING: ", e
+                        except Exception as e:
+                            print("WARNING: ", e)
                     value = values
                 elif not isinstance(value, bson.ObjectId):
                     value = bson.ObjectId(str(value))
@@ -383,7 +383,7 @@ class MongoDbImpl(DatabaseImpl):
 
         item = collection.find_one({ 'table': table })
         if item:
-            print "Entry for [%s] already exists" % table
+            print("Entry for [%s] already exists" % table)
             return
 
         item_data = {

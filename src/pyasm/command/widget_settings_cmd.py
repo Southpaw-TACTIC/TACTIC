@@ -12,7 +12,7 @@
 
 __all__ = ["WidgetSettingsCmd"]
 
-from command import *
+from .command import *
 
 class WidgetSettingsCmd(Command):
 

@@ -1200,7 +1200,8 @@ spt.mouse._smart_default_drag_motion = function( evt, bvr, mouse_411 )
     }
 
 
-    var body = spt.mouse._get_body(); 
+    var body = spt.mouse._get_body();
+    
     var scroll_top = body.scrollTop; 
     var scroll_left = body.scrollLeft; 
     offset.y = offset.y - scroll_top; 

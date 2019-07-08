@@ -37,13 +37,15 @@ from pyasm.prod.biz import ProdSetting
 from pyasm.common import *
 from pyasm.search import *
 from pyasm.web import *
-from icon_wdg import IconWdg, IconSubmitWdg
-from web_wdg import InsertLinkWdg, HintWdg, WarningMenuWdg, HelpMenuWdg
-from input_wdg import *
-from file_wdg import *
-from table_element_wdg import *
-from search_limit_wdg import *
-from widget_config import *
+
+from .icon_wdg import IconWdg, IconSubmitWdg
+from .web_wdg import InsertLinkWdg, HintWdg, WarningMenuWdg, HelpMenuWdg
+from .input_wdg import *
+from .file_wdg import *
+from .table_element_wdg import *
+from .search_limit_wdg import *
+from .widget_config import *
+
 import inspect
 
 
@@ -140,7 +142,7 @@ class BaseConfigWdg(HtmlElement):
                 element = self.config.get_display_widget(element_name)
             else:
                 element = WidgetConfig.create_widget( display_handler )
-            #except ImportError, e:
+            #except ImportError as e:
             #    # FIXME: not sure what to do with an import error here
             #    element = SimpleTableElementWdg()
 

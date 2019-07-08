@@ -18,9 +18,10 @@ import sys
 import types
 import datetime
 import codecs
+
 from pyasm.common import TacticException, jsondumps, jsonloads
 
-from sql import SqlException
+from .sql import SqlException
 
 
 class TableSchemaDumper(object):
@@ -100,7 +101,7 @@ class TableSchemaDumper(object):
                 continue
 
             col_info = info[column]
-            #print col_info
+            #print(col_info)
             space = " "*(25-len(column)) 
             data_type = col_info['data_type']
             is_nullable = col_info['nullable']
@@ -276,7 +277,7 @@ class TableDataDumper(object):
         column_info = SearchType.get_column_info(self.search_type)
 
         for sobject in self.sobjects:
-            print self.delimiter
+            print(self.delimiter)
 
             insert = Insert()
             insert.set_database(self.database)
@@ -297,9 +298,9 @@ class TableDataDumper(object):
                     # replace all of the \ with double \\
                     insert.set_value(name, value)
 
-            print "%s" % insert.get_statement()
-            print self.end_delimiter
-            print
+            print("%s" % insert.get_statement())
+            print(self.end_delimiter)
+            print("\n")
 
 
 

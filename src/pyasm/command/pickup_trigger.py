@@ -14,13 +14,14 @@ __all__ = ["PickupTrigger"]
 
 
 
-from command import CommandException
 
 from pyasm.common import *
 from pyasm.biz import CommandSObj
 from pyasm.security import *
 from pyasm.search import SObject, Search
-from trigger import *
+
+from .command import CommandException
+from .trigger import *
 
 class PickupTrigger(Trigger):
     ''' A trigger for setting the status of a pickup request 'closed' 
