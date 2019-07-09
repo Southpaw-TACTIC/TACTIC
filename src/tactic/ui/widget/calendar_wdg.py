@@ -592,8 +592,13 @@ class CalendarWdg(BaseRefreshWdg):
                 
                 if (input_top) {
                     var el = input_top.getElement('.spt_calendar_input');
+                    // add timezone info
+                    let tz = env.get_user_timezone();
+                    let tz_string = new Date().toLocaleString("en-US", {timeZone: tz});
+                    let tz_date = new Date(tz_string);
+                    let tz_info = tz_date.toString().match(/([-\+][0-9]+)\s/)[1];
+                    value = value + " -00:00 " + tz_info;
                     el.value = value;
-
                      
                     var layout = bvr.src_el.getParent(".spt_layout");
                     var version = layout ? layout.getAttribute("spt_version"): 1;
@@ -1204,7 +1209,13 @@ class CalendarInputWdg(BaseInputWdg):
             var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_input');
             var old_value = el.value;
 
-            value = value + " -00:00 " + new Date(Date().toLocaleString("en-US", {timeZone: env.get_user_timezone()})).toString().match(/([-\+][0-9]+)\s/)[1];
+            // add timezone info
+            let tz = env.get_user_timezone();
+            let tz_string = new Date().toLocaleString("en-US", {timeZone: tz});
+            let tz_date = new Date(tz_string);
+            let tz_info = tz_date.toString().match(/([-\+][0-9]+)\s/)[1];
+            value = value + " -00:00 " + tz_info;
+
             el.value = value;
 
             var input_top = spt.get_parent(bvr.src_el, '.calendar_input_top');
@@ -1780,7 +1791,12 @@ class CalendarTimeWdg(BaseRefreshWdg):
                 value = hour + ":" + mins + am_pm;
             }
             
-            value = value + " " + new Date(Date().toLocaleString("en-US", {timeZone: env.get_user_timezone()})).toString().match(/([-\+][0-9]+)\s/)[1];
+            // add timezone info
+            let tz = env.get_user_timezone();
+            let tz_string = new Date().toLocaleString("en-US", {timeZone: tz});
+            let tz_date = new Date(tz_string);
+            let tz_info = tz_date.toString().match(/([-\+][0-9]+)\s/)[1];
+            value = value + " " + tz_info;
 
             var input_top = target.getParent('.calendar_input_top');
             var el = input_top.getElement('.spt_calendar_input');
