@@ -3805,6 +3805,33 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
         self.add_session_behavior(script_path_title_text, "text", "spt_action_info_top", "script_path_title")
 
+        script_path_div.add_relay_behavior( {
+            'type': "mouseup",
+            'bvr_match_class': 'spt_input_text_result',
+            'cbjs_action': '''
+            
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+
+            var textTop = bvr.src_el.getParent(".spt_input_text_top");
+            var textInput = textTop.getElement(".spt_text_input_wdg");
+            var name = textInput.getAttribute("name");
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var top = bvr.src_el.getParent(".spt_action_info_top");
+            var input = spt.api.get_input_values(top, null, false);
+
+            spt.pipeline.set_node_multi_kwarg(node, name, input[name]);
+
+            spt.named_events.fire_event('pipeline|change', {});
+
+            '''
+        } )
+
         if language == "python":
             div.add("Language: <b class='spt_script_language'>Python</b>")
         else:
@@ -4145,37 +4172,39 @@ class ActionInfoWdg(BaseInfoWdg):
 
             var value = data.action || "create_new";
 
-            if (value == "script_path" || value == "create_new") {
-                var on_save = function(kwargs) {
-                    if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
+            var on_save = function(kwargs) {
+                var data = kwargs.default || {};
+                if (data.action != "script_path" && data.action != "create_new") return kwargs;
 
-                    var script_path_folder = kwargs.script_path_folder;
-                    var script_path_title = kwargs.script_path_title;
-                    var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
+                var script_path_folder = data.script_path_folder;
+                var script_path_title = data.script_path_title;
+                var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
 
-                    var popup = false
-                    var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
-                    if (!test) {
-                        spt.error('Invalid script path [' + script_path + '] is specified.');
-                        return;
-                    }
-
-                    // either (script_path && script) or script_new
-                    var script = kwargs.script;
-                    if (script_path && !script) {
-                        spt.error('You have most likely specified an invalid script path since the script content is empty.');
-                        return;
-                    }
-
-                    kwargs.script_path = script_path;
-                    kwargs.script = script;
-
-                    return kwargs;
+                var popup = false
+                var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
+                if (!test) {
+                    spt.error('Invalid script path [' + script_path + '] is specified.');
+                    return {
+                        is_error: true
+                    };
                 }
 
-                bvr.src_el.on_save = on_save;
-                spt.pipeline.add_node_on_save(node, "script", on_save);
+                // either (script_path && script) or script_new
+                var script = data.script;
+                if (script_path && !script) {
+                    spt.error('You have most likely specified an invalid script path since the script content is empty.');
+                    return {
+                        is_error: true
+                    };
+                }
+
+                data.script_path = script_path;
+                data.script = script;
+
+                return kwargs;
             }
+
+            spt.pipeline.add_node_on_save(node, "script", on_save);
 
             spt.panel.refresh_element(script_el, {action: value});
 
@@ -4210,7 +4239,7 @@ class ActionInfoWdg(BaseInfoWdg):
             'cbjs_action': '''
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
-            if (version && version != 1)
+            if (version == 2)
                 return;
 
             var top = bvr.src_el.getParent(".spt_form_top");
@@ -4224,37 +4253,38 @@ class ActionInfoWdg(BaseInfoWdg):
             var value = bvr.src_el.value;
             spt.pipeline.select_node_multi_kwargs(node, value, "action", value);
 
-            if (value == "script_path" || value == "create_new") {
-                var on_save = function(kwargs) {
-                    if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
+            var on_save = function(kwargs) {
+                if (kwargs.action != "script_path" && kwargs.action != "create_new") return kwargs;
 
-                    var script_path_folder = kwargs.script_path_folder;
-                    var script_path_title = kwargs.script_path_title;
-                    var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
+                var script_path_folder = kwargs.script_path_folder;
+                var script_path_title = kwargs.script_path_title;
+                var script_path = (script_path_folder && script_path_title) ? script_path_folder + "/" + script_path_title : '';
 
-                    var popup = false
-                    var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
-                    if (!test) {
-                        spt.error('Invalid script path [' + script_path + '] is specified.');
-                        return;
-                    }
-
-                    // either (script_path && script) or script_new
-                    var script = kwargs.script;
-                    if (script_path && !script) {
-                        spt.error('You have most likely specified an invalid script path since the script content is empty.');
-                        return;
-                    }
-
-                    kwargs.script_path = script_path;
-                    kwargs.script = script;
-
-                    return kwargs;
+                var popup = false
+                var test = script_path ? spt.CustomProject.get_script_by_path(script_path, popup) : true;
+                if (!test) {
+                    spt.error('Invalid script path [' + script_path + '] is specified.');
+                    return {
+                        is_error: true
+                    };
                 }
 
-                bvr.src_el.on_save = on_save;
-                spt.pipeline.add_node_on_save(node, "script", on_save);
+                // either (script_path && script) or script_new
+                var script = kwargs.script;
+                if (script_path && !script) {
+                    spt.error('You have most likely specified an invalid script path since the script content is empty.');
+                    return {
+                        is_error: true
+                    };
+                }
+
+                kwargs.script_path = script_path;
+                kwargs.script = script;
+
+                return kwargs;
             }
+
+            spt.pipeline.add_node_on_save(node, "script", on_save);
 
             spt.panel.refresh_element(script_el, {action: bvr.src_el.value});
             '''
@@ -4276,16 +4306,7 @@ class ActionInfoWdg(BaseInfoWdg):
             if (!version || version == '1')
                 spt.pipeline.select_node_multi_kwargs(node, value, "action", value);
 
-            if (value == "script_path" || value == "create_new") {
-                if (version == 2)
-                    var on_save = bvr.src_el.getParent(".spt_section_top").on_save;
-                else
-                    var on_save = bvr.src_el.on_save;
-                    
-                spt.pipeline.add_node_on_save(node, "script", on_save);
-
-                spt.named_events.fire_event('pipeline|change', {});
-            }
+            spt.named_events.fire_event('pipeline|change', {});
 
             spt.panel.refresh_element(script_el, {action: value});
             '''
@@ -4591,6 +4612,31 @@ class ApprovalInfoWdg(BaseInfoWdg):
         form_wdg.add("<br/>")
 
         self.add_session_behavior(text, "text", "spt_approval_info_top", "assigned")
+
+        form_wdg.add_relay_behavior( {
+            'type': "mouseup",
+            'bvr_match_class': 'spt_input_text_result',
+            'cbjs_action': '''
+            
+            var node = spt.pipeline.get_info_node();
+            var version = spt.pipeline.get_node_kwarg(node, 'version');
+            if (version && version != 1)
+                return;
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var top = bvr.src_el.getParent(".spt_approval_info_top");
+            var input = spt.api.get_input_values(top, null, false);
+
+            spt.pipeline.set_node_kwarg(node, "assigned", input["assigned"]);
+
+            node.has_changes = true;
+
+            spt.named_events.fire_event('pipeline|change', {});
+
+            '''
+        } )
 
         return top
 
@@ -6763,6 +6809,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     for (var key in on_saves) {
                         var on_save = on_saves[key];
                         kwargs = on_save(kwargs);
+
+                        if (kwargs.is_error) return;
                     }
                 }
 

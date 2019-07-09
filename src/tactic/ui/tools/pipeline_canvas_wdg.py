@@ -3600,8 +3600,7 @@ spt.pipeline.set_node_multi_kwarg = function(node, name, value) {
 }
 
 spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value) {
-    var type = spt.pipeline.get_node_type(node);
-    var multi_kwargs = spt.pipeline.get_node_property(node, type);
+    var multi_kwargs = spt.pipeline.get_node_property(node, 'settings');
     if (!multi_kwargs) multi_kwargs = {};
     multi_kwargs.multi = true;
     multi_kwargs.selected = kwargs_name;
