@@ -314,10 +314,9 @@ class EditCmd(Command):
 
         action_handlers = self._get_action_handlers()
 
-        print "----------0-", sobject.get_sobject_dict()
-
         # set the sobject for each action handler
         for action_handler in action_handlers:
+
             action_handler.set_sobject(sobject)
             if action_handler.check():
                 if self.parent_key:
@@ -325,9 +324,7 @@ class EditCmd(Command):
                 if self.connect_key:
                     action_handler.set_option('connect_key', self.connect_key)
                 action_handler.execute()
-
-
-        print "----------1-", sobject.get_sobject_dict()
+                
 
         # set the parent, if there is one and it's in insert
         if sobject.is_insert() and self.parent_key:
@@ -345,7 +342,8 @@ class EditCmd(Command):
             # don't include None
             if value != None:
                 self.info[key] = value
-        
+
+
         if code:
             sobject.set_value("code", code)
 
@@ -394,7 +392,7 @@ class EditCmd(Command):
             except Exception as e:
                 print("WARNING: ", e)
 
-        print "-----------2", sobject.get_sobject_dict()
+
 
 
         self.sobject = sobject
@@ -411,7 +409,6 @@ class EditCmd(Command):
         self.info['action'] = action
         self.info['search_key'] = SearchKey.get_by_sobject(sobject, use_id=True)
         self.info['sobject'] = sobject.get_sobject_dict()
-
 
         return sobject
 

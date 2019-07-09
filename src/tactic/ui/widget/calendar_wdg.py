@@ -1243,8 +1243,6 @@ class CalendarInputWdg(BaseInputWdg):
                     date_format: bvr.date_format,
                 };
 
-                console.log(options);
-
                 var kwargs = {fade: false, show_loading: false};
                 spt.panel.load(top, class_name, options, null, kwargs);
             }
@@ -1447,8 +1445,6 @@ class CalendarTimeWdg(BaseRefreshWdg):
         date = self.kwargs.get("date")
         time = self.kwargs.get("time")
 
-        print "@@@@@@@@@@@@@@", date, time
-
         if time:
             time = parser.parse(time)
             hours = time.hour
@@ -1474,8 +1470,6 @@ class CalendarTimeWdg(BaseRefreshWdg):
                     if tmps[1].find(':') != -1:
                         date = tmps[0]
                 
-                print "@@@@@@@@@@@@@2", date
-
                 try:
                     if date_format.startswith('%m'):
                         date = parser.parse(date, dayfirst=False)
@@ -1483,13 +1477,6 @@ class CalendarTimeWdg(BaseRefreshWdg):
                         date = datetime.strptime(date, date_format)
                 except:
                     date = datetime.now()
-
-                from pyasm.biz import PrefSetting
-                timezone = PrefSetting.get_value_by_key('timezone')
-                new = date
-                new = SPTDate.convert_to_timezone(new, timezone)
-                print "@@@@@@@@@@@@@@3", date, new
-                
 
             hours = date.hour
             minutes = date.minute
