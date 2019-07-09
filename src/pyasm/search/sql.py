@@ -25,6 +25,7 @@ from threading import Lock
 
 from pyasm.common import Container, Config, TacticException, Environment
 from dateutil.tz import *
+from dateutil import parser
 
 import six
 basestring = six.string_types
@@ -2127,6 +2128,30 @@ class Select(object):
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
 
+        column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
+        column_type = column_types.get(column)
+
+        if column_type in ['timestamp', 'datetime', 'datetime2']:
+            if isinstance(value, basestring):
+                if value.lower() == 'now':
+                    info = self.impl.process_value(column, value, column_type)
+                    if info:
+                        value = info.get('value')
+                        quoted = info.get('quoted')
+                else:
+                    try:
+                        value = parser.parse(value)
+                    except ValueError:
+                        pass
+
+            if isinstance(value, datetime.datetime):
+                value = SPTDate.convert_to_local(value)
+                info = self.impl.process_value(column, value, column_type)
+                if info:
+                    value = info.get('value')
+                    quoted = info.get('quoted')
+
+
         # store all the raw filter data
         self.raw_filters.append( {
                 'column': column,
@@ -2138,12 +2163,10 @@ class Select(object):
         } )
 
 
-
         if self.quoted_mode == "none":
             where = "%s %s '%s'" % (column, op, value)
             self.add_where(where)
             return
-
 
 
         subcolumn = None
@@ -2189,20 +2212,10 @@ class Select(object):
         # on simple building of select statements, db_resource could be null
         if not self.db_resource:
             column_type = "varchar"
-        elif not column_type:
-            column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
-            column_type = column_types.get(column)
-
 
         # if quoted is not explicitly set
         if quoted == None:
             quoted = True
-
-            if not column_type and self.sql:
-                # get column type from database
-                column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
-                column_type = column_types.get(column)
-
 
             info = self.impl.process_value(column, value, column_type)
             if info:
@@ -2771,6 +2784,7 @@ class Select(object):
                 return " AND ".join(cur_stack)
 
             item = wheres[self.stack_index]
+
             self.stack_index += 1
 
             if item == "begin":
@@ -2975,7 +2989,6 @@ class Insert(object):
             # get column type from database
             column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
-
 
             info = self.impl.process_value(column, value, column_type)
             if info:
@@ -3194,7 +3207,6 @@ class Update(object):
             # get column type from database
             column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
-
             info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
