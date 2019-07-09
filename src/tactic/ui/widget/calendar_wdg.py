@@ -593,11 +593,7 @@ class CalendarWdg(BaseRefreshWdg):
                 if (input_top) {
                     var el = input_top.getElement('.spt_calendar_input');
                     // add timezone info
-                    let tz = env.get_user_timezone();
-                    let tz_string = new Date().toLocaleString("en-US", {timeZone: tz});
-                    let tz_date = new Date(tz_string);
-                    let tz_info = tz_date.toString().match(/([-\+][0-9]+)\s/)[1];
-                    value = value + " -00:00 " + tz_info;
+                    value = value + " -00:00 " + spt.api.Utility.get_user_timezone_offset();
                     el.value = value;
                      
                     var layout = bvr.src_el.getParent(".spt_layout");
@@ -1210,11 +1206,7 @@ class CalendarInputWdg(BaseInputWdg):
             var old_value = el.value;
 
             // add timezone info
-            let tz = env.get_user_timezone();
-            let tz_string = new Date().toLocaleString("en-US", {timeZone: tz});
-            let tz_date = new Date(tz_string);
-            let tz_info = tz_date.toString().match(/([-\+][0-9]+)\s/)[1];
-            value = value + " -00:00 " + tz_info;
+            value = value + " -00:00 " + spt.api.Utility.get_user_timezone_offset();
 
             el.value = value;
 
@@ -1792,11 +1784,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
             }
             
             // add timezone info
-            let tz = env.get_user_timezone();
-            let tz_string = new Date().toLocaleString("en-US", {timeZone: tz});
-            let tz_date = new Date(tz_string);
-            let tz_info = tz_date.toString().match(/([-\+][0-9]+)\s/)[1];
-            value = value + " " + tz_info;
+            value = value + " " + spt.api.Utility.get_user_timezone_offset();
 
             var input_top = target.getParent('.calendar_input_top');
             var el = input_top.getElement('.spt_calendar_input');
