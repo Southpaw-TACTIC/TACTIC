@@ -1203,6 +1203,8 @@ class CalendarInputWdg(BaseInputWdg):
             }
             var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_input');
             var old_value = el.value;
+
+            value = value + " -00:00 " + new Date(Date().toLocaleString("en-US", {timeZone: env.get_user_timezone()})).toString().match(/([-\+][0-9]+)\s/)[1];
             el.value = value;
 
             var input_top = spt.get_parent(bvr.src_el, '.calendar_input_top');
@@ -1240,6 +1242,8 @@ class CalendarInputWdg(BaseInputWdg):
                     date: value,
                     date_format: bvr.date_format,
                 };
+
+                console.log(options);
 
                 var kwargs = {fade: false, show_loading: false};
                 spt.panel.load(top, class_name, options, null, kwargs);
@@ -1443,6 +1447,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
         date = self.kwargs.get("date")
         time = self.kwargs.get("time")
 
+        print "@@@@@@@@@@@@@@", date, time
 
         if time:
             time = parser.parse(time)
@@ -1468,7 +1473,9 @@ class CalendarTimeWdg(BaseRefreshWdg):
                     tmps = date.split(' ')
                     if tmps[1].find(':') != -1:
                         date = tmps[0]
-               
+                
+                print "@@@@@@@@@@@@@2", date
+
                 try:
                     if date_format.startswith('%m'):
                         date = parser.parse(date, dayfirst=False)
@@ -1476,6 +1483,12 @@ class CalendarTimeWdg(BaseRefreshWdg):
                         date = datetime.strptime(date, date_format)
                 except:
                     date = datetime.now()
+
+                from pyasm.biz import PrefSetting
+                timezone = PrefSetting.get_value_by_key('timezone')
+                new = date
+                new = SPTDate.convert_to_timezone(new, timezone)
+                print "@@@@@@@@@@@@@@3", date, new
                 
 
             hours = date.hour
@@ -1780,6 +1793,8 @@ class CalendarTimeWdg(BaseRefreshWdg):
                 value = hour + ":" + mins + am_pm;
             }
             
+            value = value + " " + new Date(Date().toLocaleString("en-US", {timeZone: env.get_user_timezone()})).toString().match(/([-\+][0-9]+)\s/)[1];
+
             var input_top = target.getParent('.calendar_input_top');
             var el = input_top.getElement('.spt_calendar_input');
             el.value = value;
