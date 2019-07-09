@@ -461,9 +461,9 @@ set_display_off = function(element_id) {
 spt.api.Utility.get_user_timezone_offset = function() 
 {
     let tz = env.get_user_timezone();
-    let tz_string = new Date().toLocaleString("en-US", {timeZone: tz});
-    let tz_date = new Date(tz_string);
-    let tz_info = tz_date.toString().match(/([-\+][0-9]+)\s/)[1];
+    if (!tz) return "";
+    let tz_date = moment().tz(tz);
+    let tz_info = tz_date.format("Z");
 
     return tz_info;
 }
