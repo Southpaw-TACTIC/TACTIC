@@ -41,7 +41,7 @@ class XmlException(TacticException):
     pass
 
 
-    
+
 class Xml(Base):
     '''simple class to extract information from an xml document'''
 
@@ -136,7 +136,7 @@ class Xml(Base):
                 pass
 
         try:
-            
+
             parser = etree.XMLParser(remove_blank_text=remove_blank_text, strip_cdata=self.strip_cdata)
             if not xml_string:
                 raise XmlException('The input XML is empty.')
@@ -153,7 +153,7 @@ class Xml(Base):
         # since we assume the use of Element in most places, avoid using ElementTree here
         #self.doc = etree.ElementTree(etree.Element(root_name))
         return self.doc
-    
+
     def get_doc(self):
         '''returns the document object'''
         return self.doc
@@ -247,17 +247,17 @@ class Xml(Base):
         #children = self.get_children(node)
         node.remove(child)
     remove_child = classmethod(remove_child)
-  
+
     def replace_child(cls, node, old_node, new_node):
         node.replace(old_node, new_node)
     replace_child = classmethod(replace_child)
-  
- 
+
+
     def _evaluate(self, xpath, node=None):
         if node != None:
             result = node.xpath(xpath)
             return result
-            
+
 
 
         result = self.cache_xpath.get(xpath)
@@ -274,7 +274,7 @@ class Xml(Base):
             parts = xpath.split(" | ")
             xpath = " | ".join( ["/%s" % x for x in parts] )
 
-       
+
         # we have to put in some namespaces because of our use of such
         # tags as link:search
         namespaces = {
@@ -298,7 +298,7 @@ class Xml(Base):
         except Exception as e:
             raise XmlException('XPath Error for [%s]: %s'% (xpath, e.message))
         return nodes
-    
+
     def get_nodes_attr(self, xpath, attr):
         nodes = self.get_nodes(xpath)
         value_list = []
@@ -360,10 +360,10 @@ class Xml(Base):
                 output = etree.ElementTree(node)
         else:
             if node == None:
-                output = self.doc 
+                output = self.doc
             else:
                 output = node
-       
+
 
         value = etree.tostring(output, pretty_print=pretty, encoding='utf-8', method=method, xml_declaration=xml_declaration)
 
@@ -395,6 +395,11 @@ class Xml(Base):
     get_attribute = classmethod(get_attribute)
 
     def set_attribute( cls, node, attribute, value ):
+        # json column values are in dict type.
+        if isinstance(value, (dict, list)):
+            import json
+            value = json.dumps(value)
+
         if not isinstance(value,basestring):
             value = str(value)
         return node.set(attribute,value)
@@ -408,7 +413,7 @@ class Xml(Base):
             pass
         return value
     del_attribute = classmethod(del_attribute)
-    
+
     def get_node_name( node ):
         return node.tag
     get_node_name = staticmethod(get_node_name)
@@ -469,7 +474,7 @@ class Xml(Base):
             #name = node.nodeName
             #if child_values:
             #    value_dict[name] = child_values
- 
+
         return values
     get_node_values_of_children = classmethod(get_node_values_of_children)
 
@@ -513,7 +518,7 @@ class Xml(Base):
             values[name] = child_values
             for child in children:
                 cls._get_recursive_node_values(child, child_values)
-            
+
     _get_recursive_node_values = classmethod(_get_recursive_node_values)
 
 
