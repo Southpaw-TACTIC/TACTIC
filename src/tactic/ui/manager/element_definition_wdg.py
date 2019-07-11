@@ -2329,13 +2329,16 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         display_options = self.kwargs.get("display_options")
 
         import types
-        if isinstance(display_options, list):
+        if (isinstance(display_options, list)):
             try:
                 display_options = eval(display_options)
             except:
                 # !!!! Lost the options
                 display_options = {}
-        if not display_options:
+        elif (isinstance(display_options, str)):
+            display_options = jsonloads(display_options)
+
+        if (not display_options):
             display_options = {}
 
 
