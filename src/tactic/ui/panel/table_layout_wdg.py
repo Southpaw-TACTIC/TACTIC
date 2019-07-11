@@ -6201,6 +6201,10 @@ spt.table.redo_last = function() {
 spt.table.apply_undo_queue = function(undo_queue) {
     var layout = spt.table.get_layout();
     var layout_top = layout.getParent(".spt_layout_top");
+    // sometimes layout_top is null
+    if (!layout_top) {
+        return;
+    }
 
     var undo_queue = layout_top.undo_queue;
 
@@ -6822,12 +6826,15 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             var headers = header_row.getElements(".spt_table_header");
 
             var row = spt.table.get_first_row();
-            var cells = row.getElements(".spt_cell_edit");
 
-            // set the row widths to that of the header
-            for (var i = 0; i < cells.length; i++) {
-                var width = headers[i].getStyle("width");
-                cells[i].setStyle("width", width);
+            if (row) {
+                var cells = row.getElements(".spt_cell_edit");
+
+                // set the row widths to that of the header
+                for (var i = 0; i < cells.length; i++) {
+                    var width = headers[i].getStyle("width");
+                    cells[i].setStyle("width", width);
+                }
             }
 
 
