@@ -592,8 +592,9 @@ class CalendarWdg(BaseRefreshWdg):
                 
                 if (input_top) {
                     var el = input_top.getElement('.spt_calendar_input');
+                    // add timezone info
+                    value = value + " -00:00 " + spt.api.Utility.get_user_timezone_offset();
                     el.value = value;
-
                      
                     var layout = bvr.src_el.getParent(".spt_layout");
                     var version = layout ? layout.getAttribute("spt_version"): 1;
@@ -1203,6 +1204,10 @@ class CalendarInputWdg(BaseInputWdg):
             }
             var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_input');
             var old_value = el.value;
+
+            // add timezone info
+            value = value + " -00:00 " + spt.api.Utility.get_user_timezone_offset();
+
             el.value = value;
 
             var input_top = spt.get_parent(bvr.src_el, '.calendar_input_top');
@@ -1443,7 +1448,6 @@ class CalendarTimeWdg(BaseRefreshWdg):
         date = self.kwargs.get("date")
         time = self.kwargs.get("time")
 
-
         if time:
             time = parser.parse(time)
             hours = time.hour
@@ -1468,7 +1472,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
                     tmps = date.split(' ')
                     if tmps[1].find(':') != -1:
                         date = tmps[0]
-               
+                
                 try:
                     if date_format.startswith('%m'):
                         date = parser.parse(date, dayfirst=False)
@@ -1476,7 +1480,6 @@ class CalendarTimeWdg(BaseRefreshWdg):
                         date = datetime.strptime(date, date_format)
                 except:
                     date = datetime.now()
-                
 
             hours = date.hour
             minutes = date.minute
@@ -1780,6 +1783,9 @@ class CalendarTimeWdg(BaseRefreshWdg):
                 value = hour + ":" + mins + am_pm;
             }
             
+            // add timezone info
+            value = value + " " + spt.api.Utility.get_user_timezone_offset();
+
             var input_top = target.getParent('.calendar_input_top');
             var el = input_top.getElement('.spt_calendar_input');
             el.value = value;

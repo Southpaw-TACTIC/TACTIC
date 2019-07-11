@@ -3435,14 +3435,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = self.value
 
-                # add timezone conversion
-                if not SObject.is_day_column(element_name):
-                    element_type = SearchType.get_tactic_type(self.search_type, element_name)
-                    
-                    if element_type in ['time', 'datetime']:
-                        value = widget.get_timezone_value(value)
-                     
-
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 

@@ -24,6 +24,7 @@ class JSIncludes(object):
         "mootools/mootools-more-1.4.0.1-yc.js",
         "json2.js",
         "moment.min.js",
+        "moment-timezone.min.js"
         #"rrule/rrule.js",
     ]
 
