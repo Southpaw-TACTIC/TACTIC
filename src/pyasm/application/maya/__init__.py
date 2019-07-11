@@ -10,12 +10,12 @@
 #
 #
 
-from maya_builder_exec import *
-from maya_builder import *
-from maya_environment import *
-from maya_introspect import *
-from maya_parser import *
-from maya_app import *
-from maya_anim_file import *
-from maya_impl import *
+from .maya_builder_exec import *
+from .maya_builder import *
+from .maya_environment import *
+from .maya_introspect import *
+from .maya_parser import *
+from .maya_app import *
+from .maya_anim_file import *
+from .maya_impl import *
 

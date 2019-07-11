@@ -17,7 +17,7 @@ import shutil
 import re
 from pyasm.search import SObjectFactory, SearchType, Search, SearchKey
 
-from command import *
+from .command import *
 
 
 class CsvExportCmd(Command):
@@ -163,7 +163,7 @@ class CsvExportCmd(Command):
             try:
                 display_wdg = config.get_display_widget(element_name)
 
-            except ImportError, e:
+            except ImportError as e:
                 print("WARNING: ", str(e))
                 from tactic.ui.common import SimpleTableElementWdg
                 display_wdg = SimpleTableElementWdg()

@@ -25,7 +25,7 @@ from pyasm.prod.biz import SessionContents
 from pyasm.prod.load import ProdLoaderContext
 
 from tactic.ui.filter import FilterData
-from version_wdg import VersionWdg
+from .version_wdg import VersionWdg
 
 class LoaderElementWdg(BaseTableElementWdg):
     '''Snapshot loader for any search type'''

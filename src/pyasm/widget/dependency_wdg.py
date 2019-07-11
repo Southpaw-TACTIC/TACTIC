@@ -17,10 +17,10 @@ from pyasm.biz import File, FileGroup, FileRange, Snapshot, Project, SObjectNotF
 from pyasm.search import Search
 from pyasm.web import Widget, WebContainer, HtmlElement, DivWdg, SpanWdg, FloatDivWdg
 
-from table_element_wdg import FunctionalTableElement
-from icon_wdg import IconButtonWdg, IconWdg
-from file_wdg import ThumbWdg
-from web_wdg import SwapDisplayWdg
+from .table_element_wdg import FunctionalTableElement
+from .icon_wdg import IconButtonWdg, IconWdg
+from .file_wdg import ThumbWdg
+from .web_wdg import SwapDisplayWdg
 from tactic.ui.common import BaseRefreshWdg
 
 import os, re
@@ -348,7 +348,7 @@ class DependencyWdg(BaseRefreshWdg):
         
         try: 
             sobject = ref_snapshot.get_sobject()
-        except SObjectNotFoundException, e:
+        except SObjectNotFoundException as e:
             widget.add('[%s|%s] may have been deleted or is not viewable.' % (ref_snapshot.get_value('search_type'),\
                 ref_snapshot.get_value('search_id')))
             return

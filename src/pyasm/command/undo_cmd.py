@@ -17,7 +17,7 @@ from pyasm.common import *
 from pyasm.biz import Project
 from pyasm.search import *
 
-from command import *
+from .command import *
 
 class UndoCmd(Command):
 

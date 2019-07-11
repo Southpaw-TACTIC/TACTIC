@@ -17,10 +17,10 @@ import re, os
 
 from pyasm.common import Config, Container, Common, TacticException
 from pyasm.search import SearchType, Search, SObject
-from file import File
-from project import Repo, Project
-from naming import NamingUtil, Naming
-from snapshot import Snapshot
+from .file import File
+from .project import Repo, Project
+from .naming import NamingUtil, Naming
+from .snapshot import Snapshot
 
 
 class BaseFileNaming(object):
@@ -255,7 +255,7 @@ class FileNaming(object):
 
         try:
             file_name = eval( "self.%s()" % func_name)
-        except Exception, e:
+        except Exception as e:
             if e[0].find("object has no attribute '%s'"%func_name) != -1:
                 file_name = self.get_default()
             
@@ -292,7 +292,7 @@ class FileNaming(object):
         if naming and self.checkin_type:
             checkin_type = naming.get_value('checkin_type')
             if checkin_type and self.checkin_type != checkin_type:
-                print "mismatched checkin_type!"
+                print("mismatched checkin_type!")
                 naming = None
                 return None
 

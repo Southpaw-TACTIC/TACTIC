@@ -14,7 +14,7 @@ __all__ = ["RetireCmd", "ReactivateCmd", "DeleteCmd"]
 
 from pyasm.search import *
 from pyasm.common import *
-from command import *
+from .command import *
 
 
 class RetireCmd(Command):

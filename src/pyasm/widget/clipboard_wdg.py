@@ -14,16 +14,17 @@
 __all__ = ["ClipboardWdg", "ClipboardListWdg", "ClipboardAddWdg", "ClipboardAddCbk", "ClipboardCopyInputWdg", "ClipboardCopyConnectionCmd", "ClipboardMoveToCategoryCbk", 'ClipboardHistoryElement']
 
 
+from pyasm.common import UserException
 from pyasm.biz import Clipboard, SObjectConnection
 from pyasm.search import SearchType, Search, SObject
 from pyasm.command import Command, DatabaseAction
 from pyasm.web import AjaxCmd, AjaxWdg, AjaxLoader, Widget, DivWdg, WebContainer, SpanWdg, Widget, HtmlElement
-from input_wdg import CheckboxWdg, BaseInputWdg
-from icon_wdg import *
-from table_element_wdg import BaseTableElementWdg
-from pyasm.common import UserException
-import math, random, types, cgi
 
+from .input_wdg import CheckboxWdg, BaseInputWdg
+from .icon_wdg import *
+from .table_element_wdg import BaseTableElementWdg
+
+import math, types, cgi
 
 
 class ClipboardWdg(AjaxWdg):

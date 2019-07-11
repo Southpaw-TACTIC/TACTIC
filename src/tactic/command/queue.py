@@ -509,8 +509,7 @@ __all__.append("QueueTest")
 class QueueTest(Command):
     def execute(self):
         # this command has only a one in 10 chance of succeeding
-        import random
-        value = random.randint(0, 10)
+        value = Common.randint(0, 10)
         if value != 5:
             sdaffsfda
 

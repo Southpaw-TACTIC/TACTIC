@@ -21,7 +21,13 @@ from pyasm.search import Search, SearchType, TableSchemaDumper, TableDataDumper,
 from pyasm.web import WebContainer
 from pyasm.command import Command, DatabaseAction
 
-import os, codecs, shutil, datetime
+import os, codecs, shutil, datetime, sys
+
+IS_Pv3 = sys.version_info[0] > 2
+
+
+
+
 
 class PluginBase(Command):
 
@@ -1018,7 +1024,7 @@ class PluginInstaller(PluginBase):
             elif node_name == 'sobject':
                 path = self.xml.get_attribute(node, "path")
                 search_type = self.xml.get_attribute(node, "search_type")
-                seq_max = self.xml.get_attribute(node, "seq_max")
+                seq_max = self.xml.get_attribute(node, "seq_max") or 0
                 try:
                     if seq_max:
                         seq_max = int(seq_max)
@@ -1611,7 +1617,12 @@ class PluginTools(PluginBase):
                         print("WARNING: ", e)
         else:
             #f = codecs.open(path, 'r', 'utf-8')
-            f = codecs.getreader('utf8')(open(path, 'r'))
+            if IS_Pv3:
+                f = open(path, 'r')
+            else:
+                f = codecs.getreader('utf8')(open(path, 'r'))
+
+
 
 
         statement = []
@@ -1646,11 +1657,15 @@ class PluginTools(PluginBase):
                 if not statement:
                     continue
                 # strip out a line feeds and add proper new lines
-                #statement_str = "\n".join([x.strip("\n") for x in statement])
+                statement.insert(0, "from pyasm.search import SearchType, CreateTable, Search, CreateView")
                 statement_str = "\n".join([x.rstrip("\r\n") for x in statement])
 
                 try:
-                    exec(statement_str)
+                    gc = {}
+                    lc = {}
+                    exec(statement_str, gc, lc)
+                    insert = lc.get("insert")
+                    table = lc.get("table")
                 except SqlException as e:
                     print("ERROR (SQLException): ", e)
                 except Exception as e:
@@ -1790,7 +1805,7 @@ class PluginTools(PluginBase):
                         if commit:
                             try:
                                 sobject.commit(triggers=False)
-                            except UnicodeDecodeError, e:
+                            except UnicodeDecodeError as e:
                                 raise
                             except Exception as e:
                                 print("WARNING: could not commit [%s] due to error [%s]" % (sobject.get_search_key(), e))
@@ -1809,7 +1824,7 @@ class PluginTools(PluginBase):
                                 plugin_content.set_value("plugin_code", self.plugin.get_code())
                                 plugin_content.commit()
 
-                    except UnicodeDecodeError, e:
+                    except UnicodeDecodeError as e:
                         print("Skipping due to unicode decode error: [%s]" % statement_str)
                         continue
 

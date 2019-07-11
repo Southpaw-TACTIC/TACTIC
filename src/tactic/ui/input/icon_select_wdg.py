@@ -18,7 +18,7 @@ from pyasm.web import DivWdg, HtmlElement
 from pyasm.widget import HiddenWdg, TextWdg, BaseInputWdg, IconWdg
 from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg, IconChooserWdg, ActionButtonWdg
 
-from text_input_wdg import TextInputWdg
+from .text_input_wdg import TextInputWdg
 
 class IconSelectWdg(BaseInputWdg):
 

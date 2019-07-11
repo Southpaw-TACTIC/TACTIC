@@ -20,6 +20,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types, sys, re, os
 
+import six
+basestring = six.string_types
+
+
+
 class TabWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
@@ -1704,8 +1709,7 @@ spt.tab.close = function(src_el) {
         for i, widget in enumerate(self.widgets):
             name = widget.get_name()
             if not name:
-                import random
-                num = random.randint(0, 10000)
+                num = Common.randint(0, 10000)
                 name = "noname%s" % num
                 widget.set_name(name)
                 title = "(Untitled)"
@@ -2115,7 +2119,7 @@ spt.tab.close = function(src_el) {
 
     def add_context_menu(self, header_div):
 
-        from menu_wdg import Menu, MenuItem
+        from .menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         #menu.set_allow_icons(False)
         #menu.set_setup_cbfn( 'spt.tab.smenu_ctx.setup_cbk' )
@@ -2493,7 +2497,7 @@ spt.tab.close = function(src_el) {
             menus_in = {
                 'DG_HEADER_CTX': menus,
             }
-            from smart_menu_wdg import SmartMenu
+            from .smart_menu_wdg import SmartMenu
             SmartMenu.attach_smart_context_menu( header_div, menus_in, False )
 
 
@@ -2590,7 +2594,7 @@ spt.tab.close = function(src_el) {
         '''
         } )
 
-        from smart_menu_wdg import SmartMenu
+        from .smart_menu_wdg import SmartMenu
         SmartMenu.assign_as_local_activator( header, 'DG_HEADER_CTX' )
 
 
@@ -2623,14 +2627,13 @@ spt.tab.close = function(src_el) {
                 title_div.add(count_wdg)
                 count_wdg.add_style("float: right")
                 count_wdg.add_style("font-size: 0.7em")
-                count_wdg.add_style("margin-right: 10px")
+                count_wdg.add_style("margin-left: 10px")
                 if count_color:
                     count_wdg.add_style("background", count_color)
 
                 count_wdg.add_update( {
                     'expression': count,
                     'search_key': search_key,
-                    'interval': 10,
                 } )
 
 

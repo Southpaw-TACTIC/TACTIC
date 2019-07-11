@@ -75,7 +75,7 @@ class CustomPrintViewWdg(BaseRefreshWdg):
 
             stmt = '\n'.join( stmt_arr )
 
-            exec stmt  # assigns 'gather_specs' dictionary ...
+            exec(stmt) # assigns 'gather_specs' dictionary ...
 
             layout_html_filled = self.process_data_gather( self.search_key, gather_specs, layout_html )
 
@@ -136,7 +136,7 @@ class CustomPrintViewWdg(BaseRefreshWdg):
 
             elif info.get("type") == "gather_list_class":
                 import_stmt = "%s as GatherClass" % info.get("import_stmt")
-                exec import_stmt
+                exec(import_stmt)
                 gc = GatherClass( sobject )
                 item_list = gc.get_items()
 

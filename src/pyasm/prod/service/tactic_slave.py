@@ -46,7 +46,7 @@ class SlaveXmlRpcServer:
         bodyFile = StringIO.StringIO()
         traceback.print_exc(file = bodyFile)
         errorBody = bodyFile.getvalue()        
-        print "Error: ", errorBody
+        print("Error: ", errorBody)
         if cherrypy.request.isRPC: 
             ## isRPC boolean is set on xml-rpc requests by the filter
             ## convert the traceback to a dumped Fault object: 

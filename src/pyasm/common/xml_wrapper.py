@@ -12,23 +12,37 @@
 
 __all__ = ["XmlException", "Xml"]
 
+# DEPREACATED: use lxml_wrapper
 
-import time, string, types, thread, os
-import random
 
-from cStringIO import StringIO
+import time, string, types, os
+try:
+    import _thread as thread
+except:
+    import thread
 
-from Ft.Xml.Domlette import NonvalidatingReader
-from Ft.Xml.Domlette import implementation
-from Ft.Xml.XPath import Evaluate
-from xml.dom.ext import PrettyPrint, Print
-#from Ft.Xml.Domlette import PrettyPrint, Print
-from Ft.Xml.Domlette import PrettyPrint as FtPrettyPrint
+import time, string, types, os
 
-from container import Container
-from base import *
-from common import *
-from common_exception import TacticException
+try:
+    from cStringIO import StringIO
+except:
+    from io import StringIO as cStringIO
+
+try:
+    from Ft.Xml.Domlette import NonvalidatingReader
+    from Ft.Xml.Domlette import implementation
+    from Ft.Xml.XPath import Evaluate
+    from xml.dom.ext import PrettyPrint, Print
+    #from Ft.Xml.Domlette import PrettyPrint, Print
+    from Ft.Xml.Domlette import PrettyPrint as FtPrettyPrint
+except:
+    print("WARNING: Ft libraries not found")
+
+
+from .container import Container
+from .base import *
+from .common import *
+from .common_exception import TacticException
 
 
 
@@ -85,8 +99,8 @@ class Xml(Base):
 
 
 
-        except Exception, e:
-            #print "Error in xml file: ", file_path
+        except Exception as e:
+            #print("Error in xml file: ", file_path)
             raise XmlException(e)
 
 
@@ -108,15 +122,15 @@ class Xml(Base):
         if xml_string not in Xml.xmls:
             Xml.xmls.add(xml_string)
         else:
-            print "already parsed!!!"
-            #print xml_string[:150]
+            print("already parsed!!!")
+            #print(xml_string[:150])
             #if xml_string.find("pipeline scale='49'") != -1:
             #    sdafd
 
             #dfafds
 
         Xml.count += 1
-        print Xml.count
+        print(Xml.count)
         """
 
 
@@ -126,17 +140,17 @@ class Xml(Base):
             xml_string = xml_string.encode('utf-8')
 
         #self.reader = PyExpat.Reader()
-        #print xml_string
+        #print(xml_string)
         #self.doc = self.reader.fromString(xml_string)
         try:
             # convert to utf-8
             if type(xml_string) != types.StringType:
                 xml_string = xml_string.encode("utf-8")
             self.doc = NonvalidatingReader.parseString(xml_string, self.uri)
-        except Exception, e:
+        except Exception as e:
             if print_error:
-                print "Error in xml: ", xml_string
-                print str(e)
+                print("Error in xml: ", xml_string)
+                print(str(e))
             raise XmlException(e)
 
 
@@ -251,15 +265,15 @@ class Xml(Base):
             Container.put("XML:xpath_cache", cache)
 
         #key = "%s|%s" % (str(self.doc), xpath)
-        num = random.randint(0, 500000)
+        num = Common.randint(0, 500000)
         key = "%s_%s|%s" % (str(self.doc), num, xpath)
         result = cache.get(key)
         if result == None:
             result = Evaluate(xpath, self.doc)
             cache[key] = result
-            #print xpath
+            #print(xpath)
         else:
-            #print "reuse"
+            #print("reuse")
             pass
 
         return result
@@ -270,7 +284,7 @@ class Xml(Base):
             return result
         if result == []:
             return result
-        #print xpath
+        #print(xpath)
         result = Evaluate(xpath, self.doc)
         self.cache_xpath[xpath] = result
         return result
@@ -281,7 +295,7 @@ class Xml(Base):
         '''get all of the nodes within the given xpath string'''
         try:
             nodes = self._evaluate(xpath)
-        except Exception, e:
+        except Exception as e:
             raise XmlException('XPath Error: %s'%e.__str__())
         return nodes
     
@@ -365,7 +379,7 @@ class Xml(Base):
 
     def dump(self):
         '''print out the stringafied version'''
-        print self.get_xml()
+        print(self.get_xml())
 
 
 

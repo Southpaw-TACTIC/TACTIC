@@ -137,7 +137,7 @@ class FrameCompletionWdg(BaseTableElementWdg):
             fps = int(fps)
 
         minutes = frames / (60*fps)
-	frames = frames - (minutes*60*fps)
+        frames = frames - (minutes*60*fps)
         seconds = frames / fps
         extra = frames % fps
 

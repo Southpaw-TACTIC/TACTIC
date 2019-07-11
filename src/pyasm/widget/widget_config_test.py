@@ -15,9 +15,10 @@ import tacticenv
 
 from pyasm.security import *
 from pyasm.search import Search, SearchType, Transaction
-from widget_config import WidgetConfigView
 from pyasm.unittest import UnittestEnvironment
 from pyasm.biz import Project
+
+from .widget_config import WidgetConfigView
 
 import unittest
 

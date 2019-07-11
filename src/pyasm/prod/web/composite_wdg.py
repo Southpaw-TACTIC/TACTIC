@@ -114,7 +114,7 @@ class CompLayerTableElementWdg(LayerTableElementWdg):
         if not snapshot:
             return "Nothing checked in"
         xml = snapshot.get_xml_value("snapshot")
-        print xml.to_string()
+        print(xml.to_string())
 
 
         # this is a comp object ... need to find the shot
@@ -154,7 +154,7 @@ class CompLayerTableElementWdg(LayerTableElementWdg):
         for ref_node in ref_nodes:
             snapshot = Snapshot.get_ref_snapshot_by_node(ref_node, mode='latest')
             if not snapshot:
-                print "Snapshot for ref_node does not exist"
+                print("Snapshot for ref_node does not exist")
                 continue
 
             render = snapshot.get_parent()

@@ -137,6 +137,6 @@ if __name__ == '__main__':
     parser.set_encoder('utf-8')
     parser.parse()
     data = parser.get_data()
-    print data
+    print(data)
 
 

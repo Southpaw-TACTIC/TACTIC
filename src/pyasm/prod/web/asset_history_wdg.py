@@ -21,7 +21,8 @@ from pyasm.widget import *
 from pyasm.prod.biz import *
 from pyasm.biz import *
 from pyasm.common import Common
-from asset_loader_wdg import *
+
+from .asset_loader_wdg import *
 
 
 from tactic.ui.common import BaseRefreshWdg

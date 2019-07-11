@@ -17,7 +17,9 @@ __all__ = [ 'TopWdg', 'TitleTopWdg']
 import types
 import os
 
-import js_includes
+import six
+basestring = six.string_types
+
 
 from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
 from pyasm.biz import Project, ProjectSetting
@@ -31,6 +33,7 @@ from tactic.ui.container import PopupWdg
 from tactic.ui.app import TacticCopyrightNoticeWdg, GoogleAnalyticsWdg
 from tactic.ui.widget import IconButtonWdg
 
+from .js_includes import JSIncludes
 
 
 class TopWdg(Widget):
@@ -638,7 +641,7 @@ class TopWdg(Widget):
         # add a calendar wdg
 
         if web.is_admin_page():
-            from tactic_branding_wdg import TacticCopyrightNoticeWdg
+            from .tactic_branding_wdg import TacticCopyrightNoticeWdg
             branding = TacticCopyrightNoticeWdg(show_license_info=True)
             top.add(branding)
 
@@ -829,6 +832,8 @@ class TopWdg(Widget):
     
         from pyasm.security import Site
         from pyasm.prod.biz import ProdSetting
+        from pyasm.biz import PrefSetting
+
         site = Site.get_site()
 
         master_enabled = Config.get_value("master", "enabled")
@@ -842,6 +847,7 @@ class TopWdg(Widget):
         else:
             master_login_ticket = ""
         master_project_code = Config.get_value("master", "project_code")
+        user_timezone = PrefSetting.get_value_by_key('timezone')
 
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
@@ -863,8 +869,9 @@ class TopWdg(Widget):
         env.set_master_login_ticket('%s');
         env.set_master_project_code('%s');
         env.set_master_site('%s');
+        env.set_user_timezone('%s');
         ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
-		master_enabled, master_url, master_login_ticket, master_project_code, master_site))
+		master_enabled, master_url, master_login_ticket, master_project_code, master_site, user_timezone))
         top.add(script)
 
 
@@ -920,7 +927,7 @@ class TopWdg(Widget):
  
 
         else:
-            from page_header_wdg import AppBusyWdg
+            from .page_header_wdg import AppBusyWdg
             div.add( AppBusyWdg() )
 
 
@@ -950,7 +957,7 @@ class TopWdg(Widget):
         div.add(color)
 
         # add in a global notify wdg
-        from notify_wdg import NotifyWdg
+        from .notify_wdg import NotifyWdg
         widget.add(NotifyWdg())
 
         from tactic.ui.app import DynamicUpdateWdg
@@ -1044,7 +1051,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
         version = Environment.get_release_version()
 
         # add some third party libraries
-        third_party = js_includes.third_party
+        third_party = JSIncludes.third_party
         security = Environment.get_security()
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
@@ -1062,21 +1069,21 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 Container.append_seq("Page:js", "%s/jquery.js" % spt_js_url)
 
 
-        for include in js_includes.third_party:
+        for include in JSIncludes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
 
-        all_js_path = js_includes.get_compact_js_filepath()
+        all_js_path = JSIncludes.get_compact_js_filepath()
 
         if os.path.exists( all_js_path ):
-            Container.append_seq("Page:js", "%s/%s" % (context_url, js_includes.get_compact_js_context_path_suffix()))
+            Container.append_seq("Page:js", "%s/%s" % (context_url, JSIncludes.get_compact_js_context_path_suffix()))
         else:
-            #for include in js_includes.legacy_core:
+            #for include in JSIncludes.legacy_core:
             #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
-            for include in js_includes.spt_js:
+            for include in JSIncludes.spt_js:
                 Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
 
-            #for include in js_includes.legacy_app:
+            #for include in JSIncludes.legacy_app:
             #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
@@ -1322,7 +1329,7 @@ class SitePage(AppServer):
         if not page:
             page = self.get_page_widget()
         page.set_as_top()
-        if type(page) in types.StringTypes:
+        if isinstance(page, basestring):
             page = StringWdg(page)
 
         application.add(page, 'content')

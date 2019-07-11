@@ -24,7 +24,10 @@ from tactic.ui.container import RoundedCornerDivWdg, PopupWdg, TabWdg
 from tactic.ui.panel import SideBarPanelWdg, ViewPanelWdg
 from tactic.ui.panel import TableLayoutWdg
 
-from help_wdg import HelpWdg
+from .help_wdg import HelpWdg
+
+import six
+basestring = six.string_types
 
 
 class PageNavContainerWdg(BaseRefreshWdg):
@@ -564,7 +567,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
         """
        
 
-        from page_header_wdg import PageHeaderWdg
+        from .page_header_wdg import PageHeaderWdg
         header_panel = DivWdg()
         header_panel.set_id("main_header")
         header_panel.add_attr("spt_class_name", "tactic.ui.app.PageHeaderWdg")
@@ -588,7 +591,7 @@ class PageNavContainerWdg(BaseRefreshWdg):
             is_admin = True
 
         if is_admin:
-            from quick_box_wdg import QuickBoxWdg
+            from .quick_box_wdg import QuickBoxWdg
             quick_box = QuickBoxWdg()
             container_div.add(quick_box)
 

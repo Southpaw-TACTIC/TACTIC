@@ -18,7 +18,7 @@ __all__ = [
 'ResetWdg', 'PasswordWdg', 'HiddenWdg', 'NoneWdg', 'ThumbInputWdg',
 'SimpleUploadWdg', 'UploadWdg', 'MultiUploadWdg', 
 'CalendarWdg', 'CalendarInputWdg',
-"PopupWdg", "PopupMenuWdg"
+"PopupWdg", "PopupMenuWdg", "ColorWdg"
 ]
 
 
@@ -28,9 +28,14 @@ from pyasm.common import Common, Marshaller, Date, SPTDate, TacticException
 from pyasm.biz import File, Snapshot, Pipeline, NamingUtil, ExpressionParser, PrefSetting
 from pyasm.web import *
 from pyasm.search import Search, SearchKey, SearchException
-from icon_wdg import IconButtonWdg, IconWdg
+
+from .icon_wdg import IconButtonWdg, IconWdg
 
 from operator import itemgetter
+
+import six
+basestring = six.string_types
+
 
 class InputException(Exception):
     pass
@@ -219,14 +224,16 @@ class BaseInputWdg(HtmlElement):
     
 
     def has_option(self, key):
-        return self.options.has_key(key)
+        return key in self.options
  
     def set_option(self, key, value):
+        if isinstance(value, type( {}.keys() )):
+            value = list(value)
         self.options[key] = value
         
     def get_option(self, key):
         '''gets the value of the specified option'''
-        if self.options.has_key(key):
+        if key in self.options:
             return self.options[key]
         else:
             return ""
@@ -1091,7 +1098,7 @@ class SelectWdg(BaseInputWdg):
         bs = kwargs.get('bs')
 
         if not name:
-            name = "select%s" % random.randint(0, 1000000)
+            name = "select%s" % Common.randint(0, 1000000)
 
         self.sobjects_for_options = None
         self.empty_option_flag = False
@@ -1238,24 +1245,25 @@ class SelectWdg(BaseInputWdg):
         if not values_option:
             values_option, labels_option = self._get_setting()
         
-        if type(values_option) == types.ListType:
+        if isinstance(values_option, list):
             self.values.extend(values_option)
             
             
         elif self.values != "":
-            self.values = string.split( self.get_option("values"), "|" )
+            self.values = self.get_option("values").split("|")
         else:
             self.values = ["None"]
 
         # get the labels for the select options
         
         self.labels = []
-        if type(labels_option) == types.ListType:
+        if isinstance(labels_option, list):
             self.labels = labels_option[:]
         elif labels_option != "":
-            self.labels = string.split( labels_option, "|" )
+            #self.labels = string.split( labels_option, "|" )
+            self.labels = labels_option.split("|")
             if len(self.values) != len(self.labels):
-                raise InputException("values [%s] does not have the same number of elements as [%s]" % (`self.values`, `self.labels`))
+                raise InputException("values [%s] does not have the same number of elements as [%s]" % (str(self.values), str(self.labels)))
 
         else:
             self.labels = self.values[:]
@@ -1356,7 +1364,7 @@ class SelectWdg(BaseInputWdg):
             if self.values:
                 zipped = zip(self.values, self.labels)
                 zipped = sorted(zipped, key=itemgetter(1))
-                unzipped = zip(*zipped)
+                unzipped = list(zip(*zipped))
                 self.values = list(unzipped[0])
                 self.labels = list(unzipped[1])
            
@@ -1697,7 +1705,7 @@ class ItemsNavigatorWdg(HtmlElement):
         else:
             past_max = 0
        
-        for x in xrange(list_num):
+        for x in range(list_num):
             value_list.append("%s - %s" %(x* self.step + 1, (x+1) * self.step))
 
         # handle the last item
@@ -2806,3 +2814,35 @@ class PopupMenuWdg(BaseInputWdg):
     def get_clear_css_script(self):
         ''' clears the css of the menu buttons, make them inactive'''
         return "$$('div[name=%s]').each(function(elem) {elem.className='inactive_menu_item';})" %self.item_name
+
+
+
+class ColorWdg(BaseInputWdg):
+
+    def __init__(self,name=None, label=None, css=None):
+        super(ColorWdg,self).__init__(name,"input", label)
+        self.set_attr("type", "color")
+        self.label = label
+        self.css = css
+
+        self.add_class("spt_input")
+
+
+    def get_display(self):
+        self.set_attr("name", self.get_input_name())
+
+        if self.is_read_only():
+            self.set_attr('disabled', 'disabled')
+
+        if not self.label:
+            color_wdg = super(ColorWdg, self).get_display()
+            return color_wdg
+        else:
+            color_wdg = BaseInputWdg.get_class_display(self)
+            span = SpanWdg(color_wdg, css=self.css)
+            span.add(self.label)
+            return span
+
+
+
+

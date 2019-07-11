@@ -85,7 +85,7 @@ class CornerGenerator(object):
                 im.save(path)
 
             except:
-                print sys.exc_info()[0]
+                print(sys.exc_info()[0])
                 continue
 
 
@@ -110,7 +110,7 @@ class CornerGenerator(object):
         # find the base path
         tactic_base = Environment.get_install_dir()
         basedir = "%s/src/context/ui_proto/roundcorners/rc_%s" % (tactic_base, color.replace("#", ""))
-        #print "test for corner: ", color
+        #print("test for corner: ", color)
 
         if os.path.exists(basedir):
             return True

@@ -16,21 +16,30 @@ import re, time, types
 from dateutil import rrule
 from dateutil import parser
 import datetime
+import functools
 
 from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException, SPTDate
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
-from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
+from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema, ProjectSetting
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
-from button_wdg import ButtonElementWdg
+
+from .button_wdg import ButtonElementWdg
 
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
 from tactic.ui.widget import IconButtonWdg, RadialProgressWdg
 
-from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
+from .table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
+
+import six
+basestring = six.string_types
+
+if Common.IS_Pv3:
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 
 # sort the tasks by the processes
@@ -65,7 +74,7 @@ def get_compare(processes):
         elif b_index != -1:
             return 1
 
-    return compare
+    return functools.cmp_to_key(compare)
 
 
 class TaskElementWdg(BaseTableElementWdg):
@@ -1167,7 +1176,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     filtered_tasks.append(task)
                 tasks = filtered_tasks
 
-            tasks = sorted(tasks,get_compare(processes))
+
+            compare = get_compare(processes)
+            tasks = sorted(tasks,key=compare)
 
         else:
             def compare(a,b):
@@ -1175,9 +1186,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 b_context = b.get_value('process')
                 return cmp(a_context, b_context)
 
-            tasks = sorted(tasks,compare)
-
-
+            tasks = sorted(tasks,key=functools.cmp_to_key(compare))
 
 
 
@@ -1252,7 +1261,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     tasks.append(task)
         
 
-            tasks = sorted(tasks,get_compare(processes))
+            tasks = sorted(tasks,key=get_compare(processes))
 
         return tasks
 
@@ -1862,7 +1871,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 process_sobj = search.get_sobject()
                 if process_sobj:
                     workflow = process_sobj.get_json_value("workflow", {})
-                    if workflow:
+                    version = workflow.get("version") or 1
+                    version_2 = version in [2, "2"]
+                    default = workflow.get("default") or {}
+
+                    if version_2 and default:
+                        related_type = default.get("search_type")
+                        related_pipeline_code = default.get("pipeline_code")
+                        related_process = default.get("process")
+                        related_scope = default.get("scope")
+                    elif not version_2 and workflow:
                         related_type = workflow.get("search_type")
                         related_pipeline_code = workflow.get("pipeline_code")
                         related_process = workflow.get("process")

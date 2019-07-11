@@ -25,6 +25,10 @@ from tactic.ui.container import PopupWdg, Menu, MenuItem, SmartMenu
 from tactic.ui.widget import TextBtnSetWdg, CalendarInputWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
+import six
+basestring = six.string_types
+
+
 class EditException(Exception):
     pass
 

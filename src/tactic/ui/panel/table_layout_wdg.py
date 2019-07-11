@@ -31,7 +31,10 @@ from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
 
-from base_table_layout_wdg import BaseTableLayoutWdg
+from .base_table_layout_wdg import BaseTableLayoutWdg
+
+import six
+basestring = six.string_types
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
@@ -47,20 +50,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'description': "Determines whether to draw with widgets or just use the raw data",
             'type': 'SelectWdg',
             'values': 'widget|raw',
-            'order': 00,
+            'order': '00',
             'category': 'Misc'
         },
 
         "search_type": {
             'description': "search type that this panels works with",
             'type': 'TextWdg',
-            'order': 01,
+            'order': '01',
             'category': 'Required'
         },
         "view": {
             'description': "view to be displayed",
             'type': 'TextWdg',
-            'order': 02,
+            'order': '02',
             'category': 'Required',
             'default': 'table',
         },
@@ -78,28 +81,28 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         "element_names": {
             'description': "Comma delimited list of elemnent to view",
             'type': 'TextWdg',
-            'order': 00,
+            'order': '00',
             'category': 'Optional'
         },
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 01,
+            'order': '01',
             'category': 'Optional'
         },
         "show_header": {
             'description': "Determines whether or not to show the table header",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 02,
+            'order': '02',
             'category': 'Optional'
         },
         "show_select": {
             'description': "Determine whether to show the selection checkbox for each row",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 03,
+            'order': '03',
             'category': 'Optional'
         },
 
@@ -872,6 +875,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         min_width = 45
         #expand_full_width = False
         for i, item_width in enumerate(reversed(column_widths)):
+
+            if isinstance(item_width, str):
+                item_width = item_width.replace("px", "")
+                item_width = int(item_width)
+
+
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -3718,7 +3727,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     editable = False
 
                 if editable == True:
-                    from layout_wdg import CellEditWdg
+                    from .layout_wdg import CellEditWdg
                     edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version())
                     edit_wdgs[name] = edit
                     # now set up any validations on this edit cell,
@@ -6206,6 +6215,10 @@ spt.table.redo_last = function() {
 spt.table.apply_undo_queue = function(undo_queue) {
     var layout = spt.table.get_layout();
     var layout_top = layout.getParent(".spt_layout_top");
+    // sometimes layout_top is null
+    if (!layout_top) {
+        return;
+    }
 
     var undo_queue = layout_top.undo_queue;
 
@@ -6827,12 +6840,15 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             var headers = header_row.getElements(".spt_table_header");
 
             var row = spt.table.get_first_row();
-            var cells = row.getElements(".spt_cell_edit");
 
-            // set the row widths to that of the header
-            for (var i = 0; i < cells.length; i++) {
-                var width = headers[i].getStyle("width");
-                cells[i].setStyle("width", width);
+            if (row) {
+                var cells = row.getElements(".spt_cell_edit");
+
+                // set the row widths to that of the header
+                for (var i = 0; i < cells.length; i++) {
+                    var width = headers[i].getStyle("width");
+                    cells[i].setStyle("width", width);
+                }
             }
 
 

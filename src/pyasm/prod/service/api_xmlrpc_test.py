@@ -61,7 +61,7 @@ class ApiTest(unittest.TestCase):
             self._test_insert()
             self.server.test_error()
         except:
-            print "Error Caught"
+            print("Error Caught")
             self.server.undo(self.ticket)
  
         return
@@ -75,7 +75,7 @@ class ApiTest(unittest.TestCase):
 
 
     def _test_query(self):
-        print "Testing Api Query"
+        print("Testing Api Query")
 
         search_type = "prod/shot"
         filters = []
@@ -92,7 +92,7 @@ class ApiTest(unittest.TestCase):
 
     def _test_insert(self):
         '''Test an individual insert of a shot and undo'''
-        print "Testing Api Insert"
+        print("Testing Api Insert")
 
         search_type = "prod/shot"
 
@@ -110,7 +110,7 @@ class ApiTest(unittest.TestCase):
 
     def _test_update(self):
         '''update the shot'''
-        print "Testing Api Update"
+        print("Testing Api Update")
 
         search_key = "prod/shot?project=%s&code=XG999" % self.project_code
 

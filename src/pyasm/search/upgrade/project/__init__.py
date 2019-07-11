@@ -10,15 +10,15 @@
 #
 #
 
-from base_upgrade import *
-from config_upgrade import *
-from simple_upgrade import *
-from sthpw_upgrade import *
-from unittest_upgrade import *
-from default_upgrade import *
+from .base_upgrade import *
+from .config_upgrade import *
+from .simple_upgrade import *
+from .sthpw_upgrade import *
+from .unittest_upgrade import *
+from .default_upgrade import *
 
 # DEPRECATED
-from prod_upgrade import *
-from game_upgrade import *
-from effects_upgrade import *
-from design_upgrade import *
+from .prod_upgrade import *
+from .game_upgrade import *
+from .effects_upgrade import *
+from .design_upgrade import *

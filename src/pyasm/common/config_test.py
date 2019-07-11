@@ -17,10 +17,11 @@ __all__ = ["ConfigTest"]
 import tacticenv
 import unittest
 
-
+from pyasm.common import *
 from pyasm.security import *
 
-from pyasm.common import *
+
+
 
 class ConfigTest(unittest.TestCase):
 

@@ -22,6 +22,8 @@ from pyasm.biz import File
 convert_exe = "convert"
 ffprobe_exe = "ffprobe"
 
+IS_Pv3 = sys.version_info[0] > 2
+
 if os.name == "nt":
     convert_exe+= ".exe"
     ffprobe_exe+= ".exe"
@@ -271,6 +273,9 @@ class BaseMetadataParser(object):
     
     def sanitize_data(self, data):
         # sanitize output
+        if IS_Pv3:
+            return data
+
         RE_ILLEGAL_XML = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                  u'|' + u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
                   (unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
@@ -350,8 +355,8 @@ class PILMetadataParser(BaseMetadataParser):
             from PIL import Image
             im = Image.open(path)
             return self._get_data(im)
-        except Exception, e:
-            print "WARNING: ", e
+        except Exception as e:
+            print("WARNING: ", e)
             return {}
 
  
@@ -457,7 +462,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
 
             return metadata
-        except Exception, e:
+        except Exception as e:
             info = {
                     "Message": str(e)
             }
@@ -504,7 +509,7 @@ class XMPMetadataParser(BaseMetadataParser):
 
 
             return metadata
-        except Exception, e:
+        except Exception as e:
             info = {
                     "Message": str(e)
             }
@@ -577,7 +582,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
             parts = re.split(p, line)
             if len(parts) < 2:
-                print "WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line
+                print("WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line)
                 continue
             name = parts[0]
             value = parts[1]
@@ -589,8 +594,8 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
                 ret[name] = value
                 names.add(name)
-            except Exception, e:
-                print "WARNING: Cannot handle line [%s] with error: " % line, e
+            except Exception as e:
+                print("WARNING: Cannot handle line [%s] with error: " % line, e)
 
 
         if names:
@@ -675,6 +680,7 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
         metadata = {}
 
+        out = out.decode()
 
         for line in out.split("\n"):
             if line.find("STREAM") != -1:
@@ -840,7 +846,7 @@ class IPTCMetadataParserX(BaseMetadataParser):
             exiftool_exists = find_executable("exiftool")
         
         if not exiftool_exists:
-            print "WARNING: exiftool does not exist at path %s" %(parser_path)
+            print("WARNING: exiftool does not exist at path %s" %(parser_path))
             return "WARNING: exiftool does not exist at path %s" %(parser_path)
 
         # get IPTC data from exiftool

@@ -19,10 +19,11 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.panel import TableLayoutWdg, ViewPanelWdg
 from tactic.ui.app import SearchWdg
 from tactic.ui.filter import FilterData
-from connection_select_wdg import ConnectionSelectWdg
 from pyasm.prod.biz import ShotInstance, Shot, SessionContents, ProdSetting
 from pyasm.search import Search
 from pyasm.prod.web import ProcessFilterWdg
+
+from .connection_select_wdg import ConnectionSelectWdg
 
 class AppShotPanelWdg(BaseRefreshWdg):
     '''Main panel for Shot Loader'''

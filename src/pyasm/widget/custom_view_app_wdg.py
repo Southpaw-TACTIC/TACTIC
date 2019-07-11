@@ -18,7 +18,7 @@ from pyasm.command import Command, CommandException
 from pyasm.web import Widget, DivWdg, SpanWdg, HtmlElement, WebContainer, AjaxCmd
 from pyasm.widget import SelectWdg, TextWdg, TableWdg, FilterCheckboxWdg, SwapDisplayWdg, HintWdg, IconSubmitWdg, IconButtonWdg, IconWdg, GeneralFilterWdg, EditWdg, PopupWdg, FilterSelectWdg, CheckboxWdg
 
-from custom_view_wdg import *
+from .custom_view_wdg import *
 
 
 class CustomViewAppWdg(Widget):

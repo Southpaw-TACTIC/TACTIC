@@ -32,8 +32,8 @@ from pyasm.common import Container, Common, Xml
 from pyasm.search import Search
 from tactic.ui.common import BaseRefreshWdg
 
-from connection_select_wdg import ConnectionSelectWdg
-from loader_wdg import IntrospectWdg
+from .connection_select_wdg import ConnectionSelectWdg
+from .loader_wdg import IntrospectWdg
 
 class CheckinWdg(BaseRefreshWdg):
     PUBLISH_BUTTON = 'Publish'
@@ -836,7 +836,7 @@ class AssetCheckinWdg(CheckinWdg):
             # backwards compatible:
             try:
                 asset_code = asset_codes[i]
-            except IndexError, e:
+            except IndexError as e:
                 asset_code = instance_name
 
             # skip if this is a reference
@@ -987,7 +987,7 @@ class AssetCheckinWdg(CheckinWdg):
             # backwards compatible:
             tmp_set_instance = set_instance
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             # make sure the set_instance comes from this set
@@ -1012,7 +1012,7 @@ class AssetCheckinWdg(CheckinWdg):
 
             # backwards compatible
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             self.handle_instance(table, set_instance, ref_asset, publish=False)
@@ -1033,7 +1033,7 @@ class AssetCheckinWdg(CheckinWdg):
 
             # backwards compatible
             if set_instance.find(":") != -1:
-                print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                 set_instance, tmp = set_instance.split(":")
 
             self.handle_missing_instance(table, set_instance, ref_asset)
@@ -1367,7 +1367,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
                     # backwards compatible:
                     tmp_set_instance = set_instance
                     if set_instance.find(":") != -1:
-                        print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                        print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                         set_instance, tmp = set_instance.split(":")
 
                     # make sure the set_instance comes from this set
@@ -1402,7 +1402,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
 
                     # backwards compatible
                     if set_instance.find(":") != -1:
-                        print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                        print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                         set_instance, tmp = set_instance.split(":")
 
                     self.handle_instance(table, set_instance, ref_asset, allow_ref_checkin=True)
@@ -1423,7 +1423,7 @@ class InstanceCheckinWdg(AssetCheckinWdg):
 
                     # backwards compatible
                     if set_instance.find(":") != -1:
-                        print "WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code()
+                        print("WARNING: snapshot '%s' has deprecated maya instance names" % snapshot.get_code())
                         set_instance, tmp = set_instance.split(":")
 
                     self.handle_missing_instance(table, set_instance, ref_asset)

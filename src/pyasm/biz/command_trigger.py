@@ -12,7 +12,6 @@
 
 __all__ = ["CommandSObj", "Trigger", "TriggerSObj", "TriggerInCommand"]
 
-
 from pyasm.search import SObject, Search
 
 class CommandSObj(SObject):

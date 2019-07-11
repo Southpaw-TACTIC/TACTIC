@@ -59,9 +59,9 @@ class XmlRpcExec(RemoteExec):
             print(server.do_command(pickled))
             print("... done!!!!")
 
-        except (socket.error), e:
+        except (socket.error) as e:
             raise SetupException( 'Could not connect to slave server "%s":\n\nError given: %s' % (server_url, e.__str__() ))
-        except (xmlrpclib.ProtocolError), e:
+        except (xmlrpclib.ProtocolError) as e:
             raise SetupException( 'xmlprc protocol error returned from slave server "%s"' % (server_url))
 
     _execute_slave = staticmethod(_execute_slave)

@@ -21,11 +21,11 @@ from pyasm.search import SObjectFactory, Search, SObject
 from pyasm.command import Trigger, EmailTrigger, Command, CommandExitException, DatabaseAction
 from pyasm.security import *
 
-from input_wdg import *
-from icon_wdg import IconWdg
-from table_element_wdg import *
+from .input_wdg import *
+from .icon_wdg import IconWdg
+from .table_element_wdg import *
 
-from web_wdg import IconSubmitWdg
+from .web_wdg import IconSubmitWdg
 
 
 

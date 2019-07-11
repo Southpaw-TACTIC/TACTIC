@@ -11,12 +11,11 @@
 #
 __all__ = ["TestDialogWdg", "DialogWdg"]
 
+from pyasm.common import Common
 from pyasm.web import *
 from pyasm.widget import IconWdg, IconButtonWdg, SelectWdg, ProdIconButtonWdg, TextWdg
 
 from tactic.ui.common import BaseRefreshWdg
-
-import random
 
 class TestDialogWdg(BaseRefreshWdg):
     def get_display(self):
@@ -98,7 +97,7 @@ class DialogWdg(BaseRefreshWdg):
     def init(self):
         self.name = self.kwargs.get('id')
         if not self.name:
-            num = random.randint(0, 10000)
+            num = Common.randint(0, 10000)
             self.name = 'dialog%s' % num
 
         # NOTE: not yet implemented. Refer to PopupWdg

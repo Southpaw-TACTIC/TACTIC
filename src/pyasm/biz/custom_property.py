@@ -44,7 +44,7 @@ class CustomProperty(SObject):
                     statement = 'ALTER TABLE "%s" DROP COLUMN "%s"' % (table, column) 
 
                 sql.do_update(statement)
-            except SqlException, e:
+            except SqlException as e:
                 print("WARNING: %s" % e )
             
 
