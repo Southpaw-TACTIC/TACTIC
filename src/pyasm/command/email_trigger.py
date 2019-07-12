@@ -257,7 +257,6 @@ class EmailTrigger(Trigger):
 
 
     def get_email_handler(self, notification, sobject, parent, command, input={}):
-
         email_handler_cls = notification.get_value("email_handler_cls")
         if not email_handler_cls:
             email_handler_cls = "EmailHandler"
@@ -655,13 +654,12 @@ class EmailTrigger2(EmailTrigger):
         else:
             is_skipped = False
 
-
         # allow the handler to check for whether an email should be sent
+
         handler = self.get_email_handler(notification, main_sobject, parent, caller, input)
         if is_skipped or not handler.check_rule():
             self.add_description('Notification not sent due to failure to pass the set rules. Comment out the rules for now if you are just running email test.')
             return
-
 
         # if all rules are met then get the groups for this notification
         try:
@@ -675,7 +673,6 @@ class EmailTrigger2(EmailTrigger):
         except SObjectValueException as e:
             raise Exception("Error in running Email handler [%s]. %s" \
                     %(handler.__class__.__name__, e.__str__()))
-
 
         def get_email():
 
@@ -877,6 +874,7 @@ class EmailTriggerThread(threading.Thread):
 
 
 class EmailTriggerTestCmd(Command):
+    
     '''This is run in the same thread for the email testing button'''
     def __init__(self, **kwargs):
         self.kwargs = kwargs
