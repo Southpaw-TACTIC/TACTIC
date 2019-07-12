@@ -481,7 +481,14 @@ set_display_off = function(element_id) {
 }
 
 
+// return user timezone UTC offset value
+spt.api.Utility.get_user_timezone_offset = function() 
+{
+    let tz = env.get_user_timezone();
+    if (!tz) return "";
+    let tz_date = moment().tz(tz);
+    let tz_info = tz_date.format("Z");
 
-
-
+    return tz_info;
+}
 
