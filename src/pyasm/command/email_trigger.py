@@ -874,7 +874,8 @@ class EmailTriggerThread(threading.Thread):
 
 
 class EmailTriggerTestCmd(Command):
-    '''This is run in the same thread for the email testing button'''
+
+  '''This is run in the same thread for the email testing button'''
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.sender_email = self.kwargs.get('sender_email')
