@@ -27,7 +27,7 @@ class GeneralAppletWdg(Widget):
 
 
     def init(self):
-        #print "DEPRECATED"
+        #print("DEPRECATED")
         #raise TacticException("Use of GeneralAppletWdg is Deprecated")
 
         # it's generated thru JS in IE
@@ -36,8 +36,8 @@ class GeneralAppletWdg(Widget):
         
         context_url = WebContainer.get_web().get_context_url()
         
-        print "-"*20
-        print self.APPLET_CLASS
+        print("-"*20)
+        print(self.APPLET_CLASS)
 
 
         # create applet

@@ -17,8 +17,8 @@ import string, types
 from pyasm.common import *
 from pyasm.search import SObjectAttr
 
-from pipeline import Pipeline
-from status_attr import * 
+from .pipeline import Pipeline
+from .status_attr import * 
 
 
 

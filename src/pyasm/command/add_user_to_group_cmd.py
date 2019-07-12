@@ -16,7 +16,7 @@ from pyasm.common import Xml
 from pyasm.security import Login, LoginGroup
 from pyasm.search import *
 
-from command import Command
+from .command import Command
 
 
 

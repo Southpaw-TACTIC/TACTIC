@@ -13,9 +13,12 @@
 __all__ = ['TransactionLog']
 
 from pyasm.common import *
-from search import SObjectUndo, SObject, Search, SObjectFactory, SearchType, SearchException, SqlException
-from transaction import FileUndo, TableUndo, TableDropUndo, AlterTableUndo
-from sobject_log import SObjectLog
+from .search import SObjectUndo, SObject, Search, SObjectFactory, SearchType, SearchException, SqlException
+from .transaction import FileUndo, TableUndo, TableDropUndo, AlterTableUndo
+from .sobject_log import SObjectLog
+
+import sys
+IS_Pv3 = sys.version_info[0] > 2
 
 class TransactionLog(SObject):
     SEARCH_TYPE = "sthpw/transaction_log"
@@ -144,11 +147,14 @@ class TransactionLog(SObject):
         cutoff = 10*1024
         if length_before > cutoff:
             import zlib, binascii
-            transaction_data = Common.process_unicode_string(transaction_data)
+            if IS_Pv3:
+                transaction_data = transaction_data.encode()
+            else:
+                transaction_data = Common.process_unicode_string(transaction_data)
             ztransaction_data = binascii.hexlify(zlib.compress(transaction_data))
             ztransaction_data = "zlib:%s" % ztransaction_data
             length_after = len(ztransaction_data)
-            print "transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
+            print("transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
         else:
             ztransaction_data = transaction_data
 
@@ -260,7 +266,7 @@ class TransactionLog(SObject):
                         Site.set_site(site)
                         has_site = True
                     except:
-                        print "Site [%s] does not exist" % site
+                        print("Site [%s] does not exist" % site)
                         continue
 
 

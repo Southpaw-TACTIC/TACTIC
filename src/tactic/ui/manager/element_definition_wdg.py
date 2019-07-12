@@ -30,6 +30,18 @@ from tactic.ui.widget import CalendarInputWdg, TextBtnSetWdg, SearchTypeSelectWd
 from dateutil import parser
 
 import types
+import functools
+import operator
+
+import six
+basestring = six.string_types
+
+
+if Common.IS_Pv3:
+    def cmp(a, b):
+        return (a > b) - (a < b)
+
+
 
 
 class ElementDefinitionWdg(BaseRefreshWdg):
@@ -1004,11 +1016,11 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                         existing_values.append(value)
 
                 existing_values.sort()
-        except (SObjectValueException, SqlException), e:
+        except (SObjectValueException, SqlException) as e:
             top.add("This widget cannot set colors")
             return top
 
-        values = bg_color_map.keys()
+        values = list(bg_color_map.keys())
         values.sort()
 
         from tactic.ui.input import ColorInputWdg
@@ -1037,12 +1049,12 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             list_top.add_style("display: none")
         list_top.add_class("spt_color_list")
 
-        list = DynamicListWdg()
-        list_top.add(list)
+        list_wdg = DynamicListWdg()
+        list_wdg.add(list)
 
         # create a template
         template = DivWdg()
-        list.add_template(template)
+        list_wdg.add_template(template)
 
         color_input = ColorInputWdg(name="bg_color")
         template.add(color_input)
@@ -1066,12 +1078,12 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         template.add(select_div)
         template.add_style("padding: 3px")
 
-        # FIXME:
+        # NOTE:
         # add a first row.  Unfortunately we can't just add the template
         # row.  This is because select row breaks if it is drawn twice.
         if not values:
             first_row = DivWdg()
-            list.add_item(first_row)
+            list_wdg.add_item(first_row)
 
             color_input = ColorInputWdg("bg_color")
             first_row.add(color_input)
@@ -1100,7 +1112,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         for value in values:
             value_div = DivWdg()
             #top.add(value_div)
-            list.add_item(value_div)
+            list_wdg.add_item(value_div)
             value_div.add_style("width: 300px")
 
             # add a color chooser
@@ -2158,8 +2170,7 @@ class ActionClassOptionsWdg(BaseRefreshWdg):
         #if is_default:
         #    return None
         
-        import types
-        if type(action_options) in types.StringTypes:
+        if isinstance(action_options, basestring):
             try:
                 action_options = eval(action_options)
             except:
@@ -2225,9 +2236,9 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
     # sort
     def options_sort(a, b):
-        if type(a) in types.StringTypes:
+        if isinstance(a, basestring):
             return 1
-        elif type(b) in types.StringTypes:
+        elif isinstance(b, basestring):
             return -1
 
         acategory = a.get('category')
@@ -2318,13 +2329,16 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         display_options = self.kwargs.get("display_options")
 
         import types
-        if type(display_options) in types.StringTypes:
+        if (isinstance(display_options, list)):
             try:
                 display_options = eval(display_options)
             except:
                 # !!!! Lost the options
                 display_options = {}
-        if not display_options:
+        elif (isinstance(display_options, str)):
+            display_options = jsonloads(display_options)
+
+        if (not display_options):
             display_options = {}
 
 
@@ -2446,7 +2460,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         # convert to an array
         class_options_array = []
         for name, value in class_options.items():
-            if type(value) in types.StringTypes:
+            if isinstance(value, basestring):
                 new_value = {
                     'name': name,
                     'description': value
@@ -2468,7 +2482,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
                 class_options_array.append(value)
 
-        class_options_array.sort(self.options_sort)
+        class_options_array.sort(key=functools.cmp_to_key(self.options_sort))
 
         current_div = DivWdg()
         top.add(current_div)
@@ -3139,7 +3153,7 @@ class SimpleElementDefinitionCbk(Command):
                 project_code = Project.get_project_code()
                 full_st = Project.get_full_search_type(search_type, project_code=project_code)
                 widget.create_required_columns(full_st)
-            except (TacticException, AttributeError), e: # for add column sql error
+            except (TacticException, AttributeError) as e: # for add column sql error
                 if self.is_insert: # will be caught in AlterTableCmd
                     raise
                 else: # in edit mode, it's ok for now

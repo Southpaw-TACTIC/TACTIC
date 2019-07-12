@@ -16,9 +16,9 @@ from pyasm.common import Environment
 from pyasm.search import DbContainer, Search
 from pyasm.web import Widget, Table, HtmlElement, WebContainer
 from pyasm.widget import IconWdg, IconButtonWdg
-from button_wdg import ButtonElementWdg
 from tactic.ui.common import BaseTableElementWdg
-from button_wdg import ButtonElementWdg
+
+from .button_wdg import ButtonElementWdg
 
 class ProjectWdg(BaseTableElementWdg):
 

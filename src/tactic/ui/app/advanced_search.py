@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "CustomSaveButtonsWdg",
+__all__ = ["AdvancedSearchKeywordWdg", "AdvancedSearchSaveWdg", "AdvancedSearchSavedSearchesWdg", "AdvancedSearchSaveButtonsWdg",
 "DeleteSavedSearchCmd", "SaveSearchCmd", "GetSavedSearchCmd", "SaveCurrentSearchCmd", "DeleteRecentSearchCmd"]
 
 from pyasm.common import Environment, Xml, jsonloads, jsondumps
@@ -72,7 +72,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 color: grey;
             }
 
-            .spt_look_ahead_top .spt_template {
+            .spt_look_ahead_top .spt_template_item {
                 display: none !important;
             }
 
@@ -289,7 +289,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         recent_search = DivWdg()
         custom_dropdown.add(recent_search)
         recent_search.add_class("spt_recent_search")
-        recent_search.add_class("spt_template")
+        recent_search.add_class("spt_template_item")
 
         recent_search_label = DivWdg()
         recent_search.add(recent_search_label)
@@ -319,7 +319,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 bvr.src_el.setStyle("display", "none");
             }
 
-            let template = bvr.src_el.getElement(".spt_template");
+            let template = bvr.src_el.getElement(".spt_template_item");
 
             let recent_searches = spt.advanced_search.keywords.recent_searches;
 
@@ -332,7 +332,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 clone.setAttribute("spt_value", value)
                 labelDiv.innerText = value;
                 labelDiv.setAttribute("spt_value", value)
-                clone.removeClass("spt_template");
+                clone.removeClass("spt_template_item");
 
                 bvr.src_el.appendChild(clone);
             }
@@ -359,7 +359,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
             let items = tagsContainer.getElements(".spt_search_tag_item");
 
             items.forEach(function(item){
-                if (item.hasClass("spt_template")) return;
+                if (item.hasClass("spt_template_item")) return;
                 item.remove();
             })
 
@@ -374,7 +374,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         search_tag_item = DivWdg()
         tag_cluster.add(search_tag_item)
         search_tag_item.add_class("spt_search_tag_item")
-        search_tag_item.add_class("spt_template search-tag")
+        search_tag_item.add_class("spt_template_item search-tag")
 
         search_tag_label = DivWdg("#charHeroSimba")
         search_tag_item.add(search_tag_label)
@@ -1026,7 +1026,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
             }
 
-            .spt_saved_searches_top .spt_template {
+            .spt_saved_searches_top .spt_saved_search_item_template {
                 display: none !important;
             }
 
@@ -1142,6 +1142,10 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                 border-radius: 3px;
                 background: white;
             }
+            
+            .spt_saved_searches_top .spt_search_category_template {
+                display: none;
+            }
 
             .spt_saved_searches_top .spt_search_category {
                 padding: 8px 20px;
@@ -1227,7 +1231,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         saved_searches_category_container = DivWdg()
         saved_searches_container.add(saved_searches_category_container)
         saved_searches_category_container.add_class("spt_saved_searches_item")
-        saved_searches_category_container.add_class("spt_template")
+        saved_searches_category_container.add_class("spt_template_item")
 
         saved_searches_category = DivWdg()
         saved_searches_category_container.add(saved_searches_category)
@@ -1240,7 +1244,8 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         saved_search_item = DivWdg()
         saved_search_item_container.add(saved_search_item)
         saved_search_item.add_class("spt_saved_search_item")
-        saved_search_item.add_class("spt_template hand")
+        saved_search_item.add_class("spt_saved_search_item_template")
+        saved_search_item.add_class("spt_template_item hand")
 
         saved_search_label = DivWdg("")
         saved_search_item.add(saved_search_label)
@@ -1328,7 +1333,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
             'cbjs_action': '''
 
             let template = bvr.src_el.getElement(".spt_saved_searches_item");
-            let itemTemplate = template.getElement(".spt_saved_search_item");
+            let itemTemplate = template.getElement(".spt_saved_search_item_template");
             let allValues = spt.advanced_search.saved.values;
             let allLabels = spt.advanced_search.saved.labels;
             let categories = spt.advanced_search.saved.categories;
@@ -1342,6 +1347,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                 let categoryDiv = clone.getElement(".spt_saved_search_category");
                 categoryDiv.innerText = category;
                 clone.setAttribute("spt_category", key);
+                clone.removeClass("spt_template_item");
 
                 let container = clone.getElement(".spt_saved_search_item_container");
 
@@ -1355,11 +1361,12 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                     itemClone.setAttribute("spt_value", value);
                     itemClone.setAttribute("spt_category", key);
 
-                    itemClone.removeClass("spt_template");
+                    itemClone.removeClass("spt_saved_search_item_template");
+                    itemClone.removeClass("spt_template_item")
                     container.appendChild(itemClone);
                 }
 
-                clone.removeClass("spt_template");
+                clone.removeClass("spt_template_item");
                 bvr.src_el.appendChild(clone);
             }
 
@@ -1384,76 +1391,12 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
         return '''
 
-if (typeof(spt.advanced_search) == "undefined") spt.advanced_search = {}; 
-
-if (typeof(spt.advanced_search.saved) == "undefined") spt.advanced_search.saved = {}; 
-
+spt.advanced_search = spt.advanced_search || {};
+spt.advanced_search.saved = spt.advanced_search.saved || {};
 spt.advanced_search.saved.categories = bvr.categories;
 spt.advanced_search.saved.values = bvr.values;
 spt.advanced_search.saved.labels = bvr.labels;
-
-
-spt.advanced_search.saved.add_item = function(key, label, value) {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    let template = categoryContainer.getElement(".spt_saved_search_item.spt_template");
-    let clone = spt.behavior.clone(template);
-    let labelDiv = clone.getElement(".spt_saved_search_label");
-    labelDiv.innerText = label;
-    clone.setAttribute("spt_category", key);
-    clone.setAttribute("spt_value", value);
-    clone.removeClass("spt_template");
-    categoryContainer.appendChild(clone);
-}
-spt.advanced_search.saved.create_item = function(key, label, value) {
-    spt.advanced_search.saved.labels[key].push(label);
-    spt.advanced_search.saved.values[key].push(value);
-}
-spt.advanced_search.saved.delete_item = function(key, label) {
-    let index = spt.advanced_search.saved.labels[key].indexOf(label);
-    spt.advanced_search.saved.labels[key].splice(index, 1);
-    spt.advanced_search.saved.values[key].splice(index, 1);
-}
-spt.advanced_search.saved.load_items = function(key) {
-    /*let values = spt.advanced_search.saved.get_values(key);
-    let labels = spt.advanced_search.saved.get_labels(key);
-    for (let i=0; i<values.length; i++) {
-        let label = labels[i];
-        let value = values[i];
         
-        spt.advanced_search.saved.add_item(key, label, value);
-    }*/
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let selected = container.getElement(".spt_saved_searches_item.selected");
-    let categoryContainer = container.querySelector("div.spt_saved_searches_item[spt_category='"+key+"']");
-    if (selected) selected.removeClass("selected");
-    categoryContainer.addClass("selected");
-}
-spt.advanced_search.saved.clear_items = function() {
-    let container = bvr.src_el.getElement(".spt_saved_searches_container");
-    let items = container.getElements(".spt_saved_search_item");
-    items.forEach(function(item){
-        if (item.hasClass("spt_template")) return;
-        item.remove();
-    });
-}
-spt.advanced_search.saved.toggle_dropdown = function(display) {
-    let dropdown = bvr.src_el.getElement(".spt_search_categories_dropdown");
-    if (display) 
-        dropdown.setStyle("display", display);
-    else
-        spt.toggle_show_hide(dropdown);
-}
-spt.advanced_search.saved.get_values = function(key) {
-    return spt.advanced_search.saved.values[key];
-}
-spt.advanced_search.saved.get_labels = function(key) {
-    return spt.advanced_search.saved.labels[key];
-}
-spt.advanced_search.saved.get_selected = function() {
-    return bvr.src_el.getElement(".spt_saved_search_item.selected");
-}
-
         '''
 
     # TODO: make categories!!
@@ -1496,7 +1439,7 @@ spt.advanced_search.saved.get_selected = function() {
 
             let header = bvr.src_el.getParent(".spt_saved_searches_header");
             let dropdown = header.getElement(".spt_search_categories_dropdown");
-            let template = header.getElement(".spt_template");
+            let template = header.getElement(".spt_template_item");
 
             let categories = spt.advanced_search.saved.categories;
 
@@ -1507,7 +1450,8 @@ spt.advanced_search.saved.get_selected = function() {
                 let clone = spt.behavior.clone(template);
                 clone.innerText = label;
                 clone.setAttribute("spt_value", value);
-                clone.removeClass("spt_template");
+                clone.removeClass("spt_search_category_template");
+                clone.removeClass("spt_template_item");
 
                 dropdown.appendChild(clone);
             }
@@ -1518,7 +1462,8 @@ spt.advanced_search.saved.get_selected = function() {
         searches_dropdown_item = DivWdg()
         searches_dropdown.add(searches_dropdown_item)
         searches_dropdown_item.add_class("spt_search_category")
-        searches_dropdown_item.add_class("spt_template hand")
+        searches_dropdown_item.add_class("spt_search_category_template")
+        searches_dropdown_item.add_class("spt_template_item hand")
         searches_dropdown_item.add_behavior({
             'type': 'click',
             'cbjs_action': '''
@@ -1621,8 +1566,9 @@ spt.advanced_search.saved.get_selected = function() {
             searchesItems.forEach(function(searchesItem) {
                 let searchItems = searchesItem.getElements(".spt_saved_search_item");
                 let display = "none";
+
                 searchItems.forEach(function(searchItem){
-                    if (searchItem.hasClass("spt_template")) return;
+                    if (searchItem.hasClass("spt_template_item")) return;
 
                     let label = searchItem.getElement(".spt_saved_search_label");
                     if (label.innerText.includes(value)) {
@@ -1708,7 +1654,7 @@ class DeleteSavedSearchCmd(Command):
 
 
 
-class CustomSaveButtonsWdg(BaseRefreshWdg):
+class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
 
     def get_styles(self):
 
@@ -1810,11 +1756,13 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
             'bvr_match_class': 'spt_save_button',
             'search_type': self.kwargs.get("search_type"),
             'cbjs_action': '''
+                
+            let top = bvr.src_el.getParent(".spt_search_top");
+            spt.advanced_search.set_top(top);
 
             let action = bvr.src_el.getAttribute("spt_action");
 
             if (action == "save_as") {
-                let top = bvr.src_el.getParent(".spt_search_top");
                 let overlay = top.getElement(".overlay");
                 let saveTop = top.getElement(".spt_save_top");
 
@@ -1823,7 +1771,6 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 saveTop.addClass("visible");
                 saveTop.getElement(".spt_save_title").innerText = bvr.src_el.innerText;
             } else if (action == "save") {
-                let top = bvr.src_el.getParent(".spt_search_top");
                 if (!top.hasClass("spt_has_changes")) return;
 
                 var selected = spt.advanced_search.saved.get_selected();
@@ -1854,7 +1801,6 @@ class CustomSaveButtonsWdg(BaseRefreshWdg):
                 let on_complete = function(ret_val) {
                     spt.notify.show_message("Search saved");
 
-                    let top = bvr.src_el.getParent('.spt_search_top');
                     top.removeClass("spt_has_changes");
                 }
 

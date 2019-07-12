@@ -110,5 +110,5 @@ class LoginGroupTrigger(Trigger):
 
             try:
                 server.update_multiple(login_in_group_dict)
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('Error updating login_in_group %s' % e.str())

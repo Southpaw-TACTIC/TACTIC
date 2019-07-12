@@ -1507,7 +1507,7 @@ class SearchTypeCreatorCmd(Command):
 
         sobject.commit()
 
-        self.sobject = sobject
+        self.search_type_obj = sobject
 
 
     

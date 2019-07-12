@@ -195,7 +195,7 @@ class PageHeaderWdg(Widget):
         help_div = DivWdg()
         help_dialog.add(help_div)
 
-        from help_wdg import HelpWdg
+        from .help_wdg import HelpWdg
         help_wdg = HelpWdg()
         help_div.add(help_wdg)
 

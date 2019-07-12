@@ -16,7 +16,7 @@ from pyasm.common import Container
 from pyasm.web import Widget
 from pyasm.widget import TabExtendWdg
 
-from tab_wdg import TabWdg
+from .tab_wdg import TabWdg
 
 
 class BaseTabWdg(Widget):

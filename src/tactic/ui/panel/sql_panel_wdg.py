@@ -19,7 +19,8 @@ __all__ = [ 'SqlPanelWdg' ]
 from pyasm.search import DbContainer, SearchType
 
 from tactic.ui.common import BaseRefreshWdg
-from panel_wdg import ViewPanelWdg
+
+from .panel_wdg import ViewPanelWdg
 
 class SqlPanelWdg(BaseRefreshWdg):
 

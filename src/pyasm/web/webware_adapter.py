@@ -95,7 +95,7 @@ class WebWare(WebEnvironment):
         return self.request.fields().keys()
 
     def has_form_key(self, key):
-        return self.request.fields().has_key(key)
+        return key in self.request.fields():
 
     def set_form_value(self, name, value):
         '''Set the form value to appear like it was submitted'''

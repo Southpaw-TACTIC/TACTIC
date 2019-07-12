@@ -16,15 +16,17 @@ import types
 import re
 from pyasm.common import Xml, Environment, Common, SPTDate, Config, Container
 from pyasm.search import SObject, Search, SearchType, SObjectValueException
-from prod_setting import ProdSetting, ProjectSetting
-from pipeline import Pipeline
-from pyasm.common import Environment
-from project import Project
-from status import StatusLog
+from .prod_setting import ProdSetting, ProjectSetting
+from .pipeline import Pipeline
+from .project import Project
+from .status import StatusLog
 
 from datetime import datetime, timedelta
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
+
+import six
+basestring = six.string_types
 
 
 
@@ -486,8 +488,8 @@ class Task(SObject):
         else:
             try:
                 parent = self.get_parent()
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 parent = Project.get()
             if not parent:
                 msg = "%s in %s: %s" % (action, process, description)
@@ -894,10 +896,9 @@ class Task(SObject):
     def add_initial_tasks(sobject, pipeline_code=None, processes=[], contexts=[],
             skip_duplicate=True, mode='standard',start_offset=0,assigned=None,
             start_date=None, schedule_mode=None, parent_process=None, status=None
-
         ):
         '''add initial tasks based on the pipeline of the sobject'''
-        from pipeline import Pipeline
+        from .pipeline import Pipeline
 
         def _get_context(existing_task_dict, process_name, context=None):
             existed = False
@@ -954,7 +955,7 @@ class Task(SObject):
             pipeline = Pipeline.get_by_code(pipeline_code)
 
         if not pipeline:
-            print "WARNING: pipeline '%s' does not exist" %  pipeline_code
+            print("WARNING: pipeline '%s' does not exist" %  pipeline_code)
             return []
 
         # remember which ones already exist
@@ -1090,7 +1091,6 @@ class Task(SObject):
             old_generator_processes = process_names
 
 
-
         # create tasks when processes are explicitly specified
         for process_name in old_generator_processes:
 
@@ -1118,9 +1118,12 @@ class Task(SObject):
             assigned_login_group = attrs.get("assigned_login_group") or None
 
             workflow = process_sobject.get_json_value("workflow") or {}
+            version = workflow.get("version") or 1
+            version_2 = version in [2, '2']
 
+            properties = workflow.get("properties") or {}
 
-            task_creation = workflow.get("task_creation")
+            task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
             if task_creation == "none":
                 continue
 
@@ -1208,7 +1211,7 @@ class Task(SObject):
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-            pipe_code = workflow.get("task_pipeline") or process_obj.get_task_pipeline()
+            pipe_code = (properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")) or process_obj.get_task_pipeline()
 
             #start_date_str = start_date.get_db_date()
             #end_date_str = end_date.get_db_date()
@@ -1371,8 +1374,8 @@ class TaskAutoSchedule(object):
 
             tmp_end_date = tmp_start_date + relativedelta(seconds=interval)
 
-            #print tmp_start_date, tmp_end_date
-            #print round_second(tmp_start_date), round_second(tmp_end_date)
+            #print(tmp_start_date, tmp_end_date)
+            #print(round_second(tmp_start_date), round_second(tmp_end_date))
             start = self.round_second(tmp_start_date)
             end = self.round_second(tmp_end_date)
 
@@ -1651,11 +1654,16 @@ class TaskGenerator(object):
         process_sobject = process_sobjects.get(process_name)
         process_obj = pipeline.get_process(process_name)
 
-        workflow = process_sobject.get_json_value("workflow") or {}
+        workflow = process_sobject.get_json_value("workflow") or {} if process_sobject else {}
+        version = workflow.get("version") or 1
+        version_2 = version in [2, '2']
+
+        properties = workflow.get("properties") or {}
+
         process_type = process_obj.get_type()
         attrs = process_obj.get_attributes()
 
-        task_creation = workflow.get("task_creation")
+        task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
 
 
 
@@ -1707,7 +1715,7 @@ class TaskGenerator(object):
 
 
         # task that are autocreated should not be created here
-        autocreate_task = workflow.get('autocreate_task')
+        autocreate_task = properties.get('autocreate_task') if version_2 else workflow.get("autocreate_task")
         if autocreate_task in ['true', True]:
             return
 
@@ -1750,22 +1758,24 @@ class TaskGenerator(object):
             attrs = process_obj.get_attributes()
 
 
-            workflow = process_sobject.get_json_value("workflow") or {}
-
+            workflow = process_sobject.get_json_value("workflow") or {} if process_sobject else {}
+            properties = workflow.get("properties") or {}
 
             duration = attrs.get("duration")
+            duration_property = properties.get("duration") if version_2 else workflow.get("duration")
             if duration:
                 duration = int(duration)
-            elif workflow.get("duration") and workflow.get("duration").isdigit():
-                duration = int(workflow.get("duration"))
+            elif duration_property and duration_property.isdigit():
+                duration = int(duration_property)
             else:
                 duration = default_duration
 
             bid_duration = attrs.get("bid_duration")
+            bid_duration_property = properties.get("bid_duration") if version_2 else workflow.get("bid_duration")
             if bid_duration:
                 bid_duration = int(bid_duration)
-            elif workflow.get("bid_duration") and workflow.get("bid_duration").isdigit():
-                bid_duration = int(workflow.get("bid_duration"))
+            elif bid_duration_property and bid_duration_property.isdigit():
+                bid_duration = int(bid_duration_property)
             else:
                 bid_duration = default_bid_duration
 
@@ -1810,7 +1820,7 @@ class TaskGenerator(object):
                 end_date = self.start_date + timedelta(days=1)
 
             # get from XML data
-            assigned_group = workflow.get("assigned_group")
+            assigned_group = properties.get("assigned_group") if version_2 else workflow.get("assigned_group")
             if not assigned_group: # backwards compatibility
                 assigned_group = attrs.get("assigned_group") or None
 
@@ -1820,7 +1830,7 @@ class TaskGenerator(object):
                 output_contexts = [process_name]
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
-            pipeline_code = workflow.get("task_pipeline") or process_obj.get_task_pipeline()
+            pipeline_code = (properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")) or process_obj.get_task_pipeline()
 
 
             for context in output_contexts:
@@ -1852,8 +1862,8 @@ class TaskGenerator(object):
                 #start = time.time()
                 triggers = "none"
                 new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_group)
-                #print "process: ", full_process_name
-                #print "time: ", time.time() - start
+                #print("process: ", full_process_name)
+                #print("time: ", time.time() - start)
 
                 # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )

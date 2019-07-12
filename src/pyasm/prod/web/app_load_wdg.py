@@ -17,12 +17,13 @@ from pyasm.search import *
 from pyasm.web import *
 from pyasm.widget import *
 
-from asset_filter_wdg import *
-from shot_navigator_wdg import *
-from prod_wdg import *
 from pyasm.prod.biz import *
 from pyasm.biz import *
 from pyasm.common import Container
+
+from .asset_filter_wdg import *
+from .shot_navigator_wdg import *
+from .prod_wdg import *
 
 
 

@@ -21,8 +21,9 @@ from pyasm.common import Base, Xml
 from pyasm.command import *
 from pyasm.search import *
 from pyasm.biz import *
-from asset import *
-from texture import *
+
+from .asset import *
+from .texture import *
 
 
 
@@ -78,7 +79,7 @@ class AssetCodeNaming(BaseNaming):
             self.asset_library_obj.commit()
         
         if not self.asset_library_obj:
-            print "WARNING: Asset library [%s] does not exist" % self.asset_library
+            print("WARNING: Asset library [%s] does not exist" % self.asset_library)
         assert self.asset_library_obj != None
 
 

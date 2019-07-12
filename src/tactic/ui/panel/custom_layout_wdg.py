@@ -14,8 +14,18 @@ from __future__ import print_function
 
 __all__ = ["CustomLayoutWdg", "SObjectHeaderWdg"]
 
-import os, types, re
-import cStringIO
+import os, types, re, sys
+try:
+    from cStringIO import StringIO as Buffer
+except:
+    from io import StringIO as Buffer
+
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
+
+
 
 from pyasm.common import Xml, XmlException, Common, TacticException, Environment, Container, jsonloads, jsondumps
 from pyasm.biz import Schema, ExpressionParser, Project
@@ -263,12 +273,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
                     return div
 
                 # convert html tag to a div
-                html = cStringIO.StringIO()
+                html = Buffer()
                 for node in nodes:
                     # unfortunately, html does not recognize <textarea/>
                     # so we have to make sure it becomes <textarea></textarea>
                     text = xml.to_string(node)
-                    text = text.encode('utf-8')
+                    if not IS_Pv3:
+                        text = text.encode('utf-8')
                     keys = ['textarea','input']
                     for key in keys:
                         p = re.compile("(<%s.*?/>)" % key)
@@ -298,7 +309,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                         for group in m1.groups():
                             if group:
                                 text = text.replace(group, '\n%s\n'%group)
-                       
+                      
                     html.write(text)
 
                 html = html.getvalue()
@@ -368,11 +379,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
             full_expr = m.group()
             expr = m.groups()[0]
             result = parser.eval(expr, sobjects, single=True, state=self.state)
-            if isinstance(result, basestring):
-                result = Common.process_unicode_string(result)
-            else:
-                result = str(result)
-            html = html.replace(full_expr, result )
+            if result:
+                if isinstance(result, basestring):
+                    result = Common.process_unicode_string(result)
+                else:
+                    result = str(result)
+                html = html.replace(full_expr, result )
 
 
         # use absolute expressions - [expr]xxx[/expr]
@@ -607,9 +619,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
     HEADER = '''<%def name='expr(expr)'><% result = server.eval(expr) %>${result}</%def>'''
 
 
-
-
-
     def process_mako(self, html):
 
         from mako.template import Template
@@ -619,10 +628,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
         # remove CDATA tags
         html = html.replace("<![CDATA[", "")
         html = html.replace("]]>", "")
-        #html = html.decode('utf-8')
 
         try:
-            if self.encoding == 'ascii':
+            if IS_Pv3:
+                template = Template(html)
+
+            elif self.encoding == 'ascii':
                 template = Template(html)
             else:
                 template = Template(html, output_encoding=self.encoding, input_encoding=self.encoding)
@@ -672,10 +683,8 @@ class CustomLayoutWdg(BaseRefreshWdg):
         try:
             html = template.render(server=self.server, search=Search, sobject=sobject, sobjects=self.sobject_dicts, data=self.data, plugin=plugin, kwargs=self.kwargs)
 
-
             # we have to replace all & signs to &amp; for it be proper html
             html = html.replace("&", "&amp;")
-            return html
         except Exception as e:
             if str(e) == """'str' object has no attribute 'caller_stack'""":
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
@@ -685,10 +694,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 message = "Error in view [%s]: %s" % (self.view, exception_message)
                 ExceptionLog.log(e, message=message)
 
-                #html = exceptions.html_error_template().render(css=False)
-                html = exceptions.html_error_template().render()
+                html = exceptions.html_error_template()
+                html = html.render()
+                html = html.decode()
                 html = html.replace("body { font-family:verdana; margin:10px 30px 10px 30px;}", "")
-                return html
+
+
+        return html
 
     def handle_layout_behaviors(self, layout):
         '''required for BaseTableElementWdg used by fast table'''
@@ -760,11 +772,16 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             # remove objects that cannot be json marshalled
             view_kwargs = self.kwargs.copy()
+            deleted_keys = []
             for key, value in view_kwargs.items():
                 try:
                     test = jsondumps(value)
                 except Exception as e:
-                    del(view_kwargs[key])
+                    #del(view_kwargs[key])
+                    deleted_keys.append(key)
+            for key in deleted_keys:
+                del(view_kwargs[key])
+
 
 
             for behavior_node in behavior_nodes:
@@ -1258,8 +1275,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         if not element_name:
-            import random
-            num = random.randint(0, 1000000)
+            num = Common.randint(0, 1000000)
             element_name = "element%s" % num
             xml.set_attribute(element_node, "name", element_name)
 

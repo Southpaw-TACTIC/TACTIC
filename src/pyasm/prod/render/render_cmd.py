@@ -18,7 +18,7 @@ from pyasm.prod.load import *
 from pyasm.prod.biz import FrameRange
 from pyasm.checkin import SnapshotBuilder, SnapshotCheckin, FileCheckin
 
-from render_context import *
+from .render_context import *
 
 
 class RenderException(Exception):
@@ -105,7 +105,7 @@ class MayaRenderCmd(Command):
 
         # get the render command and execute
         render_command = self.get_render_command()
-        print render_command
+        print(render_command)
         os.system(render_command)
 
         self.convert_images()
@@ -153,7 +153,7 @@ class MayaRenderCmd(Command):
         #frame_range_values = frame_range.get_values()
         #options['frame_range'] = "-s %s -e %s -b %s" % frame_range_values
 
-	quality = "-uf true -oi true -eaa 0 -ert true -of iff"
+        quality = "-uf true -oi true -eaa 0 -ert true -of iff"
         options['quality'] = quality
 
         options['camera'] = "-cam %s" % self.render_context.get_camera()
@@ -165,7 +165,7 @@ class MayaRenderCmd(Command):
         # set up all of the paths
         file_root = "maya_render"
         padding = 4
-	type = "png"
+        type = "png"
 
 
         render_dir = self.render_context.get_render_dir()
@@ -189,7 +189,7 @@ class MayaRenderCmd(Command):
         # copy for now
         file_root = "maya_render"
         padding = 4
-	type = "png"
+        type = "png"
 
         # check the expected images
         single = True
@@ -198,7 +198,7 @@ class MayaRenderCmd(Command):
             final_path = "%s/%s.%s" % (render_dir,file_root,type)
             cmd = "imgcvt -f iff -t %s %s %s" % \
                 (type, render_path, final_path)
-            print cmd
+            print(cmd)
             os.system(cmd)
 
 
@@ -254,7 +254,7 @@ class MayaRenderCmd(Command):
                 # convert the image
                 cmd = "imgcvt -f iff -t %s %s %s" % \
                     (type, render_paths[i], final_paths[i])
-                print cmd
+                print(cmd)
                 os.system(cmd)
 
 

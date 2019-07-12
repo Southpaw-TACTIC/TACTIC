@@ -22,14 +22,15 @@ from pyasm.search import Transaction, SearchType, Search, SObject
 from pyasm.unittest import Person
 from pyasm.checkin import FileCheckin
 
-from project import *
-from snapshot import *
-from schema import *
-from task import *
-from naming import *
-from note import Note
-from pipeline import Context, Pipeline
-from expression import ExpressionParser
+from .project import *
+from .snapshot import *
+from .schema import *
+from .task import *
+from .naming import *
+from .note import Note
+from .pipeline import Context, Pipeline
+from .expression import ExpressionParser
+
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 
@@ -497,6 +498,8 @@ class BizTest(unittest.TestCase):
         self.assertEquals( True, top_snapshot.get_value("is_latest") )
         self.assertEquals( True, top_snapshot.get_value("is_current") )
 
+
+
     def _test_schema(self):
         # prod type test
         prod_proj_code = "sample3d"
@@ -613,7 +616,7 @@ class BizTest(unittest.TestCase):
 
         # test parent filter search in sample3d
         if Project.get_by_code('sample3d'):
-            from pyasm.prod.biz import *
+            from pyasm.prod.biz import Shot, ShotInstance
             Project.set_project('sample3d')
 
             shot = Shot.get_by_code('RC_001_001')

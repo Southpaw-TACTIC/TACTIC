@@ -19,7 +19,7 @@ from pyasm.widget import *
 from pyasm.prod.biz import Asset
 from pyasm.prod.web import *
 
-from task_manager_wdg import TaskStatusFilterWdg, SObjectStatusFilterWdg
+from .task_manager_wdg import TaskStatusFilterWdg, SObjectStatusFilterWdg
 
 
 class ApprovalManagerWdg(Widget):

@@ -10,9 +10,9 @@
 #
 #
 
-from filter_data import *
-from filter_wdg import *
-from filter_element_wdg import *
-from type_filter_element_wdg import *
-#from custom_layout_filter_wdg import *
+from .filter_data import *
+from .filter_wdg import *
+from .filter_element_wdg import *
+from .type_filter_element_wdg import *
+#from .custom_layout_filter_wdg import *
 

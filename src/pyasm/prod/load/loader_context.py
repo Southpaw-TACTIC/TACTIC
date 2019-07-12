@@ -20,7 +20,7 @@ from pyasm.prod.biz import *
 from pyasm.prod.checkin import *
 import os, types
 
-from loader import *
+from .loader import *
 
 
 class LoaderException(Exception):

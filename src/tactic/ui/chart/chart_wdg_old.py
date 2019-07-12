@@ -22,6 +22,9 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types
 
+import six
+basestring = six.string_types
+
 # DEPRECATED
 
 
@@ -43,7 +46,7 @@ class ChartWdgOld(BaseRefreshWdg):
             width = '100%'
 
         if chart_data:
-            if type(chart_data) in types.StringTypes:
+            if isinstance(chart_data, basestring):
                 data = jsonloads(chart_data)
             elif type(chart_data) == types.DictType:
                 data = chart_data
@@ -72,8 +75,7 @@ class ChartWdgOld(BaseRefreshWdg):
         inner.add_style("padding: 15px")
 
 
-        import random
-        number = random.randint(0, 1000000)
+        number = Common.randint(0, 1000000)
         chart_id = 'my_chart%s' % number
         div.set_id(chart_id)
 

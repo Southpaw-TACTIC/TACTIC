@@ -122,7 +122,7 @@ class SObjectCopyCmd(Command):
                 checkin.execute()
 
                 #print "done: ", context, new_sobject.get_related_sobjects("sthpw/snapshot")
-            except CheckinException, e:
+            except CheckinException as e:
                 msgs.append('Post-process Check-in Error for %s: %s ' %(context, e.__str__()))
 
         if msgs:

@@ -25,7 +25,7 @@ from pyasm.command import Command
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, WebState, HtmlElement
 from pyasm.widget import FunctionalTableElement, TableWdg, HiddenWdg, IconSubmitWdg, IconButtonWdg, IconWdg
 
-from shot_instance_adder_wdg import ShotInstanceAdderWdg
+from .shot_instance_adder_wdg import ShotInstanceAdderWdg
 
 
 class SObjectPlannerWdg(ShotInstanceAdderWdg):

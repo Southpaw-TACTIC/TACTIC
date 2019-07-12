@@ -15,8 +15,8 @@ __all__ = ['Application', 'AppException']
 
 import sys, types
 
-from node_data import NodeData
-from app_environment import AppException
+from .node_data import NodeData
+from .app_environment import AppException
 
 
 class Application(object):
@@ -33,7 +33,7 @@ class Application(object):
 
 
     def message(self, message):
-        print message
+        print(message)
 
 
     def start_buffer(self):

@@ -81,9 +81,9 @@ class SnapshotInfoWdg(BaseTableElementWdg):
             try:
                 ref_sobjects = Search.get_by_id(key, value)
                 sobj_dict = SObject.get_dict(ref_sobjects)
-            except SearchException, e:
-                print "WARNING: search_type [%s] with id [%s] does not exist" % (key, value)
-                print str(e)
+            except SearchException as e:
+                print("WARNING: search_type [%s] with id [%s] does not exist" % (key, value))
+                print(str(e))
                 sobj_dict = {}
 
             # store a dict of dict with the search_type as key

@@ -21,7 +21,8 @@ from pyasm.web import Widget, Table, DivWdg, SpanWdg, WebContainer, FloatDivWdg
 from pyasm.widget import IconWdg, IconButtonWdg, TextWdg, HiddenWdg, BaseInputWdg, SelectWdg, ProdIconButtonWdg
 from pyasm.search import SObject
 from tactic.ui.common import BaseRefreshWdg
-from button_new_wdg import IconButtonWdg
+
+from .button_new_wdg import IconButtonWdg
 
 from datetime import datetime, timedelta
 from dateutil import parser
@@ -29,7 +30,7 @@ from dateutil import parser
 try:
     from calendar import Calendar
     HAS_CALENDAR = True
-except ImportError, e:
+except ImportError as e:
     HAS_CALENDAR = False 
     
 import calendar
@@ -1530,12 +1531,6 @@ class CalendarTimeWdg(BaseRefreshWdg):
 
 
         name = self.kwargs.get("name")
-        """
-        if not name:
-            # generate a random name
-            name = button.generate_unique_id()
-        evt_name = 'time_%s'%name
-        """
         interval = 5
        
         top.add_behavior( {

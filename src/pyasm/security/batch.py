@@ -15,9 +15,9 @@ __all__ = ['Batch', 'XmlRpcInit', 'XmlRpcLogin', 'TacticInit']
 import os, sys
 
 from pyasm.common import Environment, Container, Config, Common, SecurityException
-
 from pyasm.search import DbContainer
-from security import Security, Site
+
+from .security import Security, Site
 
 class Batch(Environment):
     '''Environment object that is used for batch operations'''

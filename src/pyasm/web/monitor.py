@@ -15,7 +15,7 @@
 __all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'ASyncThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, random, subprocess, re
+import os, sys, threading, time, urllib, subprocess, re
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
@@ -47,7 +47,7 @@ class BaseProcessThread(threading.Thread):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.num_checks = 0
-        self.kill_interval = 30 + random.randint(0,30)
+        self.kill_interval = 30 + Common.randint(0,30)
         self.kill_interval = 1
         self.end = False
         self.port = None
@@ -135,7 +135,7 @@ class BaseProcessThread(threading.Thread):
         start = time.clock()
         try:
             response = self.check()
-        except IOError, e:
+        except IOError as e:
 
             pid = self._get_pid() 
             if pid:
@@ -146,7 +146,7 @@ class BaseProcessThread(threading.Thread):
                 if pid:
                     try:
                         Common.kill(pid)
-                    except Exception, e:
+                    except Exception as e:
                         print("WARNING: process [%s] does not exist" % pid)
 
                 pid_path = self.get_pid_path()
@@ -333,7 +333,7 @@ class JobQueueThread(BaseProcessThread):
                 try:
                     #os.kill(self.pid, 9)
                     Common.kill(self.pid)
-                except Exception, e:
+                except Exception as e:
                     print("WARNING for pid [%s]: " % self.pid, e)
 
                 break
@@ -996,7 +996,7 @@ class TacticMonitor(object):
                     # any more.  
                     break
 
-            except KeyboardInterrupt, e:
+            except KeyboardInterrupt as e:
                 #print("Keyboard interrupt ... exiting Tactic")
                 for tactic_thread in self.tactic_threads:
                     tactic_thread.end = True
@@ -1035,7 +1035,7 @@ class TacticMonitor(object):
                 pid = file.readline().strip()
                 file.close()
                 Common.kill(pid)
-            except IOError, e:
+            except IOError as e:
                 continue
 
         # kill watch folder processes
@@ -1046,7 +1046,7 @@ class TacticMonitor(object):
                 pid = f.readline()
                 f.close()
                 Common.kill(pid)
-            except IOError, e:
+            except IOError as e:
                 continue
         for idx, queue in enumerate(queues):
             try:
@@ -1055,7 +1055,7 @@ class TacticMonitor(object):
                 pid = f.readline()
                 f.close()
                 Common.kill(pid)
-            except IOError, e:
+            except IOError as e:
                 continue
 
 if __name__ == '__main__':

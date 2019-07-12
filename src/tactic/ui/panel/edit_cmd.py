@@ -75,10 +75,10 @@ class EditCmd(Command):
             self.multiplier_str = web.get_form_value("multiplier")
         
         if self.multiplier_str:
-	    try:
-	        self.multiplier = int(self.multiplier_str)
-	    except:
-	        pass
+            try:
+                self.multiplier = int(self.multiplier_str)
+            except:
+                pass
 
 
 

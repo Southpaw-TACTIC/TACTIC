@@ -23,6 +23,10 @@ TZLOCAL = tzlocal()
 TZUTC = tzutc()
 TZGMT = gettz('GMT')
 
+import six
+basestring = six.string_types
+
+
 class SPTDate(object):
 
     def now(cls):
@@ -266,7 +270,7 @@ class SPTDate(object):
         #FIXME: it errors out on time before epoch
         try:
             utc = date.astimezone(TZUTC)
-        except Exception, e:
+        except Exception as e:
             naive = date.replace(tzinfo=None)
         else:
             naive = utc.replace(tzinfo=None)

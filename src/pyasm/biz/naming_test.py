@@ -740,7 +740,7 @@ class NamingTest(unittest.TestCase):
         naming6.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}/')
         try:
             naming6.commit()
-        except TacticException, e:
+        except TacticException as e:
             message = 'sandbox_dir_name should not end with /'
         else:
             message = 'Pass'
@@ -750,7 +750,7 @@ class NamingTest(unittest.TestCase):
         naming7.set_value('dir_naming', '{$PROJECT}/{@GET(.id)}/')
         try:
             naming7.commit()
-        except TacticException, e:
+        except TacticException as e:
             message = 'dir_name should not end with /'
         else:
             message = 'Pass'
@@ -760,7 +760,7 @@ class NamingTest(unittest.TestCase):
         naming8.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}')
         try:
             naming8.commit()
-        except TacticException, e:
+        except TacticException as e:
             message = 'sandbox_dir_name should not end with /'
         else:
             message = 'Pass'

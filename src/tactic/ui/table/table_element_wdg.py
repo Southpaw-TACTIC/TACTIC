@@ -375,7 +375,7 @@ class NotificationTriggerElementWdg(BaseTableElementWdg):
                   ''' %(sobj_json, bg_color)}
         return bvr
 
-from button_wdg import ButtonElementWdg
+from .button_wdg import ButtonElementWdg
 class CheckinButtonElementWdg(ButtonElementWdg):
 
     ARGS_KEYS = {
@@ -660,9 +660,9 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
             self.set_option('icon', "CHECK_OUT")
         else:
             if size == 'large':
-	        self.set_option('icon', "CHECK_OUT_LG")
-	    else:
-	        self.set_option('icon', "CHECK_OUT_SM")
+                self.set_option('icon', "CHECK_OUT_LG")
+            else:
+                self.set_option('icon', "CHECK_OUT_SM")
 
 
         top = DivWdg()
@@ -687,7 +687,7 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         sandbox_dir = self.get_option("sandbox_dir")
         if not sandbox_dir and sobject and isinstance(sobject, Snapshot):
             sandbox_dir = sobject.get_sandbox_dir(file_type='main')
-   	    snapshot_code = sobject.get_code()
+            snapshot_code = sobject.get_code()
 	 
         lock_process = self.get_option("lock_process")
         sobject = self.get_current_sobject()

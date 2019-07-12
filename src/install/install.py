@@ -68,6 +68,11 @@ class Install:
             sys.exit(0)
 
     def check_db_exists(self, project_code):
+
+        if not project_code.isalnum():
+            raise Exception("Project [%s] is not valid" % project_code)
+
+
         # create the sthpw database
 
         if self.database_type == 'SQLServer':
@@ -78,12 +83,14 @@ class Install:
             if self.database_type == 'SQLServer':
                 # Print out an error and exit
                 # if the sthpw already exists.
-                args = 'sqlcmd -U tactic -P south123paw -Q \" \
+                cmd = '''" \
                     DECLARE @db_id int; \
                     SET @db_id = db_id(\'%s\'); \
                     IF @db_id IS NOT NULL \
                         print \'Database already exists\'\
-                    \"' % project_code
+                    \"''' % project_code
+ 
+                args = ['sqlcmd', '-U', 'tactic', '-P', 'south123paw', '-Q', cmd]
                 program = subprocess.Popen(args, shell=True, \
                     stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
                 lines = program.stdout.readlines()
@@ -96,7 +103,9 @@ class Install:
                 args = ['psql','-U', 'postgres',  '-p', self.port_num, '-c', "\c %s;\q"%project_code]
 
         else:
-            args = 'psql -U postgres -p %s -c  "\c %s;\q"'%(self.port_num, project_code)
+            #args = 'psql -U postgres -p %s -c  "\c %s;\q"'%(self.port_num, project_code)
+            cmd = '"\c %s;\q"' % project_code
+            args = ['psql', '-U', 'postgres','-p', self.port_num, '-c', cmd]
         program = subprocess.Popen(args, shell=True, \
             stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
         lines = program.stdout.readlines()

@@ -16,8 +16,9 @@ from pyasm.search import Search, SearchKey
 from pyasm.web import DivWdg, Table
 from pyasm.widget import ThumbWdg, IconWdg
 
-from table_layout_wdg import FastTableLayoutWdg
 from tactic.ui.widget import SingleButtonWdg
+
+from .table_layout_wdg import FastTableLayoutWdg
 
 class StaticTableLayoutWdg(FastTableLayoutWdg):
 

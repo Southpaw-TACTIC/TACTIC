@@ -18,7 +18,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  0.25
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
         # intraday + 1
         start = "2018-11-05 18:00:00"
@@ -26,7 +26,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  1.5
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
 
         # intraday + 1
@@ -35,7 +35,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  1.25
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
 
         # friday to monday
@@ -44,7 +44,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  0.5
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
         # monday to friday
         start = "2018-11-05 18:00:00"
@@ -52,7 +52,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  3.5
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
 
         # saturday to monday
@@ -61,7 +61,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  0.25
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
 
         # thursday to sunday
@@ -70,7 +70,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  1.25
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
 
         # wednesday to next wednesday
@@ -79,7 +79,7 @@ class DurationTest(unittest.TestCase):
 
         diff = SPTDate.get_business_days_duration(start, end)
         expected =  5.0
-        self.assertEquals(expected, diff)
+        self.assertEqual(expected, diff)
 
 
 
