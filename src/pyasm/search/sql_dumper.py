@@ -381,7 +381,12 @@ class TableDataDumper(object):
                 f.write("insert.set_table('%s')\n" % self.table)
 
             data = sobject.get_data()
-            for name, value in data.items():
+            data_keys = list(data.keys())
+            data_keys.sort()
+
+            #for name, value in data.items():
+            for name in data_keys:
+                value = data.get(name)
                 
                 if self.replace_dict:
                     

@@ -1,5 +1,6 @@
 
 
+from __future__ import print_function
 
 __all__ = ['DrupalPasswordHasher']
 
@@ -52,17 +53,17 @@ class DrupalPasswordHasher(object):
 
     def encode(self, password, salt, iter_code=None):
         """The Drupal 7 method of encoding passwords"""
-        password = password.encode("utf8")
-        salt = salt.encode("utf8")
+        b_password = password.encode("utf8")
+        b_salt = salt.encode("utf8")
 
         if iter_code == None:
             iterations = 2 ** _ITOA64.index(self.iter_code)
         else:
             iterations = 2 ** _ITOA64.index(iter_code)
-        hash = hashlib.sha512(salt + password).digest()
+        hash = hashlib.sha512(b_salt + b_password).digest()
 
         for i in range(iterations):
-            hash = hashlib.sha512(hash + password).digest()
+            hash = hashlib.sha512(hash + b_password).digest()
 
         l = len(hash)
 
@@ -75,12 +76,15 @@ class DrupalPasswordHasher(object):
                 value = hash[i] # python 3
             else:
                 value = ord(hash[i])
-            num = value
 
             i = i + 1
 
             output += _ITOA64[value & 0x3f]
             if i < l:
+                if IS_Pv3:
+                    num = hash[i] # python 3
+                else:
+                    num = ord(hash[i])
                 value |= num << 8
 
             output += _ITOA64[(value >> 6) & 0x3f]
@@ -89,6 +93,10 @@ class DrupalPasswordHasher(object):
             i += 1
 
             if i < l:
+                if IS_Pv3:
+                    num = hash[i] # python 3
+                else:
+                    num = ord(hash[i])
                 value |= num << 16
 
             output += _ITOA64[(value >> 12) & 0x3f]
@@ -98,17 +106,40 @@ class DrupalPasswordHasher(object):
 
             output += _ITOA64[(value >> 18) & 0x3f]
 
+
         longhashed = "%s$%s%s%s" % (self.algorithm, iter_code,
                                     salt, output)
         return "$%s" % longhashed[:54]
 
     def verify(self, password, encoded):
-        hash = encoded.split("$")[1]
+        print("encoded: ", encoded)
+        print("len: ", len(encoded))
+        hash = encoded.split("$S$")[1]
         iter_code = hash[0]
         salt = hash[1:1 + self.salt_length]
+        print("salt: ", salt)
+        tt = self.encode(password, salt, iter_code)
+        print("tt: ", tt)
+        print("len: ", len(tt))
+
         return encoded == self.encode(password, salt, iter_code)
 
 if __name__ == '__main__':
-    print(DrupalPasswordHasher().encode("123", "GC3Nis52", 'D'))
+    password = "tactic123"
+    salt = "DPRNKWLY"
+    print("\n")
+    new = DrupalPasswordHasher().encode(password, salt, 'D')
+    print("new: ", new)
+    print("\n")
+
+    encoded = "$S$DPRNKWLYLKhGKUekMHmHDafAT.6NzngYR53Vhp2l4WoQyEINLbLo"
+    print("enc: ", encoded)
+    print("\n")
+    print("verify: ", new == encoded)
+    print("\n")
+    print( DrupalPasswordHasher().verify("123", encoded))
+
+
+
 
 

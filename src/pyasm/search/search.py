@@ -87,7 +87,6 @@ class Search(Base):
         self.security_filter = False
 
         protocol = 'local'
-        #if type(search_type) in types.StringTypes:
         if isinstance(search_type, basestring):
             # project is *always* local.  This prevents an infinite loop
             from pyasm.biz import Project
@@ -138,13 +137,11 @@ class Search(Base):
 
 
         # get the search type sobject for the search
-        #if type(search_type) == types.TypeType:
         if isinstance(search_type, type):
             # get search defined in the class
             search_type = search_type.SEARCH_TYPE
             self.search_type_obj = SearchType.get(search_type)
 
-        #elif type(search_type) in types.StringTypes:
         elif isinstance(search_type, basestring):
             self.search_type_obj = SearchType.get(search_type)
         else:
@@ -1245,10 +1242,12 @@ class Search(Base):
             start_date >= date <= end_date + 1 day
         '''
 
-        if start_date and type(start_date) in types.StringTypes:
+        #if start_date and type(start_date) in types.StringTypes:
+        if start_date and isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        if end_date and type(end_date) in types.StringTypes:
+        #if end_date and type(end_date) in types.StringTypes:
+        if end_date and isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
 
@@ -1283,10 +1282,12 @@ class Search(Base):
           start_col < end_date and end_col > end_date
         '''
 
-        if type(start_date) in types.StringTypes:
+        #if type(start_date) in types.StringTypes:
+        if isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        if type(end_date) in types.StringTypes:
+        #if type(end_date) in types.StringTypes:
+        if isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
 

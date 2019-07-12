@@ -17,6 +17,8 @@ from pyasm.widget import IconWdg, IconButtonWdg, SelectWdg, ProdIconButtonWdg, T
 
 from tactic.ui.common import BaseRefreshWdg
 
+import six
+basestring = six.string_types
 
 class WizardWdg(BaseRefreshWdg):
     ARGS_KEYS = {

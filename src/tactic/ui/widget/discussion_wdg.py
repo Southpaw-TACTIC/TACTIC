@@ -1361,7 +1361,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     processes.append(p)
         else:
             # if no workflow, then display alphabetically
-            processes = process_notes.keys()
+            processes = list(process_notes.keys())
             processes.sort()
 
 

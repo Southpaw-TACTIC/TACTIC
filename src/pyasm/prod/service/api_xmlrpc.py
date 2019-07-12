@@ -313,7 +313,10 @@ API_MODE = {
         "query",
         "eval",
 
+        # TODO: Probably harmless
         "get_task_status_colors",
+        "get_widget_setting",
+        "set_widget_setting"
     }
 } 
 
@@ -6505,7 +6508,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
             # delete the transaction if it is empty
             transaction_id = state.get_state("transaction")
             if transaction_id:
-                transaction = TransactionLog.get_by_id(transaction_id)
+                sudo = Sudo()
+                try:
+                    transaction = TransactionLog.get_by_id(transaction_id)
+                finally:
+                    sudo.exit()
                 xml = transaction.get_xml_value("transaction")
                 nodes = xml.get_nodes("transaction/*")
                 if not nodes:

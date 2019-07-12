@@ -253,7 +253,6 @@ class CherryPyStartup(CherryPyStartup20):
                     return html
             """
 
-
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
             html_response = []
@@ -265,7 +264,7 @@ class CherryPyStartup(CherryPyStartup20):
             html_response = "\n".join(html_response)
 
             # this response.body is not needed, can be commented out in the future
-            response.body = ''
+            response.body = None
             return html_response
 
 
