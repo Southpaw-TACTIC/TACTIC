@@ -690,6 +690,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 raise TacticException("Mako variable 'context' has been redefined.  Please use another variable name")
             else:
                 print("Error in view [%s]" % self.view)
+                print(e)
                 exception_message = exceptions.text_error_template().render()
                 message = "Error in view [%s]: %s" % (self.view, exception_message)
                 ExceptionLog.log(e, message=message)
