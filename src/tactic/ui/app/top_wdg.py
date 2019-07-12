@@ -1056,7 +1056,9 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
-
+        Container.append_seq("Page:js", "%s/moment.min.js" % spt_js_url)
+        Container.append_seq("Page:js", "%s/moment-timezone.min.js" % spt_js_url)
+        
         Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
         # viewer.js from pdfjs may not be needed in the future. For now,
         # it was added for KYC, which requires this. (added 2019-02)
