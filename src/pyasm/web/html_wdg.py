@@ -1036,7 +1036,7 @@ class HtmlElement(Widget):
     #
     def generate_command_key(self, cmd, ticket=None):
         if ticket and not ticket.isalnum():
-            raise Exception("No a valid ticket")
+            raise Exception("No valid ticket")
 
         from pyasm.common import jsondumps
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)

@@ -19,7 +19,9 @@ os.environ['TACTIC_APP_SERVER'] = "cherrypy"
 os.environ['TACTIC_MODE'] = "development"
 os.environ['TACTIC_CLEANUP'] = "true"
 
+
 import tacticenv
+# This will also set some paths
 from pyasm.common import Environment, Config
 
 tactic_install_dir = tacticenv.get_install_dir()

@@ -1054,7 +1054,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                 spt.app_busy.show("Deleting Project ["+bvr.project_code+"]")
                 var error_message = "Error deleting project ["+bvr.project_code+"]";
                 try {
-                    server.start({'title': 'Deleted Project ', 'description': 'Deleted Project [' + bvr.project_code + ']'});
                     server.execute_cmd(class_name, kwargs);
                     success = true;
                 }
@@ -1089,7 +1088,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
                 var top = bvr.src_el.getParent(".spt_popup");
                 spt.popup.destroy(top);
-                server.finish();
 
 
             }, 100);

@@ -3842,9 +3842,11 @@ class SObject(object):
 
     def handle_commit_security(self):
 
+        from pyasm.security import Sudo
+
         # certain tables can only be written by admin
         security = Environment.get_security()
-        if security.is_admin():
+        if security.is_admin() or Sudo.is_sudo():
             return True
 
         search_type = self.get_base_search_type()

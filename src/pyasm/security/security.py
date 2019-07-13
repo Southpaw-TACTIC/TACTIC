@@ -959,11 +959,16 @@ class Site(object):
             sudo = Sudo()
             try:
 
+                # create a new security
                 security = Security()
                 security._is_logged_in = True
                 security._login = cur_security._login
                 LoginInGroup.clear_cache()
                 security._find_all_login_groups()
+
+                # copy the ticket 
+                ticket = cur_security.get_ticket()
+                security._ticket = ticket
 
                 security.add_access_rules()
                 # initialize a new security
@@ -972,7 +977,6 @@ class Site(object):
                 security_list.append(cur_security)
             finally:
                 sudo.exit()
-
 
         try:
             # check if user is allowed to see the site

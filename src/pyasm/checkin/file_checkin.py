@@ -99,7 +99,7 @@ class FileCheckin(BaseCheckin):
             
 
         if source_paths: 
-            if type(source_paths) != types.StringType:
+            if not isinstance(source_paths, basestring):
                 self.source_paths = source_paths
             else:
                 self.source_paths = [source_paths]

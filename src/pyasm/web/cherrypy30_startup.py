@@ -126,11 +126,11 @@ class CherryPyStartup(CherryPyStartup20):
                 eval("cherrypy.root.tactic.%s" % project_code)
         # if project_code is empty , it raises SyntaxError
         except (AttributeError, SyntaxError) as e:
-            print("WARNING: ", e)
+            print("WARNING CherryPyStartup: ", e)
             has_project = False
             has_site = True
         except Exception as e:
-            print("WARNING: ", e)
+            print("WARNING CherryPyStartup: ", e)
             has_project = False
         else:
             has_project = True
@@ -147,7 +147,7 @@ class CherryPyStartup(CherryPyStartup20):
                 from pyasm.widget import UploadServerWdg
                 try:
                     from pyasm.web import WebContainer
-                    from cherrypy30_adapter import CherryPyAdapter
+                    from .cherrypy30_adapter import CherryPyAdapter
 
                     # clear the buffer
                     WebContainer.clear_buffer()

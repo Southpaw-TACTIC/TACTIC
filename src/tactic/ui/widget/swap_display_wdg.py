@@ -16,6 +16,9 @@ from pyasm.widget import IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
 
+import six
+basestring = six.string_types
+
 
 class SwapDisplayWdg(BaseRefreshWdg):
     '''This swap display is a very light version which makes use of

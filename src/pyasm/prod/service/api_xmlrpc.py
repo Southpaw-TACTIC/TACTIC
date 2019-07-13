@@ -303,6 +303,7 @@ TRANS_OPTIONAL_METHODS = {
 API_MODE = {
     "closed": {
         "execute_cmd",
+        "execute_python_script", # should this be allowed?
         "get_widget",
         "get_ticket",
         "ping",
@@ -5507,7 +5508,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if class_name.startswith("$"):
                 key = class_name.lstrip("$")
                 tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-                f = open("%s/key_%s" % (tmp_dir,key), 'r')
+                path = "%s/key_%s" % (tmp_dir,key)
+                if not os.path.exists(path):
+                    print("ERROR: Command path [%s] not found" % path)
+                    raise Exception("Command key not valid")
+
+                f = open(path, 'r')
                 data = f.read()
                 f.close()
                 data = jsonloads(data)

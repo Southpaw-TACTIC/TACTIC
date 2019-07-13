@@ -878,7 +878,9 @@ class Sql(Base):
             raise SqlException(str(e))
         except self.pgdb.Error as e:
             if not quiet:
-                if isinstance(query, unicode):
+                if IS_Pv3:
+                    wrong_query = query
+                elif isinstance(query, unicode):
                     wrong_query = query.encode('utf-8')
                 else:
                     wrong_query = unicode(query, errors='ignore').encode('utf-8')

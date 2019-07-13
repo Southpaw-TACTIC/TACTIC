@@ -1810,7 +1810,7 @@ class PluginTools(PluginBase):
 
 
 
-
+                    sudo = Sudo()
                     try:
                         if commit:
                             try:
@@ -1837,6 +1837,9 @@ class PluginTools(PluginBase):
                     except UnicodeDecodeError as e:
                         print("Skipping due to unicode decode error: [%s]" % statement_str)
                         continue
+
+                    finally:
+                        sudo.exit()
 
 
                 if table:
