@@ -19,7 +19,7 @@ sobjects = json.loads(ret_val.text)
 import pprint
 pprint.pprint(sobjects)
 
-print "---"
+print("---")
 
 
 data = {
@@ -29,10 +29,10 @@ data = {
 }
 ret_val = requests.post(url, data)
 sobject = json.loads(ret_val.text)
-print "sobject: ", sobject.get("code")
+print("sobject: ", sobject.get("code"))
 
 
-print "---"
+print("---")
 
 
 data = {
@@ -48,7 +48,7 @@ data = {
 }
 ret_val = requests.post(url, data)
 info = json.loads(ret_val.text)
-print "sobject: ", info
+print("sobject: ", info)
 
 
 
@@ -58,7 +58,7 @@ data = {
 }
 ret_val = requests.post(url, data)
 info = json.loads(ret_val.text)
-print "sobject: ", info
+print("sobject: ", info)
 
 
 

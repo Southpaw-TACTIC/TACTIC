@@ -38,10 +38,10 @@ class PopulateSObjectListCmd(Command):
 
     def populate_search_type(self, search_type):
 
-        print search_type
+        print(search_type)
         search = Search(search_type)
         sobjects = search.get_sobjects()
-        print "#: ", len(sobjects)
+        print("#: ", len(sobjects))
 
         from tactic.command import GlobalSearchTrigger
 
@@ -75,15 +75,15 @@ if __name__ == '__main__':
         sthpw_sql = DbContainer.get("sthpw")
         statement = 'DELETE from sobject_list;'
         sthpw_sql.do_update(statement)
-        print
-        print "Deleting of existing entries finished.\n"
+        print(" ")
+        print("Deleting of existing entries finished.\n")
     elif answer == 'n':
         sys.exit(0)
     else:
-        print "Anwer y or n. Exit..."
+        print("Anwer y or n. Exit...")
         sys.exit(0)
     command = PopulateSObjectListCmd()
     Command.execute_cmd(command)
-    print
-    print "Finished updating sobject_list table."
+    print(" ")
+    print("Finished updating sobject_list table.")
 

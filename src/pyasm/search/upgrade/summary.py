@@ -24,9 +24,9 @@ if __name__ == '__main__':
 
 
     if len(args) != 2:
-        print "Usage: summary.py <target> <standard>"
-        print "e.g. if you have a 3d project named 'dragonball', run:"
-        print "       summary.py dragonball prod "
+        print("Usage: summary.py <target> <standard>")
+        print("e.g. if you have a 3d project named 'dragonball', run:")
+        print("       summary.py dragonball prod ")
         sys.exit()
 
     cwd = os.path.dirname(executable)

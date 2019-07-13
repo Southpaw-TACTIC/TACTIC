@@ -24,7 +24,7 @@ class ModCodeCmd(Command):
             code_expr = "%%s%%0.%dd" % padding
             new_code = code_expr % (prefix, id)
             old_code = sobject.get_code()
-            print "Updating widget_config  [%s] with new code [%s]"%(id ,new_code)
+            print("Updating widget_config  [%s] with new code [%s]"%(id ,new_code))
             sobject.set_value("code", new_code )
             sobject.commit(triggers=False)
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     
     args = sys.argv[1:]
     if len(args) != 1:
-        print "Please provide a valid project code!"
+        print("Please provide a valid project code!")
         sys.exit(2)
 
     my_login = 'admin'

@@ -23,6 +23,9 @@ from pyasm.command import FileUpload
 
 import shutil, re
 
+import six
+basestring = six.string_types
+
 
 class UploadServerWdg(Widget):
 
@@ -140,7 +143,7 @@ class UploadServerWdg(Widget):
         if isinstance(field_storage, basestring):
             return
         path = field_storage.get_path()
-        
+
         # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
         if action == "create":
@@ -152,7 +155,7 @@ class UploadServerWdg(Widget):
             f.seek(0)
 
             #if header.startswith("data:image/png;base64") or header.startswith("data:image/jpeg;base64"):
-            if re.search("^data:([\w\-\_]+)\/([\w\-\_]+);base64", header):
+            if re.search(b"^data:([\w\-\_]+)\/([\w\-\_]+);base64", header):
                 base_decode = True
             else:
                 base_decode = False
@@ -160,7 +163,6 @@ class UploadServerWdg(Widget):
             if os.name != 'nt':
                 f.close()
 
-          
         if html5_mode and file_name and path and not base_decode:
             
             '''

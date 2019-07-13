@@ -1,0 +1,50 @@
+repos:
+- repo: git://github.com/asottile/add-trailing-comma
+  rev: v0.7.0
+  hooks:
+  - id: add-trailing-comma
+
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    sha: v1.1.1
+    hooks:
+    -   id: trailing-whitespace
+    -   id: flake8
+        args:
+        # W503 ignored for https://github.com/PyCQA/pycodestyle/issues/498
+        - --ignore=W503
+        exclude: cheroot/test/test_(http|config_server).py
+    -   id: check-merge-conflict
+    -   id: double-quote-string-fixer
+    -   id: end-of-file-fixer
+    -   id: name-tests-test
+        include: cheroot/test/
+        args:
+        - --django
+        exclude: tests/dist-check.py
+    -   id: debug-statements
+    -   id: check-added-large-files
+    -   id: check-ast
+    -   id: check-byte-order-marker
+    -   id: check-case-conflict
+    # disabled due to pre-commit/pre-commit-hooks#159
+    #-   id: check-docstring-first
+    -   id: check-json
+    -   id: check-symlinks
+    -   id: check-yaml
+    -   id: detect-private-key
+    -   id: requirements-txt-fixer
+
+-   repo: git://github.com/chewse/pre-commit-mirrors-pydocstyle
+    sha: v2.1.1
+    hooks:
+    -   id: pydocstyle
+
+-   repo: git://github.com/Lucas-C/pre-commit-hooks
+    sha: v1.1.1
+    hooks:
+    -   id: remove-tabs
+
+-   repo: git://github.com/Lucas-C/pre-commit-hooks-lxml
+    sha: v1.0.2
+    hooks:
+    -   id: forbid-html-img-without-alt-text

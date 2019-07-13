@@ -20,7 +20,7 @@ from tactic.ui.common import BaseRefreshWdg
 from pyasm.widget import IconWdg, RadioWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg
 
-from scm_dir_list_wdg import get_onload_js as scm_get_onload_js
+from .scm_dir_list_wdg import get_onload_js as scm_get_onload_js
 
 class ChangelistWdg(BaseRefreshWdg):
 
