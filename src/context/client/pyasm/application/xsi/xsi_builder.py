@@ -13,8 +13,8 @@
 __all__ = ['XSIBuilder']
 
 
-from xsi_environment import XSIEnvironment
-from xsi import XSI, XSINodeNaming
+from .xsi_environment import XSIEnvironment
+from .xsi import XSI, XSINodeNaming
 
 from pyasm.application.common import SessionBuilder
 

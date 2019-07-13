@@ -16,9 +16,9 @@ import re, os
 
 from pyasm.application.common import NodeData
 
-from maya_app import Maya, MayaNodeNaming
-from maya_environment import MayaEnvironment
-from maya_parser import *
+from .maya_app import Maya, MayaNodeNaming
+from .maya_environment import MayaEnvironment
+from .maya_parser import *
 
 
 class MayaImpl(object):
