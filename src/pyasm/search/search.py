@@ -261,7 +261,7 @@ class Search(Base):
         search_type = self.get_base_search_type()
         api_mode = Config.get_value("security", "api_mode")
 
-        if api_mode in ['open', '']:
+        if api_mode in ['open', '', None]:
             return
 
         #if user in ['admin']:
