@@ -407,10 +407,10 @@ class Common(Base):
         return integer
     randint = staticmethod(randint)
 
-    def randchoice(key):
-        num = len(key)
+    def randchoice(obj):
+        num = len(obj)
         index = Common.randint(0, num)
-        return key[index]
+        return obj[index]
     randchoice = staticmethod(randchoice)
 
 
