@@ -127,8 +127,8 @@ class SqlTest(unittest.TestCase):
         # search by search_key
         search_key = sobject.get_search_key()
         test_sobject = Search.get_by_search_key(search_key)
-        print "search_key: ", search_key
-        print "test: ", test_sobject.get_data()
+        print("search_key: ", search_key)
+        print("test: ", test_sobject.get_data())
         self.assertNotEquals(None, test_sobject)
 
 
@@ -144,25 +144,25 @@ class SqlTest(unittest.TestCase):
         return
 
 
-        print "---"
+        print("---")
         count = search.get_count()
-        print "count: ", count
+        print("count: ", count)
 
 
         search.add_order_by("author")
         sobjects = search.get_sobjects()
         for sobject in sobjects:
-            print sobject.get_value("_id"), sobject.get_value("author")
+            print(sobject.get_value("_id"), sobject.get_value("author"))
 
 
-        print "---"
+        print("---")
 
         search = Search("table/posts?project=mongodb")
         search.add_order_by("author")
         search.add_filter("author", "Fred", op=">")
         sobjects = search.get_sobjects()
         for sobject in sobjects:
-            print sobject.get_value("_id"), sobject.get_value("author")
+            print(sobject.get_value("_id"), sobject.get_value("author"))
 
 
 

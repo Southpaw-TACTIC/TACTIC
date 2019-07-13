@@ -69,14 +69,13 @@ if __name__ == '__main__':
     args = sys.argv[1:]
 
     if len(args) != 2:
-        print "Usage: schema_dumper.py <target_project> <project_type>"
+        print("Usage: schema_dumper.py <target_project> <project_type>")
         sys.exit() 
 
     target_project = args[0]
     project_type = args[1]
     if project_type not in ['sthpw','prod','flash','game','design']:
-        print "Usage: schema_dumper.py <target_project> <project_type>. Invalid \
-            project type [%s]" % project_type
+        print("Usage: schema_dumper.py <target_project> <project_type>. Invalid project type [%s]" % project_type)
         sys.exit()
 
     cwd = os.path.dirname(executable)

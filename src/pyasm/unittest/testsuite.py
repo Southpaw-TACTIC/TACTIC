@@ -79,7 +79,7 @@ def main(args):
     for test_to_perform in tests_to_perform:
         if test_to_perform not in test_classes:
             print
-            print "ERROR: Test [%s] does not exist in Test Suite" % test_to_perform
+            print("ERROR: Test [%s] does not exist in Test Suite" % test_to_perform)
             return
 
 

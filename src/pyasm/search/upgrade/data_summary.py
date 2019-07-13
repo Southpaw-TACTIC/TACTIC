@@ -23,7 +23,7 @@ if __name__ == '__main__':
     args = sys.argv[1:]
 
     if len(args) != 3:
-        print "Usage: data_summary.py <target> <standard> <table>"
+        print("Usage: data_summary.py <target> <standard> <table>")
         sys.exit()
 
     target_project = args[0]

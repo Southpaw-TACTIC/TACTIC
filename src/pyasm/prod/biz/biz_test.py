@@ -44,7 +44,7 @@ class BizTest(unittest.TestCase):
         children = parent.get_all_children(child_search_type)
         for child in children:
             reference = child.get_reference(ref_search_type)
-            print reference.get_code()
+            print(reference.get_code())
 
 
 
@@ -63,7 +63,7 @@ class BizTest(unittest.TestCase):
         instances = shot.get_all_children(instance_search_type)
         for instance in instances:
             asset = instance.get_parent(asset_search_type)
-            print asset.get_code()
+            print(asset.get_code())
 
 
 
