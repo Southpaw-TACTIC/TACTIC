@@ -23,12 +23,12 @@ def main(site=None):
 
 
     # start up the sync system ...
-    print "Starting Transaction Sync Service ..."
+    print("Starting Transaction Sync Service ...")
     from tactic.command import TransactionQueueManager
     TransactionQueueManager.start()
 
     # start up the sync system ...
-    print "Starting Watch Folder Service ..."
+    print("Starting Watch Folder Service ...")
     from tactic.command import WatchServerFolderTask
     WatchServerFolderTask.start()
 
@@ -37,7 +37,7 @@ def main(site=None):
         try:
             time.sleep(1)
         except (KeyboardInterrupt, SystemExit) as e:
-            print "Exiting ..."
+            print("Exiting ...")
             raise
 
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:", ["site"])
     except getopt.error, msg:
-        print msg
+        print(msg)
         sys.exit(2)
     # process options
     site = None

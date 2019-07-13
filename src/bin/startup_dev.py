@@ -52,9 +52,9 @@ def startup(port, server=""):
         file.close()
     except IOError as e:
         if e.errno == 13:
-            print
+            print(" ")
             print("Permission error opening the file [%s/pid.%s]." % (log_dir,port))
-            print
+            print(" ")
             if os.name=='nt':
                 print("You may need to run this shell as the Administrator.")
             else:
@@ -64,9 +64,9 @@ def startup(port, server=""):
 
 
     if os.name != 'nt' and os.getuid() == 0:
-        print 
+        print(" ") 
         print("You should not run this as root. Run it as the Web server process's user. e.g. apache")
-        print 
+        print(" ") 
         sys.exit(0)
 
     import cherrypy

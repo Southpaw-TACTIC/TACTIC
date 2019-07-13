@@ -29,7 +29,7 @@ class AddFlashShotCmd(Command):
             shot_code = "%s-%s" %(self.seq_code, shot_code)
             shot = FlashShot.get_by_code(shot_code)
             if not shot:
-                print "[%s] to be created." %shot_code
+                print("[%s] to be created." %shot_code)
                 shot = FlashShot.create(shot_code, self.seq_code, 'Shot %s' %shot_code)
                 # assuming this is one of the values in project settings
                 # shot_status
@@ -37,8 +37,8 @@ class AddFlashShotCmd(Command):
                 shot.commit()
                 count += 1
             else:
-                print "[%s] already exists." %shot_code
-        print "%d shot(s) created." %count
+                print("[%s] already exists." %shot_code)
+        print("%d shot(s) created." %count)
        
 class Usage(Exception):
     def __init__(self, msg):
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             raise Usage("The episode code [%s] has not been registered for "\
                 "project [%s] in TACTIC. Please Insert it in the Episodes tab first." %(args[0], project_code))
     except Usage as e:
-        print e.msg
+        print(e.msg)
         sys.exit(2)
 
     command = AddFlashShotCmd(seq.get_code())

@@ -71,20 +71,20 @@ def write_pid(idx):
         file.close()
     except IOError as e:
         if e.errno == 13:
-            print
-            print "Permission error opening the file [%s/startup_queue.%s]." % (log_dir, idx)
-            print
+            print(" ")
+            print("Permission error opening the file [%s/startup_queue.%s]." % (log_dir, idx))
+            print(" ")
             if os.name == 'nt':
-                print "You may need to run this shell as the Administrator."
+                print("You may need to run this shell as the Administrator.")
             else:
-                print "The file should be owned by the same user that runs this startup_queue.py process."
+                print("The file should be owned by the same user that runs this startup_queue.py process.")
 
             sys.exit(2)
 
     if os.name != 'nt' and os.getuid() == 0:
-        print 
-        print "You should not run this as root. Run it as the Web server process's user. e.g. tactic or apache"
-        print
+        print(" ") 
+        print("You should not run this as root. Run it as the Web server process's user. e.g. tactic or apache")
+        print(" ")
         sys.exit(0)
 
 

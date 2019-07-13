@@ -25,8 +25,8 @@ class FixDay(Command):
         search = Search('sthpw/work_hour')
         sobjects = search.get_sobjects()
         if verbose:
-            print "Searching %s" % search_type
-            print "  ... found %s sobjects" % len(sobjects)
+            print("Searching %s" % search_type)
+            print("  ... found %s sobjects" % len(sobjects))
 
         for i, sobject in enumerate(sobjects):
             # change back to pst for day that has finite hours
@@ -36,19 +36,19 @@ class FixDay(Command):
                 if not day.endswith('00:00:00'):
                     date, hrs = day.split(' ')
                     new_day = '%s 00:00:00'%date
-                    print "code: %s [%s]" %(sobject.get_code(), day)
+                    print("code: %s [%s]" %(sobject.get_code(), day))
                     date = parser.parse(new_day)
                     date = date + relativedelta(days=1)
-                    print "adjusted day ", date
+                    print("adjusted day ", date)
                     sobject.set_value("day", str(date))
                     sobject.commit(triggers=False)
                     self.count += 1
 
             except Exception as e:
                 if verbose:
-                    print "ERROR: ", e, " for sobject: ", sobject.get_search_type(), sobject.get_code()
+                    print("ERROR: ", e, " for sobject: ", sobject.get_search_type(), sobject.get_code())
 
-        print 'Fixed [%s] work hours offset'%self.count
+        print('Fixed [%s] work hours offset'%self.count)
             
 if __name__ == '__main__':
     Batch(login_code='admin')
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
     except getopt.error, msg:
-        print msg
+        print(msg)
         sys.exit(2)
 
     verbose = False
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # process options
     for o, a in opts:
         if o in ("-h", "--help"):
-            print "Fix the work hours from GMT back to PST where applicable"
+            print("Fix the work hours from GMT back to PST where applicable")
             sys.exit(0)
         if o in ("-v", "--verbose"):
             verbose = True

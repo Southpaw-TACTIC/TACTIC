@@ -52,10 +52,10 @@ if __name__ == '__main__':
 
 
     if len(args) == 0:
-        print "Must supply a project code. Usually it's the name of the file before the version number."
-        print "python create_template.py -m create -t template <project_code>"
-        print "python create_template.py -m install -f /tmp/some_template-1.0.0.zip <project_code>"
-        print "python create_template.py -m install -t <template_project_code> <project_code>"
+        print("Must supply a project code. Usually it's the name of the file before the version number.")
+        print("python create_template.py -m create -t template <project_code>")
+        print("python create_template.py -m install -f /tmp/some_template-1.0.0.zip <project_code>")
+        print("python create_template.py -m install -t <template_project_code> <project_code>")
         sys.exit(0)
 
 
@@ -73,11 +73,11 @@ if __name__ == '__main__':
             template_code = options.template
             install(project_code, path=path, template_code=template_code)
         else :
-            print "Mode [%s] not support.  Must be either create or install" % options.get("mode")
+            print("Mode [%s] not support.  Must be either create or install" % options.get("mode"))
             sys.exit(0)
     except TacticException as e:
-        print
-        print e.__str__()
+        print(" ")
+        print(e.__str__())
         sys.exit(2)
 
 

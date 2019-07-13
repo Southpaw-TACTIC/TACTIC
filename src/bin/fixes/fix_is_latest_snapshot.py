@@ -40,7 +40,7 @@ class FixIsLatestSnapshotCmd(Command):
         search.add_order_by("context")
         search.add_order_by("version desc")
         snapshots = search.get_sobjects()
-        print "found [%s] snapshots" % len(snapshots)
+        print("found [%s] snapshots" % len(snapshots))
 
         current_search_type = None
         current_search_id = None
@@ -62,18 +62,18 @@ class FixIsLatestSnapshotCmd(Command):
                     change_count += 1
                     try:
                         snapshot.set_latest()
-                        print "\t... set to is latest! ", search_type, search_id, context, version
+                        print("\t... set to is latest! ", search_type, search_id, context, version)
                     except Exception as e:
-                        print "\t ... WARNING: could not set latest:: ", search_type, search_id, context, version
-                        print "\t ... ", e
+                        print("\t ... WARNING: could not set latest:: ", search_type, search_id, context, version)
+                        print("\t ... ", e)
 
             current_search_type = search_type
             current_search_id = search_id
             current_context = context
             current_version = version   
 
-        print "Total is_latest: ", count
-        print "Total is_latest set: ", change_count
+        print("Total is_latest: ", count)
+        print("Total is_latest set: ", change_count)
 if __name__ == '__main__':
     Batch()
     Project.set_project("admin")
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     cmd = FixIsLatestSnapshotCmd()
     Command.execute_cmd(cmd, call_trigger=False)
 
-    print float(int( (time.time() - start) * 1000)) / 1000, "seconds"
+    print(float(int( (time.time() - start) * 1000)) / 1000, "seconds")
     
 
 
