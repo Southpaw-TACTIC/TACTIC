@@ -44,7 +44,7 @@ class FixDay(Command):
                     sobject.commit(triggers=False)
                     self.count += 1
 
-            except Exception, e:
+            except Exception as e:
                 if verbose:
                     print "ERROR: ", e, " for sobject: ", sobject.get_search_type(), sobject.get_code()
 

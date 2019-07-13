@@ -67,7 +67,7 @@ def main(args):
 
         set_string_in_version_file(SERVER_FILE_PATH_LIST, 'VERSION', version_server_new)
 
-    except Exception, e:
+    except Exception as e:
         print 'Error in set_version.py->update_version_file_server() or update_version_file_client(): ', e.__str__()
         print 'Updating version files failed.  Process terminated.'
         exit()
@@ -75,7 +75,7 @@ def main(args):
     try:
         run_create_zip()
 
-    except Exception, e:
+    except Exception as e:
         print 'Error in set_version.py->run_create_zip(): ', e.__str__()
         print 'Creating zip file failed.  Process terminated.'
         exit()

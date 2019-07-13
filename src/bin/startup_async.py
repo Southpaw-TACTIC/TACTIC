@@ -36,7 +36,7 @@ def main(site=None):
     while 1:
         try:
             time.sleep(1)
-        except (KeyboardInterrupt, SystemExit), e:
+        except (KeyboardInterrupt, SystemExit) as e:
             print "Exiting ..."
             raise
 

@@ -75,7 +75,7 @@ class FixRelativeDirCmd(Command):
 
 
 
-            except SObjectNotFoundException, e:
+            except SObjectNotFoundException as e:
                 # Remove some dangling unittest
                 if snapshot_code.endswith("UNI"):
                     file.delete()
@@ -87,13 +87,13 @@ class FixRelativeDirCmd(Command):
 
                 continue
 
-            except TacticException, e:
+            except TacticException as e:
                 print "WARNING: Problem found on file [%s]" % file.get_code()
                 print "\t", e.__str__()
                 continue
 
 
-            except Exception, e:
+            except Exception as e:
                 print "ERROR: Error found on file [%s]" % file.get_code()
                 print "\t", e.__str__()
                 if e.__str__() == 'list index out of range':

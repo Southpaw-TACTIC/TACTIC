@@ -43,7 +43,7 @@ def fix_search_code(search_types=None, verbose=False):
                     continue
                 else:
                     parent_code = parent.get_value("code")
-            except Exception, e:
+            except Exception as e:
                 if verbose:
                     print "ERROR: ", e, " for sobject: ", sobject.get_search_type(), sobject.get_code()
                 parent_code = None

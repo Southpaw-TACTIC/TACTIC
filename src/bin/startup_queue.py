@@ -48,7 +48,7 @@ def main(options, site=None):
         while 1:
             try:
                 time.sleep(1)
-            except (KeyboardInterrupt, SystemExit), e:
+            except (KeyboardInterrupt, SystemExit) as e:
                 #print "Exiting ..."
                 raise
 
@@ -69,7 +69,7 @@ def write_pid(idx):
         pid = os.getpid()
         file.write(str(pid))
         file.close()
-    except IOError, e:
+    except IOError as e:
         if e.errno == 13:
             print
             print "Permission error opening the file [%s/startup_queue.%s]." % (log_dir, idx)

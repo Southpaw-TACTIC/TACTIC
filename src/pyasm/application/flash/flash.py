@@ -272,7 +272,7 @@ class Flash(Application):
         #    print "write!!"
         #    file.write( resp.read() )
         #    file.close()
-        #except urllib2.URLError, e:
+        #except urllib2.URLError as e:
         #    raise Exception('%s - %s' % (e,url))
         f = urllib.urlopen(url)
         file = open(to_path, "wb")

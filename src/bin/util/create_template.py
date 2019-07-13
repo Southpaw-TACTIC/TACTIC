@@ -75,7 +75,7 @@ if __name__ == '__main__':
         else :
             print "Mode [%s] not support.  Must be either create or install" % options.get("mode")
             sys.exit(0)
-    except TacticException, e:
+    except TacticException as e:
         print
         print e.__str__()
         sys.exit(2)

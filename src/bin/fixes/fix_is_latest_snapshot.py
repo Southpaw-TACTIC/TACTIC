@@ -63,7 +63,7 @@ class FixIsLatestSnapshotCmd(Command):
                     try:
                         snapshot.set_latest()
                         print "\t... set to is latest! ", search_type, search_id, context, version
-                    except Exception, e:
+                    except Exception as e:
                         print "\t ... WARNING: could not set latest:: ", search_type, search_id, context, version
                         print "\t ... ", e
 

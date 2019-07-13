@@ -63,7 +63,7 @@ if __name__ == '__main__':
         if not seq:
             raise Usage("The sequence code [%s] has not been registered for "\
                 "project [%s] in TACTIC. Please Insert it in the Sequences tab first." %(args[0], project_code))
-    except Usage, e:
+    except Usage as e:
         print e.msg
         sys.exit(2)
 
