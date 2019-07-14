@@ -128,6 +128,8 @@ class BaseNodeWdg(BaseRefreshWdg):
         top.add_attr("spt_border_color", border_color)
         top.add_attr("spt_box_shadow", box_shadow)
 
+        top.add_style("margin: 0px auto")
+
         shape = self.get_shape()
         if shape == "star":
             self.set_star_shape()
@@ -519,11 +521,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 spt.pipeline.delete_selected();
 
             } else if (key == "t") {
-                var class_name = 'tactic.ui.tools.PipelineProcessTypeWdg';
-                var kwargs = {
-                };
-                spt.panel.load_popup("Process Types", class_name, kwargs);
- 
+                spt.process_tool.toggle_side_bar(bvr.src_el);
             }
 
 
@@ -3737,13 +3735,14 @@ spt.pipeline._rename_node = function(node, value) {
 spt.pipeline.set_rename_mode = function(node) {
     var name = spt.pipeline.get_node_name(node);
     var kwargs = {
-        name: name
+        name: name,
     };
 
     var class_name = "tactic.ui.tools.NodeRenameWdg"
-
     var popup = spt.panel.load_popup("Rename Node", class_name, kwargs);
     popup.activator = node;
+
+
 }
 
 
