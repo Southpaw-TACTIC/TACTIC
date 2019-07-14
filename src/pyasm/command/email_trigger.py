@@ -458,7 +458,7 @@ class SendEmail(Command):
         cc = self.kwargs.get('cc') or []
         bcc = self.kwargs.get('bcc') or []
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
