@@ -16,11 +16,11 @@ from pyasm.search import Search
 from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget
 from pyasm.widget import IconWdg
 
-import os
+import os, six
 
 from tactic.ui.common import BaseRefreshWdg
 
-from reports_wdg import ReportsWdg
+from .reports_wdg import ReportsWdg
 class DashboardsWdg(ReportsWdg):
 #class DashboardsWdg(BaseRefreshWdg):
     '''This is the welcome widget widget will appear on creation of a new
@@ -201,7 +201,7 @@ class DashboardsWdg(ReportsWdg):
 
             if image:
                 div = DivWdg()
-                if isinstance(image, basestring):
+                if isinstance(image, six.string_types):
                     image = image.upper()
                     image = eval("IconWdg('', IconWdg.%s)" % image)
                     div.add_style("margin-left: 15px")

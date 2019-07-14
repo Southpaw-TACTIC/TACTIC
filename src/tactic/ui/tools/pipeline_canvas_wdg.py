@@ -456,6 +456,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
 
+        outer.add_attr("onmousemove", "spt.pipeline._mouse_pos = {x: event.clientX, y: event.clientY}")
 
         outer.add_behavior( {
             'type': 'keyup',
@@ -522,6 +523,54 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             } else if (key == "t") {
                 spt.process_tool.toggle_side_bar(bvr.src_el);
+
+            } else if (evt.control == true && key == "c") {
+                var nodes = spt.pipeline.get_selected_nodes();
+                if (nodes) {
+                    spt.pipeline.clipboard = nodes;
+                    spt.notify.show_message(nodes.length + " Nodes Copied");
+                }
+
+            } else if (evt.control == true && key == "x") {
+                var nodes = spt.pipeline.get_selected_nodes();
+                if (nodes) {
+                    spt.pipeline.clipboard = nodes;
+                    for (var i = 0; i < nodes.length; i++ ) {
+                        spt.pipeline.remove_node(nodes[i]);
+                    }
+                    spt.notify.show_message(nodes.length + " Nodes Cut");
+                }
+
+            } else if (evt.control == true && key == "v") {
+                spt.pipeline.unselect_all_nodes();
+                var nodes = spt.pipeline.clipboard;
+                if (nodes) {
+                    var mouse_pos = {x: 0, y: 0};
+                    var mouse_pos = spt.pipeline._mouse_pos;
+                    var canvas_pos = bvr.src_el.getPosition()
+                    mouse_pos.x = mouse_pos.x - canvas_pos.x;
+                    mouse_pos.y = mouse_pos.y - canvas_pos.y;
+                    console.log(mouse_pos);
+                    var first_pos = spt.pipeline.get_position(nodes[0]);
+                    for (var i = 0; i < nodes.length; i++ ) {
+                        var node = nodes[i];
+
+                        var node_type = spt.pipeline.get_node_type(node);
+                        var node_name = null;
+
+                        var pos = spt.pipeline.get_position(node);
+                        var new_pos = {
+                            x: mouse_pos.x + pos.x - first_pos.x,
+                            y: mouse_pos.y + pos.y - first_pos.y
+                        };
+
+                        var new_node = spt.pipeline.add_node(node_name, new_pos.x, new_pos.y, {
+                            node_type: node_type,
+                        });
+                        spt.pipeline.select_node(new_node);
+                    }
+                    spt.notify.show_message(nodes.length + " Nodes Created");
+                }
             }
 
 

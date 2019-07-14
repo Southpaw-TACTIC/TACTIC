@@ -9641,10 +9641,8 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
       <display class="tactic.ui.tools.BaseNodeWdg"/>
     </element>
     <element name="info">
-      <display class="spt.tools.microservice.RestProcessInfoWdg"/>
     </element>
     <element name="process">
-      <display class="spt.tools.microservice.RestNodeHandler"/>
     </element>
             </%s>
             </config>
@@ -9689,7 +9687,6 @@ spt.process_tool.mouse_pos = null;
 spt.process_tool.item_top = null;
 
 spt.process_tool.item_drag_setup = function(evt, bvr, mouse_411) {
-    console.log("setup");
     var el = bvr.src_el.getElement(".spt_custom_node");
     var clone = spt.behavior.clone(el);
     clone.setStyle("position", "absolute");
@@ -9718,13 +9715,16 @@ spt.process_tool.item_drag_motion = function(evt, bvr, mouse_411) {
     var scroll_el = top.getParent(".spt_popup_content");
     if (scroll_el) {
         var scroll = {x: 0, y: scroll_el.scrollTop};
+        var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-2*scroll.y};
     }
     else {
-        var scroll = {x: 0, y: 0};
+        scroll_el = top;
+        //var scroll = {x: 0, y: 0};
+        console.log("xxx: " + scroll_el.scrollTop);
+        var scroll = {x: 0, y: scroll_el.scrollTop};
+        var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-scroll.y};
     }
 
-    var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-2*scroll.y};
-    console.log(new_pos);
     spt.process_tool.item_clone.position( new_pos, {relativeTo: top} );
     //spt.process_tool.item_clone.setStyle("top", item_pos.x+dx);
     //spt.process_tool.item_clone.setStyle("left", item_pos.y+dy);
