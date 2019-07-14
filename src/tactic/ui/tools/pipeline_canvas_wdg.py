@@ -3167,7 +3167,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
                     node_type = default_node_type;
             }
             else {
-                    node_type = "node";
+                    node_type = "manual";
             }
     }
 
