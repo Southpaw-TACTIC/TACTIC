@@ -81,6 +81,7 @@ class EmailHandler(object):
         recipients = set()
 
         expr = self.notification.get_value(column, no_exception=True)
+        
         if expr:
             sudo = Sudo()
 
@@ -101,7 +102,7 @@ class EmailHandler(object):
                     continue
 
                 if part.startswith("@") or part.startswith("{"):
-                    results = Search.eval(part, list=True, env_sobjects=env_sobjects)
+                    results = Search.eval(part, list=True, sobjects=self.sobject, env_sobjects=env_sobjects)
                     # clear the container after each expression eval
                     ExpressionParser.clear_cache()
                     # these can just be login names, get the actual Logins
