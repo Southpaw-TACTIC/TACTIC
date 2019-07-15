@@ -2190,7 +2190,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         td.add("<br/>Using Attributes:")
         td.add_style("padding: 5px")
 
-
         left_selected = self.kwargs.get("from_attr")
         if not left_selected:
             left_selected = "output"
@@ -2236,7 +2235,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
                 from_node = connectors[i].get_from_node();
                 to_node = connectors[i].get_to_node();
-
 
                 if (   (from_node.spt_name == bvr.kwargs.from_node) &&
                        (to_node.spt_name == bvr.kwargs.to_node )     ) {
@@ -8726,7 +8724,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
             .spt_pipeline_document .document-item-content {
                 min-height: 20px;
-                padding: 4px 10px 4px 50px;
+                padding: 4px 10px 4px 10px;
                 width: 100%;
             }
 
