@@ -226,7 +226,7 @@ spt.tab.set_attribute = function(element_name, name, value) {
     var kwargs_str = header.getAttribute("spt_kwargs");
     var kwargs;
     if (kwargs_str != '') {
-        kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"')
         kwargs = JSON.parse(kwargs_str);
     }
     else {
@@ -237,7 +237,7 @@ spt.tab.set_attribute = function(element_name, name, value) {
     header.setAttribute("spt_"+name, value);
 
     kwargs_str = JSON.stringify(kwargs);
-    kwargs_str = kwargs_str.replace(/"/g,"&quote;");
+    kwargs_str = kwargs_str.replace(/"/g,"\&amp;quot\;");
     header.setAttribute("spt_kwargs", kwargs_str);
 
 }
@@ -397,7 +397,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
         header.setAttribute("spt_class_name", class_name);
         var kwargs_str = JSON.stringify(kwargs);
-        kwargs_str = kwargs_str.replace(/\"/,"&quote;");
+        kwargs_str = kwargs_str.replace(/\"/,"\&amp;quot\;");
         header.setAttribute("spt_kwargs", kwargs_str);
         header.setAttribute("spt_element_name", element_name);
         header.setAttribute("spt_title", title);
@@ -470,7 +470,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
             subheader.setAttribute("spt_class_name", class_name);
             var kwargs_str = JSON.stringify(kwargs);
-            kwargs_str = kwargs_str.replace(/\"/,"&quote;");
+            kwargs_str = kwargs_str.replace(/\"/,"\&amp;quot\;");
             subheader.setAttribute("spt_kwargs", kwargs_str);
             subheader.setAttribute("spt_element_name", full_element_name);
             subheader.setAttribute("spt_title", full_title);
@@ -689,7 +689,7 @@ spt.tab.select = function(element_name) {
         kwargs = {};
     }
     else {
-        kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
         kwargs = JSON.parse(kwargs_str);
     }
 
@@ -742,7 +742,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
             kwargs = {};
         }
         else {
-            kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+            kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
             kwargs = JSON.parse(kwargs_str);
         }
     }
@@ -818,7 +818,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
                     // update info on header
                     header.setAttribute("spt_class_name", class_name);
                     var kwargs_str = JSON.stringify(kwargs);
-                    kwargs_str = kwargs_str.replace(/\"/,"&quote;");
+                    kwargs_str = kwargs_str.replace(/\"/,"\&amp;quot\;");
                     header.setAttribute("spt_kwargs", kwargs_str);
                     header.setAttribute("spt_element_name", tab_element_name);
                     header.setAttribute("spt_title", title);
@@ -864,7 +864,7 @@ spt.tab.reload_selected = function() {
     var kwargs_str = header.getAttribute("spt_kwargs");
     var kwargs;
     if (kwargs_str != '') {
-        kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
         kwargs = JSON.parse(kwargs_str);
     }
     else {
@@ -936,7 +936,7 @@ spt.tab.save_state = function() {
 
         var kwargs;
         if (kwargs_str != '') {
-            kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+            kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
             kwargs = JSON.parse(kwargs_str);
         }
         else {
@@ -1149,6 +1149,52 @@ spt.tab.close = function(src_el) {
     else {
        ok(false);
     } 
+}
+
+spt.tab.view_definition = function(bvr) {
+    var activator = spt.smenu.get_activator(bvr);
+    var header = activator;
+    var class_name = header.getAttribute("spt_class_name");
+    var kwargs_str = header.getAttribute("spt_kwargs");
+    var kwargs;
+    if (kwargs_str != '') {
+        console.log(kwargs_str, "huh?");
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
+        console.log(kwargs_str, "fuck");
+        kwargs = JSON.parse(kwargs_str);
+    }
+    else {
+        kwargs = {};
+    }
+
+
+    /* TEST: show widget editor
+    var class_name2 = 'tactic.ui.tools.WidgetEditorWdg';
+    var kwargs2 = {
+        'editor_id': bvr.editor_id,
+        'display_handler': class_name,
+        'display_options': kwargs,
+    }
+    spt.panel.load_popup("Widget Editor", class_name2, kwargs2);
+    */
+
+
+    var br = '\n';
+    var xml = '';
+    var placeholder = "element";
+    xml += '<' + placeholder + '>' + br;
+    xml += '  <display class="'+class_name+'">'  + br;
+    for (var name in kwargs) {
+      if (name == 'class_name') {
+        continue;
+      }
+      xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>' + br;
+    }
+    xml += '  </display>' + br;
+    xml += '</' + placeholder + '>';
+
+    var html = spt.convert_to_html_display(xml);
+    spt.alert(html, {type:'html'});
 }
 
         '''
@@ -2143,7 +2189,7 @@ spt.tab.close = function(src_el) {
             var kwargs_str = header.getAttribute("spt_kwargs");
             var kwargs;
             if (kwargs_str != '') {
-                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs_str);
             }
             else {
@@ -2252,7 +2298,7 @@ spt.tab.close = function(src_el) {
             var kwargs_str = header.getAttribute("spt_kwargs");
             var kwargs = {};
             if (kwargs_str) {
-                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs_str);
             }
             var contents = spt.tab.get_contents();
@@ -2334,48 +2380,7 @@ spt.tab.close = function(src_el) {
 
             menu_item = MenuItem(type='action', label='View Definition')
             menu_item.add_behavior( {
-                'cbjs_action': r'''
-                var activator = spt.smenu.get_activator(bvr);
-                var header = activator;
-                var class_name = header.getAttribute("spt_class_name");
-                var kwargs_str = header.getAttribute("spt_kwargs");
-                var kwargs;
-                if (kwargs_str != '') {
-                    kwargs_str = kwargs_str.replace(/&quote;/g, '"');
-                    kwargs = JSON.parse(kwargs_str);
-                }
-                else {
-                    kwargs = {};
-                }
-
-
-                /* TEST: show widget editor
-                var class_name2 = 'tactic.ui.tools.WidgetEditorWdg';
-                var kwargs2 = {
-                    'editor_id': bvr.editor_id,
-                    'display_handler': class_name,
-                    'display_options': kwargs,
-                }
-                spt.panel.load_popup("Widget Editor", class_name2, kwargs2);
-                */
-         
-
-                var br = '\n';
-                var xml = '';
-                xml += '<element>' + br;
-                xml += '  <display class="'+class_name+'">'  + br;
-                for (var name in kwargs) {
-                  if (name == 'class_name') {
-                    continue;
-                  }
-                  xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>' + br;
-                }
-                xml += '  </display>' + br;
-                xml += '</element>';
-
-                var html = spt.convert_to_html_display(xml);
-                spt.alert(html, {type:'html'});
-                '''
+                'cbjs_action': '''spt.tab.view_definition(bvr);'''
             } )
             menu.add(menu_item)
 
@@ -2394,7 +2399,7 @@ spt.tab.close = function(src_el) {
                 var title = header.getAttribute("spt_title");
 
                 var kwargs = header.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/&quote;/g, '"');
+                kwargs = kwargs.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs);
 
                 var view = element_name;
@@ -2440,7 +2445,7 @@ spt.tab.close = function(src_el) {
                 var title = header.getAttribute("spt_title");
 
                 var kwargs = header.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/&quote;/g, '"');
+                kwargs = kwargs.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs);
 
 
@@ -2810,7 +2815,7 @@ spt.tab.close = function(src_el) {
                 kwargs = {}
             }
             else {
-                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs_str);
             }
 
