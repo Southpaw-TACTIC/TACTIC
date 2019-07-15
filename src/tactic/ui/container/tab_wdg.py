@@ -1158,9 +1158,7 @@ spt.tab.view_definition = function(bvr) {
     var kwargs_str = header.getAttribute("spt_kwargs");
     var kwargs;
     if (kwargs_str != '') {
-        console.log(kwargs_str, "huh?");
         kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
-        console.log(kwargs_str, "fuck");
         kwargs = JSON.parse(kwargs_str);
     }
     else {
