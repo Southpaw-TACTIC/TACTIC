@@ -640,7 +640,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
 
 
-
             '''
         } )
 
@@ -2940,14 +2939,35 @@ spt.pipeline.select_nodes_by_group = function(group_name) {
 }
 
 spt.pipeline.select_nodes_by_box = function(TL, BR) {
+    r1 = {
+        top: TL.y,
+        bottom: BR.y,
+        left: TL.x,
+        right: BR.x
+    }
+
+
     spt.pipeline.unselect_all_nodes();
 
     var nodes = spt.pipeline.get_all_nodes();
-
     for (var i=0; i<nodes.length; i++) {
         var node = nodes[i];
+        var node_name = spt.pipeline.get_node_name(node);
+        var size = node.getSize();
 
-        if ((TL.x <node.spt_xpos && node.spt_xpos < BR.x ) && (TL.y < node.spt_ypos && node.spt_ypos < BR.y)) {
+        r2 = {
+            top: node.spt_ypos,
+            bottom: node.spt_ypos + size.y,
+            left: node.spt_xpos,
+            right: node.spt_xpos + size.x
+        }
+
+        var intersect = !(r2.left > r1.right || 
+                          r2.right < r1.left || 
+                          r2.top > r1.bottom ||
+                          r2.bottom < r1.top);
+
+        if (intersect) {
             spt.pipeline.select_node(node);
         }
     }
