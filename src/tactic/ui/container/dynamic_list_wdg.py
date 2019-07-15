@@ -76,6 +76,7 @@ class DynamicListWdg(BaseRefreshWdg):
 
         if self.template:
             template_wdg = self.get_item_wdg(self.template, is_template=True)
+            template_wdg.add_class("SPT_TEMPLATE")
             top.add(template_wdg )
 
         for item in self.items:

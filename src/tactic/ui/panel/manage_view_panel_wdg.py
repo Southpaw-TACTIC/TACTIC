@@ -466,7 +466,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
     def get_section_wdg(self, view, editable=True, default=False):
 
-        from panel_wdg import SideBarBookmarkMenuWdg
+        from .panel_wdg import SideBarBookmarkMenuWdg
 
         title = ""
         target_id = "sobject_relation"
