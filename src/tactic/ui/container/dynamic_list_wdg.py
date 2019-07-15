@@ -59,14 +59,20 @@ class DynamicListWdg(BaseRefreshWdg):
             'cbjs_action': callback
         } )
 
-        remove_callback = self.kwargs.get("remove_callback") or '''spt.dynamic_list.remove_item(bvr.src_el)'''
+        remove_callback = self.kwargs.get("remove_callback") or '''
+        spt.dynamic_list.set_top(bvr.src_el);
+        spt.dynamic_list.remove_item(bvr.src_el);
+        '''
         top.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'spt_remove',
             'cbjs_action': remove_callback
         } )
 
-        add_callback = self.kwargs.get("add_callback") or '''spt.dynamic_list.add_item(bvr.src_el)'''
+        add_callback = self.kwargs.get("add_callback") or '''
+        spt.dynamic_list.set_top(bvr.src_el);
+        spt.dynamic_list.add_item();
+        '''
         top.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'spt_add',
@@ -175,7 +181,13 @@ spt.dynamic_list = spt.dynamic_list || {};
 spt.dynamic_list.top = bvr.src_el;
 
 spt.dynamic_list.set_top = function(top) {
-    spt.dynamic_list.top = top;
+    if (top.hasClass("spt_list_top")) {
+        spt.dynamic_list.top = top;
+    } else if (top.getParent(".spt_list_top")) {
+        spt.dynamic_list.top = top.getParent(".spt_list_top")
+    } else {
+        spt.exception.handler("Dynamic list top must have class 'spt_list_top'");
+    }
 }
 
 spt.dynamic_list.get_top = function() {
@@ -183,14 +195,7 @@ spt.dynamic_list.get_top = function() {
 }
 
 spt.dynamic_list.add_item = function(src_el) {
-
-    if (src_el) {
-        var top = src_el.getParent(".spt_list_top");
-    }
-    else {
-        var top = spt.dynamic_list.top;
-    }
-
+    var top = spt.dynamic_list.top;
     var template = top.getElement(".spt_list_template_item");
 
     var new_item = spt.behavior.clone(template);
@@ -209,7 +214,8 @@ spt.dynamic_list.add_item = function(src_el) {
 }
 
 spt.dynamic_list.remove_item = function(src_el) {
-    var items = spt.dynamic_list.top.getElements(".spt_list_item");
+    var top = spt.dynamic_list.top;
+    var items = top.getElements(".spt_list_item");
     if (items.length > 1) {
         var item = src_el.getParent(".spt_list_item");
         item.destroy();

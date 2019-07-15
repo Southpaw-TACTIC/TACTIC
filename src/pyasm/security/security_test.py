@@ -235,6 +235,7 @@ class SecurityTest(unittest.TestCase):
         # set this user as admin
         self.security.set_admin(True)
 
+
         self.assertEqual('unittest_guy', user)
         self.assertEqual( False, fail )
 

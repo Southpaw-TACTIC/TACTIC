@@ -206,7 +206,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             file_template.add_class("spt_upload_file")
 
-
+        file_template.add_style("overflow: hidden")
         file_template.add_style("margin-bottom: 3px")
         file_template.add_style("padding: 3px")
         file_template.add_style("height: 40px")
