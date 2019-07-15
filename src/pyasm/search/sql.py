@@ -2128,8 +2128,12 @@ class Select(object):
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
 
-        column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
-        column_type = column_types.get(column)
+        # on simple building of select statements, db_resource could be null
+        if not self.db_resource:
+            column_type = "varchar"
+        else:
+            column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
+            column_type = column_types.get(column)
 
         if column_type in ['timestamp', 'datetime', 'datetime2']:
             if isinstance(value, basestring):
@@ -2208,10 +2212,6 @@ class Select(object):
             self.add_where(where)
             return
 
-
-        # on simple building of select statements, db_resource could be null
-        if not self.db_resource:
-            column_type = "varchar"
 
         # if quoted is not explicitly set
         if quoted == None:

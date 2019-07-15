@@ -214,7 +214,7 @@ class SecurityTest(unittest.TestCase):
         # set this user as admin
         self.security.set_admin(True)
 
-        self.assertEquals('unittest_guy',  Environment.get_user_name())
+        self.assertEquals('admin',  Environment.get_user_name())
         self.assertEquals( False, fail )
 
     def count(self, it):
