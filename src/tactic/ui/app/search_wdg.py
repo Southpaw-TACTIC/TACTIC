@@ -1225,7 +1225,6 @@ spt.advanced_search.keywords.remove_recent = function(item) {
 spt.advanced_search.saved = spt.advanced_search.saved || {};
 
 spt.advanced_search.saved.add_item = function(key, label, value) {
-    console.log("here", key, label, value);
     let search_top = spt.advanced_search.get_top();
     
     let container = search_top.getElement(".spt_saved_searches_container");
@@ -1241,7 +1240,6 @@ spt.advanced_search.saved.add_item = function(key, label, value) {
     clone.removeClass("spt_template_item");
     clone.removeClass("spt_saved_search_item_template");
     categoryContainer.appendChild(clone);
-    console.log(categoryContainer, clone);
 }
 
 spt.advanced_search.saved.create_item = function(key, label, value) {
