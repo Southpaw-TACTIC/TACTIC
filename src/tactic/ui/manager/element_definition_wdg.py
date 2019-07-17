@@ -2335,7 +2335,8 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             except:
                 # !!!! Lost the options
                 display_options = {}
-        elif (isinstance(display_options, str)):
+        elif (isinstance(display_options, basestring)):
+            display_options = display_options.replace("'", '"')
             display_options = jsonloads(display_options)
 
         if (not display_options):
@@ -2440,7 +2441,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                         
                     for name, value in data.items():
                         
-                        if isinstance(value, basestring):
+                        if (isinstance(value, basestring)):
                             value = {
                                 'description': value
                             }
@@ -2476,6 +2477,9 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     new_value['size'] = '50'
 
             else:
+                # somehow getting tuples, unpack it for now
+                if (isinstance(value, tuple)):
+                    (value,) = value
                 value['name'] = name
                 if not value.get('description'):
                     value['description'] = 'No description'
@@ -2806,6 +2810,9 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         for class_option in class_options.values():
             if isinstance(class_option, basestring):
                 continue
+
+            if (isinstance(class_option, tuple)):
+                (class_option,) = class_option
 
             class_sub_keys = class_option.get("sub_keys")
             if class_sub_keys:
