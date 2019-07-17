@@ -14,9 +14,9 @@
 import sys
 
 
-from maya_environment import *
-from maya_app import *
-from maya_builder import *
+from .maya_environment import *
+from .maya_app import *
+from .maya_builder import *
 
 
 

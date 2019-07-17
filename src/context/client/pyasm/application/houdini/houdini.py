@@ -17,8 +17,8 @@ import sys, types, re, os
 
 from pyasm.application.common import *
 
-from houdini_environment import *
-from houdini_socket import *
+from .houdini_environment import *
+from .houdini_socket import *
 
 class HoudiniException(AppException):
     pass
@@ -164,7 +164,7 @@ class Houdini(Application):
         else:
             value = value.replace("$", "\\$")
             cmd = 'opparm %s %s "%s"' % (node, attr, value)
-            print cmd
+            print(cmd)
             return hscript(cmd)
 
     def select(self, node):
@@ -327,11 +327,11 @@ class Houdini(Application):
         if optype == "subnet":
             cmd = 'otcreatetypefrom -n %s -N %s -l "%s" /obj/%s' % (new_type, new_type, path, node_name)
             hscript( cmd )
-            print cmd
+            print(cmd)
         # if this is another type than the one we are checking into
         elif optype != new_type:
             cmd = 'otcopy -n %s -e %s Object/%s %s' % (new_type, new_type, optype, path)
-            print cmd
+            print(cmd)
             ret_val = hscript(cmd)
             if ret_val.find("is not defined") != -1 or ret_val.find("Couldn't load operator definition") != -1:
                 raise HoudiniException(ret_val)
@@ -339,7 +339,7 @@ class Houdini(Application):
         # just write out the otl, keeping the same type
         else:
             cmd = "otwrite -i -z -l -o /obj/%s %s" % (node_name, path)
-            print cmd
+            print(cmd)
             hscript(cmd)
 
         # sync otl with the definition
@@ -361,7 +361,7 @@ class Houdini(Application):
         # if there is an exception, then it does not exist
         try:
             node = hscript('opls "/obj/%s"' % node)
-        except HoudiniException, e:
+        except HoudiniException as e:
             return False
 
         if not node or node.startswith("\nError"):
@@ -465,7 +465,7 @@ class Houdini(Application):
         # should not be here
         if attribute in ["tacticNodeData", "notes"]:
             return
-        print "WARNING: add_attr: ", node, attribute
+        print("WARNING: add_attr: ", node, attribute)
 
 
 
@@ -580,7 +580,7 @@ class Houdini(Application):
 
 
             if not os.path.exists(path):
-                print "WARNING: path '%s' does not exist" % path
+                print("WARNING: path '%s' does not exist" % path)
                 continue
 
 
@@ -633,14 +633,14 @@ class Houdini(Application):
                     continue
 
             if value.find(": ") == -1:
-                print "WARNING: no node attached to path: '%s'" % value
+                print("WARNING: no node attached to path: '%s'" % value)
                 continue
 
 
             node, path = value.split(": ")
 
             if not os.path.exists(path):
-                print "WARNING: path '%s' does not exist" % path
+                print("WARNING: path '%s' does not exist" % path)
                 continue
 
 
@@ -688,7 +688,7 @@ errors = ["Error", "Warning:", "Unknown command:", "Couldn't find"]
 
 def hscript(cmd):
     '''convenience method to get houdini object and call hscript command'''
-    #print "--> %s" % cmd
+    #print("--> %s" % cmd)
     houdini = Houdini.get()
     ret_val = houdini.hscript(cmd)
     for error in errors:

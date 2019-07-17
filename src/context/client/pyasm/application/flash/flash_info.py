@@ -11,7 +11,7 @@
 #
 __all__ = ['FlashInfo']
 
-import cStringIO, os, sys, urllib, xmlrpclib
+import os, sys, urllib, xmlrpclib
 from xml.dom.minidom import parseString
 
 
