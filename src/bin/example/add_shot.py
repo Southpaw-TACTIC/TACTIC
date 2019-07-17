@@ -27,7 +27,7 @@ class AddShotCmd(Command):
             shot_code = '%s_%0.3d'%(self.seq_code, x)
             shot = Shot.get_by_code(shot_code)
             if not shot:
-                print "[%s] to be created." %shot_code
+                print("[%s] to be created." %shot_code)
                 shot = Shot.create(shot_code, 'Shot %s' %shot_code)
                 shot.set_value('sequence_code', self.seq_code)
                 # assuming this is one of the values in project settings
@@ -38,8 +38,8 @@ class AddShotCmd(Command):
                 shot.commit()
                 count += 1
             else:
-                print "[%s] already exists." %shot_code
-        print "%d shot(s) created." %count
+                print("[%s] already exists." %shot_code)
+        print("%d shot(s) created." %count)
        
 class Usage(Exception):
     def __init__(self, msg):
@@ -63,8 +63,8 @@ if __name__ == '__main__':
         if not seq:
             raise Usage("The sequence code [%s] has not been registered for "\
                 "project [%s] in TACTIC. Please Insert it in the Sequences tab first." %(args[0], project_code))
-    except Usage, e:
-        print e.msg
+    except Usage as e:
+        print(e.msg)
         sys.exit(2)
 
     command = AddShotCmd(seq.get_code())

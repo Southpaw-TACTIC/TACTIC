@@ -39,7 +39,7 @@ class FakeSecurity(object):
 
 
 def import_bootstrap():
-    print "Importing bootstrap ..."
+    print("Importing bootstrap ...")
     vendor = "MySQL"
 
     impl = DatabaseImpl.get(vendor)
@@ -78,7 +78,7 @@ def import_schema(plugin_code):
     base_dir = Environment.get_plugin_dir()
     template_dir = "%s/%s" % (base_dir, plugin_code)
     manifest_path = "%s/manifest.xml" % (template_dir)
-    print "Reading manifest: ", manifest_path
+    print("Reading manifest: ", manifest_path)
 
     xml = Xml()
     xml.read_file(manifest_path)
@@ -89,7 +89,7 @@ def import_schema(plugin_code):
 
 
 def upgrade():
-    print "Running upgrade on 'sthpw' database"
+    print("Running upgrade on 'sthpw' database")
 
     install_dir = Environment.get_install_dir()
     from pyasm.common import Config  
@@ -98,7 +98,7 @@ def upgrade():
         python = "python"
 
     cmd = "%s \"%s/src/bin/upgrade_db.py\" -q -f -y -p sthpw" % (python, install_dir)
-    print cmd
+    print(cmd)
 
     os.system(cmd)
 

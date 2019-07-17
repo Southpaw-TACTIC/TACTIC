@@ -23,6 +23,7 @@ from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table,
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema, ProjectSetting
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
+from pyasm.security import Sudo
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
 
 from .button_wdg import ButtonElementWdg
@@ -449,6 +450,8 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
     def preprocess(self):
+
+
         self._get_display_options()
 
         web = WebContainer.get_web()
@@ -467,6 +470,9 @@ class TaskElementWdg(BaseTableElementWdg):
         self.assignee_dict = {}
 
         self.check_access()
+
+
+        sudo = Sudo()
 
         # deals with assignee labels if provided
         assigned = self.kwargs.get('edit_assigned')
@@ -698,7 +704,7 @@ class TaskElementWdg(BaseTableElementWdg):
                 key = "%s|%s" % (pipeline.get_code(), process.get_name())
                 exists = self.assigned_login_groups.get(key)
                 if exists is None:
-                    search = Search("sthpw/login_in_group")
+                    search = Search("sthpw/login_in_group", sudo=True)
                     search.add_filter("login_group", assigned_login_group)
                     users = search.get_sobjects()
                     if users:

@@ -1846,7 +1846,7 @@ class WidgetConfigView(Base):
         UPDATE: since this is primarily used for EditCmd, it inserts an edit definition to it
         '''
         config = WidgetConfigView.get_by_search_type(search_type=search_type, view=base_view)
-        if type(element_names) == types.StringType:
+        if isinstance(element_names, basestring):
             element_names = element_names.split(",")
 
         config_xml = "<config><custom layout='TableLayoutWdg'>"

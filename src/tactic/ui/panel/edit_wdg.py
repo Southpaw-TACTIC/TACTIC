@@ -1484,7 +1484,8 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         content = bvr.src_el.getParent(".spt_popup_content");
     }
 
-    var values = spt.api.Utility.get_input_values(content, null, true, false, {cb_boolean: true});
+    //var values = spt.api.Utility.get_input_values(content, null, true, false, {cb_boolean: true});
+    var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
     var server = TacticServerStub.get();
 
     var class_name = "tactic.ui.panel.EditCmd";

@@ -26,6 +26,9 @@ import os
 BASE = '/context/themes2'
 ALPHA = "1.0"
 
+import six
+
+
 class ButtonRowWdg(BaseRefreshWdg):
 
     def init(self):
@@ -1185,7 +1188,7 @@ class ActionButtonWdg(DivWdg):
 
         # stretch it wider in case the text is longer, 
         # don't make it too long though
-        if len(title) > 10:
+        if not isinstance(top_width, six.string_types) and len(title) > 10:
             width = len(title)/8.0 * 60
             if width < top_width:
                 width = top_width

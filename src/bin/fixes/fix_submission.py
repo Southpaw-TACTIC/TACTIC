@@ -39,7 +39,7 @@ class MoveSubmissionCmd(Command):
 
             bins = submission.get_bins()
             if not bins:
-                 print "Bin for submissin [%s] does not exist" % submission.get_id()
+                 print("Bin for submissin [%s] does not exist" % submission.get_id())
                  continue
             bin = bins[0]
             code = bin.get_code()
@@ -48,7 +48,7 @@ class MoveSubmissionCmd(Command):
 
             for path in paths:
                 if not os.path.exists(path):
-                    print "WARNING: path '%s' does not exist" % path
+                    print("WARNING: path '%s' does not exist" % path)
                     continue
 
                 dirname = os.path.dirname(path)
@@ -60,7 +60,7 @@ class MoveSubmissionCmd(Command):
 
                 new_path = "%s/%s" % (new_dirname, basename)
 
-                print new_path
+                print(new_path)
                 FileUndo.move(path, new_path)
 
 

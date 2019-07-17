@@ -42,7 +42,7 @@ class CompTest(unittest.TestCase):
         file_outs = fusion_filter.get_file_outs()
         file_ins = fusion_filter.get_file_ins()
 
-        print file_ins
+        print(file_ins)
 
 
 

@@ -126,11 +126,11 @@ class CherryPyStartup(CherryPyStartup20):
                 eval("cherrypy.root.tactic.%s" % project_code)
         # if project_code is empty , it raises SyntaxError
         except (AttributeError, SyntaxError) as e:
-            print("WARNING: ", e)
+            print("WARNING CherryPyStartup: ", e)
             has_project = False
             has_site = True
         except Exception as e:
-            print("WARNING: ", e)
+            print("WARNING CherryPyStartup: ", e)
             has_project = False
         else:
             has_project = True
@@ -147,7 +147,7 @@ class CherryPyStartup(CherryPyStartup20):
                 from pyasm.widget import UploadServerWdg
                 try:
                     from pyasm.web import WebContainer
-                    from cherrypy30_adapter import CherryPyAdapter
+                    from .cherrypy30_adapter import CherryPyAdapter
 
                     # clear the buffer
                     WebContainer.clear_buffer()
@@ -185,6 +185,15 @@ class CherryPyStartup(CherryPyStartup20):
                 project = Project.get_by_code(project_code)
             except Exception as e:
                 print("WARNING: ", e)
+                """
+                import sys,traceback
+                tb = sys.exc_info()[2]
+                stacktrace = traceback.format_tb(tb)
+                stacktrace_str = "".join(stacktrace)
+                print("-"*50)
+                print(stacktrace_str)
+                print("-"*50)
+                """
                 raise
 
 
@@ -244,7 +253,6 @@ class CherryPyStartup(CherryPyStartup20):
                     return html
             """
 
-
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
             html_response = []
@@ -256,7 +264,7 @@ class CherryPyStartup(CherryPyStartup20):
             html_response = "\n".join(html_response)
 
             # this response.body is not needed, can be commented out in the future
-            response.body = ''
+            response.body = None
             return html_response
 
 

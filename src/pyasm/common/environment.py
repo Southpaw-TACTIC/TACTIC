@@ -269,6 +269,8 @@ class Environment(Base):
         if include_ticket:
             security = Environment.get_security()
             ticket = security.get_ticket_key()
+            if not ticket:
+                raise Exception("No ticket found")
             tmp_dir = "%s/temp/%s" % (tmp_dir, ticket)
 
             # only if a ticket is needed, the make the directory

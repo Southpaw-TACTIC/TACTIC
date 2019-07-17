@@ -25,7 +25,7 @@ if __name__ == '__main__':
     args = sys.argv[1:]
 
     if len(args) != 3:
-        print "Usage: data_dumper.py <target_project> <project_type> <table>"
+        print("Usage: data_dumper.py <target_project> <project_type> <table>")
         sys.exit() 
 
     target_project = args[0]
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     table = args[2]
 
     if project_type not in ['sthpw','prod','flash','game','design']:
-        print "Usage: data_dumper.py <target_project> <project_type> <table>. Invalid \
+        print("Usage: data_dumper.py <target_project> <project_type> <table>. Invalid \)
             project type [%s]" % project_type
         sys.exit()
     

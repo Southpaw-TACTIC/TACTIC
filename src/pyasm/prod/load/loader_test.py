@@ -25,7 +25,7 @@ class TestHandler:
     def handle_node(self, name, node):
 
         if name == "special":
-            print "special"
+            print("special")
             return True
 
 

@@ -818,7 +818,7 @@ def profile():
     profile.run( "profile_execute()", path)
     p = pstats.Stats(path)
     p.sort_stats('cumulative').print_stats(30)
-    print "*"*30
+    print("*"*30)
     p.sort_stats('time').print_stats(30)
 
 
