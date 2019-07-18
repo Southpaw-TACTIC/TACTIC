@@ -1762,9 +1762,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             else:
                 has_value_list.append(value)
 
-            # json key
-            json_key = values.get("%s_key" % self.prefix)
-
 
         # build a dict to show which search type actually got some values
         # specified
