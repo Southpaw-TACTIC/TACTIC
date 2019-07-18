@@ -8643,8 +8643,8 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_document .document-item-content {
-                height: 20px;
-                padding: 4px 10px;
+                min-height: 20px;
+                padding: 4px 10px 4px 50px;
                 width: 100%;
             }
 
