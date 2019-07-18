@@ -9841,13 +9841,14 @@ class SessionalProcess:
 
             // for refreshed panels (shouldn't need this but just in this case)
             var section_name = top.getAttribute("section_name") || bvr.section_name;
-            let data = spt.pipeline.get_node_kwarg(node, section_name) || {};
+            var data = spt.pipeline.get_node_kwarg(node, section_name) || {};
 
             top.pre_processing = function() {
                 %s
             }
 
             top.load_section = function() {
+                var data = spt.pipeline.get_node_kwarg(node, section_name) || {};
                 spt.api.Utility.set_input_values2(top, data);
             }
 
@@ -9869,7 +9870,8 @@ class SessionalProcess:
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_section_top");
-            top.update_data();
+            if (top)
+                top.update_data();
 
             '''
             })
@@ -9881,7 +9883,8 @@ class SessionalProcess:
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_section_top");
-            top.update_data();
+            if (top)
+                top.update_data();
 
             '''
             })
