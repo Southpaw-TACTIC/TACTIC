@@ -642,7 +642,7 @@ class ChartData(BaseRefreshWdg):
             last = item
 
         slope = slope / i
-        print "slope: ", slope
+        print("slope: ", slope)
         """
 
         # find b: this isn't so necessary here because we have point 0

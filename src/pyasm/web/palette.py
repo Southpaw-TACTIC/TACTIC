@@ -379,7 +379,7 @@ class Palette(object):
         if range == None:
             range = -20
 
-        from web_container import WebContainer
+        from .web_container import WebContainer
         web = WebContainer.get_web()
         palette = Palette.get()
         if web.is_IE():

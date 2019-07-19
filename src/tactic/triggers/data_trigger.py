@@ -42,12 +42,12 @@ class DataUpdateTrigger(Trigger):
         trigger_sobj = self.get_trigger_sobj()
         data = self.get_trigger_data()
 
-        print "data: ", data
+        print("data: ", data)
 
         op = data.get("op")
         assert op
 
-        print "op: ", op
+        print("op: ", op)
 
 
         if op == 'join':
@@ -65,7 +65,7 @@ class DataUpdateTrigger(Trigger):
 
             value = delimiter.join(values)
 
-            print "value: ", value
+            print("value: ", value)
 
             sobject.set_value(dst_col, value)
             sobject.commit()

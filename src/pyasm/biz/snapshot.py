@@ -1339,7 +1339,7 @@ class Snapshot(SObject):
         if not level_type:
             return None
 
-        from schema import Schema
+        from .schema import Schema
         schema = Schema.get()
         if not schema:
             return None

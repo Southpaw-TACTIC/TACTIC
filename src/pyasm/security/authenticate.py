@@ -99,7 +99,7 @@ class TacticAuthenticate(Authenticate):
             encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
         else:
             # kept here for backwards compatibility
-            encrypted = hashlib.md5(password).hexdigest()
+            encrypted = hashlib.md5(password.encode()).hexdigest()
 
         # encrypt and check the password
         if encrypted != user_encrypted:
@@ -202,4 +202,7 @@ class LdapADAuthenticate(Authenticate):
 
         except Exception as e:
             raise SecurityException("Login/Password combination incorrect: 203")
+
+
+
 

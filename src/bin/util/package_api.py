@@ -26,8 +26,8 @@ def main():
     client_api_dir = '%s/src/client' % install_dir
     context_client_dir = '%s/src/context/client' % install_dir
 
-    print "install: ", install_dir
-    print "version: ", version
+    print("install: ", install_dir)
+    print("version: ", version)
 
     # copy scm directory in api
     scm_dir = "%s/src/tactic/scm" % install_dir

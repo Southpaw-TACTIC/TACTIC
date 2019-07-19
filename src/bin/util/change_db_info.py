@@ -36,12 +36,12 @@ class ChangeDbPassword:
 
 
     def print_header(self):
-        print
-        print
-        print "*"*20
-        print "TACTIC Database Configuration"
-        print "*"*20
-        print
+        print(" ")
+        print(" ")
+        print("*"*20)
+        print("TACTIC Database Configuration")
+        print("*"*20)
+        print(" ")
 
 
 
@@ -49,35 +49,35 @@ class ChangeDbPassword:
 
         # set vendor
         default_vendor = Config.get_value("database", "vendor")
-        print
-        print "Please enter the database vendor (PostgreSQL or Oracle):"
-        print
+        print(" ")
+        print("Please enter the database vendor (PostgreSQL or Oracle):")
+        print(" ")
         while 1:
             if not default_vendor:
                 default_vendor = "PostgreSQL"
             vendor = raw_input("(%s) -> " % default_vendor)
             if not vendor:
                 vendor = default_vendor
-            print
+            print(" ")
 
             if vendor in ['PostgreSQL', 'Oracle']:
                 break
             else:
-                print "ERROR: Vendor must one of 'PostgreSQL' or 'Oracle'"
-                print
+                print("ERROR: Vendor must one of 'PostgreSQL' or 'Oracle'")
+                print(" ")
 
 
         # set server
         default_server = Config.get_value("database", "server")
         if not default_server:
             default_server = "localhost"
-        print
-        print "Please enter database server hostname or IP address:"
-        print
+        print(" ")
+        print("Please enter database server hostname or IP address:")
+        print(" ")
         server = raw_input("(%s) -> " % default_server)
         if not server:
             server = default_server
-        print
+        print(" ")
 
 
 
@@ -85,15 +85,15 @@ class ChangeDbPassword:
         default_user = Config.get_value("database", "user")
         if not default_user:
             default_user = "__EMPTY__"
-        print
-        print "Please enter user name accessing the database:"
+        print(" ")
+        print("Please enter user name accessing the database:")
         if vendor == "Oracle":
-            print "    (To access Oracle using schema names, type '__EMPTY__')"
-        print
+            print("    (To access Oracle using schema names, type '__EMPTY__')")
+        print(" ")
         user = raw_input("(%s) -> " % default_user)
         if not user:
             user = default_user
-        print
+        print(" ")
 
 
 
@@ -102,13 +102,13 @@ class ChangeDbPassword:
         current_password = DbPasswordUtil.get_password()
         password = 0
         password2 = 1
-        print
-        print "Please enter database password:"
-        print "  (ENTER to keep password, '__EMPTY__' for empty password)"
+        print(" ")
+        print("Please enter database password:")
+        print("  (ENTER to keep password, '__EMPTY__' for empty password)")
 
         import getpass
         while password != password2:
-            print
+            print(" ")
             password = getpass.getpass("Enter Password -> ")
 
             if password:
@@ -118,24 +118,24 @@ class ChangeDbPassword:
                 password2 = password
                 break
 
-            print
+            print(" ")
 
             if password == password2:
                 break
             else:
-                print "ERROR: Passwords do not match"
+                print("ERROR: Passwords do not match")
 
 
         # Summary:
-        print
-        print "Vendor:   [%s]" % vendor
-        print "Server:   [%s]" % server
-        print "User:     [%s]" % user
-        print
+        print(" ")
+        print("Vendor:   [%s]" % vendor)
+        print("Server:   [%s]" % server)
+        print("User:     [%s]" % user)
+        print(" ")
 
         ok = raw_input("Save to config (N/y) -> ")
         if ok.lower() != "y":
-            print "Aborted"
+            print("Aborted")
             return
 
 
@@ -152,25 +152,25 @@ class ChangeDbPassword:
         Config.save_config()
         path = Config.get_config_path()
 
-        print
-        print "Saved new database information to [%s].  Please restart TACTIC for the changes to take effect" % path
-        print
+        print(" ")
+        print("Saved new database information to [%s].  Please restart TACTIC for the changes to take effect" % path)
+        print(" ")
 
         '''
         test = raw_input("Test Connection (N/y) -> ")
         if test.lower() != "y":
             return
 
-        print
-        print "Testing ..."
+        print(" ")
+        print("Testing ...")
         from pyasm.search import DbContainer, DatabaseException
         try:
             sql = DbContainer.get("sthpw")
         except DatabaseException:
-            print
-            print "ERROR: Could not connect"
+            print(" ")
+            print("ERROR: Could not connect")
         else:
-            print "Connection successful"
+            print("Connection successful")
         '''
 
 

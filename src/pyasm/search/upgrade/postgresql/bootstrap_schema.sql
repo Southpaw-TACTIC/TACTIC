@@ -142,6 +142,7 @@ CREATE TABLE "notification" (
     "mail_bcc" text,
     "s_status" character varying(30),
     "title" character varying(256),
+    "status" character varying(256),
     CONSTRAINT "notification_code_idx" UNIQUE ("code")
 );
 

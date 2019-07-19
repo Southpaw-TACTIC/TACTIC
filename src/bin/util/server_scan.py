@@ -31,8 +31,8 @@ def execute():
 
     iterations = 100
 
-    print "Testing [%s] requests ..." % iterations
-    print
+    print("Testing [%s] requests ..." % iterations)
+    print(" ")
 
     total_time = 0
     count = 0
@@ -62,17 +62,17 @@ def execute():
         #print "time: ", time.time() - start
 
     average_time = total_time / count
-    print "average time: ", average_time
-    print
+    print("average time: ", average_time)
+    print(" ")
 
-    print "ports: %s found" % len(ports.keys())
+    print("ports: %s found" % len(ports.keys()))
     for key in ports.keys():
-        print "\t%s: %s requests" % (key, ports[key])
+        print("\t%s: %s requests" % (key, ports[key]))
 
-    print
-    print "threads: %s found" % len(threads.keys())
+    print(" ")
+    print("threads: %s found" % len(threads.keys()))
     for key in threads.keys():
-        print "\tid=%s: %s requests" % (key, threads[key])
+        print("\tid=%s: %s requests" % (key, threads[key]))
 
     # FIXME: not completely correct yet
     #print
@@ -81,7 +81,7 @@ def execute():
     #    print "\tport=%s: %s databases" % (key, databases[key])
 
 
-    print
+    print(" ")
 
 def main():
     execute()
@@ -95,7 +95,7 @@ def main():
     profile.run( "execute()", path)
     p = pstats.Stats(path)
     p.sort_stats('cumulative').print_stats(30)
-    print "*"*30
+    print("*"*30)
     p.sort_stats('time').print_stats(30)
 
 

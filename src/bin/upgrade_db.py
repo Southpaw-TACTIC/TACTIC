@@ -34,15 +34,15 @@ if __name__ == '__main__':
 
 
     if os.name != 'nt' and os.getuid() == 0:
-        print 
-        print "You should not run this as root. Run it as the Web server process's user. e.g. apache"
-        print 
+        print(" ") 
+        print("You should not run this as root. Run it as the Web server process's user. e.g. apache")
+        print(" ") 
         sys.exit(0)
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:fyhp:q", ["site","force","yes","help","project=","quiet"])
     except getopt.error, msg:
-        print msg
+        print(msg)
         sys.exit(2)
     # process options
     for o, a in opts:
@@ -51,7 +51,7 @@ if __name__ == '__main__':
         if o in ("-f", "--force"):
             is_forced = True
         if o in ("-h", "--help"):
-            print "python upgrade_db.py [-fy] [%s]" % tacticversion
+            print("python upgrade_db.py [-fy] [%s]" % tacticversion)
             sys.exit(0)
         if o in ("-p", "--project"):
             project_code = a
@@ -59,7 +59,7 @@ if __name__ == '__main__':
             quiet = True
         if o in ("-s", "--site"):
             site = a
-            print "site: ", site
+            print("site: ", site)
    
 
     if len(args) == 0:
@@ -87,13 +87,13 @@ if __name__ == '__main__':
             elif answer == 'n':
                 sys.exit(0)
             else:
-                print "Only y or n is accepted. Exiting..."
+                print("Only y or n is accepted. Exiting...")
                 sys.exit(0)
         version = current_version
     elif len(args) == 1:
         version = args[0]
     else:
-        print "Either 1 or no argument can be accepted."
+        print("Either 1 or no argument can be accepted.")
 
 
     if not version:
@@ -105,13 +105,13 @@ if __name__ == '__main__':
                 %(version, Environment.get_release_version()))
         if answer == "y":
             if not is_forced:
-                print "-f option must be used in this situation. "
+                print("-f option must be used in this situation. ")
                 sys.exit(0)
             pass
         elif answer == 'n':
             sys.exit(0)
         else:
-            print "Only y or n is accepted. Exiting..."
+            print("Only y or n is accepted. Exiting...")
             sys.exit(0)
 
 
@@ -147,15 +147,15 @@ if __name__ == '__main__':
         elif answer == 'n':
             sys.exit(0)
         else:
-            print "Only y or n is accepted. Exiting..."
+            print("Only y or n is accepted. Exiting...")
             sys.exit(0)
 
     p = re.compile(r'\d+.\d+.\d+(.\w+)?$')
     if not p.match(version):
-        print 
-        print "Version pattern is invalid. Examples for version are 2.0.0 or 2.0.0.rc02. If you are just upgrading to the current version, just run: "
-        print
-        print "python upgrade_db.py"
+        print(" ") 
+        print("Version pattern is invalid. Examples for version are 2.0.0 or 2.0.0.rc02. If you are just upgrading to the current version, just run: ")
+        print(" ")
+        print("python upgrade_db.py")
         sys.exit(0)
 
     version.replace('.', '_')
@@ -164,11 +164,11 @@ if __name__ == '__main__':
     upgrade.execute()
 
     if not quiet:
-        print "Upgrade to version [%s] finished." % version
+        print("Upgrade to version [%s] finished." % version)
     tmp_dir = Environment.get_tmp_dir()
     output_file = '%s/upgrade_output.txt' %tmp_dir
     if not quiet:
-        print "Upgrade output file saved in [%s]" %output_file
+        print("Upgrade output file saved in [%s]" %output_file)
     
 
 

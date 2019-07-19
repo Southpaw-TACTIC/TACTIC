@@ -6099,7 +6099,7 @@ class NewProcessInfoCmd(Command):
         search.add_filter("process", self.process)
         self.process_sobj = search.get_sobject()
         if not self.process_sobj:
-            print ("Process does not exist")
+            print(("Process does not exist"))
             return
         self.workflow = self.process_sobj.get_json_value("workflow") or {}
 

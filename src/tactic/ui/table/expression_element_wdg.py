@@ -16,6 +16,7 @@ import types, re
 
 from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps, SPTDate
 from pyasm.search import Search, SearchKey, SearchType
+from pyasm.security import Sudo
 from pyasm.web import DivWdg, Widget
 from pyasm.widget import IconWdg, TextWdg, TextAreaWdg, SelectWdg, CheckboxWdg
 from pyasm.biz import ExpressionParser
@@ -423,6 +424,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
         #calc_mode = 'fast'
         # parse the expression
         parser = ExpressionParser()
+
+        # expression element widget defintion should only be saved by admin, so it can run
+        # the expression in sudo mode
+        sudo = Sudo()
         
         if calc_mode == 'fast':
             if self.cache_results == None:

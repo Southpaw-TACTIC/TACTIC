@@ -59,7 +59,7 @@ class AnnotatePage(Widget):
         sobject = self.get_current_sobject()
 
         if not sobject:
-            if not self.__dict__.has_key("search_type"):
+            if not "search_type" in self.__dict__:
                 web = WebContainer.get_web()
                 self.search_type = web.get_form_value("search_type")
                 self.search_id = web.get_form_value("search_id")
@@ -112,7 +112,7 @@ class AnnotateWdg(Widget):
         sobject = self.get_current_sobject()
 
         if not sobject:
-            if not self.__dict__.has_key("search_type"):
+            if not "search_type" in self.__dict__:
                 web = WebContainer.get_web()
                 self.search_type = web.get_form_value("search_type")
                 self.search_id = web.get_form_value("search_id")
@@ -252,7 +252,7 @@ class AnnotateWdg(Widget):
         for annotation in annotations:
             user = annotation.get_value("login")
 
-            if not sorted_annotations.has_key(user):
+            if not user in sorted_annotations:
                 sorted_annotations[user] = []
 
             sorted_annotations[user].append(annotation)

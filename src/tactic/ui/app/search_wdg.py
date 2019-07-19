@@ -551,6 +551,10 @@ class SearchWdg(BaseRefreshWdg):
                 display: flex;
             }
 
+            .spt_search_top .spt_search_filters {
+                min-width: 740px;
+            }
+
             .spt_search_top .spt_saved_searches_top {
                 width: 191px;
             }
@@ -1234,6 +1238,7 @@ spt.advanced_search.saved.add_item = function(key, label, value) {
     clone.setAttribute("spt_category", key);
     clone.setAttribute("spt_value", value);
     clone.removeClass("spt_template_item");
+    clone.removeClass("spt_saved_search_item_template");
     categoryContainer.appendChild(clone);
 }
 

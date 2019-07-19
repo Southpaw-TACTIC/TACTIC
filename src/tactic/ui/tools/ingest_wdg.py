@@ -30,6 +30,10 @@ import os.path
 import re
 import shutil
 
+import six
+basestring = six.string_types
+
+
 __all__ = ['IngestUploadWdg', 'IngestCheckCmd', 'IngestUploadCmd']
 
 

@@ -1,0 +1,45 @@
+environment:
+#  Use the following web UI to encrypt your password:
+#  https://ci.appveyor.com/tools/encrypt
+#  Ref: https://github.com/cherrypy/cheroot/issues/40
+#  PYPI_PASSWORD:
+#    secure: u+K6dKi7+CXXVFEUG4V7zUyV3w7Ntg0Ork/RGVV0eSQ=
+  PYPI_USERNAME: jaraco
+
+  matrix:
+    - PYTHON: "C:\\Python37-x64"
+    - PYTHON: "C:\\Python27-x64"
+
+install:
+  # symlink python from a directory with a space
+  - "mklink /d \"C:\\Program Files\\Python\" %PYTHON%"
+  - "SET PYTHON=\"C:\\Program Files\\Python\""
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python -m pip install tox"
+  - "python -m tox --notest"
+
+
+before_build:
+  - "python -m pip install wheel"
+
+build_script:
+  - python -m setup bdist_wheel
+
+test_script:
+  - python -m tox
+
+version: '{build}'
+
+after_test:
+  - ps: |
+      $wc = New-Object 'System.Net.WebClient'
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\junit-test-results.xml))
+
+#deploy_script:
+#  - ps: >-
+#      if($env:appveyor_repo_tag -eq 'True') {
+#          Invoke-Expression "python -m twine upload dist/* --username $env:PYPI_USERNAME --password $env:PYPI_PASSWORD"
+#      }
+
+artifacts:
+  - path: dist\*
