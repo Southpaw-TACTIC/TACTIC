@@ -14,8 +14,8 @@ __all__ = ['AccessManager', 'Sudo']
 
 import types
 
-from pyasm.common import Base, Xml, Environment, Common
-from pyasm.search import Search
+from pyasm.common import Base, Xml, Environment, Common, Container
+from pyasm.search import Search, SearchType
 
 import six
 basestring = six.string_types
@@ -30,6 +30,8 @@ class AccessException(Exception):
 class Sudo(object):
 
     def __init__(self):
+        count = Container.increment("Sudo::is_sudo")
+
         self.security = Environment.get_security()
 
         # if not already logged in, login as a safe user (guest)
@@ -45,18 +47,34 @@ class Sudo(object):
             self.was_admin = self.access_manager.was_admin
      
         self.access_manager.set_admin(True)
-    
+
+        self.already_exited = False
+
+
+
+    def is_sudo():
+        count = Container.get("Sudo::is_sudo") or 0
+        is_sudo = count > 0
+        if not is_sudo:
+            return False
+        else:
+            return True
+    is_sudo = staticmethod(is_sudo)
             
 
     def __del__(self):
-        
-        # remove if I m not in admin group
-        if self.was_admin == False:
-            self.access_manager.set_admin(False)
+        return self.exit()
 
 
     def exit(self):
-        
+        if self.already_exited == True:
+            return
+        self.already_exited = True
+
+        count = Container.decrement("Sudo::is_sudo")
+        if count < 0:
+            raise Exception("count of sudo: ", count)
+
         # remove if I m not in admin group
         if self.was_admin == False:
             self.access_manager.set_admin(False)
@@ -323,7 +341,7 @@ class AccessManager(Base):
             group_type = Xml.get_attribute( group_node, "type" )
 
             # get an existing rule set or create a new one
-            if self.groups.has_key(group_type):
+            if group_type in self.groups:
                 rules = self.groups[group_type]
             else:
                 rules = {}
@@ -716,7 +734,5 @@ class AccessManager(Base):
                 v = values[0]
             else:
                 v = values
-            print("xml_rule: ", rule, " is ", v)
-        
 
 

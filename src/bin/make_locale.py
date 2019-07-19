@@ -61,7 +61,7 @@ class AddTranslationCmd(Command):
                 translation = search.get_sobject()
 
                 if not translation:
-                    print "New: ", msgid
+                    print("New: ", msgid)
                     translation = SearchType.create("sthpw/translation")
                     translation.set_value("msgid", msgid)
                     translation.set_value("language", self.language)
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     
 
     if len(args) != 1:
-        print "Please supply a language code i.e. (ja, fr, or zh-CN)" 
+        print("Please supply a language code i.e. (ja, fr, or zh-CN)" )
         sys.exit(0)
     language = args[0]
     version_info = sys.version_info
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     # generate the pot
     cmd = 'python %s/pygettext.py -p "%s" "%s"' % (tools_dir,locale_dir,pyasm_dir)
-    print cmd
+    print(cmd)
     os.system(cmd)
 
     # put the results into a database

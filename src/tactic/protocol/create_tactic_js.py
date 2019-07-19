@@ -54,7 +54,7 @@ spt.exception.handler = function( ex ) {
 
 for filename in files:
     path = "%s/%s" % (js_dir, filename)
-    print 'path: ', path
+    print('path: ', path)
 
     if not os.path.exists(path):
         raise Exception("Cannot find file [%s]" % filename)

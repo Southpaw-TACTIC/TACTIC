@@ -286,7 +286,7 @@ class BaseRefreshWdg(Widget):
 
 
     def get_style(self):
-        print "classes: ", self, self.top.classes
+        print("classes: ", self, self.top.classes)
         
         from pyasm.web import HtmlElement
         style = HtmlElement.style()

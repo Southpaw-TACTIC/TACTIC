@@ -540,7 +540,7 @@ class DatabaseImpl(DatabaseImplInterface):
             else:
                 value = split_keywords(keywords)
 
-        elif type(keywords) == types.ListType:
+        elif isinstance(keywords, list):
             # remove empty strings from the list
             keywords = filter(None, keywords)
             value = ' & '.join(keywords)

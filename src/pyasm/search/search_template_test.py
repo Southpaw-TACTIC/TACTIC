@@ -56,8 +56,8 @@ class SearchTest(unittest.TestCase):
         SObjectFactory.set_template("prod", "prod")
         search_type2 = SearchType.get("prod/template")
 
-        print search_type.get_base_key()
-        print search_type.get_full_key()
+        print(search_type.get_base_key())
+        print(search_type.get_full_key())
 
         self.assertEquals("prod/template", search_type.get_base_key())
         self.assertEquals("prod/template?prod=prod2",search_type.get_full_key())

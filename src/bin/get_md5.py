@@ -31,7 +31,7 @@ def get_md5(path):
         md5_checksum = m.hexdigest()
         f.close()
         return md5_checksum
-    except IOError, e:
+    except IOError as e:
         # do not print to stdout, write to stderr later if desired
         sys.stderr.write("WARNING: error getting md5 on [%s]: " % path)
         return None

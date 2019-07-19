@@ -343,7 +343,7 @@ class Houdini9(Application):
 
     # attributes
     def add_attr(self, node, attribute, type="long"):
-        print "WARNING: add_attr: ", node, attribute
+        print("WARNING: add_attr: ", node, attribute)
 
 
 
@@ -424,7 +424,7 @@ class Houdini9(Application):
                     continue
 
             if value.find(": ") == -1:
-                print "WARNING: no node attached to path: '%s'" % value
+                print("WARNING: no node attached to path: '%s'" % value)
                 continue
 
 
@@ -434,7 +434,7 @@ class Houdini9(Application):
             node = node.replace("/obj/", "")
 
             if not os.path.exists(path):
-                print "WARNING: path '%s' does not exist" % path
+                print("WARNING: path '%s' does not exist" % path)
                 continue
 
             pairs = self.get_all_attrs(node)
@@ -469,7 +469,7 @@ errors = ["Error", "Warning:", "Unknown command:", "Couldn't find"]
 
 def hscript(cmd):
     '''convenience method to get maya object and call hscript command'''
-    print "--> %s" % cmd
+    print("--> %s" % cmd)
     houdini = Houdini.get()
     ret_val = houdini.hscript(cmd)
     for error in errors:

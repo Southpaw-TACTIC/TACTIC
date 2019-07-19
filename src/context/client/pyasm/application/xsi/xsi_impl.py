@@ -13,8 +13,8 @@
 __all__ = ['XSIImpl']
 
 
-from xsi import XSI, XSIEnvironment, XSINodeNaming
-from xsi_parser import XSIParser, XSIParserTextureFilter
+from .xsi import XSI, XSIEnvironment, XSINodeNaming
+from .xsi_parser import XSIParser, XSIParserTextureFilter
 from pyasm.application.common import AppException, Common
 import re,os
 import sys
@@ -188,7 +188,7 @@ class XSIImpl(object):
                         texture_paths.append(path)
                         texture_attrs.append('SourceFileName')
 
-        except AppException, e:
+        except AppException as e:
             self.app.xsi.LogMessage("WARNING: %s" % e.__str__())
         return texture_nodes, texture_paths, texture_attrs
 
@@ -404,7 +404,7 @@ class ProgressBar(object):
 
     def set_message(self, message):
         if not self.interactive:
-            print message
+            print(message)
             return
         self.bar.Caption = message
 

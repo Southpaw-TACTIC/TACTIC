@@ -132,11 +132,11 @@ class ProcessTest(unittest.TestCase):
 
         to_processes = pipeline.get_to_processes("supervisor")
         for process in to_processes:
-            print process
+            print(process)
 
         from_processes = pipeline.get_from_processes("supervisor")
         for process in from_processes:
-            print process
+            print(process)
 
 
 

@@ -14,7 +14,7 @@ __all__ = ['ClientTrigger']
 
 import sys, types
 
-from app_environment import AppEnvironment
+from .app_environment import AppEnvironment
 
 
 class ClientTrigger(object):
@@ -69,7 +69,7 @@ class TestCheckinTrigger(ClientTrigger):
         app = env.get_app()
 
         # do some checks
-        print "event: ", self.event
+        print("event: ", self.event)
 
 
 # register the trigger to just before asset is exported
