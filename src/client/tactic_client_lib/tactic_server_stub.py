@@ -3070,8 +3070,7 @@ class TacticServerStub(object):
         @return
         note that was created
         ''' 
-        return self.server.create_note(self.ticket, search_key, process, subcontext,
-                                     note, user)
+        return self.server.create_note(self.ticket, search_key, note, process, subcontext, user)
 
 
     #
