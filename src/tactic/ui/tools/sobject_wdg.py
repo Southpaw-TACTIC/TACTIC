@@ -141,7 +141,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if name:
             title.add("%s" % name)
             if code:
-                title.add(" <i style='font-size: 0.8; opacity: 0.7'>(%s)</i>" % code)
+                title.add(" <i style='font-size: 0.8em; opacity: 0.7'>(code: %s)</i>" % code)
         elif code:
             title.add("%s" % code)
         else:
