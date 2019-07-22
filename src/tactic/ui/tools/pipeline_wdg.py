@@ -11,9 +11,9 @@
 #
 
 __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 
-'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 
+'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 'ScriptCreateWdg',
 'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 
-'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd']
+'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg']
 
 import re
 import os
@@ -123,6 +123,18 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             .spt_pipeline_tool_top .search-result.search-result-template {
                 display: none;
+            }
+
+            .spt_pipeline_tool_left_header {
+                display: flex;
+                align-items: center;
+                font-size: 14px;
+                color: #7E7E7E;
+                margin-left: 5px;
+            }
+
+            .spt_pipeline_tool_left_header select {
+                margin: 5px;
             }
 
             ''')
@@ -491,12 +503,52 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             expression = self.kwargs.get("expression")
 
+            left_header = DivWdg()
+            left.add(left_header)
+            left_header.add_class("spt_pipeline_tool_left_header")
+            left_header.add("Sort:")
+
+            select = SelectWdg(name="display")
+            left_header.add(select)
+            select.set_option("values", ["document", "list"])
+            select.set_option("labels", ["Category", "Search Type"])
+
+            list_kwargs = {
+                "save_event": save_event,
+                "save_new_event": save_new_event,
+                "settings": self.settings,
+                "expression": expression
+            }
+
+            select.add_behavior({
+                'type': 'change',
+                'list_kwargs': list_kwargs,
+                'cbjs_action': '''
+
+                var value = bvr.src_el.value;
+                var left = bvr.src_el.getParent(".spt_pipeline_tool_left");
+                var content = left.getElement(".spt_pipeline_tool_left_content");
+
+                if (value == "document") {
+                    spt.panel.load(content, 'tactic.ui.tools.PipelineDocumentWdg');
+                } else if (value == "list") {
+                    spt.panel.load(content, 'tactic.ui.tools.PipelineListWdg', bvr.list_kwargs);
+                }
+
+                '''
+                })
+
+            pipeline_list_content = DivWdg()
+            left.add(pipeline_list_content)
+            pipeline_list_content.add_class("spt_pipeline_tool_left_content")
+
             use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
             if use_document_pipeline in [True, "true"]:
                 pipeline_list = PipelineDocumentWdg()
             else:
                 pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression )
-            left.add(pipeline_list)
+
+            pipeline_list_content.add(pipeline_list)
 
 
 
@@ -3217,6 +3269,8 @@ class ScriptEditWdg(BaseRefreshWdg):
         action = self.kwargs.get("action") or "script_path"
         language = self.kwargs.get("language")
 
+        show_language = self.kwargs.get("show_language") not in ['false', False]
+
        
         div = self.top
         self.set_as_panel(div)
@@ -3262,6 +3316,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         script_path_div = DivWdg()
         script_path_div.add_style("width: 100%")
         script_path_div.add_style("height: 60px")
+        script_path_div.add_style("margin-top: 10px")
         div.add(script_path_div)
         run_title = DivWdg("Script Path (Folder / Title):")
         run_title.add_style('margin-bottom: 3px')
@@ -3376,19 +3431,16 @@ class ScriptEditWdg(BaseRefreshWdg):
                 can_edit = False
 
 
-        div.add("Language:")
-        select = SelectWdg("language")
-        div.add(select)
-        select.set_option("labels", "Python|Server Javascript")
-        select.set_option("values", "python|server_js")
-        select.set_value(language)
+        if show_language:
+            div.add("Language:")
+            select = SelectWdg("language")
+            div.add(select)
+            select.set_option("labels", "Python|Server Javascript")
+            select.set_option("values", "python|server_js")
+            select.set_value(language)
+        
+
         div.add("<br/>")
-
-
-
-
-
-
 
 
 
