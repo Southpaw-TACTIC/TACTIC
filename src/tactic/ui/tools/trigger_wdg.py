@@ -2278,6 +2278,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
               <script_path>%s</script_path>
               <is_admin>%s</is_admin>
               <expected_script_path>%s</expected_script_path>
+              <show_language>false</show_language>
           </display>
         </element>
         '''%(script_path,  str(is_admin).lower(), expected_script_path))
