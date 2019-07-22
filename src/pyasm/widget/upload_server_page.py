@@ -23,6 +23,9 @@ from pyasm.command import FileUpload
 
 import shutil, re
 
+import six
+basestring = six.string_types
+
 
 class UploadServerWdg(Widget):
 
@@ -32,7 +35,7 @@ class UploadServerWdg(Widget):
         num_files = web.get_form_value("num_files")
         files = []
 
-        print "num_files: ", num_files
+        print("num_files: ", num_files)
 
         # HTML5 upload
         if num_files:
@@ -63,7 +66,7 @@ class UploadServerWdg(Widget):
 
 
         if files:
-            print "files: ", files
+            print("files: ", files)
             return "file_name=%s\n" % ','.join(files)
         else:
             return "NO FILES"
@@ -83,9 +86,9 @@ class UploadServerWdg(Widget):
         # step would be necessary
         try:
             file_name = file_name.decode('unicode-escape')
-        except UnicodeEncodeError, e:
+        except UnicodeEncodeError as e:
             pass
-        except UnicodeError,e:
+        except UnicodeError as e:
             pass
         file_name = file_name.replace("\\", "/")
         file_name = os.path.basename(file_name)
@@ -140,7 +143,7 @@ class UploadServerWdg(Widget):
         if isinstance(field_storage, basestring):
             return
         path = field_storage.get_path()
-        
+
         # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
         if action == "create":
@@ -152,7 +155,7 @@ class UploadServerWdg(Widget):
             f.seek(0)
 
             #if header.startswith("data:image/png;base64") or header.startswith("data:image/jpeg;base64"):
-            if re.search("^data:([\w\-\_]+)\/([\w\-\_]+);base64", header):
+            if re.search(b"^data:([\w\-\_]+)\/([\w\-\_]+);base64", header):
                 base_decode = True
             else:
                 base_decode = False
@@ -160,7 +163,6 @@ class UploadServerWdg(Widget):
             if os.name != 'nt':
                 f.close()
 
-          
         if html5_mode and file_name and path and not base_decode:
             
             '''
@@ -191,8 +193,8 @@ class UploadServerWdg(Widget):
                 current_umask = os.umask(0)
                 os.umask(current_umask)
                 os.chmod(to_path, 0o666 - current_umask)
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
 
             return [to_path]
 

@@ -13,14 +13,20 @@
 __all__ = ['MayaBuilder']
 
 
-import os, sys, urllib, xmlrpclib
+import os, sys, urllib
+
+try:
+    import xmlrpclib
+except:
+    from xmlrpc import client as xmlrpclib
+
 from xml.dom.minidom import parseString
 
 from pyasm.application.common import SessionBuilder
 
-from maya_environment import MayaEnvironment
-from maya_app import Maya, MayaNodeNaming
-from maya_anim_file import MayaAnimFile
+from .maya_environment import MayaEnvironment
+from .maya_app import Maya, MayaNodeNaming
+from .maya_anim_file import MayaAnimFile
 
 
 class MayaBuilder(SessionBuilder):
@@ -28,7 +34,7 @@ class MayaBuilder(SessionBuilder):
 
     def import_file(self, node_name, path, instantiation='import', use_namespace=True):
         if node_name and self.app.node_exists(node_name):
-            print "WARNING: Node '%s' already exists" % node_name
+            print("WARNING: Node '%s' already exists" % node_name)
 
         naming = MayaNodeNaming(node_name)
         

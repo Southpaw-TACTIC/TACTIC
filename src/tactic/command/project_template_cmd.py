@@ -322,7 +322,7 @@ class ProjectTemplateInstallerCmd(Command):
         # if the database already exists, then raise an exception
         if exists and self.new_project:
             msg = "WARNING: Database [%s] already exists" % self.project_code
-            print msg
+            print(msg)
             raise TacticException(msg)
 
 

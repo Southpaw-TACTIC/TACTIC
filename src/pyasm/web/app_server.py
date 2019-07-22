@@ -19,18 +19,28 @@ from pyasm.search import SObjectFactory, DbContainer, DbResource, ExceptionLog, 
 from pyasm.security import *
 from pyasm.biz import PrefSetting, Translation
 
-from web_container import WebContainer
-from widget import Widget, Html
-from web_app import WebApp
-from command_delegator import CommandDelegator
-from event_container import EventContainer
-from web_tools import *
-from html_wdg import *
-from url_security import *
+from .web_container import WebContainer
+from .widget import Widget, Html
+from .web_app import WebApp
+from .command_delegator import CommandDelegator
+from .event_container import EventContainer
+from .web_tools import *
+from .html_wdg import *
+from .url_security import *
+from .web_login_cmd import WebLoginCmd
 
-from web_login_cmd import WebLoginCmd
+import os
 
-import os, cStringIO
+import six
+basestring = six.string_types
+
+
+try:
+    from cStringIO import StringIO as Buffer
+except:
+    from io import StringIO as Buffer
+
+
 
 try:
     import profile, pstats
@@ -100,7 +110,7 @@ class BaseAppServer(Base):
 
 
     def execute(self):
-        self.buffer = cStringIO.StringIO()
+        self.buffer = Buffer()
         error = None
 
         try:
@@ -384,6 +394,7 @@ class BaseAppServer(Base):
             is_logged_in = security.is_logged_in()
         except Exception as e:
             print("AppServer Exception: ", e)
+            raise
             return self.handle_not_logged_in()
 
 
@@ -781,7 +792,6 @@ class BaseAppServer(Base):
         else:
             site = web.get_form_value("site")
 
-
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
@@ -789,7 +799,12 @@ class BaseAppServer(Base):
         elif login and password:
 
             # get the site for this user
-            login_site = site_obj.get_by_login(login)
+            sudo = Sudo()
+            try:
+                login_site = site_obj.get_by_login(login)
+            finally:
+                sudo.exit()
+
             if login_site:
                 site = login_site
 
@@ -808,7 +823,6 @@ class BaseAppServer(Base):
                     if site:
                         site_obj.pop_site()
                     return security
-
 
         elif ticket_key:
           
@@ -1058,9 +1072,9 @@ def get_app_server_class():
         except:
             cherrypy_major_version = 3
         if cherrypy_major_version >= 3:
-            from cherrypy30_adapter import get_app_server
+            from .cherrypy30_adapter import get_app_server
         else:
-            from cherrypy_adapter import get_app_server
+            from .cherrypy_adapter import get_app_server
     elif app_server == "batch":
         return object
     else:
@@ -1076,7 +1090,8 @@ def get_app_server_class():
 def get_xmlrpc_server_class():
     app_server = os.getenv('TACTIC_APP_SERVER')
     if app_server == "webware":
-        from webware_adapter import get_xmlrpc_server
+        # DEPRECATED
+        from .webware_adapter import get_xmlrpc_server
     elif app_server == "cherrypy":
         import cherrypy
         try:
@@ -1084,9 +1099,9 @@ def get_xmlrpc_server_class():
         except:
             cherrypy_major_version = 3
         if cherrypy_major_version >= 3:
-            from cherrypy30_adapter import get_xmlrpc_server
+            from .cherrypy30_adapter import get_xmlrpc_server
         else:
-            from cherrypy_adapter import get_xmlrpc_server
+            from .cherrypy_adapter import get_xmlrpc_server
     elif app_server == "batch":
         return object
     else:

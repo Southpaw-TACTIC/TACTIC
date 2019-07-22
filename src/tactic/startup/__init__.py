@@ -9,5 +9,5 @@
 #
 #
 
-from first_run_init import *
+from .first_run_init import *
 

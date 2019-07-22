@@ -10,5 +10,5 @@
 #
 #
 
-from loader import *
-from loader_context import *
+from .loader import *
+from .loader_context import *

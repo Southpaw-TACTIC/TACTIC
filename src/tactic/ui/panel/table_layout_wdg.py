@@ -31,7 +31,10 @@ from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
 
-from base_table_layout_wdg import BaseTableLayoutWdg
+from .base_table_layout_wdg import BaseTableLayoutWdg
+
+import six
+basestring = six.string_types
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
@@ -47,20 +50,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'description': "Determines whether to draw with widgets or just use the raw data",
             'type': 'SelectWdg',
             'values': 'widget|raw',
-            'order': 00,
+            'order': '00',
             'category': 'Misc'
         },
 
         "search_type": {
             'description': "search type that this panels works with",
             'type': 'TextWdg',
-            'order': 01,
+            'order': '01',
             'category': 'Required'
         },
         "view": {
             'description': "view to be displayed",
             'type': 'TextWdg',
-            'order': 02,
+            'order': '02',
             'category': 'Required',
             'default': 'table',
         },
@@ -78,28 +81,28 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         "element_names": {
             'description': "Comma delimited list of elemnent to view",
             'type': 'TextWdg',
-            'order': 00,
+            'order': '00',
             'category': 'Optional'
         },
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 01,
+            'order': '01',
             'category': 'Optional'
         },
         "show_header": {
             'description': "Determines whether or not to show the table header",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 02,
+            'order': '02',
             'category': 'Optional'
         },
         "show_select": {
             'description': "Determine whether to show the selection checkbox for each row",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 03,
+            'order': '03',
             'category': 'Optional'
         },
 
@@ -628,7 +631,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout_inner")
 
-        inner.add_style("postion: relative")
+        inner.add_style("position: relative")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px")
         inner.add_style("border-color", inner.get_color("border"))
@@ -872,6 +875,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         min_width = 45
         #expand_full_width = False
         for i, item_width in enumerate(reversed(column_widths)):
+
+            if item_width == "auto":
+                continue
+
+            if isinstance(item_width, basestring):
+                item_width = item_width.replace("px", "")
+                item_width = int(item_width)
+
+
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -929,6 +941,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             height = self.kwargs.get("height")
             if height:
+                try:
+                    height = int(height)
+                    height = str(height) + "px"
+                except ValueError:
+                    pass
                 scroll.add_style("height: %s" % height)
 
 
@@ -2947,7 +2964,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         closed_div = IconWdg("CLOSED", closed_icon) 
         swap.set_display_wdgs(open_div, closed_div)
         swap.add_style("margin-left: 5px")
-        swap.add_style("line-height: %spx" % height)
+        swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
         title_div.add_style("width: 100%")
@@ -3421,14 +3438,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = self.value
 
-                # add timezone conversion
-                if not SObject.is_day_column(element_name):
-                    element_type = SearchType.get_tactic_type(self.search_type, element_name)
-                    
-                    if element_type in ['time', 'datetime']:
-                        value = widget.get_timezone_value(value)
-                     
-
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
@@ -3713,7 +3722,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     editable = False
 
                 if editable == True:
-                    from layout_wdg import CellEditWdg
+                    from .layout_wdg import CellEditWdg
                     edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version())
                     edit_wdgs[name] = edit
                     # now set up any validations on this edit cell,
@@ -4587,7 +4596,7 @@ spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
                 spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
-            fx.start('margin-top', -size.y-100+"px");
+            fx.start('margin-top', -size.y-100);
         }
         else {
             spt.table.remove_hidden_row(sibling);
@@ -8787,7 +8796,7 @@ spt.table.open_ingest_tool = function(search_type) {
 
                 if not level_sobjects_dict:
                     done = True
-                    break;
+                    break
 
 
                 current_sobjects = []

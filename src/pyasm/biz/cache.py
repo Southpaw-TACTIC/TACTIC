@@ -126,7 +126,7 @@ class SearchTypeCache(BaseCache):
         keys = self.caches.keys()
         self.caches = {}
 
-        search = Search(self.search_type)
+        search = Search(self.search_type, sudo=True)
         search.set_show_retired(True)
         self.sobjects = search.get_sobjects()
 
@@ -160,7 +160,7 @@ class SearchTypeCache(BaseCache):
 
     def build_cache_by_column(self, column):
         # do not build if it already exists
-        if self.caches.has_key(column):
+        if column in self.caches:
             return
 
         # build a search_key cache
@@ -260,7 +260,7 @@ class CacheContainer(object):
 
         from pyasm.command import Trigger
         for event in events:
-            #print "registering: ", event
+            #print("registering: ", event)
             trigger = SearchType.create("sthpw/trigger")
             trigger.set_value("event", event)
             trigger.set_value("class_name", "pyasm.command.SearchTypeCacheTrigger")
@@ -286,7 +286,7 @@ class CacheContainer(object):
 
             cache = CacheContainer.get(key)
             if not cache:
-                print "WARNING: Cache [%s] does not exist in memory" % key
+                print("WARNING: Cache [%s] does not exist in memory" % key)
                 continue
 
             mtime = cache.get_mtime()

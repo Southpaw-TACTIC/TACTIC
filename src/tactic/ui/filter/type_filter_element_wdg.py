@@ -17,8 +17,8 @@ from pyasm.widget import CheckboxWdg, SelectWdg, TextWdg
 
 from tactic.ui.common import BaseRefreshWdg
 
-from filter_data import FilterData
-from filter_element_wdg import BaseFilterElementWdg
+from .filter_data import FilterData
+from .filter_element_wdg import BaseFilterElementWdg
 
 
 
@@ -262,7 +262,7 @@ class TypeFilterElementWdg(BaseFilterElementWdg):
             else:
                 search.add_where("(now() - \"%s\" <= '%s')" % (column, value) )
         else:
-            print "WARNING: relation [%s] not implemented" % relation
+            print("WARNING: relation [%s] not implemented" % relation)
             return
 
 

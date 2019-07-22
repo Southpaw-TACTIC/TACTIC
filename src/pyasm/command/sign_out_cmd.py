@@ -14,9 +14,10 @@ __all__ = ["SignOutCmd", "PasswordEditCmd"]
 
 
 from pyasm.common import Environment, UserException
-from command import *
 from pyasm.search import SearchKey
 from pyasm.security import Login
+
+from .command import *
 
 import hashlib
 class SignOutCmd(Command):

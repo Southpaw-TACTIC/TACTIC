@@ -65,9 +65,9 @@ SYNOPSIS
 
 
     # Print list of keywords, supplemental categories, or contacts
-    print info.keywords
-    print info.supplementalCategories
-    print info.contacts
+    print(info.keywords)
+    print(info.supplementalCategories)
+    print(info.contacts)
 
     # Get specific attributes...
     caption = info.data['caption/abstract']
@@ -85,7 +85,7 @@ SYNOPSIS
     info.saveAs(fn2)
 
     #re-read IPTC info
-    print IPTCInfo(fn2)
+    print(IPTCInfo(fn2))
 
 DESCRIPTION
 
@@ -430,7 +430,7 @@ def _getSetSomeList(name):
             self._data[name] = list(value)
         elif isinstance(value, basestring):
             self._data[name] = [value]
-            print 'Warning: IPTCInfo.%s is a list!' % name
+            print('Warning: IPTCInfo.%s is a list!' % name)
         else:
             raise ValueError('IPTCInfo.%s is a list!' % name)
 
@@ -972,7 +972,7 @@ class IPTCInfo(object):
                         try:
                             cs = unpack('!H', temp)[0]
                         except:
-                            print (
+                            print(
                                 'WARNING: problems with charset recognition',
                                 repr(temp))
                             cs = None
@@ -1356,4 +1356,4 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     if len(sys.argv) > 1:
         info = IPTCInfo(sys.argv[1])
-        print info
+        print(info)

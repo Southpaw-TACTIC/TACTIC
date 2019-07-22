@@ -22,7 +22,7 @@ from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.input import TextInputWdg
 
-from filter_data import FilterData
+from .filter_data import FilterData
 
 
 class BaseFilterWdg(BaseRefreshWdg):
@@ -65,7 +65,7 @@ class BaseFilterWdg(BaseRefreshWdg):
         for i, values in enumerate(values_list):
             # hacky
             
-            if not values.has_key("%s_column" % prefix):
+            if "%s_column" % prefix in values:
                 continue
 
             # filter out provided search_type
@@ -467,7 +467,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             filter_type = filter_data_map.get("filter_type")
             # some backwards compatibility
-            if not filter_type and filter_data_map.has_key("chldren_search_type"):
+            if not filter_type and "children_search_type" in filter_data_map:
                 filter_type = "_related"
 
             if not filter_type:
@@ -530,7 +530,11 @@ class GeneralFilterWdg(BaseFilterWdg):
 
                 child_column_indexes = self.get_column_indexes(related_type)
 
-                column_indexes = dict(column_indexes.items() + child_column_indexes.items() )
+                column_indexes = {}
+                for n, v in column_indexes.items():
+                    column_indexes[n] = v
+                for n, v in child_column_indexes.items():
+                    column_indexes[n] = v
 
             top_wdg.add(column_types)
 
@@ -1625,8 +1629,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         for i, values in enumerate(values_list):
 
             # check to see if this is right "prefix"
-            #if not values.has_key("%s_column" % self.prefix):
-            if not values.has_key("%s_enabled" % self.prefix):
+            if "%s_enabled" % self.prefix not in values:
                 continue
 
            # check if this filter is enabled
@@ -2159,7 +2162,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
             if not value or not column or not relation or special_relation:
-	        begin_idx = GeneralFilterWdg.add_ops(search, values_list,  levels, ops, i, begin_idx)
+                begin_idx = GeneralFilterWdg.add_ops(search, values_list,  levels, ops, i, begin_idx)
                 continue
 
             if relation == "is":
@@ -2298,7 +2301,7 @@ class GeneralFilterWdg(BaseFilterWdg):
     def add_ops(search, values_list, levels, ops, i, begin_idx):
         '''add level 0 op if it is the end of the values list or if it encounters level 1 op'''
         if not levels:
-	    return begin_idx
+            return begin_idx
         op = None
         # this is the end of values_list
         if i+1 == len(values_list): 

@@ -19,8 +19,8 @@ from pyasm.web import *
 from pyasm.biz import *
 from pyasm.widget import BaseTableElementWdg, FilterSelectWdg, FilterCheckboxWdg, IconButtonWdg, IconWdg
 
-from input_wdg import HiddenWdg, CalendarInputWdg
-from layout_wdg import TableWdg
+from .input_wdg import HiddenWdg, CalendarInputWdg
+from .layout_wdg import TableWdg
 
 import datetime, re
 
@@ -1924,7 +1924,7 @@ class GanttCbk(DatabaseAction):
            json_data = json_data.get('json_data')
            if isinstance(json_data, basestring):
                json_data = eval(json_data)
-        except ValueError, e:
+        except ValueError as e:
             if e.__str__().find('No JSON object') != -1:
                 raise SetupException('Data is not decodable as JSON.')
 
@@ -1941,7 +1941,7 @@ class GanttCbk(DatabaseAction):
         
 
         # single date change
-        print "KEYS ", json_data
+        print("KEYS ", json_data)
         
         if bid_start_val:
             self.sobject.set_value(bid_start_col, bid_start_val)

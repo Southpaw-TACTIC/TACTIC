@@ -34,14 +34,14 @@ class Install:
     def check_db_program(self):
         try:
             print
-            print "Verifying the database is installed. The default is no password if you have followed the instructions to not require a password. If you see it asking for 'Password for user postgres', you should close this window and make the database not require a password first (refer to our install documentation) and resume the installation."
+            print("Verifying the database is installed. The default is no password if you have followed the instructions to not require a password. If you see it asking for 'Password for user postgres', you should close this window and make the database not require a password first (refer to our install documentation) and resume the installation.")
             print
 
             # Determine database type.
             # Run command query and exit.
-            print '\nDatabase type is: ', self.database_type
-            print '(if this is not the database type desired,'
-            print 'hit Ctrl+C to cancel and see the types available with \'python install.py -h\' )'
+            print('\nDatabase type is: ', self.database_type)
+            print('(if this is not the database type desired,')
+            print('hit Ctrl+C to cancel and see the types available with \'python install.py -h\' )')
             if self.database_type == 'PostgresSQL':
                 program = subprocess.Popen(['psql', '-U',  'postgres', '-p', self.port_num, '-c', "\q"], shell=True, stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
             elif self.database_type == 'SQLServer':
@@ -64,10 +64,15 @@ class Install:
                     raise InstallException('Please put the SQL command shell for the database in your PATH environment variable. When you are finished, run install.py again.')
           
 	except KeyboardInterrupt, e:
-            print "Exiting..."
+            print("Exiting...")
             sys.exit(0)
 
     def check_db_exists(self, project_code):
+
+        if not project_code.isalnum():
+            raise Exception("Project [%s] is not valid" % project_code)
+
+
         # create the sthpw database
 
         if self.database_type == 'SQLServer':
@@ -78,32 +83,36 @@ class Install:
             if self.database_type == 'SQLServer':
                 # Print out an error and exit
                 # if the sthpw already exists.
-                args = 'sqlcmd -U tactic -P south123paw -Q \" \
+                cmd = '''" \
                     DECLARE @db_id int; \
                     SET @db_id = db_id(\'%s\'); \
                     IF @db_id IS NOT NULL \
-                        print \'Database already exists\'\
-                    \"' % project_code
+                        print(\'Database already exists\'\)
+                    \"''' % project_code
+ 
+                args = ['sqlcmd', '-U', 'tactic', '-P', 'south123paw', '-Q', cmd]
                 program = subprocess.Popen(args, shell=True, \
                     stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
                 lines = program.stdout.readlines()
                 line = '\n'.join(lines)
                 if line.find('Database already exists') != -1:
-                    print "\nError: Database '%s' already exists. Please drop the database '%s' and re-run install again." %(project_code, project_code)
-                    print "Exiting..."
+                    print("\nError: Database '%s' already exists. Please drop the database '%s' and re-run install again." %(project_code, project_code))
+                    print("Exiting...")
                     sys.exit(0)
             else:
                 args = ['psql','-U', 'postgres',  '-p', self.port_num, '-c', "\c %s;\q"%project_code]
 
         else:
-            args = 'psql -U postgres -p %s -c  "\c %s;\q"'%(self.port_num, project_code)
+            #args = 'psql -U postgres -p %s -c  "\c %s;\q"'%(self.port_num, project_code)
+            cmd = '"\c %s;\q"' % project_code
+            args = ['psql', '-U', 'postgres','-p', self.port_num, '-c', cmd]
         program = subprocess.Popen(args, shell=True, \
             stdout = subprocess.PIPE , stderr = subprocess.PIPE, stdin=sys.stdin)
         lines = program.stdout.readlines()
         line = '\n'.join(lines)
         
         if line.find('connected to database') != -1:
-            print "Database '%s' already exists. Do you want to drop the database '%s' and continue?, If you choose 'y', It will be backed up to the current directory.  (y/n)" %(project_code, project_code)
+            print("Database '%s' already exists. Do you want to drop the database '%s' and continue?, If you choose 'y', It will be backed up to the current directory.  (y/n)" %(project_code, project_code))
             print
             answer = raw_input("(n) -> " )
             if answer in ['y','Y']:
@@ -118,7 +127,7 @@ class Install:
                 self.backup_msg =  "Database 'sthpw' is backed up to [%s/%s]" %(current_dir, backup_name)
                 if self.backup_msg:
                     print
-                    print self.backup_msg
+                    print(self.backup_msg)
 
 
                 os.system('dropdb -U postgres -p %s sthpw'%self.port_num)
@@ -178,13 +187,13 @@ class Install:
     def create_temp_directory(self):
         from pyasm.common import Environment 
         self.tmp_dir = Environment.get_tmp_dir()
-        print "Creating TACTIC temp directories: ", self.tmp_dir
+        print("Creating TACTIC temp directories: ", self.tmp_dir)
         if not os.path.exists(self.tmp_dir):
             os.makedirs(self.tmp_dir)
 
     def change_directory_ownership(self):
         if os.name != 'nt':
-            print "Changing directory ownership of temp and data directories"
+            print("Changing directory ownership of temp and data directories")
             # set the owner of tmp_dir and site_dir
             os.system('chown -R %s \"%s\"'\
                 %(self.tactic_apache_user, self.tmp_dir))
@@ -203,7 +212,7 @@ class Install:
 
     def install_win32_service(self):
         if os.name == 'nt':
-            print "Installing win32 service."
+            print("Installing win32 service.")
             # install the windows service
             current_dir = self.get_current_dir()
             service_path = '"%s/src/install/service/win32_service.py" install'%current_dir
@@ -238,9 +247,9 @@ class Install:
             self.install_to_python(install_defaults)
         
         except InstallException, e:
-            print "Error: %s" %e.__str__()
+            print("Error: %s" %e.__str__())
             print
-            print "Exiting..."
+            print("Exiting...")
             print
             sys.exit(2)
 
@@ -250,7 +259,7 @@ class Install:
         try:
             import tacticenv
         except ImportError:
-            print 'Error: Failed to "import tacticenv"'
+            print('Error: Failed to "import tacticenv"')
             return
         self.check_modules(install_db)
 
@@ -266,10 +275,10 @@ class Install:
         install_dir = os.getenv("TACTIC_INSTALL_DIR")
         data_dir = os.getenv("TACTIC_DATA_DIR")
         if not os.path.exists(install_dir):
-            print "Environment variable TACTIC_INSTALL_DIR '%s' does not exist" % install_dir
+            print("Environment variable TACTIC_INSTALL_DIR '%s' does not exist" % install_dir)
             return
         if not os.path.exists(data_dir):
-            print "Environment variable TACTIC_DATA_DIR '%s' does not exist" % data_dir
+            print("Environment variable TACTIC_DATA_DIR '%s' does not exist" % data_dir)
             return
 
 
@@ -289,7 +298,7 @@ class Install:
 
 
         if install_db == False:
-            print "TACTIC setup successful.  Next, the TACTIC database needs to be configured."
+            print("TACTIC setup successful.  Next, the TACTIC database needs to be configured.")
             return
 
         # dynamically load modules now that we know where they are
@@ -301,14 +310,14 @@ class Install:
      
 
         # check if database exists
-        print "Creating database '%s' ..." % project_code
+        print("Creating database '%s' ..." % project_code)
         print
 
         db_exists = False
         from pyasm.search import DatabaseException
         try:
             if database.database_exists(project_code):
-                print "... already exists. Please remove first"
+                print("... already exists. Please remove first")
                 raise InstallException("Database '%s' already exists" % project_code)
                 db_exists = True
         except DatabaseException, e:
@@ -350,7 +359,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         ''')
 
        
-        print "Upgrading the database schema in quiet mode..."
+        print("Upgrading the database schema in quiet mode...")
         print
 
         from pyasm.search.upgrade import Upgrade
@@ -367,35 +376,35 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
         print
         print
-        print "*** Installation of TACTIC completed at [%s] ***" %self.tactic_base_dir
+        print("*** Installation of TACTIC completed at [%s] ***" %self.tactic_base_dir)
         print
         print
         #if self.backup_msg:
         #    print self.backup_msg
 
         if os.name != 'nt':
-            print "Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. /etc/httpd/conf.d/"%self.apache_conf_path
+            print("Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. /etc/httpd/conf.d/"%self.apache_conf_path)
 
         else:
-            print "Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. C:/Program Files/Apache Software Foundation/Apache2.2/conf/"%self.apache_conf_path
+            print("Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. C:/Program Files/Apache Software Foundation/Apache2.2/conf/"%self.apache_conf_path)
     
         print
-        print "Depending on the OS, you may need to add the following line to the main config file [httpd.conf] shipped with Apache as well:"
+        print("Depending on the OS, you may need to add the following line to the main config file [httpd.conf] shipped with Apache as well:")
 
 
         print
         if os.name == 'nt':
-            print "Include conf/tactic_win32.conf"
+            print("Include conf/tactic_win32.conf")
         else:
-            print "Include conf.d/*.conf"
+            print("Include conf.d/*.conf")
         print
 
     def print_header(self):
         print
         print
-        print "*"*20
-        print "Tactic Installation"
-        print "*"*20
+        print("*"*20)
+        print("Tactic Installation")
+        print("*"*20)
         print
 
 
@@ -549,7 +558,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         # set tactic install dir
         if not install_defaults:
             print
-            print "Please enter the base path of the Tactic installation:"
+            print("Please enter the base path of the Tactic installation:")
             print
             tactic_base_dir = raw_input("(%s) -> " % default_base_dir)
             if not tactic_base_dir:
@@ -587,7 +596,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             default_apache_user = self.get_default_web_server_user()
             if not install_defaults:
                 print
-                print "Please enter the user Apache Web Server is run under:"
+                print("Please enter the user Apache Web Server is run under:")
                 print
                 tactic_apache_user = raw_input("(%s) -> " % default_apache_user)
                 if not tactic_apache_user:
@@ -599,7 +608,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             self.tactic_apache_user = tactic_apache_user
             user_id  =  self.check_web_server_user(tactic_apache_user) 
             if user_id == False:
-                print "User [%s] does not exist in the system. Exiting..." %tactic_apache_user
+                print("User [%s] does not exist in the system. Exiting..." %tactic_apache_user)
                 print
                 sys.exit(2)
 
@@ -628,9 +637,9 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         except OSError, e:
             if e.__str__().find('Access is denied') != -1:
 
-                print "Permission error to create directories"
+                print("Permission error to create directories")
                 if os.name =='nt':
-                    print "Try to run your cmd.exe as Administrator by Shift+right clicking on the Cmd.exe icon."
+                    print("Try to run your cmd.exe as Administrator by Shift+right clicking on the Cmd.exe icon.")
                 raise InstallException(e)
 
         # set the tactic user
@@ -640,7 +649,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             default_tactic_user = "apache"
             default_tactic_group = "apache"
             print
-            print "Please enter TACTIC user:"
+            print("Please enter TACTIC user:")
             print
             self.tactic_user = raw_input("(%s) -> " % default_tactic_user)
             if not self.tactic_user:
@@ -751,18 +760,18 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 print
                 output = raw_input("Custom install directory [%s] already exists. It will be removed and copied over. Continue? (y/n) -> "%src_dir)
                 if output.lower() not in ['yes', 'y']:
-                    print "Installation has been stopped."
+                    print("Installation has been stopped.")
                     sys.exit(2)
                 else:
                     try:
                         shutil.rmtree(src_dir)
                     except OSError, e:
                         print
-                        print "Errors in removing directories."
+                        print("Errors in removing directories.")
                         raise InstallException(e)
 
             print
-            print "Copying files to the install directory... It may take several minutes."
+            print("Copying files to the install directory... It may take several minutes.")
             shutil.copytree(current_dir, src_dir)
 
         sys.path.append("%s/src"%src_dir)
@@ -775,7 +784,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
             if not os.path.exists(self.tactic_install_dir):
                 print
-                print "Creating a symlink at [%s]..." % self.tactic_install_dir
+                print("Creating a symlink at [%s]..." % self.tactic_install_dir)
                 os.symlink(self.tactic_src_dir, self.tactic_install_dir)
             
 
@@ -783,13 +792,13 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
     def check_modules(self, install_db):
         print
-        print "Verifying Python modules are properly installed..." 
+        print("Verifying Python modules are properly installed..." )
         print
 
         try:
             import Crypto
         except ImportError:
-            print "ERROR: Cannot import Crypto python module.  Please Install."
+            print("ERROR: Cannot import Crypto python module.  Please Install.")
             print
             raise
  
@@ -798,7 +807,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
            #import Image
            from PIL import Image 
         except ImportError:
-            print "ERROR: Cannot import Python Imaging Library. Please Install."
+            print("ERROR: Cannot import Python Imaging Library. Please Install.")
             print
             raise
             
@@ -811,7 +820,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         try:
             from lxml import etree
         except ImportError:
-            print "ERROR: Cannot import lxml.  Please Install."
+            print("ERROR: Cannot import lxml.  Please Install.")
             print
             raise
  
@@ -823,7 +832,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             try:
                 import pyodbc
             except ImportError:
-                print "ERROR: Cannot import Python Database module (pgdb or pyscopg2 or pyodbc).  Please install."
+                print("ERROR: Cannot import Python Database module (pgdb or pyscopg2 or pyodbc).  Please install.")
                 print
                 raise
 
@@ -834,14 +843,14 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             try:
                 import simplejson
             except ImportError:
-                print "ERROR: Cannot import simplejson module.  Please Install."
+                print("ERROR: Cannot import simplejson module.  Please Install.")
                 print
                 raise
         if os.name == 'nt':
             try:
                 import win32serviceutil
             except ImportError:
-                print "ERROR: Cannot import Python Database module (win32serviceutil).  Please Install py-win32."
+                print("ERROR: Cannot import Python Database module (win32serviceutil).  Please Install py-win32.")
                 print
                 raise
 
@@ -873,7 +882,7 @@ if __name__ == '__main__':
     elif install_db == "false" or install_db == "False":
         install_db = False
         print
-        print "  (Database Schema: You have indicated not to install the database schema.)"
+        print("  (Database Schema: You have indicated not to install the database schema.)")
     else:
         install_db = True
 

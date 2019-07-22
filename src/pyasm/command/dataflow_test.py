@@ -149,7 +149,7 @@ class WorkflowCmd(Command):
             self._test_approval_state()
             self._test_manual_state()
             """
-        except Exception, e:
+        except Exception as e:
             print("Error: ", e)
             raise
 
@@ -885,7 +885,7 @@ class WorkflowCmd(Command):
 
             # receive the packages
             packages = input.get("packages")
-            print "packages: ", packages
+            print("packages: ", packages)
 
             '''
         } )

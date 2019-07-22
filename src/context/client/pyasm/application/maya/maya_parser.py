@@ -14,8 +14,7 @@
 __all__ = ['MayaParser', 'MayaParserFilter', 'MayaParserTextureFilter', 'MayaParserTextureEditFilter', 'MayaParserReferenceFilter']
 
 
-from cStringIO import StringIO
-from maya_app import Maya
+from .maya_app import Maya
 from pyasm.application.common import TacticException
 import string, re, os, shutil
 
@@ -189,7 +188,7 @@ class MayaParserReferenceFilter(MayaParserFilter):
             if path:
                 self.reference_paths.append(path)
             else:
-                print "WARNING: could not extract texture path from:\n\t%s" % line
+                print("WARNING: could not extract texture path from:\n\t%s" % line)
 
 
 
@@ -247,12 +246,12 @@ class MayaParserTextureFilter(MayaParserFilter):
                 path = '%s/%s' %(texture_dir1, path)
                 exists = os.path.exists(path)
                 if not exists:
-                    print "WARNING: texture_path '%s' does not exist" % path
+                    print("WARNING: texture_path '%s' does not exist" % path)
             if not exists and texture_dir2:
                 path = '%s/%s' %(texture_dir2, path)
                 exists = os.path.exists(path)
                 if not exists:
-                    print "WARNING: texture_path '%s' does not exist" % path
+                    print("WARNING: texture_path '%s' does not exist" % path)
             if not exists:
                 return
 
@@ -266,7 +265,7 @@ class MayaParserTextureFilter(MayaParserFilter):
                     path = mayaman_path
                     break
             else:
-                print "WARNING: texture_path '%s' does not exist" % path
+                print("WARNING: texture_path '%s' does not exist" % path)
                 return
             """
         if os.path.exists(path):
@@ -276,7 +275,7 @@ class MayaParserTextureFilter(MayaParserFilter):
                 attr = "ftn"
             self.texture_attrs.append( attr )
         else:
-            print "WARNING: texture_path '%s' does not exist" % path
+            print("WARNING: texture_path '%s' does not exist" % path)
 
 
 

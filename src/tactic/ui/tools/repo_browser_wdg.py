@@ -758,7 +758,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         #if not show_no_sobject_folders:
         new_sub_paths = []
         if os.path.exists(base_dir) and os.path.isdir(base_dir):
-            if not isinstance(base_dir, unicode):
+            if not Common.IS_Pv3 and not isinstance(base_dir, unicode):
                 base_dir = unicode(base_dir)
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:

@@ -30,6 +30,10 @@ import os.path
 import re
 import shutil
 
+import six
+basestring = six.string_types
+
+
 __all__ = ['IngestUploadWdg', 'IngestCheckCmd', 'IngestUploadCmd']
 
 
@@ -322,7 +326,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("width: 400px")
         div.add_style("padding: 20px")
-        div.add_style("max-height: 510px")
+        # div.add_style("max-height: 510px")
         div.add_style("overflow: auto")
         div.add_style("margin-bottom: 20px")
 

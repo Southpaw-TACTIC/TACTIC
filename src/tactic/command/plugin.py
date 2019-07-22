@@ -15,13 +15,20 @@ __all__ = ['PluginBase', 'PluginCreator', 'PluginUploader', 'PluginInstaller', '
 
 import tacticenv
 
-from pyasm.common import Xml, Config, TacticException, Environment, jsonloads, ZipUtil
+from pyasm.common import Xml, Config, TacticException, Environment, jsonloads, ZipUtil, Common
 from pyasm.biz import Project, Schema
+from pyasm.security import Sudo
 from pyasm.search import Search, SearchType, TableSchemaDumper, TableDataDumper, DbContainer, Insert, DropTable, CreateTable, CreateView, SearchKey, TableUndo, SqlException, SearchException
 from pyasm.web import WebContainer
 from pyasm.command import Command, DatabaseAction
 
-import os, codecs, shutil, datetime
+import os, codecs, shutil, datetime, sys, functools
+
+IS_Pv3 = sys.version_info[0] > 2
+
+
+
+
 
 class PluginBase(Command):
 
@@ -250,7 +257,11 @@ class PluginBase(Command):
 
 
         if expr:
-            sobjects = Search.eval(expr)
+            sudo = Sudo()
+            try:
+                sobjects = Search.eval(expr)
+            finally:
+                sudo.exit()
 
             # order by id
             def sort_sobjects(a, b):
@@ -264,7 +275,8 @@ class PluginBase(Command):
                 else:
                     return -1
 
-            sobjects.sort(sort_sobjects)
+            #sobjects.sort(sort_sobjects)
+            sobjects = sorted(sobjects,key=functools.cmp_to_key(sort_sobjects))
 
 
         elif search_type:
@@ -1018,7 +1030,7 @@ class PluginInstaller(PluginBase):
             elif node_name == 'sobject':
                 path = self.xml.get_attribute(node, "path")
                 search_type = self.xml.get_attribute(node, "search_type")
-                seq_max = self.xml.get_attribute(node, "seq_max")
+                seq_max = self.xml.get_attribute(node, "seq_max") or 0
                 try:
                     if seq_max:
                         seq_max = int(seq_max)
@@ -1567,7 +1579,7 @@ class PluginTools(PluginBase):
         base_st = sobject.get_base_search_type()
         cols = self.UNIQUE_DICT.get(base_st, ['code'])
 
-        search = Search( sobject.get_base_search_type() )
+        search = Search( sobject.get_base_search_type(), sudo=True )
         has_filter = False
         for col in cols:
             value = sobject.get_value(col)
@@ -1603,15 +1615,24 @@ class PluginTools(PluginBase):
                 for basename in basenames:
                     subpath = "%s/%s" % (root, basename)
                     try:
-                        subf = codecs.getreader('utf8')(open(subpath, 'r'))
+                        if Common.IS_Pv3:
+                            subf = open(subpath, 'r')
+                        else:
+                            subf = codecs.getreader('utf8')(open(subpath, 'r'))
                         f.extend(subf.readlines())
                         subf.close()
                         f.append("\n")
                     except Exception as e:
-                        print("WARNING: ", e)
+                        print("XWARNING: ", e)
+                        raise
         else:
             #f = codecs.open(path, 'r', 'utf-8')
-            f = codecs.getreader('utf8')(open(path, 'r'))
+            if IS_Pv3:
+                f = open(path, 'r')
+            else:
+                f = codecs.getreader('utf8')(open(path, 'r'))
+
+
 
 
         statement = []
@@ -1646,11 +1667,15 @@ class PluginTools(PluginBase):
                 if not statement:
                     continue
                 # strip out a line feeds and add proper new lines
-                #statement_str = "\n".join([x.strip("\n") for x in statement])
+                statement.insert(0, "from pyasm.search import SearchType, CreateTable, Search, CreateView")
                 statement_str = "\n".join([x.rstrip("\r\n") for x in statement])
 
                 try:
-                    exec(statement_str)
+                    gc = {}
+                    lc = {}
+                    exec(statement_str, gc, lc)
+                    insert = lc.get("insert")
+                    table = lc.get("table")
                 except SqlException as e:
                     print("ERROR (SQLException): ", e)
                 except Exception as e:
@@ -1785,12 +1810,12 @@ class PluginTools(PluginBase):
 
 
 
-
+                    sudo = Sudo()
                     try:
                         if commit:
                             try:
                                 sobject.commit(triggers=False)
-                            except UnicodeDecodeError, e:
+                            except UnicodeDecodeError as e:
                                 raise
                             except Exception as e:
                                 print("WARNING: could not commit [%s] due to error [%s]" % (sobject.get_search_key(), e))
@@ -1809,9 +1834,12 @@ class PluginTools(PluginBase):
                                 plugin_content.set_value("plugin_code", self.plugin.get_code())
                                 plugin_content.commit()
 
-                    except UnicodeDecodeError, e:
+                    except UnicodeDecodeError as e:
                         print("Skipping due to unicode decode error: [%s]" % statement_str)
                         continue
+
+                    finally:
+                        sudo.exit()
 
 
                 if table:

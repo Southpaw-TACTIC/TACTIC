@@ -16,8 +16,8 @@ import os, re
 
 from pyasm.biz import FileNaming, Project, Snapshot
 from pyasm.common import TacticException
-from prod_setting import ProdSetting
 from pyasm.search import SearchType
+from .prod_setting import ProdSetting
 
 class ProdFileNaming(FileNaming):
 

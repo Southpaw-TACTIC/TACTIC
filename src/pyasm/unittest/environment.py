@@ -18,9 +18,8 @@ from pyasm.common import TacticException
 from pyasm.biz import Project
 from pyasm.security import Batch
 from pyasm.command import Command
-from pyasm.search import SearchType, Search
+from pyasm.search import SearchType, Search, DbResource, DbContainer
 from tactic.command import CreateProjectCmd, PluginInstaller
-from tactic.ui.tools import DeleteProjectCmd
 
 class UnittestEnvironment(object):
 
@@ -36,7 +35,7 @@ class UnittestEnvironment(object):
 
             self.delete()
 
-        print "Setting up clean Unittest project"
+        print("Setting up clean Unittest project")
 
         # create the project
         create_cmd = CreateProjectCmd(project_code=self.project_code, project_title="Unittest") #, project_type="unittest")
@@ -49,12 +48,20 @@ class UnittestEnvironment(object):
 
 
     def delete(self):
-        print "Deleting existing Unittest project"
+        print("Deleting existing Unittest project")
         related_types = ["sthpw/schema", "sthpw/task","sthpw/snapshot", "sthpw/file"]
+        self.commit()
+        from tactic.ui.tools import DeleteProjectCmd
         delete_cmd = DeleteProjectCmd(project_code=self.project_code, related_types=related_types)
         delete_cmd.execute()
 
 
+    def commit(self):
+        db_res = DbResource.get_default('unittest')
+        sql = DbContainer.get(db_res)
+        impl = sql.get_database_impl()
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
 
 
 
@@ -73,7 +80,7 @@ class Sample3dEnvironment(UnittestEnvironment):
 
             self.delete()
 
-        print "Setting up a basic Sample3d project"
+        print("Setting up a basic Sample3d project")
 
         # create the project
         create_cmd = CreateProjectCmd(project_code=self.project_code, project_title="Sample 3D") #, project_type="unittest")
@@ -84,7 +91,7 @@ class Sample3dEnvironment(UnittestEnvironment):
         installer.execute()
 
         # add 30 shots
-        for x in xrange(30):
+        for x in range(30):
             shot = SearchType.create("prod/shot")
             shot.set_value('name','shot%s'%x)
             shot.set_value('sequence_code','SEQ_01')

@@ -139,7 +139,7 @@ class SchemaDumpCmd(object):
             
 
 
-        print xml.to_string()
+        print(xml.to_string())
 
         # create a virtual plugin
         plugin = SearchType.create("sthpw/plugin")

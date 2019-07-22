@@ -22,14 +22,15 @@ from pyasm.search import Transaction, SearchType, Search, SObject
 from pyasm.unittest import Person
 from pyasm.checkin import FileCheckin
 
-from project import *
-from snapshot import *
-from schema import *
-from task import *
-from naming import *
-from note import Note
-from pipeline import Context, Pipeline
-from expression import ExpressionParser
+from .project import *
+from .snapshot import *
+from .schema import *
+from .task import *
+from .naming import *
+from .note import Note
+from .pipeline import Context, Pipeline
+from .expression import ExpressionParser
+
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 
@@ -101,7 +102,7 @@ class BizTest(unittest.TestCase):
         pipe.commit()
         Pipeline.clear_cache()
         pipeline = Pipeline.get_by_code('person')
-        self.assertEquals(pipeline != None, True)
+        self.assertEqual(pipeline != None, True)
 
         # add bunch of dummy initial tasks to the person
         initial_tasks = Task.add_initial_tasks(self.person, 'person', processes=['design1','design2'], mode='simple process', skip_duplicate=True)
@@ -110,7 +111,7 @@ class BizTest(unittest.TestCase):
             full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
             context_list.append(full_context)
 
-        self.assertEquals(context_list, ['design1:design1','design2:design2'])
+        self.assertEqual(context_list, ['design1:design1','design2:design2'])
 
         initial_tasks = Task.add_initial_tasks(self.person, 'person', processes=['design1','design2'], mode='simple process', skip_duplicate=False)
         context_list = []
@@ -118,7 +119,7 @@ class BizTest(unittest.TestCase):
             full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
             context_list.append(full_context)
 
-        self.assertEquals(context_list, ['design1:design1/001','design2:design2/001'])
+        self.assertEqual(context_list, ['design1:design1/001','design2:design2/001'])
 
         initial_tasks = Task.add_initial_tasks(self.person, 'person', contexts=['design1:design1/hi','design2:design2/low'], mode='context', skip_duplicate=False)
         context_list = []
@@ -126,7 +127,7 @@ class BizTest(unittest.TestCase):
             full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
             context_list.append(full_context)
 
-        self.assertEquals(context_list, ['design1:design1/hi','design2:design2/low'])
+        self.assertEqual(context_list, ['design1:design1/hi','design2:design2/low'])
 
         initial_tasks = Task.add_initial_tasks(self.person, 'person', contexts=['design1:design1/hi','design2:design2/low'], mode='context', skip_duplicate=False)
         context_list = []
@@ -134,18 +135,18 @@ class BizTest(unittest.TestCase):
             full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
             context_list.append(full_context)
 
-        self.assertEquals(context_list, ['design1:design1/hi/001','design2:design2/low/001'])
+        self.assertEqual(context_list, ['design1:design1/hi/001','design2:design2/low/001'])
 
         initial_tasks = Task.add_initial_tasks(self.person, 'person', contexts=['design1:design1/hi','design2:design2/low'], mode='context', skip_duplicate=True)
         # these are duplicated, so nothing should be created
-        self.assertEquals(initial_tasks, [])
+        self.assertEqual(initial_tasks, [])
 
         single_task = Task.create(self.person, "RIGGIT", "Riggit task", assigned='admin', context="RIGGIT")
         single_task2 = Task.create(self.person, "RIGGIT", "Riggit task", assigned='admin', context="RIGGIT")
 
         # since context is explicity specified, it will stay RIGGIT
-        self.assertEquals(single_task.get('context'),'RIGGIT')
-        self.assertEquals(single_task2.get('context'),'RIGGIT')
+        self.assertEqual(single_task.get('context'),'RIGGIT')
+        self.assertEqual(single_task2.get('context'),'RIGGIT')
 
         # via SearchType.create
         single_task3 = SearchType.create('sthpw/task')
@@ -153,10 +154,10 @@ class BizTest(unittest.TestCase):
         single_task3.set_value('process', 'RIGGIT')
         single_task3.commit()
         
-        self.assertEquals(single_task3.get('context'),'RIGGIT/001')
+        self.assertEqual(single_task3.get('context'),'RIGGIT/001')
         
         single_task4 = Task.create(self.person, "RIGGIT", "Riggit task", assigned='admin')
-        self.assertEquals(single_task4.get('context'),'RIGGIT/002')
+        self.assertEqual(single_task4.get('context'),'RIGGIT/002')
 
         initial_tasks = Task.add_initial_tasks(self.person, 'person', contexts=['design1:design1/hi','design2:design2/low','design3:design3','design3:design3'], mode='context', skip_duplicate=False)
       
@@ -165,7 +166,7 @@ class BizTest(unittest.TestCase):
             full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
             context_list.append(full_context)
 
-        self.assertEquals(context_list, ['design1:design1/hi/002','design2:design2/low/002', 'design3:design3','design3:design3/001'])
+        self.assertEqual(context_list, ['design1:design1/hi/002','design2:design2/low/002', 'design3:design3','design3:design3/001'])
 
         
         initial_tasks = Task.add_initial_tasks(self.person, 'person', contexts=['design1:design1','design3:design3'], mode='context', skip_duplicate=False)
@@ -175,7 +176,7 @@ class BizTest(unittest.TestCase):
             full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
             context_list.append(full_context)
 
-        self.assertEquals(context_list, ['design1:design1/002','design3:design3/002'])
+        self.assertEqual(context_list, ['design1:design1/002','design3:design3/002'])
 
         initial_tasks = Task.add_initial_tasks(self.person, 'person', processes=['design2','design3'], mode='standard', skip_duplicate=False)
         context_list = []
@@ -183,7 +184,7 @@ class BizTest(unittest.TestCase):
             full_context ='%s:%s' %(task.get_value('process'), task.get_value('context'))
             context_list.append(full_context)
 
-        self.assertEquals(context_list, ['design2:design2/002','design3:design3/003'])
+        self.assertEqual(context_list, ['design2:design2/002','design3:design3/003'])
 
 
     def _test_time(self):
@@ -192,18 +193,18 @@ class BizTest(unittest.TestCase):
         sobject.set_value('project_code','unittest')
         sobject.set_value('bid_start_date', '2014-11-11 05:00:00')
         time = sobject.get_value('bid_start_date')
-        self.assertEquals(time, '2014-11-11 05:00:00')
+        self.assertEqual(time, '2014-11-11 05:00:00')
 
         sobject.commit()
 
         time = sobject.get_value('bid_start_date')
-        self.assertEquals(time, '2014-11-11 05:00:00')
+        self.assertEqual(time, '2014-11-11 05:00:00')
         from pyasm.search import DbContainer
         sql = DbContainer.get('sthpw')
         db_value = sql.do_query('SELECT bid_start_date from task where id = %s'%sobject.get_id())
         
         # 2014-11-11 00:00:00 is actually written to the database
-        self.assertEquals(db_value[0][0].strftime('%Y-%m-%d %H:%M:%S %Z'), '2014-11-11 00:00:00 ')
+        self.assertEqual(db_value[0][0].strftime('%Y-%m-%d %H:%M:%S %Z'), '2014-11-11 00:00:00 ')
         
         # an sType specified without a project but with an id could be a common human error
         # but it should handle that fine
@@ -213,14 +214,14 @@ class BizTest(unittest.TestCase):
         task = Search.eval('@SOBJECT(sthpw/task["id", "%s"])'%sobject.get_id(), single=True)
 
         # EST and GMT diff is 5 hours
-        self.assertEquals(task.get_value('bid_start_date'), '2014-11-11 05:00:00')
+        self.assertEqual(task.get_value('bid_start_date'), '2014-11-11 05:00:00')
 
 
         # test NOW() auto conversion
         sobj = SearchType.create('sthpw/note')
         sobj.set_value('process','TEST')
         sobj.set_value('note','123')
-        self.assertEquals(sobj.get_value('timestamp'), "")
+        self.assertEqual(sobj.get_value('timestamp'), "")
         sobj.commit()
 
         # this is local commited time converted back to GMT
@@ -233,7 +234,7 @@ class BizTest(unittest.TestCase):
         now = SPTDate.now()
         diff = now - committed_time
         # should be roughly the same minute, not hours apart
-        self.assertEquals(diff.seconds < 60, True)
+        self.assertEqual(diff.seconds < 60, True)
                 
 
 
@@ -266,16 +267,16 @@ class BizTest(unittest.TestCase):
         # get version -1
         snapshot = Snapshot.get_by_version(self.search_type, self.search_id, context=self.context, version=-1, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
 
         # latest version
         snapshot = Snapshot.get_latest(self.search_type, self.search_id, context=self.context, use_cache=False)
         version = snapshot.get_version()
 
-        self.assertEquals('biz_test_test_v004.txt', snapshot.get_all_file_names()[0])
-        self.assertEquals(4, version)
+        self.assertEqual('biz_test_test_v004.txt', snapshot.get_all_file_names()[0])
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(0, revision)
+        self.assertEqual(0, revision)
 
         for i in range(0,2):
             file = open(self.file_path, 'w')
@@ -297,39 +298,39 @@ class BizTest(unittest.TestCase):
         # get current version and revision latest
         snapshot = Snapshot.get_by_version(self.search_type, self.search_code, context=self.context, version=0, revision=-1, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(2, revision)
+        self.assertEqual(2, revision)
             
         # get revision
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version=-1, revision=-1, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(2, revision)
+        self.assertEqual(2, revision)
         is_latest = snapshot.get_value('is_latest')
-        self.assertEquals(True, is_latest)
+        self.assertEqual(True, is_latest)
         
         # v4r1 should not be latest
         snapshot = Snapshot.get_by_version(self.search_type, self.search_id, context=self.context, version=4, revision=1, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(1, revision)
+        self.assertEqual(1, revision)
         is_latest = snapshot.get_value('is_latest')
-        self.assertEquals(False, is_latest)
+        self.assertEqual(False, is_latest)
 
         # is_latest is v4r2, so can't find v4r0 any more
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version=-1, revision=None, use_cache=False)
         
-        self.assertEquals(None, snapshot)
+        self.assertEqual(None, snapshot)
 
         # use max to find v4r0
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version='max', revision=None, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(0, revision)
+        self.assertEqual(0, revision)
     
         # add 2 non current revisions
         for i in range(0,2):
@@ -345,39 +346,39 @@ class BizTest(unittest.TestCase):
         # get latest version and revision
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version=-1, revision=-1, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(4, revision)
+        self.assertEqual(4, revision)
         is_latest = snapshot.get_value('is_latest')
-        self.assertEquals(True, is_latest)
+        self.assertEqual(True, is_latest)
 
 
         # get current version and latest revision (but current v4r2 takes precedence)
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version=0, revision=-1, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(2, revision)
+        self.assertEqual(2, revision)
         is_latest = snapshot.get_value('is_latest')
-        self.assertEquals(False, is_latest)
+        self.assertEqual(False, is_latest)
 
 
         # get current version and 0 revision (but current v4r2 is the real current, returns None)
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version=0, revision=None, use_cache=False)
-        self.assertEquals(None, snapshot)
+        self.assertEqual(None, snapshot)
 
         
         # is_latest is v4r4, so can't find v4r0 any more
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version=-1, revision=None, use_cache=False)
-        self.assertEquals(None, snapshot)
+        self.assertEqual(None, snapshot)
         
         
         # use max to find v4r0
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version='max', revision=None, use_cache=False)
         version = snapshot.get_version()
-        self.assertEquals(4, version)
+        self.assertEqual(4, version)
         revision = snapshot.get_value('revision')
-        self.assertEquals(0, revision)
+        self.assertEqual(0, revision)
 
         
         # create a new test.txt file
@@ -389,8 +390,8 @@ class BizTest(unittest.TestCase):
         # check in another revision v4r5 
         checkin = FileCheckin(self.person, self.file_path, "main", context=self.context, is_revision=True, is_current=False)
         checkin.execute()
-        self.assertEquals(4, checkin.snapshot.get_version())
-        self.assertEquals(5, checkin.snapshot.get_value('revision'))
+        self.assertEqual(4, checkin.snapshot.get_version())
+        self.assertEqual(5, checkin.snapshot.get_value('revision'))
                 
         # create a new test_version.txt file
         self.file_path = "./biz_test_version.txt"
@@ -400,8 +401,8 @@ class BizTest(unittest.TestCase):
         # check in new revision v101 with a new context
         checkin = FileCheckin(self.person, self.file_path, "main", context='rev_test', is_revision=True, is_current=False)
         checkin.execute()
-        self.assertEquals(1, checkin.snapshot.get_version())
-        self.assertEquals(1, checkin.snapshot.get_value('revision'))
+        self.assertEqual(1, checkin.snapshot.get_version())
+        self.assertEqual(1, checkin.snapshot.get_value('revision'))
 
         # create a new test_version.txt file
         self.file_path = "./biz_test_version.txt"
@@ -412,7 +413,7 @@ class BizTest(unittest.TestCase):
         checkin = FileCheckin(self.person, self.file_path, "main", context='rev_test', is_revision=False, is_current=False)
         checkin.execute()
         # this should increment to v2r1
-        self.assertEquals(2, checkin.snapshot.get_version())
+        self.assertEqual(2, checkin.snapshot.get_version())
     
     def _test_level(self):
 
@@ -460,10 +461,10 @@ class BizTest(unittest.TestCase):
 
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, self.context, version=-1, use_cache=True, level_type=level_type, level_id=level_id)
         # make sure we get the top level one
-        self.assertEquals( 5, snapshot.get_value("version") )
-        self.assertEquals( "", snapshot.get_value("level_type") )
+        self.assertEqual( 5, snapshot.get_value("version") )
+        self.assertEqual( "", snapshot.get_value("level_type") )
         # integer None is now converted to 0
-        self.assertEquals( 0, snapshot.get_value("level_id") )
+        self.assertEqual( 0, snapshot.get_value("level_id") )
 
 
         # checkin the file to the level
@@ -477,25 +478,27 @@ class BizTest(unittest.TestCase):
 
         snapshot = checkin.get_snapshot()
         version = snapshot.get_version()
-        self.assertEquals(1, version)
+        self.assertEqual(1, version)
         snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, self.context, version='-1', use_cache=True, level_type=level_type, level_id=level_id)
 
-        self.assertEquals( level_type, snapshot.get_value("level_type") )
-        self.assertEquals( level_id, snapshot.get_value("level_id") )
-        self.assertEquals( 1, snapshot.get_value("version") )
-        self.assertEquals( True, snapshot.get_value("is_latest") )
-        self.assertEquals( True, snapshot.get_value("is_current") )
+        self.assertEqual( level_type, snapshot.get_value("level_type") )
+        self.assertEqual( level_id, snapshot.get_value("level_id") )
+        self.assertEqual( 1, snapshot.get_value("version") )
+        self.assertEqual( True, snapshot.get_value("is_latest") )
+        self.assertEqual( True, snapshot.get_value("is_current") )
 
 
         # get latest version and revision of the person and make sure 
         # it has its own is_latest
         top_snapshot = Snapshot.get_snapshot(self.search_type, self.search_id, context=self.context, version=-1, revision=-1, use_cache=False)
         version = top_snapshot.get_version()
-        self.assertEquals(5, version)
+        self.assertEqual(5, version)
         revision = top_snapshot.get_value('revision')
-        self.assertEquals(0, revision)
-        self.assertEquals( True, top_snapshot.get_value("is_latest") )
-        self.assertEquals( True, top_snapshot.get_value("is_current") )
+        self.assertEqual(0, revision)
+        self.assertEqual( True, top_snapshot.get_value("is_latest") )
+        self.assertEqual( True, top_snapshot.get_value("is_current") )
+
+
 
     def _test_schema(self):
         # prod type test
@@ -503,25 +506,25 @@ class BizTest(unittest.TestCase):
         if Project.get_by_code(prod_proj_code):
             prod_schema = Schema.get_by_project_code(prod_proj_code)
             parent_type = prod_schema.get_parent_type('prod/asset')
-            self.assertEquals('prod/asset_library', parent_type)
+            self.assertEqual('prod/asset_library', parent_type)
 
             parent_type = prod_schema.get_parent_type('prod/sequence')
-            self.assertEquals('prod/episode', parent_type)
+            self.assertEqual('prod/episode', parent_type)
             
             parent_type = prod_schema.get_parent_type('prod/shot')
-            self.assertEquals('prod/sequence', parent_type)
+            self.assertEqual('prod/sequence', parent_type)
 
             parent_type = prod_schema.get_parent_type('sthpw/task')
-            self.assertEquals('*', parent_type)
+            self.assertEqual('*', parent_type)
 
             parent_type = prod_schema.get_parent_type('sthpw/note')
-            self.assertEquals('*', parent_type)
+            self.assertEqual('*', parent_type)
             
             parent_type = prod_schema.get_parent_type('prod/render')
-            self.assertEquals('*', parent_type)
+            self.assertEqual('*', parent_type)
             
             parent_type = prod_schema.get_parent_type('prod/submission')
-            self.assertEquals('*', parent_type)
+            self.assertEqual('*', parent_type)
         
         schema = Schema.get_by_project_code("unittest")
         # create a new search_type
@@ -532,13 +535,13 @@ class BizTest(unittest.TestCase):
         
         
         parent_type = schema.get_parent_type('unittest/city')
-        self.assertEquals('unittest/country', parent_type)
+        self.assertEqual('unittest/country', parent_type)
 
         # get all of the child types
         child_types = schema.get_child_types('unittest/person')
         expected = ['unittest/person_in_car', 'unittest/house']
-        self.assertEquals(True, expected[0] in child_types)
-        self.assertEquals(True, expected[1] in child_types)
+        self.assertEqual(True, expected[0] in child_types)
+        self.assertEqual(True, expected[1] in child_types)
 
         # create a new schema that has the unittest as the parent
         new_schema = SearchType.create(Schema.SEARCH_TYPE)
@@ -554,7 +557,7 @@ class BizTest(unittest.TestCase):
 
         # get search_types defined in this schema
         search_types = new_schema.get_search_types(hierarchy=False)
-        self.assertEquals(1, len(search_types) )
+        self.assertEqual(1, len(search_types) )
 
         # get all search_types
         search_types = new_schema.get_search_types()
@@ -567,7 +570,7 @@ class BizTest(unittest.TestCase):
         from pyasm.search import Search
 
         to_status = Search.eval('@GET(sthpw/status_log.to_status)', sobjects=[single_task], single=True)
-        self.assertEquals(to_status, "Assignment")
+        self.assertEqual(to_status, "Assignment")
         single_task.set_value('status', "Test Done")
         single_task.commit(triggers=True)
         
@@ -575,45 +578,45 @@ class BizTest(unittest.TestCase):
         ExpressionParser.clear_cache() 
         to_status = Search.eval("@GET(sthpw/status_log['@ORDER_BY','id desc'].to_status)", sobjects=[single_task], single=True)
         
-        self.assertEquals(to_status, "Test Done")
+        self.assertEqual(to_status, "Test Done")
 
         # get tasks with get_all_children()
         tasks = self.person.get_all_children("sthpw/task")
-        self.assertEquals(len(initial_tasks), len(tasks) )
+        self.assertEqual(len(initial_tasks), len(tasks) )
 
         
         # get notes with get_all_children()
         Note.create(self.person, "test note", context='default')
         Note.create(self.person, "test note2", context='default2')
         notes = self.person.get_all_children("sthpw/note")
-        self.assertEquals(2, len(notes) )
+        self.assertEqual(2, len(notes) )
 
         #relationship
         schema = Schema.get()
         if Project.get_by_code('sample3d'):
             relationship = schema.get_relationship('prod/asset','sthpw/snapshot')
-            self.assertEquals(relationship, 'search_code')
-            #self.assertEquals(relationship, 'search_type')
+            self.assertEqual(relationship, 'search_code')
+            #self.assertEqual(relationship, 'search_type')
 
             relationship = schema.get_relationship('prod/asset','sthpw/task')
-            self.assertEquals(relationship, 'search_code')
-            #self.assertEquals(relationship, 'search_type')
+            self.assertEqual(relationship, 'search_code')
+            #self.assertEqual(relationship, 'search_type')
 
             relationship = schema.get_relationship('prod/shot','sthpw/note')
-            self.assertEquals(relationship, 'search_code')
-            #self.assertEquals(relationship, 'search_type')
+            self.assertEqual(relationship, 'search_code')
+            #self.assertEqual(relationship, 'search_type')
 
         relationship = schema.get_relationship('sthpw/file','sthpw/snapshot')
-        self.assertEquals(relationship, 'code')
+        self.assertEqual(relationship, 'code')
         relationship = schema.get_relationship('sthpw/project_type','sthpw/project')
-        self.assertEquals(relationship, 'code')
+        self.assertEqual(relationship, 'code')
 
         relationship = schema.get_relationship('unittest/car','unittest/house')
-        self.assertEquals(relationship, None)
+        self.assertEqual(relationship, None)
 
         # test parent filter search in sample3d
         if Project.get_by_code('sample3d'):
-            from pyasm.prod.biz import *
+            from pyasm.prod.biz import Shot, ShotInstance
             Project.set_project('sample3d')
 
             shot = Shot.get_by_code('RC_001_001')
@@ -644,18 +647,18 @@ class BizTest(unittest.TestCase):
                     search.add_relationship_filters(parents) 
                     
             sobjects = search.get_sobjects()
-            self.assertEquals(len(instances), len(sobjects))
+            self.assertEqual(len(instances), len(sobjects))
 
             
             relationship_attrs = schema.get_relationship_attrs('sthpw/transaction_log','sthpw/sobject_log')
             rev_relationship_attrs = schema.get_relationship_attrs('sthpw/sobject_log','sthpw/transaction_log')
             for attrs in [ relationship_attrs,  rev_relationship_attrs]:
-                self.assertEquals(attrs.get('from_col'), 'transaction_log_id')
-                self.assertEquals(attrs.get('to_col'), 'id')
-                self.assertEquals(attrs.get('from'), 'sthpw/sobject_log')
-                self.assertEquals(attrs.get('to'), 'sthpw/transaction_log')
-                self.assertEquals(attrs.get('relationship'), 'id')
-                self.assertEquals(attrs.get('disabled'), None)
+                self.assertEqual(attrs.get('from_col'), 'transaction_log_id')
+                self.assertEqual(attrs.get('to_col'), 'id')
+                self.assertEqual(attrs.get('from'), 'sthpw/sobject_log')
+                self.assertEqual(attrs.get('to'), 'sthpw/transaction_log')
+                self.assertEqual(attrs.get('relationship'), 'id')
+                self.assertEqual(attrs.get('disabled'), None)
 
 
         Project.set_project('unittest')
@@ -678,10 +681,10 @@ class BizTest(unittest.TestCase):
         pipeline.commit()
 
         pipeline = Pipeline.get_by_code("unittest/test")
-        self.assertEquals("sthpw/pipeline", pipeline.get_search_type() )
+        self.assertEqual("sthpw/pipeline", pipeline.get_search_type() )
 
         process_names = pipeline.get_process_names()
-        self.assertEquals(4, len(process_names))
+        self.assertEqual(4, len(process_names))
 
         # test project specific pipelines
         pipeline_xml = '''
@@ -701,9 +704,9 @@ class BizTest(unittest.TestCase):
 
 
         pipeline = Pipeline.get_by_code("unittest/test")
-        self.assertEquals("config/pipeline?project=unittest", pipeline.get_search_type() )
+        self.assertEqual("config/pipeline?project=unittest", pipeline.get_search_type() )
         process_names = pipeline.get_process_names()
-        self.assertEquals(5, len(process_names))
+        self.assertEqual(5, len(process_names))
 
         return
 
@@ -783,18 +786,18 @@ class BizTest(unittest.TestCase):
         pipeline = Pipeline.get_by_code('shot_test')
         back_connects = pipeline.get_backward_connects('layout')
         # we got 2 connections to layout from model_test
-        self.assertEquals('model_test/model' in back_connects, True)
-        self.assertEquals('model_test/rig' in back_connects, True)
+        self.assertEqual('model_test/model' in back_connects, True)
+        self.assertEqual('model_test/rig' in back_connects, True)
 
    
         # test Context class
         context = Context('prod/shot', 'char_final')
         context_list = context.get_context_list()
-        self.assertEquals(['char_effects','char_lgt'], context_list)
+        self.assertEqual(['char_effects','char_lgt'], context_list)
         
         context = Context('prod/shot', 'anim')
         context_list = context.get_context_list()
-        self.assertEquals(['anim'], context_list)
+        self.assertEqual(['anim'], context_list)
 
         Project.set_project('unittest')
 
@@ -829,74 +832,74 @@ class BizTest(unittest.TestCase):
         # convert a naming pattern to a file
         template = "{name_last}_{name_first}_{context[0]}_{context[1]}.jpg"
         file_name = naming.naming_to_file(template, self.person, snapshot2)
-        self.assertEquals("Test_Unit_test_subtest.jpg", file_name)
+        self.assertEqual("Test_Unit_test_subtest.jpg", file_name)
 
         template = "{name_last}_{name_first}_{snapshot.context[0]}_{snapshot.context[1]}.jpg"
         file_name = naming.naming_to_file(template, self.person, snapshot2)
-        self.assertEquals("Test_Unit_test_subtest.jpg", file_name)
+        self.assertEqual("Test_Unit_test_subtest.jpg", file_name)
 
         template = "{name_last}_{name_first}_{context[0]}.png"
         file_name = naming.naming_to_file(template, self.person, snapshot)
-        self.assertEquals("Test_Unit_test.png", file_name)
+        self.assertEqual("Test_Unit_test.png", file_name)
 
         # use a non-existent index , i.e. 2 
         template = "{name_last}_{name_first}_{context[2]}.png"
         file_name = naming.naming_to_file(template, self.person, snapshot)
         # unknown context index returns !
-        self.assertEquals("Test_Unit_!.png", file_name)
+        self.assertEqual("Test_Unit_!.png", file_name)
 
         
         # explicit declarations of objects
         template = "{sobject.name_last}/first/{sobject.name_first}/{snapshot.context}"
         dir = naming.naming_to_dir(template, self.person, snapshot)
 
-        self.assertEquals("Test/first/Unit/test", dir)
+        self.assertEqual("Test/first/Unit/test", dir)
 
         template = "{sobject.name_last}_{sobject.name_first}_{snapshot.context}.jpg"
         file_name = naming.naming_to_file(template, self.person, snapshot)
-        self.assertEquals("Test_Unit_test.jpg", file_name)
+        self.assertEqual("Test_Unit_test.jpg", file_name)
 
 
         # implicit declarations
         template = "{name_last}_{name_first}_{context}.jpg"
         file_name = naming.naming_to_file(template, self.person, snapshot)
-        self.assertEquals("Test_Unit_test.jpg", file_name)
+        self.assertEqual("Test_Unit_test.jpg", file_name)
 
         # handle versions and revisions
         template = "{name_last}_{name_first}_{context}_v{version}_r{revision}.jpg"
         file_name = naming.naming_to_file(template, self.person, snapshot)
-        self.assertEquals("Test_Unit_test_v005_r000.jpg", file_name)
+        self.assertEqual("Test_Unit_test_v005_r000.jpg", file_name)
 
         # create a fake file_object
         file = SearchType.create("sthpw/file")
         file.set_value("file_name", "whatever.png")
         template = "{name_last}_{name_first}_{context}_v{version}.{ext}"
         file_name = naming.naming_to_file(template, self.person, snapshot, file)
-        self.assertEquals("Test_Unit_test_v005.png", file_name)
+        self.assertEqual("Test_Unit_test_v005.png", file_name)
 
         # create a fake file_object with explicit ext
         file = SearchType.create("sthpw/file")
         file.set_value("file_name", "whatever.png")
         template = "{name_last}_{name_first}_{context}_v{version}.{ext}"
         file_name = naming.naming_to_file(template, self.person, snapshot, file, ext='bmp')
-        self.assertEquals("Test_Unit_test_v005.bmp", file_name)
+        self.assertEqual("Test_Unit_test_v005.bmp", file_name)
 
         # create parts of a directory
         # context = 'model/hi'
         snapshot.set_value("context", "model/hi")
         template = "{name_first}/{context[0]}/maya/{context[1]}"
         file_name = naming.naming_to_dir(template, self.person, snapshot, file)
-        self.assertEquals("Unit/model/maya/hi", file_name)
+        self.assertEqual("Unit/model/maya/hi", file_name)
 
         template = "{name_first}/{snapshot.context[0]}/maya/{snapshot.context[1]}"
         file_name = naming.naming_to_dir(template, self.person, snapshot, file)
-        self.assertEquals("Unit/model/maya/hi", file_name)
+        self.assertEqual("Unit/model/maya/hi", file_name)
         
         # context = 'texture'
         snapshot.set_value("context", "texture")
         template = "{name_first}/{context[0]}/maya"
         file_name = naming.naming_to_dir(template, self.person, snapshot, file)
-        self.assertEquals("Unit/texture/maya", file_name)
+        self.assertEqual("Unit/texture/maya", file_name)
  
 
         
@@ -904,7 +907,7 @@ class BizTest(unittest.TestCase):
         # build a naming from a name
         sample_name = 'chr001_model_v004.0001.ext'
         naming = naming.build_naming(sample_name)
-        self.assertEquals("{0}_{1}_{2}.{3}.{4}", naming)
+        self.assertEqual("{0}_{1}_{2}.{3}.{4}", naming)
 
 
     def _test_instances(self):
@@ -931,15 +934,15 @@ class BizTest(unittest.TestCase):
             instances.append(instance)
 
         test_instances = self.person.get_instances("unittest/car")
-        self.assertEquals(len(instances), len(test_instances))
-        self.assertEquals(3, len(instances))
+        self.assertEqual(len(instances), len(test_instances))
+        self.assertEqual(3, len(instances))
 
       
         # test search instances
         for instance, test_instance in zip(instances, test_instances):
             search_key = instance.get_search_key()
             test_search_key = test_instance.get_search_key()
-            self.assertEquals(search_key, test_search_key)
+            self.assertEqual(search_key, test_search_key)
 
 
         # get the instance between two sobjects
@@ -957,7 +960,7 @@ class BizTest(unittest.TestCase):
 
       
         #FIXME: this may fail unless you restart startup_dev.py
-        self.assertEquals(2, len(test_instances))
+        self.assertEqual(2, len(test_instances))
 
 
         # test remove the other way around
@@ -970,9 +973,9 @@ class BizTest(unittest.TestCase):
         test_instances2 = Search.eval('@SOBJECT(unittest/person_in_car)', self.person)
      
 
-        self.assertEquals(1, len(test_instances2))
+        self.assertEqual(1, len(test_instances2))
         test_instances2 = cars[2].get_instances("unittest/person")
-        self.assertEquals(1, len(test_instances2))
+        self.assertEqual(1, len(test_instances2))
 
 
 

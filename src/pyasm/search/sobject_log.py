@@ -13,7 +13,7 @@
 __all__ = ['SObjectLog', 'RetireLog']
 
 from pyasm.common import *
-from search import *
+from .search import *
 
 
 class SObjectLog(SObject):

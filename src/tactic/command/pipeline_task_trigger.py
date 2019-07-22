@@ -70,7 +70,7 @@ class PipelineTaskStatusTrigger(Trigger):
 
             #conditionx = "@GET(.status) != 'Approved'"
             #result = Search.eval(conditionx, src_task)
-            #print "result: ", result
+            #print("result: ", result)
 
             # make sure that the appropriate status was set
             src_status = data.get("src_status")
@@ -195,7 +195,7 @@ class PipelineTaskTrigger(Trigger):
         #"""
 
         data = jsonloads(data)
-        print "data: ", data
+        print("data: ", data)
         from tactic.ui.filter import FilterData
         filter_data = FilterData(data)
 
@@ -256,7 +256,7 @@ class PipelineTaskTrigger(Trigger):
         output_tasks = task.get_output_tasks()
         input_tasks = task.get_input_tasks()
         actions = filter_data.get_values_by_prefix("action")
-        #print "actions: ", actions
+        #print("actions: ", actions)
 
         for action in actions:
             type = action.get("type")
@@ -272,7 +272,7 @@ class PipelineTaskTrigger(Trigger):
 
             elif type == 'input':
                 for output_task in output_tasks:
-                    print "a : ", attribute, value
+                    print("a : ", attribute, value)
                     
                     #output_status = output_task.get_value("status")
                     output_task.set_value(attribute, value)
@@ -544,7 +544,7 @@ class TaskCreatorTrigger(Trigger):
         #start = time.time()
         Task.add_initial_tasks(sobject, pipeline_code=pipeline_code, skip_duplicate=True, mode='standard')
 
-        #print "intial_tasks ...", search_key, time.time() - start
+        #print("intial_tasks ...", search_key, time.time() - start)
 
 
 

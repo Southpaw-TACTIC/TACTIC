@@ -8,7 +8,20 @@
 
 __all__ = ['UploadMultipart']
 
-import httplib, urlparse, socket
+import socket
+
+try:
+    import httplib
+except:
+    from http import client as httplib # Python 3
+
+try:
+    import urlparse
+except:
+    from urllib import parse as urlparse # Python 3
+
+
+
 
 class UploadMultipart(object):
     '''Handles the multipart content type for uploading files.  Will break up
@@ -80,11 +93,11 @@ class UploadMultipart(object):
                     ret_value = self.posturl(url,fields,files)
 
                     return ret_value
-                except socket.error, e:
-                    print "Error: ", e
+                except socket.error as e:
+                    print("Error: ", e)
 
                     # retry about 5 times
-                    print "... trying again"
+                    print("... trying again")
                     self.count += 1
                     if self.count == 5:
                         raise
@@ -148,8 +161,13 @@ class UploadMultipart(object):
             M.append(CRLF)
 
         #body = CRLF.join(L)
-        import cStringIO
-        buf = cStringIO.StringIO()
+        #import cStringIO
+        try:
+            from cStringIO import StringIO as Buffer
+        except:
+            from io import StringIO as Buffer
+
+        buf = Buffer()
         buf.writelines(M)
         body = buf.getvalue()
 

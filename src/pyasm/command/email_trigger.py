@@ -19,12 +19,21 @@ import smtplib
 import types
 import datetime
 from dateutil.relativedelta import relativedelta
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
-from email.mime.application import MIMEApplication
-from email.MIMEImage import MIMEImage
-from email.Utils import formatdate
-from command import CommandException
+
+try:
+    from email.MIMEMultipart import MIMEMultipart
+    from email.MIMEText import MIMEText
+    from email.mime.application import MIMEApplication
+    from email.MIMEImage import MIMEImage
+    from email.Utils import formatdate
+except:
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+    from email.mime.image import MIMEImage
+    from email.utils import formatdate
+
+
 
 from pyasm.common import *
 from pyasm.biz import Project, GroupNotification, Notification, CommandSObj, ProdSetting
@@ -32,7 +41,10 @@ from pyasm.biz import ExpressionParser
 from pyasm.security import *
 from pyasm.search import SObject, Search, SearchType, SObjectValueException, ExceptionLog
 from pyasm.command import Command
-from trigger import *
+
+
+from .command import CommandException
+from .trigger import *
 
 class EmailTrigger(Trigger):
 
@@ -88,12 +100,12 @@ class EmailTrigger(Trigger):
         search_type = main_sobject.get_search_type_obj().get_base_key()
         parent = None
         if main_sobject.has_value('search_type') and main_sobject.has_value('search_id'):
-            parent = main_sobject.get_parent() 
+            parent = main_sobject.get_parent()
             if not parent:
                 Environment.add_warning('Parent not found', 'Parent not found for task [%s]' % main_sobject.get_search_key())
                 return
 
-            # the command needs to set this info if it wants to search 
+            # the command needs to set this info if it wants to search
             # for the search type of its parent
             if command.get_info('parent_centric') == True:
                 search_type = parent.get_search_type_obj().get_base_key()
@@ -103,12 +115,12 @@ class EmailTrigger(Trigger):
         #search.add_where("(\"search_type\" = '%s' or \"search_type\" is NULL)"% search_type)
         search.add_filter("search_type", search_type)
         search.add_where("(\"project_code\" = '%s' or \"project_code\" is NULL)" % Project.get().get_code() )
-        
+
         # Basically, this selects which command this notification will be
         # run from.  Other commands will be ignored.
         search.add_filter("code", self.notification_code)
         notifications = search.get_sobjects()
-        
+
         # send an email for each notification that matches the rules
         for notification in notifications:
             # check if there are any recievers for this notification
@@ -142,7 +154,7 @@ class EmailTrigger(Trigger):
                     value = command.get_info(rule_key)
                 if not value:
                     break
-                
+
                 if op == "=":
                     if value != rule_value:
                         break
@@ -167,7 +179,7 @@ class EmailTrigger(Trigger):
                         break
             else:
                 is_skipped = False
-           
+
             # allow the handler to check for whether an email should be sent
             handler = self.get_email_handler(notification, main_sobject, parent, command, input)
             if is_skipped or not handler.check_rule():
@@ -185,14 +197,14 @@ class EmailTrigger(Trigger):
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
-            except SObjectValueException, e:
+            except SObjectValueException as e:
                 raise Exception("Error in running Email handler [%s]. %s" \
                         %(handler.__class__.__name__, e.__str__()))
 
             # set the email
             self.send(to_users, cc_users, bcc_users, subject, message)
-            
-            
+
+
             from_user = Environment.get_user_name()
 
             project_code = Project.get_project_code()
@@ -245,7 +257,6 @@ class EmailTrigger(Trigger):
 
 
     def get_email_handler(self, notification, sobject, parent, command, input={}):
-
         email_handler_cls = notification.get_value("email_handler_cls")
         if not email_handler_cls:
             email_handler_cls = "EmailHandler"
@@ -259,7 +270,7 @@ class EmailTrigger(Trigger):
             email_set.add(email)
     add_email = classmethod(add_email)
 
-    def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[], from_user=None):
+    def send(cls, to_users, cc_users, bcc_users, subject, message, cc_emails=[], bcc_emails=[], from_user=None, reply_to_user=None):
         cc = set()
         sender = set()
         to_emails = set()
@@ -267,20 +278,36 @@ class EmailTrigger(Trigger):
         total_bcc_emails = set()
         recipients = set()
 
+
         if cc_emails:
             total_cc_emails.update(cc_emails)
         if bcc_emails:
             total_bcc_emails.update(bcc_emails)
 
+
         if from_user:
             sender.add(from_user)
             user_email = from_user
+
         else:
             user_email = Environment.get_login().get_full_email()
             if not user_email:
                 print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
                 return
             sender.add(user_email)
+
+            # we want from_user to be the current login.
+            from_user = user_email
+
+            # if there is a config setting for default admin email.
+            default_admin_email = Config.get_value("services", "mail_default_admin_email")
+            if default_admin_email:
+                from_user = default_admin_email
+
+        # set the reply_to_user to user_email.
+        if not reply_to_user:
+            reply_to_user = user_email
+
 
         for x in to_users:
             if isinstance(x, Login):
@@ -299,7 +326,7 @@ class EmailTrigger(Trigger):
                 if not email:
                     print("WARNING: email for [%s] cannot be determined" % x)
                     continue
-                
+
                 cls.add_email(to_emails, email)
 
 
@@ -349,34 +376,23 @@ class EmailTrigger(Trigger):
             subject = subject.encode('utf-8')
             charset = 'utf-8'
             is_uni = True
-        
+
         if "</html>" in message:
             st = 'html'
         else:
             st = 'plain'
-        
-        msg = MIMEText(message, _subtype=st, _charset=charset)
 
-        ''' 
-        msg['Subject'] = subject
-        msg['From'] = user_email
-        msg['Reply-To'] = user_email
-        msg['To'] = ", ".join(to_emails)
-        msg['Cc'] = ','.join(total_cc_emails)
-        msg['Bcc'] = ','.join(total_bcc_emails)
-        msg['Date'] = formatdate(localtime=True)
-        '''
-        
+        msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
-        msg.add_header('From', user_email)
-        msg.add_header('Reply-To', user_email)
+        msg.add_header('From', from_user)
+        msg.add_header('Reply-To', reply_to_user)
         msg.add_header('To', ", ".join(to_emails))
         msg.add_header('Cc', ", ".join(total_cc_emails))
         msg.add_header('Bcc', ", ".join(total_bcc_emails))
         msg.add_header('Date', formatdate(localtime=True))
         if is_uni:
             msg.add_header('html_encoding', 'base64')
-       
+
         email_to_sender = ProdSetting.get_value_by_key('email_to_sender')
         if not email_to_sender:
             email_to_sender = 'false'
@@ -385,13 +401,13 @@ class EmailTrigger(Trigger):
             recipients = total_bcc_emails|total_cc_emails|to_emails
         else:
             recipients = total_bcc_emails|total_cc_emails|to_emails|sender
- 
+
         site = Site.get_site()
         project_code = Project.get_project_code()
         email = EmailTriggerThread(user_email, recipients, "%s" %msg.as_string(), site=site, project_code=project_code)
         email.start()
-              
-        
+
+
     send = classmethod(send)
 
 
@@ -411,7 +427,7 @@ class SendEmail(Command):
         paths - paths of files to attach
     '''
     def execute(self):
-        
+
         sender_email = self.kwargs.get('sender_email')
         sender_name = self.kwargs.get('sender_name')
         paths = self.kwargs.get("paths") or []
@@ -474,7 +490,7 @@ class SendEmail(Command):
             part['Content-Disposition'] = 'attachment; filename="%s"' % os.path.basename(path)
             msg.attach(part)
 
-       
+
 
         msg.add_header('Subject', subject)
         if sender_name:
@@ -493,12 +509,12 @@ class SendEmail(Command):
 
         site = Site.get_site()
         project_code = Project.get_project_code()
-        
+
         email = EmailTriggerThread(
-            sender_email, 
-            recipients, 
-            "%s" %msg.as_string(), 
-            site=site, 
+            sender_email,
+            recipients,
+            "%s" %msg.as_string(),
+            site=site,
             project_code=project_code,
             log_exception=log_exception
         )
@@ -540,7 +556,7 @@ class EmailTrigger2(EmailTrigger):
         else:
             sobjects = caller.get_sobjects()
             if not sobjects:
-                msg = "Caller has no sobjects.  Triggers cannot be called" 
+                msg = "Caller has no sobjects.  Triggers cannot be called"
                 Environment.add_warning("Caller has no sobjects", msg)
 
 
@@ -569,14 +585,14 @@ class EmailTrigger2(EmailTrigger):
         if note:
             env_sobjects['note'] = note
 
-        
+
         # get the rules from the database
         rules_xml = notification.get_xml_value("rules")
         rule_nodes = rules_xml.get_nodes("rules/rule")
         is_skipped = True
 
         parser = ExpressionParser()
-        
+
         # process the rules
         for rule_node in rule_nodes:
             rule = []
@@ -612,7 +628,7 @@ class EmailTrigger2(EmailTrigger):
                     value = ''
             if not value:
                 break
-                       
+
             if op == "=":
                 if value != rule_value:
                     break
@@ -628,7 +644,7 @@ class EmailTrigger2(EmailTrigger):
                 if value in rule_value:
                     break
 
-            else: 
+            else:
                 # match the rule to the value
                 p = re.compile(rule_value)
                 if not p.match(value):
@@ -638,27 +654,25 @@ class EmailTrigger2(EmailTrigger):
         else:
             is_skipped = False
 
-
         # allow the handler to check for whether an email should be sent
+
         handler = self.get_email_handler(notification, main_sobject, parent, caller, input)
         if is_skipped or not handler.check_rule():
             self.add_description('Notification not sent due to failure to pass the set rules. Comment out the rules for now if you are just running email test.')
             return
-
 
         # if all rules are met then get the groups for this notification
         try:
             to_users = handler.get_to()
             if not to_users:
                 return
-            
+
             cc_users = handler.get_cc()
             bcc_users = handler.get_bcc()
 
-        except SObjectValueException, e:
+        except SObjectValueException as e:
             raise Exception("Error in running Email handler [%s]. %s" \
                     %(handler.__class__.__name__, e.__str__()))
-        
 
         def get_email():
 
@@ -668,7 +682,7 @@ class EmailTrigger2(EmailTrigger):
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
-            except SObjectValueException, e:
+            except SObjectValueException as e:
                 raise Exception("Error in running Email handler [%s]. %s" \
                         %(handler.__class__.__name__, e.__str__()))
 
@@ -704,9 +718,9 @@ class EmailTrigger2(EmailTrigger):
             self._send_to_users(to_users, cc_users, bcc_users, subject, message, send_email)
 
 
-                
-        
-            
+
+
+
     def _send_to_users(self, to_users, cc_users, bcc_users, subject, message, send_email):
 
         all_users = set()
@@ -737,7 +751,7 @@ class EmailTrigger2(EmailTrigger):
         # send the email
         if send_email:
             self.send(to_users, cc_users, bcc_users, subject, message)
-            self.add_description('\nEmail sent to [%s]' %all_emails) 
+            self.add_description('\nEmail sent to [%s]' %all_emails)
 
         self.add_notification(email_users, subject, message, project_code)
 
@@ -800,7 +814,7 @@ class EmailTriggerThread(threading.Thread):
         if len(self.password) > 127:
             # This is an encrypted password
             self.password = Common.unencrypt_password(self.password)
-            
+
         self.port = Config.get_value('services','mail_port', True)
         self.mail_sender_disabled = Config.get_value('services','mail_sender_disabled', True) == 'true'
         self.mail_tls_enabled = Config.get_value('services','mail_tls_enabled', True) == 'true'
@@ -819,7 +833,7 @@ class EmailTriggerThread(threading.Thread):
     def set_mailserver(self, mailserver):
         self.mailserver = mailserver
 
- 
+
     def run(self):
         try:
             s = smtplib.SMTP()
@@ -834,15 +848,14 @@ class EmailTriggerThread(threading.Thread):
                 s.login(self.user,self.password)
             #s.set_debuglevel(1)
             if self.mail_sender_disabled:
-                # to get around some email server security check if the addr 
+                # to get around some email server security check if the addr
                 # is owned by the sender email address's owner
                 self.sender_email = ''
             s.sendmail(self.sender_email, self.recipient_emails, self.msg)
             s.quit()
 
-        except Exception, e:
+        except Exception as e:
             
-
             message = "-"*20
             message += "\n"
             message += "WARNING: Error sending email:"
@@ -850,17 +863,18 @@ class EmailTriggerThread(threading.Thread):
             message += "\n"
             message += "mailserver: %s" % self.mailserver
             message += "port: %s" % self.port
-            message += "sender: %s" % self.sender_email 
+            message += "sender: %s" % self.sender_email
             message += "recipients: %s" % self.recipient_emails
-           
+
             if self.project_code and self.site and self.log_exception:
                 Batch(site=self.site, project_code=self.project_code)
                 ExceptionLog.log(e, message=message)
             else:
                 print(message)
-                
+
 
 class EmailTriggerTestCmd(Command):
+    
     '''This is run in the same thread for the email testing button'''
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -891,12 +905,12 @@ class EmailTriggerTestCmd(Command):
         msg.add_header('Reply-To', self.sender_email)
         msg.add_header('To',  ','.join(self.recipient_emails))
         msg.add_header('Date', formatdate(localtime=True))
-       
+
 
         if is_unicode:
             msg.add_header('html_encoding', 'base64')
         self.msg = msg
-        
+
         self.mailserver = Config.get_value('services','mailserver')
         # get optional arguments
         self.user = Config.get_value('services','mail_user', True)
@@ -910,7 +924,7 @@ class EmailTriggerTestCmd(Command):
             self.port = 25
         else:
             self.port = int(self.port)
-         
+
         super(EmailTriggerTestCmd, self).__init__()
 
     def is_undoable(cls):
@@ -920,7 +934,7 @@ class EmailTriggerTestCmd(Command):
     def set_mailserver(self, mailserver):
         self.mailserver = mailserver
 
-   
+
     def execute(self):
         try:
             s = smtplib.SMTP()
@@ -935,13 +949,13 @@ class EmailTriggerTestCmd(Command):
                 s.login(self.user,self.password)
             #s.set_debuglevel(1)
             if self.mail_sender_disabled:
-                # to get around some email server security check if the addr 
+                # to get around some email server security check if the addr
                 # is owned by the sender email address's owner
                 self.sender_email = ''
             s.sendmail(self.sender_email, self.recipient_emails, self.msg.as_string())
             s.quit()
 
-        except Exception, e:
+        except Exception as e:
             msg = []
             msg.append( "-"*60)
             msg.append( "WARNING: Error sending email:")
@@ -950,7 +964,7 @@ class EmailTriggerTestCmd(Command):
             msg.append("port: %s" %self.port)
             msg.append( "sender: %s"% self.sender_email)
             msg.append( "recipients: %s"% ','.join(self.recipient_emails))
-            
+
             raise TacticException('\n'.join(msg))
 
 
@@ -963,7 +977,7 @@ class EmailTriggerTest(EmailTrigger2):
         to_emails = set()
         total_cc_emails = set()
         total_bcc_emails = set()
-    
+
         if cc_emails:
             total_cc_emails.update(cc_emails)
         if bcc_emails:
@@ -989,7 +1003,7 @@ class EmailTriggerTest(EmailTrigger2):
                 if not email:
                     print("WARNING: email for [%s] cannot be determined" % x)
                     continue
-                
+
                 cls.add_email(to_emails, email)
 
 
@@ -1033,7 +1047,7 @@ class EmailTriggerTest(EmailTrigger2):
         """
         charset = 'us-ascii'
         if type(message) == types.UnicodeType:
-            message = Common.process_unicode_string(message) 
+            message = Common.process_unicode_string(message)
             charset = 'utf-8'
 
         if "</html>" in message:
@@ -1041,14 +1055,14 @@ class EmailTriggerTest(EmailTrigger2):
         else:
             st = 'plain'
         msg = MIMEText(message, _subtype=st, _charset=charset)
-        
+
         msg['Subject'] = subject
         msg['From'] = user_email
         msg['Reply-To'] = user_email
         msg['To'] = ", ".join(to_emails)
         msg['Cc'] = ','.join(total_cc_emails)
         msg['Bcc'] = ','.join(total_bcc_emails)
-        
+
         '''
         msg.add_header('Subject', subject)
         msg.add_header('From', user_email)
@@ -1063,4 +1077,4 @@ class EmailTriggerTest(EmailTrigger2):
         email.execute()
 
     send = classmethod(send)
- 
+

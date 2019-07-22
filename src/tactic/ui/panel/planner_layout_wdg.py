@@ -12,7 +12,6 @@
 __all__ = ["PlannerLayoutWdg"]
 
 import os, types, re
-import cStringIO
 
 from pyasm.common import Xml, XmlException, Common, TacticException, Environment
 from pyasm.biz import Schema, ExpressionParser, Project
@@ -24,7 +23,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu, ResizableTableWdg
 from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg
 
-from panel_wdg import ViewPanelWdg
+from .panel_wdg import ViewPanelWdg
 
 class PlannerLayoutWdg(BaseRefreshWdg):
 

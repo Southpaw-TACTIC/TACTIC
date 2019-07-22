@@ -84,7 +84,7 @@ class Clipboard(SObject):
             if parent:
                 parents.append(parent)
             else:
-                print "WARNING: parent to clipboard item [%s] does not exist" % item.get_code()
+                print("WARNING: parent to clipboard item [%s] does not exist" % item.get_code())
         return parents
     get_selected = classmethod(get_selected)
 

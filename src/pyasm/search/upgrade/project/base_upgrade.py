@@ -20,6 +20,8 @@ from pyasm.command import Command
 from pyasm.search import Search, DbContainer, SqlException, Transaction
 from pyasm.common import Base, Common, Container
 
+import six
+
 
 
 class BaseUpgrade(Command):
@@ -46,7 +48,7 @@ class BaseUpgrade(Command):
 
     def set_upgrade_method(self, method):
         ''' this is the name of the method for the current upgrade instance'''
-        if not isinstance(method, basestring):
+        if not isinstance(method, six.string_types):
             raise TacticException('method should be a string')
         self.upgrade_method = method 
 
@@ -78,8 +80,11 @@ class BaseUpgrade(Command):
 
         if not self.version_update:
             self.version_update = "2.5.0.v01"
-      
-        members = inspect.getmembers(self.__class__, predicate=inspect.ismethod)
+
+        if Common.IS_Pv3:
+            members = inspect.getmembers(self.__class__, predicate=inspect.isfunction)
+        else:
+            members = inspect.getmembers(self.__class__, predicate=inspect.ismethod)
         methods = []
         critical_methods = []
         for name, member in members:
@@ -111,9 +116,11 @@ class BaseUpgrade(Command):
             elif not (self.version_update < method_version <= self.to_version):
                     continue
             if not self.quiet:
-                print "Running upgrade for [%s]..." %name
+                print("Running upgrade for [%s]..." %name)
 
             self.run_method(name, method)
+
+
 
     def get_database_type(self):
         project = Project.get_by_code(self.project_code)
@@ -126,7 +133,7 @@ class BaseUpgrade(Command):
                 #upgrade = eval( '%s()' %self.__class__.__name__)
                 upgrade = BaseUpgrade()
             except NameError:
-                print "Failed to import upgrade script for %s" %self.__class__.__name__ 
+                print("Failed to import upgrade script for %s" %self.__class__.__name__ )
                 return
             # substitute the function of 'execute' method with the
             # upgrade script
@@ -158,7 +165,7 @@ class BaseUpgrade(Command):
         db_resource = project.get_project_db_resource()
         db = DbContainer.get(db_resource)
         #if not self.quiet:
-        #    print sql
+        #    print(sql)
 
         # Warnings from MySQL.
         from warnings import filterwarnings
@@ -167,8 +174,8 @@ class BaseUpgrade(Command):
 
         try:
             db.do_update(sql, quiet=self.quiet)
-        except SqlException, e:
-            #print "Error: ", e
+        except SqlException as e:
+            #print("Error: ", e)
             # TEST for Sqlite
             if str(e).startswith("duplicate column name:"):
                 pass
@@ -181,9 +188,9 @@ class BaseUpgrade(Command):
                 pass
 
             elif not self.quiet:
-                print
-                print "WARNING: Skipping due to SqlException..."
-                print "Message: ", e
+                print("\n")
+                print("WARNING: Skipping due to SqlException...")
+                print("Message: ", e)
                 print
             members = inspect.getmembers(self, predicate=inspect.ismethod)
             key = '%s|%s' %(self.project_code, self.upgrade_class)

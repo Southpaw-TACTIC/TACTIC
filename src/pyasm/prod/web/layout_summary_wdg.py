@@ -19,9 +19,8 @@ from pyasm.biz import Task, Project, Snapshot
 from pyasm.prod.biz import Episode, ShotInstance, Asset, Shot, Sequence
 from pyasm.widget import *
 
-from asset_filter_wdg import *
-from asset_info_wdg import ShotInfoWdg
-#from prod_input_wdg import ProcessFilterSelectWdg
+from .asset_filter_wdg import *
+from .asset_info_wdg import ShotInfoWdg
 
 class LayoutSummaryWdg(Widget):
 

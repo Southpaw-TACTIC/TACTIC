@@ -26,6 +26,9 @@ import os
 BASE = '/context/themes2'
 ALPHA = "1.0"
 
+import six
+
+
 class ButtonRowWdg(BaseRefreshWdg):
 
     def init(self):
@@ -226,7 +229,7 @@ class ButtonRowWdg(BaseRefreshWdg):
         right.add_style("z-index: 0")
         right.add_style("border-style: solid")
         right.add_style("border-color: %s" % right.get_color("border") )
-        right.add_style("border-width: 1 1 1 0")
+        right.add_style("border-width: 1px 1px 1px 0px")
         top.add(right)
 
 
@@ -646,7 +649,7 @@ class ButtonWdg(BaseRefreshWdg):
         'cbjs_action': '''
             var button = bvr.src_el;
             button.setStyle("border-style", "ridge");
-            button.setStyle("width", bvr.width-2);
+            button.setStyle("width", bvr.width-2 + "px");
         '''
         } )
 
@@ -708,8 +711,8 @@ class ButtonWdg(BaseRefreshWdg):
                 var width = parseInt(button.getStyle("width").replace("px",""));
                 button.setStyle('opacity', '1');
                 button.setStyle('border', 'solid 1px red');
-                button.setStyle("height", height-2);
-                button.setStyle("width", width-2);
+                button.setStyle("height", height-2+"px");
+                button.setStyle("width", width-2+"px");
             ''',
             'cbjs_action_out': '''
                 var button = bvr.src_el;
@@ -719,8 +722,8 @@ class ButtonWdg(BaseRefreshWdg):
 
                 button.setStyle('opacity', '0.5');
                 button.setStyle('border', '');
-                button.setStyle("height", height+2);
-                button.setStyle("width", width+2);
+                button.setStyle("height", height+2+"px");
+                button.setStyle("width", width+2+"px");
             '''
      
             } )
@@ -1010,10 +1013,10 @@ class ActionButtonWdgOld(DivWdg):
         text_div.add("<b>%s</b>" % title)
         text_div.add_style("width: 100%")
 
-	if self.browser == 'Qt' and os.name != 'nt':
+        if self.browser == 'Qt' and os.name != 'nt':
             text_div.add_style("top: 8px")
         else:
-	    text_div.add_style("top: 6px")
+            text_div.add_style("top: 6px")
 
 
         text_div.add_style("z-index: 10")
@@ -1146,7 +1149,7 @@ class ActionButtonWdg(DivWdg):
         width = self.kwargs.get("width")
         if width:
             top_width = int(width)
-            self.add_style("width: %s"%top_width)
+            self.add_style("width: %spx"%top_width)
         else:
             top_width = 40
             if size == 'm':
@@ -1185,7 +1188,7 @@ class ActionButtonWdg(DivWdg):
 
         # stretch it wider in case the text is longer, 
         # don't make it too long though
-        if len(title) > 10:
+        if not isinstance(top_width, six.string_types) and len(title) > 10:
             width = len(title)/8.0 * 60
             if width < top_width:
                 width = top_width
@@ -1223,7 +1226,7 @@ class ActionButtonWdg(DivWdg):
 
         from pyasm.widget import ButtonWdg
         button = ButtonWdg()
-        button.add_style("width: %s" % top_width)
+        button.add_style("width: %spx" % top_width)
         button.add_class('spt_label')
 
         icon = self.kwargs.get("icon")

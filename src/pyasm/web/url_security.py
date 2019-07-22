@@ -14,8 +14,8 @@ __all__ = ['RedirectSecurity', 'UrlSecurity']
 
 from pyasm.common import *
 
-from web_container import WebContainer
-from widget import Html
+from .web_container import WebContainer
+from .widget import Html
 
 
 class RedirectSecurity(Base):

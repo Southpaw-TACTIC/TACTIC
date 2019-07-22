@@ -15,11 +15,11 @@ __all__ = ['MayaModelValidate', 'MayaModelCheckin']
 
 try:
     import maya.cmds as cmds
-except ImportError, e:
+except ImportError as e:
     #print "WARNING: examples.py requires Maya python libraries"
     pass
 
-from handler import Handler
+from .handler import Handler
 
 
 

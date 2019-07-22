@@ -13,7 +13,6 @@
 
 __all__ = ['XSIParser', 'XSIParserFilter']
 
-from cStringIO import StringIO
 from pyasm.application.common import TacticException
 import string, re, os, shutil
 
@@ -172,7 +171,7 @@ class XSIParserTextureFilter(XSIParserFilter):
         if self.app:
             self.app.message(msg)
         else:
-            print msg
+            print(msg)
 
     def set_global_dirs(self, dir_list):
         self.global_dirs = dir_list

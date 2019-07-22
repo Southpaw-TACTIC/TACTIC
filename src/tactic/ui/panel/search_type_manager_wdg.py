@@ -26,7 +26,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.activator import ButtonForDropdownMenuWdg
 from tactic.ui.widget import ActionButtonWdg
 
-from manage_view_panel_wdg import ManageViewPanelWdg, ManageSideBarDetailWdg
+from .manage_view_panel_wdg import ManageViewPanelWdg, ManageSideBarDetailWdg
 
 class SearchTypeManagerWdg(ManageViewPanelWdg):
     '''Panel to manage search types ... this is meant to be a generic interface

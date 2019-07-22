@@ -10,12 +10,13 @@
 #
 #
 
-__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg']
+__all__ = ['BaseNodeWdg', 'PipelineCanvasWdg', 'NodeRenameWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
+from pyasm.biz import ProjectSetting
 from pyasm.common import Container, Common, jsondumps
-from pyasm.web import DivWdg, WebContainer, Table, Widget
+from pyasm.web import DivWdg, WebContainer, Table, Widget, HtmlElement
 from pyasm.search import Search, SearchType
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
@@ -119,8 +120,9 @@ class BaseNodeWdg(BaseRefreshWdg):
         border_color = self.get_border_color()
         box_shadow = self.get_box_shadow()
 
+
         top.add_style("width", width)
-        top.add_style("height", height)
+        top.add_style("height", str(height)+"px")
         top.add_style("box-sizing", "border-box")
 
         top.add_attr("spt_border_color", border_color)
@@ -137,12 +139,12 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("border-radius: %spx" % (height/2))
 
         elif shape == "elipse":
-            top.add_style("width", height)
+            top.add_style("width", str(height)+"px")
             top.add_style("border-radius: %spx" % border_radius)
 
         elif shape == "diamond":
             top.add_style("transform: rotate(-45deg)")
-            top.add_style("width", height)
+            top.add_style("width", str(height)+"px")
 
         else:
             top.add_style("border-radius: %spx" % border_radius)
@@ -196,16 +198,16 @@ class BaseNodeWdg(BaseRefreshWdg):
         div.add(style)
         style.add('''
         .star-six {
-            width: 0;
-            height: 0;
+            width: 0px;
+            height: 0px;
             border-left: 50px solid transparent;
             border-right: 50px solid transparent;
             border-bottom: 100px solid red;
             position: relative;
         }
         .star-six:after {
-            width: 0;
-            height: 0;
+            width: 0px;
+            height: 0px;
             border-left: 50px solid transparent;
             border-right: 50px solid transparent;
             border-top: 100px solid red;
@@ -225,7 +227,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.top = DivWdg()
         self.set_as_panel(self.top)
         self.top.add_class("spt_pipeline_top")
-        self.unique_id = self.top.set_unique_id();
+        self.unique_id = self.top.set_unique_id()
 
         self.is_editable = self.kwargs.get("is_editable")
         if self.is_editable in ['false', False]:
@@ -354,6 +356,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         top.add_style("position: relative")
 
+        version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled")
+        top.add_attr("version_2_enabled", version_2_enabled)
+
         show_title = self.kwargs.get("show_title")
         if show_title not in ['false', False]:
             top.add(self.get_canvas_title())
@@ -362,7 +367,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # outer is used to resize canvas
         outer = DivWdg()
 
-        top.add(outer);
+        top.add(outer)
         outer.add_class("spt_pipeline_resize")
         outer.add_class("spt_resizable")
 
@@ -373,17 +378,31 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if self.kwargs.get("show_border") not in [False, 'false']:
             outer.add_border()
 
+        
+
         # set the size limit
-        outer.add_style("width: %s" % self.width)
-        outer.add_style("height: %s" % self.height)
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        outer.add_style("width: %s" % width)
+        outer.add_style("height: %s" % height)
 
 
 
         from tactic.ui.input import TextInputWdg
         hot_key_div = DivWdg()
         outer.add(hot_key_div)
-        hot_key_div.add_style("margin-left: -5000");
-        hot_key_div.add_style("position: absolute");
+        hot_key_div.add_style("margin-left: -5000px")
+        hot_key_div.add_style("position: absolute")
 
         hot_key_input = TextInputWdg(name="hot_key_input")
         hot_key_div.add(hot_key_input)
@@ -529,8 +548,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             'SIMPLE_NODE_CTX': simple_menus
         }
 
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.attach_smart_context_menu( outer, menus_in, False )
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.attach_smart_context_menu( outer, menus_in, False )
 
         # inner is used to scale
         inner = DivWdg()
@@ -579,9 +599,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas = DivWdg()
         inner.add(canvas)
 
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+
         canvas.add_class("spt_pipeline_canvas")
-        canvas.add_style("width: %s" % self.width)
-        canvas.add_style("height: %s" % self.height)
+        canvas.add_style("width: %s" % width)
+        canvas.add_style("height: %s" % height)
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
 
@@ -866,7 +899,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #canvas.add_style("float: left")
         canvas.add_style("position: relative")
 
-        canvas.add_style("margin-top: -%s" % self.height)
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        canvas.add_style("margin-top: -%s" % height)
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
         canvas.set_attr("spt_background_color", self.background_color)
@@ -962,8 +1001,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         //node_name = parts[parts.length-1];
 
         node_name = "node0";
-        spt.pipeline.add_node(node_name);
+        var node = spt.pipeline.add_node(node_name);
 
+        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+            spt.pipeline.set_node_kwarg(node, 'version', 2);
 
         var top = bvr.src_el.getParent(".spt_pipeline_folder")
         spt.behavior.destroy_element(top);
@@ -1007,7 +1048,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             height = 55
             width = 55
         elif node_type == "unknown":
-            border_radius = 50;
+            border_radius = 50
             width = 50
             height = 50
             border_radius =  5
@@ -1040,9 +1081,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'NODE_CTX' )
-
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         offset = 0
 
@@ -1153,8 +1194,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             icon_div.add_style("position: absolute")
             icon_div.add_style("z-index: 300")
             icon_div.add_style("border: solid 1px transparent")
-            icon_div.add_style("width: 24px");
-            icon_div.add_style("text-align: center");
+            icon_div.add_style("width: 24px")
+            icon_div.add_style("text-align: center")
 
             icon_div.add_behavior( {
             'type': 'click_up',
@@ -1556,7 +1597,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("title", name)
 
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
         node.add_style("position: absolute")
 
         node.add_style("width: auto")
@@ -1638,7 +1679,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
         node.add_style("position: absolute")
 
         width = custom_wdg.get_width()
@@ -1646,7 +1687,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         enable_context_menu = self.kwargs.get("enable_context_menu")
 
-        if enable_context_menu not in ['false', False]:
+        if self.is_editable == True:
             from tactic.ui.container.smart_menu_wdg import SmartMenu
             SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
@@ -1776,7 +1817,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("title", name)
 
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
 
         width = 60
         height = 60
@@ -1787,9 +1828,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("width: auto")
         node.add_style("height: auto")
 
+        enable_context_menu = self.kwargs.get("enable_context_menu")
 
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         # add custom node behaviors
         node_behaviors = self.get_node_behaviors()
@@ -1861,7 +1904,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("title", name)
 
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
 
 
         width = 65
@@ -1873,9 +1916,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_style("width: auto")
         node.add_style("height: auto")
 
-
-        from tactic.ui.container.smart_menu_wdg import SmartMenu
-        SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+        if self.is_editable == True:
+            from tactic.ui.container.smart_menu_wdg import SmartMenu
+            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
 
         # add custom node behaviors
         node_behaviors = self.get_node_behaviors()
@@ -1949,7 +1992,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
 
-        node.add_style("z-index", "200");
+        node.add_style("z-index", "200")
 
 
         width = 30
@@ -1995,7 +2038,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_style("height: %spx" % height)
 
         label.add_style("top: %spx" % (height/4+7) )
-        label.add_class("spt_label");
+        label.add_class("spt_label")
         label.add(name)
         label.add_style("vertical-align: middle")
         label.add_style("overflow: hidden")
@@ -3077,7 +3120,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
                     node_type = default_node_type;
             }
             else {
-                    node_type = "node";
+                    node_type = "manual";
             }
     }
 
@@ -3145,7 +3188,10 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
     // set any properties that might exist
     new_node.properties = kwargs.properties || {};
-    new_node[node_type] = { description: kwargs.description || "" };
+
+    // BACKWARDS COMPATIBILITY
+    if (new_node.properties.settings && new_node.properties.settings.version == 1) 
+        new_node[node_type] = { description: kwargs.description || "" }
 
 
     // add to a group
@@ -3427,6 +3473,7 @@ spt.pipeline.get_node_property = function(node, name) {
 
 spt.pipeline.set_node_properties = function(node, properties) {
     node.properties = properties;
+    node.has_changes = true;
 }
 
 spt.pipeline.get_node_properties = function(node) {
@@ -3461,11 +3508,9 @@ spt.pipeline.set_node_kwarg = function(node, name, value) {
 }
 
 spt.pipeline.add_node_on_save = function(node, name, value) {
-    var kwargs = spt.pipeline.get_node_kwargs(node);
-    if (!kwargs) kwargs = {};
-    if (!kwargs.on_saves) kwargs.on_saves = {};
-    kwargs.on_saves[name] = value;
-    spt.pipeline.set_node_kwargs(node, kwargs);
+    if (!node.on_saves) node.on_saves = {};
+    node.on_saves[name] = value;
+    node.has_changes = true;
 }
 
 // Supports both kwargs and multi kwargs
@@ -3555,8 +3600,7 @@ spt.pipeline.set_node_multi_kwarg = function(node, name, value) {
 }
 
 spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value) {
-    var type = spt.pipeline.get_node_type(node);
-    var multi_kwargs = spt.pipeline.get_node_property(node, type);
+    var multi_kwargs = spt.pipeline.get_node_property(node, 'settings');
     if (!multi_kwargs) multi_kwargs = {};
     multi_kwargs.multi = true;
     multi_kwargs.selected = kwargs_name;
@@ -3564,7 +3608,9 @@ spt.pipeline.select_node_multi_kwargs = function(node, kwargs_name, name, value)
     if (!kwargs) kwargs = {};
     kwargs[name] = value;
     multi_kwargs[kwargs_name] = kwargs;
-    spt.pipeline.set_node_property(node, type, multi_kwargs);
+    curr_kwargs = spt.pipeline.get_node_property(node, 'settings');
+    Object.assign(curr_kwargs, multi_kwargs);
+    spt.pipeline.set_node_kwargs(node, curr_kwargs);
 }
 
 
@@ -3689,12 +3735,15 @@ spt.pipeline._rename_node = function(node, value) {
 
 
 spt.pipeline.set_rename_mode = function(node) {
-    var input = node.getElement(".spt_input");
-    var label = node.getElement(".spt_label");
-    label.setStyle("display", "none");
-    input.setStyle("display", "");
-    input.focus();
-    input.select();
+    var name = spt.pipeline.get_node_name(node);
+    var kwargs = {
+        name: name
+    };
+
+    var class_name = "tactic.ui.tools.NodeRenameWdg"
+
+    var popup = spt.panel.load_popup("Rename Node", class_name, kwargs);
+    popup.activator = node;
 }
 
 
@@ -4243,6 +4292,9 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
 
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
+        // BACKWARDS COMPATIBILITY
+        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+            spt.pipeline.set_node_kwarg(to_node, "version", 2);
 
         // FIXME: hard coded
         var height = 40;
@@ -6754,6 +6806,101 @@ spt.pipeline.get_connectors_to_node = function(to_name) {
 }
 
     '''
+
+
+class NodeRenameWdg(BaseRefreshWdg):
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_rename_node {
+                display: flex;
+                height: 40px;
+            }
+
+            .spt_node_name_input {
+                padding: 10px;
+            }
+
+            .spt_node_name_submit {
+                background: #ccc;
+                cursor: hand;
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                text-transform: uppercase;
+                color: white;
+            }
+
+            .spt_node_name_submit:hover {
+                background: #999;
+            }
+
+            ''')
+
+        return styles
+
+
+    def get_display(self):
+
+        top = DivWdg()
+        top.add_class("spt_rename_node")
+
+        name = self.kwargs.get("name") or ""
+
+        name_input = HtmlElement.text()
+        top.add(name_input)
+        name_input.add_class("spt_node_name_input")
+        name_input.add_attr("value", name)
+        name_input.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var node = popup.activator;
+
+            var top = node.getParent(".spt_pipeline_top");
+
+            if (!top.hot_key_state) return;
+            
+            top.hot_key_state = false;
+            document.activeElement.blur();
+            bvr.src_el.focus();
+
+            '''
+            })
+
+        btn = DivWdg("Rename")
+        top.add(btn)
+        btn.add_class("spt_node_name_submit")
+        btn.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_rename_node");
+            var inp = top.getElement(".spt_node_name_input");
+            var name = inp.value;
+
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var node = popup.activator;
+            spt.pipeline.set_node_name(node, name);
+
+            spt.popup.close(popup);
+
+            var top = nodex.getParent(".spt_pipeline_top");
+            top.hot_key_state = true;
+
+            '''
+            })
+
+        top.add(self.get_styles())
+
+        return top
+
+
+
 
 
 

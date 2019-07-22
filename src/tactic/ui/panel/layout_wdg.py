@@ -192,7 +192,7 @@ class SwitchLayoutMenu(object):
             '''
 
 
-        from layout_util import LayoutUtil
+        from .layout_util import LayoutUtil
 
         for i, view in enumerate(views):
             #data = LayoutUtil.get_layout_data(search_type=self.search_type, layout=view)
@@ -287,7 +287,7 @@ class CellEditWdg(BaseRefreshWdg):
         try:
             # FIXME: This doesn't look right.. the type can only be display or action, not edit
             self.display_wdg = self.config.get_widget(element_name, "edit")
-        except ImportError, e:
+        except ImportError as e:
             print("WARNING: create widget", str(e))
             self.display_wdg = SimpleTableElementWdg()
             self.display_wdg.add("No edit defined")
@@ -316,7 +316,7 @@ class CellEditWdg(BaseRefreshWdg):
         if not self.element_type:
             try:
                 self.element_type = self.display_wdg.get_type()
-            except AttributeError, e:
+            except AttributeError as e:
                 pass
                 
 
@@ -1129,7 +1129,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
             # get the database columns
             column_info = SearchType.get_column_info(search_type)
-            columns = column_info.keys()
+            columns = list(column_info.keys())
 
             columns.sort()
             context_menu.add( self.get_columns_wdg("Database Columns", columns) )

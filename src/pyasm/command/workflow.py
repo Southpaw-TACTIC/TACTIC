@@ -1254,9 +1254,17 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
-            if workflow.get("autocreate_task") in ['true', True]:
+            version = workflow.get("version") or 1
+            version_2 = version in [2, '2']
+
+            properties = workflow.get("properties") or {}
+
+            autocreate_task = properties.get("autocreate_task") if version_2 else workflow.get("autocreate_task")
+            task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
+
+            if autocreate_task in ['true', True]:
                 autocreate_task = True
-            if workflow.get("task_creation") in ['none']:
+            if task_creation in ['none']:
                 autocreate_task = True
 
             process_obj = self.pipeline.get_process(self.process)
@@ -1371,7 +1379,12 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         # Handle remapped status.
         process_sobj = self.get_process_sobj(pipeline, process)
         workflow = process_sobj.get_json_value("workflow", {})
-        status_pipeline_code = workflow.get("task_pipeline")
+        version = workflow.get("version") or 1
+        version_2 = version in [2, '2']
+
+        properties = workflow.get("properties") or {}
+
+        status_pipeline_code = properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")
         #print("status_pipeline_code:", status_pipeline_code)
 
         status_pipeline = None
@@ -1557,8 +1570,16 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         assigned = None
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
-            if workflow:
-                assigned = workflow.get("assigned")
+            version = workflow.get("version") or 1
+            version_2 = version in [2, '2']
+            
+            if version_2:
+                data = workflow.get("data") or {}
+                if data:
+                    assigned = data.get("assigned")
+            else:
+                if workflow:
+                    assigned = workflow.get("assigned")
 
 
         # check to see if the tasks exist and if they don't then create one
@@ -1921,6 +1942,10 @@ class WorkflowOutputNodeHandler(BaseWorkflowNodeHandler):
 class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(self):
+
+        if not self.check_inputs():
+            return
+
         # fast track to complete - no tasks
         Trigger.call(self, "process|action", output=self.input)
 

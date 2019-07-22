@@ -14,8 +14,11 @@ __all__ = ['AccessManager', 'Sudo']
 
 import types
 
-from pyasm.common import Base, Xml, Environment, Common
-from pyasm.search import Search
+from pyasm.common import Base, Xml, Environment, Common, Container
+from pyasm.search import Search, SearchType
+
+import six
+basestring = six.string_types
 
 
 class AccessException(Exception):
@@ -27,6 +30,8 @@ class AccessException(Exception):
 class Sudo(object):
 
     def __init__(self):
+        count = Container.increment("Sudo::is_sudo")
+
         self.security = Environment.get_security()
 
         # if not already logged in, login as a safe user (guest)
@@ -42,18 +47,34 @@ class Sudo(object):
             self.was_admin = self.access_manager.was_admin
      
         self.access_manager.set_admin(True)
-    
+
+        self.already_exited = False
+
+
+
+    def is_sudo():
+        count = Container.get("Sudo::is_sudo") or 0
+        is_sudo = count > 0
+        if not is_sudo:
+            return False
+        else:
+            return True
+    is_sudo = staticmethod(is_sudo)
             
 
     def __del__(self):
-        
-        # remove if I m not in admin group
-        if self.was_admin == False:
-            self.access_manager.set_admin(False)
+        return self.exit()
 
 
     def exit(self):
-        
+        if self.already_exited == True:
+            return
+        self.already_exited = True
+
+        count = Container.decrement("Sudo::is_sudo")
+        if count < 0:
+            raise Exception("count of sudo: ", count)
+
         # remove if I m not in admin group
         if self.was_admin == False:
             self.access_manager.set_admin(False)
@@ -107,10 +128,10 @@ class AccessManager(Base):
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print "TRACE: ", self.was_admin
-            print stacktrace_str
-            print "-"*50
+            print("-"*50)
+            print("TRACE: ", self.was_admin)
+            print(stacktrace_str)
+            print("-"*50)
         """
 
 
@@ -212,7 +233,7 @@ class AccessManager(Base):
                 group_type = Xml.get_attribute( rule_node, "category" )
 
             # get an existing rule set or create a new one
-            if self.groups.has_key(group_type):
+            if group_type in self.groups:
                 rules = self.groups[group_type]
             else:
                 rules = {}
@@ -238,7 +259,7 @@ class AccessManager(Base):
                 count += 1
 
 
-            if count == 1 and attrs2.has_key('key'):
+            if count == 1 and 'key' in attrs2:
                 # backwards compatibility
                 rule_key = attrs2['key']
             else:
@@ -295,7 +316,7 @@ class AccessManager(Base):
                 # check if rule_access exists first, which doesn't for search_filter,
                 # but it has to go into the rules regardless
                 # if the rule already exists, take the highest one
-                if rule_access and rules.has_key(rule_key):
+                if rule_access and rule_key in rules:
                     curr_access, cur_attrs = rules[rule_key]
 
                     try:
@@ -320,7 +341,7 @@ class AccessManager(Base):
             group_type = Xml.get_attribute( group_node, "type" )
 
             # get an existing rule set or create a new one
-            if self.groups.has_key(group_type):
+            if group_type in self.groups:
                 rules = self.groups[group_type]
             else:
                 rules = {}
@@ -546,7 +567,7 @@ class AccessManager(Base):
             rule = dct
             rule_search_type = rule.get('search_type')
             if not rule_search_type:
-                print "No [search_type] defined in security rule"
+                print("No [search_type] defined in security rule")
                 continue
 
             # search types must match
@@ -706,14 +727,12 @@ class AccessManager(Base):
         '''For debugging, printing out the rules for a particular group'''
         rules = self.groups.get(group)
         if not rules:
-            print "no rules for %s" %group
+            print("no rules for %s" %group)
             return
         for rule, values in rules.items():
             if isinstance(values, tuple):
                 v = values[0]
             else:
                 v = values
-            print "xml_rule: ", rule, " is ", v
-        
 
 

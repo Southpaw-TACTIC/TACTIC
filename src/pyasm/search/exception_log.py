@@ -13,8 +13,8 @@
 __all__ = ['ExceptionLog']
 
 from pyasm.common import *
-from search import *
-from sql import DbContainer
+from .search import *
+from .sql import DbContainer
 
 import sys,traceback
 
@@ -52,12 +52,17 @@ class ExceptionLog(SObject):
 
         class_name = exception.__class__.__name__
 
-        exception_log = SObjectFactory.create("sthpw/exception_log")
-        exception_log.set_value("login", user_name)
-        exception_log.set_value("class", class_name)
-        exception_log.set_value("message", message)
-        exception_log.set_value("stack_trace", stacktrace_str)
-        exception_log.commit()
+        from pyasm.security import Sudo
+        sudo = Sudo()
+        try:
+            exception_log = SObjectFactory.create("sthpw/exception_log")
+            exception_log.set_value("login", user_name)
+            exception_log.set_value("class", class_name)
+            exception_log.set_value("message", message)
+            exception_log.set_value("stack_trace", stacktrace_str)
+            exception_log.commit()
+        finally:
+            sudo.exit()
 
         del tb, stacktrace
        

@@ -30,6 +30,10 @@ import dateutil, os
 
 from tactic.ui.widget.button_new_wdg import ActionButtonWdg, IconButtonWdg
 
+import six
+basestring = six.string_types
+
+
 class DiscussionElementWdg(BaseTableElementWdg):
 
     ARGS_KEYS = {
@@ -1172,6 +1176,7 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
+            no_notes_msg.add_style("display: flex")
             no_notes_div.add(no_notes_msg)
 
 
@@ -1212,7 +1217,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
             
             sk = self.parent.get_search_key(use_id=True)
-            if isinstance(sk, unicode):
+            if not Common.IS_Pv3 and isinstance(sk, unicode):
                 sk = sk.encode('utf-8')
             
             kwargs = {
@@ -1359,7 +1364,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     processes.append(p)
         else:
             # if no workflow, then display alphabetically
-            processes = process_notes.keys()
+            processes = list(process_notes.keys())
             processes.sort()
 
 
@@ -1504,7 +1509,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 add_wdg.add_class(add_class)
 
                 sk = self.parent.get_search_key(use_id=True)
-                if isinstance(sk, unicode):
+                if not Common.IS_Pv3 and isinstance(sk, unicode):
                     sk = sk.encode('utf-8')
 
 
@@ -1696,7 +1701,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
         if not notes:
             return self.top
 
-        self.default_num_notes = self.kwargs.get("default_num_notes")
+        self.default_num_notes = self.kwargs.get("default_num_notes") or 0
         self.note_expandable = self.kwargs.get("note_expandable")
         self.show_note_status = self.kwargs.get("show_note_status")
 

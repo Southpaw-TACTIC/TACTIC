@@ -24,12 +24,12 @@ from pyasm.common import *
 from pyasm.search import Search, SearchType, Sql
 from pyasm.web import *
 from pyasm.widget import *
-from shot_navigator_wdg import *
-from prod_input_wdg import *
 from pyasm.biz import Project, PrefSetting
 from pyasm.prod.load import ProdLoaderContext
 from pyasm.prod.biz import Shot
 
+from .prod_input_wdg import *
+from .shot_navigator_wdg import *
 
 
 class AssetFilterWdg(Widget):

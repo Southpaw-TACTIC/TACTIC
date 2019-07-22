@@ -93,7 +93,7 @@ class WebState(object):
 
     # DEPRECATED
     def get_state(self, name):
-        if self.current_state.has_key(name):
+        if name in self.current_state:
             return self.current_state[name]
         else:
             return ""

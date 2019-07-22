@@ -42,6 +42,8 @@ spt.Environment = function() {
     this.master_login_ticket = null;
     this.master_project_code = null;
     this.master_site = null;
+    this.user_timezone = null;
+
 
     // by default, look at the browser
     if (typeof(document) != 'undefined') {
@@ -191,6 +193,15 @@ spt.Environment = function() {
     this.get_master_site = function() {
         return this.master_site;
     }
+
+    this.set_user_timezone = function(timezone) {
+        this.user_timezone = timezone;
+    }
+
+    this.get_user_timezone = function(timezone) {
+        return this.user_timezone;
+    }
+
 
 
     /*

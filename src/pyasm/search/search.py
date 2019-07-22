@@ -19,10 +19,15 @@ import uuid
 from pyasm.common import *
 from pyasm.common.spt_date import SPTDate
 
-from sobject_config import *
-from transaction import Transaction
-from sobject_mapping import *
-from database_impl import DatabaseImpl
+from .sobject_config import *
+from .transaction import Transaction
+from .sobject_mapping import *
+from .database_impl import DatabaseImpl
+
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
 
 # Need to import this way because of how DbResource needs to get imported
 from pyasm.search.sql import SqlException, DatabaseException, Sql, DbResource, DbContainer, DbPasswordUtil, Select, Insert, Update, CreateTable, DropTable, AlterTable
@@ -66,7 +71,7 @@ class Search(Base):
     serach.add_filter("asset_library", "chr")
     sobjects = search.get_sobjects()
     '''
-    def __init__(self, search_type, project_code=None):
+    def __init__(self, search_type, project_code=None, sudo=False):
         # storage for result
         self.is_search_done = False
         self.sobjects = []
@@ -82,7 +87,7 @@ class Search(Base):
         self.security_filter = False
 
         protocol = 'local'
-        if type(search_type) in types.StringTypes:
+        if isinstance(search_type, basestring):
             # project is *always* local.  This prevents an infinite loop
             from pyasm.biz import Project
             if search_type != "sthpw/project":
@@ -129,13 +134,15 @@ class Search(Base):
 
         if search_type == None:
             raise SearchException("search_type is None")
+
+
         # get the search type sobject for the search
-        if type(search_type) == types.TypeType:
+        if isinstance(search_type, type):
             # get search defined in the class
             search_type = search_type.SEARCH_TYPE
             self.search_type_obj = SearchType.get(search_type)
 
-        elif type(search_type) in types.StringTypes:
+        elif isinstance(search_type, basestring):
             self.search_type_obj = SearchType.get(search_type)
         else:
             self.search_type_obj = search_type
@@ -148,6 +155,9 @@ class Search(Base):
             self.project_code = Project.extract_project_code(search_type)
 
         base_search_type = SearchKey.extract_base_search_type(search_type)
+
+        if not sudo:
+            self.check_security()
        
         # Put in a security check for search types that are not sthpw
         # or config.
@@ -197,7 +207,6 @@ class Search(Base):
                 self.set_null_filter()
 
 
-
  
        
         # provide the project_code kwarg here
@@ -242,6 +251,39 @@ class Search(Base):
         self.order_bys = []
         # order_by is applied by default if available
         self.order_by = True
+
+
+
+    def check_security(self):
+        from pyasm.security import Sudo
+        user = Environment.get_user_name()
+
+        search_type = self.get_base_search_type()
+        api_mode = Config.get_value("security", "api_mode")
+
+        if api_mode in ['open', '', None]:
+            return
+
+        #if user in ['admin']:
+        #    return
+
+        if Sudo.is_sudo():
+            return
+
+
+        if search_type in {
+                'sthpw/login',
+                'sthpw/login_in_group',
+                'sthpw/login_group',
+                'sthpw/transaction_log',
+                'sthpw/change_timestamp',
+                'sthpw/exception_log',
+                'sthpw/ticket',
+                #'sthpw/search_object'
+                #'config/project_settings',
+        }:
+            raise Exception("Search Permission Denied [%s]" % search_type)
+
 
 
 
@@ -491,7 +533,8 @@ class Search(Base):
         for filter in filters:
             if not filter:
                 continue
-            if type(filter) in types.StringTypes or len(filter) == 1:
+            #if type(filter) in types.StringTypes or len(filter) == 1:
+            if isinstance(filter, basestring) or len(filter) == 1:
                 # straight where clause not allowed
                 if isinstance(filter, basestring):
                     where = filter
@@ -528,7 +571,7 @@ class Search(Base):
                         value = Search.eval(value, single=True)
                     self.add_filter(name, value, table=table)
                     #print('name: [%s],[%s]' % (name, value))
-                elif type(value) in (types.IntType, types.FloatType, types.BooleanType):
+                elif isinstance(value, (int, float, bool)):
                     # <name> = '<value>'
                     self.add_filter(name, value, table=table)
                 else:
@@ -927,7 +970,7 @@ class Search(Base):
                     col_values  = [x.get_value(to_col) for x in sobjects]
 
                     self.add_filter("%ssearch_type" % prefix, sobjects[0].get_search_type() )
-                    if isinstance(col_values[0], int) or isinstance(col_values[0], long):
+                    if isinstance(col_values[0], six.integer_types):
                         self.add_filters(from_col, col_values, op=op )
                     else:
                         self.add_filters("%ssearch_code" % prefix, col_values, op=op)
@@ -1199,10 +1242,12 @@ class Search(Base):
             start_date >= date <= end_date + 1 day
         '''
 
-        if start_date and type(start_date) in types.StringTypes:
+        #if start_date and type(start_date) in types.StringTypes:
+        if start_date and isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        if end_date and type(end_date) in types.StringTypes:
+        #if end_date and type(end_date) in types.StringTypes:
+        if end_date and isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
 
@@ -1237,10 +1282,12 @@ class Search(Base):
           start_col < end_date and end_col > end_date
         '''
 
-        if type(start_date) in types.StringTypes:
+        #if type(start_date) in types.StringTypes:
+        if isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        if type(end_date) in types.StringTypes:
+        #if type(end_date) in types.StringTypes:
+        if isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
 
@@ -1796,6 +1843,7 @@ class Search(Base):
         # get columns that are datetime to be converted to strings in
         # SObject constructor
         column_info = self.get_column_info()
+
         datetime_cols = []
         boolean_cols = []
         skipped_cols = []
@@ -1864,9 +1912,6 @@ class Search(Base):
             'boolean_cols': boolean_cols,
             'skipped_cols': skipped_cols,
         }
-
-
-
 
         # Count number of sobjects
         num_sobjects = Container.get("NUM_SOBJECTS")
@@ -2370,6 +2415,7 @@ class RemoteSearch(Select):
     def add_filter(self, name, value, op='=', quoted=True):
         if not op:
             op = '='
+
         self.filters.append( [name, op, value] )
 
     def get_sobjects(self):
@@ -2378,7 +2424,6 @@ class RemoteSearch(Select):
         trys = 3
         import time
         start = time.time()
-
 
         for i in range(1, trys):
             try:
@@ -2460,7 +2505,8 @@ class SObject(object):
                 self.search_type_obj = self
                 self.full_search_type = "sthpw/search_object"
 
-            elif type(search_type) in types.StringTypes:
+            #elif type(search_type) in types.StringTypes:
+            elif isinstance(search_type, basestring):
                 self.search_type_obj = SearchType.get(search_type)
                 self.full_search_type = Project.get_full_search_type(search_type)
             else:
@@ -2491,7 +2537,7 @@ class SObject(object):
                 self.data = fast_data['data'][fast_data['count']]
 
                 # MongoDb
-                #if self.data.has_key("_id") and not self.data.has_key("code"):
+                #if '_id' in self.data and 'code' not in self.data:
                 #    self.data["code"] = self.data["_id"]
 
                 # convert datetimes to strings
@@ -2854,7 +2900,7 @@ class SObject(object):
 
     def get_attr(self, name):
         self._handle_attrs()
-        if self.attrs.has_key(name):
+        if name in self.attrs:
             return self.attrs[name]
         elif self.has_value(name):
             # by default all columns are attrs
@@ -3018,7 +3064,7 @@ class SObject(object):
 
         # first look at the update data
         # This will fail most often, so we don't use the try/except clause
-        if self.has_updates and self.update_data.has_key(name):
+        if self.has_updates and name in self.update_data:
             if is_data:
                 attr_data = self.update_data.get(name) or {}
                 return attr_data.get(attr)
@@ -3050,7 +3096,7 @@ class SObject(object):
                     return ""
             else:
                 return value
-        except KeyError, e:
+        except KeyError as e:
             pass
 
 
@@ -3076,10 +3122,10 @@ class SObject(object):
 
 
         # first look at the update data
-        if self.update_data.has_key(name):
+        if name in self.update_data:
             return True
         # then look at the old data
-        elif self.data.has_key(name):
+        elif name in self.data:
             return True
         else:
             return False
@@ -3237,6 +3283,30 @@ class SObject(object):
     def skip_invalid_column(self):
         self._skip_invalid_column = True
 
+
+    def process_value(self, name, value, column_type):
+        info = {}
+        info['quoted'] = False
+
+        if column_type == "timestamp":
+            if isinstance(value, basestring):
+                try:
+                    value = parser.parse(value)
+                except ValueError:
+                    pass
+
+            if isinstance(value, datetime.datetime):
+                if value.tzinfo:
+                    value = SPTDate.convert_to_timezone(value, 'UTC')
+                info['quoted'] = True
+
+            info['value'] = value
+        else:
+            info = self.get_database_impl().process_value(name, value, column_type)
+
+        return info
+
+
     def set_value(self, name, value, quoted=True, temp=False):
         '''set the value of this sobject. It is
         not commited to the database'''
@@ -3267,7 +3337,7 @@ class SObject(object):
             Container.put("SObject:xml_cache", xml_dict)
         search_key = self.get_search_key()
         key = "%s|%s" % (search_key, name)
-        if xml_dict.has_key(key):
+        if key in xml_dict:
             del xml_dict[key]
 
 
@@ -3284,7 +3354,8 @@ class SObject(object):
         if isinstance(value, Xml):
             value.clear_xpath_cache()
             value = value.to_string()
-        elif type(value) in [types.ListType, types.TupleType]:
+        #elif type(value) in [types.ListType, types.TupleType]:
+        elif isinstance(value, (list, tuple)):
             if len(value) == 0:
                 # This check added to handle cases where a list is empty, as 'value[0]' is not defined
                 # in that case. For now we just return and skip the setting of this value.
@@ -3296,11 +3367,12 @@ class SObject(object):
 
         # NOTE: this should be pretty quick, but could use some optimization
         column_type = SearchType.get_column_type(self.full_search_type, name)
-        info = self.get_database_impl().process_value(name, value, column_type)
+
+        info = self.process_value(name, value, column_type)
+
         if info:
             value = info.get("value")
             quoted = info.get("quoted")
-
 
         # handle security
         from pyasm.biz import Project
@@ -3350,9 +3422,12 @@ class SObject(object):
                 #value = value.decode('string_escape'))
                 try:
                     value = value.decode('utf-8', 'ignore')
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     value = value.decode('iso-8859-1', 'ignore')
-        
+                except:
+                    if IS_Pv3 and isinstance(value, bytes):
+                        value = value.decode()
+       
         self._set_value(name, value, quoted=quoted)
 
 
@@ -3360,11 +3435,7 @@ class SObject(object):
     def _set_value(self, name, value, quoted=True):
         '''called by set_value()'''
 
-        if self.update_data.has_key(name) or not self.data.has_key(name) or value != self.data[name]:
-
-            # FIXME: this may be necessary with MySQL
-            #if isinstance(value, basestring):
-            #    value = value.replace("\\", "\\\\")
+        if name in self.update_data or name not in self.data or value != self.data[name]:
 
             self.update_data[name] = value
             self.quoted_flag[name] = quoted
@@ -3624,7 +3695,7 @@ class SObject(object):
 
         search_type = self.get_base_search_type()
 
-        if type(sobject) in types.StringTypes:
+        if isinstance(sobject, basestring):
             tmp_sobject = SearchKey.get_by_search_key(sobject)
             if not tmp_sobject:
                 raise SearchException("Parent [%s] not found" %sobject) 
@@ -3677,7 +3748,7 @@ class SObject(object):
         '''add a related sobject.  This uses the style relationships'''
         search_type = self.get_base_search_type()
 
-        if type(sobject) in types.StringTypes:
+        if isinstance(sobject, basestring):
             sobject = SearchKey.get_by_search_key(sobject)
 
         search_type2 = sobject.get_base_search_type()
@@ -3771,9 +3842,11 @@ class SObject(object):
 
     def handle_commit_security(self):
 
+        from pyasm.security import Sudo
+
         # certain tables can only be written by admin
         security = Environment.get_security()
-        if security.is_admin():
+        if security.is_admin() or Sudo.is_sudo():
             return True
 
         search_type = self.get_base_search_type()
@@ -3979,8 +4052,6 @@ class SObject(object):
                     else:
                         value = SPTDate.add_gmt_timezone(value)
                     
-                    value = impl.process_date(value)
-                    
                 # stringified it if it's a datetime obj
                 if value and not isinstance(value, basestring):
                     value = value.strftime('%Y-%m-%d %H:%M:%S %z')
@@ -4071,7 +4142,13 @@ class SObject(object):
         # auto updated values in the database
         sobject = None
         if not is_search_type:
-            search = Search(self.full_search_type)
+
+            from pyasm.security import Sudo
+            sudo = Sudo()
+            try:
+                search = Search(self.full_search_type)
+            finally:
+                sudo.exit()
             search.set_show_retired_flag(True)
             # trick the search to believe that security filter has been applied
             search.set_security_filter()
@@ -4673,6 +4750,7 @@ class SObject(object):
                     self.set_value(key, value)
         except Exception as e:
             print("Error: ", e.__str__())
+            #raise
 
 
 
@@ -5557,8 +5635,8 @@ class SObject(object):
 
     def get_cache_dict(cls, sobject=None, search_type=None):
         '''get the cache dict to insert new sobj into'''
-        if sobject and type(sobject) != types.ListType:
-            #key = SObject._get_cached_key(sobject.SEARCH_TYPE)
+        #if sobject and type(sobject) != types.ListType:
+        if sobject and not isinstance(sobject, list):
             key = SObject._get_cached_key(sobject.get_base_search_type())
         elif search_type:
             key = SObject._get_cached_key(search_type)
@@ -6245,7 +6323,8 @@ class SearchType(SObject):
         triggers[base] = base_triggers
         if base == 'sthpw/task':
             if base_triggers.get(base) == None:
-                exec("from pyasm.biz import Task")
+                #exec("from pyasm.biz import Task")
+                from pyasm.biz import Task
                 Task.add_static_triggers()
                 base_triggers[base] = True
 
@@ -6440,8 +6519,6 @@ class SearchType(SObject):
         sobject = search_object_data.get(search_type)
         if sobject:
             return sobject
-        #if search_object_data.has_key(search_type):
-        #    return search_object_data[search_type]
 
 
         # get it from the global cache
@@ -6746,13 +6823,15 @@ class SObjectUndo:
                     from_data = ""
                 elif isinstance(from_data, str):
                     # this could be slow, but remove bad characters
-                    from_data = unicode(from_data, errors='ignore').encode('utf-8')
+                    if not IS_Pv3:
+                        from_data = unicode(from_data, errors='ignore').encode('utf-8')
                 to_data = new_data[key]
                 if to_data == None:
                     to_data = ""
                 elif isinstance(to_data, str):
                     # this could be slow, but remove bad characters
-                    to_data = unicode(to_data, errors='ignore').encode('utf-8')
+                    if not IS_Pv3:
+                        to_data = unicode(to_data, errors='ignore').encode('utf-8')
                 elif column_types.get(key) == 'timestamp':
                     to_data = SPTDate.add_gmt_timezone(to_data)
                     to_data = str(to_data)
@@ -6850,12 +6929,12 @@ class SObjectUndo:
         if search_id:
             try:
                 search_id = int(search_id)
-            except ValueError, e:
+            except ValueError as e:
                 # try to extract from quotes: example '15'
                 if search_id.startswith("'") and search_id.endswith("'"):
                     try:
                         search_id = int(search_id.strip("'"))
-                    except ValueError, e:
+                    except ValueError as e:
                         print("ERROR: undo error: ", e.__str__())
                         return
 
@@ -7243,7 +7322,7 @@ class SearchKey(object):
                 for name_value_pair in name_value_pairs:
                     name, value = name_value_pair.split("=")
                     data[name] = value
-            except ValueError, e:
+            except ValueError as e:
                 raise SearchException('Badly formatted search key found [%s]'%search_key)
             if search_type.startswith("sthpw/"):
                 old_search_type = search_type

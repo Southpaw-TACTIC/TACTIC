@@ -72,9 +72,9 @@ class SObjectRestHandler(BaseRestHandler):
 
     def GET(self):
         method = self.kwargs.get("method")
-        print self.kwargs
-        print "method: ", method
-        print "expression: ", self.kwargs.get("expression")
+        print(self.kwargs)
+        print("method: ", method)
+        print("expression: ", self.kwargs.get("expression"))
 
 
         # /rest/get_by_code/cars/CAR00009
@@ -121,7 +121,7 @@ class APIRestHandler(BaseRestHandler):
         web = WebContainer.get_web()
 
         method = web.get_form_value("method")
-        print "method: ", method
+        print("method: ", method)
 
         # make sure there are no special characters in there ie: ()
         p = re.compile('^\w+$')
@@ -154,9 +154,9 @@ class APIRestHandler(BaseRestHandler):
             else:
                 kwargs[key] = web.get_form_value(key)
 
-        print "kwargs: ", kwargs
+        print("kwargs: ", kwargs)
         call = "server.%s(**kwargs)" % method
-        print "call: ", call
+        print("call: ", call)
 
 
         return eval(call)

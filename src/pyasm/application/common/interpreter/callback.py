@@ -57,7 +57,7 @@ class BaseClientCbk(object):
         try:
             self.execute()
 
-        except Exception, e:
+        except Exception as e:
             self.server.abort()
             raise
         else:
@@ -103,7 +103,7 @@ class ClientLoadCbk(BaseClientCbk):
 
         search_keys = self.get_option('search_key')
         for search_key in search_keys:
-            print "search_key: ", search_key
+            print("search_key: ", search_key)
 
             # get the snapshot
             snapshot = self.server.get_by_search_key(search_key)
@@ -127,7 +127,7 @@ class ClientLoadCbk(BaseClientCbk):
 def callback(ticket, callback_class, options):
     # NOTE: cgi.parse_qs creates arrays for *all* values
     options = cgi.parse_qs(options)
-    print "options: ", options
+    print("options: ", options)
 
     # get the callback, if there is one
     callback = eval("%s()" % callback_class)

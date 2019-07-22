@@ -29,8 +29,8 @@ class CodeNaming:
         try:
             func = "self.%s(self.code)" % func_name
             self.matches = eval( func )
-        except AttributeError, e:
-            print "WARNING: ", e.__str__()
+        except AttributeError as e:
+            print("WARNING: ", e.__str__())
             self.matches = {}
 
 

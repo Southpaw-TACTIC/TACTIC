@@ -27,6 +27,9 @@ from tactic.ui.container import TabWdg, Menu, MenuItem
 from tactic.ui.tools import PipelineCanvasWdg
 from tactic.ui.widget import SingleButtonWdg, IconButtonWdg, ActionButtonWdg
 
+import six
+basestring = six.string_types
+
 
 class SObjectDetailWdg(BaseRefreshWdg):
     '''Single SObject Widget'''
@@ -138,7 +141,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if name:
             title.add("%s" % name)
             if code:
-                title.add(" <i style='font-size: 0.8; opacity: 0.7'>(%s)</i>" % code)
+                title.add(" <i style='font-size: 0.8em; opacity: 0.7'>(code: %s)</i>" % code)
         elif code:
             title.add("%s" % code)
         else:
@@ -402,7 +405,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if isinstance(tab_kwargs, basestring):
             tab_kwargs = jsonloads(tab_kwargs)      
 
-        show_remove = False
+        show_remove = tab_kwargs.get("show_remove") or False
         show_add = tab_kwargs.get("show_add") or False
         add_bvr = tab_kwargs.get("add_bvr") or ""
         use_default_style = tab_kwargs.get("use_default_style")

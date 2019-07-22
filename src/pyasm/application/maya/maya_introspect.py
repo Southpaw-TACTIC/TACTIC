@@ -10,7 +10,7 @@
 #
 #
 
-import os, sys, urllib, xmlrpclib
+import os, sys, urllib
 from xml.dom.minidom import parseString
 from xml.dom.minidom import getDOMImplementation
 

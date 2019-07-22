@@ -858,7 +858,7 @@ class RadialProgressWdg(BaseRefreshWdg):
                 percent = 0
 
         if percent == None:
-            percent = 0;
+            percent = 0
 
         color = self.kwargs.get("color")
         if not color:
@@ -866,7 +866,6 @@ class RadialProgressWdg(BaseRefreshWdg):
 
         #size = 100
         size = 60 
-
 
         top.add_style("width", size)
         top.add_style("height", size)

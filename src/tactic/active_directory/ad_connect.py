@@ -23,7 +23,7 @@ ERROR = ""
 try:
     import win32security, pywintypes
     import active_directory
-except ImportError, e:
+except ImportError as e:
     if os.name != 'nt':
         ERROR = "Active directory libraries only work on a Windows platform"
     else:
@@ -68,14 +68,14 @@ class ADConnect(object):
         
     def debug(self, message):
         if self.debug_flag:
-            print message
+            print(message)
 
     def lookup(self):
         self.debug("Looking up info on %s." % (self.username)) 
         try: 
             account=win32security.LookupAccountName(None, self.username)
             return account
-        except pywintypes.error, e:
+        except pywintypes.error as e:
             return False
     
     def logon(self):
@@ -89,28 +89,28 @@ class ADConnect(object):
              # We're not going to use the handle, just seeing if we can get it.
              handle.Close()
              return True
-        except pywintypes.error, e:
+        except pywintypes.error as e:
              # Because of the sheer number of Windows-specific errors that can
              # occur here, we have to assume any of them mean that the
              # credentials were not valid.
-             print e
+             print(e)
              return False
 
 import sys, getopt
 
 def usage():
-    print "ADS credentials checker"
-    print "Usage: ad_connect.py [Option]"
-    print "Check for ADS connectivity"
-    print ""
-    print "-u <username>        username"
-    print "-p <password>        password"
-    print "-h, --help           Display this message, and exit"
-    print "-a <domain>          Set domain"
-    print "-c                   check credentials against server"
-    print "-i                   lookup account info"      
-    print "-d                   Debug messages"
-    print ""
+    print("ADS credentials checker")
+    print("Usage: ad_connect.py [Option]")
+    print("Check for ADS connectivity")
+    print("")
+    print("-u <username>        username")
+    print("-p <password>        password")
+    print("-h, --help           Display this message, and exit")
+    print("-a <domain>          Set domain")
+    print("-c                   check credentials against server")
+    print("-i                   lookup account info"      )
+    print("-d                   Debug messages")
+    print("")
 
 def main(argv):
     try:
@@ -137,18 +137,18 @@ def main(argv):
                 ads.set_debug(True)
             elif opt == '-c':
                 if ads.logon():
-                    print "Successful logon"
+                    print("Successful logon")
                 else:
-                    print "Failed logon"
+                    print("Failed logon")
             elif opt == '-i':
                 x=ads.lookup()
-                print "SID:%s" % x[0]
-                print "Domain:%s" % x[1]
+                print("SID:%s" % x[0])
+                print("Domain:%s" % x[1])
             else:
                 usage()
                 sys.exit()
     else:
-        print ("Try 'ad_connect.py -h' for more information.")
+        print(("Try 'ad_connect.py -h' for more information."))
 
 if __name__ == '__main__':
     main(sys.argv[1:])

@@ -211,7 +211,7 @@ class WidgetClassHandler(object):
 if __name__ == '__main__':
 
     handler = WidgetClassHandler()
-    print handler.get_display_handler('expression')
-    print handler.get_display_handler('button')
+    print(handler.get_display_handler('expression'))
+    print(handler.get_display_handler('button'))
 
 

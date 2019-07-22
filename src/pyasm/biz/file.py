@@ -14,24 +14,23 @@ __all__ = ["FileException", "File", "FileAccess", "IconCreator", "FileGroup", "F
 
 from pyasm.common import Common, Xml, TacticException, Environment, System, Config, jsonloads
 from pyasm.search import *
-from project import Project
-from subprocess import Popen, PIPE
+from .project import Project
 
+from subprocess import Popen, PIPE
 import sys, os, string, re, stat, glob
 
 
 try:
-    #import Image
     from PIL import Image
     # Test to see if imaging actually works
-    import _imaging
+    #import _imaging
     HAS_PIL = True
 except:
     HAS_PIL = False
     try:
         import Image
         # Test to see if imaging actually works
-        import _imaging
+        #import _imaging
         HAS_PIL = True
     except:
         HAS_PIL = False
@@ -400,7 +399,7 @@ class File(SObject):
         if not py_exec:
             py_exec = "python"
 
-        if isinstance(path, unicode):
+        if not Common.IS_Pv3 and isinstance(path, unicode):
             path = path.encode('utf-8')
         popen =  subprocess.Popen([py_exec, '%s/src/bin/get_md5.py'%Environment.get_install_dir(), path], shell=False, stdout=subprocess.PIPE)
         popen.wait()
@@ -491,7 +490,7 @@ class IconCreator(object):
         file_name = os.path.basename(self.file_path)
 
         ext = File.get_extension(file_name)
-        type = string.lower(ext)
+        type = ext.lower()
 
 
         if type == "pdf":
@@ -502,7 +501,7 @@ class IconCreator(object):
         elif type in File.VIDEO_EXT:
             try:
                 self._process_video( file_name )
-            except IOError, e:
+            except IOError as e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print("WARNING: ", e.__str__())
@@ -511,7 +510,7 @@ class IconCreator(object):
             # assume it is an image
             try:
                 self._process_image( file_name )
-            except IOError, e:
+            except IOError as e:
                 '''This is an unknown file type.  Do nothing and except as a
                 file'''
                 print("WARNING: ", e.__str__())
@@ -778,7 +777,7 @@ class IconCreator(object):
                 icon_path_size = os.stat(self.icon_path)[stat.ST_SIZE]
                 if not icon_path_size:
                     self.icon_path = None
-        except IOError, e:
+        except IOError as e:
             Environment.add_warning("Could not process file", \
                 "%s - %s" % (self.file_path, e.__str__()))
             self.web_path = None
@@ -796,8 +795,9 @@ class IconCreator(object):
         free_aspect_ratio = thumb_size[1] == -1
 
         try:
-            large_path = large_path.encode('utf-8')
-            small_path = small_path.encode('utf-8')
+            if not Common.IS_Pv3:
+                large_path = large_path.encode('utf-8')
+                small_path = small_path.encode('utf-8')
 
             if HAS_IMAGE_MAGICK:
                 # generate imagemagick command
@@ -856,6 +856,8 @@ class IconCreator(object):
                     to_ext = "JPEG"
                 if x >= y:
                     im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
+                    if im.mode != "RGB":
+                        im = im.convert("RGB")
                     im.save(small_path, to_ext)
                 else:
 

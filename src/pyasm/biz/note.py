@@ -16,7 +16,7 @@ from pyasm.common import Environment
 from pyasm.security import Security
 from pyasm.search import SearchType, SObject, Search
 
-from project import Project
+from .project import Project
 
 class Note(SObject):
 
