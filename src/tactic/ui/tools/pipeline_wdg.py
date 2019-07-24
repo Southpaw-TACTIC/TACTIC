@@ -6171,21 +6171,8 @@ class NewProcessInfoCmd(Command):
 
         # set node workflow data
         workflow = {}
-        filtered_keys = set(['process', 'pipeline_code'])
-        for key in self.kwargs:
-            if key.startswith('_') or key in filtered_keys:
-                continue
-            elif key == "default":
-                inner = self.kwargs.get(key)
-                inner_workflow = {}
-                for key2 in inner:
-                    if key2.startswith('_') or key2 in filtered_keys:
-                        continue
-                    else:
-                        inner_workflow[key2] = inner.get(key2)
-                workflow[key] = inner_workflow
-            else:
-                workflow[key] = self.kwargs.get(key)
+        self.filtered_keys = set(['process', 'pipeline_code', 'None'])
+        workflow = self.populate_workflow(workflow, self.kwargs)
 
         self.process_sobj.set_json_value("workflow", workflow)
 
@@ -6214,6 +6201,26 @@ class NewProcessInfoCmd(Command):
                 print("Failed saving node for node type [%s]:" % node_type)
                 print(e)
                 print
+
+
+
+    def populate_workflow(self, workflow, data):
+
+        for key in data:
+            value = data.get(key)
+            is_empty = value == None or value == ""
+            unwanted_keys = key.startswith('_') or key in self.filtered_keys
+
+            if (is_empty or unwanted_keys):
+                continue
+
+            if (isinstance(value, dict)):
+                value = self.populate_workflow({}, value)
+            
+            workflow[key] = value
+
+        return workflow
+
 
 
     def handle_action(self):
@@ -7325,7 +7332,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': '''
 
-        
+
       
         '''
         } )
