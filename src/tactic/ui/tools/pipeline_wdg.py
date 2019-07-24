@@ -7317,6 +7317,18 @@ class PipelineEditorWdg(BaseRefreshWdg):
             '''
         } )
         """
+
+        button = ButtonNewWdg(title="Default app template", icon="FA_FILE")
+        button_row.add(button)
+
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+
+        
+      
+        '''
+        } )
  
 
 
