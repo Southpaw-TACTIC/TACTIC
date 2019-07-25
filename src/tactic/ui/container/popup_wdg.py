@@ -1020,7 +1020,7 @@ spt.popup.get_widget = function( evt, bvr )
 
     // get the content container
     var width_wdg = popup.getElement(".spt_popup_width");
-    width_wdg.setStyle("min-width", "200px");
+    width_wdg.setStyle("min-width", "900px");
     if (width != null) {
         //width_wdg.setStyle("width", width);
         var content = popup.getElement(".spt_popup_content");

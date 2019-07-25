@@ -811,15 +811,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "notes":
                 config_xml.append('''
-                <element name="notes" title="Notes" count="@COUNT(sthpw/note)">
+                <element name="notes" title="Notes" count="@COUNT(sthpw/note)" >
                   <display class='tactic.ui.panel.CustomLayoutWdg'>
                   <html>
-                    <div style="padding: 20px">
+                    <div style="padding: 20px;">
                     <div style="font-size: 25px">Notes</div>
                     <div>List of all of the notes for this item</div>
                     <hr/>
                     <br/>
-                    <div style="min-height: 200px">
+                    <div style="overflow:auto; height:500px;" spt_window_resize_offset="300" class="spt_window_resize spt_notes_wrap">
                     <element>
                       <display class='tactic.ui.widget.DiscussionWdg'>
                         <search_key>%(search_key)s</search_key>
@@ -953,7 +953,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         </tab>
         </config>
         ''')
-
         config_xml = "".join(config_xml)
         config_xml = config_xml.replace("&", "&amp;")
 
@@ -1341,7 +1340,7 @@ class RelatedSObjectWdg(BaseRefreshWdg):
         left = table.add_cell()
         left.add_style("vertical-align: top")
         left.add_style("padding: 10px")
-        left.add_style("width: 200px")
+        # left.add_style("width: 200px")
         left.add_style("min-width: 200px")
 
         left.add_relay_behavior( {
@@ -2131,6 +2130,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
         height = self.kwargs.get("height") or 500
         show_title = self.kwargs.get("show_title")
+        window_resize_offset = self.kwargs.get("window_resize_offset")
 
         show_title = self.kwargs.get("show_title")
         if show_title not in [False, 'false']:
@@ -2151,6 +2151,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             'is_editable': False,
             'use_mouse_wheel': True,
             'show_border': False,
+            'window_resize_offset':window_resize_offset
         }
         pipeline = TaskDetailPipelineWdg(**kwargs)
         div.add(pipeline)

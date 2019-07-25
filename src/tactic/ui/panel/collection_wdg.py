@@ -207,8 +207,8 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         content_div.add(text)
         # set minimum if there is at least one collection
         if len(collections) > 0:
-            content_div.add_style("min-height: 300")
-        content_div.add_style("max-height: 300")
+            content_div.add_style("min-height: 300px")
+        content_div.add_style("max-height: 300px")
         content_div.add_style("overflow-y: auto")
 
         content_div.add("<br clear='all'/>")
@@ -593,7 +593,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
 
     def get_content_wdg(self):
-
         self.search_type = self.kwargs.get("search_type")
         self.collection_key = self.kwargs.get("collection_key")
 
@@ -628,13 +627,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         left.add_style("vertical-align: top")
         left.add_style("width: 250px")
         left.add_style("max-width: 250px")
-        left.add_style("height: auto")
 
         right = table.add_cell()
         right.add_style("vertical-align: top")
         right.add_style("width: auto")
-        right.add_style("height: auto")
-
+        right.add_style("overflow-y: auto")
         left.add(self.get_collection_wdg())
         right.add(self.get_right_content_wdg())
 
@@ -836,7 +833,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 upload_mode=self.kwargs.get("upload_mode"),
                 group_elements=group_elements,
                 parent_key=parent_key,
-                collection_key=collection_key
+                collection_key=collection_key,
+                window_resize_offset=self.kwargs.get("window_resize_offset")
         )
         div.add(tile)
 
@@ -966,7 +964,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
                 show_search_limit: true,
                 //expression: expr,
                 parent_dict: parent_dict,
-                parent_key: bvr.parent_key,
+                parent_key: bvr.parent_key
             }
             spt.panel.load(content, cls, kwargs);
 
@@ -1043,7 +1041,18 @@ class CollectionContentWdg(BaseRefreshWdg):
         collection = Search.get_by_search_key(self.collection_key)
 
         top = self.top
-        top.add_style("min-height: 400px")
+        top.add_style("height", "530px")
+        top.add_style("overflow", "auto")
+        top.add_class("spt_collection_tile_wrap")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        if window_resize_offset:
+            top.add_class("spt_window_resize")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
+
+        window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
+        if window_resize_xoffset:
+            top.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
         self.kwargs["scale"] = 75
         self.kwargs["show_scale"] = False
@@ -1171,6 +1180,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                     'type': 'mouseup',
                     'search_type': self.kwargs.get("search_type"),
                     'parent_key': self.parent_key,
+                    'window_resize_offset': self.kwargs.window_resize_offset,
                     'collection_type': collection_type,
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
@@ -1195,7 +1205,8 @@ class CollectionContentWdg(BaseRefreshWdg):
                             show_shelf: false,
                             show_search_limit: true,
                             expression: expr,
-                            parent_key: bvr.parent_key
+                            parent_key: bvr.parent_key,
+                            window_resize_offset=bvr.window_resize_offset
                         }
                         spt.panel.load(content, cls, kwargs);
 

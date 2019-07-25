@@ -1256,6 +1256,7 @@ spt.tab.close = function(src_el) {
 
             .spt_tab_header.drag-header {
                 position: relative;
+                height:35px;
             }
 
             .spt_tab_header_label {

@@ -871,7 +871,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
             .spt_notes_dialog {
                 border: solid 1px #DDD;
-                width: 100%;
+                width: 97%;
                 height: auto;
                 box-sizing: border-box;
                 margin: 0px 30px 10px 20px;
