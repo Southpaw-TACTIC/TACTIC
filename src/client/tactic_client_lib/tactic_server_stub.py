@@ -3003,10 +3003,8 @@ class TacticServerStub(object):
 
 
 
-    def get_task_status_colors(self, ticket):
+    def get_task_status_colors(self):
         '''Get all the colors for a task status
-
-        ticket - authentication ticket
 
         @return:
         dictionary of colors
@@ -3070,8 +3068,7 @@ class TacticServerStub(object):
         @return
         note that was created
         ''' 
-        return self.server.create_note(self.ticket, search_key, process, subcontext,
-                                     note, user)
+        return self.server.create_note(self.ticket, search_key, note, process, subcontext, user)
 
 
     #
