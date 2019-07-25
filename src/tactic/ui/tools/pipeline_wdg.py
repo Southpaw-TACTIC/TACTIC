@@ -137,6 +137,20 @@ class PipelineToolWdg(BaseRefreshWdg):
                 margin: 5px;
             }
 
+            .spt_app_template_input_container {
+                position: absolute;
+                width: 200px;
+                height: 60px;
+                background: white;
+                box-shadow: 0px 2px 4px 0px #ccc;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 5px;
+                box-sizing: border-box;
+                font-size: 10px;
+                color: #7e7e7e;
+            }
+
             ''')
 
         return styles
@@ -642,6 +656,27 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         } )
 
+
+        app_template_input_container = DivWdg()
+        right.add(app_template_input_container)
+        app_template_input_container.add_class("spt_app_template_input_container")
+
+        app_template_input_container.add("Default Template")
+
+        app_template_input = TextInputWdg(name="default_template", height="34", width="100%")
+        app_template_input_container.add(app_template_input)
+
+        app_template_input_container.add_style("display", "none")
+        app_template_input_container.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            bvr.src_el.on_complete = function() {
+                spt.hide(bvr.src_el);
+            }
+
+            '''
+            })
 
 
         if self.kwargs.get("is_refresh"):
@@ -1364,6 +1399,7 @@ class PipelineListWdg(BaseRefreshWdg):
             
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
+            var default_template = data.default_template;
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -1371,7 +1407,14 @@ class PipelineListWdg(BaseRefreshWdg):
             var xml = spt.pipeline.export_group(group_name);
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
-                var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
+                var args = {
+                    search_key: search_key, 
+                    pipeline: xml, 
+                    color: color, 
+                    project_code: bvr.project_code, 
+                    default_template: default_template,
+                    pipeline_data: data
+                };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
@@ -1899,6 +1942,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
         top.add( self.get_description_wdg(pipeline) )
         top.add( self.get_color_wdg(pipeline) )
+        top.add( self.get_default_template_wdg(pipeline) )
 
 
         # sobject count
@@ -2093,6 +2137,48 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
             '''))
 
+
+        return div
+
+
+
+    def get_default_template_wdg(self, pipeline):
+        # get template from data column
+        data = pipeline.get_json_value("data") or {}
+        default_template = data.get("default_template") or ""
+        
+        div = DivWdg()
+        div.add_class("spt_app_template_wdg")
+        div.add_style("margin: 10px 10px 20px 10px")
+        div.add("<div><b>Default Template:</b></div>")
+
+        text = TextInputWdg(name="default_template")
+        div.add(text)
+        text.set_value(default_template)
+
+        text.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var data = spt.pipeline.get_data();
+            default_template = data.default_template;
+
+            if (default_template)
+                bvr.src_el.value = default_template;
+
+            '''
+        } )
+
+        text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var default_template = bvr.src_el.value;
+            spt.pipeline.set_data('default_template', default_template)
+
+            spt.named_events.fire_event('pipeline|change', {});
+ 
+            '''
+        } )
 
         return div
 
@@ -6846,6 +6932,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
             var description = data.descriptions[group_name];
+            var default_template = data.default_template;
 
             var nodes = spt.pipeline.get_nodes_by_group(group_name);
             var node_kwargs = {};
@@ -6895,7 +6982,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     pipeline:xml, 
                     color:color, 
                     description: description, 
-                    project_code: bvr.project_code, 
+                    project_code: bvr.project_code,
+                    default_template: default_template,
                     node_kwargs: node_kwargs
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
@@ -7332,7 +7420,20 @@ class PipelineEditorWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': '''
 
+        var right = bvr.src_el.getParent(".spt_pipeline_tool_right");
+        var el = right.getElement(".spt_app_template_input_container");
 
+        var position_args = {
+            position: 'upperleft', 
+            relativeTo: bvr.src_el,
+            offset: { 
+                y:40
+            }
+        }
+        el.position(position_args);
+
+        spt.show(el);
+        spt.body.add_focus_element(el);
       
         '''
         } )
@@ -8418,6 +8519,9 @@ class PipelineSaveCbk(Command):
         project_code = self.kwargs.get('project_code')
         timestamp = self.kwargs.get("timestamp")
 
+        default_template = self.kwargs.get("default_template")
+        pipeline_data = self.kwargs.get("pipeline_data")
+
         from pyasm.common import Xml
         xml = Xml()
         xml.read_string(pipeline_xml)
@@ -8470,6 +8574,16 @@ class PipelineSaveCbk(Command):
         """
 
         pipeline.update_dependencies()
+
+        pipeline_data = {
+            'default_template': default_template
+        }
+        try:
+            pipeline.set_json_value('data', pipeline_data)
+            pipeline.commit()
+        except:
+            raise Exception("sthpw/pipline missing column 'data'")
+
 
 
         self.check_duplicates(process_nodes, xml)
@@ -8710,7 +8824,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_document .document-group-label {
-                height: 14px;
+                
             }
 
             .spt_pipeline_document .document-item-content {
@@ -8932,6 +9046,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 
                 var data = spt.pipeline.get_data();
                 var color = data.colors[group_name];
+                var default_template = data.default_template;
 
                 server = TacticServerStub.get();
                 spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -8939,7 +9054,14 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 var xml = spt.pipeline.export_group(group_name);
                 var search_key = server.build_search_key("sthpw/pipeline", group_name);
                 try {
-                    var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
+                    var args = {
+                        search_key: search_key, 
+                        pipeline: xml, 
+                        color: color, 
+                        project_code: bvr.project_code, 
+                        default_template: default_template,
+                        pipeline_data: data
+                    };
                     server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                     spt.named_events.fire_event('pipeline|save', {});
 
