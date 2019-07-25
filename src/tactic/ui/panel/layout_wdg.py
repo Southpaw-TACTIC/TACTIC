@@ -1129,7 +1129,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
             # get the database columns
             column_info = SearchType.get_column_info(search_type)
-            columns = column_info.keys()
+            columns = list(column_info.keys())
 
             columns.sort()
             context_menu.add( self.get_columns_wdg("Database Columns", columns) )

@@ -21,7 +21,7 @@ import os, sys, getopt
 try: 
     import active_directory
 except Exception as e:
-    print "WARNING: cannot import active_directory"
+    print("WARNING: cannot import active_directory")
     print
     #class active_directory:
     #    pass
@@ -42,7 +42,7 @@ mail: remko@southpawtech.com
 
     user = active_directory.find_user(user_name, domain)
     if not user:
-        print "WARNING: user [%s] cannot be found" % user_name
+        print("WARNING: user [%s] cannot be found" % user_name)
         return ''
    
     import types
@@ -141,27 +141,27 @@ def main(argv):
                 domain = arg
             elif opt == '-u':
                 try:
-                    print get_user_info(arg, domain)
+                    print(get_user_info(arg, domain))
                 except Exception as e:
-                    print "ERROR: ", str(e)
+                    print("ERROR: ", str(e))
                     raise
 
             elif opt == '-g':
-                print get_group_info(arg)
+                print(get_group_info(arg))
             else:
                 usage()
                 sys.exit()
     else:
-        print ("Try 'python ad_get_user_info.py -h' for more information.")
+        print(("Try 'python ad_get_user_info.py -h' for more information."))
 
 
 def usage():
-    print "Usage: python ad_get_user_info.py [Option]"
-    print ""
-    print "-d <name>            Set domain to use"
-    print "-u <name>            Look up the user 'name'"
-    print "-g <name>            Look up the group 'name'"
-    print ""
+    print("Usage: python ad_get_user_info.py [Option]")
+    print("")
+    print("-d <name>            Set domain to use")
+    print("-u <name>            Look up the user 'name'")
+    print("-g <name>            Look up the group 'name'")
+    print("")
 
 
 if __name__ == '__main__':

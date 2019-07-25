@@ -62,7 +62,7 @@ class SchemaTest(unittest.TestCase):
         new_schema.commit()
 
         schema = Schema.get(reset_cache=True)
-        print schema.get_value("schema")
+        print(schema.get_value("schema"))
 
 
 

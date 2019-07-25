@@ -238,8 +238,6 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
             var index = extras[name+"set_input_values2_index"] || 0;
             var length = value.length;
 
-            console.log(value, index, input);
-
             if (index > length-1)
                 continue
 

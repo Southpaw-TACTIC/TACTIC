@@ -1,0 +1,8 @@
+repos:
+- repo: git://github.com/pre-commit/mirrors-pylint.git
+  rev: v1.9.1
+  hooks:
+  - id: pylint
+    args:
+    - --msg-template={path}:L {line:3d}:({symbol}) {msg} (C {column:2d}), ::{msg_id}
+    - --output-format=colorized

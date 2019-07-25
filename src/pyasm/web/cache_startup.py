@@ -83,23 +83,27 @@ class CacheStartup(object):
             cache = TableInfoCache( **kwargs )
 
 
+        from pyasm.security import Sudo
+        sudo = Sudo()
+        try:
 
-        # cache search object table
-        search_type_cache = SearchTypeCache.get("sthpw/search_object")
-        search_type_cache.build_cache_by_column("search_type")
+            # cache search object table
+            search_type_cache = SearchTypeCache.get("sthpw/search_object")
+            search_type_cache.build_cache_by_column("search_type")
 
-        # cache login table
-        search_type_cache = SearchTypeCache.get("sthpw/login")
-        search_type_cache.build_cache_by_column("login")
+            # cache login table
+            search_type_cache = SearchTypeCache.get("sthpw/login")
+            search_type_cache.build_cache_by_column("login")
 
-        # cache login_group table
-        search_type_cache = SearchTypeCache.get("sthpw/login_group")
-        search_type_cache.build_cache_by_column("login_group")
+            # cache login_group table
+            search_type_cache = SearchTypeCache.get("sthpw/login_group")
+            search_type_cache.build_cache_by_column("login_group")
 
-        # DISABLING this ... needs to be written often and is large
-        #search_type_cache = SearchTypeCache.get("sthpw/ticket")
-        #search_type_cache.build_cache_by_column("ticket")
-
+            # DISABLING this ... needs to be written often and is large
+            #search_type_cache = SearchTypeCache.get("sthpw/ticket")
+            #search_type_cache.build_cache_by_column("ticket")
+        finally:
+            sudo.exit()
 
 
 

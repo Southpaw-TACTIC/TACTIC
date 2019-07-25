@@ -25,7 +25,7 @@ try:
     from ad_connect import ADConnect
     from ad_lookup import ADLookup
 except ImportError:
-    print "WARNING: cannot import Active Directory classes"
+    print("WARNING: cannot import Active Directory classes")
     pass
 
 class ADException(Exception):
@@ -75,7 +75,7 @@ class ADAuthenticate(Authenticate):
                 #flag = Command.execute_cmd(cmd)
                 flag = cmd.execute()
             except Exception as e:
-                print e
+                print(e)
                 raise
             if flag != True:
                 return False  
@@ -87,7 +87,7 @@ class ADAuthenticate(Authenticate):
 
         # skip authentication if ad does not exist
         if not self.ad_exists:
-            print "WARNING: Active directory does not exist ... skipping verify"
+            print("WARNING: Active directory does not exist ... skipping verify")
             return True
 
         ad_connect = ADConnect()
@@ -265,7 +265,7 @@ class ADAuthenticate(Authenticate):
 
             # only add values that are actually in the login object
             if name not in columns:
-                print "WARNING: skipping [%s].  Does not exist in login" % name
+                print("WARNING: skipping [%s].  Does not exist in login" % name)
                 continue
 
             login.set_value(name, value)
@@ -350,11 +350,11 @@ class ADAuthenticate(Authenticate):
             if line.startswith("ERROR") or line.startswith("WARNING"):
                 error_flag = True
                 error = line
-                print line
+                print(line)
                 continue
 
             if error_flag:
-                print line
+                print(line)
                 continue
 
 
@@ -472,7 +472,7 @@ class ADAuthenticate(Authenticate):
 
         if not login_in_groups:
             for group in default_groups:
-                print "adding to: ", group
+                print("adding to: ", group)
                 user.add_to_group(group)
 
 

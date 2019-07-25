@@ -91,7 +91,7 @@ class FlashBuilder(SessionBuilder):
         jsfl_list.append(jsfl)
         # execute all of the jsfl commands
         jsfl_final = "\n".join(jsfl_list)
-        print jsfl_final
+        print(jsfl_final)
         self.app.run_jsfl(jsfl_final)
 
     def close_files(self):
@@ -112,7 +112,7 @@ class FlashBuilder(SessionBuilder):
         jsfl_list.append(jsfl)
 
         jsfl_final = "\n".join(jsfl_list)
-        print "jsfl_final: ", jsfl_final
+        print("jsfl_final: ", jsfl_final)
 
         self.app.run_jsfl(jsfl_final)
 

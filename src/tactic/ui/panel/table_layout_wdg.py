@@ -876,7 +876,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #expand_full_width = False
         for i, item_width in enumerate(reversed(column_widths)):
 
-            if isinstance(item_width, str):
+            if item_width == "auto":
+                continue
+
+            if isinstance(item_width, basestring):
                 item_width = item_width.replace("px", "")
                 item_width = int(item_width)
 

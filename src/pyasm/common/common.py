@@ -297,12 +297,10 @@ class Common(Base):
         # if the func is wrapped in a method, extract it
         if isinstance(func, types.MethodType):
             func = func.im_func
-        
-        # PYTHON3: this does not work in Python 3
-        # Some suggestions
-        # method = types.MethodType(func, instance)
-        import new
-        method = new.instancemethod(func, instance, cls)
+       
+        #import new
+        #method = new.instancemethod(func, instance, cls)
+        method = types.MethodType(func, instance)
         if not method_name: 
             method_name=func.__name__
             

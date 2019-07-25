@@ -92,7 +92,7 @@ class FlashClientTest(unittest.TestCase):
         log_path = "C:/sthpw/render/action_log.txt"
 
         jsfl = self.app.get_jsfl(jsfl_path, "render_layer", file_format, render_dir, log_path)
-        print jsfl
+        print(jsfl)
         
 
 
