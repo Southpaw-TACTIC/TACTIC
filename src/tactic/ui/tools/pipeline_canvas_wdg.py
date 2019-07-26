@@ -243,8 +243,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.top.add_attr("spt_default_node_type", default_node_type)
 
 
-        print("initing...")
-
         self.width = self.kwargs.get("width")
         if not self.width:
             self.width = "auto"
