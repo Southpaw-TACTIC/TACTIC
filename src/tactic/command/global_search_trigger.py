@@ -303,7 +303,7 @@ class GlobalSearchTrigger(Trigger):
                 collection_keywords = collection_keywords.lower()
 
             if path:
-                if isinstance(path, unicode):
+                if not Common.IS_Pv3 and isinstance(path, unicode):
                     path = path.encode('utf-8','replace')
 
                 if isinstance(path, basestring):

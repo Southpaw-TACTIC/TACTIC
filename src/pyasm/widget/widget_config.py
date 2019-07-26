@@ -314,6 +314,7 @@ class WidgetConfig(Base):
         assert element_name != None
 
         xpath = "config/%s/element[@name='%s']/display/@class" % (self.view_xpath, element_name)
+
         value = self.xml.get_value(xpath)
         if not value:
             xpath = "config/%s/element[@name='%s']/display/@widget" % (self.view_xpath, element_name)
