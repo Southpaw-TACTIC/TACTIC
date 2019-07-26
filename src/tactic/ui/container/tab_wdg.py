@@ -1300,7 +1300,6 @@ spt.tab.view_definition = function(bvr) {
 
             .spt_tab_header.drag-header {
                 position: relative;
-                height:35px;
             }
 
             .spt_tab_header_label {
@@ -2712,7 +2711,7 @@ spt.tab.view_definition = function(bvr) {
         # add a drag behavior
         allow_drag = self.kwargs.get("allow_drag")
         if allow_drag not in [False, 'false']:
-            header.add_class("drag-header");
+            header.add_class("drag-header")
             header.add_behavior( {
             'type': 'drag',
             #"mouse_btn": 'LMB',

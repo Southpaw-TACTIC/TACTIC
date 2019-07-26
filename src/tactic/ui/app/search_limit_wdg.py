@@ -281,8 +281,6 @@ class SearchLimitWdg(Widget):
         #widget.add_style("border", "solid 1px blue")
         widget.add_color("background", "background")
         widget.add_color("color", "color")
-        widget.add_style("padding: 5px 8px 13px 30px")
-        widget.add_style("position", "relative")
 
         hidden = HiddenWdg("prefix", self.prefix)
         widget.add(hidden)
@@ -546,7 +544,6 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         self.set_as_panel(top)
         top.set_unique_id()
         top.add_class("spt_search_limit_top")
-        top.add_style("position: relative")
 
 
 
@@ -584,7 +581,8 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
         top.add_style("padding-right: 30px")
         top.add_style("padding-left: 8px")
         top.add_style("padding-top: 5px")
-        top.add_style("padding-bottom: 13px")
+        top.add_style("padding-bottom: 8px")
+        top.add_style("position: relative")
 
         showing_div = DivWdg()
         showing_div.add_style("padding: 5px")
@@ -714,7 +712,6 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
 
 
         top.add_class("spt_table_search")
-        top.add_style("position: relative")
         hidden = HiddenWdg("prefix", "search_limit_simple")
         top.add(hidden)
 

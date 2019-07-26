@@ -1041,7 +1041,7 @@ class CollectionContentWdg(BaseRefreshWdg):
         collection = Search.get_by_search_key(self.collection_key)
 
         top = self.top
-        top.add_style("height", "530px")
+        top.add_style("min-height", "400px")
         top.add_style("overflow", "auto")
         top.add_class("spt_collection_tile_wrap")
 

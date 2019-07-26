@@ -819,7 +819,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     <div>List of all of the notes for this item</div>
                     <hr/>
                     <br/>
-                    <div style="overflow:auto; height:500px;" spt_window_resize_offset="300" class="spt_window_resize spt_notes_wrap">
+                    <div style="min-height: 200px">
                     <element>
                       <display class='tactic.ui.widget.DiscussionWdg'>
                         <search_key>%(search_key)s</search_key>
