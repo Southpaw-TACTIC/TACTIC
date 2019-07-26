@@ -155,6 +155,9 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border: 1px solid #ccc;
                 border-width: 1 1 0 0;
                 height: 28px;
+
+                display: flex;
+                align-items: center;
             }
 
             .spt_pipeline_tool_top .spt_hide_sidebar {
@@ -186,6 +189,14 @@ class PipelineToolWdg(BaseRefreshWdg):
                 left: 3px;
                 top: 1px;
                 background: white;
+            }
+
+            .spt_pipeline_tool_top .spt_pipeline_type_search {
+                border: 0px;
+                height: 100%;
+                padding: 6px 8px;
+                width: 200px;
+                border-right: 1px solid #ccc;
             }
 
             ''')
@@ -607,6 +618,32 @@ class PipelineToolWdg(BaseRefreshWdg):
                 bvr.src_el.setStyle("display", "none")
 
                 '''})
+
+            #### search for process select
+            type_search = HtmlElement.text()
+            toolbar.add(type_search)
+            type_search.add_class("spt_pipeline_type_search")
+            type_search.add_attr("placeholder", "Search for process types...")
+            type_search.add_style("display: none")
+
+            type_search.add_behavior({
+                'type': 'keyup',
+                'cbjs_action': '''
+
+                var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var typeTop = top.getElement(".spt_process_select_top");
+                var containers = typeTop.getElements(".spt_custom_node_container");
+
+                containers.forEach(function(container) {
+                    if (container.getAttribute("spt_node_type").contains(bvr.src_el.value))
+                        container.setStyle("display", "");
+                    else
+                        container.setStyle("display", "none")
+                });
+
+
+                '''
+                })
             
             # --------------
 
@@ -8883,7 +8920,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             .spt_pipeline_document {
                 border: 1px solid #ccc;
                 overflow: auto;
-                min-height: 650px;
+                min-height: 614px;
 
                 width: 250px;
                 box-sizing: border-box;
@@ -8946,7 +8983,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
         top.add_class("spt_window_resize")
 
         # FIXME: this nuber should not be hard codeed
-        top.add_attr("spt_window_resize_offset", "178")
+        top.add_attr("spt_window_resize_offset", "207")
 
         project_code = Project.get_project_code()
         top.add_attr("spt_project_code", project_code)
@@ -9879,8 +9916,9 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         styles = HtmlElement.style('''
 
             .spt_process_select_top {
-                border-top: 1px solid #ccc;
+                border: 1px solid #ccc;
                 width: 250px;
+                box-sizing: border-box;
             }
 
 
@@ -9899,7 +9937,7 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
         # FIXME: this nuber should not be hard codeed
         top.add_class("spt_window_resize")
-        top.add_attr("spt_window_resize_offset", "178")
+        top.add_attr("spt_window_resize_offset", "207")
         top.add_style("overflow-y: auto")
 
         # get all of the custom process node types
@@ -10063,18 +10101,22 @@ spt.process_tool.toggle_side_bar = function(activator) {
     var toolTop = activator.getParent(".spt_pipeline_tool_top");
     var left = toolTop.getElement(".spt_pipeline_tool_left");
 
+    var toolbar = left.getElement(".spt_pipeline_toolbar");
+    var search = toolbar.getElement(".spt_pipeline_type_search");
+
     var el1 = left.getElement(".spt_pipeline_list_top");
     var el2 = left.getElement(".spt_pipeline_nodes");
 
     if (el1.getStyle("display") == "none") {
         el1.setStyle("display", "");
         el2.setStyle("display", "none");
+        search.setStyle("display", "none");
     }
     else {
         el1.setStyle("display", "none");
         el2.setStyle("display", "");
+        search.setStyle("display", "");
     }
-
 }
 
 
@@ -10136,6 +10178,7 @@ spt.process_tool.toggle_side_bar = function(activator) {
             item_div = DivWdg()
             custom_div.add(item_div)
             item_div.add_class("spt_custom_node")
+            item_div.add_class("spt_custom_node_container")
             item_div.add_color("background", "background")
 
             item_div.add_style("border-radius: 3px")
