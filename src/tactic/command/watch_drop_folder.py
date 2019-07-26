@@ -552,7 +552,7 @@ class CheckinCmd(object):
             """
             #TEST: simulate different check-in duration
             sec = Common.randint(1, 5)
-            print "checking in for ", sec, "sec"
+            print("checking in for ", sec, "sec")
             server.eval("@SOBJECT(sthpw/login)")
             import shutil
             dir_name,base_name = os.path.split(file_path)

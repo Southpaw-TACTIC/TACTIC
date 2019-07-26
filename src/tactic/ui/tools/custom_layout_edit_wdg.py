@@ -587,7 +587,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         web = WebContainer.get_web();
-        folder_states = web.get_form_value("folder_states")
+        #folder_states = web.get_form_value("folder_states")
         folder_states = self.kwargs.get("folder_state")
         if folder_states:
             try:
@@ -1657,7 +1657,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             'cbjs_action': '''
             spt.app_busy.show("Refreshing ...")
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
-            spt.panel.refresh(top);
+            var states_el = top.getElement(".spt_folder_states");
+            var state_value = states_el.value;
+            spt.panel.refresh_element(top, {folder_state: state_value});
             spt.app_busy.hide();
             '''
         } )
@@ -1749,7 +1751,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             
 
             top.setAttribute("spt_view", view);
-            spt.panel.refresh(top);
+            var states_el = top.getElement(".spt_folder_states");
+            var state_value = states_el.value;
+            spt.panel.refresh_element(top, {folder_state: state_value});
 
             '''
         } )
@@ -1765,7 +1769,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             top.setAttribute("spt_view", "__new__");
-            spt.panel.refresh(top);
+            var states_el = top.getElement(".spt_folder_states");
+            var state_value = states_el.value;
+            spt.panel.refresh_element(top, {folder_state: state_value});
             '''
         } )
 
@@ -2911,6 +2917,11 @@ class AddImageElementWdg(ButtonElementWdg):
 class CustomLayoutEditTestWdg(BaseRefreshWdg):
 
     def get_display(self):
+        security = Environment.get_security()
+        if not security.is_admin():
+            div = DivWdg()
+            div.add("Only Admin can execute this")
+            return div
 
         html = self.kwargs.get("html")
         style = self.kwargs.get("style")

@@ -14,7 +14,7 @@ __all__ = ['HoudiniImpl']
 import re
 from pyasm.application.common import NodeData
 
-from houdini import Houdini, HoudiniEnvironment, HoudiniNodeNaming
+from .houdini import Houdini, HoudiniEnvironment, HoudiniNodeNaming
 
 
 class HoudiniImpl(object):

@@ -14,7 +14,8 @@ _all__ = ["NodeData"]
 
 from xml.dom.minidom import parseString
 from xml.dom.minidom import getDOMImplementation
-from base_app_info import BaseAppInfo
+
+from .base_app_info import BaseAppInfo
 
 class NodeData(object):
     '''class which stores tactic specific data on the node'''

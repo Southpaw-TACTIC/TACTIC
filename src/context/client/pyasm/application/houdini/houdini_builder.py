@@ -13,8 +13,8 @@
 __all__ = ['HoudiniBuilder']
 
 
-from houdini_environment import HoudiniEnvironment
-from houdini import Houdini, HoudiniNodeNaming
+from .houdini_environment import HoudiniEnvironment
+from .houdini import Houdini, HoudiniNodeNaming
 
 from pyasm.application.common import SessionBuilder
 
@@ -57,7 +57,7 @@ class HoudiniBuilder(SessionBuilder):
 
 
     def handle_mel(self, cmd_str):
-        print "WARNING: mel: ", cmd_str
+        print("WARNING: mel: ", cmd_str)
 
     def set_attr(self, node_name, node, current_node_name):
         '''set attribute for the current app'''

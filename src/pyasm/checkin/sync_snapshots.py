@@ -44,7 +44,7 @@ class SnapshotSync(Command):
                 snapshot.commit()
 
 
-        print messages
+        print(messages)
 
 if __name__ == '__main__':
     Batch(project_code='admin')

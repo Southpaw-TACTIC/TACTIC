@@ -32,9 +32,9 @@ import tactic.ui.app.js_includes as js_includes
 
 def compact_javascript_files():
 
-    print " "
-    print "Processing javascript files to compact into single '_compact_spt_all.js' file ..."
-    print " "
+    print(" ")
+    print("Processing javascript files to compact into single '_compact_spt_all.js' file ...")
+    print(" ")
 
     context_path = "%s/src/context" % Environment.get_install_dir()
     all_js_path = js_includes.get_compact_js_filepath()
@@ -44,7 +44,7 @@ def compact_javascript_files():
     for (dir, includes_list) in js_includes.all_lists:
         for include in includes_list:
             js_path = "%s/%s/%s" % (context_path, dir, include)
-            print "    >> processing '%s' ..." % js_path
+            print("    >> processing '%s' ..." % js_path)
             out_fp.write( "// %s\n\n" % js_path )
             in_fp = open( js_path, "r" )
             done = False
@@ -82,12 +82,12 @@ def compact_javascript_files():
 
     out_fp.close()
 
-    print " "
-    print "Generated compact '%s' file." % all_js_path
+    print(" ")
+    print("Generated compact '%s' file." % all_js_path)
 
-    print " "
-    print "DONE compacting javascript files into single file."
-    print " "
+    print(" ")
+    print("DONE compacting javascript files into single file.")
+    print(" ")
 
 
 if __name__ == "__main__":

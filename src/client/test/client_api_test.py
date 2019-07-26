@@ -77,12 +77,12 @@ class ClientApiTest(unittest.TestCase):
         test_ticket = ''
         try:
             test_ticket = self.server.get_ticket('admin', 'tactic')
-        except Exception, e:
+        except Exception as e:
             try:
                 import getpass
                 password = getpass.getpass("Enter TACTIC Password -> ")
                 test_ticket = self.server.get_ticket('admin', password)
-            except Exception, e:
+            except Exception as e:
                 x = e.__str__().find("Login/Password combination incorrect") == -1
                 self.assertEquals(False, x, e.__str__() )
         
@@ -1267,7 +1267,7 @@ class ClientApiTest(unittest.TestCase):
         try:
             version = 256
             snapshot = self.server.get_paths(search_key, context, version)
-        except Exception, e:
+        except Exception as e:
             if 'version [256] does not exist' in e.__str__():
                 pass
             else:
@@ -1290,7 +1290,7 @@ class ClientApiTest(unittest.TestCase):
         try:
             version = -1
             paths = self.server.get_paths(search_key, context, version, file_type='*', versionless=True)
-        except Exception, e:
+        except Exception as e:
             if 'version [-1] does not exist' in e.__str__():
                 pass
             else:
@@ -1819,21 +1819,21 @@ class ClientApiTest(unittest.TestCase):
         # add an inline element to definition (should error out)
         try:
             self.server.add_config_element(search_type, 'project_view', 'user', class_name = data_dict['class_name'], display_options=data_dict['display_options'], element_attrs=data_dict['element_attrs'], unique=data_dict['unique'])
-        except Exception, e:
+        except Exception as e:
             self.assertEquals("<Fault 1: 'This view name [user] has been taken.'>", e.__str__())
 
         # add an invalid element name with space and special chars
         for name in ['user A', 'user\tY', '!hello user#', 'user\n', '\ruser']:
             try:
                 self.server.add_config_element(search_type, 'project_view', name, class_name = data_dict['class_name'], display_options=data_dict['display_options'], element_attrs=data_dict['element_attrs'], unique=data_dict['unique'])
-            except Exception, e:
+            except Exception as e:
                 self.assertEquals(True, 'contains special characters or spaces' in e.__str__())
         
         # add an invalid element name starting with numbers
         for name in ['1user', '0 user', '90 users']:
             try:
                 self.server.add_config_element(search_type, 'project_view', name, class_name = data_dict['class_name'], display_options=data_dict['display_options'], element_attrs=data_dict['element_attrs'], unique=data_dict['unique'])
-            except Exception, e:
+            except Exception as e:
                 self.assertEquals(True, 'should not start with a number' in e.__str__())
         self.server.add_config_element(search_type, 'definition', 'user',  class_name = data_dict['class_name'], display_options=data_dict['display_options'], element_attrs=data_dict['element_attrs'], unique=data_dict['unique'])
 
@@ -1920,7 +1920,7 @@ class ClientApiTest(unittest.TestCase):
             self.server.add_config_element(search_type, view, element_name, \
                 class_name=display_cls, display_options=options,\
                 element_attrs=element_attrs)
-        except Exception, e:
+        except Exception as e:
             self.assertEquals("<Fault 1: 'This view name [my_preference] is reserved for internal use.'>", e.__str__())
         
         element_name = "unit_preference"

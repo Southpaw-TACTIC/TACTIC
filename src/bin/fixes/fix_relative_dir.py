@@ -53,7 +53,7 @@ class FixRelativeDirCmd(Command):
                     path = "%s/%s" % (lib_dir, file_name)
 
                     if not os.path.exists(path):
-                        print "WARNING: path [%s] does not exist" % path
+                        print("WARNING: path [%s] does not exist" % path)
 
                 file_type = snapshot.get_type_by_file_name(file_name)
 
@@ -75,27 +75,27 @@ class FixRelativeDirCmd(Command):
 
 
 
-            except SObjectNotFoundException, e:
+            except SObjectNotFoundException as e:
                 # Remove some dangling unittest
                 if snapshot_code.endswith("UNI"):
                     file.delete()
                     snapshot.delete()
                 else:
                     if WARNING:
-                        print "WARNING: Error getting directory for snapshot [%s] for file [%s]" % (snapshot_code, file.get_code() )
-                        print "\t", e.__str__()
+                        print("WARNING: Error getting directory for snapshot [%s] for file [%s]" % (snapshot_code, file.get_code() ))
+                        print("\t", e.__str__())
 
                 continue
 
-            except TacticException, e:
-                print "WARNING: Problem found on file [%s]" % file.get_code()
-                print "\t", e.__str__()
+            except TacticException as e:
+                print("WARNING: Problem found on file [%s]" % file.get_code())
+                print("\t", e.__str__())
                 continue
 
 
-            except Exception, e:
-                print "ERROR: Error found on file [%s]" % file.get_code()
-                print "\t", e.__str__()
+            except Exception as e:
+                print("ERROR: Error found on file [%s]" % file.get_code())
+                print("\t", e.__str__())
                 if e.__str__() == 'list index out of range':
                     continue
                 elif e.__str__() == "'NoneType' object has no attribute 'get_value'":
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     cmd = FixRelativeDirCmd()
     Command.execute_cmd(cmd)
 
-    print float(int( (time.time() - start) * 1000)) / 1000, "seconds"
+    print(float(int( (time.time() - start) * 1000)) / 1000, "seconds")
     
 
 

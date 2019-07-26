@@ -32,9 +32,9 @@ class SqlReporter:
         t_tables = self.target.get_tables()
         s_tables = self.standard.get_tables()
 
-        print "-- extra tables: ", [x for x in t_tables if x not in s_tables]
+        print("-- extra tables: ", [x for x in t_tables if x not in s_tables])
         missing_tables = [x for x in s_tables if x not in t_tables]
-        print "-- missing tables: ", missing_tables
+        print("-- missing tables: ", missing_tables)
 
 
     def compare_all_schema(self):
@@ -122,26 +122,26 @@ class SqlReporter:
             return
         print
         print
-        print "Table: ", table
-        print "-"*20
+        print("Table: ", table)
+        print("-"*20)
 
         if diffs:
-            print pattern % ("column","target schema","standard schema")
-            print "-"*110
+            print(pattern % ("column","target schema","standard schema"))
+            print("-"*110)
 
             for diff in diffs:
-                print diff
+                print(diff)
 
-            print "-"*110
+            print("-"*110)
 
 
         for new in new_mods:
-            print new
+            print(new)
         # print all of the extras
         if extras:
-            print "Not in standard:"
+            print("Not in standard:")
             for extra in extras:
-                print "\t", extra
+                print("\t", extra)
 
 
 
@@ -157,7 +157,7 @@ class SqlReporter:
             if self.ignore_table(table):
                 continue
             data = self.standard.get_data(table)
-            print data.get_create_table()
+            print(data.get_create_table())
             file.write( data.get_create_table() )
 
         file.close()
@@ -176,7 +176,7 @@ class SqlReporter:
                 continue
             data = self.target.get_data(table)
 
-            print data.get_create_table()
+            print(data.get_create_table())
 
  
 
@@ -202,7 +202,7 @@ class SqlReporter:
         common_tables = [x for x in s_tables if x in t_tables]
 
         for table in common_tables:
-            print "table: ", table
+            print("table: ", table)
             target_data = self.target.get_data(table)
             standard_data = self.standard.get_data(table)
 
@@ -210,9 +210,9 @@ class SqlReporter:
 
                 # check if the standard has this entry
                 if not standard_data.rows.has_key(row_key):
-                    print "Entry not in target:"
+                    print("Entry not in target:")
                     #print target_rows
-                    print "\tINSERT INTO %s (%s) VALUES (%s)" % (table, ", ".join(target_rows.keys()), ", ".join(["'%s'" % x for x in target_rows.values()] ))
+                    print("\tINSERT INTO %s (%s) VALUES (%s)" % (table, ", ".join(target_rows.keys()), ", ".join(["'%s'" % x for x in target_rows.values()] )))
                     continue
 
 
@@ -224,9 +224,9 @@ class SqlReporter:
                     target_keys = target_rows.keys()
                     for col_key in target_keys:
                         if target_rows[col_key] != standard_rows[col_key]:
-                            print "Data does not match:"
-                            print "column: ", col_key
-                            print "\t'%s' != '%s'" % \
+                            print("Data does not match:")
+                            print("column: ", col_key)
+                            print("\t'%s' != '%s'" % \)
                                 (target_rows[col_key],standard_rows[col_key])
 
 
@@ -235,9 +235,9 @@ class SqlReporter:
 
                 # check if the target has this entry
                 if not target_data.rows.has_key(row_key):
-                    print "Entry not in standard:"
+                    print("Entry not in standard:")
                     #print standard_rows
-                    print "\tINSERT INTO %s (%s) VALUES (%s)" % (table, ", ".join(target_rows.keys()), ", ".join(["'%s'" % x for x in standard_rows.values()] ))
+                    print("\tINSERT INTO %s (%s) VALUES (%s)" % (table, ", ".join(target_rows.keys()), ", ".join(["'%s'" % x for x in standard_rows.values()] )))
 
 
 

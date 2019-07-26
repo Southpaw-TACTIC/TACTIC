@@ -248,13 +248,6 @@ class ExpressionTest(unittest.TestCase):
         expression = "@GET(sthpw/snapshot['is_latest','true'].code)"
         result = self.parser.eval(expression, single=True)
 
-        # expression = "@GET(sthpw/snapshot['code','%s'].is_latest)==True" %result
-        
-        # result = self.parser.eval(expression)
-        # self.assertEqual(True, result)
-
-    
-
         # evaluate the total age ... NOTE: {} means stringify, @SOBJECT is assumed
         expression = "{@COUNT(unittest/person)} people"
         result = self.parser.eval(expression, self.city)

@@ -1,0 +1,206 @@
+conditions: v1
+
+dist: xenial
+language: python
+
+python:
+- 2.7
+- 3.4
+- 3.5
+- 3.6
+- &pypy2 pypy2.7-6.0
+- &pypy3 pypy3.5-6.0
+
+_base_envs:
+- &stage_lint
+  stage: &stage_lint_name lint
+- &stage_test
+  stage: &stage_test_name test
+- &stage_test_priority
+  stage: &stage_test_priority_name test against latest Python versions first (under GNU/Linux)
+- &stage_test_osx
+  stage: &stage_test_osx_name test under OS X (last chance to fail before deploy available)
+- &stage_deploy
+  stage: &stage_deploy_name upload new version of python package to PYPI (only for tagged commits)
+- &manual_run_or_cron  # run the job only if it's a cron run or it's triggered manually
+  if: type IN (api, cron)
+- &pyenv_base
+  <<: *stage_test
+  language: generic
+  python: *pypy2
+  env:
+  - &env_pypy2 PYTHON_VERSION=pypy2.7-5.10.0
+  - &env_pyenv PYENV_ROOT="$HOME/.pyenv"
+  - &env_path PATH="$PYENV_ROOT/bin:$PATH"
+  before_install:
+  - &ensure_pyenv_installed |
+    if [ ! -f "$PYENV_ROOT/bin/pyenv" ]
+    then
+      rm -rf "$PYENV_ROOT"
+      curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+    fi
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+    pyenv update
+  - &install_python pyenv install --skip-existing --keep --verbose "$PYTHON_VERSION"
+  - &switch_python pyenv shell "$PYTHON_VERSION"
+  - &python_version python --version
+  - &python_ssl_openssl_version >-
+    python -c 'import ssl; print("\nOPENSSL_VERSION: " + ssl.OPENSSL_VERSION + "\nOPENSSL_VERSION_INFO: " + repr(ssl.OPENSSL_VERSION_INFO) + "\nOPENSSL_VERSION_NUMBER: " + repr(ssl.OPENSSL_VERSION_NUMBER))'
+- &osx_python_base
+  <<: *pyenv_base
+  <<: *stage_test_osx
+  os: osx
+  language: generic
+  before_install:
+  - brew install zlib readline
+  - brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/master/Formula/pyenv.rb || brew upgrade pyenv
+  - brew install openssl@1.1
+  - &ensure_pyenv_preloaded |
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+  - *install_python
+  - *switch_python
+  - *python_version
+  - python -m pip install tox
+  - env CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 LDFLAGS="$(brew --prefix openssl@1.1)/lib/libssl.a $(brew --prefix openssl@1.1)/lib/libcrypto.a" CFLAGS="-I$(brew --prefix openssl@1.1)/include" python -m tox --notest
+  - *python_ssl_openssl_version
+  before_cache:
+  - brew --cache
+- &python_3_7_mixture
+  python: &mainstream_python 3.7
+- &pure_python_base
+  <<: *stage_test
+  <<: *python_3_7_mixture
+- &pure_python_base_priority
+  <<: *pure_python_base
+  <<: *stage_test_priority
+- &lint_python_base
+  <<: *stage_lint
+  # Some linters depend on pyyaml, which fails under Python 3.7 now:
+  python: 3.6
+  after_failure: skip
+
+jobs:
+  fast_finish: true
+  allow_failures:
+  - env: TOXENV=pre-commit-failing
+  include:
+  - <<: *lint_python_base
+    name: pre-commit.com tool linters
+    env: TOXENV=pre-commit
+  - <<: *lint_python_base
+    <<: *python_3_7_mixture
+    name: setup.py check linter
+    env: TOXENV=setup-check
+  - <<: *lint_python_base
+    name: temporary failing pre-commit.com tool linters
+    env: TOXENV=pre-commit-failing
+  - <<: *pure_python_base_priority
+    # mainstream here (3.7)
+  - <<: *pure_python_base_priority
+    python: nightly
+  - <<: *osx_python_base
+    <<: *manual_run_or_cron
+    python: 2.7
+    env:
+    - PYTHON_VERSION=2.7.13
+    - *env_pyenv
+    - *env_path
+  - <<: *osx_python_base
+    <<: *manual_run_or_cron
+    python: 3.4
+    env:
+    - PYTHON_VERSION=3.4.6
+    - *env_pyenv
+    - *env_path
+  - <<: *osx_python_base
+    <<: *manual_run_or_cron
+    python: 3.5
+    env:
+    - PYTHON_VERSION=3.5.3
+    - *env_pyenv
+    - *env_path
+  - <<: *osx_python_base
+    python: 3.6
+    env:
+    - PYTHON_VERSION=3.6.5
+    - *env_pyenv
+    - *env_path
+  - <<: *osx_python_base
+    python: *mainstream_python
+    env:
+    - PYTHON_VERSION=3.7.0
+    - *env_pyenv
+    - *env_path
+  - <<: *osx_python_base
+    <<: *manual_run_or_cron
+    python: nightly
+    env:
+    - PYTHON_VERSION=3.8-dev
+    - *env_pyenv
+    - *env_path
+  - <<: *osx_python_base
+    <<: *manual_run_or_cron
+    osx_image: xcode9.4
+    python: pypy3.5-5.10.1
+    env:
+    - PYTHON_VERSION=pypy3.5-5.10.1
+    - *env_pyenv
+    - *env_path
+  # pypy2.7-5.10.0 fails under OS X because it's unsupported
+  - <<: *stage_deploy
+    if: tag IS present
+    <<: *python_3_7_mixture
+    install: skip
+    script: skip
+    deploy:
+      provider: pypi
+      on:
+        all_branches: true
+      user: jaraco
+      password:
+        secure: RAfz06AINvz7bfij/YhfkAreRqamgxS8a6jSRNxntYhtJke3ZszUbIDag8+n1I+G5XT2LnMhHqPNR7Plc+AeMz7VXTuy+b81Li5kse20NYlPhd7mBVmTUpXtqYQashV5J39F4qkATBLznCOrMEomM07VTXjO/o2hmQuXniab2Uo=
+      distributions: dists
+      skip_cleanup: true
+
+cache:
+  pip: true
+  directories:
+  - $HOME/.cache/pre-commit
+  - $HOME/.pre-commit
+  - $HOME/virtualenv/python$(python -c 'import platform; print(platform.python_version())')
+  - $HOME/Library/Caches/Homebrew
+
+install:
+- python -m pip install tox tox-venv
+- python -m tox --notest  # Pre-populate a virtualenv with dependencies
+- *python_ssl_openssl_version
+- >-
+  ".tox/${TOXENV:-python}/bin/python" -m OpenSSL.debug || true
+
+script:
+- python -m tox
+
+after_failure:
+- ip a
+- sysctl -a
+- echo "Here's a list of installed Python packages:"
+- pip list --format=columns
+- echo Dumping logs, because tests failed to succeed
+- |
+    for log in `ls cheroot/test/*.log`
+    do
+      echo Outputting $log
+      cat $log
+    done
+- py_log=/home/travis/build/cherrypy/cheroot/.tox/python/log/python-0.log
+- echo Outputting python invocation log from $py_log
+- cat $py_log
+stages:
+- *stage_lint_name
+- *stage_test_priority_name
+- *stage_test_name
+- name: *stage_test_osx_name
+  if: type IN (api, cron) OR tag IS present
+- name: *stage_deploy_name

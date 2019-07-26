@@ -126,7 +126,7 @@ class SearchTypeCache(BaseCache):
         keys = self.caches.keys()
         self.caches = {}
 
-        search = Search(self.search_type)
+        search = Search(self.search_type, sudo=True)
         search.set_show_retired(True)
         self.sobjects = search.get_sobjects()
 

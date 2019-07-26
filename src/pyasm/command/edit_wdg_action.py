@@ -192,10 +192,13 @@ class DatabaseAction(Command):
         if self.value:
             return self.value
         values = self.get_values(name)
-        if type(values) == types.InstanceType:
-            return values
+        if isinstance(values, list):
+            if values:
+                return values[0]
+            else:
+                return ''
         elif values:
-            return values[0]
+            return values
         else:
             return ""
 

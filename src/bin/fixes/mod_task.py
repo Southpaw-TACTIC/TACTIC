@@ -21,10 +21,10 @@ class ModTaskCmd(Command):
         search.add_filter('context', None)
         tasks = search.get_sobjects()
         if tasks and len(tasks) > 700:
-	    print "More than 700 tasks are found. Exiting as a precaution."
+	    print("More than 700 tasks are found. Exiting as a precaution.")
 	    sys.exit(0)
         if not tasks: 
-            print "All tasks have context attribute filled in. Exiting."
+            print("All tasks have context attribute filled in. Exiting.")
             sys.exit(0)
 
         ctr = 0
@@ -40,7 +40,7 @@ class ModTaskCmd(Command):
                 task.set_value('context', process)
                 task.commit(triggers=False)
                 ctr += 1
-        print "%s tasks have been processed. Their context are matched with their process." %ctr   
+        print("%s tasks have been processed. Their context are matched with their process." %ctr   )
 
 
 

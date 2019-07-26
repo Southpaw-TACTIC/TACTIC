@@ -11,7 +11,7 @@
 #
 from __future__ import print_function
 
-__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
+__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', "API_MODE"]
 
 import decimal
 import shutil, os, types, sys
@@ -39,11 +39,9 @@ from pyasm.command import Command, UndoCmd, RedoCmd, Trigger, CommandExitExcepti
 from pyasm.checkin import FileCheckin, FileGroupCheckin, SnapshotBuilder, FileAppendCheckin, FileGroupAppendCheckin
 from pyasm.biz import IconCreator, Project, FileRange, Pipeline, Snapshot, DebugLog, File, FileGroup, Schema, ExpressionParser
 from pyasm.search import *
-from pyasm.security import XmlRpcInit, XmlRpcLogin, Ticket, LicenseException, Security
+from pyasm.security import XmlRpcInit, XmlRpcLogin, Ticket, LicenseException, Security, Sudo
 
-from pyasm.web import WebContainer, Palette
-#from pyasm.web import EventContainer, CommandDelegator
-#from pyasm.widget import IframeWdg, IframePlainWdg, WidgetConfigView
+from pyasm.web import WebContainer, Palette, Widget
 from pyasm.widget import WidgetConfigView
 from pyasm.web.app_server import XmlrpcServer
 
@@ -167,6 +165,8 @@ def get_full_cmd(self, meth, ticket, args):
             if self.get_protocol() == "local":
                 transaction = super(ApiClientCmd,self2).get_transaction()
                 return transaction
+
+            sudo = Sudo()
 
             state = TransactionState.get_by_ticket(ticket)
             transaction_id = state.get_state("transaction")
@@ -299,6 +299,31 @@ TRANS_OPTIONAL_METHODS = {
     'execute_cmd': 3
 }
 
+
+
+API_MODE = {
+    "closed": {
+        "execute_cmd",
+        "execute_python_script", # should this be allowed?
+        "get_widget",
+        "get_ticket",
+        "ping",
+    },
+    "query": {
+        "get_by_search_key",
+        "get_by_code",
+        "query",
+        "eval",
+
+        # TODO: Probably harmless
+        "get_task_status_colors",
+        "get_widget_setting",
+        "set_widget_setting"
+    }
+} 
+
+
+
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
     '''
@@ -329,33 +354,27 @@ def xmlrpc_decorator(meth):
         try:
             ticket = self.init(original_ticket)
 
+            # These modes disable a good chunk of the API for a more secure
+            # environment.
 
-            # These lines disable a good chunk of the API.  This will need to
-            # have rules specified ... like a specific API ticket or an access
-            # rule that allows this.
-            #if self.get_protocol() != 'local':
-            #    if meth.__name__ not in ["execute_cmd", "get_widget", "ping"]:
-            #        raise Exception("Permission Denied")
+            if self.get_protocol() != 'local':
+                api_mode = Config.get_value("security", "api_mode") or "open"
 
+                allowed = False
 
-            try:
+                security = Environment.get_security()
+                user_name = security.get_user_name()
+                #if user_name == "admin":
+                #    allowed = True
 
-                """
-                if meth.__name__ not in [
-                        'get_widget',
-                        'execute_cmd',
-                        
-                        'eval',
-                        'get_by_search_key',
-                        'query',
-                        'get_task_status_colors'
-                        ]:
-                    print("----------------")
-                    print(meth.__name__)
-                    print("----------------")
-                """
+                meth_name = meth.__name__
+                if api_mode == "open":
+                    allowed = True
 
-                print ("----------------", meth.__name__)
+                if api_mode in ["closed", "query"]:
+                    if meth_name in API_MODE.get("closed"):
+                        allowed = True
+
                 if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif meth.__name__ in TRANS_OPTIONAL_METHODS:
@@ -5301,6 +5320,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
+                if not isinstance(widget, Widget):
+                    raise Exception("Must be derived from Widget")
+
+
                 if 'spt_help' in libraries:
                     from tactic.ui.app import HelpWdg
                     HelpWdg()
@@ -5516,8 +5539,42 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 args = jsonloads(args)
 
 
+            # TEST: look up class name use in a key
+            key = None
+            if class_name.startswith("$"):
+                key = class_name.lstrip("$")
+                tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                path = "%s/key_%s" % (tmp_dir,key)
+                if not os.path.exists(path):
+                    print("ERROR: Command path [%s] not found" % path)
+                    raise Exception("Command key not valid")
+
+                f = open(path, 'r')
+                data = f.read()
+                f.close()
+                data = jsonloads(data)
+                class_name = data.get("class_name")
+                login = data.get("login")
+                current_login = Environment.get_user_name()
+                if login != current_login:
+                    raise Exception("Permission Denied: wrong user")
+
+
             args_array = []
             cmd = Common.create_from_class_path(class_name, args_array, args)
+
+            if cmd.requires_key() and not key:
+                raise Exception("Permission Denied: command requires key")
+
+
+
+            if not isinstance(cmd, Command):
+                raise Exception("Cannot run command [%s].  Must be derived from Command." % class_name)
+
+            if not cmd.can_run(source="api"):
+                raise Exception("Cannot run command [%s] from API." % class_name)
+
+
             if use_transaction:
                 Command.execute_cmd(cmd)
             else:
@@ -6493,7 +6550,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
             # delete the transaction if it is empty
             transaction_id = state.get_state("transaction")
             if transaction_id:
-                transaction = TransactionLog.get_by_id(transaction_id)
+                sudo = Sudo()
+                try:
+                    transaction = TransactionLog.get_by_id(transaction_id)
+                finally:
+                    sudo.exit()
                 xml = transaction.get_xml_value("transaction")
                 nodes = xml.get_nodes("transaction/*")
                 if not nodes:
