@@ -556,7 +556,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         level = 0
         names = set()
         curr_ret = ret
-        for line in ret_val.split("\n"):
+        for line in ret_val.decode().split("\n"):
             line = line.strip()
             if not line:
                 continue

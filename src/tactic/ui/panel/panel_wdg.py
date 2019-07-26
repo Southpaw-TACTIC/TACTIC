@@ -2169,6 +2169,10 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         class_name = options.get("class_name")
         widget_key = options.get("widget_key")
         if widget_key:
+
+            if not widget_key.isalnum():
+                widget_key = "code"
+            
             class_name = WidgetClassHandler().get_display_handler(widget_key)
             options['class_name'] = class_name
 
@@ -2952,8 +2956,12 @@ class ViewPanelWdg(BaseRefreshWdg):
                 impl = SearchType.get_database_impl_by_search_type(search_type)
                 if impl.get_database_type() == "MongoDb":
                     self.element_names = impl.get_default_columns()
-            except SearchException:
-                raise
+            except SearchException as e:
+                print("ERROR: %s" % e)
+                div = DivWdg("ERROR: %s" % e)
+                return div
+                #raise
+
 
 
            

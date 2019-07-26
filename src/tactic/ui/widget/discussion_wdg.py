@@ -2042,13 +2042,12 @@ class NoteWdg(BaseRefreshWdg):
 
         if context.endswith("/review") or context.endswith("/error"):
             context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
-            tr.add_style("background: rgba(232, 74, 77, 0.8)")
+            #tr.add_style("background: rgba(232, 74, 77, 0.8)")
+            tr.add_style("border-bottom: solid 1px rgba(232, 74, 77, 0.8)")
 
         else:
             #tr.add_color("background", "background", -10)
-            pass
-
-        tr.add_style("border-bottom: solid 2px #DDD")
+            tr.add_style("border-bottom: solid 2px #DDD")
 
         td = content.add_cell()
 

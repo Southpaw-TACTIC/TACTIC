@@ -20,6 +20,8 @@ from pyasm.search import Search, SObject, SearchType
 from pyasm.biz import GroupNotification, Pipeline, Task, Snapshot, File, Note
 from pyasm.biz import ExpressionParser
 
+import six
+
 
 class EmailHandler(object):
     '''Base class for email notifications'''
@@ -65,7 +67,7 @@ class EmailHandler(object):
         
 
     def set_ticket(self, user=None, expiry=None):
-        if isinstance(user, basestring):
+        if isinstance(user, six.string_types):
             login_name = user
         else:
             login_name = user.get_login()
@@ -107,7 +109,7 @@ class EmailHandler(object):
                     ExpressionParser.clear_cache()
                     # these can just be login names, get the actual Logins
                     if results:
-                        if isinstance(results[0], basestring):
+                        if isinstance(results[0], six.string_types):
                             login_sobjs = Search.eval("@SOBJECT(sthpw/login['login','in','%s'])" %'|'.join(results),  list=True)
                             login_list = SObject.get_values(login_sobjs, 'login')
                             

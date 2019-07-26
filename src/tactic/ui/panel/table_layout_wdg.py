@@ -2976,8 +2976,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'collapse_level': collapse_level,
                 'cbjs_action': '''
 
-                console.log(bvr.src_el);
-
                 if (bvr.collapse_level != -1) {
                     var row = bvr.src_el.getParent(".spt_group_row");
                     var group_level = row.getAttribute("spt_group_level");
@@ -7485,22 +7483,22 @@ spt.table.get_parent_groups = function(src_el, level) {
     var lowest_group_level = group_level;
 
     while (true) {
-
-        var group = row.getPrevious(".spt_table_row_item");
-        if (!group) {
+        // get previous group
+        var row = row.getPrevious(".spt_table_row_item");
+        if (!row)
             break;
-        }
-        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
-            row = group;
+
+        // check if level is greater than lowest level reached
+        if ( row.getAttribute("spt_group_level") >= lowest_group_level )
             continue
-        }
-        lowest_group_level = group.getAttribute("spt_group_level");
-        if (level && level == group.getAttribute("spt_group_level")) {
-            return group;
+
+        // set new lowest_group_level, check if its equal to level
+        lowest_group_level = row.getAttribute("spt_group_level");
+        if (level && level == row.getAttribute("spt_group_level")) {
+            return row;
         } else if (!level) {
-            group_parents.push(group);
+            group_parents.push(row);
         }
-        row = group;
     }
 
     return group_parents;

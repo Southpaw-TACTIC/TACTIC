@@ -992,9 +992,18 @@ class CalendarInputWdg(BaseInputWdg):
                     'offset_x' : offset_x,
                     'offset_y' : offset_y
                     })
+
+            text.add_behavior({'type': 'keyupX', 'cbjs_action': 
+                    '''
+                    if (evt.key == 'tab') {
+                        var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
+                        spt.hide(el);
+                    }
+                    '''
+                    })
             # TODO: this onblur is nice because it hides the calendar,
             # but it stops the input from functioning
-            #input.add_event('onblur', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
+            # input.add_event('onblur', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
 
             # TODO: focus behavior not supported yet
             #input.add_behavior( {
