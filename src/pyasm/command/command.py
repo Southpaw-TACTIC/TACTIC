@@ -58,7 +58,7 @@ class Command(Base):
         self.kwargs = kwargs
 
         self.transaction = None
-
+        self.update = None
 
     '''
     already defined as a cls method below
@@ -84,6 +84,9 @@ class Command(Base):
 
     def get_sobjects(self):
         return self.sobjects
+
+    def is_update(self):
+        return self.update 
 
 
     ###########
