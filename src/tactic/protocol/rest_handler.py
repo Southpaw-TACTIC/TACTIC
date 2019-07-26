@@ -158,10 +158,18 @@ class APIRestHandler(BaseRestHandler):
         call = "server.%s(**kwargs)" % method
         print "call: ", call
 
-
-        return eval(call)
-
-
+        try:
+            return eval(call)
+        except Exception as e:
+            import cherrypy
+            cherrypy.response.status = "405"
+            return {
+                "error": {
+                    "args": e.args,
+                    "message": e.message,
+                    "type": e.__class__.__name__
+                }
+            }
 
 
 
