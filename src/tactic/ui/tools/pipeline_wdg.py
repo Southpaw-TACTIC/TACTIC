@@ -151,6 +151,43 @@ class PipelineToolWdg(BaseRefreshWdg):
                 color: #7e7e7e;
             }
 
+            .spt_pipeline_tool_top .spt_pipeline_toolbar {
+                border-width: 1 1 1 0;
+                border: 1px solid #ccc;
+                height: 28px;
+            }
+
+            .spt_pipeline_tool_top .spt_hide_sidebar {
+                padding: 5px;
+                height: 100%;
+                box-sizing: border-box;
+            }
+
+            .spt_pipeline_tool_top .toolbar-icon:hover {
+                background: #eee;
+            }
+
+            .spt_pipeline_tool_top .full-centered {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .spt_pipeline_tool_top .toolbar-icon {
+                width: 20px;
+                color: grey;
+            }
+
+            .spt_pipeline_tool_top .spt_show_sidebar {
+                height: 26px;
+                border: 1px solid #ccc;
+                border-width: 0px 1px 1px 0px;
+                position: absolute;
+                left: 3px;
+                top: 1px;
+                background: white;
+            }
+
             ''')
 
         return styles
@@ -516,6 +553,64 @@ class PipelineToolWdg(BaseRefreshWdg):
             #left.add_style("min-width: 250px")
 
             expression = self.kwargs.get("expression")
+
+            # TOOLBAR--------------
+            toolbar = DivWdg()
+            left.add(toolbar)
+            toolbar.add_class("spt_pipeline_toolbar")
+
+            collapse_button = DivWdg()
+            toolbar.add(collapse_button)
+            collapse_button.add_class("full-centered spt_hide_sidebar toolbar-icon hand")
+            collapse_button.add("<i class='fa fa-caret-left'></i>")
+
+            collapse_button.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var left = toolTop.getElement(".spt_pipeline_tool_left");
+                var right = toolTop.getElement(".spt_pipeline_tool_right");
+
+                left.setStyle("margin-left", "-250px");
+                left.setStyle("opacity", "0");
+                right.setStyle("margin-left", "0px");
+                left.gone = true;
+                setTimeout(function(){
+                    left.setStyle("z-index", "-1");
+                }, 250);
+
+                var show_icon = toolTop.getElement(".spt_show_sidebar");
+                show_icon.setStyle("display", "");
+
+                '''})
+
+            show_button = DivWdg()
+            container.add(show_button)
+            show_button.add_class("full-centered spt_show_sidebar toolbar-icon hand")
+            show_button.add("<i class='fa fa-caret-right'></i>")
+            show_button.add_style("display: none")
+            show_button.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var left = toolTop.getElement(".spt_pipeline_tool_left");
+                var right = toolTop.getElement(".spt_pipeline_tool_right");
+
+                left.setStyle("margin-left", "0px");
+                left.setStyle("opacity", "1");
+                right.setStyle("margin-left", "250px");
+                left.gone = false;
+                setTimeout(function(){
+                    left.setStyle("z-index", "");
+                }, 250);
+
+                bvr.src_el.setStyle("display", "none")
+
+                '''})
+            
+            # --------------
 
             left_header = DivWdg()
             left.add(left_header)
@@ -6854,7 +6949,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
         button = ButtonNewWdg(title="Toggle workflow list", icon="FA_LIST_UL")
-        button_row.add(button)
+        #button_row.add(button)
         button.add_behavior({
             'type': 'click',
             'cbjs_action': '''
@@ -8892,6 +8987,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             show_search_limit=False,
             #show_row_highlight=False,
             show_group_highlight=False,
+            expand_on_load=False,
+            collapse_default=True,
+            collapse_level=1,
             show_border="horizontal",
             height="auto",
             width="100%",

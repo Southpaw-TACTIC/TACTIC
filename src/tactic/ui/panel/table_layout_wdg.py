@@ -2967,6 +2967,29 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
+
+        collapse_default = self.kwargs.get("collapse_default")
+        if collapse_default in [True, 'true']:
+            collapse_level = self.kwargs.get("collapse_level") or -1
+            swap.add_behavior({
+                'type': 'load',
+                'collapse_level': collapse_level,
+                'cbjs_action': '''
+
+                console.log(bvr.src_el);
+
+                if (bvr.collapse_level != -1) {
+                    var row = bvr.src_el.getParent(".spt_group_row");
+                    var group_level = row.getAttribute("spt_group_level");
+                    if (group_level != bvr.collapse_level)
+                        return;
+                }
+
+                bvr.src_el.getElement(".spt_group_row_collapse").click();
+
+                '''
+                })
+
         title_div.add_style("width: 100%")
 
 
