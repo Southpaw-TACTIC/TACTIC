@@ -17,7 +17,7 @@ from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget
 from pyasm.widget import IconWdg, ThumbWdg
 from pyasm.biz import Project
 
-import os
+import os, six
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
@@ -634,7 +634,7 @@ class ReportsWdg(BaseRefreshWdg):
 
             if image:
                 div = DivWdg()
-                if isinstance(image, basestring):
+                if isinstance(image, six.string_types):
                     image = image.upper()
                     image = eval("IconWdg('', IconWdg.%s)" % image)
                     div.add_style("margin-left: 15px")

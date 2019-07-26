@@ -128,6 +128,8 @@ class BaseNodeWdg(BaseRefreshWdg):
         top.add_attr("spt_border_color", border_color)
         top.add_attr("spt_box_shadow", box_shadow)
 
+        top.add_style("margin: 0px auto")
+
         shape = self.get_shape()
         if shape == "star":
             self.set_star_shape()
@@ -454,6 +456,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
 
+        outer.add_attr("onmousemove", "spt.pipeline._mouse_pos = {x: event.clientX, y: event.clientY}")
 
         outer.add_behavior( {
             'type': 'keyup',
@@ -519,13 +522,122 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 spt.pipeline.delete_selected();
 
             } else if (key == "t") {
-                var class_name = 'tactic.ui.tools.PipelineProcessTypeWdg';
-                var kwargs = {
-                };
-                spt.panel.load_popup("Process Types", class_name, kwargs);
- 
-            }
+                spt.process_tool.toggle_side_bar(bvr.src_el);
 
+            } else if (evt.control == true && key == "c") {
+                var nodes = spt.pipeline.get_selected_nodes();
+                if (nodes) {
+                    spt.notify.show_message(nodes.length + " Nodes Copied");
+                }
+
+                spt.pipeline.clipboard = nodes;
+
+
+                var canvas_pos = bvr.src_el.getPosition()
+                var first_pos = spt.pipeline.get_position(nodes[0]);
+
+                var new_nodes = [];
+                for (var i = 0; i < nodes.length; i++ ) {
+                    var node = nodes[i];
+
+                    var node_type = spt.pipeline.get_node_type(node);
+                    var node_name = spt.pipeline.get_node_name(node);
+
+                    var pos = spt.pipeline.get_position(node);
+                    var new_pos = {
+                        x: pos.x - first_pos.x,
+                        y: pos.y - first_pos.y
+                    };
+
+                    var new_node = {
+                        node_type: node_type,
+                        pos: new_pos,
+                        connects: [],
+                    }
+
+                    new_nodes.push(new_node);
+
+                }
+
+                for (var i = 0; i < nodes.length; i++ ) {
+                    var node = nodes[i];
+                    var node_name = spt.pipeline.get_node_name(node);
+                    var new_node = new_nodes[i];
+
+                    var connectors = spt.pipeline.get_connectors_from_node(node_name);
+                    for (var j = 0; j < connectors.length; j++ ) {
+                        var connector = connectors[j];
+                        var to_node = connector.get_to_node();
+                        var index = 0;
+                        for (var k = 0; k < nodes.length; k++ ) {
+                            if (to_node == nodes[k]) {
+                                index = k;
+                                break;
+                            }
+                        }
+                        new_node.connects.push(k);
+                    }
+
+                }
+
+                spt.pipeline.clipboard = new_nodes;
+
+
+            } else if (evt.control == true && key == "x") {
+                var nodes = spt.pipeline.get_selected_nodes();
+                if (nodes) {
+                    spt.pipeline.clipboard = nodes;
+                    for (var i = 0; i < nodes.length; i++ ) {
+                        spt.pipeline.remove_node(nodes[i]);
+                    }
+                    spt.notify.show_message(nodes.length + " Nodes Cut");
+                }
+
+            } else if (evt.control == true && key == "v") {
+
+                var selected = spt.pipeline.get_selected_nodes();
+
+                spt.pipeline.unselect_all_nodes();
+                var nodes = spt.pipeline.clipboard;
+                if (nodes) {
+                    var mouse_pos = {x: 0, y: 0};
+                    var mouse_pos = spt.pipeline._mouse_pos;
+                    var canvas_pos = bvr.src_el.getPosition()
+                    mouse_pos.x = mouse_pos.x - canvas_pos.x;
+                    mouse_pos.y = mouse_pos.y - canvas_pos.y;
+
+
+                    var nn = spt.pipeline.clipboard;
+                    var new_nodes = [];
+                    for (var i = 0; i < nn.length; i++) {
+                        var data = nn[i];
+                        var new_node_name = null;
+                        var pos = data.pos;
+                        var node_type = data.node_type;
+                        var new_pos = { x: pos.x+mouse_pos.x, y: pos.y+mouse_pos.y};
+                        console.log(new_pos);
+                        var new_node = spt.pipeline.add_node(new_node_name, new_pos.x, new_pos.y, { node_type: node_type, });
+                        new_nodes.push(new_node);
+                        spt.pipeline.select_node(new_node);
+
+                        if (i == 0) {
+                            for (var j = 0; j < selected.length; j++) {
+                                spt.pipeline.connect_nodes(selected[j], new_node);
+                            }
+                        }
+
+                    }
+
+                    for (var i = 0; i < nn.length; i++) {
+                        var data = nn[i];
+                        var new_node = new_nodes[i];
+                        for (var j = 0; j < data.connects.length; j++) {
+                            var connect = data.connects[j];
+                            spt.pipeline.connect_nodes(new_node, new_nodes[connect]);
+                        }
+                    }
+                }
+            }
 
 
             '''
@@ -2827,14 +2939,35 @@ spt.pipeline.select_nodes_by_group = function(group_name) {
 }
 
 spt.pipeline.select_nodes_by_box = function(TL, BR) {
+    r1 = {
+        top: TL.y,
+        bottom: BR.y,
+        left: TL.x,
+        right: BR.x
+    }
+
+
     spt.pipeline.unselect_all_nodes();
 
     var nodes = spt.pipeline.get_all_nodes();
-
     for (var i=0; i<nodes.length; i++) {
         var node = nodes[i];
+        var node_name = spt.pipeline.get_node_name(node);
+        var size = node.getSize();
 
-        if ((TL.x <node.spt_xpos && node.spt_xpos < BR.x ) && (TL.y < node.spt_ypos && node.spt_ypos < BR.y)) {
+        r2 = {
+            top: node.spt_ypos,
+            bottom: node.spt_ypos + size.y,
+            left: node.spt_xpos,
+            right: node.spt_xpos + size.x
+        }
+
+        var intersect = !(r2.left > r1.right || 
+                          r2.right < r1.left || 
+                          r2.top > r1.bottom ||
+                          r2.bottom < r1.top);
+
+        if (intersect) {
             spt.pipeline.select_node(node);
         }
     }
@@ -3737,13 +3870,14 @@ spt.pipeline._rename_node = function(node, value) {
 spt.pipeline.set_rename_mode = function(node) {
     var name = spt.pipeline.get_node_name(node);
     var kwargs = {
-        name: name
+        name: name,
     };
 
     var class_name = "tactic.ui.tools.NodeRenameWdg"
-
     var popup = spt.panel.load_popup("Rename Node", class_name, kwargs);
     popup.activator = node;
+
+
 }
 
 

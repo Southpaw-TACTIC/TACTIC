@@ -13,6 +13,7 @@
 __all__ = ['TransactionLog']
 
 from pyasm.common import *
+
 from .search import SObjectUndo, SObject, Search, SObjectFactory, SearchType, SearchException, SqlException
 from .transaction import FileUndo, TableUndo, TableDropUndo, AlterTableUndo
 from .sobject_log import SObjectLog
@@ -198,6 +199,10 @@ class TransactionLog(SObject):
 
         if not transaction_data:
             transaction_data = log.get_value("transaction")
+
+
+        from pyasm.security import Sudo
+        sudo = Sudo()
 
         # log a reference to each sobject affected
         already_logged = {}

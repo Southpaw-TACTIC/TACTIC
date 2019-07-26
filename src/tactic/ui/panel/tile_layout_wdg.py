@@ -3335,7 +3335,7 @@ class ThumbWdg2(BaseRefreshWdg):
             search_type = sobject.get_search_type_obj()
             path = self.get_path_from_sobject(search_type)
             if path:
-                if isinstance(path, unicode):
+                if not Common.IS_Pv3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
                 path = Common.pathname2url(path)
 
