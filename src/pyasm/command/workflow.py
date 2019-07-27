@@ -700,13 +700,16 @@ class BaseProcessTrigger(Trigger):
 
 
 
-    def get_process_state(sobject, process):
+    def get_process_state(self, sobject, process=None):
+
+        if not process:
+            process = self.input.get("process")
 
         key = "Workflow|process_state|%s" % sobject.get_search_key()
         process_states_dict = Container.get(key)
         if process_states_dict is None:
             process_states_dict = {}
-            Container.put(key, proces_states_dict)
+            Container.put(key, process_states_dict)
 
             search = Search("config/process_state")
             search.add_sobject_filter(sobject)
@@ -722,8 +725,11 @@ class BaseProcessTrigger(Trigger):
             process_state = SearchType.create("config/process_state")
             process_state.set_sobject_value(sobject)
             process_state.set_value("process", process)
+            process_state.commit()
 
             process_states_dict[process] = process_state
+
+        return process_state
 
 
 
@@ -897,6 +903,13 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         # check all of the input processes to see if they are all complete
         complete = True
         for input_process in input_processes:
+
+            input_complete = self.is_complete(input_process)
+            if input_complete == False:
+                complete = False
+                break
+
+            """
             key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
             message_sobj = Search.get_by_code("sthpw/message", key)
             if message_sobj:
@@ -916,6 +929,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                     if task_status not in ["complete", 'not_required']:
                         complete = False
                         break
+            """
 
 
         if not complete:
@@ -923,6 +937,37 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         else:
             return True
 
+
+
+    def is_complete(self, input_process):
+        pipeline = self.input.get("pipeline")
+        sobject = self.input.get("sobject")
+
+        complete = True
+
+        # TODO: look at process state
+
+
+        key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
+        message_sobj = Search.get_by_code("sthpw/message", key)
+        if message_sobj:
+            message = message_sobj.get_json_value("message")
+            if message not in ["complete", "not_required"]:
+                complete = False
+        else:
+            # look for some other means to determine if this is done
+            search = Search("sthpw/task")
+            search.add_parent_filter(sobject)
+            search.add_filter("process", input_process.get_name())
+            task = search.get_sobject()
+            if task:
+                task_status = task.get("status")
+                task_status = task_status.lower().replace(" ", "_")
+                if task_status not in ["complete", 'not_required']:
+                    complete = False
+
+
+        return complete
 
 
 

@@ -609,8 +609,8 @@ class TacticSchedulerThread(threading.Thread):
                 except Exception as e:
                     raise
                 finally:
-                    DbContainer.close_thread_sql()
                     DbContainer.commit_thread_sql()
+                    DbContainer.close_thread_sql()
                     DbContainer.close_all()
 
 
@@ -630,7 +630,8 @@ class TacticSchedulerThread(threading.Thread):
             """
 
             project_code = data.get("project_code")
-            task = TimedTask(index=idx, project_code=project_code)
+            name = "task%s" % idx
+            task = TimedTask(name=name, index=idx, project_code=project_code)
 
             args = {}
             if data.get("mode"):
@@ -697,6 +698,7 @@ class TacticSchedulerThread(threading.Thread):
                     args['weekday'] = eval( data.get("weekday") )
 
                 scheduler.add_weekly_task(task, **args)
+
 
 
 
@@ -934,6 +936,8 @@ class TacticMonitor(object):
         tactic_timed_thread = TacticTimedThread()
         tactic_timed_thread.start()
         tactic_threads.append(tactic_timed_thread)
+
+
 
         # create a separate thread for scheduler processes
         if not start_scheduler:
