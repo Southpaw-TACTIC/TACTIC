@@ -15,7 +15,7 @@
 __all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'ASyncThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, subprocess, re
+import os, sys, threading, time, urllib, subprocess, re, six
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
@@ -549,6 +549,8 @@ class TacticSchedulerThread(threading.Thread):
 
 
                 data = trigger_sobj.get_json_value("data")
+
+                # ??? Why get process code from data (and not process column)
                 process_code = data.get("process")
 
                 if not trigger_class and not process_code:
@@ -566,6 +568,7 @@ class TacticSchedulerThread(threading.Thread):
                 try:
                     timed_trigger = Common.create_from_class_path(trigger_class, [], data)
                     timed_trigger.set_input(data)
+                    timed_trigger.set_trigger_sobj(trigger_sobj)
                     has_triggers = True
 
                 except ImportError:
@@ -633,7 +636,12 @@ class TacticSchedulerThread(threading.Thread):
             if data.get("mode"):
                 args['mode'] = data.get("mode")
 
-            trigger_type = data.get("type")
+            print("data: ", data)
+
+            # FIXME: should decide on one
+            trigger_type = data.get("interval_type")
+            if not trigger_type:
+                trigger_type = data.get("type")
 
             if trigger_type == 'interval':
 
@@ -641,7 +649,7 @@ class TacticSchedulerThread(threading.Thread):
                 delay = data.get("delay")
 
                 # make sure interval and delays are not strings
-                if isinstance(interval, basestring):
+                if isinstance(interval, six.string_types):
                     try:
                         interval = int(interval)
                     except:
@@ -651,7 +659,7 @@ class TacticSchedulerThread(threading.Thread):
                     continue
 
 
-                if isinstance(delay, basestring):
+                if isinstance(delay, six.string_types):
                     try:
                         delay = int(delay)
                     except:
@@ -931,7 +939,6 @@ class TacticMonitor(object):
         if not start_scheduler:
             start_scheduler = Config.get_value("services", "scheduler")
         if start_scheduler in ['true', True]:
-            
             sites = Config.get_value("services", "scheduler_sites")
             if sites:
                 sites = re.split("[|,]", sites)

@@ -516,7 +516,6 @@ class Project(SObject):
 
 
     def get_full_search_type(cls, search_type, project_code=None, project=None):
-        #if type(search_type) in types.StringTypes:
         if isinstance(search_type, basestring):
             if search_type.find("?") == -1:
                 base_key = search_type

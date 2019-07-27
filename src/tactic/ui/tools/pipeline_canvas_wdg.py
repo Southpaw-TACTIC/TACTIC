@@ -1817,7 +1817,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_behavior( node_behavior )
 
 
-        nobs_offset = 0
+        nobs_offset = custom_wdg.get_nob_offset() or 0
         self.add_nobs(node, width, height, nobs_offset)
 
 

@@ -123,10 +123,8 @@ class Xml(Base):
     count = 0
     def read_string(self, xml_string, print_error=True, remove_blank_text=True):
 
-        #if type(xml_string) not in types.StringTypes:
         if not isinstance(xml_string, basestring):
             xml_string = str(xml_string)
-        #elif type(xml_string) == types.UnicodeType:
         elif isinstance(xml_string, basestring):
             xml_string = xml_string.replace('encoding="UTF-8"','')
             xml_string = xml_string.replace("encoding='UTF-8'",'')

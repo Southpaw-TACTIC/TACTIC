@@ -240,10 +240,8 @@ class Widget(object):
 
         assert widget != None
 
-        #if type(widget) in types.StringTypes:
         if isinstance(widget, basestring):
             widget = StringWdg(widget)
-        #elif type(widget)==types.IntType or type(widget)==types.FloatType:
         elif isinstance(widget, (int, float)):
             widget = StringWdg(str(widget))
         elif not isinstance(widget,Widget):

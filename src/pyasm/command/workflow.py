@@ -1057,9 +1057,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
     def handle_complete(self):
 
         # run a nodes complete trigger
-        status = "complete"
+        status = self.input.get("status")
         self.log_message(self.sobject, self.process, status)
-        self.set_all_tasks(self.sobject, self.process, "complete")
+        self.set_all_tasks(self.sobject, self.process, status)
 
         self.run_callback(self.pipeline, self.process, status)
 
@@ -1087,6 +1087,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
         # call the process|pending event for all output processes
+        # (for not required, call process|not_required)
         output_processes = self.pipeline.get_output_processes(self.process)
         for output_process in output_processes:
             output_process = output_process.get_name()
@@ -1105,7 +1106,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 'packages': self.packages
             }
 
-            event = "process|pending"
+            if status == "not_required":
+                event = "process|not_required"
+            else:
+                event = "process|pending"
+
             Trigger.call(self, event, output)
 
 
@@ -1130,6 +1135,14 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
             event = "process|complete"
             Trigger.call(self, event, output)
+
+
+    def handle_not_required(self):
+        if not self.check_inputs():
+            return
+
+        self.input["status"] = "not_required"
+        return self.handle_complete()
 
 
 
@@ -1392,29 +1405,30 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             status_pipeline = Pipeline.get_by_code(status_pipeline_code)
 
 
+        # if this is coming from an internal message (such task status),
         # make sure all of the tasks are complete
-        tasks = Task.get_by_sobject(self.sobject, process=process)
-
-        # Make sure all of the tasks are complete
         is_complete = True
-        for task in tasks:
-            #self.log_message(self.sobject, self.process, status)
 
-            task_status = task.get_value("status")
+        if self.input.get("internal") == True:
+            tasks = Task.get_by_sobject(self.sobject, process=process)
+            # Make sure all of the tasks are complete
+            for task in tasks:
+                #self.log_message(self.sobject, self.process, status)
 
-            # For remapped status
-            if status_pipeline:
-                status_process_sobj = self.get_process_sobj(status_pipeline, task_status)
+                task_status = task.get_value("status")
 
-                if status_process_sobj:
-                    workflow_data = status_process_sobj.get_json_value("workflow", {})
-                    mapping = workflow_data.get("mapping")
-                    #print("Remapped %s to %s." % (task_status, mapping))
-                    task_status = mapping
-            #print("task_status: %s" % task_status)
-            if task_status.lower().replace(" ","_") not in ['complete','approved','not_required']:
-                is_complete = False
-                break
+                # For remapped status
+                if status_pipeline:
+                    status_process_sobj = self.get_process_sobj(status_pipeline, task_status)
+
+                    if status_process_sobj:
+                        workflow_data = status_process_sobj.get_json_value("workflow", {})
+                        mapping = workflow_data.get("mapping")
+                        #print("Remapped %s to %s." % (task_status, mapping))
+                        task_status = mapping
+                if task_status.lower().replace(" ","_") not in ['complete','approved','not_required']:
+                    is_complete = False
+                    break
 
 
         if not is_complete:
@@ -1428,6 +1442,38 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         self.store_state()
 
         return super(WorkflowManualNodeHandler, self).handle_complete()
+
+
+
+
+    def handle_not_required(self):
+        status = "not_required"
+
+        # restore the state of the node
+        state = self.restore_state()
+
+        pipeline = self.input.get("pipeline")
+        process = self.input.get("process")
+        sobject = self.input.get("sobject")
+
+        # Handle remapped status.
+        process_sobj = self.get_process_sobj(pipeline, process)
+        workflow = process_sobj.get_json_value("workflow", {})
+        version = workflow.get("version") or 1
+        version_2 = version in [2, '2']
+
+        properties = workflow.get("properties") or {}
+
+        # build a standard output package
+        self.packages = self.get_output_packages()
+
+        # store the state
+        self.store_state()
+
+        return super(WorkflowManualNodeHandler, self).handle_not_required()
+
+
+
 
 
 
@@ -2259,6 +2305,12 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         else:
             return
 
+
+        # switch the status to whatever any derived class states (ie: not_required)
+        status = self.get_status()
+        self.input['status'] = status
+
+
         handler = None
         if node_type == "action":
             handler = WorkflowActionNodeHandler(input=self.input)
@@ -2283,7 +2335,10 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
 
         if handler:
-            return handler.handle_complete()
+            if status == "not_required":
+                return handler.handle_not_required()
+            else:
+                return handler.handle_complete()
 
 
         # Make sure the below is completely deprecated

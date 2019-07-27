@@ -12,7 +12,7 @@
 
 __all__ = ['ADAuthenticate', 'ADException']
 
-import types, os
+import types, os, six
 
 from pyasm.common import SecurityException, Config, Common
 from pyasm.security import Authenticate, TacticAuthenticate, Login, LoginInGroup
@@ -336,7 +336,7 @@ class ADAuthenticate(Authenticate):
 
         data = {}
 
-        if type(path) in types.StringTypes:
+        if isinstance(path, six.string_types):
             f = open(path, 'r')
         else:
             f = path
