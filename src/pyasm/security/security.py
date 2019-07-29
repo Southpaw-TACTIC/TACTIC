@@ -1973,11 +1973,11 @@ import pickle, os, base64
 
 try:
     from Cryptodome.PublicKey import RSA
-    from Cryptodome.Hash import MD5
+    from Cryptodome.Hash import MD5, SHA256
+    from Cryptodome.Signature import pkcs1_15
 except ImportError:
     from Crypto.PublicKey import RSA
     from Crypto.Hash import MD5
-
 
 
 # HACK:  From PyCrypto-2.0.1 to PyCrypt-2.3, the install datastructure: RSAobj
@@ -1993,6 +1993,7 @@ except:
     pass
 
 
+
 class LicenseKey(object):
     def __init__(self, public_key):
         # unwrap the public key (for backwards compatibility
@@ -2003,7 +2004,6 @@ class LicenseKey(object):
             self.algorithm, self.keyobj = pickle.loads(keyobj.encode())
         except Exception as e:
             raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
-
 
 
     def verify_string(self, raw, signature):
@@ -2036,8 +2036,30 @@ class LicenseKey(object):
         return binary
 
 
+class LicenseKey2(LicenseKey):
 
 
+    def __init__(self, public_key):
+        # unwrap the public key (for backwards compatibility
+        unwrapped_key = self.unwrap("Key", public_key)
+        self.keyobj = RSA.import_key(unwrapped_key)
+        self.algorithm = ""
+
+    def verify_string(self, raw, signature):
+        # unwrap the signature
+        unwrapped_signature = self.unwrap("Signature", signature)
+        
+        msg = raw.encode('utf-8')
+        h = SHA256.new(msg)
+        
+        try:
+            pkcs1_15.new(self.keyobj).verify(h, unwrapped_signature)
+            return True
+        except (ValueError, TypeError):
+            return False
+
+
+  
 
 class LicenseException(Exception):
     pass
@@ -2091,6 +2113,8 @@ class License(object):
         data_node = self.xml.get_node("license/data")
         data = self.xml.to_string(data_node).strip()
         public_key = str(self.xml.get_value("license/public_key"))
+        
+        version = self.xml.get_value("license/data/version")
 
         # the data requires a very specific spacing.  4Suite puts out a
         # different dump and lxml and unfortunately, the license key is
@@ -2103,7 +2127,10 @@ class License(object):
 
         # verify the signature
         if self.verify_flag:
-            key = LicenseKey(public_key)
+            if version == "1":
+                key = LicenseKey(public_key)
+            else:
+                key = LicenseKey2(public_key)
             if not key.verify_string(data, signature):
                 # will be redefined in constructor
                 self.xml = None
