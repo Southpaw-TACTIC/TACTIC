@@ -24,7 +24,8 @@ from tactic.ui.tools import RepoBrowserDirListWdg
 from tactic.ui.widget import DirListWdg, SingleButtonWdg, ButtonNewWdg, IconButtonWdg
 from tactic.ui.container import DialogWdg, Menu, MenuItem, SmartMenu
 from pyasm.biz import FileGroup
-import os, re
+
+import os, re, six
 
 
 class SnapshotFilesWdg(BaseRefreshWdg):
@@ -594,7 +595,7 @@ class SObjectDirListWdg(DirListWdg):
             self.sobjects = [sobject]
 
         if search_keys:
-            if isinstance(search_keys, basestring):
+            if isinstance(search_keys, six.string_types):
                 search_keys = search_keys.replace("'", '"')
                 search_keys = jsonloads(search_keys)
             self.sobjects = Search.get_by_search_keys(search_keys)
@@ -1182,7 +1183,7 @@ class PathMetadataWdg(BaseRefreshWdg):
 
         keys = metadata.get("__keys__")
         if not keys:
-            keys = metadata.keys()
+            keys = list(metadata.keys())
 
         empty = False
         if not keys:
@@ -1201,7 +1202,7 @@ class PathMetadataWdg(BaseRefreshWdg):
             value = Common.process_unicode_string(value)
 
 
-            if not isinstance(key, basestring):
+            if not isinstance(key, six.string_types):
                 key = str(key)
             #title = Common.get_display_title(key)
             title = key

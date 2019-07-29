@@ -264,6 +264,7 @@ class Search(Base):
         if api_mode in ['open', '', None]:
             return
 
+        # Commented our for testing
         #if user in ['admin']:
         #    return
 
