@@ -14,6 +14,7 @@ __all__ = ["ProjectConfigWdg", "UserConfigWdg", "UserPanelWdg"]
 from pyasm.common import Common, Environment
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.biz import Project
+from pyasm.security import Sudo
 from pyasm.web import DivWdg, Table, WebContainer, SpanWdg, HtmlElement
 from pyasm.widget import ThumbWdg, IconWdg, CheckboxWdg
 from tactic.ui.container import SmartMenu
@@ -841,7 +842,11 @@ class UserPanelWdg(BaseRefreshWdg):
             new_filter = ""
 
         expr_filter = "%ssthpw/login['login','not in','admin|guest']['begin']['license_type','user']['license_type','is','NULL']['or']" % new_filter
-        current_users = Search.eval("@COUNT(%s)" %expr_filter)
+        sudo = Sudo()
+        try:
+            current_users = Search.eval("@COUNT(%s)" %expr_filter)
+        finally:
+            sudo.exit()
 
         top = self.top
         top.add_class("spt_panel_user_top")

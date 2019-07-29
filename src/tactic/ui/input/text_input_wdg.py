@@ -369,7 +369,8 @@ class TextInputWdg(BaseInputWdg):
                     
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
-                    display = unicode(display, errors='ignore').encode('utf-8')
+                    if not Common.IS_Pv3:
+                        display = unicode(display, errors='ignore').encode('utf-8')
 
                 format_str = self.get_option("display_format")
                 if format_str:
@@ -1957,7 +1958,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_style("padding: 3px")
             div.add_style("cursor: pointer")
             
-            if isinstance(keywords, str):
+            if not Common.IS_Pv3 and isinstance(keywords, str):
                 keywords = unicode(keywords, errors='ignore')
 
             if len(keywords) > self.DISPLAY_LENGTH:

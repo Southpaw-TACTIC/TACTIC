@@ -32,7 +32,7 @@ class CheckinDirListWdg(DirListWdg):
 
     def preprocess(self):
         # find out if there is a snapshot associated with this path
-        #print "sobject: ", self.sobject
+        #print("sobject: ", self.sobject)
 
         #context = "design/%s" % basename
         #search = Search("sthpw/snapshot")
@@ -87,7 +87,7 @@ class CheckinDirListWdg(DirListWdg):
         for sobject in sobjects:
             source_path = sobject.get_value("source_path")
             if not source_path:
-                print "WARNING: source_path for file [%s] is empty" % sobject.get_code()
+                print("WARNING: source_path for file [%s] is empty" % sobject.get_code())
                 continue
             self.checked_in_paths[source_path] = sobject
 
@@ -1296,7 +1296,7 @@ class CheckinDependencyWdg(BaseRefreshWdg):
 
 
 
-        #print "ref: ", ref_snapshots
+        #print("ref: ", ref_snapshots)
 
         search_type = "jobs/media"
         search_type = "sthpw/snapshot"

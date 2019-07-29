@@ -71,7 +71,7 @@ class Search(Base):
     serach.add_filter("asset_library", "chr")
     sobjects = search.get_sobjects()
     '''
-    def __init__(self, search_type, project_code=None):
+    def __init__(self, search_type, project_code=None, sudo=False):
         # storage for result
         self.is_search_done = False
         self.sobjects = []
@@ -87,7 +87,6 @@ class Search(Base):
         self.security_filter = False
 
         protocol = 'local'
-        #if type(search_type) in types.StringTypes:
         if isinstance(search_type, basestring):
             # project is *always* local.  This prevents an infinite loop
             from pyasm.biz import Project
@@ -138,13 +137,11 @@ class Search(Base):
 
 
         # get the search type sobject for the search
-        #if type(search_type) == types.TypeType:
         if isinstance(search_type, type):
             # get search defined in the class
             search_type = search_type.SEARCH_TYPE
             self.search_type_obj = SearchType.get(search_type)
 
-        #elif type(search_type) in types.StringTypes:
         elif isinstance(search_type, basestring):
             self.search_type_obj = SearchType.get(search_type)
         else:
@@ -158,6 +155,9 @@ class Search(Base):
             self.project_code = Project.extract_project_code(search_type)
 
         base_search_type = SearchKey.extract_base_search_type(search_type)
+
+        if not sudo:
+            self.check_security()
        
         # Put in a security check for search types that are not sthpw
         # or config.
@@ -207,7 +207,6 @@ class Search(Base):
                 self.set_null_filter()
 
 
-
  
        
         # provide the project_code kwarg here
@@ -252,6 +251,40 @@ class Search(Base):
         self.order_bys = []
         # order_by is applied by default if available
         self.order_by = True
+
+
+
+    def check_security(self):
+        from pyasm.security import Sudo
+        user = Environment.get_user_name()
+
+        search_type = self.get_base_search_type()
+        api_mode = Config.get_value("security", "api_mode")
+
+        if api_mode in ['open', '', None]:
+            return
+
+        # Commented our for testing
+        #if user in ['admin']:
+        #    return
+
+        if Sudo.is_sudo():
+            return
+
+
+        if search_type in {
+                'sthpw/login',
+                'sthpw/login_in_group',
+                'sthpw/login_group',
+                'sthpw/transaction_log',
+                'sthpw/change_timestamp',
+                'sthpw/exception_log',
+                'sthpw/ticket',
+                #'sthpw/search_object'
+                #'config/project_settings',
+        }:
+            raise Exception("Search Permission Denied [%s]" % search_type)
+
 
 
 
@@ -501,7 +534,6 @@ class Search(Base):
         for filter in filters:
             if not filter:
                 continue
-            #if type(filter) in types.StringTypes or len(filter) == 1:
             if isinstance(filter, basestring) or len(filter) == 1:
                 # straight where clause not allowed
                 if isinstance(filter, basestring):
@@ -1210,10 +1242,10 @@ class Search(Base):
             start_date >= date <= end_date + 1 day
         '''
 
-        if start_date and type(start_date) in types.StringTypes:
+        if start_date and isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        if end_date and type(end_date) in types.StringTypes:
+        if end_date and isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
 
@@ -1248,10 +1280,10 @@ class Search(Base):
           start_col < end_date and end_col > end_date
         '''
 
-        if type(start_date) in types.StringTypes:
+        if isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        if type(end_date) in types.StringTypes:
+        if isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
 
@@ -2469,7 +2501,6 @@ class SObject(object):
                 self.search_type_obj = self
                 self.full_search_type = "sthpw/search_object"
 
-            #elif type(search_type) in types.StringTypes:
             elif isinstance(search_type, basestring):
                 self.search_type_obj = SearchType.get(search_type)
                 self.full_search_type = Project.get_full_search_type(search_type)
@@ -3806,9 +3837,11 @@ class SObject(object):
 
     def handle_commit_security(self):
 
+        from pyasm.security import Sudo
+
         # certain tables can only be written by admin
         security = Environment.get_security()
-        if security.is_admin():
+        if security.is_admin() or Sudo.is_sudo():
             return True
 
         search_type = self.get_base_search_type()
@@ -4104,7 +4137,13 @@ class SObject(object):
         # auto updated values in the database
         sobject = None
         if not is_search_type:
-            search = Search(self.full_search_type)
+
+            from pyasm.security import Sudo
+            sudo = Sudo()
+            try:
+                search = Search(self.full_search_type)
+            finally:
+                sudo.exit()
             search.set_show_retired_flag(True)
             # trick the search to believe that security filter has been applied
             search.set_security_filter()
@@ -6475,8 +6514,6 @@ class SearchType(SObject):
         sobject = search_object_data.get(search_type)
         if sobject:
             return sobject
-        #if search_object_data.has_key(search_type):
-        #    return search_object_data[search_type]
 
 
         # get it from the global cache

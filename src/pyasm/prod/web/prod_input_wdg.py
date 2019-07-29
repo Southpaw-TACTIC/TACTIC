@@ -243,7 +243,7 @@ class UserSelectWdg(SelectWdg):
         
 
     def get_display(self):
-        search = Search(Login)
+        search = Search(Login, sudo=True)
         self.set_search_for_options(search, 'login','login')
         self.set_option("extra_values", "admin")
         if self.kwargs.get('default_user') =='true':

@@ -15,6 +15,7 @@ __all__ = ['WebInit', 'SidebarTrigger', 'StatusLogTrigger', 'DisplayNameTrigger'
 from pyasm.common import Common, Config, Environment
 from pyasm.command import Trigger
 from pyasm.search import SearchType, Search
+from pyasm.security import Sudo
 from pyasm.biz import StatusLog
 
 import os
@@ -45,16 +46,21 @@ class SidebarTrigger(Trigger):
         login = Environment.get_user_name()
         tmp_dir = "%s/cache/side_bar" % Environment.get_tmp_dir()
         project_check = True
-        if search_type =='sthpw/login_group':   
-            login_objs = sobject.get_logins()
-            logins = [x.get_value('login') for x in login_objs]
-            project_check = False
-        else:
-            if all_logins:
-                expr = '@GET(sthpw/login.login)'
-                logins = Search.eval(expr) 
+
+        sudo = Sudo()
+        try:
+            if search_type =='sthpw/login_group':   
+                login_objs = sobject.get_logins()
+                logins = [x.get_value('login') for x in login_objs]
+                project_check = False
             else:
-                logins = [login]
+                if all_logins:
+                    expr = '@GET(sthpw/login.login)'
+                    logins = Search.eval(expr) 
+                else:
+                    logins = [login]
+        finally:
+            sudo.exit()
         
         filenames = []
         if not os.path.exists(tmp_dir):

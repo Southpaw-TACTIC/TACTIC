@@ -876,7 +876,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #expand_full_width = False
         for i, item_width in enumerate(reversed(column_widths)):
 
-            if isinstance(item_width, str):
+            if item_width == "auto":
+                continue
+
+            if isinstance(item_width, basestring):
                 item_width = item_width.replace("px", "")
                 item_width = int(item_width)
 
@@ -906,7 +909,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll = DivWdg()
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
-            h_scroll.add_style("overflow-y: none")
+            h_scroll.add_style("overflow-y: auto")
 
             scroll = DivWdg()
             h_scroll.add(scroll)
@@ -951,10 +954,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_class("spt_window_resize")
                 scroll.add_attr("spt_window_resize_offset", window_resize_offset)
 
+            window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
+            if window_resize_xoffset:
+                scroll.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+
             # sync header to this scroll
             # FIXME: this does not work with locked columns as the locked columns have their own
             # scrollbar
-            scroll.add_class("spt_table_scroll")
             scroll.add_attr( "onScroll", '''document.id(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
             # Scroll event not implemented in behaviors yet
             """
@@ -1342,12 +1348,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             # extra stuff to make it work with ViewPanelWdg
             if self.kwargs.get("is_inner") not in ['true', True]:
-                top.add_class("spt_table_top");
+                top.add_class("spt_table_top")
 
             class_name = Common.get_full_class_name(self)
             top.add_attr("spt_class_name", class_name)
 
-            self.table.add_class("spt_table_content");
+            self.table.add_class("spt_table_content")
             inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
             inner.add_attr("spt_view", self.kwargs.get('view'))
 
@@ -2964,6 +2970,27 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
+
+        collapse_default = self.kwargs.get("collapse_default")
+        if collapse_default in [True, 'true']:
+            collapse_level = self.kwargs.get("collapse_level") or -1
+            swap.add_behavior({
+                'type': 'load',
+                'collapse_level': collapse_level,
+                'cbjs_action': '''
+
+                if (bvr.collapse_level != -1) {
+                    var row = bvr.src_el.getParent(".spt_group_row");
+                    var group_level = row.getAttribute("spt_group_level");
+                    if (group_level != bvr.collapse_level)
+                        return;
+                }
+
+                bvr.src_el.getElement(".spt_group_row_collapse").click();
+
+                '''
+                })
+
         title_div.add_style("width: 100%")
 
 
@@ -3914,7 +3941,6 @@ spt.table.add_filter = function(element, filter_type) {
     
     var filter_templates = filter_top.getElements(".spt_filter_template_with_op");
     for (var i = 0; i < filter_templates.length; i++) {
-        console.log(filter_templates[i]);
         var filter_template_type = filter_templates[i].getAttribute("spt_filter_type")
         if (filter_template_type == filter_type) {
             filter_template = filter_templates[i];
@@ -7459,22 +7485,22 @@ spt.table.get_parent_groups = function(src_el, level) {
     var lowest_group_level = group_level;
 
     while (true) {
-
-        var group = row.getPrevious(".spt_table_row_item");
-        if (!group) {
+        // get previous group
+        var row = row.getPrevious(".spt_table_row_item");
+        if (!row)
             break;
-        }
-        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
-            row = group;
+
+        // check if level is greater than lowest level reached
+        if ( row.getAttribute("spt_group_level") >= lowest_group_level )
             continue
-        }
-        lowest_group_level = group.getAttribute("spt_group_level");
-        if (level && level == group.getAttribute("spt_group_level")) {
-            return group;
+
+        // set new lowest_group_level, check if its equal to level
+        lowest_group_level = row.getAttribute("spt_group_level");
+        if (level && level == row.getAttribute("spt_group_level")) {
+            return row;
         } else if (!level) {
-            group_parents.push(group);
+            group_parents.push(row);
         }
-        row = group;
     }
 
     return group_parents;

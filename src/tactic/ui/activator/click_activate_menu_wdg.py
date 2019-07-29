@@ -46,14 +46,14 @@ class AttachContextMenuWdg(BaseRefreshWdg):
         # verify the args
         args_keys = self.get_args_keys()
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            if key not in args_keys:
                 #raise WidgetException("Key [%s] not in accepted arguments" % key)
                 pass
 
         web = WebContainer.get_web()
         args_keys = self.get_args_keys()
         for key in args_keys.keys():
-            if not kwargs.has_key(key):
+            if key not in kwargs:
                 value = web.get_form_value(key)
                 kwargs[key] = value
 
@@ -65,7 +65,7 @@ class AttachContextMenuWdg(BaseRefreshWdg):
 
         # Generate the main context menu ...
         ctx_map = self.menus[0]
-        if not ctx_map.has_key('allow_icons'):
+        if 'allow_icons' not in ctx_map:
             ctx_map['allow_icons'] = True
         ctx_menu_wdg = ContextMenuWdg( activator_wdg=self.activator_wdg, menu_id=ctx_map['menu_id'],
                                        width=ctx_map['width'], opt_spec_list=ctx_map['opt_spec_list'],
@@ -75,7 +75,7 @@ class AttachContextMenuWdg(BaseRefreshWdg):
         # Generate any needed sub-menus for the context menu ...
         sm_map_list = self.menus[1:]
         for sm_map in sm_map_list:
-            if not sm_map.has_key('allow_icons'):
+            if 'allow_icons' not in sm_map:
                 sm_map['allow_icons'] = True
             submenu_wdg = SubMenuWdg( menu_id=sm_map['menu_id'], width=sm_map['width'],
                                           opt_spec_list=sm_map['opt_spec_list'], allow_icons=sm_map['allow_icons'] )
@@ -107,15 +107,15 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
         self.style = kwargs['style']
 
         self.match_width = False
-        if kwargs.has_key('match_width'):
+        if 'match_width' in kwargs:
             self.match_width = kwargs['match_width']
 
         self.nudge_menu_horiz = 0;
-        if kwargs.has_key('nudge_menu_horiz') and kwargs['nudge_menu_horiz']:
+        if 'nudge_menu_horiz' in kwargs and kwargs['nudge_menu_horiz']:
             self.nudge_menu_horiz = int( kwargs['nudge_menu_horiz'] )
 
         self.nudge_menu_vert = 0;
-        if kwargs.has_key('nudge_menu_vert') and kwargs['nudge_menu_vert']:
+        if 'nudge_menu_vert' in kwargs and kwargs['nudge_menu_vert']:
             self.nudge_menu_vert = int( kwargs['nudge_menu_vert'] )
 
         # -- Here is an example of what the menus parameter should look like ...
@@ -154,14 +154,14 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
         # verify the args
         args_keys = self.get_args_keys()
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            if key not in args_keys:
                 #raise WidgetException("Key [%s] not in accepted arguments" % key)
                 pass
 
         web = WebContainer.get_web()
         args_keys = self.get_args_keys()
         for key in args_keys.keys():
-            if not kwargs.has_key(key):
+            if key not in kwargs:
                 value = web.get_form_value(key)
                 kwargs[key] = value
 
@@ -216,7 +216,7 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
         # Now generate the main drop down menu and any needed sub-menus ...
         #
         dd_map = self.menus[0]
-        if not dd_map.has_key('allow_icons'):
+        if 'allow_icons' not in dd_map:
             dd_map['allow_icons'] = True  # default is to allow icons
         if self.match_width:
             dd_map['width'] = self.width
@@ -228,7 +228,7 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
 
         sm_map_list = self.menus[1:]
         for sm_map in sm_map_list:
-            if not sm_map.has_key('allow_icons'):
+            if 'allow_icons' not in sm_map:
                 sm_map['allow_icons'] = True
             submenu_wdg = SubMenuWdg( menu_id=sm_map['menu_id'], width=sm_map['width'],
                                           opt_spec_list=sm_map['opt_spec_list'], allow_icons=sm_map['allow_icons'] )

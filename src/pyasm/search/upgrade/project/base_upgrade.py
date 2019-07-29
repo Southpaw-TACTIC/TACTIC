@@ -20,6 +20,8 @@ from pyasm.command import Command
 from pyasm.search import Search, DbContainer, SqlException, Transaction
 from pyasm.common import Base, Common, Container
 
+import six
+
 
 
 class BaseUpgrade(Command):
@@ -46,7 +48,7 @@ class BaseUpgrade(Command):
 
     def set_upgrade_method(self, method):
         ''' this is the name of the method for the current upgrade instance'''
-        if not isinstance(method, basestring):
+        if not isinstance(method, six.string_types):
             raise TacticException('method should be a string')
         self.upgrade_method = method 
 
@@ -78,8 +80,11 @@ class BaseUpgrade(Command):
 
         if not self.version_update:
             self.version_update = "2.5.0.v01"
-      
-        members = inspect.getmembers(self.__class__, predicate=inspect.ismethod)
+
+        if Common.IS_Pv3:
+            members = inspect.getmembers(self.__class__, predicate=inspect.isfunction)
+        else:
+            members = inspect.getmembers(self.__class__, predicate=inspect.ismethod)
         methods = []
         critical_methods = []
         for name, member in members:
@@ -114,6 +119,8 @@ class BaseUpgrade(Command):
                 print("Running upgrade for [%s]..." %name)
 
             self.run_method(name, method)
+
+
 
     def get_database_type(self):
         project = Project.get_by_code(self.project_code)

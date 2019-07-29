@@ -30,6 +30,10 @@ import dateutil, os
 
 from tactic.ui.widget.button_new_wdg import ActionButtonWdg, IconButtonWdg
 
+import six
+basestring = six.string_types
+
+
 class DiscussionElementWdg(BaseTableElementWdg):
 
     ARGS_KEYS = {
@@ -553,6 +557,9 @@ class DiscussionWdg(BaseRefreshWdg):
                 server.abort();
             }
 
+            attach_top.files = [];
+            var attach_list = attach_top.getElement(".spt_attachment_list");
+            attach_list.innerHTML = "";
             spt.discussion.refresh(top);
 
             spt.app_busy.hide();
@@ -1357,7 +1364,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     processes.append(p)
         else:
             # if no workflow, then display alphabetically
-            processes = process_notes.keys()
+            processes = list(process_notes.keys())
             processes.sort()
 
 
@@ -2038,13 +2045,12 @@ class NoteWdg(BaseRefreshWdg):
 
         if context.endswith("/review") or context.endswith("/error"):
             context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
-            tr.add_style("background: rgba(232, 74, 77, 0.8)")
+            #tr.add_style("background: rgba(232, 74, 77, 0.8)")
+            tr.add_style("border-bottom: solid 1px rgba(232, 74, 77, 0.8)")
 
         else:
             #tr.add_color("background", "background", -10)
-            pass
-
-        tr.add_style("border-bottom: solid 2px #DDD")
+            tr.add_style("border-bottom: solid 2px #DDD")
 
         td = content.add_cell()
 
@@ -2542,7 +2548,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
        
         from tactic.ui.input import UploadButtonWdg 
         on_complete = '''
-       
+
         var files = spt.html5upload.get_files(); 
 
         var top = bvr.src_el.getParent(".spt_attachment_top")
@@ -2613,12 +2619,14 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         upload_init = ''' 
         var server = TacticServerStub.get();
-        var ticket_key = server.start({title: 'New Note'});
         var top = bvr.src_el.getParent(".spt_attachment_top");
-        top.setAttribute('ticket_key', ticket_key);
+        var ticket_key = top.getAttribute('ticket_key');
+
+        if (!ticket_key) {
+          ticket_key = server.start({title: 'New Note'});
+          top.setAttribute('ticket_key', ticket_key);
+        }
         upload_file_kwargs['ticket'] = ticket_key;
-      
-       
         '''
 
       

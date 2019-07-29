@@ -165,7 +165,7 @@ class OverviewTabWdg(BaseTabWdg):
         search_type_obj = SearchType.get(search_type)
         config = WidgetConfigView.get_by_search_type(search_type_obj, "table")
         element_names = config.get_element_names()
-        print "element: ", element_names
+        print("element: ", element_names)
 
         config = '''
         <config>

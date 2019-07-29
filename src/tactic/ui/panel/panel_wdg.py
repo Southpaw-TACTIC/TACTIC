@@ -2169,6 +2169,10 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         class_name = options.get("class_name")
         widget_key = options.get("widget_key")
         if widget_key:
+
+            if not widget_key.isalnum():
+                widget_key = "code"
+            
             class_name = WidgetClassHandler().get_display_handler(widget_key)
             options['class_name'] = class_name
 
@@ -2952,8 +2956,12 @@ class ViewPanelWdg(BaseRefreshWdg):
                 impl = SearchType.get_database_impl_by_search_type(search_type)
                 if impl.get_database_type() == "MongoDb":
                     self.element_names = impl.get_default_columns()
-            except SearchException:
-                raise
+            except SearchException as e:
+                print("ERROR: %s" % e)
+                div = DivWdg("ERROR: %s" % e)
+                return div
+                #raise
+
 
 
            
@@ -3248,6 +3256,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         if default_data:
             if isinstance(default_data, dict):
                 default_data = jsondumps(default_data)
+        collapse_default = self.kwargs.get("collapse_default")
+        collapse_level = self.kwargs.get("collapse_level")
 
 
         is_inner = self.kwargs.get("is_inner")
@@ -3354,6 +3364,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             #"search_wdg": search_wdg
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,
+            "collapse_default": collapse_default,
+            "collapse_level": collapse_level
         }
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
@@ -3430,7 +3442,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
-            from tool_layout_wdg import RepoBrowserLayoutWdg
+            from .tool_layout_wdg import RepoBrowserLayoutWdg
             kwargs['parent_mode'] = self.kwargs.get('parent_mode')
             kwargs['file_system_edit'] = self.kwargs.get('file_system_edit')
             kwargs['base_dir'] = self.kwargs.get('base_dir')
@@ -3439,7 +3451,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout == 'card':
             kwargs['preview_width'] = self.kwargs.get("preview_width")
             kwargs['process'] = self.kwargs.get("process")
-            from tool_layout_wdg import CardLayoutWdg
+            from .tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
@@ -3459,6 +3471,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = self.kwargs.get("upload_mode")
             kwargs['process'] = self.kwargs.get("process")
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
+            kwargs['window_resize_offset'] = self.kwargs.get("window_resize_offset")
             from .collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 

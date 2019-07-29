@@ -19,6 +19,8 @@ from pyasm.search import SearchType, Search, SearchKey
 from pyasm.command import Command, Trigger
 
 import os
+import six
+basestring = six.string_types
 
 class GlobalSearchTrigger(Trigger):
 
@@ -301,7 +303,7 @@ class GlobalSearchTrigger(Trigger):
                 collection_keywords = collection_keywords.lower()
 
             if path:
-                if isinstance(path, unicode):
+                if not Common.IS_Pv3 and isinstance(path, unicode):
                     path = path.encode('utf-8','replace')
 
                 if isinstance(path, basestring):
@@ -310,7 +312,7 @@ class GlobalSearchTrigger(Trigger):
                     searchable_keywords.extend(path)
 
             if user:
-                if isinstance(user, unicode):
+                if not Common.IS_Pv3 and isinstance(user, unicode):
                     user = user.encode('utf-8','replace')
 
                 if isinstance(user, basestring):

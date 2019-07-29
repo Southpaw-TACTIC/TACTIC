@@ -2649,7 +2649,7 @@ class PopupMenuWdg(BaseInputWdg):
         self.title.add_style('border-bottom','1px dotted #ccc')
     
     def add(self, widget, name=None):
-        if type(widget) in types.StringTypes:
+        if isinstance(widget, six.string_types):
             tmp = widget
             widget = StringWdg(widget)
             if not name:

@@ -875,9 +875,9 @@ class SearchTest(unittest.TestCase):
         database_type = Project.get_by_code("unittest").get_database_type()
         if database_type == "MySQL":
             print
-            print "WARNING: !!!!!!!"
-            print "_test_commit is disabled"
-            print "WARNING: !!!!!!!"
+            print("WARNING: !!!!!!!")
+            print("_test_commit is disabled")
+            print("WARNING: !!!!!!!")
             print
             return
 

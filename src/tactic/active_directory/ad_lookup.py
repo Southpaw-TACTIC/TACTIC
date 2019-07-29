@@ -66,12 +66,12 @@ class ADLookup(object):
     
     def debug(self, message):
         if self.debug_flag:
-            print message
+            print(message)
 
 
     def lookup_attr(self, username, attr):
         user=active_directory.find_user(username)
-        print user.attr
+        print(user.attr)
         return user.attr
 
 
@@ -80,7 +80,7 @@ class ADLookup(object):
         #print user.dump
         #x=user.properties
         #print x.cn
-        print user.cn
+        print(user.cn)
         return user.cn
 
 
@@ -95,18 +95,18 @@ class ADLookup(object):
 import sys, getopt
 
 def usage():
-    print "ADS lookup tool"
-    print "Usage: ad_lookup.py [Option]"
-    print "Check for ADS data"
-    print ""
-    print "-u <name>            Look up the username 'name'"
-    print "-o <objectname>      objectname - ex. \"displayName\""
-    print "-f <filter>          filter - ex. \"objectName=person\""
-    print "-h, --help           Display this message, and exit"
-    print "-i                   lookup root info"
-    print "-r                   execute the lookup"      
-    print "-d                   Debug messages"
-    print ""
+    print("ADS lookup tool")
+    print("Usage: ad_lookup.py [Option]")
+    print("Check for ADS data")
+    print("")
+    print("-u <name>            Look up the username 'name'")
+    print("-o <objectname>      objectname - ex. \"displayName\"")
+    print("-f <filter>          filter - ex. \"objectName=person\"")
+    print("-h, --help           Display this message, and exit")
+    print("-i                   lookup root info")
+    print("-r                   execute the lookup"      )
+    print("-d                   Debug messages")
+    print("")
 
 def main(argv):
     try:
@@ -126,7 +126,7 @@ def main(argv):
             elif opt == '-f':
                 ads.set_filter(arg)
             elif opt == '-i':
-                print ads.get_root()
+                print(ads.get_root())
             elif opt == '-d':
                 ads.set_debug(True)
             elif opt == '-r':
@@ -137,7 +137,7 @@ def main(argv):
                 usage()
                 sys.exit()
     else:
-        print ("Try 'ad_lookup.py -h' for more information.")
+        print(("Try 'ad_lookup.py -h' for more information."))
 
 if __name__ == '__main__':
     main(sys.argv[1:])

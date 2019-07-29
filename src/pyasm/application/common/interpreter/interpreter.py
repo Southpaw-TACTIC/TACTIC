@@ -80,7 +80,7 @@ class PipelineInterpreter(object):
         # get input processes and hand over the delivery
         input_processes = self.pipeline.get_input_process_names(process)
         for input_process in input_processes:
-            print "input: ", input_process
+            print("input: ", input_process)
         #if self.handlers:
         #    handler.set_input( self.handlers[-1].get_output() )
 

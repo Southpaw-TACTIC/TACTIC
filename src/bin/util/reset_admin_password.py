@@ -37,6 +37,6 @@ if not admin:
 admin.set_value("password", password)
 admin.commit()
 
-print "Successfully reset admin password.  You will be prompted to change it on startup of TACTIC."
+print("Successfully reset admin password.  You will be prompted to change it on startup of TACTIC.")
 raw_input()
 

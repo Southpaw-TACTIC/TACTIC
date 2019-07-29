@@ -18,6 +18,7 @@ import threading
 import smtplib
 import types
 import datetime
+import six
 from dateutil.relativedelta import relativedelta
 
 try:
@@ -371,9 +372,12 @@ class EmailTrigger(Trigger):
         charset = 'us-ascii'
         is_uni = False
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
+            charset = 'utf-8'
+            is_uni = True
+        elif Common.IS_Pv3:
             charset = 'utf-8'
             is_uni = True
 
@@ -458,7 +462,7 @@ class SendEmail(Command):
         cc = self.kwargs.get('cc') or []
         bcc = self.kwargs.get('bcc') or []
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
@@ -626,6 +630,7 @@ class EmailTrigger2(EmailTrigger):
                     value = caller.get_info(rule_key)
                 except:
                     value = ''
+
             if not value:
                 break
 
@@ -648,7 +653,6 @@ class EmailTrigger2(EmailTrigger):
                 # match the rule to the value
                 p = re.compile(rule_value)
                 if not p.match(value):
-                    print("... skipping: '%s' != %s" % (value, rule_value))
                     break
 
         else:
@@ -735,7 +739,7 @@ class EmailTrigger2(EmailTrigger):
         email_users = set()
         if send_email:
             for user in all_users:
-                if type(user) in types.StringTypes:
+                if isinstance(user, six.string_types):
                     email = user
                 else:
                     email =  user.get_value('email')

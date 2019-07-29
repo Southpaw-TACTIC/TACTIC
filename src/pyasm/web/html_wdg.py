@@ -24,7 +24,7 @@ import sys
 from dateutil import parser
 
 
-from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue
+from pyasm.common import Container, jsondumps, jsonloads, Common, FormatValue, Environment
 from pyasm.search import Search, SObject, SearchType
 from pyasm.biz import PrefSetting
 from pyasm.common import SPTDate
@@ -179,7 +179,6 @@ class HtmlElement(Widget):
     def set_attr(self, name, value):
         '''Set an attribute of the html element'''
 
-        #if type(value) in types.StringTypes:
         if isinstance(value, basestring):
             self.attrs[name] = value
         # This is never called because of the above
@@ -525,7 +524,7 @@ class HtmlElement(Widget):
                 if 'cbjs' in k and '\n' in v:
                     bvr_spec[k] = regex.sub( '\n', v )
             self.behaviors.append( bvr_spec )
-        elif type(bvr_spec) == types.StringType:
+        elif isinstance(bvr_spec, six.string_types):
             # legacy support for any '.add_behavior' calls that provide a bvr_spec argument that is a string
             # representation of a behavior specification dictionary
             self.behaviors.append( self.convert_behavior_str(bvr_spec) )
@@ -1029,6 +1028,41 @@ class HtmlElement(Widget):
     def get_updates(self):
         return {self.get_id(): self.updates}
 
+
+
+    #
+    # Command key generation
+    #
+    def generate_command_key(self, cmd, kwargs={}, ticket=None):
+        if ticket and not ticket.isalnum():
+            raise Exception("No valid ticket")
+
+        from pyasm.common import jsondumps
+        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+        #tmp_dir = "/tmp"
+
+        #if not ticket:
+        #    ticket = Environment.get_security().get_ticket_key()
+        #tmp_dir = "%s/%s" % (tmp_dir, ticket)
+        #if not os.path.exist(tmp_dir):
+        #    os.makedirs(tmp_dir)
+
+        login = Environment.get_user_name()
+        key = "$"+Common.generate_random_key()
+        filename = "key_" + key.lstrip("$")
+        f = open("%s/%s" % (tmp_dir, filename), "w")
+        data = {
+            "class_name": cmd,
+            "login": login,
+            "ticket": ticket,
+            "kwargs": kwargs,
+        }
+        f.write(jsondumps(data))
+        f.close()
+
+        self.add_attr("SPT_CMD_KEY", key)
+
+        return key
 
 
 

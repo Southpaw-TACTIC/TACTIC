@@ -15,6 +15,7 @@ __all__ = ['ProcessGroupSelectWdg', 'LoginTableElementWdg']
 
 from pyasm.search import Search, SearchKey, SearchException
 from pyasm.biz import Pipeline
+from pyasm.security import Security, Sudo
 from pyasm.web import DivWdg, SpanWdg, HtmlElement
 from pyasm.widget import BaseInputWdg, SelectWdg
 from tactic.ui.common import SimpleTableElementWdg
@@ -283,7 +284,11 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         value = super(LoginTableElementWdg, self).get_value(name)
         if value:
-            user = Search.get_by_code("sthpw/login", value)
+            sudo = Sudo()
+            try:
+                user = Search.get_by_code("sthpw/login", value)
+            except:
+                sudo.exit()
             if user:
                 value = user.get_value("display_name") or value
 

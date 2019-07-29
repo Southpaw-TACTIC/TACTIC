@@ -885,7 +885,7 @@ class WorkflowCmd(Command):
 
             # receive the packages
             packages = input.get("packages")
-            print "packages: ", packages
+            print("packages: ", packages)
 
             '''
         } )

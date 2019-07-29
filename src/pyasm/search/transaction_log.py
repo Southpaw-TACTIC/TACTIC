@@ -13,6 +13,7 @@
 __all__ = ['TransactionLog']
 
 from pyasm.common import *
+
 from .search import SObjectUndo, SObject, Search, SObjectFactory, SearchType, SearchException, SqlException
 from .transaction import FileUndo, TableUndo, TableDropUndo, AlterTableUndo
 from .sobject_log import SObjectLog
@@ -199,6 +200,10 @@ class TransactionLog(SObject):
         if not transaction_data:
             transaction_data = log.get_value("transaction")
 
+
+        from pyasm.security import Sudo
+        sudo = Sudo()
+
         # log a reference to each sobject affected
         already_logged = {}
         xml = Xml()
@@ -361,7 +366,7 @@ class TransactionLog(SObject):
     def delete_all_redo():
         user_name = Environment.get_user_name()
 
-        search = Search("sthpw/transaction_log")
+        search = Search("sthpw/transaction_log", sudo=True)
         search.add_order_by("timestamp")
         search.add_filter("type", "redo")
         search.add_filter("login", user_name)

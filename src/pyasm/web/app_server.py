@@ -31,6 +31,9 @@ from .web_login_cmd import WebLoginCmd
 
 import os
 
+import six
+basestring = six.string_types
+
 
 try:
     from cStringIO import StringIO as Buffer
@@ -391,6 +394,7 @@ class BaseAppServer(Base):
             is_logged_in = security.is_logged_in()
         except Exception as e:
             print("AppServer Exception: ", e)
+            raise
             return self.handle_not_logged_in()
 
 
@@ -788,7 +792,6 @@ class BaseAppServer(Base):
         else:
             site = web.get_form_value("site")
 
-
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
@@ -796,7 +799,12 @@ class BaseAppServer(Base):
         elif login and password:
 
             # get the site for this user
-            login_site = site_obj.get_by_login(login)
+            sudo = Sudo()
+            try:
+                login_site = site_obj.get_by_login(login)
+            finally:
+                sudo.exit()
+
             if login_site:
                 site = login_site
 
@@ -815,7 +823,6 @@ class BaseAppServer(Base):
                     if site:
                         site_obj.pop_site()
                     return security
-
 
         elif ticket_key:
           
@@ -994,7 +1001,7 @@ class BaseAppServer(Base):
         # NOTE: this needs to happen after the body is put in a Container
         page = self.get_page_widget()
         page.set_as_top()
-        if type(page) in types.StringTypes:
+        if isinstance(page, six.string_types):
             page = StringWdg(page)
 
         application.add(page, 'content')

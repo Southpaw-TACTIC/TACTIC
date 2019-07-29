@@ -224,6 +224,7 @@ top.spt_update_interval_id = setInterval( function() {
     if (Object.keys(update).length > 0) {
 
         var on_complete = function(ret_val) {
+            
             var timestamp = ret_val.info ? ret_val.info.timestamp : null;
             if (!timestamp) 
                 return;
@@ -458,20 +459,26 @@ class DynamicUpdateCmd(Command):
         # find all of the search that have changed
         changed_keys = set()
         changed_types = set()
-        for check_type in ['sthpw/change_timestamp', 'sthpw/sobject_log']:
-            search = Search(check_type)
-            search.add_filter("timestamp", last_timestamp, op=">")
-            search.add_filters("search_type", ["sthpw/sobject_log", "sthpw/status_log"], op="not in")
-            changed_sobjects = search.get_sobjects()
-            for sobject in changed_sobjects:
-                search_type = sobject.get_value("search_type")
-                search_code = sobject.get_value("search_code")
-                if search_type.startswith("sthpw/"):
-                    search_key = "%s?code=%s" % (search_type, search_code)
-                else:
-                    search_key = "%s&code=%s" % (search_type, search_code)
-                changed_keys.add(u'%s'%search_key)
-                changed_types.add(search_type)
+
+        from pyasm.security import Sudo
+        sudo = Sudo()
+        try:
+            for check_type in ['sthpw/change_timestamp', 'sthpw/sobject_log']:
+                search = Search(check_type)
+                search.add_filter("timestamp", last_timestamp, op=">")
+                search.add_filters("search_type", ["sthpw/sobject_log", "sthpw/status_log"], op="not in")
+                changed_sobjects = search.get_sobjects()
+                for sobject in changed_sobjects:
+                    search_type = sobject.get_value("search_type")
+                    search_code = sobject.get_value("search_code")
+                    if search_type.startswith("sthpw/"):
+                        search_key = "%s?code=%s" % (search_type, search_code)
+                    else:
+                        search_key = "%s&code=%s" % (search_type, search_code)
+                    changed_keys.add(u'%s'%search_key)
+                    changed_types.add(search_type)
+        finally:
+            sudo.exit()
   
         intersect_keys = client_keys.intersection(changed_keys)
         
@@ -554,7 +561,6 @@ class DynamicUpdateCmd(Command):
 
 
         #print("Dyn Cmd duration", time.time()  - start)
-        return results
 
 
 

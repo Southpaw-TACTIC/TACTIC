@@ -93,7 +93,7 @@ class TableData:
         # print add columns
         extra_columns = [x for x in standard_data.columns if x not in self.columns]
         for column in extra_columns:
-            print standard_data.get_alter_table(column)
+            print(standard_data.get_alter_table(column))
 
         #for column, definition in self.columns.items():
         #    if column in extra_columns:
@@ -113,19 +113,19 @@ class TableData:
         extra_columns = [x for x in data.columns if x not in self.columns]
 
         if missing_columns:
-            print "missing columns: ", missing_columns
+            print("missing columns: ", missing_columns)
         if extra_columns:
-            print "extra columns: ", extra_columns
+            print("extra columns: ", extra_columns)
 
             for extra_column in extra_columns:
-                print data.get_alter_table(extra_column)
+                print(data.get_alter_table(extra_column))
 
         missing_constraints = [x for x in self.constraints if x not in data.constraints]
         extra_constraints = [x for x in data.constraints if x not in self.constraints]
         if missing_constraints:
-            print "missing constraints: ", missing_constraints
+            print("missing constraints: ", missing_constraints)
         if extra_constraints:
-            print "extra constraints: ", extra_constraints
+            print("extra constraints: ", extra_constraints)
 
 
 
@@ -271,8 +271,8 @@ class SqlParser:
                 expr = '\((.*)\) VALUES \((.*)\);$'
                 info = self._extract_values(expr, line)
                 if not info:
-                    print "Error: "
-                    print line
+                    print("Error: ")
+                    print(line)
                     raise Exception("Improper INSERT statement")
 
                 columns = info[0].split(", ")
@@ -341,16 +341,16 @@ class SqlParser:
         if diffs:
             print
             print
-            print "Table: ", table
-            print "-"*20
+            print("Table: ", table)
+            print("-"*20)
 
-            print pattern % ("column","standard schema","target schema")
-            print "-"*110
+            print(pattern % ("column","standard schema","target schema"))
+            print("-"*110)
 
             for diff in diffs:
-                print diff
+                print(diff)
 
-            print "-"*110
+            print("-"*110)
 
 
         # print constraints
@@ -358,16 +358,16 @@ class SqlParser:
         constraints2 = data2.constraints
 
         if constraints != constraints2:
-            print constraints
-            print constraints2
+            print(constraints)
+            print(constraints2)
 
         # print indexes
         indexes = data.indexes
         indexes2 = data2.indexes
 
         if indexes != indexes:
-            print indexes
-            print indexes2
+            print(indexes)
+            print(indexes2)
 
 
 
