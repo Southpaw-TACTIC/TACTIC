@@ -1025,15 +1025,11 @@ spt.popup.get_widget = function( evt, bvr )
         //width_wdg.setStyle("width", width);
         var content = popup.getElement(".spt_popup_content");
         content.setStyle("width", width);
-    } else {
-        var content = popup.getElement(".spt_popup_content");
-        content.setStyle("width", "900px");
     }
-
     if (height != null) {
         width_wdg.setStyle("height", height);
         width_wdg.setStyle("overflow", "auto");
-    } 
+    }
    
     // If specified, turn off ability to resize
     var resize_icon = popup.getElement(".spt_popup_resize");
