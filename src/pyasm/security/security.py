@@ -1930,8 +1930,15 @@ class Security(Base):
 
 
 import pickle, os, base64
-from Crypto.PublicKey import RSA
-from Crypto.Hash import MD5
+
+try:
+    from Cryptodome.PublicKey import RSA
+    from Cryptodome.Hash import MD5
+except ImportError:
+    from Crypto.PublicKey import RSA
+    from Crypto.Hash import MD5
+
+
 
 # HACK:  From PyCrypto-2.0.1 to PyCrypt-2.3, the install datastructure: RSAobj
 # was changed to _RSAobj.  This means that the unwrapped key, which is basically
