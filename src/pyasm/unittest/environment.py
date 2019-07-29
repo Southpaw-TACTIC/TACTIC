@@ -18,7 +18,7 @@ from pyasm.common import TacticException
 from pyasm.biz import Project
 from pyasm.security import Batch
 from pyasm.command import Command
-from pyasm.search import SearchType, Search
+from pyasm.search import SearchType, Search, DbResource, DbContainer
 from tactic.command import CreateProjectCmd, PluginInstaller
 
 class UnittestEnvironment(object):
@@ -50,11 +50,18 @@ class UnittestEnvironment(object):
     def delete(self):
         print("Deleting existing Unittest project")
         related_types = ["sthpw/schema", "sthpw/task","sthpw/snapshot", "sthpw/file"]
+        self.commit()
         from tactic.ui.tools import DeleteProjectCmd
         delete_cmd = DeleteProjectCmd(project_code=self.project_code, related_types=related_types)
         delete_cmd.execute()
 
 
+    def commit(self):
+        db_res = DbResource.get_default('unittest')
+        sql = DbContainer.get(db_res)
+        impl = sql.get_database_impl()
+        if impl.commit_on_schema_change():
+            DbContainer.commit_thread_sql()
 
 
 
