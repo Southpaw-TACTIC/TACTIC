@@ -650,7 +650,6 @@ class EmailTrigger2(EmailTrigger):
                 # match the rule to the value
                 p = re.compile(rule_value)
                 if not p.match(value):
-                    print("... skipping: '%s' != %s" % (value, rule_value))
                     break
 
         else:
