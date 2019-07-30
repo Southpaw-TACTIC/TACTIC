@@ -110,7 +110,7 @@ class Login(SObject):
 
     def add_to_group(self, group_name):
         '''Adds a user to the specified group'''
-        if type(group_name) in types.StringTypes:
+        if isinstance(group_name, six.string_types):
             self.__validate_group(group_name)
         else:
             group_name = group_name.get_value("login_group")
@@ -121,7 +121,7 @@ class Login(SObject):
     def remove_from_group(self, group_name):
         '''removes the user from a specfied group'''
 
-        if type(group_name) in types.StringTypes:
+        if isinstance(group_name, six.string_types):
             self.__validate_group(group_name)
         else:
             group_name = group_name.get_value("login_group")
@@ -675,7 +675,7 @@ class LoginInGroup(SObject):
 
 
     def get_by_names(login_name, group_name):
-        search = Search( LoginInGroup.SEARCH_TYPE )
+        search = Search( LoginInGroup.SEARCH_TYPE, sudo=True )
         search.add_filter("login", login_name)
         search.add_filter("login_group", group_name)
         sobject = search.get_sobject()
