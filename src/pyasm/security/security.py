@@ -1995,34 +1995,55 @@ except:
 
 
 class LicenseKey(object):
-    def __init__(self, public_key):
-        # unwrap the public key (for backwards compatibility
+    def __init__(self, public_key, version="2"):
+        self.version = version
+        
+        # unwrap the public key (for backwards compatibility)
         unwrapped_key = self.unwrap("Key", public_key)
-        try:
-            # get the size and key object
-            haspass, self.size, keyobj = pickle.loads(unwrapped_key)
-            self.algorithm, self.keyobj = pickle.loads(keyobj.encode())
-        except Exception as e:
-            raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
+        
+        if version == "1":
+            try:
+                # get the size and key object
+                haspass, self.size, keyobj = pickle.loads(unwrapped_key)
+                self.algorithm, self.keyobj = pickle.loads(keyobj.encode())
+            except Exception as e:
+                raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
+        elif version == "2":
+            try:
+                self.keyobj = RSA.import_key(unwrapped_key)
+            except Exception as e:
+                raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
+        else:
+            raise LicenseException("License version not recognized.")
 
 
     def verify_string(self, raw, signature):
         # unwrap the signature
         unwrapped_signature = self.unwrap("Signature", signature)
 
-        # deconstruct the signature
-        algorithm, raw_signature = pickle.loads(unwrapped_signature)
-        assert self.algorithm == algorithm
+        if self.version == "1":
+            # deconstruct the signature
+            algorithm, raw_signature = pickle.loads(unwrapped_signature)
+            assert self.algorithm == algorithm
 
-        # MD5 the raw text
-        m = MD5.new()
-        m.update(raw.encode())
-        d = m.digest()
-
-        if self.keyobj.verify(d, raw_signature):
-            return True
+            # MD5 the raw text
+            m = MD5.new()
+            m.update(raw.encode())
+            d = m.digest()
+            
+            if self.keyobj.verify(d, raw_signature):
+                return True
+            else:
+                return False
         else:
-            return False
+            msg = raw.encode('utf-8')
+            h = SHA256.new(msg)
+            try:
+                pkcs1_15.new(self.keyobj).verify(h, unwrapped_signature)
+                return True
+            except (ValueError, TypeError):
+                return False
+
 
     def unwrap(self, key_type, msg):
         msg = msg.replace("<StartPycrypto%s>" % key_type, "")
@@ -2036,33 +2057,10 @@ class LicenseKey(object):
         return binary
 
 
-class LicenseKey2(LicenseKey):
-
-
-    def __init__(self, public_key):
-        # unwrap the public key (for backwards compatibility
-        unwrapped_key = self.unwrap("Key", public_key)
-        self.keyobj = RSA.import_key(unwrapped_key)
-        self.algorithm = ""
-
-    def verify_string(self, raw, signature):
-        # unwrap the signature
-        unwrapped_signature = self.unwrap("Signature", signature)
-        
-        msg = raw.encode('utf-8')
-        h = SHA256.new(msg)
-        
-        try:
-            pkcs1_15.new(self.keyobj).verify(h, unwrapped_signature)
-            return True
-        except (ValueError, TypeError):
-            return False
-
-
-  
 
 class LicenseException(Exception):
     pass
+
 
 class License(object):
     license_path = "%s/tactic-license.xml" % Environment.get_license_dir()
@@ -2127,10 +2125,7 @@ class License(object):
 
         # verify the signature
         if self.verify_flag:
-            if version == "1":
-                key = LicenseKey(public_key)
-            else:
-                key = LicenseKey2(public_key)
+            key = LicenseKey(public_key, version=version)
             if not key.verify_string(data, signature):
                 # will be redefined in constructor
                 self.xml = None
