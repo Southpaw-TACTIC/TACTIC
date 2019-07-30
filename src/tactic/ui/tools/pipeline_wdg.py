@@ -6413,7 +6413,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         
         has_change_action = '''
             bvr.src_el.addClass("spt_has_changes");
-        ''';
+        '''
 
         top.add_named_listener('pipeline|change', has_change_action)
 
