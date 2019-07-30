@@ -1657,9 +1657,6 @@ class Security(Base):
     def login_user_without_password(self, login_name, expiry=None):
         '''login a user without a password.  This should be used sparingly'''
 
-        # Probably should never be called
-        raise Exception("login_user_without password")
-
         search = Search("sthpw/login")
         search.add_filter("login", login_name)
         self._login = search.get_sobject()
