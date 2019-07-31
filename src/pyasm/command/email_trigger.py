@@ -372,9 +372,12 @@ class EmailTrigger(Trigger):
         charset = 'us-ascii'
         is_uni = False
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
+            charset = 'utf-8'
+            is_uni = True
+        elif Common.IS_Pv3:
             charset = 'utf-8'
             is_uni = True
 

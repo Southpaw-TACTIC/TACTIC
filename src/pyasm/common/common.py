@@ -1555,7 +1555,6 @@ class Marshaller:
     def set_class(self, class_path):
         if not class_path:
             self.class_path = None
-        #elif type(class_path) in types.StringTypes:
         elif isinstance(class_path, basestring):
             self.class_path = class_path
         elif type(class_path) == types.TypeType:

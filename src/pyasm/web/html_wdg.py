@@ -179,7 +179,6 @@ class HtmlElement(Widget):
     def set_attr(self, name, value):
         '''Set an attribute of the html element'''
 
-        #if type(value) in types.StringTypes:
         if isinstance(value, basestring):
             self.attrs[name] = value
         # This is never called because of the above
@@ -525,7 +524,7 @@ class HtmlElement(Widget):
                 if 'cbjs' in k and '\n' in v:
                     bvr_spec[k] = regex.sub( '\n', v )
             self.behaviors.append( bvr_spec )
-        elif type(bvr_spec) == types.StringType:
+        elif isinstance(bvr_spec, six.string_types):
             # legacy support for any '.add_behavior' calls that provide a bvr_spec argument that is a string
             # representation of a behavior specification dictionary
             self.behaviors.append( self.convert_behavior_str(bvr_spec) )
@@ -1034,7 +1033,7 @@ class HtmlElement(Widget):
     #
     # Command key generation
     #
-    def generate_command_key(self, cmd, ticket=None):
+    def generate_command_key(self, cmd, kwargs={}, ticket=None):
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
@@ -1056,6 +1055,7 @@ class HtmlElement(Widget):
             "class_name": cmd,
             "login": login,
             "ticket": ticket,
+            "kwargs": kwargs,
         }
         f.write(jsondumps(data))
         f.close()

@@ -5856,7 +5856,7 @@ class ProcessInfoCmd(Command):
 
         event = "process|action"
 
-        from trigger_wdg import TriggerToolWdg
+        from .trigger_wdg import TriggerToolWdg
 
         folder = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, pipeline.get_code())
         title = process_sobj.get_code()
