@@ -447,15 +447,21 @@ def xmlrpc_decorator(meth):
                 stacktrace_str = "".join(stacktrace)
                 print("-"*50)
                 print(stacktrace_str)
-                message = e.message
+                try:
+                    message = e.message
+                except:
+                    message = str(e)
            
                 if not message:
                     message = e.__str__()
 
-                if isinstance(message, unicode):
-                    error_msg = message.encode('utf-8')
-                elif isinstance(message, str):
-                    error_msg = unicode(message, errors='ignore').encode('utf-8')
+                if not Common.IS_Pv3:
+                    if isinstance(message, unicode):
+                        error_msg = message.encode('utf-8')
+                    elif isinstance(message, str):
+                        error_msg = unicode(message, errors='ignore').encode('utf-8')
+                    else:
+                        error_msg = message
                 else:
                     error_msg = message
                 print("Error: ", error_msg)
@@ -5518,6 +5524,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 f.close()
                 data = jsonloads(data)
                 class_name = data.get("class_name")
+                static_kwargs = data.get("kwargs") or {}
+                if static_kwargs:
+                    print("Adding kwargs: %s" % static_kwargs)
+                    for n, v in static_kwargs.items():
+                        args[n] = v
+
                 login = data.get("login")
                 current_login = Environment.get_user_name()
                 if login != current_login:

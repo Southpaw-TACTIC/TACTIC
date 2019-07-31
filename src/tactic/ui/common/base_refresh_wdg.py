@@ -65,13 +65,12 @@ class BaseRefreshWdg(Widget):
             web = WebContainer.get_web()
             args_keys = self.get_args_keys()
             for key in args_keys.keys():
-                if web and not kwargs.has_key(key):
+                if web and key not in kwargs:
                     value = web.get_form_value(key)
                     kwargs[key] = value
         else:
             args_keys = self.get_args_keys()
             for key in args_keys.keys():
-                #if not kwargs.has_key(key):
                 if key not in kwargs:
                     kwargs[key] = ''
         self.kwargs = kwargs

@@ -476,7 +476,7 @@ class EditMultipleCmd(Command):
 
             if extra:
                 for name, value in extra.items():
-                    if not data.has_key(name):
+                    if not name in data:
                         data[name] = value
 
             if web_data_list:
