@@ -15,8 +15,8 @@ __all__ = ['MayaModelValidate', 'MayaModelCheckin']
 
 try:
     import maya.cmds as cmds
-except ImportError, e:
-    print "WARNING: examples.py requires Maya python libraries"
+except ImportError as e:
+    print("WARNING: examples.py requires Maya python libraries")
 
 from pyasm.application.common.interpreter import Handler
 

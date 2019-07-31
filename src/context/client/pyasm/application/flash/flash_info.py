@@ -80,10 +80,10 @@ class FlashInfo(BaseAppInfo):
         return self.publish_dir
 
     def report_error(self, exception):
-        print "Error: ", exception
+        print("Error: ", exception)
 
     def report_warning(self, exception):
-        print "Warning: ", exception
+        print("Warning: ", exception)
 
 """
 def upload_warning():
