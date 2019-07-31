@@ -16,6 +16,7 @@ import decimal
 import shutil, os, types, sys, thread
 import re, random
 import datetime, time
+import requests
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -307,7 +308,6 @@ def xmlrpc_decorator(meth):
                 Container.put(data_key, state) 
 
 
-
     def new(self, original_ticket, *args, **kwargs):
         results = None
         try:
@@ -324,6 +324,9 @@ def xmlrpc_decorator(meth):
 
             try:
                 #if meth.__name__ in QUERY_METHODS:
+                if meth.__name__ != "execute_cmd":
+                    print "---------METH: ", meth.__name__
+
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
@@ -333,6 +336,15 @@ def xmlrpc_decorator(meth):
                     else:
                         cmd = get_full_cmd(self, meth, ticket, args)
 
+                    multi_site = Config.get_value("master", "enabled")
+                    if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd":
+                        cmd_class = Common.create_from_class_path(args[0], {}, {})
+                        if cmd_class.is_update():
+                            result = self.redirect_to_server(args)
+                            print ("---------new", result, cmd.is_update(), meth.__name__)
+                            return self.browser_res(meth, result)
+                    
+                    
                 else:
                     cmd = get_full_cmd(self, meth, ticket, args)
 
@@ -411,11 +423,7 @@ def xmlrpc_decorator(meth):
         try:
             # NOTE: add in a special requirement for get_widget() because
             # of the bizarre 4096 byte limitation on responseXML in the browser
-            web = WebContainer.get_web()
-            if (web and web.get_app_name() == "Browser" \
-                    and meth.__name__ not in ['get_widget'] \
-                    and self.get_language() == 'javascript'):
-                results = jsondumps(results)
+            results = self.browser_res(meth, results)
 
             # handle special cases for c#
             #elif self.get_language() == 'c#':
@@ -1005,6 +1013,43 @@ class ApiXMLRPC(BaseApiXMLRPC):
         log = DebugLog.log(level,message,category)
         return True
 
+
+
+    def browser_res(self, meth, result):
+
+        web = WebContainer.get_web()
+        if (web and web.get_app_name() == "Browser" \
+                and meth.__name__ not in ['get_widget'] \
+                and self.get_language() == 'javascript'):
+            result = jsondumps(result)
+
+        return result
+
+
+
+    #@trace_decorator
+    def redirect_to_server(self, args):
+
+        master_ticket = Config.get_value("master", "login_ticket")
+        url = Config.get_value("master", "rest_url")
+        cmd = args[0]
+        kwargs = args[1]
+
+        if type(kwargs) == dict:
+            kwargs = jsondumps(kwargs)
+
+        data = {
+            'login_ticket': master_ticket,
+            'method': 'execute_cmd',
+            'class_name': cmd,
+            "args" : kwargs,
+        }
+
+        r = requests.post(url, data=data)
+        ret_val = r.json()
+        result = ret_val.get("info")
+
+        return ret_val
 
 
 
