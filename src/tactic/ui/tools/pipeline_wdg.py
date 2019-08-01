@@ -9594,6 +9594,8 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                     refreshedRow.setAttribute("spt_group_level", 2);
                     var documentItem = refreshedRow.getElement(".spt_document_item");
                     documentItem.click();
+                    var cellEdit = refreshedRow.getElement(".spt_cell_edit");
+                    cellEdit.setStyle("padding", "0px 0px 0px 24px");
                 }
                 spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
             });
@@ -9746,7 +9748,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var children = spt.table.get_child_rows_tuple(tuple, true);
 
             children.forEach(function(child) {
-            var item = child.getElement(".spt_document_item");
+                var item = child.getElement(".spt_cell_edit");
                 item.setStyle("background", "red");
                 item.setStyle("color", "white");
             });
@@ -9768,7 +9770,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var children = spt.table.get_child_rows_tuple(tuple, true);
 
             children.forEach(function(child) {
-            var item = child.getElement(".spt_document_item");
+                var item = child.getElement(".spt_cell_edit");
                 item.setStyle("background", "");
                 item.setStyle("color", "");
             });
