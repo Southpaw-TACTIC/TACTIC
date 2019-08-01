@@ -222,32 +222,6 @@ class BaseNodeWdg(BaseRefreshWdg):
 
 
 
-'''
-        
-Workflow Editor action keys documentation
-
-i.e.
-[key] - description
------------------------------------------
-[a] - Fit entire workflow to canvas
-[f] - Fit workflow to selected node(s)
-[s] - Focus node search
-[u] - Undo
-[r] - Redo
-[=] - Zoom In
-[-] - Zoom Out
-[1] - Set zoom at 0.5*default (Zoom out)
-[2] - Set zoom at default
-[3] - Set zoom at 1.5*default (Zoom In)
-[backspace / del] - Delete selected node
-[t] - Toggle left sidebar (list of pipelines <-> list of nodes)
-[ctrl + c] - Copy selected nodes
-[ctrl + x] - Cut selected nodes
-[ctrl + v] - Paste selected nodes
-
-'''
-
-
 class PipelineCanvasWdg(BaseRefreshWdg):
     '''Pipeline Widget'''
 
