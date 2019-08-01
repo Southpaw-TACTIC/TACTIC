@@ -42,6 +42,9 @@ class Scheduler(object):
     def get_all_tasks(self):
         return self.tasks
 
+    def get_task_names(self):
+        return self.tasks.keys()
+
     def cancel_task(self, name, delay=0):
         task = self.tasks.get(name)
         if not task:
