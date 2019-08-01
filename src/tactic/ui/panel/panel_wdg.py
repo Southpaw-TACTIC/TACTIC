@@ -3256,6 +3256,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         if default_data:
             if isinstance(default_data, dict):
                 default_data = jsondumps(default_data)
+        collapse_default = self.kwargs.get("collapse_default")
+        collapse_level = self.kwargs.get("collapse_level")
 
 
         is_inner = self.kwargs.get("is_inner")
@@ -3362,6 +3364,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             #"search_wdg": search_wdg
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,
+            "collapse_default": collapse_default,
+            "collapse_level": collapse_level
         }
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr

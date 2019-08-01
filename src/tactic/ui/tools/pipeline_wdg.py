@@ -137,6 +137,68 @@ class PipelineToolWdg(BaseRefreshWdg):
                 margin: 5px;
             }
 
+            .spt_app_template_input_container {
+                position: absolute;
+                width: 200px;
+                height: 60px;
+                background: white;
+                box-shadow: 0px 2px 4px 0px #ccc;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 5px;
+                box-sizing: border-box;
+                font-size: 10px;
+                color: #7e7e7e;
+            }
+
+            .spt_pipeline_tool_top .spt_pipeline_toolbar {
+                border: 1px solid #ccc;
+                border-width: 1 1 0 0;
+                height: 28px;
+
+                display: flex;
+                align-items: center;
+            }
+
+            .spt_pipeline_tool_top .spt_hide_sidebar {
+                padding: 5px;
+                height: 100%;
+                box-sizing: border-box;
+                border-right: 1px solid #ccc;
+            }
+
+            .spt_pipeline_tool_top .toolbar-icon:hover {
+                background: #eee;
+            }
+
+            .spt_pipeline_tool_top .full-centered {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .spt_pipeline_tool_top .toolbar-icon {
+                width: 20px;
+                color: grey;
+            }
+
+            .spt_pipeline_tool_top .spt_show_sidebar {
+                height: 26px;
+                border: 1px solid #ccc;
+                position: absolute;
+                left: 3px;
+                top: 1px;
+                background: white;
+            }
+
+            .spt_pipeline_tool_top .spt_pipeline_type_search {
+                border: 0px;
+                height: 100%;
+                padding: 6px 8px;
+                width: 200px;
+                border-right: 1px solid #ccc;
+            }
+
             ''')
 
         return styles
@@ -501,21 +563,93 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             expression = self.kwargs.get("expression")
 
+            # TOOLBAR--------------
+            toolbar = DivWdg()
+            left.add(toolbar)
+            toolbar.add_class("spt_pipeline_toolbar")
+
+            collapse_button = DivWdg()
+            toolbar.add(collapse_button)
+            collapse_button.add_class("full-centered spt_hide_sidebar toolbar-icon hand")
+            collapse_button.add("<i class='fa fa-caret-left'></i>")
+
+            collapse_button.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var left = toolTop.getElement(".spt_pipeline_tool_left");
+                var right = toolTop.getElement(".spt_pipeline_tool_right");
+
+                left.setStyle("margin-left", "-250px");
+                left.setStyle("opacity", "0");
+                right.setStyle("margin-left", "0px");
+                left.gone = true;
+                setTimeout(function(){
+                    left.setStyle("z-index", "-1");
+                }, 250);
+
+                var show_icon = toolTop.getElement(".spt_show_sidebar");
+                show_icon.setStyle("display", "");
+
+                '''})
+
+            show_button = DivWdg()
+            container.add(show_button)
+            show_button.add_class("full-centered spt_show_sidebar toolbar-icon hand")
+            show_button.add("<i class='fa fa-caret-right'></i>")
+            show_button.add_style("display: none")
+            show_button.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var left = toolTop.getElement(".spt_pipeline_tool_left");
+                var right = toolTop.getElement(".spt_pipeline_tool_right");
+
+                left.setStyle("margin-left", "0px");
+                left.setStyle("opacity", "1");
+                right.setStyle("margin-left", "250px");
+                left.gone = false;
+                setTimeout(function(){
+                    left.setStyle("z-index", "");
+                }, 250);
+
+                bvr.src_el.setStyle("display", "none")
+
+                '''})
+
+            #### search for process select
+            type_search = HtmlElement.text()
+            toolbar.add(type_search)
+            type_search.add_class("spt_pipeline_type_search")
+            type_search.add_attr("placeholder", "Search for process types...")
+            type_search.add_style("display: none")
+
+            type_search.add_behavior({
+                'type': 'keyup',
+                'cbjs_action': '''
+
+                var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var typeTop = top.getElement(".spt_process_select_top");
+                var containers = typeTop.getElements(".spt_custom_node_container");
+
+                containers.forEach(function(container) {
+                    if (container.getAttribute("spt_node_type").contains(bvr.src_el.value))
+                        container.setStyle("display", "");
+                    else
+                        container.setStyle("display", "none")
+                });
+
+
+                '''
+                })
+            
+            # --------------
 
             pipeline_list_top = DivWdg()
             left.add(pipeline_list_top)
             pipeline_list_top.add_class("spt_pipeline_list_top")
-
-
-            left_header = DivWdg()
-            pipeline_list_top.add(left_header)
-            left_header.add_class("spt_pipeline_tool_left_header")
-            left_header.add("Sort:")
-
-            select = SelectWdg(name="display")
-            left_header.add(select)
-            select.set_option("values", ["document", "list"])
-            select.set_option("labels", ["Category", "Search Type"])
 
             list_kwargs = {
                 "save_event": save_event,
@@ -524,34 +658,28 @@ class PipelineToolWdg(BaseRefreshWdg):
                 "expression": expression
             }
 
-            select.add_behavior({
-                'type': 'change',
+            pipeline_list_content = DivWdg()
+            pipeline_list_top.add(pipeline_list_content)
+            pipeline_list_content.add_class("spt_pipeline_tool_left_content")
+
+            pipeline_list_content.add_behavior({
+                'type': 'load',
                 'list_kwargs': list_kwargs,
                 'cbjs_action': '''
 
-                var value = bvr.src_el.value;
-                var left = bvr.src_el.getParent(".spt_pipeline_tool_left");
-                var content = left.getElement(".spt_pipeline_tool_left_content");
-
-                if (value == "document") {
-                    spt.panel.load(content, 'tactic.ui.tools.PipelineDocumentWdg');
-                } else if (value == "list") {
-                    spt.panel.load(content, 'tactic.ui.tools.PipelineListWdg', bvr.list_kwargs);
-                }
+                bvr.src_el.list_kwargs = bvr.list_kwargs;
 
                 '''
                 })
 
-            pipeline_list_content = DivWdg()
-            pipeline_list_top.add(pipeline_list_content)
-
-            pipeline_list_content.add_class("spt_pipeline_tool_left_content")
 
             use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
             if use_document_pipeline in [True, "true"]:
                 pipeline_list = PipelineDocumentWdg()
+                pipeline_list_content.add_attr("mode", "document")
             else:
                 pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression )
+                pipeline_list_content.add_attr("mode", "list")
             pipeline_list_content.add(pipeline_list)
 
 
@@ -655,6 +783,27 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         } )
 
+
+        app_template_input_container = DivWdg()
+        right.add(app_template_input_container)
+        app_template_input_container.add_class("spt_app_template_input_container")
+
+        app_template_input_container.add("Default Template")
+
+        app_template_input = TextInputWdg(name="default_template", height="34", width="100%")
+        app_template_input_container.add(app_template_input)
+
+        app_template_input_container.add_style("display", "none")
+        app_template_input_container.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            bvr.src_el.on_complete = function() {
+                spt.hide(bvr.src_el);
+            }
+
+            '''
+            })
 
 
         if self.kwargs.get("is_refresh"):
@@ -1377,6 +1526,7 @@ class PipelineListWdg(BaseRefreshWdg):
             
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
+            var default_template = data.default_template;
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -1384,7 +1534,14 @@ class PipelineListWdg(BaseRefreshWdg):
             var xml = spt.pipeline.export_group(group_name);
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
-                var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
+                var args = {
+                    search_key: search_key, 
+                    pipeline: xml, 
+                    color: color, 
+                    project_code: bvr.project_code, 
+                    default_template: default_template,
+                    pipeline_data: data
+                };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
@@ -1912,6 +2069,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
         top.add( self.get_description_wdg(pipeline) )
         top.add( self.get_color_wdg(pipeline) )
+        top.add( self.get_default_template_wdg(pipeline) )
 
 
         # sobject count
@@ -2106,6 +2264,48 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
             '''))
 
+
+        return div
+
+
+
+    def get_default_template_wdg(self, pipeline):
+        # get template from data column
+        data = pipeline.get_json_value("data") or {}
+        default_template = data.get("default_template") or ""
+        
+        div = DivWdg()
+        div.add_class("spt_app_template_wdg")
+        div.add_style("margin: 10px 10px 20px 10px")
+        div.add("<div><b>Default Template:</b></div>")
+
+        text = TextInputWdg(name="default_template")
+        div.add(text)
+        text.set_value(default_template)
+
+        text.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var data = spt.pipeline.get_data();
+            default_template = data.default_template;
+
+            if (default_template)
+                bvr.src_el.value = default_template;
+
+            '''
+        } )
+
+        text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var default_template = bvr.src_el.value;
+            spt.pipeline.set_data('default_template', default_template)
+
+            spt.named_events.fire_event('pipeline|change', {});
+ 
+            '''
+        } )
 
         return div
 
@@ -6779,32 +6979,22 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
 
-        button = ButtonNewWdg(title="Toggle workflow list", icon="FA_LIST_UL")
+        button = ButtonNewWdg(title="Toggle workflow list mode", icon="FA_LIST_UL")
         button_row.add(button)
         button.add_behavior({
             'type': 'click',
             'cbjs_action': '''
 
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var left = toolTop.getElement(".spt_pipeline_tool_left");
-            var right = toolTop.getElement(".spt_pipeline_tool_right");
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var left = top.getElement(".spt_pipeline_tool_left");
+            var content = left.getElement(".spt_pipeline_tool_left_content");
 
-            if (left.gone) {
-                left.setStyle("margin-left", "0px");
-                left.setStyle("opacity", "1");
-                right.setStyle("margin-left", "250px");
-                left.gone = false;
-                setTimeout(function(){
-                    left.setStyle("z-index", "");
-                }, 250);
-            } else {
-                left.setStyle("margin-left", "-250px");
-                left.setStyle("opacity", "0");
-                right.setStyle("margin-left", "0px");
-                left.gone = true;
-                setTimeout(function(){
-                    left.setStyle("z-index", "-1");
-                }, 250);
+            if (content.getAttribute("mode") == "list") {
+                content.setAttribute("mode", "document");
+                spt.panel.load(content, 'tactic.ui.tools.PipelineDocumentWdg');
+            } else if (content.getAttribute("mode") == "document") {
+                content.setAttribute("mode", "list");
+                spt.panel.load(content, 'tactic.ui.tools.PipelineListWdg', content.list_kwargs);
             }
 
             '''
@@ -6874,6 +7064,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
             var description = data.descriptions[group_name];
+            var default_template = data.default_template;
 
             var nodes = spt.pipeline.get_nodes_by_group(group_name);
             var node_kwargs = {};
@@ -6923,7 +7114,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     pipeline:xml, 
                     color:color, 
                     description: description, 
-                    project_code: bvr.project_code, 
+                    project_code: bvr.project_code,
+                    default_template: default_template,
                     node_kwargs: node_kwargs
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
@@ -7353,14 +7545,28 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
         """
 
+        # hide this for now
         button = ButtonNewWdg(title="Default app template", icon="FA_FILE")
-        button_row.add(button)
+        #button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
 
+        var right = bvr.src_el.getParent(".spt_pipeline_tool_right");
+        var el = right.getElement(".spt_app_template_input_container");
 
+        var position_args = {
+            position: 'upperleft', 
+            relativeTo: bvr.src_el,
+            offset: { 
+                y:40
+            }
+        }
+        el.position(position_args);
+
+        spt.show(el);
+        spt.body.add_focus_element(el);
       
         '''
         } )
@@ -8446,6 +8652,9 @@ class PipelineSaveCbk(Command):
         project_code = self.kwargs.get('project_code')
         timestamp = self.kwargs.get("timestamp")
 
+        default_template = self.kwargs.get("default_template")
+        pipeline_data = self.kwargs.get("pipeline_data")
+
         from pyasm.common import Xml
         xml = Xml()
         xml.read_string(pipeline_xml)
@@ -8498,6 +8707,16 @@ class PipelineSaveCbk(Command):
         """
 
         pipeline.update_dependencies()
+
+        pipeline_data = {
+            'default_template': default_template
+        }
+        try:
+            pipeline.set_json_value('data', pipeline_data)
+            pipeline.commit()
+        except:
+            raise Exception("sthpw/pipline missing column 'data'")
+
 
 
         self.check_duplicates(process_nodes, xml)
@@ -8701,7 +8920,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             .spt_pipeline_document {
                 border: 1px solid #ccc;
                 overflow: auto;
-                min-height: 650px;
+                min-height: 614px;
 
                 width: 250px;
                 box-sizing: border-box;
@@ -8738,7 +8957,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_document .document-group-label {
-                height: 14px;
+                
             }
 
             .spt_pipeline_document .document-item-content {
@@ -8764,7 +8983,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
         top.add_class("spt_window_resize")
 
         # FIXME: this nuber should not be hard codeed
-        top.add_attr("spt_window_resize_offset", "178")
+        top.add_attr("spt_window_resize_offset", "207")
 
         project_code = Project.get_project_code()
         top.add_attr("spt_project_code", project_code)
@@ -8807,6 +9026,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             show_search_limit=False,
             #show_row_highlight=False,
             show_group_highlight=False,
+            expand_on_load=False,
+            collapse_default=True,
+            collapse_level=1,
             show_border="horizontal",
             height="auto",
             width="100%",
@@ -8962,6 +9184,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 
                 var data = spt.pipeline.get_data();
                 var color = data.colors[group_name];
+                var default_template = data.default_template;
 
                 server = TacticServerStub.get();
                 spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -8969,7 +9192,14 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 var xml = spt.pipeline.export_group(group_name);
                 var search_key = server.build_search_key("sthpw/pipeline", group_name);
                 try {
-                    var args = {search_key: search_key, pipeline:xml, color:color, project_code: bvr.project_code};
+                    var args = {
+                        search_key: search_key, 
+                        pipeline: xml, 
+                        color: color, 
+                        project_code: bvr.project_code, 
+                        default_template: default_template,
+                        pipeline_data: data
+                    };
                     server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                     spt.named_events.fire_event('pipeline|save', {});
 
@@ -9013,7 +9243,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 spt.notify.show_message("Workflows require a name");
             } else {
                 var parent_group = spt.table.get_parent_groups(bvr.src_el, 1);
-                if (!parent_group) return;
+                if (!parent_group || parent_group.length == 0) return;
                 var category = parent_group.getAttribute("spt_group_name");
 
                 var server = TacticServerStub.get();
@@ -9364,6 +9594,8 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                     refreshedRow.setAttribute("spt_group_level", 2);
                     var documentItem = refreshedRow.getElement(".spt_document_item");
                     documentItem.click();
+                    var cellEdit = refreshedRow.getElement(".spt_cell_edit");
+                    cellEdit.setStyle("padding", "0px 0px 0px 24px");
                 }
                 spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
             });
@@ -9516,7 +9748,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var children = spt.table.get_child_rows_tuple(tuple, true);
 
             children.forEach(function(child) {
-            var item = child.getElement(".spt_document_item");
+                var item = child.getElement(".spt_cell_edit");
                 item.setStyle("background", "red");
                 item.setStyle("color", "white");
             });
@@ -9538,7 +9770,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var children = spt.table.get_child_rows_tuple(tuple, true);
 
             children.forEach(function(child) {
-            var item = child.getElement(".spt_document_item");
+                var item = child.getElement(".spt_cell_edit");
                 item.setStyle("background", "");
                 item.setStyle("color", "");
             });
@@ -9680,6 +9912,23 @@ class PipelineSaveCmd(Command):
 __all__.append("PipelineProcessTypeWdg")
 class PipelineProcessTypeWdg(BaseRefreshWdg):
 
+
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_process_select_top {
+                border: 1px solid #ccc;
+                width: 250px;
+                box-sizing: border-box;
+            }
+
+
+            ''')
+
+        return styles
+
+
     def get_display(self):
 
         top = self.top
@@ -9690,7 +9939,7 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
         # FIXME: this nuber should not be hard codeed
         top.add_class("spt_window_resize")
-        top.add_attr("spt_window_resize_offset", "178")
+        top.add_attr("spt_window_resize_offset", "207")
         top.add_style("overflow-y: auto")
 
         # get all of the custom process node types
@@ -9701,7 +9950,7 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
 
         # base nodes 
-        base_nodes = ["manual", "action", "condition", "approval", "heirarchy", "dependency"]
+        base_nodes = ["manual", "action", "condition", "approval", "hierarchy", "dependency"]
         base_nodes.reverse()
         for base in base_nodes:
             node = SearchType.create("config/widget_config")
@@ -9854,18 +10103,22 @@ spt.process_tool.toggle_side_bar = function(activator) {
     var toolTop = activator.getParent(".spt_pipeline_tool_top");
     var left = toolTop.getElement(".spt_pipeline_tool_left");
 
+    var toolbar = left.getElement(".spt_pipeline_toolbar");
+    var search = toolbar.getElement(".spt_pipeline_type_search");
+
     var el1 = left.getElement(".spt_pipeline_list_top");
     var el2 = left.getElement(".spt_pipeline_nodes");
 
     if (el1.getStyle("display") == "none") {
         el1.setStyle("display", "");
         el2.setStyle("display", "none");
+        search.setStyle("display", "none");
     }
     else {
         el1.setStyle("display", "none");
         el2.setStyle("display", "");
+        search.setStyle("display", "");
     }
-
 }
 
 
@@ -9896,7 +10149,29 @@ spt.process_tool.toggle_side_bar = function(activator) {
             node_scale.add_style("margin-top: 10px")
             node_scale.add_style("margin-left: 15px")
 
-            node_wdg = custom_node.get_display_widget("node", display_options)
+            node_wdg = None
+            if (view in ['approval', 'condition', 'hierarchy', 'dependency', 'progress', 'action', 'manual']):
+                pipeline_canvas_wdg = PipelineCanvasWdg(add_node_behaviors=False)
+
+                if (view == 'approval'):
+                    node_wdg = pipeline_canvas_wdg.get_approval_node("approval")
+                elif (view == 'condition'):
+                    node_wdg = pipeline_canvas_wdg.get_condition_node("condition")
+                elif (view == 'action'):
+                    node_wdg = pipeline_canvas_wdg.get_node("action", node_type="action")
+                elif (view == 'hierarchy'):
+                    node_wdg = pipeline_canvas_wdg.get_node("hierarchy", node_type="hierarchy")
+                elif (view == 'dependency'):
+                    node_wdg = pipeline_canvas_wdg.get_node("dependency", node_type="dependency")
+                elif (view == 'progress'):
+                    node_wdg = pipeline_canvas_wdg.get_node("progress", node_type="progress")
+                else:
+                    node_wdg = pipeline_canvas_wdg.get_node("manual", node_type="manual")
+
+                node_wdg.add_class("spt_custom_node")
+            else:
+                node_wdg = custom_node.get_display_widget("node", display_options)
+
             node_scale.add(node_wdg)
             node_wdg.add_style("z-index: 0")
 
@@ -9905,6 +10180,7 @@ spt.process_tool.toggle_side_bar = function(activator) {
             item_div = DivWdg()
             custom_div.add(item_div)
             item_div.add_class("spt_custom_node")
+            item_div.add_class("spt_custom_node_container")
             item_div.add_color("background", "background")
 
             item_div.add_style("border-radius: 3px")
@@ -9952,6 +10228,8 @@ spt.process_tool.toggle_side_bar = function(activator) {
             "cb_set_prefix": 'spt.process_tool.item_drag'
             } )
 
+
+        top.add(self.get_styles())
 
         return top
 
