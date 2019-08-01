@@ -156,7 +156,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         if not self.search_key or self.show_settings:
             if False and self.show_settings:
                 middle = table.add_cell()
-                middle.add_style("height: 10") # not sure why we need this height
+                middle.add_style("height: 10px") # not sure why we need this height
                 middle.add_style("padding: 30px 20px")
                 line = DivWdg()
                 middle.add(line)
@@ -214,10 +214,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         thumb_div = DivWdg()
         file_template.add(thumb_div)
         thumb_div.add_style("float: left")
-        thumb_div.add_style("width: 60");
-        thumb_div.add_style("height: 40");
-        thumb_div.add_style("overflow: hidden");
-        thumb_div.add_style("margin: 3 10 3 0");
+        thumb_div.add_style("width: 60")
+        thumb_div.add_style("height: 40")
+        thumb_div.add_style("overflow: hidden")
+        thumb_div.add_style("margin: 3 10 3 0")
         thumb_div.add_class("spt_thumb")
 
 
