@@ -24,18 +24,18 @@ class ConfigUpgrade(BaseUpgrade):
     #
     def upgrade_v4_7_0_a08_002(self):
         self.run_sql('''
-        ALTER TABLE "spt_process" ALTER COLUMN "state" TYPE varchar(256);
+        ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE varchar(256);
         ''')
 
 
     def upgrade_v4_7_0_a08_001(self):
         if self.get_database_type() == 'PostgreSQL':
             self.run_sql('''
-            ALTER TABLE "spt_process" ALTER COLUMN "state" TYPE jsonb USING state::jsonb;
+            ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE jsonb USING state::jsonb;
             ''')
         else:
             self.run_sql('''
-            ALTER TABLE "spt_process" ALTER COLUMN "state" TYPE json;
+            ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE json;
             ''')
 
 
