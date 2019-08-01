@@ -2109,7 +2109,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         process_colors = self.process_colors.get(pipeline_code)
-        if process_colors and process_colors.has_key(process):
+        if process_colors and process in process_colors:
             tmp_color = process_colors[process]
             if tmp_color:
                 process_color = tmp_color
