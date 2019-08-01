@@ -1653,12 +1653,58 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # a double click will select the whole group
         node.add_behavior( {
         'type': 'double_click',
+        'modkeys': 'ALT',
         'cbjs_action': '''
         spt.pipeline.init(bvr);
+
         var node = bvr.src_el;
-        spt.pipeline.select_nodes_by_group(node.spt_group);
+        spt.pipeline.select_node(node); 
+
+        var select_output_nodes = function(nodes) {
+            for (let i = 0; i < nodes.length; i++) {
+                let cur_node = nodes[i];
+                if (cur_node.spt_is_selected == true) {
+                    break;
+                }
+                spt.pipeline.select_node(cur_node); 
+                let cur_output_nodes = spt.pipeline.get_output_nodes(cur_node);
+                if (cur_output_nodes.length > 0) {
+                    select_output_nodes(cur_output_nodes);
+                }
+            }
+        };
+
+        var select_input_nodes = function(nodes) {
+            for (let i = 0; i < nodes.length; i++) {
+                let cur_node = nodes[i];
+                if (cur_node.spt_is_selected == true) {
+                    break;
+                }
+                spt.pipeline.select_node(cur_node); 
+                let cur_input_nodes = spt.pipeline.get_input_nodes(cur_node);
+                if (cur_input_nodes.length > 0) {
+                    select_input_nodes(cur_input_nodes);
+                }
+            }
+        };
+
+
+        if (evt.alt == true) {
+            var input_nodes = spt.pipeline.get_input_nodes(node);
+            select_input_nodes(input_nodes);
+        }
+        else {
+            var output_nodes = spt.pipeline.get_output_nodes(node);
+            select_output_nodes(output_nodes);
+        }
+
+
+
         '''
         } )
+
+
+
 
 
 
@@ -3099,7 +3145,7 @@ spt.pipeline.get_output_nodes = function(node) {
         var to_node = connector.get_to_node();
         var from_node = connector.get_from_node();
         if (from_node == node) {
-            nodes.push(from_node);
+            nodes.push(to_node);
         }
     }
 
