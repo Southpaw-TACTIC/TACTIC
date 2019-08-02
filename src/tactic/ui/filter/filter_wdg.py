@@ -24,6 +24,7 @@ from tactic.ui.input import TextInputWdg
 
 from filter_data import FilterData
 
+import six
 
 class BaseFilterWdg(BaseRefreshWdg):
     '''Represents the base filter for use in SearchWdg'''
@@ -100,13 +101,16 @@ class GeneralFilterWdg(BaseFilterWdg):
         return {
         'prefix': 'the prefix name for all of the input elements',
         'search_type': 'the search_type that this filter will operate on',
-        'mode': 'sobject|parent|child|custom - these modes determine on which level the filter will do the search on',
+        'mode': 'sobject|parent|child|custom|custom_related - these modes determine on which level the filter will do the search on',
         'columns': 'searchable columns override',
-
         'custom_filter_view': ' view for custom mode',
+        'custom_related_search_types': 'Custom | seperated list of related search types to override search type select',
+        'custom_related_stype_views': '''Custom , seperated list of related search types and views to override column select. 
+            Uses the format "<search_type>|<view>" ie. "vfx/shot|my_custom_shot_view"'''
         }
 
     def init(self):
+
         self.prefix = self.kwargs.get('prefix')
         if not self.prefix:
             self.prefix = 'general'
@@ -196,12 +200,30 @@ class GeneralFilterWdg(BaseFilterWdg):
         else:
             self.related_types = []
 
+        # Contains list of columns by related search type
         self.related_types_column_dict = {}
+
+        # Contains columns and labels by search type
+        self.rtypes_column_labels_dict = {}
+
         # verify the table represented by the search type exists and retrieve 
         # the column names for the column selector
         valid_related_types = []
 
-        custom_related_stype_views = self.kwargs.get("custom_related_stype_views")
+        custom_related_stype_views = {}
+        custom_views = self.kwargs.get("custom_related_stype_views")
+        
+        if custom_views and isinstance(custom_views, six.string_types):
+            custom_views = custom_views.split(",")  
+       
+        if custom_views:
+            for item in custom_views:
+                search_type, view = item.split("|")
+                custom_related_stype_views[search_type] = view
+      
+
+
+                
 
         for related_type in self.related_types:
 
@@ -209,15 +231,28 @@ class GeneralFilterWdg(BaseFilterWdg):
             if not search_type_obj:
                 continue
             columns = []
-            try:
-                # the table may have been deleted from the db
-                #columns = search_type_obj.get_columns(show_hidden=False)
-                columns = SearchType.get_columns(related_type)
-                columns = self.remove_columns(columns)
-            except SqlException as e:
-                DbContainer.abort_thread_sql()
-                continue
-            self.related_types_column_dict[related_type] = columns
+            
+            custom_column_view = custom_related_stype_views.get(related_type)
+            if custom_column_view:
+                from pyasm.widget import WidgetConfigView
+                config = WidgetConfigView.get_by_search_type(related_type, custom_column_view)
+                columns = config.get_element_names()
+                labels = [config.get_element_title(x) for x in columns]
+                self.related_types_column_dict[related_type] = columns
+                self.rtypes_column_labels_dict[related_type] = labels
+            else:
+
+                try:
+                    # the table may have been deleted from the db
+                    #columns = search_type_obj.get_columns(show_hidden=False)
+                    columns = SearchType.get_columns(related_type)
+                    columns = self.remove_columns(columns)
+                except SqlException as e:
+                    DbContainer.abort_thread_sql()
+                    continue
+                self.related_types_column_dict[related_type] = columns
+                self.rtypes_column_labels_dict[related_type] = [Common.get_display_title(x) for x in columns]
+
             valid_related_types.append(related_type)
             
 
@@ -255,7 +290,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 self.visible = False
 
 
-
+   
     def get_default_display_handler(cls, element_name):
         return None
     get_default_display_handler = classmethod(get_default_display_handler)
@@ -270,6 +305,7 @@ class GeneralFilterWdg(BaseFilterWdg):
  
     def set_columns(self, columns):
         self.columns = columns
+
 
     def set_columns_from_search_type(self, search_type):
         self.columns = SearchType.get_columns(search_type)
@@ -446,8 +482,9 @@ class GeneralFilterWdg(BaseFilterWdg):
             column_indexes = {}
             for related_type in self.related_types:
                 columns = self.related_types_column_dict.get(related_type)
+                labels = self.rtypes_column_labels_dict.get(related_type)
 
-                filter_selector = self.get_column_selector(related_type, -1, columns=columns)
+                filter_selector = self.get_column_selector(related_type, -1, columns=columns, labels=labels)
                 column_types.add(filter_selector)
 
                 child_column_indexes = self.get_column_indexes(related_type)
@@ -704,7 +741,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         '''gets the filter widget.  There are 2 parts to a filter.  A selection
         of the filter name (which often corresponds to the attribute of an
         sobject and the actual filter'''
-
+        
         div = DivWdg()
         div.add_style("float: left")
         hidden = HiddenWdg("prefix", self.prefix)
@@ -763,14 +800,18 @@ class GeneralFilterWdg(BaseFilterWdg):
         columns = None
         related_search_type = None
         if self.mode in ['parent', 'child', 'custom_related']:
+            
             search_type_wdg = self.get_search_type_selector(filter_name, filter_index)
             #search_type = search_type_wdg.get_widget("selector").get_value()
             search_type = search_type_wdg.get_widget("selector").value
+            
+            
             if search_type and search_type != "*":
                 #columns = self.get_columns_from_search_type(search_type)
                 columns = SearchType.get_columns(search_type)
                 columns = self.remove_columns(columns)
                 related_search_type = search_type
+            
             div.add( search_type_wdg )
 
             spacing = DivWdg('&nbsp; &nbsp;')
@@ -785,10 +826,14 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
+        if self.mode == 'custom_related':
+            columns = self.related_types_column_dict.get(related_search_type)
 
+        labels = self.rtypes_column_labels_dict.get(related_search_type) or []
+          
 
         # 2. add the column selector
-        filter_selector = self.get_column_selector(filter_name, filter_index, columns)
+        filter_selector = self.get_column_selector(filter_name, filter_index, columns, labels=labels)
         div.add( filter_selector )
         selector = filter_selector.get_widget("selector")
         #columns = selector.get_values()
@@ -1032,7 +1077,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         return search_type_selector
 
 
-    def get_column_selector(self, filter_name, filter_index, columns=[]):
+    def get_column_selector(self, filter_name, filter_index, columns=[], labels=[]):
         '''Get a select of the columns for a search type'''
         filter_selector = DivWdg(css='spt_filter_columns')
         filter_selector.add_style("float: left")
@@ -1044,9 +1089,11 @@ class GeneralFilterWdg(BaseFilterWdg):
         if not columns:
             columns = self.columns
 
-        columns.sort()
         # avoid putting straight column names
-        labels = [Common.get_display_title(x) for x in columns]
+        if not labels:
+            labels = [Common.get_display_title(x) for x in columns]
+        
+        labels, columns = (list(t) for t in zip(*sorted(zip(labels, columns))))
 
         # add an expression entry
         columns = columns[:]
