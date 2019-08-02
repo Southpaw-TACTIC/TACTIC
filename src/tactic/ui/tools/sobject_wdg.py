@@ -409,6 +409,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         show_add = tab_kwargs.get("show_add") or False
         add_bvr = tab_kwargs.get("add_bvr") or ""
         use_default_style = tab_kwargs.get("use_default_style")
+        height = tab_kwargs.get("height")
         #show_add = True
         #show_remove = True
         
@@ -424,6 +425,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             save_state=save_state, 
             use_header_back=True,
             use_default_style=use_default_style,
+            height=height,
         )
         tab.add_style("margin: 0px -1px -1px -1px")
 
