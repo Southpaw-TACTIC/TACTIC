@@ -8725,6 +8725,7 @@ class PipelineSaveCbk(Command):
 
         node_kwargs = self.kwargs.get("node_kwargs") or {}
 
+
         for i in range(len(process_nodes)):
             node = process_nodes[i]
             process = None
@@ -10083,11 +10084,15 @@ spt.process_tool.item_drag_action = function(evt, bvr, mouse_411) {
         var pos = selected[i].getPosition();
         var pos = spt.pipeline.get_position(selected[i]);
 
+        var group_name = spt.pipeline.get_current_group();
+        var group = spt.pipeline.get_group(group_name);
         if (pos.x < new_pos.x) {
-            spt.pipeline.connect_nodes(selected[i], new_node);
+            var connector = spt.pipeline.connect_nodes(selected[i], new_node);
+            group.add_connector(connector);
         }
         else {
-            spt.pipeline.connect_nodes(new_node, selected[i]);
+            var connector = spt.pipeline.connect_nodes(new_node, selected[i]);
+            group.add_connector(connector);
         }
     }
 

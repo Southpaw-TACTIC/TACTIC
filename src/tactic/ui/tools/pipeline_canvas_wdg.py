@@ -4570,6 +4570,8 @@ spt.pipeline.connect_nodes = function(from_node, to_node) {
     connector.set_to_node(to_node);
 
     connector.draw();
+
+    return connector;
 }
 
 
@@ -6723,6 +6725,7 @@ spt.pipeline.export_group = function(group_name) {
     var nodes;
     var connectors;
     var dangling_connectors = [];
+
     if (typeof(group_name) == 'undefined') {
         nodes = spt.pipeline.get_all_nodes(group_name);
         connectors = canvas.connectors;
@@ -6853,7 +6856,6 @@ spt.pipeline.export_group = function(group_name) {
         }
         xml += '/>\n';
     }
-
 
     // export the connectors
     for (var i = 0; i < connectors.length; i++) {
