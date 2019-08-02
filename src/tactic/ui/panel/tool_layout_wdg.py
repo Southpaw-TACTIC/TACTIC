@@ -216,6 +216,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
                 current_offset=info.get("current_offset")
             )
             inner.add(limit_wdg)
+            limit_wdg.add_style("padding", "10px")
 
         content = DivWdg()
         inner.add( content )
@@ -224,7 +225,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         # NOTE: a lot of scaffolding to convince that search_cbk that this
         # is a proper layout
-        top.add_class("spt_table_top");
+        top.add_class("spt_table_top")
         class_name = Common.get_full_class_name(self)
         top.add_attr("spt_class_name", class_name)
 
@@ -240,7 +241,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         self.handle_load_behaviors(content)
 
 
-        inner.add_class("spt_table_content");
+        inner.add_class("spt_table_content")
         inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
         inner.add_attr("spt_view", self.kwargs.get('view'))
 
@@ -250,7 +251,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         limit_span.add_style("margin-top: 4px")
         limit_span.add_class("spt_table_search")
         limit_span.add_style("width: 250px")
-        limit_span.add_style("margin: 5 auto")
+        limit_span.add_style("margin: 5px auto")
 
       
         inner.add_attr("total_count", info.get("count"))
@@ -502,6 +503,7 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
         from tactic.ui.tools import RepoBrowserWdg
         kwargs = self.kwargs.copy()
+
 
         kwargs['search'] = self.search
 

@@ -1176,11 +1176,12 @@ class CollectionContentWdg(BaseRefreshWdg):
                 } )
 
                 title_div.add_class("hand")
+                window_resize_offset = self.kwargs.get("window_resize_offset") or None
                 title_div.add_relay_behavior( {
                     'type': 'mouseup',
                     'search_type': self.kwargs.get("search_type"),
                     'parent_key': self.parent_key,
-                    'window_resize_offset': self.kwargs.window_resize_offset,
+                    'window_resize_offset': window_resize_offset,
                     'collection_type': collection_type,
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
