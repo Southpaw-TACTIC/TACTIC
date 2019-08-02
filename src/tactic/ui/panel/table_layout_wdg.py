@@ -644,14 +644,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         style_div = HtmlElement("style")
         top.add(style_div)
         style_div.add('''
-.spt_layout .spt_cell_edit {
+            .spt_layout .spt_cell_edit {
 
-    padding: 3px 8px;
-    vertical-align: top;
+                padding: 3px 8px;
+                vertical-align: top;
 
-    background-repeat: no-repeat;
-    background-position: bottom right;
-}
+                background-repeat: no-repeat;
+                background-position: bottom right;
+            }
         ''')
 
 
@@ -1305,6 +1305,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     }
                     return;
                 }
+                // FIXME: Not sure why we need to have a apply undo queue here
                 spt.table.apply_undo_queue();
 
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
@@ -1677,7 +1678,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     if (width == -1) {
                         continue;
                     }
-                    //console.log(name, width);
                     spt.table.set_column_width(name, width);
                 }
 
@@ -3034,7 +3034,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
 
-
         tr.add_class("spt_table_row_item")
         tr.add_class("spt_table_row")
         # to tag it with the current table to avoid selecting nested table contents when they are present
@@ -3404,7 +3403,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 widget.handle_tr(tr)
                 widget.handle_td(td)
 
-        
             is_editable = True
             # Check if view is editable first, if not, skip checking each column
             if self.view_editable:
@@ -5967,7 +5965,6 @@ spt.table.set_display = function( el, value, input_type ) {
 }
 
 spt.table.set_changed_color = function(row, cell) {
-    
     cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
     row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
 
@@ -6213,76 +6210,67 @@ spt.table.apply_undo_queue = function(undo_queue) {
     var layout = spt.table.get_layout();
     var layout_top = layout.getParent(".spt_layout_top");
     // sometimes layout_top is null
+    
     if (!layout_top) {
         return;
     }
-
     var undo_queue = layout_top.undo_queue;
-
+    
     if (!undo_queue) {
         return;
     }
+    
+    var undo = undo_queue[undo_queue.length-1];
+    var search_key = undo.search_key;
+    var element_name = undo.element_name;
+    var orig_cell = undo.cell;
+    var row = spt.table.get_row_by_search_key(search_key);
+    if (!row) {
+        return;
+    }
 
-    for (var i = 0; i < undo_queue.length; i ++) {
-        var undo = undo_queue[i];
-        var search_key = undo.search_key;
-        var element_name = undo.element_name;
-        var orig_cell = undo.cell;
+    var cell = spt.table.get_cell(element_name, row);
+    if (!cell) {
+        return;
+    }
 
-        var row = spt.table.get_row_by_search_key(search_key);
-        if (!row) {
-            continue;
-        }
+    var undo_type = undo.type;
+    if (undo_type) {
+        undo.redo();
+        return;
+    }
 
-        var cell = spt.table.get_cell(element_name, row);
-        if (!cell) {
-            continue;
-        }
+    // get the original value.  If there is no original value, then
+    // set it so it can be used for future changes in this undo queue
 
+    var orig_value = cell.getAttribute("spt_orig_value");
+    if (orig_value == null) {
+        var orig_value = cell.getAttribute("spt_input_value");
+        cell.setAttribute("spt_orig_value", orig_value);
+    }
+    cell.innerHTML = undo.new_html;
+    cell.setAttribute("spt_input_value", undo.new_value);
+    var new_value = undo.new_value;
+    // remap to the new cell
+    undo.cell = cell;
+    if (new_value == orig_value) {
+        cell.removeClass("spt_cell_changed");
+        row.removeClass("spt_row_changed");
+        var row_background = row.getAttribute("spt_orig_background");
+        if (!row_background || row_background == "null") row_background = 'transparent';
 
-
-        var undo_type = undo.type;
-        if (undo_type) {
-            undo.redo();
+        var cell_background = cell.getAttribute("spt_orig_background");
+        if (!cell_background) {
             return;
         }
-
-
-        // get the original value.  If there is no original value, then
-        // set it soe it can be used for future changes in this undo queue
-        var orig_value = cell.getAttribute("spt_orig_value");
-        if (orig_value == null) {
-            var orig_value = cell.getAttribute("spt_input_value");
-            cell.setAttribute("spt_orig_value", orig_value);
-        }
-
-
-        cell.innerHTML = undo.new_html;
-        cell.setAttribute("spt_input_value", undo.new_value);
-
-        var new_value = undo.new_value;
-
-        // remap to the new cell
-        undo.cell = cell;
-
-
-        if (new_value == orig_value) {
-            cell.removeClass("spt_cell_changed");
-            row.removeClass("spt_row_changed");
-
-            var row_background = row.getAttribute("spt_orig_background");
-            if (!row_background || row_background == "null") row_background = 'transparent';
-
-            cell.setStyle("background-color", cell.getAttribute("spt_orig_background"));
-            row.setStyle("background-color", row_background);
-            row.setAttribute("spt_background", row.getAttribute("spt_orig_background"));
-        }
-        else {
-            cell.addClass("spt_cell_changed");
-            row.addClass("spt_row_changed");
-            spt.table.set_changed_color(row, cell);
-        }
-
+        cell.setStyle("background-color", cell_background);
+        row.setStyle("background-color", row_background);
+        row.setAttribute("spt_background", row_background);
+    }
+    else {
+        cell.addClass("spt_cell_changed");
+        row.addClass("spt_row_changed");
+        spt.table.set_changed_color(row, cell);
     }
 }
 
