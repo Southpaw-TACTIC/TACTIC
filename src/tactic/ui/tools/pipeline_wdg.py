@@ -10168,6 +10168,8 @@ spt.process_tool.toggle_side_bar = function(activator) {
                 else:
                     node_wdg = pipeline_canvas_wdg.get_node("manual", node_type="manual")
 
+                description = pipeline_canvas_wdg.get_node_description(view)
+
                 node_wdg.add_class("spt_custom_node")
             else:
                 node_wdg = custom_node.get_display_widget("node", display_options)

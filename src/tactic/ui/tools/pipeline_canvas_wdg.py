@@ -291,6 +291,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.add_node_behaviors = True
 
 
+    def get_node_description(self, node_type):
+
+        node_descriptions = {
+            'manual': 'A basic process where work is done by a person',
+            'action': 'An automated process which can execute a script or command',
+            'condition': 'An automated process which can execute a script or command',
+            'approval': 'A process where a task will be created for a specific user whose job is to approve work down in the previous processes',
+            'hierarchy': 'A process that references a sub-workflow',
+            'dependency': 'A process that listens to another process and sets its status accordingly'
+        }
+
+        return node_descriptions.get(node_type)
+
 
     def get_unique_id(self):
         return self.unique_id
