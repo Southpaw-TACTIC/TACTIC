@@ -26,6 +26,11 @@ import os
 
 class PythonCmd(Command):
 
+    def can_run(self, source="api"):
+        if source == "api":
+            return False
+
+
     def get_results(self):
         code = self.kwargs.get("code")
         script_path = self.kwargs.get("script_path")
@@ -122,6 +127,12 @@ class PythonTrigger(Trigger):
         self.kwargs = kwargs
         self.ret_val = None
         self.script_path = self.kwargs.get("script_path")
+
+
+    def can_run(self, source="api"):
+        if source == "api":
+            return False
+
 
 
     def set_script_path(self, script_path):

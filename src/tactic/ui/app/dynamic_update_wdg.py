@@ -224,6 +224,7 @@ top.spt_update_interval_id = setInterval( function() {
     if (Object.keys(update).length > 0) {
 
         var on_complete = function(ret_val) {
+            
             var timestamp = ret_val.info ? ret_val.info.timestamp : null;
             if (!timestamp) 
                 return;
@@ -560,7 +561,6 @@ class DynamicUpdateCmd(Command):
 
 
         #print("Dyn Cmd duration", time.time()  - start)
-        return results
 
 
 

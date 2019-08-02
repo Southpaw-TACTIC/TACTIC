@@ -2711,7 +2711,7 @@ spt.tab.view_definition = function(bvr) {
         # add a drag behavior
         allow_drag = self.kwargs.get("allow_drag")
         if allow_drag not in [False, 'false']:
-            header.add_class("drag-header");
+            header.add_class("drag-header")
             header.add_behavior( {
             'type': 'drag',
             #"mouse_btn": 'LMB',

@@ -862,6 +862,10 @@ class CalendarInputWdg(BaseInputWdg):
         #state = self.get_state()
         #state['calendar'] = self.get_value()
 
+        # assign validation bvr
+        self.validation_script_path = self.get_option('validation_script_path') or ''
+        self.validation_warning = self.get_option('validation_warning') or ''
+
         from tactic.ui.panel import EditWdg
         show_activator = self.get_option('show_activator')
 
@@ -1086,13 +1090,13 @@ class CalendarInputWdg(BaseInputWdg):
         }
         input.add_behavior( kbd_bvr )
 
-        if self.cbjs_validation:
+        if self.cbjs_validation or self.validation_script_path:
             if self.validation_warning:
                 v_warning = self.validation_warning
             else:
                 v_warning = "Date entry is not valid"
             from tactic.ui.app import ValidationUtil
-            v_util = ValidationUtil( direct_cbjs=self.cbjs_validation, warning=v_warning )
+            v_util = ValidationUtil( direct_cbjs=self.cbjs_validation, validation_script_path=self.validation_script_path, warning=v_warning )
             v_bvr = v_util.get_validation_bvr()
             if v_bvr:
                 input.add_behavior( v_bvr )

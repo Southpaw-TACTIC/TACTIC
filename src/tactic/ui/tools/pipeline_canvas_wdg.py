@@ -750,15 +750,21 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
 
-        #canvas.add_class("spt_window_resize")
-        #canvas.add_attr("spt_window_resize_xoffset", 500)
-        #canvas.add_attr("spt_window_resize_offset", 200)
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        if window_resize_offset:
+            canvas.add_class("spt_window_resize")
+            canvas.add_attr("spt_window_resize_offset", window_resize_offset)
+
+        window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
+        if window_resize_xoffset:
+            canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
 
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
-	"drag_el": '@',
+	    "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
@@ -1838,7 +1844,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_behavior( node_behavior )
 
 
-        nobs_offset = 0
+        nobs_offset = custom_wdg.get_nob_offset() or 0
         self.add_nobs(node, width, height, nobs_offset)
 
 

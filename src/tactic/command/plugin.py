@@ -1623,7 +1623,8 @@ class PluginTools(PluginBase):
                         subf.close()
                         f.append("\n")
                     except Exception as e:
-                        print("XWARNING: ", e)
+                        print("WARNING: ", e)
+                        print("File [%s]" % subpath)
                         raise
         else:
             #f = codecs.open(path, 'r', 'utf-8')

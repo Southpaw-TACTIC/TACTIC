@@ -534,7 +534,6 @@ class Search(Base):
         for filter in filters:
             if not filter:
                 continue
-            #if type(filter) in types.StringTypes or len(filter) == 1:
             if isinstance(filter, basestring) or len(filter) == 1:
                 # straight where clause not allowed
                 if isinstance(filter, basestring):
@@ -1243,11 +1242,9 @@ class Search(Base):
             start_date >= date <= end_date + 1 day
         '''
 
-        #if start_date and type(start_date) in types.StringTypes:
         if start_date and isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        #if end_date and type(end_date) in types.StringTypes:
         if end_date and isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
@@ -1283,11 +1280,9 @@ class Search(Base):
           start_col < end_date and end_col > end_date
         '''
 
-        #if type(start_date) in types.StringTypes:
         if isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        #if type(end_date) in types.StringTypes:
         if isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
@@ -2506,7 +2501,6 @@ class SObject(object):
                 self.search_type_obj = self
                 self.full_search_type = "sthpw/search_object"
 
-            #elif type(search_type) in types.StringTypes:
             elif isinstance(search_type, basestring):
                 self.search_type_obj = SearchType.get(search_type)
                 self.full_search_type = Project.get_full_search_type(search_type)

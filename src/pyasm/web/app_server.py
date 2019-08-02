@@ -1001,7 +1001,7 @@ class BaseAppServer(Base):
         # NOTE: this needs to happen after the body is put in a Container
         page = self.get_page_widget()
         page.set_as_top()
-        if type(page) in types.StringTypes:
+        if isinstance(page, six.string_types):
             page = StringWdg(page)
 
         application.add(page, 'content')

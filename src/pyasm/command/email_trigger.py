@@ -372,9 +372,12 @@ class EmailTrigger(Trigger):
         charset = 'us-ascii'
         is_uni = False
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
+            charset = 'utf-8'
+            is_uni = True
+        elif Common.IS_Pv3:
             charset = 'utf-8'
             is_uni = True
 
@@ -650,7 +653,6 @@ class EmailTrigger2(EmailTrigger):
                 # match the rule to the value
                 p = re.compile(rule_value)
                 if not p.match(value):
-                    print("... skipping: '%s' != %s" % (value, rule_value))
                     break
 
         else:

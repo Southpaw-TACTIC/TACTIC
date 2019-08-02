@@ -322,7 +322,7 @@ class Command(Base):
             if top_cmd_seq:
                 top_cmd_seq.pop()
 
-            if isinstance(e, TacticException):
+            if not Common.IS_Pv3 and isinstance(e, TacticException):
                 if isinstance(message, unicode):
                     error_msg = message.encode('utf-8')
                 else:
