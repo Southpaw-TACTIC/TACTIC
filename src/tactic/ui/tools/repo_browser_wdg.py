@@ -106,7 +106,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             #project_dir = "%s/%s" % (base_dir, relative_dir)
             base_dir = container_path 
 
-            parent_type = parent.get_search_type()
+            search_type = parent.get_search_type()
            
             search = Search(search_type)
             
@@ -1817,7 +1817,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         parent_key = self.kwargs.get("parent_key")
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
-            parent_key = parent.get_search_key()
+            search_type = parent.get_search_type()
    
 
 
@@ -3525,37 +3525,7 @@ class RepoBrowserSearchWrapper(object):
 
 
     def get_file_search(base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
-        '''
-        search_code = None
-        if parent_key:
-            sobject = Search.get_by_search_key(parent_key)
-            search_code = sobject.get_code() or None
-            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-            print("search_code: %s" % search_code)
-            print("parent_key: %s" % parent_key)
         
-
-        if parent_mode == "single_search_type":
-            search_type = search_types[0]
-            search = Search(search_type)
-
-            if search_code:
-                if search_code.startswith("JOB_ASSET"):
-                    search.add_filter("code", search_code)
-                    print("job_asset")
-                else:
-                    # search.add_filter("_is_collection", "true", op="!=")
-                    # search.add_op("or")
-                    search.add_filter("_is_collection", "NULL", op="is", quoted=False)
-                    search.add_filter("job_code", search_code)
-                    print("job")
-                
-            else:
-                search.add_filter("code", None)
-
-            return search
-
-        '''
         search = Search("sthpw/file")
 
         # Add a search type filter ... ignore this is the search_type are snapshots
