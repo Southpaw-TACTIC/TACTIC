@@ -53,7 +53,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             'description': 'Parent sObject to scope snapshots with when single_asset mode is used.',
             'type': 'TextWdg',
             'order': 2   
-        } 
+        }
     }
 
 
@@ -82,20 +82,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #self.mode = 'folder'
 
         keywords = self.kwargs.get("keywords")
-
-       
-            
         search_type = self.kwargs.get("search_type")
-        
-        
-
         search_type = SearchType.build_search_type(search_type)
-
-        
-
         expression = self.kwargs.get("expression")
-
         parent_key = self.kwargs.get("search_key")
+
         
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
@@ -115,7 +106,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             #project_dir = "%s/%s" % (base_dir, relative_dir)
             base_dir = container_path 
 
-            # parent_type = parent.get_search_type()
+            parent_type = parent.get_search_type()
            
             search = Search(search_type)
             
@@ -276,7 +267,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
         # Display the basename of of the base_dir 
         # default is True.
         show_base_dir = self.kwargs.get("show_base_dir")
-        search_code = base_dir.split("/")[-1]
 
         
         # The left contains a directory listing
@@ -294,8 +284,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             keywords=keywords,
             search_keys=search_keys,
             search=search,
-            parent_key=parent_key,
-            search_code=search_code,
+            parent_key=parent_key
         )
         content_div.add(dir_list)
 
@@ -599,9 +588,9 @@ class RepoBrowserDirListWdg(DirListWdg):
 
          
 
-    def get_file_search(self, base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type", search_code=""):
+    def get_file_search(self, base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
         
-        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode, parent_mode, search_code)
+        return RepoBrowserSearchWrapper.get_file_search(base_dir, search_types, parent_ids, mode, parent_mode)
         
 
     def get_relative_paths(self, base_dir, do_search=True):
@@ -667,6 +656,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             search_types = [sobjects[0].get_search_type()]
             parent_ids = [x.get_id() for x in sobjects]
             self.sobjects = sobjects
+        
 
 
         search_types = [SearchType.build_search_type(x) for x in search_types]
@@ -689,9 +679,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             if len(search_types) == 1 and search_types[0] == "sthpw/snapshot":
                 relative_dir = ""
 
-            job_code = self.kwargs.get("search_code")
-            search = self.get_file_search(relative_dir, search_types, parent_ids, mode="folder", parent_mode=self.parent_mode, search_code=job_code)
-            file_objects = search.get_sobjects()
+            
+            search = self.get_file_search(relative_dir, search_types, parent_ids, mode="folder", parent_mode=self.parent_mode)
+            if search: 
+                file_objects = search.get_sobjects()
+            else:
+                file_objects = []
 
             for file_object in file_objects:
                 relative_dir = file_object.get_value("relative_dir")
@@ -795,8 +788,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     paths.append(full)
                     
                     if do_sub_search:
-                        job_code = self.kwargs.get("search_code")
-                        search = self.get_file_search(subdir, search_types, parent_ids, mode="count", parent_mode=self.parent_mode, search_code=job_code)
+                        search = self.get_file_search(subdir, search_types, parent_ids, mode="count", parent_mode=self.parent_mode)
                         count = search.get_count()
                         self.counts[subdir] = count
                         if count:
@@ -995,8 +987,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                         search_type: bvr.search_type,
                         snapshot_codes: snapshot_codes
                     };
-                    console.log("1111111111111111111");
-                    console.log(kwargs);
                 } else {
                     var dirname = bvr.src_el.getAttribute("spt_dirname");
                     var basename = bvr.src_el.getAttribute("spt_basename");
@@ -1757,8 +1747,6 @@ class RepoBrowserDirListWdg(DirListWdg):
                     handler_kwargs: handler_kwargs,
                     folder_state: folder_state,
                 };
-                console.log("333333333");
-                console.log(kwargs);
                 spt.panel.load(sibling, class_name, kwargs, {}, {show_loading: false});
             }
         } 
@@ -1843,10 +1831,8 @@ class RepoBrowserDirListWdg(DirListWdg):
         dir_cbjs_action = '''
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
-            console.log(bvr.src_el);
-            var job_asset = bvr.src_el.getElement("span") || bvr.src_el;
-            var job_asset_code = job_asset.innerHTML;
-            console.log(job_asset_code);
+            //var job_asset = bvr.src_el.getElement("span") || bvr.src_el;
+            //var job_asset_code = job_asset.innerHTML;
 
                 
             // Get parent search keys
@@ -1880,13 +1866,10 @@ class RepoBrowserDirListWdg(DirListWdg):
                 file_system_edit: bvr.file_system_edit,
                 parent_mode: bvr.parent_mode,
                 search_type: bvr.search_type,
-                search_code: job_asset_code,
                 view: 'table',
                 dirname: dirname,
                 search_keys: search_keys
             };
-            console.log(kwargs);
-            console.log("2222222222222222222222222222");
             spt.table.last_table = null;
             spt.panel.load(content, class_name, kwargs);
             spt.app_busy.hide();
@@ -3541,26 +3524,36 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
 class RepoBrowserSearchWrapper(object):
 
 
-    def get_file_search(base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type", search_code=""):
+    def get_file_search(base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
         '''
-        search = Search("workflow/job_asset")
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(search_code)
-        if search_code:
-            if search_code.startswith("JOB_ASSET"):
-                search.add_filter("code", search_code)
-                print("job_asset")
-            else:
-                # search.add_filter("_is_collection", "true", op="!=")
-                # search.add_op("or")
-                search.add_filter("_is_collection", "NULL", op="is", quoted=False)
-                search.add_filter("job_code", search_code)
-                print("job")
-            
-        else:
-            search.add_filter("code", None)
+        search_code = None
+        if parent_key:
+            sobject = Search.get_by_search_key(parent_key)
+            search_code = sobject.get_code() or None
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            print("search_code: %s" % search_code)
+            print("parent_key: %s" % parent_key)
+        
 
-        return search
+        if parent_mode == "single_search_type":
+            search_type = search_types[0]
+            search = Search(search_type)
+
+            if search_code:
+                if search_code.startswith("JOB_ASSET"):
+                    search.add_filter("code", search_code)
+                    print("job_asset")
+                else:
+                    # search.add_filter("_is_collection", "true", op="!=")
+                    # search.add_op("or")
+                    search.add_filter("_is_collection", "NULL", op="is", quoted=False)
+                    search.add_filter("job_code", search_code)
+                    print("job")
+                
+            else:
+                search.add_filter("code", None)
+
+            return search
 
         '''
         search = Search("sthpw/file")
@@ -3622,24 +3615,21 @@ class RepoBrowserSearchWrapper(object):
         
 
 
-        '''
+        
         key = "repo_browser:%s" % search_type
         parent_search_str = WidgetSettings.get_value_by_key(key)
-        print("parent_search_str: %s" % parent_search_str)
         if parent_search_str:
             
             parent_search = Search(search_type)
             parent_search.select.loads(parent_search_str)
             parents = parent_search.get_sobjects()
             parent_codes = [x.get_value("code") for x in parents]
-            print("parent_codes: %s" % parent_codes)
             
             if search_type == "sthpw/snapshot":
                 search.add_filters("snapshot_code", parent_codes)
             else:
                 search.add_filter("search_type", search_type)
-                # search.add_filters("search_code", parent_codes)
-        '''
+                search.add_filters("search_code", parent_codes)
         return search
     get_file_search = staticmethod(get_file_search)
 
@@ -3722,11 +3712,12 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
                 parent_search.add_op("or")
                 search = parent_search
             else:
-                job_code = self.kwargs.get("search_code")
-                search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [], search_code=job_code)
-                # file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [], search_code=job_code)
-                # search = Search(search_type)
-                # search.add_relationship_search_filter(file_search)
+                # job_code = self.kwargs.get("search_code")
+                # search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [], search_code=job_code)
+                # parent_key = self.kwargs.get("parent_key")
+                file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [])
+                search = Search(search_type)
+                search.add_relationship_search_filter(file_search)
 
         # File system edit
         self.file_system_edit = self.kwargs.get("file_system_edit") 
