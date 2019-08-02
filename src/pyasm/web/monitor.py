@@ -623,18 +623,13 @@ class TacticSchedulerThread(threading.Thread):
             'mode': 'threaded'
         }
         """
-
-
         project_code = data.get("project_code")
         name = timed_trigger.get_trigger_sobj().get_code()
-        print("Adding trigger [%s]" % name)
         task = TimedTask(name=name, trigger=timed_trigger, project_code=project_code)
 
         args = {}
         if data.get("mode"):
             args['mode'] = data.get("mode")
-
-        print("data: ", data)
 
         # FIXME: should decide on one
         trigger_type = data.get("interval_type")
@@ -740,14 +735,24 @@ class TacticSchedulerThread(threading.Thread):
                     new_names = set([x.get_trigger_sobj().get_code() for x in new_timed_triggers])
 
                     added = new_names.difference(old_names)
-                    for add in added:
-                        print("Adding [%s]" % add)
-                        n = [x.get_trigger_sobj().get_code() for x in new_timed_triggers]
-                        index = n.index(add)
-                        timed_trigger = new_timed_triggers[index]
-                        self.add_trigger(timed_trigger)
-
                     removed = old_names.difference(new_names)
+
+                    # add any changed ones
+                    search = Search("sthpw/change_timestamp")
+                    new_processes = [x.get_trigger_sobj().get("process") for x in new_timed_triggers]
+                    search.add_filters("search_code", new_processes)
+                    search.add_filter("timestamp", "now() - '10 seconds'::INTERVAL", quoted=False, op=">")
+                    changes = search.get_sobjects()
+                    for change in changes:
+                        search_code = change.get("search_code")
+                        for t in new_timed_triggers:
+                            if t.get_trigger_sobj().get("process") == search_code:
+                                name = t.get_trigger_sobj().get_code()
+                                added.add(name)
+                                removed.add(name)
+                                break
+
+
                     for remove in removed:
                         print("Removing [%s]" % remove)
                         task_names = self.scheduler.get_task_names()
@@ -755,6 +760,15 @@ class TacticSchedulerThread(threading.Thread):
                             print("WARNING: [%s] not in scheduler" % remove)
                             continue
                         self.scheduler.cancel_task(remove)
+
+
+                    for add in added:
+                        print("Adding [%s]" % add)
+                        n = [x.get_trigger_sobj().get_code() for x in new_timed_triggers]
+                        index = n.index(add)
+                        timed_trigger = new_timed_triggers[index]
+                        self.add_trigger(timed_trigger)
+
 
                     # reset to the new list of triggers
                     self2.triggers = new_timed_triggers
@@ -773,6 +787,7 @@ class TacticSchedulerThread(threading.Thread):
             'delay': 3,
         }
         self.scheduler.add_interval_task(refresh_task, **args)
+
 
 
 
