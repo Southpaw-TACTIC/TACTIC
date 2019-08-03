@@ -24,7 +24,7 @@ class ConfigUpgrade(BaseUpgrade):
     #
     def upgrade_v4_7_0_a08_002(self):
         self.run_sql('''
-        ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE varchar(256);
+        ALTER TABLE "spt_process_state" ALTER COLUMN "status" TYPE varchar(256);
         ''')
 
 
