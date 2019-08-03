@@ -359,6 +359,36 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         return canvas_title
 
 
+
+    def get_snapshot_wdg(self):
+
+        snapshot_top = DivWdg()
+        snapshot_top.add_style("position: absolute")
+        snapshot_top.add_style("top: 0px")
+        snapshot_top.add_style("left: 0px")
+        snapshot_top.add_style("z-index: 150")
+        snapshot_top.add_style("border: solid 1px #DDD")
+        snapshot_top.add_style("overflow: hidden")
+
+        snapshot_wdg = DivWdg()
+        snapshot_top.add(snapshot_wdg)
+        snapshot_wdg.add_class("spt_pipeline_snapshot")
+
+        outline_wdg = DivWdg()
+        outline_wdg.add_class("spt_outline")
+        snapshot_top.add(outline_wdg)
+        outline_wdg.add_style("border", "solid 1px #333")
+        outline_wdg.add_style("width", "25px")
+        outline_wdg.add_style("height", "25px")
+        outline_wdg.add_style("position: absolute")
+        outline_wdg.add_style("top: 10px")
+        outline_wdg.add_style("left: 10px")
+
+        return snapshot_top
+
+
+
+
     def get_display(self):
 
         top = self.top
@@ -370,6 +400,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         show_title = self.kwargs.get("show_title")
         if show_title not in ['false', False]:
             top.add(self.get_canvas_title())
+
+
+        top.add(self.get_snapshot_wdg())
 
 
         # outer is used to resize canvas
@@ -470,6 +503,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var key = evt.key;
 
+            //spt.pipeline.set_top(bvr.src_el.getElement(".spt_pipeline_top"));
+
             if (key == "a") {
                 spt.pipeline.fit_to_canvas();
             }
@@ -530,6 +565,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             } else if (key == "t") {
                 spt.process_tool.toggle_side_bar(bvr.src_el);
+
+            } else if (key == "w") {
+                var container = spt.pipeline.take_snapshot();
+                var scale = spt.pipeline.get_scale();
+                container.scale = scale;
+
+            } else if (key == "q") {
+
+                spt.pipeline.match_snapshot();
 
             } else if (evt.control == true && key == "c") {
                 var nodes = spt.pipeline.get_selected_nodes();
@@ -5079,6 +5123,8 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 
 
     spt.pipeline.draw_skip = 0;
+
+    spt.pipeline.match_snapshot();
 }
 
 spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
@@ -5130,6 +5176,7 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
     }
     spt.pipeline.redraw_canvas();
 
+    spt.pipeline.match_snapshot();
 }
 
 
@@ -5235,6 +5282,8 @@ spt.pipeline.set_scale = function(scale) {
     //TweenLite.to(scale_el, 0.2, {scale: scale});
 
     spt.pipeline.redraw_canvas();
+
+    spt.pipeline.match_snapshot();
 
 }
 
@@ -5375,7 +5424,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         scale = vscale;
     }
 
-    scale = scale * 0.85;
+    scale = scale * 0.95;
     //scale = 1.0
     if (scale > 1.0) {
         scale = 1.0;
@@ -5452,6 +5501,111 @@ spt.pipeline.fit_to_node = function(node) {
 
 }
 
+
+
+spt.pipeline.take_snapshot = function(container) {
+
+    var el = spt.pipeline.top;
+    var c = spt.pipeline.get_canvas();
+    spt.pipeline.fit_to_canvas();
+    var scale = spt.pipeline.get_scale();
+
+    if (!container) {
+        var container = el.getElement(".spt_pipeline_snapshot");
+    }
+    container.innerHTML = "";
+
+    var size = el.getSize();
+    container.size = size;
+
+
+    var nodes = spt.pipeline.get_all_nodes();
+    var first_node = nodes[0]
+    var first_pos = first_node.getPosition(spt.pipeline.top);
+    container.pos = first_pos;
+
+
+    html2canvas(el)
+        .then(  canvas => {
+            //document.body.appendChild(canvas);
+            container.appendChild(canvas);
+
+            var size = canvas.getSize();
+            var scale = size.x / 300;
+            var width = 300;
+            var height = size.y / scale;
+            canvas.setStyle("width", width);
+            canvas.setStyle("height", height);
+
+            spt.pipeline.match_snapshot();
+
+        });
+
+    container.scale = spt.pipeline.get_scale();
+    return container;
+
+}
+
+
+spt.pipeline.match_snapshot = function(container) {
+    var top = spt.pipeline.top;
+
+    if (!container) {
+        container = top.getElement(".spt_pipeline_snapshot");
+    }
+    if (!container) {
+        return;
+    }
+    var nodes = spt.pipeline.get_all_nodes();
+    if (!nodes || nodes.length == 0) {
+        return;
+    }
+
+
+    var outline = container.getParent().getElement(".spt_outline");
+
+    var container_size = container.getSize();
+    var full_scale = container.scale;
+    var full_pos = container.pos;
+    var full_size = container.size;
+
+    if (!full_scale || !full_pos || !full_size) {
+        return;
+    }
+
+    var cur_scale = spt.pipeline.get_scale();
+    var container_width = container_size.x;
+    var container_height = container_size.y;
+
+    var ratio = full_scale / cur_scale;
+
+    var width = container_width * ratio;
+    var height = container_height * ratio;
+
+    outline.setStyle("width", width)
+    outline.setStyle("height", height)
+
+    var center = {x: full_size.x/2, y: full_size.y/2};
+
+    var first_node = nodes[0]
+    var first_pos = first_node.getPosition(spt.pipeline.top);
+
+    var left_pos = (full_pos.x-first_pos.x) * (container_width/full_size.x) * ratio;
+    var top_pos =  (full_pos.y-first_pos.y) * (container_height/full_size.y) * ratio;
+
+    var left_pos = center.x * (1 - ratio)
+    var left_translate = (first_pos.x - (full_pos.x - center.x)/ratio - center.x)*ratio;
+    left_pos -= left_translate;
+    left_pos = left_pos * (container_width/full_size.x)
+
+    var top_pos = center.y * (1 - ratio)
+    var top_translate = (first_pos.y - (full_pos.y - center.y)/ratio - center.y)*ratio;
+    top_pos -= top_translate;
+    top_pos = top_pos * (container_height/full_size.y)
+
+    outline.setStyle("left", left_pos);
+    outline.setStyle("top", top_pos);
+}
 
 
 spt.pipeline.last_mouse_pos = null;
