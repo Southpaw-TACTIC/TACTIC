@@ -199,7 +199,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border: 0px;
                 height: 100%;
                 padding: 6px 8px;
-                width: 200px;
+                width: 100%;
                 border-right: 1px solid #ccc;
             }
 
