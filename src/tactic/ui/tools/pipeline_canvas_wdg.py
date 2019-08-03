@@ -370,6 +370,45 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         snapshot_top.add_style("border: solid 1px #DDD")
         snapshot_top.add_style("overflow: hidden")
 
+        snapshot_top.add_behavior( {
+            'type': 'click',
+            'cbjs_action': '''
+            var pos = bvr.src_el.getPosition();
+
+            var container = bvr.src_el.getElement(".spt_pipeline_snapshot");
+            var canvas_size = container.size;
+            var full_scale = container.scale;
+            var cur_scale = spt.pipeline.get_scale();
+            var ratio = full_scale / cur_scale;
+
+
+
+
+            var outline = bvr.src_el.getElement(".spt_outline");
+            outline_pos = outline.getPosition(bvr.src_el);
+            outline_size = outline.getSize();
+            console.log("outline");
+            console.log(outline_pos);
+
+            var container_size = container.getSize();
+
+            // find out where it hit the target
+            var x = mouse_411.curr_x - pos.x;
+            var y = mouse_411.curr_y - pos.y;
+            console.log("pos: " + x + ", " + y);
+
+            var dx = (x - outline_pos.x - outline_size.x/2) * canvas_size.x / container_size.x / ratio;
+            var dy = (y - outline_pos.y - outline_size.y/2) * canvas_size.y / container_size.y / ratio;
+
+            console.log(dx + ", " + dy);
+
+            spt.pipeline.move_all_nodes(-dx, -dy);
+            spt.pipeline.move_all_folders(-dx, -dy);
+
+
+            '''
+        } )
+
         snapshot_wdg = DivWdg()
         snapshot_top.add(snapshot_wdg)
         snapshot_wdg.add_class("spt_pipeline_snapshot")
@@ -377,12 +416,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outline_wdg = DivWdg()
         outline_wdg.add_class("spt_outline")
         snapshot_top.add(outline_wdg)
-        outline_wdg.add_style("border", "solid 1px #333")
-        outline_wdg.add_style("width", "25px")
-        outline_wdg.add_style("height", "25px")
+        outline_wdg.add_style("border", "solid 0.5px #666")
+        #outline_wdg.add_style("width", "25px")
+        #outline_wdg.add_style("height", "25px")
         outline_wdg.add_style("position: absolute")
         outline_wdg.add_style("top: 10px")
         outline_wdg.add_style("left: 10px")
+
+        outline_wdg.add_style("background", "rgba(0,0,0,0.02)")
 
         return snapshot_top
 
@@ -4199,6 +4240,8 @@ spt.pipeline.move_all_nodes = function(rel_x, rel_y) {
     }
 
     spt.pipeline.redraw_canvas();
+
+    spt.pipeline.match_snapshot();
 }
 
 

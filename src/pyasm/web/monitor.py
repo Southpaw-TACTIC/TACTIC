@@ -636,10 +636,24 @@ class TacticSchedulerThread(threading.Thread):
         if not trigger_type:
             trigger_type = data.get("type")
 
-        if trigger_type == 'interval':
+        if trigger_type == 'delayed':
+            delay = data.get("delay") or 0
+            if delay:
+                delay = int(delay)
+                delay = delay * 60 # minutes
+
+            args = {
+                'delay': delay,
+            }
+
+            self.scheduler.add_single_task(task, **args)
+
+
+        elif trigger_type == 'interval':
 
             interval = data.get("interval")
-            delay = data.get("delay")
+            #delay = data.get("delay")
+            delay = 0 # currently interferes with "delayed" mode delay attr
 
             # make sure interval and delays are not strings
             if isinstance(interval, six.string_types):
