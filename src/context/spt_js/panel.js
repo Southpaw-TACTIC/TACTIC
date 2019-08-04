@@ -49,7 +49,7 @@ spt.panel.refresh = function(panel_id, values, kwargs) {
     }
 
     if (values == null || values == undefined || values == {}) {
-        values = spt.api.Utility.get_input_values(panel);
+        values = spt.api.Utility.get_input_values(panel, null, false);
     }
 
     spt.panel._refresh_widget(panel, values, kwargs);

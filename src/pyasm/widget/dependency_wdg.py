@@ -478,7 +478,7 @@ class DependencyThumbWdg(ThumbWdg):
         icon_size = self.get_icon_size()
         
         p = re.compile(r'.*(\.jpg|\.png|\.tif)$')
-        if p.match(image_link) and self.info.has_key(icon_type):
+        if p.match(image_link) and icon_type in self.info:
             icon_link = self.info.get('icon')
         else:
             icon_link = ThumbWdg.find_icon_link(image_link)

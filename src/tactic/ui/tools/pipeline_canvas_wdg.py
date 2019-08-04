@@ -607,14 +607,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             } else if (key == "t") {
                 spt.process_tool.toggle_side_bar(bvr.src_el);
 
+            } else if (key == "q") {
+                spt.process_tool.show_side_bar(bvr.src_el);
+ 
             } else if (key == "w") {
                 var container = spt.pipeline.take_snapshot();
                 var scale = spt.pipeline.get_scale();
                 container.scale = scale;
-
-            } else if (key == "q") {
-
-                spt.pipeline.match_snapshot();
 
             } else if (evt.control == true && key == "c") {
                 var nodes = spt.pipeline.get_selected_nodes();
@@ -965,6 +964,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         folder = self.get_folder("folder")
         template_div.add(folder)
 
+        # group node
+        group = self.get_group_node("group")
+        template_div.add(group)
+
         # add approval node
         approval = self.get_approval_node("approval")
         template_div.add(approval)
@@ -1138,6 +1141,128 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
     def get_canvas_behaviors(self):
         return []
+
+
+
+    def get_group_node(self, group_name):
+        div = DivWdg()
+        div.add_class("spt_pipeline_group")
+        div.add_class("spt_pipeline_folder")
+        div.add_style("width: 400px")
+        div.add_style("height: 300px")
+        div.add_style("position: relative")
+        div.add_style("z-index: 150")
+        div.add_style("border: solid 1px blue")
+        div.add_style("background: rgba(0,0,255,0.05)")
+
+        div.add_behavior( {
+            'type': 'double_click',
+            'cbjs_action': '''
+            spt.pipeline.group.select_nodes(bvr.src_el);
+            '''
+        } )
+
+        content = DivWdg()
+        div.add(content)
+        content.add_class("spt_content")
+
+        top_left = DivWdg()
+        div.add(top_left)
+        top_left.add_style("position: absolute")
+        top_left.add_style("top: -1px")
+        top_left.add_style("left: -1px")
+        top_left.add_style("width: 80px")
+        top_left.add_style("height: 20px")
+        top_left.add_style("padding: 5px")
+        top_left.add_style("font-weight: bold")
+        top_left.add_style("border: solid 1px blue")
+
+
+        top_left.add_behavior( {
+            'type': 'drag',
+            'drag_el': '@.parentNode',
+            'cbjs_motion': '''
+            '''
+        } )
+
+
+
+
+        top_left.add("Sales Intake")
+
+        bottom_right = DivWdg()
+        div.add(bottom_right)
+        bottom_right.add_style("position: absolute")
+        bottom_right.add_style("bottom: -1px")
+        bottom_right.add_style("right: -1px")
+        bottom_right.add_style("width: 10px")
+        bottom_right.add_style("height: 10px")
+        bottom_right.add_style("border: solid 1px blue")
+
+        bottom_right.add_behavior( {
+            'type': 'drag',
+            "cb_set_prefix": 'spt.pipeline.group.resize'
+        } )
+
+
+        div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+spt.pipeline.group = {};
+
+
+spt.pipeline.group.select_nodes = function(top) {
+    var pos1 = spt.pipeline.get_el_position(top);
+    var size = top.getSize();
+    var pos2 = {x: pos1.x + size.x, y: pos1.y + size.y};
+
+    spt.pipeline.select_nodes_by_box(pos1, pos2);
+
+}
+
+spt.pipeline.group.move_setup = function(evt, bvr, mouse_411) {
+}
+
+spt.pipeline.group.move_motion = function(evt, bvr, mouse_411) {
+}
+
+spt.pipeline.group.move_action = function(evt, bvr, mouse_411) {
+}
+
+spt.pipeline.group.resize_setup = function(evt, bvr, mouse_411) {
+    spt.pipeline.group.orig_mouse = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+
+    var parent = bvr.src_el.getParent(".spt_pipeline_group");
+    spt.pipeline.group.orig_size = parent.getSize();
+}
+
+spt.pipeline.group.resize_motion = function(evt, bvr, mouse_411) {
+    var parent = bvr.src_el.getParent(".spt_pipeline_group");
+    var size = parent.getSize();
+
+    var dx = mouse_411.curr_x - spt.pipeline.group.orig_mouse.x;
+    var dy = mouse_411.curr_y - spt.pipeline.group.orig_mouse.y;
+
+    var scale = spt.pipeline.get_scale();
+    dx = dx / scale;
+    dy = dy / scale;
+
+    parent.setStyle("width", spt.pipeline.group.orig_size.x + dx);
+    parent.setStyle("height", spt.pipeline.group.orig_size.y + dy);
+
+}
+
+spt.pipeline.group.resize_action = function(evt, bvr, mouse_411) {
+}
+
+            '''
+
+        } )
+
+
+        return div
+
+
 
 
     def get_folder(self, group_name):
@@ -5089,6 +5214,18 @@ spt.pipeline.draw_arrow = function(halfway, point0, size) {
 }
 
 
+
+spt.pipeline.draw_rect = function(pos1, pos2, color) {
+    var ctx = spt.pipeline.get_ctx();
+    if (color) {
+        ctx.strokeStyle = color;
+    }
+    ctx.strokeRect(pos1.x, pos1.y, pos2.x-pos1.x, pos2.y-pos1.y);
+}
+
+
+
+
 // Pan functionality
 spt.pipeline.orig_mouse_position = null;
 spt.pipeline.last_mouse_position = null;
@@ -5649,6 +5786,22 @@ spt.pipeline.match_snapshot = function(container) {
     outline.setStyle("left", left_pos);
     outline.setStyle("top", top_pos);
 }
+
+
+spt.pipeline.clear_snapshot = function(container) {
+    var top = spt.pipeline.top;
+
+    if (!container) {
+        container = top.getElement(".spt_pipeline_snapshot");
+    }
+
+    if (!container) {
+        var container = el.getElement(".spt_pipeline_snapshot");
+    }
+    container.innerHTML = "";
+
+}
+
 
 
 spt.pipeline.last_mouse_pos = null;
@@ -6418,6 +6571,8 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     }
 
     spt.pipeline.redraw_canvas();
+
+    spt.pipeline.clear_snapshot();
 
     spt.named_events.fire_event('pipeline|save', {});
 }

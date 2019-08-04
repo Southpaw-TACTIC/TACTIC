@@ -38,7 +38,7 @@ class SubMenuWdg(BaseRefreshWdg):
         self.opt_spec_list = kwargs['opt_spec_list']
 
         self.allow_icons = True
-        if kwargs.has_key('allow_icons'):
+        if 'allow_icons' in kwargs:
             self.allow_icons = kwargs['allow_icons']
 
 
@@ -55,14 +55,14 @@ class SubMenuWdg(BaseRefreshWdg):
         # verify the args
         args_keys = self.get_args_keys()
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            if key not in args_keys:
                 #raise WidgetException("Key [%s] not in accepted arguments" % key)
                 pass
 
         web = WebContainer.get_web()
         args_keys = self.get_args_keys()
         for key in args_keys.keys():
-            if not kwargs.has_key(key):
+            if key not in kwargs:
                 value = web.get_form_value(key)
                 kwargs[key] = value
 
@@ -98,7 +98,7 @@ class SubMenuWdg(BaseRefreshWdg):
             tr.add_class( "SPT_CTX_MENU_%s" % opt['type'].upper() )
             disabled = False
 
-            if opt.has_key( 'disabled' ) and opt['disabled']:
+            if opt.get('disabled'):
                 disabled = True
 
             if not disabled:
@@ -109,7 +109,7 @@ class SubMenuWdg(BaseRefreshWdg):
                                       'hover_class':'look_menu_hover'} )
 
                 if opt['type'] == 'action':
-                    if opt.has_key('bvr_cb') and type(opt['bvr_cb']) == dict:
+                    if 'bvr_cb' in opt and isinstance(opt['bvr_cb'], dict):
                         bvr = opt['bvr_cb']
                         bvr['cbjs_preaction'] = 'spt.ctx_menu.clear();'
                         # bvr['cbfn_preaction'] = 'spt.ctx_menu.clear'
@@ -138,7 +138,7 @@ class SubMenuWdg(BaseRefreshWdg):
                 td.add_styles("text-align: center; vertical-align: middle; width: %spx;" % icon_col_width)
                 td.add_looks("menu_icon_column")
 
-                if opt.has_key( 'icon' ):
+                if 'icon' in opt:
                     icon_wdg = IconWdg("", opt['icon'])
                     td.add( icon_wdg )
                     if disabled:
@@ -155,7 +155,7 @@ class SubMenuWdg(BaseRefreshWdg):
             td.add_style( "cursor: default" )
 
             label_str = ''
-            if opt.has_key( 'label' ):
+            if 'label' in opt:
                 label_str = opt.get('label')
             elif opt.get('type') == 'separator':
                 label_str = '<HR>'

@@ -10115,6 +10115,42 @@ spt.process_tool.toggle_side_bar = function(activator) {
         el2.setStyle("display", "");
         search.setStyle("display", "");
     }
+
+}
+
+
+spt.process_tool.show_side_bar = function(activator) {
+
+    var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+    var left = toolTop.getElement(".spt_pipeline_tool_left");
+    var right = toolTop.getElement(".spt_pipeline_tool_right");
+
+/*
+    
+    left.setStyle("margin-left", "0px");
+    left.setStyle("opacity", "1");
+    right.setStyle("margin-left", "250px");
+    left.gone = false;
+    setTimeout(function(){
+        left.setStyle("z-index", "");
+    }, 250);
+
+    bvr.src_el.setStyle("display", "none")
+
+
+    left.setStyle("margin-left", "-250px");
+    left.setStyle("opacity", "0");
+    right.setStyle("margin-left", "0px");
+    left.gone = true;
+    setTimeout(function(){
+        left.setStyle("z-index", "-1");
+    }, 250);
+
+    var show_icon = toolTop.getElement(".spt_show_sidebar");
+    show_icon.setStyle("display", "");
+
+*/
+
 }
 
 

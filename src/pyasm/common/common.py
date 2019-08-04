@@ -1719,7 +1719,7 @@ class RollbackImporter:
         print("uninstall ....")
         __builtin__.__import__ = self.realImport
         for modname, modinfo in self.newModules.items():
-            if not self.previousModules.has_key(modname):
+            if modname not in self.previousModules:
                 # Force reload when modname next imported
                 print("modname: ", modname)
                 if not sys.modules.get(modname):

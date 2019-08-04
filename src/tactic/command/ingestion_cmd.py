@@ -480,8 +480,6 @@ class IngestionCmd(Command):
 
 
 
-        #has_keyword = True
-        #if has_keyword:
         if search_type_sobj.column_exists('keywords'):
             keywords = " ".join(keywords)
             self.sobject.set_value("keywords", keywords)
