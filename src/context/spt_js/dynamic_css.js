@@ -147,10 +147,15 @@ spt.css.convert_hex_to_rgb_obj = function( hex_color_value )
 }
 
 
-spt.css.convert_hex_to_rgb_str = function( hex_color_value )
+spt.css.convert_hex_to_rgb_str = function( hex_color_value, alpha )
 {
     var rgb = spt.css.convert_hex_to_rgb_obj( hex_color_value );
-    return "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")";
+    if (alpha) {
+        return "rgba(" + rgb.r + "," + rgb.g + "," + rgb.b + "," + alpha + ")";
+    }
+    else {
+        return "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")";
+    }
 }
 
 
@@ -303,6 +308,10 @@ spt.css.copy_styles =  function( from_el, to_el, override_styles_str )
 }
 
 
+
+
+
+// DEPRECATED
 spt.css.has_look = function( look_to_check, el )
 {
     if( el.hasClass( "look_" + look_to_check ) ) {
@@ -312,6 +321,7 @@ spt.css.has_look = function( look_to_check, el )
 }
 
 
+// DEPRECATED
 spt.css.add_looks = function( looks_to_add, target_el )
 {
     if( ! looks_to_add ) {
@@ -354,6 +364,7 @@ spt.css.add_looks = function( looks_to_add, target_el )
 }
 
 
+// DEPRECATED
 spt.css.remove_looks = function( looks_list, target_el )
 {
     if( spt.get_typeof(looks_list) == 'string' ) {
