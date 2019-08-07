@@ -5994,7 +5994,6 @@ spt.table.set_changed_color = function(row, cell) {
 }
 
 spt.table._accept_single_edit = function(cell, new_value, undo) {
-    console.log("accept single edit");
     var old_value = cell.getAttribute("spt_input_value");
 
     if (old_value != new_value) {
@@ -6092,7 +6091,6 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
             }*/
         }
 
-        console.log(undo.saved);
         return undo;
     }
 }
@@ -6217,9 +6215,6 @@ spt.table.apply_undo_queue = function(undo_queue) {
         return;
     }
     var undo_queue = layout_top.undo_queue;
-
-    console.log(undo_queue);
-    
     if (!undo_queue) {
         return;
     }
@@ -6234,14 +6229,10 @@ spt.table.apply_undo_queue = function(undo_queue) {
             return;
         }
 
-        console.log(row);
-
         var cell = spt.table.get_cell(element_name, row);
         if (!cell) {
             return;
         }
-
-        console.log(cell);
 
         var undo_type = undo.type;
         if (undo_type) {
@@ -6253,24 +6244,17 @@ spt.table.apply_undo_queue = function(undo_queue) {
         // set it so it can be used for future changes in this undo queue
 
         var orig_value = cell.getAttribute("spt_input_value");
-        console.log("original value: " + orig_value);
-        console.log(cell.innerHTML);
 
         
         var new_value = undo.new_value;
-        console.log("new value: " + new_value);
         // remap to the new cell
         undo.cell = cell;
 
         var temp = cell.getAttribute("spt_orig_input_value");
         var bkg = cell.getAttribute("spt_orig_background");
-        console.log("temp: " + temp);
-        console.log("bkg: " + bkg);
-        console.log("saved: " + undo.saved);
         
 
         var saved = undo.saved;
-        console.log(saved == true);
 
         if (saved == true) {
             cell.removeClass("spt_cell_changed");
@@ -6354,16 +6338,12 @@ spt.table.save_changes = function(kwargs) {
                 continue;
             }
             var search_key = action.search_key;
-            console.log("search key:" + search_key);
             var element_name = action.element_name;
-            console.log("element_name:" + element_name);
 
             var action_type = action.type;
-            console.log("action_type:" + action_type);
 
             if (!action_type) {
                 var item_data = updates[search_key];
-                console.log("action_type:" + action_type);
                 if (!item_data) {
                     item_data = {};
                     updates[search_key] = item_data;
