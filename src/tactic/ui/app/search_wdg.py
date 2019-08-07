@@ -552,7 +552,7 @@ class SearchWdg(BaseRefreshWdg):
             }
 
             .spt_search_top .spt_search_filters {
-                min-width: 740px;
+                min-width: 800px;
             }
 
             .spt_search_top .spt_saved_searches_top {
