@@ -5994,6 +5994,7 @@ spt.table.set_changed_color = function(row, cell) {
 }
 
 spt.table._accept_single_edit = function(cell, new_value, undo) {
+    console.log("accept single edit");
     var old_value = cell.getAttribute("spt_input_value");
 
     if (old_value != new_value) {
@@ -6024,6 +6025,7 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
         undo.search_key = search_key;
         undo.element_name = element_name;
         undo.cbjs_action = null;
+        undo.saved = false;
 
 
         var row = cell.getParent(".spt_table_row");
@@ -6090,7 +6092,7 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
             }*/
         }
 
-
+        console.log(undo.saved);
         return undo;
     }
 }
@@ -6215,62 +6217,82 @@ spt.table.apply_undo_queue = function(undo_queue) {
         return;
     }
     var undo_queue = layout_top.undo_queue;
+
+    console.log(undo_queue);
     
     if (!undo_queue) {
         return;
     }
     
-    var undo = undo_queue[undo_queue.length-1];
-    var search_key = undo.search_key;
-    var element_name = undo.element_name;
-    var orig_cell = undo.cell;
-    var row = spt.table.get_row_by_search_key(search_key);
-    if (!row) {
-        return;
-    }
+    for (var i = 0; i < undo_queue.length; i++) {
+        var undo = undo_queue[i];
+        var search_key = undo.search_key;
+        var element_name = undo.element_name;
 
-    var cell = spt.table.get_cell(element_name, row);
-    if (!cell) {
-        return;
-    }
-
-    var undo_type = undo.type;
-    if (undo_type) {
-        undo.redo();
-        return;
-    }
-
-    // get the original value.  If there is no original value, then
-    // set it so it can be used for future changes in this undo queue
-
-    var orig_value = cell.getAttribute("spt_orig_value");
-    if (orig_value == null) {
-        var orig_value = cell.getAttribute("spt_input_value");
-        cell.setAttribute("spt_orig_value", orig_value);
-    }
-    cell.innerHTML = undo.new_html;
-    cell.setAttribute("spt_input_value", undo.new_value);
-    var new_value = undo.new_value;
-    // remap to the new cell
-    undo.cell = cell;
-    if (new_value == orig_value) {
-        cell.removeClass("spt_cell_changed");
-        row.removeClass("spt_row_changed");
-        var row_background = row.getAttribute("spt_orig_background");
-        if (!row_background || row_background == "null") row_background = 'transparent';
-
-        var cell_background = cell.getAttribute("spt_orig_background");
-        if (!cell_background) {
+        var row = spt.table.get_row_by_search_key(search_key);
+        if (!row) {
             return;
         }
-        cell.setStyle("background-color", cell_background);
-        row.setStyle("background-color", row_background);
-        row.setAttribute("spt_background", row_background);
-    }
-    else {
-        cell.addClass("spt_cell_changed");
-        row.addClass("spt_row_changed");
-        spt.table.set_changed_color(row, cell);
+
+        console.log(row);
+
+        var cell = spt.table.get_cell(element_name, row);
+        if (!cell) {
+            return;
+        }
+
+        console.log(cell);
+
+        var undo_type = undo.type;
+        if (undo_type) {
+            undo.redo();
+            return;
+        }
+
+        // get the original value.  If there is no original value, then
+        // set it so it can be used for future changes in this undo queue
+
+        var orig_value = cell.getAttribute("spt_input_value");
+        console.log("original value: " + orig_value);
+        console.log(cell.innerHTML);
+
+        
+        var new_value = undo.new_value;
+        console.log("new value: " + new_value);
+        // remap to the new cell
+        undo.cell = cell;
+
+        var temp = cell.getAttribute("spt_orig_input_value");
+        var bkg = cell.getAttribute("spt_orig_background");
+        console.log("temp: " + temp);
+        console.log("bkg: " + bkg);
+        console.log("saved: " + undo.saved);
+        
+
+        var saved = undo.saved;
+        console.log(saved == true);
+
+        if (saved == true) {
+            cell.removeClass("spt_cell_changed");
+            row.removeClass("spt_row_changed");
+            var statuses_color = JSON.parse(cell.getAttribute("spt_colors"));
+            var status = cell.getAttribute("spt_input_value");
+            var cell_color = statuses_color[status];
+
+            if (cell_color == null) {
+                continue;
+            }
+            cell.setStyle("background-color", cell_color);
+            row.setStyle("background-color", 'white');
+            row.setAttribute("spt_background", 'white');
+        }
+        else {
+            cell.innerHTML = undo.new_html;
+            cell.setAttribute("spt_input_value", undo.new_value);
+            cell.addClass("spt_cell_changed");
+            row.addClass("spt_row_changed");
+            spt.table.set_changed_color(row, cell);
+        }
     }
 }
 
@@ -6313,8 +6335,8 @@ spt.table.save_changes = function(kwargs) {
 
 
     // collapse updates from undo_queue for be classified by search_type
-    //var use_undo_queue = true;
-    var use_undo_queue = false;
+    var use_undo_queue = true;
+    //var use_undo_queue = false;
 
     if (use_undo_queue) {
 
@@ -6327,13 +6349,21 @@ spt.table.save_changes = function(kwargs) {
 
         for (var i = 0; i < undo_queue.length; i++) {
             var action = undo_queue[i];
+            var saved = action.saved;
+            if (saved == true){
+                continue;
+            }
             var search_key = action.search_key;
+            console.log("search key:" + search_key);
             var element_name = action.element_name;
+            console.log("element_name:" + element_name);
 
             var action_type = action.type;
+            console.log("action_type:" + action_type);
 
             if (!action_type) {
                 var item_data = updates[search_key];
+                console.log("action_type:" + action_type);
                 if (!item_data) {
                     item_data = {};
                     updates[search_key] = item_data;
@@ -6347,6 +6377,8 @@ spt.table.save_changes = function(kwargs) {
                 updates[search_key] = action.get_data();
                 extra_updates[search_key] = action.get_extra_data();
             }
+
+            action.saved = true;
 
 
         }
