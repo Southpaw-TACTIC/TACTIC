@@ -1141,7 +1141,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node_name = "node0";
         var node = spt.pipeline.add_node(node_name);
 
-        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+        if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
             spt.pipeline.set_node_kwarg(node, 'version', 2);
 
         var top = bvr.src_el.getParent(".spt_pipeline_folder")
@@ -4457,7 +4457,7 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
         // BACKWARDS COMPATIBILITY
-        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+        if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
             spt.pipeline.set_node_kwarg(to_node, "version", 2);
 
         // FIXME: hard coded

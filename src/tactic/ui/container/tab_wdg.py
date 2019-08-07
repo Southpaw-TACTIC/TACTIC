@@ -393,7 +393,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         }
 
         label.setAttribute("title", title);
-        label.innerHTML = display_title;
+        label.innerHTML = display_title + label.innerHTML;
 
         header.setAttribute("spt_class_name", class_name);
         var kwargs_str = JSON.stringify(kwargs);
@@ -426,6 +426,26 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var content_boxes = spt.tab.get_contents();
         var last_content = content_boxes[content_boxes.length -1];
         content_box.inject(last_content, "after");
+
+        if (kwargs.count) {
+            var count_div = header.getElement(".spt_tab_header_count");
+
+            var expression = kwargs.count;
+            var search_key = kwargs.search_key;
+            var eval_expression = kwargs.eval_count;
+
+            var server = TacticServerStub.get();
+            var count = server.eval(eval_expression);
+
+            count_div.innerText = count;
+
+            var update_data = {
+                expression: expression,
+                search_key: search_key
+            };
+
+            spt.update.add(count_div, update_data);
+        }
 
     }
 
@@ -496,7 +516,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         }
 
     }
-
 
 
     if (! class_name) {
@@ -928,7 +947,7 @@ spt.tab.save_state = function() {
             name: element_name,
             title: title
         };
-        attrs_list.push(attrs)
+        
 
         var class_name = header.getAttribute("spt_class_name");
         class_names.push(class_name);
@@ -943,6 +962,10 @@ spt.tab.save_state = function() {
             kwargs = {};
         }
         kwargs_list.push(kwargs);
+
+        if (kwargs.count)
+            attrs.count = kwargs.count;
+        attrs_list.push(attrs)
     }
 
     var server = TacticServerStub.get();
@@ -2569,7 +2592,7 @@ spt.tab.view_definition = function(bvr) {
         } )
 
 
-
+        count = attrs.get("count")
 
         header.add_attr("spt_element_name", element_name)
         header.add_attr("spt_title", title)
@@ -2577,6 +2600,7 @@ spt.tab.view_definition = function(bvr) {
         if not is_template:
             header.add_attr("spt_class_name", class_name)
             if kwargs:
+                kwargs['count'] = count
                 # FIXME: this kwargs processing is a big HACK ...
                 # need to extract what add_behavior does.
                 kwargs_str = Common.convert_to_json(kwargs)
@@ -2604,8 +2628,14 @@ spt.tab.view_definition = function(bvr) {
  
         title_div = DivWdg()
 
+        count_wdg = SpanWdg()
+        count_wdg.add_class("badge spt_tab_header_count")
+        title_div.add(count_wdg)
+        count_wdg.add_style("float: right")
+        count_wdg.add_style("font-size: 0.7em")
+        count_wdg.add_style("margin-left: 10px")
+
         icon = None
-        count = attrs.get("count")
         if icon:
             icon = IconWdg(name="whatever", icon=icon)
             title_div.add(icon)
@@ -2625,12 +2655,7 @@ spt.tab.view_definition = function(bvr) {
 
             if sobject:
                 value = Search.eval(count, sobject)
-                count_wdg = SpanWdg(value)
-                count_wdg.add_class("badge")
-                title_div.add(count_wdg)
-                count_wdg.add_style("float: right")
-                count_wdg.add_style("font-size: 0.7em")
-                count_wdg.add_style("margin-left: 10px")
+                count_wdg.add(value)
                 if count_color:
                     count_wdg.add_style("background", count_color)
 

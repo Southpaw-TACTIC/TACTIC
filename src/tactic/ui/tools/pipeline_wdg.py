@@ -7271,7 +7271,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
  
 
-        version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled") == "true"
+        version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled") != "false"
 
         button = ButtonNewWdg(title="Add Process", icon="FA_PLUS")
         button_row.add(button)
@@ -8972,6 +8972,13 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 border: none;
             }
 
+            .spt_pipeline_document .spt_document_count {
+                margin-left: 5px;
+                color: darkred;
+                text-decoration: underline;
+                font-weight: bold;
+            }
+
             ''')
 
         return styles
@@ -9437,7 +9444,8 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
         label_wdg = DivWdg()
         label_wdg.add_class("spt_document_label spt_group_label")
         label_wdg.add_class("document-group-content")
-        label_wdg.add(label)
+        label_wdg.add("<span class='spt_label_span'>%s</span>" % label)
+        label_wdg.add("<span class='spt_document_count'></span>")
 
         label_wdg.add_behavior({
             'type': 'click_up',
@@ -9454,6 +9462,27 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
 
             '''
 
+            })
+
+        label_wdg.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            var row = bvr.src_el.getParent(".spt_group_row");
+            if (row.getAttribute("spt_group_level") != 1) return;
+
+            var count_div = bvr.src_el.getElement(".spt_document_count");
+            var count = 0;
+
+            while (row.nextElementSibling && row.nextElementSibling.getAttribute("spt_group_level") != 1) {
+                var row = row.nextElementSibling;
+                if (row.hasClass("spt_table_row"))
+                    count++;
+            }
+
+            count_div.innerText = count;
+
+            '''
             })
 
         return label_wdg
