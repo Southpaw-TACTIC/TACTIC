@@ -557,6 +557,9 @@ class DiscussionWdg(BaseRefreshWdg):
                 server.abort();
             }
 
+            attach_top.files = [];
+            var attach_list = attach_top.getElement(".spt_attachment_list");
+            attach_list.innerHTML = "";
             spt.discussion.refresh(top);
 
             spt.app_busy.hide();
@@ -2545,7 +2548,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
        
         from tactic.ui.input import UploadButtonWdg 
         on_complete = '''
-       
+
         var files = spt.html5upload.get_files(); 
 
         var top = bvr.src_el.getParent(".spt_attachment_top")
@@ -2616,12 +2619,14 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         upload_init = ''' 
         var server = TacticServerStub.get();
-        var ticket_key = server.start({title: 'New Note'});
         var top = bvr.src_el.getParent(".spt_attachment_top");
-        top.setAttribute('ticket_key', ticket_key);
+        var ticket_key = top.getAttribute('ticket_key');
+
+        if (!ticket_key) {
+          ticket_key = server.start({title: 'New Note'});
+          top.setAttribute('ticket_key', ticket_key);
+        }
         upload_file_kwargs['ticket'] = ticket_key;
-      
-       
         '''
 
       

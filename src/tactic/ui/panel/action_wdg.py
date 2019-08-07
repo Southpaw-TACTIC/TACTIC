@@ -42,13 +42,13 @@ class TableActionWdg(Widget):
         # verify the args
         args_keys = self.get_args_keys()
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            if key not in args_keys:
                 raise WidgetException("Key [%s] not in accepted arguments" % key)
 
         web = WebContainer.get_web()
         args_keys = self.get_args_keys()
         for key in args_keys.keys():
-            if not kwargs.has_key(key):
+            if key not in kwargs:
                 value = web.get_form_value(key)
                 kwargs[key] = value
 
@@ -96,13 +96,13 @@ class ViewActionWdg(Widget):
         # verify the args
         args_keys = self.get_args_keys()
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            if key not in args_keys:
                 raise WidgetException("Key [%s] not in accepted arguments" % key)
 
         web = WebContainer.get_web()
         args_keys = self.get_args_keys()
         for key in args_keys.keys():
-            if not kwargs.has_key(key):
+            if key not in kwargs:
                 value = web.get_form_value(key)
                 kwargs[key] = value
 

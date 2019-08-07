@@ -13,7 +13,12 @@ from __future__ import with_statement
 __all__ = ['EncryptUtil']
 
 import os, struct, hashlib
-from Crypto.Cipher import AES
+
+try:
+    from Cryptodome.Cipher import AES
+except ImportError:
+    from Crypto.Cipher import AES
+
 
 # Repurposed from:
 # http://eli.thegreenplace.net/2010/06/25/aes-encryption-of-files-in-python-with-pycrypto/
