@@ -324,8 +324,8 @@ def xmlrpc_decorator(meth):
 
             try:
                 #if meth.__name__ in QUERY_METHODS:
-                if meth.__name__ != "execute_cmd":
-                    print "---------METH: ", meth.__name__
+                multi_site = Config.get_value("master", "enabled")
+                redirect = False
 
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)
@@ -336,17 +336,16 @@ def xmlrpc_decorator(meth):
                     else:
                         cmd = get_full_cmd(self, meth, ticket, args)
 
-                    multi_site = Config.get_value("master", "enabled")
                     if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd":
                         cmd_class = Common.create_from_class_path(args[0], {}, {})
                         if cmd_class.is_update():
-                            result = self.redirect_to_server(args)
-                            print ("---------new", result, cmd.is_update(), meth.__name__)
+                            result = self.redirect_to_server(meth.__name__, args)
                             return self.browser_res(meth, result)
-                    
-                    
                 else:
-                    cmd = get_full_cmd(self, meth, ticket, args)
+                    if multi_site:
+                        result = self.redirect_to_server(meth.__name__, args)
+                        return self.browser_res(meth, result)
+
 
                 profile_flag = False
 
@@ -1028,7 +1027,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     #@trace_decorator
-    def redirect_to_server(self, args):
+    def redirect_to_server(self, meth, args):
 
         master_ticket = Config.get_value("master", "login_ticket")
         url = Config.get_value("master", "rest_url")
@@ -1040,7 +1039,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         data = {
             'login_ticket': master_ticket,
-            'method': 'execute_cmd',
+            'method': meth,
             'class_name': cmd,
             "args" : kwargs,
         }
