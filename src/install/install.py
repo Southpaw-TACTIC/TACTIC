@@ -794,14 +794,23 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         print
         print("Verifying Python modules are properly installed..." )
         print
-
-        try:
-            import Crypto
-        except ImportError:
-            print("ERROR: Cannot import Crypto python module.  Please Install.")
-            print
-            raise
  
+        has_crypto = False
+	try:
+	    import Cryptodome
+	    has_crypto = True
+	except ImportError:
+	    try:
+		import Crypto
+		has_crypto = True
+		print("Cryptodome is reccomended over Crypto since Crypto is not actively maintained.")
+	    except ImportError:
+		pass
+
+	if not has_crypto:
+	    print("ERROR: Cannot import Cryptodome or Crypto python module.  Please Install.")
+	    print
+	    raise
 
         try:
            #import Image
