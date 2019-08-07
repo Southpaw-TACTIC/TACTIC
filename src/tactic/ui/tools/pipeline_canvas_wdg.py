@@ -3423,6 +3423,9 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
             editor_top.addClass("spt_has_changes");
     }
 
+    // BACKWARDS COMPATIBILITY
+    if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
+        spt.pipeline.set_node_kwarg(new_node, "version", 2);
 
     return new_node;
 }
