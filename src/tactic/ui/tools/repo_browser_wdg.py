@@ -1831,8 +1831,6 @@ class RepoBrowserDirListWdg(DirListWdg):
         dir_cbjs_action = '''
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
-            //var job_asset = bvr.src_el.getElement("span") || bvr.src_el;
-            //var job_asset_code = job_asset.innerHTML;
 
                 
             // Get parent search keys
@@ -3682,9 +3680,6 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
                 parent_search.add_op("or")
                 search = parent_search
             else:
-                # job_code = self.kwargs.get("search_code")
-                # search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [], search_code=job_code)
-                # parent_key = self.kwargs.get("parent_key")
                 file_search = RepoBrowserSearchWrapper.get_file_search(reldir, [parent_type], [])
                 search = Search(search_type)
                 search.add_relationship_search_filter(file_search)
