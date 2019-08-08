@@ -31,6 +31,8 @@ from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
 
+from pyasm.biz import ProjectSetting
+
 from .base_table_layout_wdg import BaseTableLayoutWdg
 
 import six
@@ -1258,6 +1260,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             self.handle_row(table, sobject, row, level)
 
 
+        undo_queue_save = ProjectSetting.get_value_by_key("table_layout/undo_queue/save") or "false"
+        undo_queue_refresh = ProjectSetting.get_value_by_key("table_layout/undo_queue/refresh") or "false"
+
+        table.add_behavior({
+            'type': 'load',
+            'undo_queue_save': undo_queue_save,
+            'undo_queue_refresh': undo_queue_refresh,
+            'cbjs_action': '''
+                spt.table.undo_queue_save = bvr.undo_queue_save;
+                spt.table.undo_queue_refresh = bvr.undo_queue_refresh;
+            '''
+        })
+
 
         # dynamically load rows
         if has_loading:
@@ -1305,8 +1320,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     }
                     return;
                 }
-                // FIXME: Not sure why we need to have a apply undo queue here
                 spt.table.apply_undo_queue();
+                
 
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
                 if (bvr.expand_on_load) {
@@ -1332,6 +1347,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 setTimeout( function() {
                     spt.table.apply_undo_queue();
                 }, 0 );
+                
             '''
             } )
  
@@ -2970,7 +2986,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
-
         collapse_default = self.kwargs.get("collapse_default")
         if collapse_default in [True, 'true']:
             collapse_level = self.kwargs.get("collapse_level") or -1
@@ -2978,22 +2993,16 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'type': 'load',
                 'collapse_level': collapse_level,
                 'cbjs_action': '''
-
                 if (bvr.collapse_level != -1) {
                     var row = bvr.src_el.getParent(".spt_group_row");
                     var group_level = row.getAttribute("spt_group_level");
-                    if (group_level != bvr.collapse_level)
-                        return;
+                    if (group_level != bvr.collapse_level) return;
                 }
-
                 bvr.src_el.getElement(".spt_group_row_collapse").click();
-
                 '''
                 })
 
         title_div.add_style("width: 100%")
-
-
 
         # build the inner flex layout
         td_inner = DivWdg()
@@ -6111,7 +6120,6 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
                 labels[element_name] = cell.getAttribute("spt_input_value");
             }*/
         }
-
         return undo;
     }
 }
@@ -6228,6 +6236,9 @@ spt.table.redo_last = function() {
 
 
 spt.table.apply_undo_queue = function(undo_queue) {
+    if (spt.table.undo_queue_refresh == "false"){
+        return;
+    }
     var layout = spt.table.get_layout();
     var layout_top = layout.getParent(".spt_layout_top");
     // sometimes layout_top is null
@@ -6247,12 +6258,12 @@ spt.table.apply_undo_queue = function(undo_queue) {
 
         var row = spt.table.get_row_by_search_key(search_key);
         if (!row) {
-            return;
+            continue;
         }
 
         var cell = spt.table.get_cell(element_name, row);
         if (!cell) {
-            return;
+            continue;
         }
 
         var undo_type = undo.type;
@@ -6265,19 +6276,18 @@ spt.table.apply_undo_queue = function(undo_queue) {
         // set it so it can be used for future changes in this undo queue
 
         var orig_value = cell.getAttribute("spt_input_value");
-
-        
+        if (!orig_value){
+            continue;
+        }
         var new_value = undo.new_value;
+
         // remap to the new cell
         undo.cell = cell;
 
         var temp = cell.getAttribute("spt_orig_input_value");
         var bkg = cell.getAttribute("spt_orig_background");
         
-
-        var saved = undo.saved;
-
-        if (saved == true) {
+        if (orig_value == new_value) {
             cell.removeClass("spt_cell_changed");
             row.removeClass("spt_row_changed");
             var statuses_color = JSON.parse(cell.getAttribute("spt_colors"));
@@ -6340,10 +6350,9 @@ spt.table.save_changes = function(kwargs) {
 
 
     // collapse updates from undo_queue for be classified by search_type
-    var use_undo_queue = true;
-    //var use_undo_queue = false;
+    var use_undo_queue = spt.table.undo_queue_save;
 
-    if (use_undo_queue) {
+    if (use_undo_queue == "true") {
 
         var layout = spt.table.get_layout();
         var layout_top = layout.getParent(".spt_layout_top")
@@ -7485,15 +7494,14 @@ spt.table.get_parent_groups = function(src_el, level) {
     var lowest_group_level = group_level;
 
     while (true) {
-        // get previous group
+         // get previous group
         var row = row.getPrevious(".spt_table_row_item");
         if (!row)
             break;
-
         // check if level is greater than lowest level reached
-        if ( row.getAttribute("spt_group_level") >= lowest_group_level )
-            continue
-
+        if ( row.getAttribute("spt_group_level") >= lowest_group_level ){
+            continue;
+        }
         // set new lowest_group_level, check if its equal to level
         lowest_group_level = row.getAttribute("spt_group_level");
         if (level && level == row.getAttribute("spt_group_level")) {
