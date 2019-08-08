@@ -432,10 +432,9 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
             var expression = kwargs.count;
             var search_key = kwargs.search_key;
-            var eval_expression = kwargs.eval_count;
 
             var server = TacticServerStub.get();
-            var count = server.eval(eval_expression);
+            var count = server.eval(expression, {search_keys: search_key});
 
             count_div.innerText = count;
 

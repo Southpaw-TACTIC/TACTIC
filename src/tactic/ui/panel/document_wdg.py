@@ -319,7 +319,7 @@ spt.document.item.open_edit = function(top) {
     label.setStyle("display", "none");
     input.setStyle("display", "");
     top.toggled = true;
-    input.value = label.getElement(".spt_label_span").innerText;
+    input.value = label.getElement(".spt_group_label").innerText;
 }
 
 spt.document.item.close_edit = function(top) {
@@ -332,7 +332,7 @@ spt.document.item.close_edit = function(top) {
     top.toggled = false;
 
     if (input.value != "" && input.value != label.innerText) {
-        label.getElement(".spt_label_span").innerText = input.value;
+        label.getElement(".spt_group_label").innerText = input.value;
         return true;
     }
     else return false;

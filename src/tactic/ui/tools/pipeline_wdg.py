@@ -4892,6 +4892,20 @@ class ApprovalInfoWdg(BaseInfoWdg):
             } )
 
 
+        setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
+        if setting in ["true"]:
+
+            from spt.modules.workflow import TaskButtonDetailSettingWdg, TaskDetailSettingWdg
+            #detail_wdg = TaskDetailSettingWdg(
+            detail_wdg = TaskButtonDetailSettingWdg(
+                    **self.kwargs
+            )
+
+            #detail_wdg = self.get_detail_wdg()
+            top.add(detail_wdg)
+            detail_wdg.add_style("margin: 10px")
+
+
 
 
         form_wdg = DivWdg()
@@ -9476,9 +9490,9 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
     def get_label_wdg(self, uncategorized, label):
 
         label_wdg = DivWdg()
-        label_wdg.add_class("spt_document_label spt_group_label")
+        label_wdg.add_class("spt_document_label")
         label_wdg.add_class("document-group-content")
-        label_wdg.add("<span class='spt_label_span'>%s</span>" % label)
+        label_wdg.add("<span class='spt_group_label'>%s</span>" % label)
         label_wdg.add("<span class='spt_document_count'></span>")
 
         label_wdg.add_behavior({
@@ -9538,7 +9552,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
             var input = top.getElement(".spt_document_input");
 
             if (top.hasClass("spt_unsaved_group")) {
-                var label = top.getElement(".spt_document_label");
+                var label = top.getElement(".spt_group_label");
                 label.innerText = "";
 
                 if (input.value == "") input.value = spt.document.item.generate_name();
