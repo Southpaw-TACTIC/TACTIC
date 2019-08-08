@@ -6340,8 +6340,8 @@ spt.table.save_changes = function(kwargs) {
 
 
     // collapse updates from undo_queue for be classified by search_type
-    var use_undo_queue = true;
-    //var use_undo_queue = false;
+    //var use_undo_queue = true;
+    var use_undo_queue = false;
 
     if (use_undo_queue) {
 
