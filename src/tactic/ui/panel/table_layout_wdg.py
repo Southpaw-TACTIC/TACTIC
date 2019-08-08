@@ -1260,17 +1260,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             self.handle_row(table, sobject, row, level)
 
 
-        undo_queue_save = ProjectSetting.get_value_by_key("table_layout/undo_queue/save")
-        undo_queue_refresh = ProjectSetting.get_value_by_key("table_layout/undo_queue/refresh")
+        undo_queue_save = ProjectSetting.get_value_by_key("table_layout/undo_queue/save") or "false"
+        undo_queue_refresh = ProjectSetting.get_value_by_key("table_layout/undo_queue/refresh") or "false"
 
         table.add_behavior({
             'type': 'load',
             'undo_queue_save': undo_queue_save,
             'undo_queue_refresh': undo_queue_refresh,
             'cbjs_action': '''
-                if (!spt.table){
-                    spt.table = {};
-                }
                 spt.table.undo_queue_save = bvr.undo_queue_save;
                 spt.table.undo_queue_refresh = bvr.undo_queue_refresh;
             '''
@@ -2989,9 +2986,23 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
+        collapse_default = self.kwargs.get("collapse_default")
+        if collapse_default in [True, 'true']:
+            collapse_level = self.kwargs.get("collapse_level") or -1
+            swap.add_behavior({
+                'type': 'load',
+                'collapse_level': collapse_level,
+                'cbjs_action': '''
+                if (bvr.collapse_level != -1) {
+                    var row = bvr.src_el.getParent(".spt_group_row");
+                    var group_level = row.getAttribute("spt_group_level");
+                    if (group_level != bvr.collapse_level) return;
+                }
+                bvr.src_el.getElement(".spt_group_row_collapse").click();
+                '''
+                })
+
         title_div.add_style("width: 100%")
-
-
 
         # build the inner flex layout
         td_inner = DivWdg()
@@ -6269,6 +6280,7 @@ spt.table.apply_undo_queue = function(undo_queue) {
             continue;
         }
         var new_value = undo.new_value;
+
         // remap to the new cell
         undo.cell = cell;
 
@@ -7482,22 +7494,21 @@ spt.table.get_parent_groups = function(src_el, level) {
     var lowest_group_level = group_level;
 
     while (true) {
-
-        var group = row.getPrevious(".spt_table_row_item");
-        if (!group) {
+         // get previous group
+        var row = row.getPrevious(".spt_table_row_item");
+        if (!row)
             break;
+        // check if level is greater than lowest level reached
+        if ( row.getAttribute("spt_group_level") >= lowest_group_level ){
+            continue;
         }
-        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
-            row = group;
-            continue
-        }
-        lowest_group_level = group.getAttribute("spt_group_level");
-        if (level && level == group.getAttribute("spt_group_level")) {
-            return group;
+        // set new lowest_group_level, check if its equal to level
+        lowest_group_level = row.getAttribute("spt_group_level");
+        if (level && level == row.getAttribute("spt_group_level")) {
+            return row;
         } else if (!level) {
-            group_parents.push(group);
+            group_parents.push(row);
         }
-        row = group;
     }
 
     return group_parents;
