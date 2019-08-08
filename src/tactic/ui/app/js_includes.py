@@ -86,6 +86,10 @@ class JSIncludes(object):
 
         # TEST
         "mooScrollable/Scrollable.js",
+
+        #"html2canvas.js",
+
+
     ]
 
 

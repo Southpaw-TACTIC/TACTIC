@@ -42,20 +42,28 @@ class Scheduler(object):
     def get_all_tasks(self):
         return self.tasks
 
+    def get_task_names(self):
+        return self.tasks.keys()
+
     def cancel_task(self, name, delay=0):
         task = self.tasks.get(name)
         if not task:
             print("WARNING: cannot cancel.  Task [%s] not found." % name)
             return
 
+        self.scheduler.cancel(task)
+        del(self.tasks[name])
+        return
+        """
         class CancelTask(SchedulerTask):
             def execute(self2):
                 print("Cancelling task [%s]" % name)
                 self.scheduler.cancel(task)
                 del(self.tasks[name])
 
-        cancel_name = "cancel_%s" % self.tasks.get("name")
+        cancel_name = "cancel_%s" % self.tasks.get(name)
         self.add_single_task( CancelTask(name=cancel_name), delay=delay )
+        """
 
 
     def _process_task(self, task, mode):

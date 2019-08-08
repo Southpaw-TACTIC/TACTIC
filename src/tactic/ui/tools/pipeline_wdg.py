@@ -6455,7 +6455,7 @@ class NewProcessInfoCmd(Command):
 
         event = "process|action"
 
-        from trigger_wdg import TriggerToolWdg
+        from .trigger_wdg import TriggerToolWdg
 
         folder = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, self.pipeline_code)
         title = self.process_sobj.get_code()
@@ -6613,7 +6613,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         
         has_change_action = '''
             bvr.src_el.addClass("spt_has_changes");
-        '''
+        ''';
 
         top.add_named_listener('pipeline|change', has_change_action)
 
