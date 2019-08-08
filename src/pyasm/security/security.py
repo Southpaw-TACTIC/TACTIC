@@ -1657,9 +1657,6 @@ class Security(Base):
     def login_user_without_password(self, login_name, expiry=None):
         '''login a user without a password.  This should be used sparingly'''
 
-        # Probably should never be called
-        raise Exception("login_user_without password")
-
         search = Search("sthpw/login")
         search.add_filter("login", login_name)
         self._login = search.get_sobject()
@@ -1973,8 +1970,15 @@ class Security(Base):
 
 
 import pickle, os, base64
-from Crypto.PublicKey import RSA
-from Crypto.Hash import MD5
+
+try:
+    from Cryptodome.PublicKey import RSA
+    from Cryptodome.Hash import MD5, SHA256
+    from Cryptodome.Signature import pkcs1_15
+except ImportError:
+    from Crypto.PublicKey import RSA
+    from Crypto.Hash import MD5
+
 
 # HACK:  From PyCrypto-2.0.1 to PyCrypt-2.3, the install datastructure: RSAobj
 # was changed to _RSAobj.  This means that the unwrapped key, which is basically
@@ -1989,36 +1993,57 @@ except:
     pass
 
 
-class LicenseKey(object):
-    def __init__(self, public_key):
-        # unwrap the public key (for backwards compatibility
-        unwrapped_key = self.unwrap("Key", public_key)
-        try:
-            # get the size and key object
-            haspass, self.size, keyobj = pickle.loads(unwrapped_key)
-            self.algorithm, self.keyobj = pickle.loads(keyobj.encode())
-        except Exception as e:
-            raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
 
+class LicenseKey(object):
+    def __init__(self, public_key, version="2"):
+        self.version = version
+        
+        # unwrap the public key (for backwards compatibility)
+        unwrapped_key = self.unwrap("Key", public_key)
+        
+        if version == "1":
+            try:
+                # get the size and key object
+                haspass, self.size, keyobj = pickle.loads(unwrapped_key)
+                self.algorithm, self.keyobj = pickle.loads(keyobj.encode())
+            except Exception as e:
+                raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
+        elif version == "2":
+            try:
+                self.keyobj = RSA.import_key(unwrapped_key)
+            except Exception as e:
+                raise LicenseException("License key corrupt. Please verify license file. %s" %e.__str__())
+        else:
+            raise LicenseException("License version not recognized.")
 
 
     def verify_string(self, raw, signature):
         # unwrap the signature
         unwrapped_signature = self.unwrap("Signature", signature)
 
-        # deconstruct the signature
-        algorithm, raw_signature = pickle.loads(unwrapped_signature)
-        assert self.algorithm == algorithm
+        if self.version == "1":
+            # deconstruct the signature
+            algorithm, raw_signature = pickle.loads(unwrapped_signature)
+            assert self.algorithm == algorithm
 
-        # MD5 the raw text
-        m = MD5.new()
-        m.update(raw.encode())
-        d = m.digest()
-
-        if self.keyobj.verify(d, raw_signature):
-            return True
+            # MD5 the raw text
+            m = MD5.new()
+            m.update(raw.encode())
+            d = m.digest()
+            
+            if self.keyobj.verify(d, raw_signature):
+                return True
+            else:
+                return False
         else:
-            return False
+            msg = raw.encode('utf-8')
+            h = SHA256.new(msg)
+            try:
+                pkcs1_15.new(self.keyobj).verify(h, unwrapped_signature)
+                return True
+            except (ValueError, TypeError):
+                return False
+
 
     def unwrap(self, key_type, msg):
         msg = msg.replace("<StartPycrypto%s>" % key_type, "")
@@ -2033,10 +2058,9 @@ class LicenseKey(object):
 
 
 
-
-
 class LicenseException(Exception):
     pass
+
 
 class License(object):
     license_path = "%s/tactic-license.xml" % Environment.get_license_dir()
@@ -2087,6 +2111,8 @@ class License(object):
         data_node = self.xml.get_node("license/data")
         data = self.xml.to_string(data_node).strip()
         public_key = str(self.xml.get_value("license/public_key"))
+        
+        version = self.xml.get_value("license/data/version")
 
         # the data requires a very specific spacing.  4Suite puts out a
         # different dump and lxml and unfortunately, the license key is
@@ -2099,7 +2125,7 @@ class License(object):
 
         # verify the signature
         if self.verify_flag:
-            key = LicenseKey(public_key)
+            key = LicenseKey(public_key, version=version)
             if not key.verify_string(data, signature):
                 # will be redefined in constructor
                 self.xml = None

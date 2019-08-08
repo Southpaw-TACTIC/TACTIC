@@ -2950,8 +2950,11 @@ class TabSaveStateCmd(Command):
             xml.set_attribute(display, "class", class_name)
 
             for key, value in kwargs.items():
-                attr = xml.create_text_element(key, value)
-                xml.append_child(display, attr)
+                if (key == 'count'):
+                    xml.set_attribute(element, key, value)
+                else:
+                    attr = xml.create_text_element(key, value)
+                    xml.append_child(display, attr)
 
         xml_string = xml.to_string()
 

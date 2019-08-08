@@ -20,6 +20,31 @@ class ConfigUpgrade(BaseUpgrade):
 
 
     #
+    # 4.7.0.a08
+    #
+    def upgrade_v4_7_0_a08_002(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE jsonb USING state::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE json;
+            ''')
+
+
+    def upgrade_v4_7_0_a08_001(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "spt_process" ALTER COLUMN "state" TYPE jsonb USING state::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "spt_process" ALTER COLUMN "state" TYPE json;
+            ''')
+
+
+    #
     # 4.7.0.a01
     #
     def upgrade_v4_7_0_a01_002(self):
@@ -44,8 +69,8 @@ class ConfigUpgrade(BaseUpgrade):
                 "search_type" character varying(256),
                 "search_code" character varying(256),
                 "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
-                "status" jsonb,
-                "state" character varying(256),
+                "state" jsonb,
+                "status" character varying(256),
                 "data" jsonb,
                 "s_status" character varying(32),
                 CONSTRAINT "spt_pipeline_info_code_idx" UNIQUE ("code")

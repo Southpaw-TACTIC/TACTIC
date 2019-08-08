@@ -243,6 +243,55 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.top.add_attr("spt_default_node_type", default_node_type)
 
 
+        self.width = self.kwargs.get("width")
+        if not self.width:
+            self.width = "auto"
+        self.height = self.kwargs.get("height")
+        if not self.height:
+            self.height = 600
+        self.background_color = self.kwargs.get("background_color")
+        if not self.background_color:
+            self.background_color = "white"
+
+
+
+
+        # create an inner and outer divs
+        self.nob_mode = self.kwargs.get('nob_mode')
+        if not self.nob_mode:
+            self.nob_mode = "visible"
+
+        self.line_mode = self.kwargs.get('line_mode')
+        if not self.line_mode:
+            self.line_mode = "bezier"
+
+
+        self.has_prefix = self.kwargs.get('has_prefix')
+        if self.has_prefix in [True, 'true']:
+            self.has_prefix = True
+        else:
+            self.has_prefix = False
+
+        self.filter_node_name = self.kwargs.get('filter_node_name')
+        if self.filter_node_name in [True, 'true']:
+            self.filter_node_name = True
+        else:
+            self.filter_node_name = False
+
+        self.allow_cycle = self.kwargs.get('allow_cycle')
+        if self.allow_cycle in [False, 'false']:
+            self.allow_cycle = False
+        else:
+            self.allow_cycle = True
+
+        self.add_node_behaviors = self.kwargs.get("add_node_behaviors")
+        if (self.add_node_behaviors in [False, 'false']):
+            self.add_node_behaviors = False
+        else:
+            self.add_node_behaviors = True
+
+
+
     def get_unique_id(self):
         return self.unique_id
 
@@ -313,49 +362,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = self.top
-
-        self.width = self.kwargs.get("width")
-        if not self.width:
-            self.width = "auto"
-        self.height = self.kwargs.get("height")
-        if not self.height:
-            self.height = 600
-        self.background_color = self.kwargs.get("background_color")
-        if not self.background_color:
-            self.background_color = "white"
-
-
-
-
-        # create an inner and outer divs
-        self.nob_mode = self.kwargs.get('nob_mode')
-        if not self.nob_mode:
-            self.nob_mode = "visible"
-
-        self.line_mode = self.kwargs.get('line_mode')
-        if not self.line_mode:
-            self.line_mode = "bezier"
-
-
-        self.has_prefix = self.kwargs.get('has_prefix')
-        if self.has_prefix in [True, 'true']:
-            self.has_prefix = True
-        else:
-            self.has_prefix = False
-
-        self.filter_node_name = self.kwargs.get('filter_node_name')
-        if self.filter_node_name in [True, 'true']:
-            self.filter_node_name = True
-        else:
-            self.filter_node_name = False
-
-        self.allow_cycle = self.kwargs.get('allow_cycle')
-        if self.allow_cycle in [False, 'false']:
-            self.allow_cycle = False
-        else:
-            self.allow_cycle = True
-
-
         top.add_style("position: relative")
 
         version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled")
@@ -457,6 +463,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         outer.add_attr("onmousemove", "spt.pipeline._mouse_pos = {x: event.clientX, y: event.clientY}")
+
 
         outer.add_behavior( {
             'type': 'keyup',
@@ -883,7 +890,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         action = self.get_node("action", node_type="action")
         template_div.add(action)
 
-        heirarchy = self.get_node("heirarcy", node_type="hierarchy")
+        heirarchy = self.get_node("hierarchy", node_type="hierarchy")
         template_div.add(heirarchy)
 
         dependency = self.get_node("dependency", node_type="dependency")
@@ -1402,8 +1409,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_behavior( node_behavior )
 
 
-
-        self.add_default_node_behaviors(node, text)
+        
+        if (self.add_node_behaviors):
+            self.add_default_node_behaviors(node, text)
 
         return node
 
@@ -1823,7 +1831,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_behavior( node_behavior )
 
 
-        nobs_offset = 0
+        nobs_offset = custom_wdg.get_nob_offset() or 0
         self.add_nobs(node, width, height, nobs_offset)
 
 
@@ -2002,7 +2010,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add(active)
         active.add_class("spt_active")
 
-        self.add_default_node_behaviors(node, text)
+        if (self.add_node_behaviors):
+            self.add_default_node_behaviors(node, text)
 
         return node
 
@@ -2091,7 +2100,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         node.add(active)
         active.add_class("spt_active")
 
-        self.add_default_node_behaviors(node, text)
+
+        if (self.add_node_behaviors):
+            self.add_default_node_behaviors(node, text)
 
         return node
 

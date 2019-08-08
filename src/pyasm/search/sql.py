@@ -179,7 +179,6 @@ class Sql(Base):
             user = db_resource.get_user()
             password = db_resource.get_password()
         else:
-            #assert type(database_name) in types.StringTypes
             # allow unicode
             assert isinstance(database_name, basestring)
         self.database_name = database_name
