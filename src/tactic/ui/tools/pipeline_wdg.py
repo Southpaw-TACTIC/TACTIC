@@ -2889,7 +2889,15 @@ class BaseInfoWdg(BaseRefreshWdg):
         title_edit_text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
+
             var node = spt.pipeline.get_info_node();
+
+            if (!bvr.src_el.value) {
+                spt.alert("Node name cannot be empty");
+                bvr.src_el.value = spt.pipeline.get_node_name(node);
+                return;
+            }
+
             spt.pipeline.set_node_name(node, bvr.src_el.value);
             spt.pipeline.set_node_property(node, "name", bvr.src_el.value);
 

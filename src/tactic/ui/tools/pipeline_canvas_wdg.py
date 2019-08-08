@@ -1138,8 +1138,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         //var parts = group_name.split("/");
         //node_name = parts[parts.length-1];
 
-        node_name = "node0";
-        var node = spt.pipeline.add_node(node_name);
+        var node = spt.pipeline.add_node();
 
         if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
             spt.pipeline.set_node_kwarg(node, 'version', 2);
@@ -4423,6 +4422,7 @@ spt.pipeline.detect_cycle = function() {
 }
 
 spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
+
     var drop_on_el = spt.get_event_target(evt);
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
     var from_node = bvr.src_el.getParent(".spt_pipeline_node");
