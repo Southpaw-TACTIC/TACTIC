@@ -337,15 +337,15 @@ def xmlrpc_decorator(meth):
 
                     if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd":
                         cmd_class = Common.create_from_class_path(args[0], {}, {})
-                        if cmd_class.is_update():
+                        if cmd_class.is_update() == True:
                             result = self.redirect_to_server(ticket, meth.__name__, args)
                             return self.browser_res(meth, result)
                 else:
-                    #cmd = get_full_cmd(self, meth, ticket, args)
                     if multi_site:
                         result = self.redirect_to_server(ticket, meth.__name__, args)
                         return self.browser_res(meth, result)
-                    
+                    else: 
+                        cmd = get_full_cmd(self, meth, ticket, args)
 
                 profile_flag = False
 
@@ -1029,7 +1029,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
     #@trace_decorator
     def redirect_to_server(self, ticket, meth, args):
 
-        url = Config.get_value("master", "rest_url")
+        project_code = Config.get_value("master", "project_code")
+        url = Config.get_value("master", "url") 
+        rest_url = "http://" + url + "/" + project_code + "/REST/"
         cmd = args[0]
         kwargs = args[1]
 
@@ -1043,7 +1045,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             "args" : kwargs,
         }
 
-        r = requests.post(url, data=data)
+        r = requests.post(rest_url, data=data)
         ret_val = r.json()
         result = ret_val.get("info")
 
