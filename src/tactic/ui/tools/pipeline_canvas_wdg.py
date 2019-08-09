@@ -291,6 +291,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.add_node_behaviors = True
 
 
+    def get_node_description(self, node_type):
+
+        node_descriptions = {
+            'manual': 'A basic process where work is done by a person',
+            'action': 'An automated process which can execute a script or command',
+            'condition': 'An automated process which can execute a script or command',
+            'approval': 'A process where a task will be created for a specific user whose job is to approve work down in the previous processes',
+            'hierarchy': 'A process that references a sub-workflow',
+            'dependency': 'A process that listens to another process and sets its status accordingly'
+        }
+
+        return node_descriptions.get(node_type)
+
 
     def get_unique_id(self):
         return self.unique_id
@@ -1210,10 +1223,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         //var parts = group_name.split("/");
         //node_name = parts[parts.length-1];
 
-        node_name = "node0";
-        var node = spt.pipeline.add_node(node_name);
+        var node = spt.pipeline.add_node();
 
-        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+        if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
             spt.pipeline.set_node_kwarg(node, 'version', 2);
 
         var top = bvr.src_el.getParent(".spt_pipeline_folder")
@@ -2635,16 +2647,18 @@ spt.pipeline.first_init = function(bvr) {
     var sobjs = server.eval(expr);
 
     data.colors = {};
+    data.descriptions = {};
+    data.default_templates = {};
     for (var i = 0; i < sobjs.length; i++) {
         var sobj = sobjs[i];
         data.colors[sobj[key]] = sobj.color;
+        data.descriptions[sobj[key]] = sobj.description;
+
+        if (sobj.data)
+            data.default_templates[sobj[key]] = sobj.data.default_template;
     }
 
-    data.descriptions = {};
-    for (var i = 0; i < sobjs.length; i++) {
-        var sobj = sobjs[i];
-        data.descriptions[sobj[key]] = sobj.description;
-    }
+
 
 }
 
@@ -3541,6 +3555,12 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
             editor_top.addClass("spt_has_changes");
     }
 
+    // BACKWARDS COMPATIBILITY
+    if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
+        spt.pipeline.set_node_kwarg(new_node, "version", 2);
+
+    new_node.has_changes = true;
+    spt.named_events.fire_event('pipeline|change', {});
 
     return new_node;
 }
@@ -3726,6 +3746,8 @@ spt.pipeline._remove_nodes = function(nodes) {
         }
     }
     spt.pipeline.redraw_canvas();
+
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -4540,6 +4562,7 @@ spt.pipeline.detect_cycle = function() {
 }
 
 spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
+
     var drop_on_el = spt.get_event_target(evt);
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
     var from_node = bvr.src_el.getParent(".spt_pipeline_node");
@@ -4577,7 +4600,7 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
         // BACKWARDS COMPATIBILITY
-        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+        if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
             spt.pipeline.set_node_kwarg(to_node, "version", 2);
 
         // FIXME: hard coded
@@ -4690,6 +4713,8 @@ spt.pipeline.connect_nodes = function(from_node, to_node) {
     connector.set_to_node(to_node);
 
     connector.draw();
+
+    return connector;
 }
 
 
@@ -6268,6 +6293,17 @@ spt.pipeline.Group = function(name) {
         return this.description;
     }
 
+    this.get_data = function(name) {
+        return this[name];
+    }
+
+    this.set_data = function(name, value) {
+        this[name] = value;
+
+        var data = spt.pipeline.get_data();
+        data[name+"s"][this.get_name()] = value;
+    }
+
 
 }
 
@@ -6953,6 +6989,7 @@ spt.pipeline.export_group = function(group_name) {
     var nodes;
     var connectors;
     var dangling_connectors = [];
+
     if (typeof(group_name) == 'undefined') {
         nodes = spt.pipeline.get_all_nodes(group_name);
         connectors = canvas.connectors;
@@ -7083,7 +7120,6 @@ spt.pipeline.export_group = function(group_name) {
         }
         xml += '/>\n';
     }
-
 
     // export the connectors
     for (var i = 0; i < connectors.length; i++) {
