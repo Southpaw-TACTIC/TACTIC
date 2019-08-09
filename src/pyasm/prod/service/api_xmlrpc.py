@@ -325,7 +325,6 @@ def xmlrpc_decorator(meth):
             try:
                 #if meth.__name__ in QUERY_METHODS:
                 multi_site = Config.get_value("master", "enabled")
-                redirect = False
 
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)
@@ -339,13 +338,14 @@ def xmlrpc_decorator(meth):
                     if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd":
                         cmd_class = Common.create_from_class_path(args[0], {}, {})
                         if cmd_class.is_update():
-                            result = self.redirect_to_server(meth.__name__, args)
+                            result = self.redirect_to_server(ticket, meth.__name__, args)
                             return self.browser_res(meth, result)
                 else:
+                    #cmd = get_full_cmd(self, meth, ticket, args)
                     if multi_site:
-                        result = self.redirect_to_server(meth.__name__, args)
+                        result = self.redirect_to_server(ticket, meth.__name__, args)
                         return self.browser_res(meth, result)
-
+                    
 
                 profile_flag = False
 
@@ -1027,9 +1027,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     #@trace_decorator
-    def redirect_to_server(self, meth, args):
+    def redirect_to_server(self, ticket, meth, args):
 
-        master_ticket = Config.get_value("master", "login_ticket")
         url = Config.get_value("master", "rest_url")
         cmd = args[0]
         kwargs = args[1]
@@ -1038,7 +1037,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             kwargs = jsondumps(kwargs)
 
         data = {
-            'login_ticket': master_ticket,
+            'login_ticket': ticket,
             'method': meth,
             'class_name': cmd,
             "args" : kwargs,
