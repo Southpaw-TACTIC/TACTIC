@@ -2516,16 +2516,18 @@ spt.pipeline.first_init = function(bvr) {
     var sobjs = server.eval(expr);
 
     data.colors = {};
+    data.descriptions = {};
+    data.default_templates = {};
     for (var i = 0; i < sobjs.length; i++) {
         var sobj = sobjs[i];
         data.colors[sobj[key]] = sobj.color;
+        data.descriptions[sobj[key]] = sobj.description;
+
+        if (sobj.data)
+            data.default_templates[sobj[key]] = sobj.data.default_template;
     }
 
-    data.descriptions = {};
-    for (var i = 0; i < sobjs.length; i++) {
-        var sobj = sobjs[i];
-        data.descriptions[sobj[key]] = sobj.description;
-    }
+
 
 }
 
@@ -3426,6 +3428,9 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
         spt.pipeline.set_node_kwarg(new_node, "version", 2);
 
+    new_node.has_changes = true;
+    spt.named_events.fire_event('pipeline|change', {});
+
     return new_node;
 }
 
@@ -3610,6 +3615,8 @@ spt.pipeline._remove_nodes = function(nodes) {
         }
     }
     spt.pipeline.redraw_canvas();
+
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -6041,6 +6048,17 @@ spt.pipeline.Group = function(name) {
 
     this.get_description = function() {
         return this.description;
+    }
+
+    this.get_data = function(name) {
+        return this[name];
+    }
+
+    this.set_data = function(name, value) {
+        this[name] = value;
+
+        var data = spt.pipeline.get_data();
+        data[name+"s"][this.get_name()] = value;
     }
 
 

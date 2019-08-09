@@ -1569,7 +1569,7 @@ class PipelineListWdg(BaseRefreshWdg):
             
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
-            var default_template = data.default_template;
+            var default_template = data.default_templates[group_name];
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -2330,8 +2330,9 @@ class PipelineInfoWdg(BaseRefreshWdg):
             'type': 'load',
             'cbjs_action': '''
 
+            var group_name = spt.pipeline.get_current_group();
             var data = spt.pipeline.get_data();
-            default_template = data.default_template;
+            default_template = data.default_templates[group_name];
 
             if (default_template)
                 bvr.src_el.value = default_template;
@@ -2342,8 +2343,11 @@ class PipelineInfoWdg(BaseRefreshWdg):
         text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
+
             var default_template = bvr.src_el.value;
-            spt.pipeline.set_data('default_template', default_template)
+            var group_name = spt.pipeline.get_current_group();
+            var group = spt.pipeline.get_group(group_name);
+            group.set_data("default_template", default_template);
 
             spt.named_events.fire_event('pipeline|change', {});
  
@@ -7040,6 +7044,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 
         button_row = ButtonRowWdg(show_title=True)
+        button_row.add_style("margin-left: 16px;")
 
         project_code = Project.get_project_code()
 
@@ -7129,7 +7134,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
             var description = data.descriptions[group_name];
-            var default_template = data.default_template;
+            var default_template = data.default_templates[group_name];
 
             var nodes = spt.pipeline.get_nodes_by_group(group_name);
             var node_kwargs = {};
@@ -7339,7 +7344,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled") != "false"
 
         button = ButtonNewWdg(title="Add Process", icon="FA_PLUS")
-        button_row.add(button)
+        #button_row.add(button)
 
         button.add_behavior( {
         'type': 'click_up',
@@ -9248,7 +9253,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 
                 var data = spt.pipeline.get_data();
                 var color = data.colors[group_name];
-                var default_template = data.default_template;
+                var default_template = data.default_templates[group_name];
 
                 server = TacticServerStub.get();
                 spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -10175,6 +10180,7 @@ spt.process_tool.item_drag_action = function(evt, bvr, mouse_411) {
     // BACKWARDS COMPATIBILITY
     if (bvr.version_2_enabled)
         spt.pipeline.set_node_kwarg(new_node, "version", 2);
+    new_node.has_changes = true;
     var new_pos = spt.pipeline.get_position(new_node);
 
     var selected = spt.pipeline.get_selected_nodes();
