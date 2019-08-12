@@ -277,6 +277,8 @@ QUERY_METHODS = {
     'get_upload_file_size': 0,
     'get_doc_link': 0,
     'get_interaction_count': 0,
+    'get_plugin_dir': 0,
+    'get_by_code': 0,
 }
 
 TRANS_OPTIONAL_METHODS = {
@@ -335,7 +337,7 @@ def xmlrpc_decorator(meth):
                     else:
                         cmd = get_full_cmd(self, meth, ticket, args)
 
-                    if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd":
+                    if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd" and args[0] != 'tactic.command.PluginReloader':
                         cmd_class = Common.create_from_class_path(args[0], {}, {})
                         if cmd_class.is_update() == True:
                             result = self.redirect_to_server(ticket, meth.__name__, args)
@@ -1031,7 +1033,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         project_code = Config.get_value("master", "project_code")
         url = Config.get_value("master", "url") 
-        rest_url = "http://" + url + "/" + project_code + "/REST/"
+        rest_url = url + "/" + project_code + "/REST/"
         cmd = args[0]
         kwargs = args[1]
 

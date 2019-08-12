@@ -830,9 +830,10 @@ class TopWdg(Widget):
         master_enabled = Config.get_value("master", "enabled")
         master_site = ProdSetting.get_value_by_key("master/site")
         master_url = Config.get_value("master", "url")
-        master_url = "http://" + master_url + "/tactic/default/Api/"
+        master_url = master_url + "/tactic/default/Api/"
         security = Environment.get_security()
         ticket = security.get_ticket()
+
         if ticket:
             master_login_ticket = ticket.get_value("ticket")
         else:
