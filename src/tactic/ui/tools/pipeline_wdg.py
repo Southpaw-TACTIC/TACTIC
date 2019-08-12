@@ -7073,7 +7073,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Toggle workflow list", icon="FA_WRENCH")
+        button = ButtonNewWdg(title="Add node", icon="FA_WRENCH", sub_icon="FA_PLUS")
         button_row.add(button)
 
         button.add_behavior({
