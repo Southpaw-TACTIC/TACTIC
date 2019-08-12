@@ -337,7 +337,7 @@ def xmlrpc_decorator(meth):
                     else:
                         cmd = get_full_cmd(self, meth, ticket, args)
 
-                    if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd" and args[0] != 'tactic.command.PluginReloader':
+                    if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd" and args[0]:
                         cmd_class = Common.create_from_class_path(args[0], {}, {})
                         if cmd_class.is_update() == True:
                             result = self.redirect_to_server(ticket, meth.__name__, args)
