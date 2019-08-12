@@ -1069,18 +1069,42 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
     def get_folder(self, group_name):
+
+        styles = HtmlElement.style('''
+
+            .spt_pipeline_folder {
+                width: 200px;
+                height: 100px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                top: 100px;
+                left: 100px;
+                position: relative;
+                z-index: 150;
+
+                border-radius: 5px;
+                border: 1px solid #ccc;
+
+                cursor: hand;
+            }
+
+            .spt_pipeline_folder:hover {
+                background: #eee;
+            }
+
+            .spt_pipeline_folder .spt_content {
+                font-size: 14px;
+                color: #666;
+                padding: 10px;
+                text-align: center;
+            }
+
+            ''')
+
         div = DivWdg()
         div.add_class("spt_pipeline_folder")
-        div.add_border()
-        div.add_style("border-style: dashed")
-        div.add_style("width: 140px")
-        div.add_style("height: 80px")
-        div.add_style("top: 100px")
-        div.add_style("left: 100px")
-        div.add_style("position: relative")
-        div.add_style("z-index: 150")
-        div.set_round_corners(size=5, corners=['TR','BR','BL', 'TL'])
-        div.add_gradient("background", "background")
 
         lip_div = DivWdg()
         div.add(lip_div)
@@ -1096,13 +1120,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_class("spt_content")
         div.add(content_div)
-        content_div.add_style("padding: 10px")
-        content_div.add_style("height: 60px")
-        content_div.add_style("text-align: center")
 
 
         color_div = DivWdg()
-        content_div.add(color_div)
+        #content_div.add(color_div)
         color_div.add_style("margin-right: 5px")
         color_div.add_class("spt_color_swatch")
         color_div.add_style("height: 15px")
@@ -1114,15 +1135,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content_div.add(group_div)
         group_div.add_class("spt_group")
 
-        group_div.add(group_name)
+        #group_div.add(group_name)
 
-        group_div.add_style("font-weight: bold")
+        #group_div.add_style("font-weight: bold")
 
-
-        content_div.add("<br/>")
-        content_div.add("<br/>")
-
-        button = DivWdg("Click to Start")
+        button = DivWdg("Click here to add your first node. Use the <i class='fa fa-wrench'></i> to add more nodes.")
         content_div.add( button )
 
 
@@ -1157,6 +1174,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.node_drag'
         } )
+
+        div.add(styles)
 
         return div
 
@@ -3431,6 +3450,14 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     new_node.has_changes = true;
     spt.named_events.fire_event('pipeline|change', {});
 
+    // if folder hide folder
+    var folder = spt.pipeline.top.getElement(".spt_pipeline_folder");
+    if (folder) {
+        var group_name = folder.spt_group;
+        spt.pipeline.set_current_group(group_name);
+        spt.behavior.destroy_element(folder);
+    }
+
     return new_node;
 }
 
@@ -4005,7 +4032,7 @@ spt.pipeline.add_folder = function(group_name, color, title) {
         title = parts[parts.length-1];
     }
 
-    group_label.innerHTML = title;
+    //group_label.innerHTML = title;
     canvas.appendChild(new_folder);
 
     // color the folder
@@ -4022,6 +4049,8 @@ spt.pipeline.add_folder = function(group_name, color, title) {
 
 
 spt.pipeline.set_folder_color = function(folder, color) {
+
+    return
 
     // only color the swatch for now
     var swatch = folder.getElement(".spt_color_swatch");
