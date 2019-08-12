@@ -15,8 +15,12 @@ __all__ = ['CryptoKey']
 
 import os, binascii
 
-from Crypto.Hash import MD5
-from Crypto.PublicKey import RSA
+try:
+    from Cryptodome.Hash import MD5
+    from Cryptodome.PublicKey import RSA
+except ImportError:
+    from Crypto.Hash import MD5
+    from Crypto.PublicKey import RSA
 
 
 class CryptoKey(object):

@@ -997,6 +997,7 @@ class CalendarInputWdg(BaseInputWdg):
                     'offset_y' : offset_y
                     })
 
+            # FIXME: keyup 'tab' occurs after blur
             text.add_behavior({'type': 'keyupX', 'cbjs_action': 
                     '''
                     if (evt.key == 'tab') {
