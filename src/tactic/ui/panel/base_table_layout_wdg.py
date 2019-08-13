@@ -1891,6 +1891,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
             button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
+            button.add_class("spt_table_search_button")
             div.add(button)
 
 
