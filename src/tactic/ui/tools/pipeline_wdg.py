@@ -2314,7 +2314,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
     def get_default_template_wdg(self, pipeline):
         # get template from data column
-        data = pipeline.get_json_value("data") or {}
+        data = pipeline.get_json_value("data", no_exception=True) or {}
         default_template = data.get("default_template") or ""
         
         div = DivWdg()
@@ -6592,7 +6592,7 @@ class NewProcessInfoCmd(Command):
 
         event = "process|action"
 
-        from trigger_wdg import TriggerToolWdg
+        from .trigger_wdg import TriggerToolWdg
 
         folder = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, self.pipeline_code)
         title = self.process_sobj.get_code()
@@ -6750,7 +6750,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         
         has_change_action = '''
             bvr.src_el.addClass("spt_has_changes");
-        '''
+        ''';
 
         top.add_named_listener('pipeline|change', has_change_action)
 
@@ -8828,6 +8828,12 @@ class PipelineSaveCbk(Command):
             data['project_code'] = project_code
         if timestamp:
             data['timestamp'] = timestamp
+            
+        if default_template and SearchType.column_exists("sthpw/pipeline", "data"):
+            pipeline_data = {
+                'default_template': default_template
+            }
+            data['data'] = pipeline_data
 
         server.insert_update(pipeline_sk, data = data)
 
@@ -8845,16 +8851,6 @@ class PipelineSaveCbk(Command):
         """
 
         pipeline.update_dependencies()
-
-        pipeline_data = {
-            'default_template': default_template
-        }
-        try:
-            pipeline.set_json_value('data', pipeline_data)
-            pipeline.commit()
-        except:
-            raise Exception("sthpw/pipline missing column 'data'")
-
 
 
         self.check_duplicates(process_nodes, xml)

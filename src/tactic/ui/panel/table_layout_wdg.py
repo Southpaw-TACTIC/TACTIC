@@ -31,6 +31,8 @@ from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
 
+from pyasm.biz import ProjectSetting
+
 from .base_table_layout_wdg import BaseTableLayoutWdg
 
 import six
@@ -644,14 +646,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         style_div = HtmlElement("style")
         top.add(style_div)
         style_div.add('''
-.spt_layout .spt_cell_edit {
+            .spt_layout .spt_cell_edit {
 
-    padding: 3px 8px;
-    vertical-align: top;
+                padding: 3px 8px;
+                vertical-align: top;
 
-    background-repeat: no-repeat;
-    background-position: bottom right;
-}
+                background-repeat: no-repeat;
+                background-position: bottom right;
+            }
         ''')
 
 
@@ -1258,6 +1260,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             self.handle_row(table, sobject, row, level)
 
 
+        undo_queue_save = ProjectSetting.get_value_by_key("table_layout/undo_queue/save") or "false"
+        undo_queue_refresh = ProjectSetting.get_value_by_key("table_layout/undo_queue/refresh") or "false"
+
+        table.add_behavior({
+            'type': 'load',
+            'undo_queue_save': undo_queue_save,
+            'undo_queue_refresh': undo_queue_refresh,
+            'cbjs_action': '''
+                spt.table.undo_queue_save = bvr.undo_queue_save;
+                spt.table.undo_queue_refresh = bvr.undo_queue_refresh;
+            '''
+        })
+
 
         # dynamically load rows
         if has_loading:
@@ -1306,6 +1321,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     return;
                 }
                 spt.table.apply_undo_queue();
+                
 
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
                 if (bvr.expand_on_load) {
@@ -1331,6 +1347,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 setTimeout( function() {
                     spt.table.apply_undo_queue();
                 }, 0 );
+                
             '''
             } )
  
@@ -1677,7 +1694,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     if (width == -1) {
                         continue;
                     }
-                    //console.log(name, width);
                     spt.table.set_column_width(name, width);
                 }
 
@@ -2970,7 +2986,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
-
         collapse_default = self.kwargs.get("collapse_default")
         if collapse_default in [True, 'true']:
             collapse_level = self.kwargs.get("collapse_level") or -1
@@ -2978,22 +2993,16 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'type': 'load',
                 'collapse_level': collapse_level,
                 'cbjs_action': '''
-
                 if (bvr.collapse_level != -1) {
                     var row = bvr.src_el.getParent(".spt_group_row");
                     var group_level = row.getAttribute("spt_group_level");
-                    if (group_level != bvr.collapse_level)
-                        return;
+                    if (group_level != bvr.collapse_level) return;
                 }
-
                 bvr.src_el.getElement(".spt_group_row_collapse").click();
-
                 '''
                 })
 
         title_div.add_style("width: 100%")
-
-
 
         # build the inner flex layout
         td_inner = DivWdg()
@@ -3054,7 +3063,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         bgcolor2 = bgcolor1
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
-
 
         tr.add_class("spt_table_row_item")
         tr.add_class("spt_table_row")
@@ -3425,7 +3433,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 widget.handle_tr(tr)
                 widget.handle_td(td)
 
-        
             is_editable = True
             # Check if view is editable first, if not, skip checking each column
             if self.view_editable:
@@ -5988,7 +5995,6 @@ spt.table.set_display = function( el, value, input_type ) {
 }
 
 spt.table.set_changed_color = function(row, cell) {
-    
     cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
     row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
 
@@ -6048,6 +6054,7 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
         undo.search_key = search_key;
         undo.element_name = element_name;
         undo.cbjs_action = null;
+        undo.saved = false;
 
 
         var row = cell.getParent(".spt_table_row");
@@ -6113,8 +6120,6 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
                 labels[element_name] = cell.getAttribute("spt_input_value");
             }*/
         }
-
-
         return undo;
     }
 }
@@ -6231,24 +6236,25 @@ spt.table.redo_last = function() {
 
 
 spt.table.apply_undo_queue = function(undo_queue) {
+    if (spt.table.undo_queue_refresh == "false"){
+        return;
+    }
     var layout = spt.table.get_layout();
     var layout_top = layout.getParent(".spt_layout_top");
     // sometimes layout_top is null
+    
     if (!layout_top) {
         return;
     }
-
     var undo_queue = layout_top.undo_queue;
-
     if (!undo_queue) {
         return;
     }
-
-    for (var i = 0; i < undo_queue.length; i ++) {
+    
+    for (var i = 0; i < undo_queue.length; i++) {
         var undo = undo_queue[i];
         var search_key = undo.search_key;
         var element_name = undo.element_name;
-        var orig_cell = undo.cell;
 
         var row = spt.table.get_row_by_search_key(search_key);
         if (!row) {
@@ -6260,50 +6266,48 @@ spt.table.apply_undo_queue = function(undo_queue) {
             continue;
         }
 
-
-
         var undo_type = undo.type;
         if (undo_type) {
             undo.redo();
             return;
         }
 
-
         // get the original value.  If there is no original value, then
-        // set it soe it can be used for future changes in this undo queue
-        var orig_value = cell.getAttribute("spt_orig_value");
-        if (orig_value == null) {
-            var orig_value = cell.getAttribute("spt_input_value");
-            cell.setAttribute("spt_orig_value", orig_value);
+        // set it so it can be used for future changes in this undo queue
+
+        var orig_value = cell.getAttribute("spt_input_value");
+        if (!orig_value){
+            continue;
         }
-
-
-        cell.innerHTML = undo.new_html;
-        cell.setAttribute("spt_input_value", undo.new_value);
-
         var new_value = undo.new_value;
 
         // remap to the new cell
         undo.cell = cell;
 
-
-        if (new_value == orig_value) {
+        var temp = cell.getAttribute("spt_orig_input_value");
+        var bkg = cell.getAttribute("spt_orig_background");
+        
+        if (orig_value == new_value) {
             cell.removeClass("spt_cell_changed");
             row.removeClass("spt_row_changed");
+            var statuses_color = JSON.parse(cell.getAttribute("spt_colors"));
+            var status = cell.getAttribute("spt_input_value");
+            var cell_color = statuses_color[status];
 
-            var row_background = row.getAttribute("spt_orig_background");
-            if (!row_background || row_background == "null") row_background = 'transparent';
-
-            cell.setStyle("background-color", cell.getAttribute("spt_orig_background"));
-            row.setStyle("background-color", row_background);
-            row.setAttribute("spt_background", row.getAttribute("spt_orig_background"));
+            if (cell_color == null) {
+                continue;
+            }
+            cell.setStyle("background-color", cell_color);
+            row.setStyle("background-color", 'white');
+            row.setAttribute("spt_background", 'white');
         }
         else {
+            cell.innerHTML = undo.new_html;
+            cell.setAttribute("spt_input_value", undo.new_value);
             cell.addClass("spt_cell_changed");
             row.addClass("spt_row_changed");
             spt.table.set_changed_color(row, cell);
         }
-
     }
 }
 
@@ -6346,10 +6350,9 @@ spt.table.save_changes = function(kwargs) {
 
 
     // collapse updates from undo_queue for be classified by search_type
-    //var use_undo_queue = true;
-    var use_undo_queue = false;
+    var use_undo_queue = spt.table.undo_queue_save;
 
-    if (use_undo_queue) {
+    if (use_undo_queue == "true") {
 
         var layout = spt.table.get_layout();
         var layout_top = layout.getParent(".spt_layout_top")
@@ -6360,6 +6363,10 @@ spt.table.save_changes = function(kwargs) {
 
         for (var i = 0; i < undo_queue.length; i++) {
             var action = undo_queue[i];
+            var saved = action.saved;
+            if (saved == true){
+                continue;
+            }
             var search_key = action.search_key;
             var element_name = action.element_name;
 
@@ -6380,6 +6387,8 @@ spt.table.save_changes = function(kwargs) {
                 updates[search_key] = action.get_data();
                 extra_updates[search_key] = action.get_extra_data();
             }
+
+            action.saved = true;
 
 
         }
@@ -7485,15 +7494,14 @@ spt.table.get_parent_groups = function(src_el, level) {
     var lowest_group_level = group_level;
 
     while (true) {
-        // get previous group
+         // get previous group
         var row = row.getPrevious(".spt_table_row_item");
         if (!row)
             break;
-
         // check if level is greater than lowest level reached
-        if ( row.getAttribute("spt_group_level") >= lowest_group_level )
-            continue
-
+        if ( row.getAttribute("spt_group_level") >= lowest_group_level ){
+            continue;
+        }
         // set new lowest_group_level, check if its equal to level
         lowest_group_level = row.getAttribute("spt_group_level");
         if (level && level == row.getAttribute("spt_group_level")) {
