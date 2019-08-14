@@ -3306,24 +3306,28 @@ class DefaultInfoWdg(BaseInfoWdg):
                     'cbjs_action': '''
 
                     var node = spt.pipeline.get_info_node();
-                    var defaults = {
-                        app: "custom_view",
-                        app0: "overview",
-                        custom_view: "",
-                        data_process: "",
-                        data_process0: "",
-                        display_mode: "tab",
-                        form_html: "",
-                        kwargs: "",
-                        kwargs0: "",
-                        mode: "app",
-                        num_apps: "1",
-                        template_view: "inherit",
-                        title: "",
-                        title0: "Overview",
-                        view: ""
+                    var task_detail = spt.pipeline.set_node_kwarg(node, 'task_detail');
+
+                    if (!task_detail) {
+                        var defaults = {
+                            app: "custom_view",
+                            app0: "overview",
+                            custom_view: "",
+                            data_process: "",
+                            data_process0: "",
+                            display_mode: "tab",
+                            form_html: "",
+                            kwargs: "",
+                            kwargs0: "",
+                            mode: "app",
+                            num_apps: "1",
+                            template_view: "inherit",
+                            title: "",
+                            title0: "Overview",
+                            view: ""
+                        }
+                        spt.pipeline.set_node_kwarg(node, 'task_detail', defaults);
                     }
-                    spt.pipeline.set_node_kwarg(node, 'task_detail', defaults);
 
                     '''
                     })
@@ -4946,7 +4950,42 @@ class ApprovalInfoWdg(BaseInfoWdg):
             top.add(detail_wdg)
             detail_wdg.add_style("margin: 10px")
 
+            new_task_detail = ProjectSetting.get_value_by_key("new_task_detail") == "true"
+            if new_task_detail:
+                detail_wdg.add_behavior({
+                    'type': 'load',
+                    'cbjs_action': '''
 
+                    var node = spt.pipeline.get_info_node();
+                    var task_detail = spt.pipeline.set_node_kwarg(node, 'task_detail');
+
+                    if (!task_detail) {
+                        var defaults = {
+                            app: "custom_view",
+                            app0: "overview",
+                            app1: "review_assets",
+                            custom_view: "",
+                            data_process: "",
+                            data_process0: "",
+                            data_process1: "",
+                            display_mode: "tab",
+                            form_html: "",
+                            kwargs: "",
+                            kwargs0: "",
+                            kwargs1: "",
+                            mode: "app",
+                            num_apps: "2",
+                            template_view: "inherit",
+                            title: "",
+                            title0: "Overview",
+                            title1: "Review Assets",
+                            view: ""
+                        }
+                        spt.pipeline.set_node_kwarg(node, 'task_detail', defaults);
+                    }
+
+                    '''
+                    })
 
 
         form_wdg = DivWdg()
