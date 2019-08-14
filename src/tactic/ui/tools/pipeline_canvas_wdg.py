@@ -1105,6 +1105,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_class("spt_pipeline_folder")
+        div.add_class("spt_pipeline_folder_template")
 
         lip_div = DivWdg()
         div.add(lip_div)
@@ -1156,12 +1157,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         //node_name = parts[parts.length-1];
 
         var node = spt.pipeline.add_node();
-
-        if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
-            spt.pipeline.set_node_kwarg(node, 'version', 2);
-
-        var top = bvr.src_el.getParent(".spt_pipeline_folder")
-        spt.behavior.destroy_element(top);
         spt.pipeline.redraw_canvas();
         '''
         } )
@@ -3451,7 +3446,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     spt.named_events.fire_event('pipeline|change', {});
 
     // if folder hide folder
-    var folder = spt.pipeline.top.getElement(".spt_pipeline_folder");
+    var folder = spt.pipeline.top.getElement(".spt_pipeline_folder:not(.spt_pipeline_folder_template)");
     if (folder) {
         var group_name = folder.spt_group;
         spt.pipeline.set_current_group(group_name);
@@ -4024,6 +4019,7 @@ spt.pipeline.add_folder = function(group_name, color, title) {
     var template_container = top.getElement(".spt_pipeline_template");
     var template = template_container.getElement(".spt_pipeline_folder");
     var new_folder = spt.behavior.clone(template);
+    new_folder.removeClass("spt_pipeline_folder_template");
 
     var group_label = new_folder.getElement(".spt_group");
 
