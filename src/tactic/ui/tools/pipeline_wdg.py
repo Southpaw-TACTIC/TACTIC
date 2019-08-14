@@ -3306,7 +3306,7 @@ class DefaultInfoWdg(BaseInfoWdg):
                     'cbjs_action': '''
 
                     var node = spt.pipeline.get_info_node();
-                    var task_detail = spt.pipeline.set_node_kwarg(node, 'task_detail');
+                    var task_detail = spt.pipeline.get_node_kwarg(node, 'task_detail');
 
                     if (!task_detail) {
                         var defaults = {
@@ -4957,7 +4957,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
                     'cbjs_action': '''
 
                     var node = spt.pipeline.get_info_node();
-                    var task_detail = spt.pipeline.set_node_kwarg(node, 'task_detail');
+                    var task_detail = spt.pipeline.get_node_kwarg(node, 'task_detail');
 
                     if (!task_detail) {
                         var defaults = {
