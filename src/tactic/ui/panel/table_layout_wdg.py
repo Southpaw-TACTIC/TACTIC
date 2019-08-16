@@ -1270,7 +1270,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'cbjs_action': '''
                 spt.table.undo_queue_save = bvr.undo_queue_save;
                 spt.table.undo_queue_refresh = bvr.undo_queue_refresh;
-                spt.table.undo_queue_refresh = true;
             '''
         })
 
