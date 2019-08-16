@@ -6482,7 +6482,12 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var xml_doc = spt.parse_xml(pipeline_xml);
     var pipeline_name = pipeline.name;
     var pipeline_type = pipeline.type;
-    var pipeline_data = JSON.parse(pipeline.data) || {};
+    if (typeOf(pipeline.data) == "string") {
+        var pipeline_data = JSON.parse(pipeline.data) || {};
+    }
+    else {
+        var pipeline_data = pipeline.data || {};
+    }
 
     var node_index = pipeline_data.node_index || 0;
 
