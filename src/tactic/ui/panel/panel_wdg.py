@@ -2991,7 +2991,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # define the top widget
         top = self.top
-        top.add_class("spt_view_panel_top");
+        top.add_class("spt_view_panel_top")
 
         inner = DivWdg()
         top.add(inner)
@@ -3002,7 +3002,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             inner.add_behavior({
                 'type': 'load',
                 'cbjs_action': self.get_onload_js()
-            });
+            })
 
 
 
@@ -3285,6 +3285,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout = search_type_obj.get_value("default_layout", no_exception=True)
         if not layout:
             layout = 'default'
+        
 
         search = self.kwargs.get("search")
 
@@ -3367,6 +3368,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "collapse_default": collapse_default,
             "collapse_level": collapse_level
         }
+
+
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 

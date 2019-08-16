@@ -1270,6 +1270,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'cbjs_action': '''
                 spt.table.undo_queue_save = bvr.undo_queue_save;
                 spt.table.undo_queue_refresh = bvr.undo_queue_refresh;
+                spt.table.undo_queue_refresh = true;
             '''
         })
 
@@ -1322,7 +1323,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 }
                 spt.table.apply_undo_queue();
                 
-
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
                 if (bvr.expand_on_load) {
                     spt.table.expand_table("full");
@@ -6283,9 +6283,6 @@ spt.table.apply_undo_queue = function(undo_queue) {
 
         // remap to the new cell
         undo.cell = cell;
-
-        var temp = cell.getAttribute("spt_orig_input_value");
-        var bkg = cell.getAttribute("spt_orig_background");
         
         if (orig_value == new_value) {
             cell.removeClass("spt_cell_changed");
@@ -6303,7 +6300,7 @@ spt.table.apply_undo_queue = function(undo_queue) {
         }
         else {
             cell.innerHTML = undo.new_html;
-            cell.setAttribute("spt_input_value", undo.new_value);
+            //cell.setAttribute("spt_input_value", undo.new_value);
             cell.addClass("spt_cell_changed");
             row.addClass("spt_row_changed");
             spt.table.set_changed_color(row, cell);
@@ -6431,7 +6428,7 @@ spt.table.save_changes = function(kwargs) {
             }
 
             // get extra action
-            var extra_action_row = rows[i].extra_action
+            var extra_action_row = rows[i].extra_action;
             if (extra_action_row) {
                 extra_action.push(extra_action_row);
             }
