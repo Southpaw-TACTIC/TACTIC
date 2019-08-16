@@ -1028,25 +1028,21 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
-    #@trace_decorator
     def redirect_to_server(self, ticket, meth, args):
 
         project_code = Config.get_value("master", "project_code")
         url = Config.get_value("master", "url") 
         rest_url = url + "/" + project_code + "/REST/"
-        cmd = args[0]
-        kwargs = args[1]
-
-        if type(kwargs) == dict:
-            kwargs = jsondumps(kwargs)
+       
+ 
+        args = jsondumps(args)
 
         data = {
             'login_ticket': ticket,
             'method': meth,
-            'class_name': cmd,
-            "args" : kwargs,
+            'args' : args
         }
-
+       
         r = requests.post(rest_url, data=data)
         ret_val = r.json()
         result = ret_val.get("info")
