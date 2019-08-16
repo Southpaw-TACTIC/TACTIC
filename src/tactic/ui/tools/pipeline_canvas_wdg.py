@@ -3444,10 +3444,14 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
             group_info = spt.pipeline.add_group(group);
     }
 
+
     var nodes = spt.pipeline.get_all_nodes();
     if (typeof(name) == 'undefined' || name == null) {
-            name = "node"+nodes.length;
+        var node_index = group_info.get_data("node_index") || 0;
+        name = "node"+node_index;
+        group_info.set_data("node_index", node_index+1);
     }
+
 
     if (typeof(x) == 'undefined' || x == null) {
             var size = canvas.getSize();
@@ -3579,8 +3583,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     // if folder hide folder
     var folder = spt.pipeline.top.getElement(".spt_pipeline_folder:not(.spt_pipeline_folder_template)");
     if (folder) {
-        var group_name = folder.spt_group;
-        spt.pipeline.set_current_group(group_name);
+        spt.pipeline.set_current_group(group);
         spt.behavior.destroy_element(folder);
     }
 
@@ -4592,7 +4595,6 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
     var from_node = bvr.src_el.getParent(".spt_pipeline_node");
     var canvas = spt.pipeline.get_canvas();
-
 
     if (bvr.connector && to_node == null) {
         // if this is a reused connector, then delete it
@@ -6284,6 +6286,7 @@ spt.pipeline.Group = function(name) {
 
         // set all the nodes in this group to be this color
         for (var i = 0; i < this.nodes.length; i++) {
+            console.log(this.nodes[i], "??????");
             spt.pipeline.set_color(this.nodes[i], color);
         }
     }
@@ -6326,7 +6329,8 @@ spt.pipeline.Group = function(name) {
         this[name] = value;
 
         var data = spt.pipeline.get_data();
-        data[name+"s"][this.get_name()] = value;
+        if (data[name+"s"])
+            data[name+"s"][this.get_name()] = value;
     }
 
 
@@ -6398,6 +6402,9 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var xml_doc = spt.parse_xml(pipeline_xml);
     var pipeline_name = pipeline.name;
     var pipeline_type = pipeline.type;
+    var pipeline_data = JSON.parse(pipeline.data) || {};
+
+    var node_index = pipeline_data.node_index || 0;
 
     // first check if the group already there
     var group = spt.pipeline.get_group(pipeline_code);
@@ -6421,6 +6428,9 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     group.set_color(color);
     group.set_group_type("pipeline");
     group.set_node_type("process");
+    group.set_data("node_index", node_index);
+
+    console.log(pipeline_data, "tf rib", group.get_data("node_index"));
 
     spt.pipeline.set_current_group(pipeline_code);
     spt.pipeline.set_search_type(pipeline_code, pipeline_stype);

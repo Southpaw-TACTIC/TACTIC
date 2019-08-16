@@ -1569,7 +1569,14 @@ class PipelineListWdg(BaseRefreshWdg):
             
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
+
+            var group = spt.pipeline.get_group(group_name);
             var default_template = data.default_templates[group_name];
+            var node_index = group.get_data("node_index");
+            var pipeline_data = {
+                default_template: default_template,
+                node_index: node_index
+            };
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -1581,9 +1588,8 @@ class PipelineListWdg(BaseRefreshWdg):
                     search_key: search_key, 
                     pipeline: xml, 
                     color: color, 
-                    project_code: bvr.project_code, 
-                    default_template: default_template,
-                    pipeline_data: data
+                    project_code: bvr.project_code,
+                    pipeline_data: pipeline_data
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
             } catch(e) {
@@ -7202,7 +7208,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
             var description = data.descriptions[group_name];
+
+            var group = spt.pipeline.get_group(group_name);
             var default_template = data.default_templates[group_name];
+            var node_index = group.get_data("node_index");
+            var pipeline_data = {
+                default_template: default_template,
+                node_index: node_index
+            };
 
             var nodes = spt.pipeline.get_nodes_by_group(group_name);
             var node_kwargs = {};
@@ -7253,8 +7266,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     color:color, 
                     description: description, 
                     project_code: bvr.project_code,
-                    default_template: default_template,
-                    node_kwargs: node_kwargs
+                    node_kwargs: node_kwargs,
+                    pipeline_data: pipeline_data
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                 spt.named_events.fire_event('pipeline|save', {});
@@ -8791,7 +8804,7 @@ class PipelineSaveCbk(Command):
         timestamp = self.kwargs.get("timestamp")
 
         default_template = self.kwargs.get("default_template")
-        pipeline_data = self.kwargs.get("pipeline_data")
+        pipeline_data = self.kwargs.get("pipeline_data") or {}
 
         from pyasm.common import Xml
         xml = Xml()
@@ -8829,10 +8842,7 @@ class PipelineSaveCbk(Command):
         if timestamp:
             data['timestamp'] = timestamp
             
-        if default_template and SearchType.column_exists("sthpw/pipeline", "data"):
-            pipeline_data = {
-                'default_template': default_template
-            }
+        if SearchType.column_exists("sthpw/pipeline", "data"):
             data['data'] = pipeline_data
 
         server.insert_update(pipeline_sk, data = data)
@@ -9317,7 +9327,14 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 
                 var data = spt.pipeline.get_data();
                 var color = data.colors[group_name];
+
+                var group = spt.pipeline.get_group(group_name);
                 var default_template = data.default_templates[group_name];
+                var node_index = group.get_data("node_index");
+                var pipeline_data = {
+                    default_template: default_template,
+                    node_index: node_index
+                };
 
                 server = TacticServerStub.get();
                 spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -9328,10 +9345,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                     var args = {
                         search_key: search_key, 
                         pipeline: xml, 
-                        color: color, 
+                        color: color,
                         project_code: bvr.project_code, 
-                        default_template: default_template,
-                        pipeline_data: data
+                        pipeline_data: pipeline_data
                     };
                     server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                     spt.named_events.fire_event('pipeline|save', {});
