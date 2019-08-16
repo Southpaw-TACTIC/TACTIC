@@ -1292,7 +1292,7 @@ class MethodMode(ExpressionParser):
                     sobject = self.sobjects[0]
                 else:
                     sobject = None
-                cmd = PythonCmd(script_path=first_arg, sobject=sobject)
+                cmd = PythonCmd(script_path=first_arg, sobject=sobject, env_sobjects=self.env_sobjects)
                 results = cmd.execute()
 
 
