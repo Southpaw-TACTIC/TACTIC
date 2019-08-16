@@ -3241,6 +3241,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_label_view = self.kwargs.get("group_label_view")
         group_label_class = self.kwargs.get("group_label_class")
         expand_mode = self.kwargs.get("expand_mode")
+        data_mode = self.kwargs.get("data_mode")
         show_name_hover = self.kwargs.get("show_name_hover")
         op_filters = self.kwargs.get("op_filters")
         show_collection_tool = self.kwargs.get("show_collection_tool")
@@ -3351,6 +3352,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "keywords_columns": keywords_columns,
             "filter": filter,
             "expand_mode": expand_mode,
+            "data_mode": data_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
             "show_collection_tool": show_collection_tool,

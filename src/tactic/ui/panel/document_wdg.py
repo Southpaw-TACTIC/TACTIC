@@ -14,6 +14,7 @@
 __all__ = ['DocumentWdg', 'DocumentItemWdg', 'DocumentSaveCmd']
 
 
+from pyasm.common import Common, jsonloads, jsondumps
 from pyasm.biz import Project
 from pyasm.command import Command
 from pyasm.search import Search, SearchType, SObject
@@ -34,6 +35,9 @@ class DocumentWdg(BaseRefreshWdg):
     def init(self):
 
         self.document = None
+
+        if self.kwargs.get("document"):
+            self.document = jsonloads(self.kwargs.get("document") )
 
 
 
@@ -99,16 +103,22 @@ class DocumentWdg(BaseRefreshWdg):
 
 
                 if isinstance(sobject, dict):
-                    s = SearchType.create("sthpw/task")
+
+                    search_type = self.kwargs.get("search_type")
+                    if not search_type:
+                        search_type = "sthpw/task"
+
+                    s = SearchType.create(search_type)
                     for n, v in sobject.items():
                         s.set_value(n,v)
                     sobject = s
-                    SObject.cache_sobject(sobject.get_search_key(), s, search_type="sthpw/task")
+                    SObject.cache_sobject(sobject.get_search_key(), s, search_type=search_type)
 
                 name = sobject.get_value("name", no_exception=True)
                 if not name:
-                    name = sobject.get("code")
-
+                    name = sobject.get_value("code", no_exception=True)
+                if not name:
+                    name = sobject.get_value("id")
 
                 title = name
                 sobject.set_value("title", title)
@@ -117,6 +127,7 @@ class DocumentWdg(BaseRefreshWdg):
                 sobject.set_value("group_level", group_level)
 
                 sobjects.append(sobject)
+
 
 
             elif expression:
@@ -444,7 +455,6 @@ spt.document.export = function(kwargs) {
         }
         item["group_level"] = parseInt(group_level);
 
-
         if (row_type == "group") {
             if (row.getAttribute("spt_deleted") == "true") {
                 break;
@@ -467,9 +477,32 @@ spt.document.export = function(kwargs) {
                 }
             }
         } else {
-            var search_key = row.getAttribute("spt_search_key_v2");
-            item["type"] = "sobject";
-            item["search_key"] = search_key;
+
+            if (kwargs.mode == "report") {
+                var element_names = spt.table.get_element_names();
+                var cells = row.getElements(".spt_cell_edit");
+                var index = 0;
+                var data = {};
+                data["id"] = i;
+                cells.forEach( function(cell) {
+                    var element_name = element_names[index];
+                    var value = cell.getAttribute("spt_report_value");
+                    if (value == null) {
+                        value = cell.getAttribute("spt_input_value");
+                    }
+                    data[element_name] = value;
+                    index += 1;
+                } );
+                item["type"] = "sobject";
+                item["sobject"] = data;
+            }
+            else {
+                var search_key = row.getAttribute("spt_search_key_v2");
+                item["type"] = "sobject";
+                item["search_key"] = search_key;
+            }
+
+
         }
 
         content.push(item);

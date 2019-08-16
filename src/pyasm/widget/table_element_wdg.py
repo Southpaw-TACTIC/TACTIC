@@ -1495,7 +1495,7 @@ class HiddenRowToggleWdg(FunctionalTableElement):
             options = self.options.copy()
             # remove the unnecesary new, title_icon key
             options.pop('new')
-            if options.has_key('title_icon'):
+            if "title_icon" in options:
                 options.pop('title_icon')
             options['search_key'] = parent_key
             on_script = "spt.panel.load('%s', '%s', bvr.args, {}, false);"%(display_id, new)

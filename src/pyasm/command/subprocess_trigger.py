@@ -129,7 +129,7 @@ class SubprocessTrigger(Handler):
 
 
         # if it was not overridden by the trigger, the return default for the mode
-        if not self.info.has_key("result"):
+        if "result" not in self.info:
             self.info['result'] = result
 
 

@@ -138,6 +138,7 @@ class BaseUpgrade(Command):
             # substitute the function of 'execute' method with the
             # upgrade script
             Common.add_func_to_class(method, upgrade, upgrade.__class__, 'execute')
+
             upgrade.set_project(self.project_code)
             upgrade.set_upgrade_class(self.__class__.__name__)
             upgrade.set_upgrade_method(name)

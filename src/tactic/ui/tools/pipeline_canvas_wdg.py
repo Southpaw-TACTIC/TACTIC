@@ -14,9 +14,10 @@ __all__ = ['BaseNodeWdg', 'PipelineCanvasWdg', 'NodeRenameWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.biz import ProjectSetting
+from pyasm.biz import ProjectSetting, Task, Pipeline
 from pyasm.common import Container, Common, jsondumps
 from pyasm.web import DivWdg, WebContainer, Table, Widget, HtmlElement
+from pyasm.command import Command
 from pyasm.search import Search, SearchType
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
@@ -35,6 +36,9 @@ class BaseNodeWdg(BaseRefreshWdg):
         node_type = self.get_node_type()
         title = Common.get_display_title(node_type)
         return title
+
+    def use_default_node_behavior(self):
+        return True
 
     def get_title_background(self):
         return "rgba(0,0,0,0.5)"
@@ -620,14 +624,41 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             } else if (key == "t") {
                 spt.process_tool.toggle_side_bar(bvr.src_el);
 
+            } else if (key == "q") {
+                spt.process_tool.show_side_bar(bvr.src_el);
+ 
             } else if (key == "w") {
                 var container = spt.pipeline.take_snapshot();
                 var scale = spt.pipeline.get_scale();
                 container.scale = scale;
 
-            } else if (key == "q") {
+            } else if (key == "n") {
 
-                spt.pipeline.match_snapshot();
+                var canvas = spt.pipeline.get_canvas();
+                var groups = canvas.getElements(".spt_pipeline_group");
+                if (groups.length) {
+                    var selected_index = 0;
+                    for (var i = 0; i < groups.length; i++) {
+                        var group = groups[i];
+                        if (group.hasClass("spt_selected")) {
+                            group.removeClass("spt_selected");
+                            selected_index = i;
+                            break;
+                        }
+                    }
+
+                    selected_index += 1;
+                    if (selected_index >= groups.length) {
+                        selected_index = 0;
+                    }
+
+                    var group = groups[selected_index];
+                    group.addClass("spt_selected");
+                    spt.pipeline.group.set_top(group);
+                    var nodes = spt.pipeline.group.select_nodes();
+                    spt.pipeline.fit_to_node(nodes);
+                }
+
 
             } else if (evt.control == true && key == "c") {
                 var nodes = spt.pipeline.get_selected_nodes();
@@ -1151,6 +1182,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
     def get_canvas_behaviors(self):
         return []
+
+
 
 
     def get_folder(self, group_name):
@@ -1959,8 +1992,16 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         custom_wdg = CustomProcessConfig.get_node_handler(node_type)
         node.add(custom_wdg)
 
+
+
         node.add_attr("spt_element_name", name)
         node.add_attr("title", name)
+
+
+        if not custom_wdg.use_default_node_behavior():
+            return custom_wdg
+
+
 
         node.add_style("z-index", "200")
         node.add_style("position: absolute")
@@ -2533,10 +2574,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         return r'''
 
+if (!spt.pipeline) {
+    spt.pipeline = {};
+}
 
 //spt.Environment.get().add_library("spt_pipeline");
 
-spt.pipeline = {};
 
 spt.pipeline.top = null;
 
@@ -3125,6 +3168,8 @@ spt.pipeline.select_nodes_by_box = function(TL, BR) {
 
     spt.pipeline.unselect_all_nodes();
 
+    var selected = [];
+
     var nodes = spt.pipeline.get_all_nodes();
     for (var i=0; i<nodes.length; i++) {
         var node = nodes[i];
@@ -3145,8 +3190,11 @@ spt.pipeline.select_nodes_by_box = function(TL, BR) {
 
         if (intersect) {
             spt.pipeline.select_node(node);
+            selected.push(node);
         }
     }
+
+    return selected;
 }
 
 
@@ -5141,6 +5189,18 @@ spt.pipeline.draw_arrow = function(halfway, point0, size) {
 }
 
 
+
+spt.pipeline.draw_rect = function(pos1, pos2, color) {
+    var ctx = spt.pipeline.get_ctx();
+    if (color) {
+        ctx.strokeStyle = color;
+    }
+    ctx.strokeRect(pos1.x, pos1.y, pos2.x-pos1.x, pos2.y-pos1.y);
+}
+
+
+
+
 // Pan functionality
 spt.pipeline.orig_mouse_position = null;
 spt.pipeline.last_mouse_position = null;
@@ -5552,13 +5612,14 @@ spt.pipeline.fit_to_node = function(node) {
     if (!node) return;
 
     var nodes = null;
-    if (typeof(group_name) == 'undefined') {
-        nodes = spt.pipeline.get_all_nodes();
+    if (node.length > 0) {
+        nodes = node;
     }
     else {
-        nodes = spt.pipeline.get_nodes_by_group(group_name);
+        nodes = [node];
     }
 
+    /*
     var top = null;
     var left = null;
     var bottom = null;
@@ -5578,6 +5639,9 @@ spt.pipeline.fit_to_node = function(node) {
             bottom = pos.y
         }
     }
+    */
+
+    var node = nodes[0];
 
     var canvas = spt.pipeline.get_canvas();
     var size = canvas.getSize();
@@ -5701,6 +5765,22 @@ spt.pipeline.match_snapshot = function(container) {
     outline.setStyle("left", left_pos);
     outline.setStyle("top", top_pos);
 }
+
+
+spt.pipeline.clear_snapshot = function(container) {
+    var top = spt.pipeline.top;
+
+    if (!container) {
+        container = top.getElement(".spt_pipeline_snapshot");
+    }
+
+    if (!container) {
+        var container = el.getElement(".spt_pipeline_snapshot");
+    }
+    container.innerHTML = "";
+
+}
+
 
 
 spt.pipeline.last_mouse_pos = null;
@@ -6490,6 +6570,8 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
 
     spt.pipeline.redraw_canvas();
 
+    spt.pipeline.clear_snapshot();
+
     spt.named_events.fire_event('pipeline|save', {});
 }
 
@@ -6932,6 +7014,39 @@ spt.pipeline.set_status_color = function(search_key) {
     var server = TacticServerStub.get();
     var sobject = server.get_by_search_key(search_key);
 
+    var cmd = "tactic.ui.tools.PipelineGetStatusColorsCmd";
+    var kwargs = {
+        search_key: search_key
+    }
+    server.p_execute_cmd(cmd, kwargs)
+    .then( function(ret_val) {
+        var info = ret_val.info;
+        console.log(info);
+        var group_name = spt.pipeline.get_current_group();
+        var nodes = spt.pipeline.get_nodes_by_group(group_name);
+
+        var default_color = 'rgb(128,128,128)';
+
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var process = spt.pipeline.get_node_name(node);
+            console.log(process);
+
+            var color = info[process]
+            console.log(color);
+            if (!color) {
+                color = default_color;
+                node.setStyle("opacity", "0.5");
+            }
+            spt.pipeline.set_color(node, color);
+        }
+ 
+    } );
+
+    return;
+
+
+/*
     // get all of the tass for this sobject
     var tasks = server.query("sthpw/task", {parent_key: search_key});
     var tasks_dict = {};
@@ -6979,6 +7094,7 @@ spt.pipeline.set_status_color = function(search_key) {
         }
         spt.pipeline.set_color(node, color);
     }
+*/
 }
 
 
@@ -7271,6 +7387,72 @@ spt.pipeline.get_connectors_to_node = function(to_name) {
 }
 
     '''
+
+
+
+
+__all__.append("PipelineGetStatusColorsCmd")
+class PipelineGetStatusColorsCmd(Command):
+
+    def execute(self):
+
+        search_key = self.kwargs.get("search_key")
+
+        sobject = Search.get_by_search_key(search_key)
+
+        # get all of the tass for this sobject
+        tasks = Task.get_by_sobject(sobject)
+
+        tasks_dict = {};
+        for task in tasks:
+            process = task.get_value("process")
+            tasks_dict[process] = task
+
+        pipeline_code = sobject.get("pipeline_code")
+        pipeline = Pipeline.get_by_sobject(sobject)
+        process_names = pipeline.get_process_names()
+
+        colors =  Task.get_status_colors()
+        colors = colors.get("task")
+
+        default_color = 'rgb(128,128,128)'
+        default_color = ""
+
+        process_colors = {}
+
+        for process in process_names:
+            task = tasks_dict.get(process)
+
+            if not task:
+
+                # check the message status
+                key = "%s|%s|status" % (search_key, process)
+                message = Search.get_by_code("sthpw/message", key)
+                if not message:
+                    color = default_color
+                else:
+                    status = message.get("message")
+                    if status:
+                        status = status.replace("_", " ")
+                        status = status.title()
+                    color = colors.get(status)
+                    if not color:
+                        color = default_color
+
+
+            else:
+                status = task.get("status")
+                color = colors.get(status)
+                if not color:
+                    color = default_color
+
+            process_colors[process] = color
+
+        return process_colors
+
+
+
+
 
 
 class NodeRenameWdg(BaseRefreshWdg):

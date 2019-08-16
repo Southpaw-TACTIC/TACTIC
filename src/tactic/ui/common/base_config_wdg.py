@@ -221,7 +221,11 @@ class BaseConfigWdg(BaseRefreshWdg):
             #for key in display_options.keys():
             element.set_options(display_options)
 
-            self.add_widget(element,element_name)
+            data_mode = self.kwargs.get("data_mode")
+            if data_mode == "report":
+                element.set_option("data_mode", "report")
+
+            self.add_widget(element, element_name)
 
             # layout widgets also categorize their widgets based on type
             if element_name == "Filter":

@@ -487,7 +487,7 @@ class CustomXmlWdg(BaseTableElementWdg):
             name = node.nodeName
             value = Xml.get_node_value(node)
 
-            if options.has_key(name):
+            if name in options:
                 # turn this into an array
                 array = []
                 array.append(options.get(name))
