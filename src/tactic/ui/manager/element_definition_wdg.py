@@ -208,7 +208,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var top = bvr.src_el.getParent(".spt_element_top");
             //var mode = top.getElement(".spt_element_def_mode");
-            var inputs = spt.api.Utility.get_input_values(top);
+            var inputs = spt.api.Utility.get_input_values(top, null, false);
 
             if (inputs.name == '') {
                 alert('Please provide a name for this element');
@@ -317,7 +317,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var top = bvr.src_el.getParent(".spt_element_definition");
             var mode = top.getElement(".spt_element_def_mode");
-            var inputs = spt.api.Utility.get_input_values(top);
+            var inputs = spt.api.Utility.get_input_values(top, null, false);
 
             var tab_top = bvr.src_el.getParent(".spt_element_top");
             spt.tab.set_tab_top(tab_top);
@@ -847,7 +847,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_element_definition");
-            var inputs = spt.api.Utility.get_input_values(top);
+            var inputs = spt.api.Utility.get_input_values(top, null, false);
             var class_name = 'tactic.ui.manager.SimpleElementDefinitionCbk';
             var is_insert = %s;
             var is_edit_layout = '%s';
@@ -878,7 +878,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             var server = TacticServerStub.get();
             var activator = spt.smenu.get_activator(bvr);
             var top = activator.getParent(".spt_element_definition");
-            var inputs = spt.api.Utility.get_input_values(top);
+            var inputs = spt.api.Utility.get_input_values(top, null, false);
             var class_name = 'tactic.ui.manager.SimpleElementDefinitionCbk';
             var is_insert = %s;
             var is_edit_layout = '%s';
@@ -1898,7 +1898,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
                 //spt.hide(view_el);
             }
 
-            var values = spt.api.Utility.get_input_values(top);
+            var values = spt.api.Utility.get_input_values(top, null, false);
             var wdg = top.getElement(".spt_widget_options_top");
             spt.show(wdg);
             spt.panel.refresh(wdg, values);
@@ -2005,7 +2005,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             'type': 'change',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_widget_selector_top");
-            var values = spt.api.Utility.get_input_values(top);
+            var values = spt.api.Utility.get_input_values(top, null, false);
             var wdg = top.getElement(".spt_widget_options_top");
             spt.panel.refresh(wdg, values);
             '''
@@ -2014,7 +2014,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             'type': 'blur',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_widget_selector_top");
-            var values = spt.api.Utility.get_input_values(top);
+            var values = spt.api.Utility.get_input_values(top, null, false);
             var wdg = top.getElement(".spt_widget_options_top");
             spt.panel.refresh(wdg, values);
             '''
@@ -2044,7 +2044,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             'type': 'change',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_widget_selector_top");
-            var values = spt.api.Utility.get_input_values(top);
+            var values = spt.api.Utility.get_input_values(top, null, false);
             var wdg = top.getElement(".spt_widget_options_top");
             spt.panel.refresh(wdg, values);
             '''
@@ -2053,7 +2053,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
             'type': 'blur',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_widget_selector_top");
-            var values = spt.api.Utility.get_input_values(top);
+            var values = spt.api.Utility.get_input_values(top, null, false);
             var wdg = top.getElement(".spt_widget_options_top");
             spt.panel.refresh(wdg, values);
             '''
@@ -3164,7 +3164,7 @@ class SimpleElementDefinitionCbk(Command):
                 if self.is_insert: # will be caught in AlterTableCmd
                     raise
                 else: # in edit mode, it's ok for now
-                    print("WARNING when creating required columns: ", e.message)
+                    print("WARNING when creating required columns: ", e)
                     pass
                 #raise
             except AttributeError:

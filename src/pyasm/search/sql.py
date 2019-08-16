@@ -357,7 +357,7 @@ class Sql(Base):
         if use_cache:
             columns = Container.get_dict("Sql:table_columns", key)
             if columns:
-                return columns[:]
+                return list(columns)
 
             # use global cache
             if database == 'sthpw':
@@ -369,8 +369,7 @@ class Sql(Base):
                 if cache:
                     columns = cache.get_value_by_key("columns", table)
                     if columns != None:
-                        return columns[:]
-                        #return columns
+                        return list(columns)
 
         impl = self.get_database_impl()
         columns = impl.get_columns(db_resource, table)
@@ -378,7 +377,7 @@ class Sql(Base):
         if use_cache:
             Container.put_dict("Sql:table_columns", key, columns)
 
-        return columns[:]
+        return list(columns)
 
 
     def get_table_info(self):

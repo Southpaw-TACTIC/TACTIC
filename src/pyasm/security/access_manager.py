@@ -32,7 +32,7 @@ class Sudo(object):
     def __init__(self):
         count = Container.increment("Sudo::is_sudo")
         if count < 0:
-            raise Exception("Count of sudo:", count)
+            raise Exception("count of sudo: ", count)
 
         self.security = Environment.get_security()
 
@@ -484,6 +484,10 @@ class AccessManager(Base):
 
         if self.is_admin() or Sudo.is_sudo():
             return True
+
+        if Sudo.is_sudo():
+            return True
+
 
         if isinstance(key, basestring):
             from pyasm.biz import Project

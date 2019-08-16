@@ -140,7 +140,7 @@ class DatabaseImpl(DatabaseImplInterface):
         '''
 
         return None
-    
+
     def process_date(self, value):
         '''DatabaseImpl process date str to work with db before commit. SQLServer needs it'''
         return value
@@ -221,7 +221,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
         # import the necessary schema
         types = ['config', type]
-        
+
         # sthpw schema is composed of 2 files
         if db_resource == 'sthpw':
             types.insert(0, 'bootstrap')
@@ -273,7 +273,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
     def database_exists(self, database, host=None, port=None):
-        '''@param: 
+        '''@param:
             database - if string, it's just a database name (old)
                        if DbResource, it could contain the host already
             host - can be localhost or a different server
@@ -290,8 +290,8 @@ class DatabaseImpl(DatabaseImplInterface):
                 else:
                     vendor = self.get_database_type()
                 db_resource = DbResource(database=database, host=host, vendor=vendor, port=port)
-            
-            cached = Container.get("Sql:database_exists:%s"%db_resource.get_key()) 
+
+            cached = Container.get("Sql:database_exists:%s"%db_resource.get_key())
             if cached != None:
                 return cached
 
@@ -302,7 +302,7 @@ class DatabaseImpl(DatabaseImplInterface):
             else:
                 return False
             # cache it for repeated use
-            Container.put("Sql:database_exists:%s"%db_resource.get_key(), True) 
+            Container.put("Sql:database_exists:%s"%db_resource.get_key(), True)
         except Exception as e:
             #print("Error: ", str(e))
             return False
@@ -383,7 +383,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
     def get_constraints(self, db_resource, table):
         return []
-      
+
 
 
 
@@ -410,10 +410,10 @@ class DatabaseImpl(DatabaseImplInterface):
         search = Search('workflow/base_keyword')
         search.add_op_filters(op_filters)
         search_stmt = search.get_statement()
-       
+
         wheres = search_stmt.split('WHERE')
         where = wheres[-1]
-        
+
         return where
 
     def get_parent_cte(self, op_filters):
@@ -429,7 +429,7 @@ class DatabaseImpl(DatabaseImplInterface):
                   1
                  FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
                  WHERE (%s)
-                  
+
                  AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
                  UNION ALL
                  SELECT
@@ -509,13 +509,13 @@ class DatabaseImpl(DatabaseImplInterface):
             WHERE r."parent_code" = ng."search_code" and depth < 10
             AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
             )
-            
+
             Select search_code from res;
             ''' % var_dict
 
 
         return stmt
-        
+
     def get_text_search_filter(cls, column, keywords, column_type, table=None, op="&"):
         '''default impl works with Postgres'''
 
@@ -528,7 +528,7 @@ class DatabaseImpl(DatabaseImplInterface):
                 op_str = " %s " % op
                 value = op_str.join(parts)
                 return value
-            
+
             if keywords.find("|") != -1 or keywords.find("&") != -1:
                 # prevent syntax error from multiple | or &
                 keywords = re.sub( r'\|+', r'|', keywords)
@@ -554,11 +554,11 @@ class DatabaseImpl(DatabaseImplInterface):
 
         # for multiple columns
         #coalesce(title,'') || ' ' || coalesce(body,'')
-        
+
         # avoid syntax error
         value = value.replace("'", "''")
 
-       
+
 
         if table:
             column = '"%s"."%s"' % (table, column)
@@ -570,7 +570,7 @@ class DatabaseImpl(DatabaseImplInterface):
         else:
             # prefix matching
             value = '%s:*'%value
-        
+
         wheres = []
         if column_type == 'tsvector':
             wheres.append(column)
@@ -585,7 +585,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
     get_text_search_filter = classmethod(get_text_search_filter)
 
-    
+
     def get_columns(cls, db_resource, table):
         '''get ordered column names'''
          # do a dummy select to get the ordered columns
@@ -668,7 +668,7 @@ class DatabaseImpl(DatabaseImplInterface):
 
 
 class BaseSQLDatabaseImpl(DatabaseImpl):
-    
+
     def is_column_sortable(self, db_resource, table, column):
 
         # support -> operator
@@ -726,7 +726,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         # SQL Server specific implementation.
         #postfix_len = '_id_seq'.__len__()
         #table_name_len = sequence_name.__len__() - postfix_len
-        #table_name = sequence_name[0:table_name_len] 
+        #table_name = sequence_name[0:table_name_len]
         #print('  get_create_sequence: table_name = ', table_name)
         #return 'ALTER TABLE %s ADD %s INT IDENTITY(100, 5) ' % (table_name, sequence_name)
         #return 'ALTER COLUMN %s ADD %s INT IDENTITY(100, 5) ' % (table_name, sequence_name)
@@ -757,12 +757,12 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             return statement
 
         # SQL Server implementation
-        # 
+        #
         # Example:
-        # SELECT * from (SELECT TOP 100 *, 
+        # SELECT * from (SELECT TOP 100 *,
         #        ROW_NUMBER() over (ORDER BY id) as _tmp_spt_rownum FROM
         # [tblCatalogCrossReference]  WHERE code='abc'
-        #   ) tmp_spt_table 
+        #   ) tmp_spt_table
         # WHERE tmp_spt_table._tmp_spt_rownum between (5) and (10)
         start = offset + 1
         end = start + int(limit) - 1
@@ -804,7 +804,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         parts = []
         # For SQL Server, replaced "serial" type with "identity".
         # create table "hi" ("colA" int, "id" int identity(1,1) primary key("id") );
-        # 
+        #
         parts.append("int identity(1,1)")
         return " ".join(parts)
 
@@ -880,13 +880,13 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
         if not type:
             type = 'day'
-        
+
         if offset:
             # Postgres: parts.append("'%s %s'::interval" % (offset, type) )
             # Postgres: eg. now() + '10 hour'::interval
 
             # SQL Server: DATEADD(hour, +10, CURRENT_TIMESTAMP)
-            part = "DATEADD(%s, %s%s, GETDATE())" % (type, op, offset) 
+            part = "DATEADD(%s, %s%s, GETDATE())" % (type, op, offset)
         else:
             part = "GETDATE()"
         return part
@@ -896,7 +896,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def get_json(self, not_null=False):
         raise Exception("JSON Type not supported yet")
 
-    
+
     #
     # Sequence methods for SQL Server
     #
@@ -919,7 +919,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
     def get_nextval_select(self, sequence):
         # In Postgres, when a table is created, currval is undefined and nextval is 1.
         # SQL Server doesn't have a concept of nextval.
-        # When the table is created, the currval *is already 1*, 
+        # When the table is created, the currval *is already 1*,
         # and so nextval becomes 2.  This poses a problem.
         # The solution is to check if
         # ident_current('table_name') = 1 then just return 1.
@@ -955,7 +955,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     #
     # Regular Expressions
-    # 
+    #
     def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             op = 'LIKE'
@@ -972,7 +972,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             regex = "'%%%s%%'" %regex
         else:
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
-            
+
         return "%s %s %s" %(column, op, regex)
 
 
@@ -987,11 +987,11 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         else:
             value = str(keywords)
 
-        
+
         # avoid syntax error
         value = value.replace("'", "''")
 
-       
+
 
         if table:
             column = '"%s"."%s"' % (table, column)
@@ -1001,7 +1001,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         """
         if column_type in ['integer','serial']:
             column = "CAST(%s AS varchar(10))" %column
-       
+
         """
         wheres = []
 
@@ -1059,7 +1059,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                   1
                  FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
                  WHERE ( %s )
-                    
+
                  AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
                  UNION ALL
                  SELECT
@@ -1108,7 +1108,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             WHERE r."parent_code" = ng."search_code" and depth < 10
             AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
             )
-            
+
             Select search_code from res;
             ''' % var_dict
 
@@ -1125,12 +1125,12 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             lower_value = value.lower()
             if value == "NOW":
                 value = "getdate()"
-            # this is now called in commit() but as a precaution 
+            # this is now called in commit() but as a precaution
             elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
                 if value == 'NULL':
                     pass
                 else:
-                    # TODO:  condensed to process + or - 
+                    # TODO:  condensed to process + or -
                     if re.search(r"(\s\+\d{4})", value):
                         # add : so it becomes +00:00
                         parts = value.split(' +')
@@ -1141,7 +1141,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                         parts = value.split(' -')
                         parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
                         value = '%s -%s'%(parts[0], parts[1])
-                    value = "convert(datetime2, '%s', 0)" % value 
+                    value = "convert(datetime2, '%s', 0)" % value
         return value
     #
     # Type process methods
@@ -1161,18 +1161,18 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                 pass
             else:
                 lower_value = value.lower()
-            
+
                 if value == "NOW":
                     value = "getdate()"
                     #return {"value": value, "quoted": quoted}
-                # FIXME: this is implemented this way because set_value 
+                # FIXME: this is implemented this way because set_value
                 # can be called twice.  This method should called from commit
                 # and not set_value
                 elif not lower_value.startswith("convert") and not lower_value.startswith("getdate") and not lower_value.startswith("dateadd") :
                     if value == 'NULL':
                         pass
                     else:
-                        # TODO:  condensed to process + or - 
+                        # TODO:  condensed to process + or -
                         if re.search(r"(\s\+\d{4})", value):
                             # add : so it becomes +00:00
                             parts = value.split(' +')
@@ -1184,10 +1184,10 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                             parts[-1] = '%s:%s' %(parts[-1][0:2], parts[-1][2:4])
                             value = '%s -%s'%(parts[0], parts[1])
                         value = "convert(datetime2, '%s', 0)" % value
-            """    
+            """
             return {"value": value, "quoted": quoted}
 
-          
+
 
 
         elif column_type in ['uniqueidentifier'] and value == "NEWID":
@@ -1200,7 +1200,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     #
     # Database methods
-    # 
+    #
     def _get_db_info(self, db_resource):
         ''' get the database info from the config file'''
         if isinstance(db_resource, DbResource):
@@ -1216,7 +1216,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
         parts = []
-        host_str ="-S %s" % host 
+        host_str ="-S %s" % host
         if port:
             host_str = '%s,%s'%(host_str, port)
         parts.append(host_str)
@@ -1224,13 +1224,13 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         parts.append("-P %s" % password)
         parts.append("-p %s" % port)
 
-        
+
         return " ".join(parts)
 
 
     def create_database(self, database):
         '''create a database.  This is done by a system command'''
-        
+
         # if the database already exists, do nothing
         if self.database_exists(database):
             return
@@ -1272,7 +1272,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
         else:
             database = db_resource
 
-  
+
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.  sqlcmd -S localhost -U tactic -P south123paw -d sthpw -Q "dropdatabase test1"
         # note: The database we are connecting to must be 'sthpw'
@@ -1350,7 +1350,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             cmd = 'sqlcmd -S %s,%s -U %s -P %s -d %s -i "%s"' % \
                   (self.server, self.port, self.user, self.password, database, schema_path)
 
-           
+
             print("Importing schema ...")
             print(cmd)
             os.system(cmd)
@@ -1427,7 +1427,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
             prefix = "%s" % db_resource.get_db_resource()
         else:
             prefix = "%s" % db_resource
-            
+
         if use_cache:
             # use global cache
             if prefix.endswith(':sthpw'):
@@ -1445,14 +1445,14 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
                         return dict
 
         key2 = "%s:%s" % (prefix, table)
-      
+
         key = "DatabaseImpl:column_info"
         cache_dict = Container.get(key)
         if cache_dict == None:
             cache_dict = {}
             Container.put(key, cache_dict)
-        
-        if use_cache:    
+
+        if use_cache:
             cache = cache_dict.get(key2)
             if cache != None:
                 return cache
@@ -1517,16 +1517,16 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     get_column_info = classmethod(get_column_info)
 
-  
 
-   
- 
+
+
+
 
     def get_column_types(self, database, table):
-        ''' get column data types. Note: can potentially get 
+        ''' get column data types. Note: can potentially get
             character_maximum_length, numeric_precision, and udt_name '''
-    
-        info = self.get_column_info(database, table) 
+
+        info = self.get_column_info(database, table)
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('data_type')
@@ -1534,14 +1534,14 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     def get_column_nullables(self, database, table):
         ''' get column data nullables '''
-    
-        info = self.get_column_info(database, table) 
+
+        info = self.get_column_info(database, table)
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('nullable')
-        return column_dict 
+        return column_dict
 
-   
+
 
     def set_savepoint(self, name='save_pt'):
         '''set a savepoint'''
@@ -1567,7 +1567,7 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
     def get_columns(cls, db_resource, table):
         '''SQLServer get ordered column names'''
-        
+
         from .sql import DbContainer
         sql = DbContainer.get(db_resource)
 
@@ -1582,8 +1582,8 @@ class SQLServerImpl(BaseSQLDatabaseImpl):
 
 
         # remove temp columns
-        columns = cls.remove_temp_column(columns, sql) 
-        
+        columns = cls.remove_temp_column(columns, sql)
+
 
         return columns
 
@@ -1617,7 +1617,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         version_str = result[0][0]
 
         #eg. result = PostgreSQL 8.2.11 on i386-redhat-linux-gnu, compiled by GCC gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-33)
-        #eg. result = PostgreSQL 9.1.3, compiled by Visual C++ build 1500, 64-bit 
+        #eg. result = PostgreSQL 9.1.3, compiled by Visual C++ build 1500, 64-bit
         parts = version_str.split(" ")
         version_parts = parts[1].split(".")
         version_parts = [int(re.split('[\.,]',x)[0]) for x in version_parts]
@@ -1739,7 +1739,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
        return " ".join(parts)
 
 
-    
+
     #
     # Sequence methods for Postgres
     #
@@ -1795,7 +1795,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
     #
     # Regular Expressions
-    # 
+    #
     def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             op = '~*'
@@ -1807,8 +1807,24 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             op = '!~'
         else:
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
-            
-        return "\"%s\" %s '%s'" %(column, op, regex)
+
+        # json column handling
+        subcolumn = None
+        if column.find("->>") != -1:
+            parts = column.split("->>")
+            column = parts[0]
+            subcolumn = parts[1]
+        elif column.find("->") != -1:
+            parts = column.split("->")
+            column = parts[0]
+            subcolumn = parts[1]
+
+        if subcolumn:
+            where = "\"%s\"->>'%s' %s '%s'" % (column, subcolumn, op, regex)
+        else:
+            where = "\"%s\" %s '%s'" %(column, op, regex)
+
+        return where
 
 
 
@@ -1843,7 +1859,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
     #
     # Database methods
-    # 
+    #
     def _get_db_info(self, db_resource, host=None, port=None):
         ''' get the database info from the config file if db_resource object is not given. e.g. during install'''
         from .sql import DbResource
@@ -1877,12 +1893,12 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
         return " ".join(parts)
 
-  
+
 
 
     def create_database(self, database):
         '''create a database.  This is done by a system command'''
-        
+
         # if the database already exists, do nothing
         if self.database_exists(database):
             return
@@ -1903,8 +1919,8 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         if not result:
             return
             #raise Exception("Error creating database '%s'" % database)
-        
-        
+
+
 
         if result[0] == "CREATE DATABASE":
             print("success")
@@ -1932,12 +1948,12 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
         database_version = Sql.get_default_database_version()
         major = database_version[0]
-        minor = database_version[1] 
+        minor = database_version[1]
 
 
-        # connect from the main db    
-        sql = DbContainer.get('sthpw') 
-        
+        # connect from the main db
+        sql = DbContainer.get('sthpw')
+
         # try to kill the connections first
         version = '%s.%s' %(major, minor)
         if version >= '8.4':
@@ -2043,8 +2059,8 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                     name = results[k][2]
                     if mode in ['PRIMARY KEY', 'CHECK']:
                         continue
-                    constraints.append({'mode':mode, 'name': name}) 
-            
+                    constraints.append({'mode':mode, 'name': name})
+
             for constraint in constraints:
                 name = constraint.get('name')
                 statement = '''select pg_get_indexdef(oid) from pg_class where relname='%s';''' % name
@@ -2137,14 +2153,14 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                         return dict
 
         key2 = "%s:%s" % (prefix, table)
-      
+
         key = "DatabaseImpl:column_info"
         cache_dict = Container.get(key)
         if cache_dict == None:
             cache_dict = {}
             Container.put(key, cache_dict)
-        
-        if use_cache:    
+
+        if use_cache:
             cache = cache_dict.get(key2)
             if cache != None:
                 return cache
@@ -2167,7 +2183,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         result = sql.do_query(query)
 
         # convert to the proper data structure
-       
+
         if len(result) > 0:
             for k in range(len(result)):
                 name = result[k][0]
@@ -2191,7 +2207,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
                     data_type = "time"
 
                 info_dict = {'data_type': data_type, 'nullable': is_nullable, 'size': size}
-               
+
 
                 cache[name] = info_dict
 
@@ -2200,12 +2216,12 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     get_column_info = classmethod(get_column_info)
 
 
-    
+
 
     def get_column_types(self, database, table, use_cache=True):
-        ''' get column data types. Note: can potentially get 
+        ''' get column data types. Note: can potentially get
             character_maximum_length, numeric_precision, and udt_name '''
-        info = self.get_column_info(database, table) 
+        info = self.get_column_info(database, table)
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('data_type')
@@ -2213,12 +2229,12 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
     def get_column_nullables(self, database, table):
         ''' get column data nullables '''
-    
-        info = self.get_column_info(database, table) 
+
+        info = self.get_column_info(database, table)
         column_dict = {}
         for key, value in info.items():
             column_dict[key] = value.get('nullable')
-        return column_dict 
+        return column_dict
 
 
 
@@ -2239,7 +2255,7 @@ class OracleImpl(PostgresImpl):
         sql = DbContainer.get("system")
         sql.do_update(statement)
 
- 
+
     def get_page(self, limit=None, offset=0):
         '''get the pagination sql based on limit and offset'''
         if limit == None:
@@ -2424,7 +2440,7 @@ class OracleImpl(PostgresImpl):
 
     def get_nextval_select(self, sequence):
         return 'select %s.nextval from dual' % sequence
-    
+
     def get_setval_select(self, sequence):
         return None
         #return 'select %s.setval from dual' % sequence
@@ -2579,7 +2595,7 @@ class OracleImpl(PostgresImpl):
 
     def get_column_types(self, database, table):
         ''' get column data types in a dict '''
-        
+
         return super(OracleImpl, self).get_column_types(database, table)
 
     # schema manipulation
@@ -2591,7 +2607,7 @@ class OracleImpl(PostgresImpl):
         if not_null:
             statement = '%s NOT NULL' %statement
         return [statement]
-    # 
+    #
     # Sql manipulation functions
     #
     # This deals with Oracles absurdly low 4000 byte limit on sql statements
@@ -2683,12 +2699,12 @@ class OracleImpl(PostgresImpl):
     def process_value(self, column, value, column_type="varchar"):
         '''Some values need to be preprocessed before going to an sql
         statement depending on type'''
-        quoted = True 
+        quoted = True
 
         if value == "NULL":
             quoted = False
         elif column_type == "integer":
-            quoted = False 
+            quoted = False
         elif column_type == "timestamp":
             orig_value = value
             value = str(value)
@@ -2696,7 +2712,7 @@ class OracleImpl(PostgresImpl):
                 quoted = False
                 value = "NULL"
             elif value.startswith('SYSTIMESTAMP'):
-                quoted = False 
+                quoted = False
             else:
                 # try to match the date with regular expressions
 
@@ -2769,7 +2785,7 @@ class OracleImpl(PostgresImpl):
 
 
 class SqliteImpl(PostgresImpl):
-    
+
     def get_database_type(self):
         return "Sqlite"
 
@@ -2862,7 +2878,7 @@ class SqliteImpl(PostgresImpl):
             # combine the the op and offset sign.
             if op == '-':
                 offset = offset * -1
-            
+
             if not type:
                 type = "days"
             elif type.lower() in ['week','weeks']:
@@ -2892,7 +2908,7 @@ class SqliteImpl(PostgresImpl):
 
     #
     # Regular Expressions
-    # 
+    #
     def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             #op = '~*'
@@ -2908,7 +2924,7 @@ class SqliteImpl(PostgresImpl):
             return "\"%s\" NOT LIKE '%%%s%%'" %(column, regex)
         else:
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
-            
+
         return "\"%s\" %s '%s'" %(column, op, regex)
 
 
@@ -2940,7 +2956,7 @@ class SqliteImpl(PostgresImpl):
 
     #
     # Database methods
-    # 
+    #
 
     def _get_database_path(self, database):
 
@@ -2954,7 +2970,7 @@ class SqliteImpl(PostgresImpl):
             db_dir = "%s/db" % data_dir
 
         db_path = "%s/%s.db" % (db_dir, database)
-        
+
         return db_path
 
 
@@ -3070,7 +3086,7 @@ class SqliteImpl(PostgresImpl):
                 size = 0
             else:
                 size = 0
-        
+
 
             info_dict = {'data_type': data_type, 'nullable': nullable,
                 'size': size}
@@ -3183,12 +3199,12 @@ class MySQLImpl(PostgresImpl):
         version_str = result[0][0]
         version_parts = version_str.split(".")
         version_parts = [int(x) for x in version_parts]
-        
+
         # eg. result is [5, 1, 47]
         return version_parts
 
 
-  
+
 
     def process_value(self, name, value, column_type="varchar"):
         if column_type == 'boolean':
@@ -3350,7 +3366,7 @@ class MySQLImpl(PostgresImpl):
                 size = 0
             else:
                 size = 0
-        
+
 
             info_dict = {'data_type': data_type, 'nullable': nullable,
                 'size': size}
@@ -3432,7 +3448,7 @@ class MySQLImpl(PostgresImpl):
     def get_json(self, not_null=False):
         parts = []
 
-        # JSON not support untile MySQL 5.7 (need to check version) 
+        # JSON not support untile MySQL 5.7 (need to check version)
         #parts.append("JSON")
         parts.append("text")
 
@@ -3442,7 +3458,7 @@ class MySQLImpl(PostgresImpl):
 
 
 
- 
+
 
     def get_timestamp_now(self, offset=None, type=None, op='+'):
         '''MySQL get current / offset timestamp from now'''
@@ -3471,7 +3487,7 @@ class MySQLImpl(PostgresImpl):
 
     #
     # Regular Expressions
-    # 
+    #
     def get_regex_filter(self, column, regex, op='EQI'):
         if op == 'EQI':
             #op = '~*'
@@ -3487,7 +3503,7 @@ class MySQLImpl(PostgresImpl):
             return "\"%s\" NOT LIKE '%%%s%%'" %(column, regex)
         else:
             raise SetupException('Invalid op [%s]. Try EQ, EQI, NEQ, or NEQI' %op)
-            
+
         return "\"%s\" %s '%s'" %(column, op, regex)
 
 
@@ -3519,7 +3535,7 @@ class MySQLImpl(PostgresImpl):
 
     #
     # Database methods
-    # 
+    #
     def create_database(self, database):
         '''create a database'''
         from .sql import DbContainer, DbResource
@@ -3537,7 +3553,7 @@ class MySQLImpl(PostgresImpl):
         # TODO: if the database does not exist, do nothing
         # if not database_exists(database):
         #    return
-        
+
 
         # TODO: Retrieve server, username, password from TACTIC config file.
         # eg.   mysql --host=localhost --port=5432 --user=root --password=south123paw --execute="create database unittest"
@@ -3573,7 +3589,7 @@ class MySQLImpl(PostgresImpl):
 
     def commit_on_schema_change(self):
         return True
-    
+
 
     #
     # Schema functions
@@ -3589,7 +3605,7 @@ class MySQLImpl(PostgresImpl):
                 op_str = " %s " % op
                 value = op_str.join(parts)
                 return value
-            
+
             if keywords.find("|") != -1 or keywords.find("&") != -1:
                 # prevent syntax error from multiple | or &
                 keywords = re.sub( r'\|+', r'|', keywords)
@@ -3621,12 +3637,12 @@ class MySQLImpl(PostgresImpl):
         else:
             # prefix matching
             value = '%s:*'%value
-        
+
         where = "MATCH (%s) AGAINST ('%s' WITH QUERY EXPANSION)" % (column, value)
 
-        
+
         return where
-    
+
     def get_parent_cte(self,  op_filters):
         '''MySQL parent CTE'''
         where = self._get_cte_where(op_filters)
@@ -3671,7 +3687,7 @@ class MySQLImpl(PostgresImpl):
                   1
                  FROM "keyword_map" AS r, "base_keyword" AS p1, "base_keyword" AS p2
                  WHERE ( %s )
-                    
+
                  AND p1."code" = r."parent_keyword_code" AND p2."code" = r."child_keyword_code"
                  UNION ALL
                  SELECT
@@ -3720,7 +3736,7 @@ class MySQLImpl(PostgresImpl):
             WHERE r."parent_code" = ng."search_code" and depth < 10
             AND p1."code" = r."parent_code" AND p2."code" = r."search_code"
             )
-            
+
             Select search_code from res;
             ''' % var_dict
 

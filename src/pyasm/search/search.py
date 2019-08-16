@@ -3654,7 +3654,7 @@ class SObject(object):
             if SearchType.column_exists(self.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
             
-                if isinstance(sobj_id, int) or isinstance(sobj_id, long):
+                if isinstance(sobj_id, six.integer_types):
                     self.set_value("search_id", sobj_id )
                 else:
                     self.set_value("search_code", sobj_id )
