@@ -268,7 +268,7 @@ class ColorContainerWdg(BaseRefreshWdg):
         super(ColorContainerWdg,self).__init__(**kwargs)
 
         from pyasm.widget import ColorWdg
-        self.color_wdg = ColorWdg(kwargs)
+        self.color_wdg = ColorWdg(**kwargs)
 
         self.color_wdg.add_behavior({
             'type': 'load',

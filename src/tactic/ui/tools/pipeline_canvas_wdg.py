@@ -295,6 +295,19 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.add_node_behaviors = True
 
 
+    def get_node_description(self, node_type):
+
+        node_descriptions = {
+            'manual': 'A basic process where work is done by a person',
+            'action': 'An automated process which can execute a script or command',
+            'condition': 'An automated process which can execute a script or command',
+            'approval': 'A process where a task will be created for a specific user whose job is to approve work down in the previous processes',
+            'hierarchy': 'A process that references a sub-workflow',
+            'dependency': 'A process that listens to another process and sets its status accordingly'
+        }
+
+        return node_descriptions.get(node_type)
+
 
     def get_unique_id(self):
         return self.unique_id
@@ -1174,18 +1187,43 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
     def get_folder(self, group_name):
+
+        styles = HtmlElement.style('''
+
+            .spt_pipeline_folder {
+                width: 200px;
+                height: 100px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                top: 100px;
+                left: 100px;
+                position: relative;
+                z-index: 150;
+
+                border-radius: 5px;
+                border: 1px solid #ccc;
+
+                cursor: hand;
+            }
+
+            .spt_pipeline_folder:hover {
+                background: #eee;
+            }
+
+            .spt_pipeline_folder .spt_content {
+                font-size: 14px;
+                color: #666;
+                padding: 10px;
+                text-align: center;
+            }
+
+            ''')
+
         div = DivWdg()
         div.add_class("spt_pipeline_folder")
-        div.add_border()
-        div.add_style("border-style: dashed")
-        div.add_style("width: 140px")
-        div.add_style("height: 80px")
-        div.add_style("top: 100px")
-        div.add_style("left: 100px")
-        div.add_style("position: relative")
-        div.add_style("z-index: 150")
-        div.set_round_corners(size=5, corners=['TR','BR','BL', 'TL'])
-        div.add_gradient("background", "background")
+        div.add_class("spt_pipeline_folder_template")
 
         lip_div = DivWdg()
         div.add(lip_div)
@@ -1201,13 +1239,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_class("spt_content")
         div.add(content_div)
-        content_div.add_style("padding: 10px")
-        content_div.add_style("height: 60px")
-        content_div.add_style("text-align: center")
 
 
         color_div = DivWdg()
-        content_div.add(color_div)
+        #content_div.add(color_div)
         color_div.add_style("margin-right: 5px")
         color_div.add_class("spt_color_swatch")
         color_div.add_style("height: 15px")
@@ -1219,15 +1254,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         content_div.add(group_div)
         group_div.add_class("spt_group")
 
-        group_div.add(group_name)
+        #group_div.add(group_name)
 
-        group_div.add_style("font-weight: bold")
+        #group_div.add_style("font-weight: bold")
 
-
-        content_div.add("<br/>")
-        content_div.add("<br/>")
-
-        button = DivWdg("Click to Start")
+        button = DivWdg("Click here to add your first node. Use the <i class='fa fa-wrench'></i> to add more nodes.")
         content_div.add( button )
 
 
@@ -1243,14 +1274,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         //var parts = group_name.split("/");
         //node_name = parts[parts.length-1];
 
-        node_name = "node0";
-        var node = spt.pipeline.add_node(node_name);
-
-        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
-            spt.pipeline.set_node_kwarg(node, 'version', 2);
-
-        var top = bvr.src_el.getParent(".spt_pipeline_folder")
-        spt.behavior.destroy_element(top);
+        var node = spt.pipeline.add_node();
         spt.pipeline.redraw_canvas();
         '''
         } )
@@ -1263,6 +1287,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.node_drag'
         } )
+
+        div.add(styles)
 
         return div
 
@@ -2678,16 +2704,18 @@ spt.pipeline.first_init = function(bvr) {
     var sobjs = server.eval(expr);
 
     data.colors = {};
+    data.descriptions = {};
+    data.default_templates = {};
     for (var i = 0; i < sobjs.length; i++) {
         var sobj = sobjs[i];
         data.colors[sobj[key]] = sobj.color;
+        data.descriptions[sobj[key]] = sobj.description;
+
+        if (sobj.data)
+            data.default_templates[sobj[key]] = sobj.data.default_template;
     }
 
-    data.descriptions = {};
-    for (var i = 0; i < sobjs.length; i++) {
-        var sobj = sobjs[i];
-        data.descriptions[sobj[key]] = sobj.description;
-    }
+
 
 }
 
@@ -3464,10 +3492,14 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
             group_info = spt.pipeline.add_group(group);
     }
 
+
     var nodes = spt.pipeline.get_all_nodes();
     if (typeof(name) == 'undefined' || name == null) {
-            name = "node"+nodes.length;
+        var node_index = group_info.get_data("node_index") || 0;
+        name = "node"+node_index;
+        group_info.set_data("node_index", node_index+1);
     }
+
 
     if (typeof(x) == 'undefined' || x == null) {
             var size = canvas.getSize();
@@ -3589,6 +3621,19 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
             editor_top.addClass("spt_has_changes");
     }
 
+    // BACKWARDS COMPATIBILITY
+    if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
+        spt.pipeline.set_node_kwarg(new_node, "version", 2);
+
+    new_node.has_changes = true;
+    spt.named_events.fire_event('pipeline|change', {});
+
+    // if folder hide folder
+    var folder = spt.pipeline.top.getElement(".spt_pipeline_folder:not(.spt_pipeline_folder_template)");
+    if (folder) {
+        spt.pipeline.set_current_group(group);
+        spt.behavior.destroy_element(folder);
+    }
 
     return new_node;
 }
@@ -3774,6 +3819,8 @@ spt.pipeline._remove_nodes = function(nodes) {
         }
     }
     spt.pipeline.redraw_canvas();
+
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -4154,6 +4201,7 @@ spt.pipeline.add_folder = function(group_name, color, title) {
     var template_container = top.getElement(".spt_pipeline_template");
     var template = template_container.getElement(".spt_pipeline_folder");
     var new_folder = spt.behavior.clone(template);
+    new_folder.removeClass("spt_pipeline_folder_template");
 
     var group_label = new_folder.getElement(".spt_group");
 
@@ -4162,7 +4210,7 @@ spt.pipeline.add_folder = function(group_name, color, title) {
         title = parts[parts.length-1];
     }
 
-    group_label.innerHTML = title;
+    //group_label.innerHTML = title;
     canvas.appendChild(new_folder);
 
     // color the folder
@@ -4179,6 +4227,8 @@ spt.pipeline.add_folder = function(group_name, color, title) {
 
 
 spt.pipeline.set_folder_color = function(folder, color) {
+
+    return
 
     // only color the swatch for now
     var swatch = folder.getElement(".spt_color_swatch");
@@ -4588,11 +4638,11 @@ spt.pipeline.detect_cycle = function() {
 }
 
 spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
+
     var drop_on_el = spt.get_event_target(evt);
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
     var from_node = bvr.src_el.getParent(".spt_pipeline_node");
     var canvas = spt.pipeline.get_canvas();
-
 
     if (bvr.connector && to_node == null) {
         // if this is a reused connector, then delete it
@@ -4625,7 +4675,7 @@ spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
         var default_node_type = null;
         to_node = spt.pipeline.add_node(null, null, null, { node_type: null} );
         // BACKWARDS COMPATIBILITY
-        if (spt.pipeline.top.getAttribute("version_2_enabled") == "true")
+        if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
             spt.pipeline.set_node_kwarg(to_node, "version", 2);
 
         // FIXME: hard coded
@@ -4738,6 +4788,8 @@ spt.pipeline.connect_nodes = function(from_node, to_node) {
     connector.set_to_node(to_node);
 
     connector.draw();
+
+    return connector;
 }
 
 
@@ -6314,6 +6366,7 @@ spt.pipeline.Group = function(name) {
 
         // set all the nodes in this group to be this color
         for (var i = 0; i < this.nodes.length; i++) {
+            console.log(this.nodes[i], "??????");
             spt.pipeline.set_color(this.nodes[i], color);
         }
     }
@@ -6346,6 +6399,18 @@ spt.pipeline.Group = function(name) {
 
     this.get_description = function() {
         return this.description;
+    }
+
+    this.get_data = function(name) {
+        return this[name];
+    }
+
+    this.set_data = function(name, value) {
+        this[name] = value;
+
+        var data = spt.pipeline.get_data();
+        if (data[name+"s"])
+            data[name+"s"][this.get_name()] = value;
     }
 
 
@@ -6417,6 +6482,9 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var xml_doc = spt.parse_xml(pipeline_xml);
     var pipeline_name = pipeline.name;
     var pipeline_type = pipeline.type;
+    var pipeline_data = JSON.parse(pipeline.data) || {};
+
+    var node_index = pipeline_data.node_index || 0;
 
     // first check if the group already there
     var group = spt.pipeline.get_group(pipeline_code);
@@ -6440,6 +6508,9 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     group.set_color(color);
     group.set_group_type("pipeline");
     group.set_node_type("process");
+    group.set_data("node_index", node_index);
+
+    console.log(pipeline_data, "tf rib", group.get_data("node_index"));
 
     spt.pipeline.set_current_group(pipeline_code);
     spt.pipeline.set_search_type(pipeline_code, pipeline_stype);
@@ -7069,6 +7140,7 @@ spt.pipeline.export_group = function(group_name) {
     var nodes;
     var connectors;
     var dangling_connectors = [];
+
     if (typeof(group_name) == 'undefined') {
         nodes = spt.pipeline.get_all_nodes(group_name);
         connectors = canvas.connectors;
@@ -7199,7 +7271,6 @@ spt.pipeline.export_group = function(group_name) {
         }
         xml += '/>\n';
     }
-
 
     // export the connectors
     for (var i = 0; i < connectors.length; i++) {

@@ -1186,6 +1186,10 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_el.setStyle("width", percent + "%");
         progress_el.innerHTML = String(percent) + "%";
         progress_el.setStyle("background", "#f0ad4e");
+
+        // hide the upload files button
+        upload_button = top.getElement(".spt_upload_files_top");
+        upload_button.setStyle("display", "none");
         '''
 
 
@@ -1393,6 +1397,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             spt.alert(error);
             progress_el.setStyle("background", "#F00");
             spt.message.stop_interval(message_key);
+
+            // display the upload files button again.
+            upload_button = top.getElement(".spt_upload_files_top");
+            upload_button.setStyle("display", "");
         }
 
 
@@ -1919,7 +1927,7 @@ class IngestUploadCmd(Command):
             sequences = FileRange.get_sequences(filenames)
             filenames = []
             for sequence in sequences:
-                
+
                 if sequence.get('is_sequence'):
                     filename = sequence.get("template")
                 else:
@@ -1943,19 +1951,19 @@ class IngestUploadCmd(Command):
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
 
-    
-          
+
+
             if filename.endswith("/"):
                 # this is a folder:
                     continue
 
             new_keywords = keywords
- 
+
             if filename.startswith("search_key:"):
                 mode = "search_key"
                 tmp, search_key = filename.split("search_key:")
                 snapshot = Search.get_by_search_key(search_key)
-                
+
                 source_keywords = snapshot.get_value("keywords", no_exception=True)
                 if source_keywords:
                     new_keywords = "%s %s" % (new_keywords, source_keywords)
@@ -1972,8 +1980,8 @@ class IngestUploadCmd(Command):
 
                 if not snapshot:
                     raise Exception("Must pass in snapshot search_key")
-                
-                
+
+
 
             else:
                 mode = "multi"
@@ -2086,7 +2094,7 @@ class IngestUploadCmd(Command):
                 path = "%s/%s" % (relative_dir, filename)
             else:
                 path = filename
-            
+
             # Handle update data
             # for some unknown reason, this input prefix is ignored
             new_data = {}
@@ -2096,7 +2104,7 @@ class IngestUploadCmd(Command):
 
                 name = name.replace("%s|"%input_prefix, "")
                 new_data[name] = value
-          
+
             if new_data:
                 from tactic.ui.panel import EditCmd
 
@@ -2154,7 +2162,7 @@ class IngestUploadCmd(Command):
                 # remove duplicated
                 new_file_keywords = set( new_file_keywords.split(" ") )
                 new_file_keywords = " ".join(new_file_keywords)
- 
+
                 if not cmd_keyword_mode == "none":
                     sobject.set_value("keywords", new_file_keywords)
 

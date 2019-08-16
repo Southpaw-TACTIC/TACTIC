@@ -482,7 +482,7 @@ class AccessManager(Base):
             key - string or list of dictiorary like view_side_bar or ['search_type':'sthpw/task', 'project','main']
             required_access - speific access level like allow, deny, edit, view, delete'''
 
-        if self.is_admin():
+        if self.is_admin() or Sudo.is_sudo():
             return True
 
         if Sudo.is_sudo():
