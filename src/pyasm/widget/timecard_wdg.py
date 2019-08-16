@@ -954,7 +954,7 @@ class TimecardCmd(Command):
                 continue
 
             tmp, search_id, col = key.split("|")
-            if not info.has_key(search_id):
+            if search_id not in info:
                 info[search_id] = []
 
             info[search_id].append( (col,value) )

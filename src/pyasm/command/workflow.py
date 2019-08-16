@@ -267,6 +267,14 @@ class TaskStatusChangeTrigger(Trigger):
         node_type = process.get_type()
         process_name = process.get_name()
 
+
+        # need to clear message entry
+        key = "%s|%s|status" % (sobject.get_search_key(), process)
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        server.log_message(key, "")
+
+
         if status in PREDEFINED:
             event = "process|%s" % status
         else:
@@ -942,6 +950,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
     def is_complete(self, input_process):
         pipeline = self.input.get("pipeline")
         sobject = self.input.get("sobject")
+        process = self.input.get("process")
 
         complete = True
 
@@ -964,6 +973,14 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 task_status = task.get("status")
                 task_status = task_status.lower().replace(" ", "_")
                 if task_status not in ["complete", 'not_required']:
+                    complete = False
+            # if there is no task and this is a manual node, then this is not blocked
+            else:
+                process_obj = pipeline.get_process(process)
+                node_type = process_obj.get_type()
+                if node_type not in ['manual', 'approval']:
+                    # NOTE: at some point, we should have an has_task method to deal with
+                    # this list
                     complete = False
 
 
@@ -1663,7 +1680,7 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
             workflow = process_sobj.get_json_value("workflow", {})
             version = workflow.get("version") or 1
             version_2 = version in [2, '2']
-            
+
             if version_2:
                 data = workflow.get("data") or {}
                 if data:
@@ -2034,6 +2051,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(self):
 
+        self.log_message(self.sobject, self.process, "pending")
         if not self.check_inputs():
             return
 
@@ -2042,7 +2060,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(self):
-        self.log_message(self.sobject, self.process, "action")
+
+        self.log_message(self.sobject, self.process, "in_progress")
 
         # get the node's triggers
         search = Search("config/process")
@@ -2109,7 +2128,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
         else:
 
-            if isinstance(ret_val, basestring): 
+            if isinstance(ret_val, basestring):
                 ret_val = [ret_val]
 
             output_processes = []

@@ -2141,7 +2141,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 context_div.add_color("color", 'color')
             proc = task.get_value("process")
             label_dict = self.label_dict.get(pipeline_code)
-            if label_dict and label_dict.has_key(proc):
+            if label_dict and proc in label_dict:
                 context_div.add(label_dict[proc])
 
         if not self.context_color_mode:

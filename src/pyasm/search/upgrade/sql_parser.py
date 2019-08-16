@@ -146,7 +146,7 @@ class SqlParser:
 
 
     def get_data(self, table):
-        if self.tables.has_key(table):
+        if table in self.tables:
             return self.tables[table]
         else:
             return TableData(table)
@@ -288,7 +288,7 @@ class SqlParser:
                     rows[columns[i]] = values[i]
 
                 # ensure that the data object exists
-                if not self.tables.has_key(data_table):
+                if data_table not in self.tables:
                     data = TableData(create_table)
                     self.tables[data_table] = data
 
@@ -319,7 +319,7 @@ class SqlParser:
 
         for column, schema in columns.items():
 
-            if not columns2.has_key(column):
+            if column not in colums2:
                 database = "x"
             else:
                 database = columns2[column]
@@ -334,7 +334,7 @@ class SqlParser:
 
 
         for column2, database in columns2.items():
-            if not columns.has_key(column2):
+            if column2 not in columns:
                 schema = "x"
                 diffs.append( pattern % (column2,schema,database) )
 

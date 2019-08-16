@@ -66,7 +66,7 @@ class SqlReporter:
 
         for column, schema in columns.items():
 
-            if not columns2.has_key(column):
+            if column not in columns2:
                 database = "x"
             else:
                 database = columns2[column]
@@ -81,7 +81,7 @@ class SqlReporter:
 
 
         for column2, database in columns2.items():
-            if not columns.has_key(column2):
+            if column2 not in columns:
                 schema = "x"
                 diffs.append( pattern % (column2,schema,database) )
 
@@ -209,7 +209,7 @@ class SqlReporter:
             for row_key,target_rows in target_data.rows.items():
 
                 # check if the standard has this entry
-                if not standard_data.rows.has_key(row_key):
+                if row_key not in standard_data:
                     print("Entry not in target:")
                     #print target_rows
                     print("\tINSERT INTO %s (%s) VALUES (%s)" % (table, ", ".join(target_rows.keys()), ", ".join(["'%s'" % x for x in target_rows.values()] )))
@@ -234,7 +234,7 @@ class SqlReporter:
             for row_key,standard_rows in standard_data.rows.items():
 
                 # check if the target has this entry
-                if not target_data.rows.has_key(row_key):
+                if row_key not in target_data:
                     print("Entry not in standard:")
                     #print standard_rows
                     print("\tINSERT INTO %s (%s) VALUES (%s)" % (table, ", ".join(target_rows.keys()), ", ".join(["'%s'" % x for x in standard_rows.values()] )))

@@ -1569,7 +1569,14 @@ class PipelineListWdg(BaseRefreshWdg):
             
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
+
+            var group = spt.pipeline.get_group(group_name);
             var default_template = data.default_templates[group_name];
+            var node_index = group.get_data("node_index");
+            var pipeline_data = {
+                default_template: default_template,
+                node_index: node_index
+            };
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -1581,9 +1588,8 @@ class PipelineListWdg(BaseRefreshWdg):
                     search_key: search_key, 
                     pipeline: xml, 
                     color: color, 
-                    project_code: bvr.project_code, 
-                    default_template: default_template,
-                    pipeline_data: data
+                    project_code: bvr.project_code,
+                    pipeline_data: pipeline_data
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
             } catch(e) {
@@ -3299,6 +3305,39 @@ class DefaultInfoWdg(BaseInfoWdg):
             top.add(detail_wdg)
             detail_wdg.add_style("margin: 10px")
 
+            new_task_detail = ProjectSetting.get_value_by_key("new_task_detail") == "true"
+            if new_task_detail:
+                detail_wdg.add_behavior({
+                    'type': 'load',
+                    'cbjs_action': '''
+
+                    var node = spt.pipeline.get_info_node();
+                    var task_detail = spt.pipeline.get_node_kwarg(node, 'task_detail');
+
+                    if (!task_detail) {
+                        var defaults = {
+                            app: "custom_view",
+                            app0: "overview",
+                            custom_view: "",
+                            data_process: "",
+                            data_process0: "",
+                            display_mode: "tab",
+                            form_html: "",
+                            kwargs: "",
+                            kwargs0: "",
+                            mode: "app",
+                            num_apps: "1",
+                            template_view: "inherit",
+                            title: "",
+                            title0: "Overview",
+                            view: ""
+                        }
+                        spt.pipeline.set_node_kwarg(node, 'task_detail', defaults);
+                    }
+
+                    '''
+                    })
+
 
         # triggers
         search = Search("config/trigger")
@@ -4917,7 +4956,42 @@ class ApprovalInfoWdg(BaseInfoWdg):
             top.add(detail_wdg)
             detail_wdg.add_style("margin: 10px")
 
+            new_task_detail = ProjectSetting.get_value_by_key("new_task_detail") == "true"
+            if new_task_detail:
+                detail_wdg.add_behavior({
+                    'type': 'load',
+                    'cbjs_action': '''
 
+                    var node = spt.pipeline.get_info_node();
+                    var task_detail = spt.pipeline.get_node_kwarg(node, 'task_detail');
+
+                    if (!task_detail) {
+                        var defaults = {
+                            app: "custom_view",
+                            app0: "overview",
+                            app1: "review_assets",
+                            custom_view: "",
+                            data_process: "",
+                            data_process0: "",
+                            data_process1: "",
+                            display_mode: "tab",
+                            form_html: "",
+                            kwargs: "",
+                            kwargs0: "",
+                            kwargs1: "",
+                            mode: "app",
+                            num_apps: "2",
+                            template_view: "inherit",
+                            title: "",
+                            title0: "Overview",
+                            title1: "Review Assets",
+                            view: ""
+                        }
+                        spt.pipeline.set_node_kwarg(node, 'task_detail', defaults);
+                    }
+
+                    '''
+                    })
 
 
         form_wdg = DivWdg()
@@ -7073,7 +7147,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="Toggle workflow list", icon="FA_WRENCH")
+        button = ButtonNewWdg(title="Add node", icon="FA_WRENCH", sub_icon="FA_PLUS")
         button_row.add(button)
 
         button.add_behavior({
@@ -7134,7 +7208,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
             var description = data.descriptions[group_name];
+
+            var group = spt.pipeline.get_group(group_name);
             var default_template = data.default_templates[group_name];
+            var node_index = group.get_data("node_index");
+            var pipeline_data = {
+                default_template: default_template,
+                node_index: node_index
+            };
 
             var nodes = spt.pipeline.get_nodes_by_group(group_name);
             var node_kwargs = {};
@@ -7185,8 +7266,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     color:color, 
                     description: description, 
                     project_code: bvr.project_code,
-                    default_template: default_template,
-                    node_kwargs: node_kwargs
+                    node_kwargs: node_kwargs,
+                    pipeline_data: pipeline_data
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                 spt.named_events.fire_event('pipeline|save', {});
@@ -8723,7 +8804,7 @@ class PipelineSaveCbk(Command):
         timestamp = self.kwargs.get("timestamp")
 
         default_template = self.kwargs.get("default_template")
-        pipeline_data = self.kwargs.get("pipeline_data")
+        pipeline_data = self.kwargs.get("pipeline_data") or {}
 
         from pyasm.common import Xml
         xml = Xml()
@@ -8761,10 +8842,7 @@ class PipelineSaveCbk(Command):
         if timestamp:
             data['timestamp'] = timestamp
             
-        if default_template and SearchType.column_exists("sthpw/pipeline", "data"):
-            pipeline_data = {
-                'default_template': default_template
-            }
+        if SearchType.column_exists("sthpw/pipeline", "data"):
             data['data'] = pipeline_data
 
         server.insert_update(pipeline_sk, data = data)
@@ -9249,7 +9327,14 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 
                 var data = spt.pipeline.get_data();
                 var color = data.colors[group_name];
+
+                var group = spt.pipeline.get_group(group_name);
                 var default_template = data.default_templates[group_name];
+                var node_index = group.get_data("node_index");
+                var pipeline_data = {
+                    default_template: default_template,
+                    node_index: node_index
+                };
 
                 server = TacticServerStub.get();
                 spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
@@ -9260,10 +9345,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                     var args = {
                         search_key: search_key, 
                         pipeline: xml, 
-                        color: color, 
+                        color: color,
                         project_code: bvr.project_code, 
-                        default_template: default_template,
-                        pipeline_data: data
+                        pipeline_data: pipeline_data
                     };
                     server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                     spt.named_events.fire_event('pipeline|save', {});
@@ -10227,6 +10311,42 @@ spt.process_tool.toggle_side_bar = function(activator) {
         document.removeClass("selected");
         search.addClass("selected");
     }
+
+}
+
+
+spt.process_tool.show_side_bar = function(activator) {
+
+    var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+    var left = toolTop.getElement(".spt_pipeline_tool_left");
+    var right = toolTop.getElement(".spt_pipeline_tool_right");
+
+/*
+    
+    left.setStyle("margin-left", "0px");
+    left.setStyle("opacity", "1");
+    right.setStyle("margin-left", "250px");
+    left.gone = false;
+    setTimeout(function(){
+        left.setStyle("z-index", "");
+    }, 250);
+
+    bvr.src_el.setStyle("display", "none")
+
+
+    left.setStyle("margin-left", "-250px");
+    left.setStyle("opacity", "0");
+    right.setStyle("margin-left", "0px");
+    left.gone = true;
+    setTimeout(function(){
+        left.setStyle("z-index", "-1");
+    }, 250);
+
+    var show_icon = toolTop.getElement(".spt_show_sidebar");
+    show_icon.setStyle("display", "");
+
+*/
+
 }
 
 

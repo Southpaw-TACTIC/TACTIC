@@ -639,7 +639,6 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             value = wiki.convert(value) 
         if name == 'id' and value == -1:
             value = ''
-
         elif data_type in ["timestamp","time"] or name == "timestamp":
             if value == 'now':
                 value = ''
@@ -658,6 +657,8 @@ class SimpleTableElementWdg(BaseTableElementWdg):
             else:
                 value = ''
         elif isinstance(value, dict) and not value:
+            value = ""
+        elif value is None:
             value = ""
         else:
             if isinstance(value, Widget):

@@ -252,7 +252,6 @@ class Transaction(Base):
         db_name = database.get_database_name()
 
         # if the database is listed, then ignore it
-        #if self.databases.has_key(db_name):
         if db_name in self.databases:
             return
 

@@ -1004,8 +1004,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         if not command_class:
             command_class = 'tactic.ui.tools.DeleteProjectCmd'
 
-        command_key = button.generate_command_key(command_class)
-
+        command_key = button.generate_command_key(command_class, {"project_code": project_code})
 
         on_complete = self.kwargs.get("on_complete")
 
