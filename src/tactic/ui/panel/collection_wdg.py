@@ -1180,7 +1180,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                     'type': 'mouseup',
                     'search_type': self.kwargs.get("search_type"),
                     'parent_key': self.parent_key,
-                    'window_resize_offset': self.kwargs.window_resize_offset,
+                    'window_resize_offset': self.kwargs.get("window_resize_offset"),
                     'collection_type': collection_type,
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''

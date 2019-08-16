@@ -14,9 +14,10 @@ __all__ = ['BaseNodeWdg', 'PipelineCanvasWdg', 'NodeRenameWdg']
 
 from tactic.ui.common import BaseRefreshWdg
 
-from pyasm.biz import ProjectSetting
+from pyasm.biz import ProjectSetting, Task, Pipeline
 from pyasm.common import Container, Common, jsondumps
 from pyasm.web import DivWdg, WebContainer, Table, Widget, HtmlElement
+from pyasm.command import Command
 from pyasm.search import Search, SearchType
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg
@@ -6942,6 +6943,39 @@ spt.pipeline.set_status_color = function(search_key) {
     var server = TacticServerStub.get();
     var sobject = server.get_by_search_key(search_key);
 
+    var cmd = "tactic.ui.tools.PipelineGetStatusColorsCmd";
+    var kwargs = {
+        search_key: search_key
+    }
+    server.p_execute_cmd(cmd, kwargs)
+    .then( function(ret_val) {
+        var info = ret_val.info;
+        console.log(info);
+        var group_name = spt.pipeline.get_current_group();
+        var nodes = spt.pipeline.get_nodes_by_group(group_name);
+
+        var default_color = 'rgb(128,128,128)';
+
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var process = spt.pipeline.get_node_name(node);
+            console.log(process);
+
+            var color = info[process]
+            console.log(color);
+            if (!color) {
+                color = default_color;
+                node.setStyle("opacity", "0.5");
+            }
+            spt.pipeline.set_color(node, color);
+        }
+ 
+    } );
+
+    return;
+
+
+/*
     // get all of the tass for this sobject
     var tasks = server.query("sthpw/task", {parent_key: search_key});
     var tasks_dict = {};
@@ -6989,6 +7023,7 @@ spt.pipeline.set_status_color = function(search_key) {
         }
         spt.pipeline.set_color(node, color);
     }
+*/
 }
 
 
@@ -7281,6 +7316,69 @@ spt.pipeline.get_connectors_to_node = function(to_name) {
 }
 
     '''
+
+
+
+
+__all__.append("PipelineGetStatusColorsCmd")
+class PipelineGetStatusColorsCmd(Command):
+
+    def execute(self):
+
+        search_key = self.kwargs.get("search_key")
+
+        sobject = Search.get_by_search_key(search_key)
+
+        # get all of the tass for this sobject
+        tasks = Task.get_by_sobject(sobject)
+
+        tasks_dict = {};
+        for task in tasks:
+            process = task.get_value("process")
+            tasks_dict[process] = task
+
+        pipeline_code = sobject.get("pipeline_code")
+        pipeline = Pipeline.get_by_sobject(sobject)
+        process_names = pipeline.get_process_names()
+
+        colors =  Task.get_status_colors()
+        colors = colors.get("task")
+
+        default_color = 'rgb(128,128,128)'
+        default_color = ""
+
+        process_colors = {}
+
+        for process in process_names:
+            task = tasks_dict.get(process)
+
+            if not task:
+
+                # check the message status
+                key = "%s|%s|status" % (search_key, process)
+                message = Search.get_by_code("sthpw/message", key)
+                if not message:
+                    color = default_color
+                else:
+                    status = message.get("message")
+                    if status:
+                        status = status.replace("_", " ")
+                        status = status.title()
+                    color = colors.get(status)
+                    if not color:
+                        color = default_color
+
+
+            else:
+                status = task.get("status")
+                color = colors.get(status)
+                if not color:
+                    color = default_color
+
+            process_colors[process] = color
+
+        return process_colors
+
 
 
 
