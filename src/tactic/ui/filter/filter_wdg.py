@@ -1001,7 +1001,29 @@ class GeneralFilterWdg(BaseFilterWdg):
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_buttons_top");
             var action_el = top.getElement(".spt_action_top");
+
+            var size = bvr.src_el.getSize();
+            var viewportOffset = bvr.src_el.getBoundingClientRect();
+            offset = {};
+
+            var body = document.id(document.body);
+            offset.y = viewportOffset.top + size.y;
+            offset.x = viewportOffset.left;
+
+            body.appendChild(action_el);
+            action_el.position({position: 'upperleft', relativeTo: body, offset: offset});
             action_el.setStyle("display", "");
+            action_el.src = top;
+            action_el.on_complete = function() {
+                var src = action_el.src;
+                action_el.src = null;
+
+                action_el.parentNode.removeChild(action_el);
+                src.appendChild(action_el);
+
+                action_el.setStyle("display", "none");
+            }
+
             spt.body.add_focus_element(action_el);
         '''
         # 'cbjs_action': '''
@@ -1110,7 +1132,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         action_div.add_style("border: solid 1px #DDD")
         action_div.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
         action_div.add_style("background: #FFF")
-        action_div.add_style("z-index: 100")
+        action_div.add_style("z-index: 1000")
         action_div.add_style("padding: 5px 0px")
         action_div.add_style("max-height: 150px")
         action_div.add_style("overflow: auto")
@@ -1119,10 +1141,38 @@ class GeneralFilterWdg(BaseFilterWdg):
             'type': 'click',
             'bvr_match_class': 'spt_new_filter_item',
             'cbjs_action': '''
+            var actionTop = bvr.src_el.getParent(".spt_action_top");
             var filter_type = bvr.src_el.getAttribute("spt_filter_type");
-            spt.table.add_filter(bvr.src_el, filter_type);
-            var top = bvr.src_el.getParent(".spt_action_top");
-            top.setStyle("display", "none");
+            spt.table.add_filter(actionTop.src, filter_type);
+            actionTop.src.setStyle("display", "none");
+
+
+            // show search again
+            var table = spt.table.get_table().getParent(".spt_table_top");
+            var dialog_id = table.getAttribute("spt_search_dialog_id");
+
+            var dialog = document.id(dialog_id);
+            if (!dialog) {
+                return;
+            }
+
+            var search_button = table.getElement(".spt_table_search_button");
+            var offset = search_button.getPosition();
+            var size = search_button.getSize();
+            offset = {x:offset.x-265, y:offset.y+size.y+10};
+
+            var body = document.id(document.body);
+            var scroll_top = body.scrollTop;
+            var scroll_left = body.scrollLeft;
+            offset.y = offset.y - scroll_top;
+            offset.x = offset.x - scroll_left;
+            dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
+            
+            spt.toggle_show_hide(dialog);
+
+            if (spt.is_shown(dialog))
+                spt.body.add_focus_element(dialog);
+
             '''
         } )
 
@@ -1152,7 +1202,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             element_div.add_class("hand")
             element_div.add(title)
             element_div.add_style("text-align: center")
-            element_div.add_style("padding: 5px 5px")
+            element_div.add_style("padding: 5px")
 
             if element_name == "Column Filter":
                 element_div.add_attr("spt_filter_type", "_column")
