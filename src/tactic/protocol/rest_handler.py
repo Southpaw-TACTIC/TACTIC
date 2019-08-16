@@ -126,38 +126,51 @@ class APIRestHandler(BaseRestHandler):
         # make sure there are no special characters in there ie: ()
         p = re.compile('^\w+$')
         if not re.match(p, method):
-            raise Exception("Mathod [%s] does not exist" % method)
+            raise Exception("Method [%s] does not exist" % method)
 
 
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
 
         if not eval("server.%s" % method):
-            raise Exception("Mathod [%s] does not exist" % method)
-
+            raise Exception("Method [%s] does not exist" % method)
 
         keys = web.get_form_keys()
 
-        kwargs = {}
-
-
-        for key in keys:
-
-            if key in ["method", "login_ticket", "password"]:
-                continue
-
-            if key == 'kwargs':
-                args = web.get_form_value(key)
+        args = None
+        call = None
+        if 'args' in keys:
+            args = web.get_form_value('args')
+            try:
                 args = jsonloads(args)
-                for name, value in args.items():
-                    kwargs[name] = value
-            else:
-                kwargs[key] = web.get_form_value(key)
+            except ValueError:
+                pass
+           
+            if isinstance(args, list):
+                print "args: ",args
+                call = "server.%s(*args)" % method
+            
 
-        print "kwargs: ", kwargs
-        call = "server.%s(**kwargs)" % method
+        if not call:
+            kwargs = {}
+
+            for key in keys:
+
+                if key in ["method", "login_ticket", "password"]:
+                    continue
+
+                if key == 'kwargs':
+                    args = web.get_form_value(key)
+                    args = jsonloads(args)
+                    for name, value in args.items():
+                        kwargs[name] = value
+                else:
+                    kwargs[key] = web.get_form_value(key)
+
+            print "kwargs: ", kwargs
+            call = "server.%s(**kwargs)" % method
+
         print "call: ", call
-
         try:
             return eval(call)
         except Exception as e:
@@ -170,7 +183,6 @@ class APIRestHandler(BaseRestHandler):
                     "type": e.__class__.__name__
                 }
             }
-
 
 
 
