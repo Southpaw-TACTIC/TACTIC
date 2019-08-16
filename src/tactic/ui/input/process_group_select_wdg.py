@@ -226,6 +226,9 @@ class LoginTableElementWdg(SimpleTableElementWdg):
         super(LoginTableElementWdg, self).handle_td(td)
         task = self.get_current_sobject()
         if task:
+            # the group info for the login dropdown.
+            td.add_attr('spt_input_key', task.get_value("assigned_group"))
+
             search_type = task.get_value('search_type')
             search_id = task.get_value('search_id')
             
