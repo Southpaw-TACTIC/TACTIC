@@ -645,7 +645,14 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         parent_key = self.parent_key
 
         div = DivWdg()
-        div.add_style("margin: 15px 0px")
+        div.add_style("overflow: auto")
+        div.add_class("spt_collection_wrap")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        if window_resize_offset:
+            div.add_class("spt_window_resize")
+            div.add_attr("spt_window_resize_offset", window_resize_offset)
+        # div.add_style("margin: 15px 0px")
 
         """
         title_div = DivWdg("Collections") 
@@ -822,6 +829,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         #div.add(shelf_wdg)
 
         group_elements = self.kwargs.get("group_elements") or []
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
 
         tile = CollectionContentWdg(
                 search_type=self.search_type,
@@ -834,7 +842,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 group_elements=group_elements,
                 parent_key=parent_key,
                 collection_key=collection_key,
-                window_resize_offset=self.kwargs.get("window_resize_offset")
+                window_resize_offset=window_resize_offset
         )
         div.add(tile)
 
@@ -1041,9 +1049,17 @@ class CollectionContentWdg(BaseRefreshWdg):
         collection = Search.get_by_search_key(self.collection_key)
 
         top = self.top
-        top.add_style("min-height", "400px")
-        top.add_style("overflow", "auto")
         top.add_class("spt_collection_tile_wrap")
+        top.add_style("position", "relative")
+
+        self.kwargs["scale"] = 75
+        self.kwargs["show_scale"] = False
+        self.kwargs["expand_mode"] = "plain"
+        self.kwargs["show_search_limit"] = False
+
+        top.add_style("overflow-y", "auto")
+        top.add_style("overflow-x", "auto")
+        top.add_style("height", "auto")
 
         window_resize_offset = self.kwargs.get("window_resize_offset")
         if window_resize_offset:
@@ -1053,11 +1069,6 @@ class CollectionContentWdg(BaseRefreshWdg):
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
             top.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
-
-        self.kwargs["scale"] = 75
-        self.kwargs["show_scale"] = False
-        self.kwargs["expand_mode"] = "plain"
-        self.kwargs["show_search_limit"] = False
 
 
         if not collection:
