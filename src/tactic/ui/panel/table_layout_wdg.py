@@ -5327,7 +5327,8 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
         }
 
         // find the key in the cell (NOTE: this should be "spt_input_key"
-        if (! key) {
+        //TODO: why is key = None?
+        if (!key || key == 'None') {
             key = cell.getAttribute("spt_input_key");
             if (!key) {
                 key = cell.getAttribute("spt_input_value");
