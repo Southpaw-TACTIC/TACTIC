@@ -1527,6 +1527,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_top.add_class("hand")
 
         collection_div.add_class("spt_collection_item")
+        collection_div.add_style("position", "relative")
         collection_div.add_attr("spt_collection_key", collection.get_search_key())
         collection_div.add_attr("spt_collection_code", collection.get_code())
         collection_div.add_attr("spt_collection_path", path)
