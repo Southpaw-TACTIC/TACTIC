@@ -2746,6 +2746,10 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 class BaseInfoWdg(BaseRefreshWdg):
 
+    def set_as_section_top(self, widget):
+        widget.add_class("spt_section_top")
+        SessionalProcess.add_relay_session_behavior(widget)
+
 
     def get_description_wdg(self):
         desc_div = DivWdg()
