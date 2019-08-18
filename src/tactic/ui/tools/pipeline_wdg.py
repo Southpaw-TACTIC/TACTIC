@@ -13,7 +13,7 @@
 __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 
 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 'ScriptCreateWdg',
 'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 
-'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg']
+'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg', 'NewConnectorInfoWdg']
 
 import re
 import os
@@ -79,7 +79,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 position: absolute;
                 right: -400px;
                 transition: 0.25s;
-                top: 43px;
+                top: 33px;
                 bottom: 0px;
                 border: 1px solid #ccc;
                 //height: 600;
@@ -92,14 +92,14 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             .spt_pipeline_tool_top .search-results {
                 position: absolute;
-                right: 4;
+                right: 9;
                 height: 144px;
                 width: 163px;
                 background: white;
                 border: 1px solid #ccc;
                 box-shadow: 0px 2px 4px 0px #ccc;
                 z-index: 1000;
-                top: 40;
+                top: 29;
                 overflow-y: auto;
             }
 
@@ -705,6 +705,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 pipeline_list_top.add_class("spt_window_resize")
                 pipeline_list_top.add_attr("spt_window_resize_offset", window_resize_offset)
                 pipeline_list_top.add_style("overflow-y: auto")
+            else:
+                pipeline_list_top.add_style("height", "600")
 
             list_kwargs = {
                 "save_event": save_event,
@@ -730,7 +732,6 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
             if use_document_pipeline in [True, "true"]:
-                window_resize_offset = self.kwargs.get("window_resize_offset")
                 pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
                 pipeline_list_content.add_attr("mode", "document")
             else:
@@ -738,7 +739,6 @@ class PipelineToolWdg(BaseRefreshWdg):
                 pipeline_list_content.add_attr("mode", "list")
             pipeline_list_content.add(pipeline_list)
 
-            window_resize_offset = self.kwargs.get("window_resize_offset")
             widget = PipelineProcessTypeWdg(window_resize_offset=window_resize_offset)
             widget.add_class("spt_pipeline_nodes")
             widget.add_style("display: none")
@@ -751,7 +751,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         show_help = self.kwargs.get('show_help') or True
         width = self.kwargs.get("width")
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        window_resize_offset = None #self.kwargs.get("window_resize_offset") or None
         width = "100%"
         pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'), window_resize_offset=window_resize_offset)
         right.add(pipeline_wdg)
@@ -1842,7 +1842,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
             var group_name = spt.pipeline.get_current_group();
 
-            var class_name = 'tactic.ui.tools.ConnectorInfoWdg';
+            var class_name = 'tactic.ui.tools.NewConnectorInfoWdg';
             var kwargs = {
                 pipeline_code: group_name,
                 from_node: from_node.spt_name,
@@ -2387,9 +2387,6 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
 
 
-
-
-
 class ConnectorInfoWdg(BaseRefreshWdg):
 
     def get_display(self):
@@ -2685,7 +2682,439 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         return top
 
 
+class NewConnectorInfoWdg(BaseRefreshWdg):
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_pipeline_connector_info {
+               min-width: 300px; 
+            }
+
+            .spt_pipeline_connector_info .spt_info_header {
+                text-transform: uppercase;
+                color: #333;
+                font-size: 1.2em;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                background: #eee;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_node_labels {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_node_labels div{
+                font-weight: bold;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_nodes {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_node {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-width: 100px;
+                height: 36px;
+                font-size: 10px;
+                border: 1px solid #ccc;
+                box-sizing: border-box;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_node.from-node {
+                border-width: 1px 1px 1px 0;
+                border-radius: 0 3px 3px 0;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_node.to-node {
+                border-width: 1px 0 1px 1px;
+                border-radius: 3px 0px 0px 3px;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_line {
+                margin: 0 50px;
+                height: 30px;
+                border: 1px solid #ccc;
+                border-width: 0 1px 1px 1px;
+                border-radius: 0 0 3px 3px;
+
+                position: relative;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_arrow {
+                position: absolute;
+                left: 145px;
+                bottom: -9px;
+
+                color: #ccc;
+                font-size: 13px;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_inputs {
+                display: grid;
+                grid-template-columns: 50% 50%;
+                margin-top: 20px;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_input_column {
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+            }
+
+            .spt_pipeline_connector_info .spt_text_container {
+                width: 150px;
+                font-size: 10px;
+                color: #ccc;
+            }
+
+            .spt_pipeline_connector_info .spt_attributes_container {
+                width: 170px;
+                margin-top: 10px;
+            }
+
+            .spt_pipeline_connector_info .spt_stream_attribute.spt_stream_attribute_template {
+                display: none;
+            }
+
+            .spt_pipeline_connector_info .spt_stream_attribute {
+                color: white;
+                border-radius: 8px;
+                display: inline-block;
+                padding: 3px 8px 2px;
+                margin: 3px 4px;
+                cursor: hand;
+
+                position: relative;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_input_column[spt_column='left'] .spt_stream_attribute {
+                background: green;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_input_column[spt_column='right'] .spt_stream_attribute {
+                background: red;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_input_column[spt_column='left'] .spt_stream_attribute:hover {
+                background: darkgreen;
+            }
+
+            .spt_pipeline_connector_info .spt_info_content_input_column[spt_column='right'] .spt_stream_attribute:hover {
+                background: darkred;
+            }
+
+            .spt_pipeline_connector_info .spt_close_wdg {
+
+            }
+
+            .spt_pipeline_tool_info {
+                padding-top: 0px;
+            }
+
+
+            ''')
+
+        return styles
+
+
+    def get_display(self):
+        
+        top = self.top
+        top.add_class("spt_pipeline_connector_info")
+        top.add_behavior({
+            'type': 'load',
+            'kwargs': self.kwargs,
+            'cbjs_action': self.get_onload_js()
+            })
+        
+        pipeline_code = self.kwargs.get("pipeline_code")
+        pipeline = Pipeline.get_by_code(pipeline_code)
+       
+        # Custom connector info wdg
+        pipeline_type = pipeline.get_value("type")
+        if pipeline_type:
+            search = Search("config/widget_config")
+            search.add_filter("category", "workflow_connector")
+            search.add_filter("view", pipeline_type)
+            config = search.get_sobject()
+            if config:
+                handler = config.get_display_widget("info", self.kwargs)
+                top.add(handler)
+                return top
+
+        
+        title_wdg = DivWdg()
+        top.add(title_wdg)
+        title_wdg.add_class("spt_info_header")
+        title_wdg.add("Connector")
+
+        top.add("<br/>")
+        
+
+        self.from_node = self.kwargs.get("from_node")
+        self.to_node = self.kwargs.get("to_node")
+
+        from_type = self.kwargs.get("from_type")
+        to_type = self.kwargs.get("to_type")
+
+        left_selected = self.kwargs.get("from_attr")
+        if not left_selected:
+            left_selected = "output"
+        right_selected = self.kwargs.get("to_attr")
+        if not right_selected:
+            right_selected = "input"
+
+
+        content = self.get_content_header()
+        top.add(content)
+        content.add_class("spt_info_content")
+
+        # node connector thing
+        content_header = DivWdg()
+        content.add(content_header)
+
+        # inputs
+        content_inputs = DivWdg()
+        content.add(content_inputs)
+        content_inputs.add_class("spt_info_content_inputs")
+
+        ##### left -------------------------------------------
+
+        left = DivWdg()
+        content_inputs.add(left)
+        left.add_class("spt_info_content_input_column")
+        left.add_attr("spt_column", "left")
+
+        text_container = DivWdg()
+        left.add(text_container)
+        text_container.add_class("spt_text_container")
+
+        text = TextInputWdg(name="left", width=150)
+        text_container.add(text)
+        text.add_class("spt_output_attr")
+        if left_selected:
+            text.set_value(left_selected)
+        text.add_behavior({
+            'type': 'blur',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_pipeline_connector_info");
+            var value = bvr.src_el.value;
+
+            var connector = top.connector;
+            if (!connector) return;
+
+            connector.set_attr("from_attr", value);
+
+            '''
+            })
+
+        text_container.add("Output Stream")
+
+        left_attributes = ['output','yes','no','true','false']
+        attributes_container = self.get_attributes_container(left_attributes)
+        left.add(attributes_container)
+
+        ##### right -------------------------------------------
+
+        right = DivWdg()
+        content_inputs.add(right)
+        right.add_class("spt_info_content_input_column")
+        right.add_attr("spt_column", "right")
+
+        text_container = DivWdg()
+        right.add(text_container)
+        text_container.add_class("spt_text_container")
+
+        text = TextInputWdg(name="right", width=150)
+        text_container.add(text)
+        text.add_class("spt_input_attr")
+        if right_selected:
+            text.set_value(right_selected)
+
+        text.add_behavior({
+            'type': 'blur',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_pipeline_connector_info");
+            var value = bvr.src_el.value;
+
+            var connector = top.connector;
+            if (!connector) return;
+
+            connector.set_attr("to_attr", value);
+
+            '''
+            })
+
+        text_container.add("Input Stream")
+
+        right_attributes = ['input','review']
+        attributes_container = self.get_attributes_container(right_attributes)
+        right.add(attributes_container)
+
+        top.add(self.get_styles())
+
+        return top
+
+
+    def get_content_header(self):
+
+        content_header = DivWdg()
+        content_header.add_class("spt_info_content_header")
+
+        ##### node labels
+
+        node_labels_wdg = DivWdg()
+        content_header.add(node_labels_wdg)
+        node_labels_wdg.add_class("spt_info_content_node_labels")
+
+        from_node_label = DivWdg("Incoming node")
+        node_labels_wdg.add(from_node_label)
+        to_node_label = DivWdg("Outgoing node")
+        node_labels_wdg.add(to_node_label)
+
+        ##### nodes
+
+        nodes_wdg = DivWdg()
+        content_header.add(nodes_wdg)
+        nodes_wdg.add_class("spt_info_content_nodes")
+
+        from_node_wdg = DivWdg(self.from_node)
+        from_node_wdg.add_class("spt_info_content_node")
+        from_node_wdg.add_class("from-node")
+        from_node_wdg.add_attr("title", self.from_node)
+
+        to_node_wdg = DivWdg(self.to_node)
+        to_node_wdg.add_class("spt_info_content_node")
+        to_node_wdg.add_class("to-node")
+        from_node_wdg.add_attr("title", self.to_node)
+
+        nodes_wdg.add(from_node_wdg)
+        nodes_wdg.add(to_node_wdg)
+
+        ##### line
+
+        line_wdg = DivWdg()
+        content_header.add(line_wdg)
+        line_wdg.add_class("spt_info_content_line")
+
+        arrow = DivWdg(">")
+        line_wdg.add(arrow)
+        arrow.add_class("spt_info_content_arrow")
+
+        return content_header
+
+
+    def get_attributes_container(self, attributes):
+
+        attributes_container = DivWdg()
+        attributes_container.add_class("spt_attributes_container")
+
+        attribute_wdg = DivWdg()
+        attributes_container.add(attribute_wdg)
+        attribute_wdg.add_class("spt_stream_attribute spt_stream_attribute_template")
+
+        attribute_wdg.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_pipeline_connector_info");
+            var column =  bvr.src_el.getParent(".spt_info_content_input_column");
+            var inp = column.getElement(".spt_text_input_wdg");
+            let value = bvr.src_el.getAttribute("spt_attribute");
+
+            inp.value = value;
+
+            var connector = top.connector;
+            if (!connector) return;
+
+            var side = column.getAttribute("spt_column");
+            if (side == "right")
+                connector.set_attr("to_attr", value);
+            else
+                connector.set_attr("from_attr", value);
+
+            '''
+            })
+
+        ####### WIP #######
+        close_button = DivWdg("<i class='fa fa-times'></i>")
+        #attribute_wdg.add(close_button)
+        close_button.add_class('spt_close_wdg')
+        close_button.add_behavior({
+            'type': 'mouseenter',
+            'cbjs_action': '''
+
+
+
+            '''
+            })
+
+        add_wdg = DivWdg()
+        #attributes_container.add(add_wdg)
+        add_wdg.add_class("spt_add_attribute")
+        ####### WIP #######
+
+
+        attributes_container.add_behavior({
+            'type': 'load',
+            'attributes': attributes,
+            'cbjs_action': '''
+
+            let attributes = bvr.attributes;
+            let template = bvr.src_el.getElement(".spt_stream_attribute_template");
+
+            attributes.forEach(function(attribute){
+                var clone = spt.behavior.clone(template);
+                clone.innerHTML += attribute;
+                clone.removeClass("spt_stream_attribute_template");
+                clone.setAttribute("spt_attribute", attribute)
+                bvr.src_el.appendChild(clone);
+            })
+
+            '''
+            })
+
+        return attributes_container
+
+
+    def get_onload_js(self):
+
+        return '''
+
+        // find the current connector
+        var pipeline_code = spt.pipeline.get_current_group();
+        var group = spt.pipeline.get_group(pipeline_code);
+        var connectors = group.get_connectors();
+        var connector = null;
+        for (var i = 0; i < connectors.length; i++) {
+
+            from_node = connectors[i].get_from_node();
+            to_node = connectors[i].get_to_node();
+
+
+            if (   (from_node.spt_name == bvr.kwargs.from_node) &&
+                   (to_node.spt_name == bvr.kwargs.to_node )     ) {
+
+                connector = connectors[i];
+                break;
+           }
+        }
+
+        bvr.src_el.connector = connector;
+
+        '''
 
 
 
@@ -6602,11 +7031,9 @@ class NewProcessInfoCmd(Command):
 
 
     def handle_action(self):
-
         is_admin = Environment.get_security().is_admin()
-
-        action_kwargs = self.kwargs.get("action") or {}
-
+        
+        action_kwargs = self.kwargs.get("default") or {}
         action = action_kwargs.get("action") or "create_new"
         script = action_kwargs.get("script")
         script_path = action_kwargs.get("script_path")
@@ -6760,7 +7187,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
             .spt_pipeline_editor_top .spt_pipeline_editor_shelf .search-box {
                 float: right;
-                margin-top:3px;
+                margin: 3px;
                 height: 26px;
                 padding: 2px 6px;
                 width: 164px;
@@ -7056,7 +7483,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         for i in range(0, 3):
             spacing_div = DivWdg()
             spacing_divs.append(spacing_div)
-            spacing_div.add_style("height: 31px")
+            spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 10 0 20")
             spacing_div.add_style("border-style: solid")
@@ -9154,6 +9581,11 @@ class PipelineDocumentWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_document")
         top.add_style("height: 100%")
 
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if (window_resize_offset):
+            top.add_class("spt_window_resize_offset")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
+
         project_code = Project.get_project_code()
         top.add_attr("spt_project_code", project_code)
 
@@ -10117,8 +10549,6 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         styles = HtmlElement.style('''
 
             .spt_process_select_top {
-                border: 1px solid #ccc;
-                width: 250px;
                 box-sizing: border-box;
             }
 
@@ -10136,6 +10566,11 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
         top.add_class("spt_process_select_top")
         top.add_style("overflow-y: auto")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if (window_resize_offset):
+            top.add_class("spt_window_resize")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
 
         # get all of the custom process node types
         search = Search("config/widget_config")
