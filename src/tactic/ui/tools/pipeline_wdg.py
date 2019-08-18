@@ -751,7 +751,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         show_help = self.kwargs.get('show_help') or True
         width = self.kwargs.get("width")
-        window_resize_offset = None #self.kwargs.get("window_resize_offset") or None
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
         width = "100%"
         pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'), window_resize_offset=window_resize_offset)
         right.add(pipeline_wdg)
