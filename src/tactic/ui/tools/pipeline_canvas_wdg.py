@@ -5700,12 +5700,8 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     spt.pipeline.set_scale(scale);
 
     // zero position at the specified scale
-    //var zero_pos_x = size.x/2 - size.x/2 * scale;
-    //var zero_pos_y = size.y/2 - size.y/2 * scale;
-
-
-    var zero_pos_x = 100;
-    var zero_pos_y = 100;
+    //var zero_pos_x = 100;
+    //var zero_pos_y = 100;
 
     var zero_pos_x = size.x/2 - hsize/2 - 100;
     var zero_pos_y = size.y/2 - vsize/2;
@@ -5714,7 +5710,6 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var dy = - top + zero_pos_y;
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
-
 
 }
 
