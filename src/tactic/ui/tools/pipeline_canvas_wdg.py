@@ -502,6 +502,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add(hot_key_div)
         hot_key_div.add_style("margin-left: -5000px")
         hot_key_div.add_style("position: absolute")
+        #hot_key_div.add_style("z-index: 1000")
 
         hot_key_input = TextInputWdg(name="hot_key_input")
         hot_key_div.add(hot_key_input)
@@ -528,7 +529,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         } )
  
-
         outer.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''
@@ -845,6 +845,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # create a canvas where all the nodes are drawn
         canvas = DivWdg()
         inner.add(canvas)
+        #canvas.add_style("border: solid 1px blue")
 
         width = self.width
         try:
@@ -879,7 +880,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
-	    "drag_el": '@',
+        "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
@@ -900,11 +901,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 spt.pipeline.init(bvr);
                 var scale = spt.pipeline.get_scale();
                 if (evt.wheel < 0) {
-                    spt.pipeline.set_scale( scale / 1.1 );
+                    var scale = scale / 1.1;
                 }
                 else {
-                    spt.pipeline.set_scale( scale * 1.1 );
+                    var scale = scale * 1.1;
                 }
+                spt.pipeline.set_scale( scale );
+
             '''
             } )
 
@@ -1138,6 +1141,43 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             spt.pipeline.set_has_prefix(bvr.has_prefix);
         '''
         } )
+
+
+
+        # add a screenspace div for items that do not move with scroll
+        screen_div = DivWdg()
+        outer.add(screen_div)
+        screen_div.add_class("spt_screen")
+        screen_div.add_style("width: 100%")
+        screen_div.add_style("height: 100%")
+        screen_div.add_style("overflow: hidden")
+        screen_div.add_style("top: 0px")
+        screen_div.add_style("left: 0px")
+        screen_div.add_style("position: absolute")
+        screen_div.add_style("z-index: 10")
+
+        screen_div.add_behavior( {
+        "type": 'drag',
+        "mouse_btn": 'LMB',
+        "drag_el": '@',
+        "cb_set_prefix": 'spt.pipeline.canvas_drag'
+        } )
+
+
+        if self.kwargs.get("use_mouse_wheel") in [True, 'true']:
+            screen_div.add_behavior( {
+            "type": 'wheel',
+            "cbjs_action": '''
+                spt.pipeline.init(bvr);
+                var scale = spt.pipeline.get_scale();
+                if (evt.wheel < 0) {
+                    spt.pipeline.set_scale( scale / 1.1 );
+                }
+                else {
+                    spt.pipeline.set_scale( scale * 1.1 );
+                }
+            '''
+            } )
 
 
         return top
@@ -2631,6 +2671,7 @@ spt.pipeline._init = function() {
     }
     var paint = top.getElement(".spt_pipeline_paint");
     var ctx = paint.getContext('2d');
+    var screen = top.getElement(".spt_screen");
 
     var data = top.spt_data;
     if (typeof(data) == 'undefined') {
@@ -2641,6 +2682,8 @@ spt.pipeline._init = function() {
     }
     data.canvas = canvas;
     data.paint = paint;
+    data.screen = screen;
+    data.screen_nodes = screen.getElements(".spt_screen_node");
     data.ctx = ctx;
 
     var connector_panel_data = top.getAttribute("spt_connector_panel_data");
@@ -2733,6 +2776,29 @@ spt.pipeline.get_canvas = function() {
 }
 
 
+spt.pipeline.get_screen = function() {
+    var top = spt.pipeline.top;
+    var screen = spt.pipeline.get_data().screen;
+    if (!screen) {
+        screen = top.getElement(".spt_screen");
+        if (screen) {
+            spt.pipeline.get_data().screen = screen;
+        }
+    }
+    return screen;
+}
+
+spt.pipeline.get_screen_nodes = function() {
+    var screen_nodes = spt.pipeline.get_data().screen_nodes;
+    if (!screen_nodes) {
+        console.log("find them");
+        var screen = spt.pipeline.get_screen();
+        screen_nodes = screen.getElements(".spt_screen_node");
+        spt.pipeline.get_data().screen_nodes = screen_nodes;
+    }
+    return screen_nodes;
+}
+ 
 
 spt.pipeline.get_ctx = function() {
     return spt.pipeline.get_data().ctx;
@@ -2890,6 +2956,17 @@ spt.pipeline.clear_canvas = function() {
     }
 
     spt.pipeline.redraw_canvas();
+
+
+    // remove screen nodes
+    var screen = top.getElement(".spt_screen");
+    if (screen) {
+        var els = screen.getElements(".spt_screen_node");
+        els.forEach( function(el) {
+            spt.behavior.destroy_element(el);
+        } );
+    }
+
 }
 
 
@@ -3473,10 +3550,10 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     if (!node_type) {
             var default_node_type = top.getAttribute("spt_default_node_type");
             if (default_node_type) {
-                    node_type = default_node_type;
+                node_type = default_node_type;
             }
             else {
-                    node_type = "manual";
+                node_type = "manual";
             }
     }
 
@@ -5235,6 +5312,19 @@ spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
     spt.pipeline.init(bvr);
     spt.pipeline.orig_translate = spt.pipeline.get_translate();
 
+
+    var screen = spt.pipeline.get_screen();
+    if (screen) {
+        var screen_nodes = screen.getElements(".spt_screen_node");
+        screen_nodes.forEach( function(screen_node) {
+            if (screen_node.canvas_drag_motion) {
+                screen_node.canvas_drag_setup();
+            }
+        } );
+    }
+
+
+
     spt.body.hide_focus_elements(evt);
 
     spt.pipeline.draw_skip = 0;
@@ -5270,7 +5360,15 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
     }
 
 
-
+    var screen = spt.pipeline.top.getElement(".spt_screen");
+    if (screen) {
+        var screen_nodes = screen.getElements(".spt_screen_node");
+        screen_nodes.forEach( function(screen_node) {
+            if (screen_node.canvas_drag_motion) {
+                screen_node.canvas_drag_motion(dx, dy);
+            }
+        } );
+    }
 
     var orig_translate = spt.pipeline.orig_translate;
     spt.pipeline.set_translate(orig_translate.x+dx, orig_translate.y+dy);
@@ -5432,6 +5530,19 @@ spt.pipeline.set_scale = function(scale) {
     scale_el.setStyle("-moz-transform", transform_str)
     scale_el.setStyle("-webkit-transform", transform_str)
     scale_el.setStyle("transform", transform_str)
+
+
+
+    var screen = spt.pipeline.get_screen();
+    if (screen) {
+        //screen.setStyle("transform", "scaleY("+scale+")");
+        var els = spt.pipeline.get_screen_nodes();
+        els.forEach( function(el) {
+            el.set_scale(scale);
+        } );
+    }
+
+
 
     //TweenLite.to(scale_el, 0.2, {scale: scale});
 

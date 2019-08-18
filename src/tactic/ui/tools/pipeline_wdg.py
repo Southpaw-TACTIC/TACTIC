@@ -2745,9 +2745,6 @@ class ProcessInfoWdg(BaseRefreshWdg):
         elif node_type == 'unknown':
             widget = UnknownInfoWdg(**self.kwargs)
 
-        elif node_type == 'progress':
-            widget = ProgressInfoWdg(**self.kwargs)
-
         else:
             from pyasm.command import CustomProcessConfig
             widget = CustomProcessConfig.get_info_handler(node_type, self.kwargs)
