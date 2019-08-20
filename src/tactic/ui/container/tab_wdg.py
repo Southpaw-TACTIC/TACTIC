@@ -2794,6 +2794,13 @@ class TabRenameWdg(BaseRefreshWdg):
 
 from pyasm.command import Command
 class TabSaveStateCmd(Command):
+    
+
+    def __init__(self, **kwargs):
+        super(TabSaveStateCmd, self).__init__(**kwargs)
+        self.update = True
+
+
     def execute(self):
 
         class_names = self.kwargs.get("class_names")

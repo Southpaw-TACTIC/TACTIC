@@ -152,8 +152,12 @@ def get_full_cmd(self, meth, ticket, args):
                 transaction = super(ApiClientCmd,self2).get_transaction()
                 return transaction
 
-            state = TransactionState.get_by_ticket(ticket)
-            transaction_id = state.get_state("transaction")
+            try:
+                state = TransactionState.get_by_ticket(ticket)
+                transaction_id = state.get_state("transaction")
+            except Exception as e:
+                transaction_id = None
+          
             if not transaction_id:
                 return Command.get_transaction(self2)
 
