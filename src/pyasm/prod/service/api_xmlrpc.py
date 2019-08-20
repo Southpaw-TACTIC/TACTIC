@@ -329,7 +329,6 @@ def xmlrpc_decorator(meth):
 
 
             try:
-                #if meth.__name__ in QUERY_METHODS:
                 multi_site = Config.get_value("master", "enabled")
 
                 if QUERY_METHODS.has_key(meth.__name__):
@@ -344,7 +343,7 @@ def xmlrpc_decorator(meth):
                     if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd" and args[0]:
                         cmd_class = Common.create_from_class_path(args[0], {}, {})
                         if cmd_class.is_update() == True:
-                            result = self.redirect_to_server(ticket, meth.__name__, args)
+                            result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
                             return self.browser_res(meth, result)
                 else:
                     if multi_site:

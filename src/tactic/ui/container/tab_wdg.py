@@ -944,7 +944,10 @@ spt.tab.save_state = function() {
         kwargs_list: kwargs_list,
         save_state: save_state
     };
-    server.execute_cmd(command, kwargs, {}, { on_complete: function() {} });
+    server.execute_cmd(command, kwargs, {}, { 
+        on_complete: function(ret_val) {console.log(ret_val)}, 
+        on_error: function(err) {console.log(err)} 
+    });
 
 }
 
