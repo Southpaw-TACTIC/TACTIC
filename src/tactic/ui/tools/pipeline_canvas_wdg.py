@@ -1352,7 +1352,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         if self.is_editable == True:
             from tactic.ui.container.smart_menu_wdg import SmartMenu
-            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+            SmartMenu.assign_as_local_activator( node, 'NODE_CTX')
 
         offset = 0
 
@@ -6482,7 +6482,12 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var xml_doc = spt.parse_xml(pipeline_xml);
     var pipeline_name = pipeline.name;
     var pipeline_type = pipeline.type;
-    var pipeline_data = JSON.parse(pipeline.data) || {};
+    
+    var pipeline_data = {}
+    if (typeof(pipeline.data) === "string") {
+        pipeline_data = JSON.parse(pipeline.data);
+    }
+    
 
     var node_index = pipeline_data.node_index || 0;
 
