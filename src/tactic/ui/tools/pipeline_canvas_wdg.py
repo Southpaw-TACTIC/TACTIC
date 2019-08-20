@@ -7502,6 +7502,30 @@ class NodeRenameWdg(BaseRefreshWdg):
         name_input.add_class("spt_node_name_input")
         name_input.add_attr("value", name)
         name_input.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            bvr.src_el.select();
+
+            var top = bvr.src_el.getParent(".spt_rename_node");
+            top.rename = function () {
+                var inp = top.getElement(".spt_node_name_input");
+                var name = inp.value;
+
+                var popup = bvr.src_el.getParent(".spt_popup");
+                var node = popup.activator;
+                spt.pipeline.set_node_name(node, name);
+
+                spt.popup.close(popup);
+
+                var top = node.getParent(".spt_pipeline_top");
+                top.hot_key_state = true;
+            }
+
+            '''
+            })
+
+        name_input.add_behavior({
             'type': 'click_up',
             'cbjs_action': '''
 
@@ -7519,6 +7543,19 @@ class NodeRenameWdg(BaseRefreshWdg):
             '''
             })
 
+        name_input.add_behavior({
+            'type': 'keyup',
+            'cbjs_action': '''
+
+            var key = evt.key;
+            if (key == 'enter') {
+                var top = bvr.src_el.getParent(".spt_rename_node");
+                top.rename();
+            }
+
+            '''
+            })
+
         btn = DivWdg("Rename")
         top.add(btn)
         btn.add_class("spt_node_name_submit")
@@ -7527,17 +7564,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_rename_node");
-            var inp = top.getElement(".spt_node_name_input");
-            var name = inp.value;
-
-            var popup = bvr.src_el.getParent(".spt_popup");
-            var node = popup.activator;
-            spt.pipeline.set_node_name(node, name);
-
-            spt.popup.close(popup);
-
-            var top = nodex.getParent(".spt_pipeline_top");
-            top.hot_key_state = true;
+            top.rename();
 
             '''
             })
