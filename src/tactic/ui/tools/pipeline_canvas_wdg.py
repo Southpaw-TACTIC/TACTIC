@@ -563,6 +563,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             //spt.pipeline.set_top(bvr.src_el.getElement(".spt_pipeline_top"));
 
+            console.log(key, "KEY");
+
             if (key == "a") {
                 spt.pipeline.fit_to_canvas();
             }
@@ -2997,6 +2999,9 @@ spt.pipeline.add_to_selected = function(item) {
 
 
 spt.pipeline.delete_selected = function() {
+    var selected = spt.pipeline.get_selected_nodes();
+    spt.pipeline.remove_nodes(selected);
+
     var data = spt.pipeline.get_data();
     var selected = data.selected;
     for (var i = 0; i < selected.length; i++) {
@@ -3005,8 +3010,6 @@ spt.pipeline.delete_selected = function() {
             spt.pipeline.delete_connector(item);
         }
     }
-    var selected = spt.pipeline.get_selected_nodes();
-    spt.pipeline.remove_nodes(selected);
 
     spt.pipeline.redraw_canvas();
 }
@@ -6366,7 +6369,6 @@ spt.pipeline.Group = function(name) {
 
         // set all the nodes in this group to be this color
         for (var i = 0; i < this.nodes.length; i++) {
-            console.log(this.nodes[i], "??????");
             spt.pipeline.set_color(this.nodes[i], color);
         }
     }
@@ -6509,8 +6511,6 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     group.set_group_type("pipeline");
     group.set_node_type("process");
     group.set_data("node_index", node_index);
-
-    console.log(pipeline_data, "tf rib", group.get_data("node_index"));
 
     spt.pipeline.set_current_group(pipeline_code);
     spt.pipeline.set_search_type(pipeline_code, pipeline_stype);
