@@ -415,6 +415,10 @@ class EditCmd(Command):
 class EditMultipleCmd(Command):
     '''Do multiple edits in a single call'''
 
+    def __init__(self, **kwargs):
+        super(EditMultipleCmd, self).__init__(**kwargs)
+        self.update = True
+
     def execute(self):
         """
         var kwargs = {
