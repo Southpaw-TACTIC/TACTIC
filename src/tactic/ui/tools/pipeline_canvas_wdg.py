@@ -4115,15 +4115,17 @@ spt.pipeline._rename_node = function(node, value) {
 
 spt.pipeline.set_rename_mode = function(node) {
     var name = spt.pipeline.get_node_name(node);
-    var kwargs = {
+    var args = {
         name: name,
     };
 
+    var kwargs = {
+        resize: false
+    }
+
     var class_name = "tactic.ui.tools.NodeRenameWdg"
-    var popup = spt.panel.load_popup("Rename Node", class_name, kwargs);
+    var popup = spt.panel.load_popup(null, class_name, args, kwargs);
     popup.activator = node;
-
-
 }
 
 
@@ -7507,12 +7509,15 @@ class NodeRenameWdg(BaseRefreshWdg):
 
             bvr.src_el.select();
 
+            var popup = bvr.src_el.getParent(".spt_popup");
+            var title = popup.getElement(".spt_popup_title");
+            title.setStyle("display", "none");
+
             var top = bvr.src_el.getParent(".spt_rename_node");
             top.rename = function () {
                 var inp = top.getElement(".spt_node_name_input");
                 var name = inp.value;
-
-                var popup = bvr.src_el.getParent(".spt_popup");
+                
                 var node = popup.activator;
                 spt.pipeline.set_node_name(node, name);
 
@@ -7521,6 +7526,7 @@ class NodeRenameWdg(BaseRefreshWdg):
                 var top = node.getParent(".spt_pipeline_top");
                 top.hot_key_state = true;
             }
+
 
             '''
             })
