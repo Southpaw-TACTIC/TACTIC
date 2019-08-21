@@ -253,8 +253,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.height = self.kwargs.get("height")
         if not self.height:
             self.height = 600
-        print("----------------------------")
-        print("height:%s" % self.height)
         self.background_color = self.kwargs.get("background_color")
         if not self.background_color:
             self.background_color = "white"
@@ -406,20 +404,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var outline = bvr.src_el.getElement(".spt_outline");
             outline_pos = outline.getPosition(bvr.src_el);
             outline_size = outline.getSize();
-            console.log("outline");
-            console.log(outline_pos);
 
             var container_size = container.getSize();
 
             // find out where it hit the target
             var x = mouse_411.curr_x - pos.x;
             var y = mouse_411.curr_y - pos.y;
-            console.log("pos: " + x + ", " + y);
 
             var dx = (x - outline_pos.x - outline_size.x/2) * canvas_size.x / container_size.x / ratio;
             var dy = (y - outline_pos.y - outline_size.y/2) * canvas_size.y / container_size.y / ratio;
-
-            console.log(dx + ", " + dy);
 
             spt.pipeline.move_all_nodes(-dx, -dy);
             spt.pipeline.move_all_folders(-dx, -dy);
@@ -472,6 +465,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add_class("spt_pipeline_resize")
         outer.add_class("spt_resizable")
 
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if window_resize_offset:
+            outer.add_class("spt_window_resize")
+            outer.add_attr("spt_window_resize_offset", window_resize_offset)
+
 
         outer.add_style("overflow: hidden")
         outer.add_style("box-sizing: border-box")
@@ -489,8 +487,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         except ValueError:
             pass
         height = self.height
-        print("====================")
-        print("height: %s" % height)
         try:
             height = int(height)
             height = str(height) + "px"
@@ -755,7 +751,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                         var pos = data.pos;
                         var node_type = data.node_type;
                         var new_pos = { x: pos.x+mouse_pos.x, y: pos.y+mouse_pos.y};
-                        console.log(new_pos);
                         var new_node = spt.pipeline.add_node(new_node_name, new_pos.x, new_pos.y, { node_type: node_type, });
                         new_nodes.push(new_node);
                         spt.pipeline.select_node(new_node);
