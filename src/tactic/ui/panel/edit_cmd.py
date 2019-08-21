@@ -100,6 +100,8 @@ class EditCmd(Command):
         self.search_type = None
         self.sobject = kwargs.get("sobject")
 
+        self.update = True
+
 
     def get_sobject(self):
         return self.sobject

@@ -45,6 +45,13 @@ class ApiException(Exception):
     pass
 
 
+class RemoteApiException(Exception):
+
+    def __init__(self, error):
+        self.class_name = error.get('type')
+        self.message = error.get('message')
+        self.args = error.get('args')
+
 
 
 # methods that only query.  These do not need the overhead of a transaction
@@ -340,11 +347,13 @@ def xmlrpc_decorator(meth):
                     else:
                         cmd = get_full_cmd(self, meth, ticket, args)
 
-                    if multi_site and meth.__name__ == "execute_cmd" and args[0] != "tactic.ui.app.DynamicUpdateCmd" and args[0]:
-                        cmd_class = Common.create_from_class_path(args[0], {}, {})
-                        if cmd_class.is_update() == True:
-                            result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
-                            return self.browser_res(meth, result)
+                    if multi_site and meth.__name__ == "execute_cmd" and args[0]:
+                        if args[0] != "tactic.ui.app.DynamicUpdateCmd": 
+                            cmd_class = Common.create_from_class_path(args[0], {}, {})
+                            if cmd_class.is_update() == True:
+                                #FIXME: Extra dict is appended to args list 
+                                result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                                return self.browser_res(meth, result)
                 else:
                     if multi_site:
                         result = self.redirect_to_server(ticket, meth.__name__, args)
@@ -1032,6 +1041,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
     def redirect_to_server(self, ticket, meth, args):
+        '''Uses REST call to redirect API call to remote server.'''
 
         project_code = Config.get_value("master", "project_code")
         url = Config.get_value("master", "url") 
@@ -1039,7 +1049,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
        
  
         args = jsondumps(args)
-
         data = {
             'login_ticket': ticket,
             'method': meth,
@@ -1048,9 +1057,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
        
         r = requests.post(rest_url, data=data)
         ret_val = r.json()
-        result = ret_val.get("info")
-
-        return ret_val
+        error = ret_val.get("error")
+        if error:
+            raise RemoteApiException(error)
+        else: 
+            return ret_val
 
 
 
