@@ -253,6 +253,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.height = self.kwargs.get("height")
         if not self.height:
             self.height = 600
+        print("----------------------------")
+        print("height:%s" % self.height)
         self.background_color = self.kwargs.get("background_color")
         if not self.background_color:
             self.background_color = "white"
@@ -487,6 +489,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         except ValueError:
             pass
         height = self.height
+        print("====================")
+        print("height: %s" % height)
         try:
             height = int(height)
             height = str(height) + "px"
@@ -7026,7 +7030,6 @@ spt.pipeline.set_status_color = function(search_key) {
     server.p_execute_cmd(cmd, kwargs)
     .then( function(ret_val) {
         var info = ret_val.info;
-        console.log(info);
         var group_name = spt.pipeline.get_current_group();
         var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
@@ -7035,10 +7038,8 @@ spt.pipeline.set_status_color = function(search_key) {
         for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
             var process = spt.pipeline.get_node_name(node);
-            console.log(process);
 
             var color = info[process]
-            console.log(color);
             if (!color) {
                 color = default_color;
                 node.setStyle("opacity", "0.5");

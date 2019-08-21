@@ -498,6 +498,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # this is different name from the old table selected_search_keys
         search_keys = self.kwargs.get("search_keys")
+        print("search_keys: %s" % search_keys)
+        if search_keys:
+            search_keys.reverse()
+            self.kwargs["search_keys"] = search_keys
+            print("search_keys_reverse: %s" % self.kwargs["search_keys"])
+            print("search_keys_reverse2: %s" % search_keys)
 
         # if a search key has been explicitly set without expression, use that
         expression = self.kwargs.get('expression')

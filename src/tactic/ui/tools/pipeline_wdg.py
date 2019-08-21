@@ -57,6 +57,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 position: absolute;
                 left: 0px;
                 transition: .25s;
+                border: 1px solid #ccc;
+                width:247px;
             }
 
             .spt_pipeline_tool_right {
@@ -78,7 +80,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 transition: 0.25s;
                 top: 43px;
                 border: 1px solid #ccc;
-                height: 600;
+                //height: 600;
                 box-sizing: border-box;
                 padding-top: 20px;
                 border-width: 1px 0px 1px 1px;
@@ -153,7 +155,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             .spt_pipeline_tool_top .spt_pipeline_toolbar {
                 border: 1px solid #ccc;
-                border-width: 1 1 0 0;
+                border-width: 0 0 1 0;
                 height: 28px;
 
                 display: flex;
@@ -320,7 +322,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.add_style("align-items: stretch")
             container.add_style("align-columns: stretch")
             container.add_style("width: 100%")
-            container.add_style("height: 100%")
+            # container.add_style("height: 100%")
             container.add_color("background", "background")
             container.add_style("position: relative")
 
@@ -336,6 +338,11 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             right = DivWdg()
             right.add_class("spt_pipeline_tool_right")
+            right.add_style("overflow-y: auto")
+            window_resize_offset = self.kwargs.get("window_resize_offset") or None
+            if window_resize_offset:
+                right.add_class("spt_window_resize")
+                right.add_attr("spt_window_resize_offset", window_resize_offset)
 
             container.add(right)
 
@@ -694,6 +701,12 @@ class PipelineToolWdg(BaseRefreshWdg):
             left.add(pipeline_list_top)
             pipeline_list_top.add_class("spt_pipeline_list_top")
 
+            window_resize_offset = self.kwargs.get("window_resize_offset") or None
+            if window_resize_offset:
+                pipeline_list_top.add_class("spt_window_resize")
+                pipeline_list_top.add_attr("spt_window_resize_offset", window_resize_offset)
+                pipeline_list_top.add_style("overflow-y: auto")
+
             list_kwargs = {
                 "save_event": save_event,
                 "save_new_event": save_new_event,
@@ -718,10 +731,12 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
             if use_document_pipeline in [True, "true"]:
-                pipeline_list = PipelineDocumentWdg()
+                window_resize_offset = self.kwargs.get("window_resize_offset")
+                print("run here")
+                pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
                 pipeline_list_content.add_attr("mode", "document")
             else:
-                pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression )
+                pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression, window_resize_offset=window_resize_offset )
                 pipeline_list_content.add_attr("mode", "list")
             pipeline_list_content.add(pipeline_list)
 
@@ -738,8 +753,9 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         show_help = self.kwargs.get('show_help') or True
         width = self.kwargs.get("width")
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
         width = "100%"
-        pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'))
+        pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'), window_resize_offset=window_resize_offset)
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
@@ -749,7 +765,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         start_div.add_class("spt_pipeline_editor_start")
         right.add(start_div)
         start_div.add_style("position: absolute")
-        start_div.add_style("height: 100%")
+        # start_div.add_style("height: 100%")
         start_div.add_style("width: 100%")
         start_div.add_style("top: 0px")
         start_div.add_style("background: rgba(240,240,240,0.8)")
@@ -763,8 +779,9 @@ class PipelineToolWdg(BaseRefreshWdg):
         msg_div.add("Select a workflow<br/><br/>or<br/><br/>Create a new one")
         msg_div.add_style("width: 300px")
         msg_div.add_style("height: 150px")
-        msg_div.add_style("margin-top: 20%")
-        msg_div.add_style("margin: 20% auto")
+        # msg_div.add_style("margin-top: 10%")
+        # msg_div.add_style("margin-left: 15%")
+        msg_div.add_style("margin: 10% 33%")
         msg_div.add_border()
         msg_div.add_color("background", "background")
         msg_div.add_style("padding-top: 40px")
@@ -1041,6 +1058,13 @@ class PipelineListWdg(BaseRefreshWdg):
         self.set_as_panel(top)
         top.add_style("position: relative")
         top.add_style("padding: 0px 0px")
+        top.add_style("overflow-y: auto")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if window_resize_offset:
+            top.add_class("spt_window_resize")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
+            top.add_style("overflow-y: auto")
 
         title_div = DivWdg()
 
@@ -6756,7 +6780,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         
         has_change_action = '''
             bvr.src_el.addClass("spt_has_changes");
-        ''';
+        '''
 
         top.add_named_listener('pipeline|change', has_change_action)
 
@@ -6887,7 +6911,22 @@ class PipelineEditorWdg(BaseRefreshWdg):
             self.width = "auto"
         self.height = self.kwargs.get("height")
         if not self.height:
-            self.height = 600
+            print("#################################")
+            window_resize_offset = self.kwargs.get("window_resize_offset") or None
+            print(window_resize_offset)
+            if window_resize_offset:
+                """
+                top.add_behavior( {
+                    'type': 'load',
+                    'cbjs_action': '''
+                    bvr.kwargs.window_size = window.getSize();
+                    '''
+                })
+                """
+                window_size = 700
+                self.height = 700 - int(window_resize_offset)
+            else:
+                self.height = 600
 
 
         
@@ -7039,7 +7078,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
         show_gear = self.kwargs.get("show_gear")
-        button_div = self.get_buttons_wdg(show_gear);
+        button_div = self.get_buttons_wdg(show_gear)
         button_div.add_style("float: left")
         shelf_wdg.add(button_div)
 
@@ -9063,11 +9102,11 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_document {
-                border: 1px solid #ccc;
+                //border: 1px solid #ccc;
                 overflow: auto;
-                min-height: 614px;
+                min-height: 300px;
 
-                width: 250px;
+                //width: 250px;
                 box-sizing: border-box;
             }
 
@@ -9123,10 +9162,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
         top = self.top
         top.add_class("spt_pipeline_document")
-        top.add_class("spt_window_resize")
-
-        # FIXME: this nuber should not be hard codeed
-        top.add_attr("spt_window_resize_offset", "207")
+        top.add_style("height: 100%")
 
         project_code = Project.get_project_code()
         top.add_attr("spt_project_code", project_code)
@@ -10110,9 +10146,10 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
         top.add_class("spt_process_select_top")
 
-        # FIXME: this nuber should not be hard codeed
-        top.add_class("spt_window_resize")
-        top.add_attr("spt_window_resize_offset", "207")
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if window_resize_offset:
+            top.add_class("spt_window_resize")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
         top.add_style("overflow-y: auto")
 
         # get all of the custom process node types
@@ -10245,7 +10282,7 @@ spt.process_tool.item_drag_action = function(evt, bvr, mouse_411) {
 
 
     var drop_on_el = spt.get_event_target(evt);
-    if (! drop_on_el.hasClass(".spt_pipeoine_top") ) {
+    if (! drop_on_el.hasClass(".spt_pipeline_top") ) {
         var parent = drop_on_el.getParent(".spt_pipeline_top");
         if (!parent) {
             return;
@@ -10379,7 +10416,7 @@ spt.process_tool.show_side_bar = function(activator) {
 
             node_wdg = None
             if (view in ['approval', 'condition', 'hierarchy', 'dependency', 'progress', 'action', 'manual']):
-                pipeline_canvas_wdg = PipelineCanvasWdg(add_node_behaviors=False)
+                pipeline_canvas_wdg = PipelineCanvasWdg(add_node_behaviors=False, height=self.kwargs.get("height"))
 
                 if (view == 'approval'):
                     node_wdg = pipeline_canvas_wdg.get_approval_node("approval")
