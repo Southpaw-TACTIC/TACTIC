@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
+__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', 'RemoteApiException']
 
 import decimal
 import shutil, os, types, sys, thread
