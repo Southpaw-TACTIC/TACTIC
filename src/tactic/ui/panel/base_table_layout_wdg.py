@@ -944,7 +944,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div = DivWdg() 
         div.add_class("SPT_DTS")
         #div.add_style("overflow: hidden")
-        div.add_style("padding-top: 3px")
+        div.add_style("padding-top: 2px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
 
@@ -1510,7 +1510,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         browser = web.get_browser()
         import os
         if browser == 'Qt' and os.name != 'nt':
-            height = "41px"
+            height = "38px"
         elif scale != 1:
             xx.add_style("position: absolute")
             xx.add_color("backgroud","background")
@@ -1521,7 +1521,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #div.add_style("opacity: 0.6")
             height = "32px"
         else:
-            height = "41px"
+            height = "38px"
             #div.add_style("opacity: 0.6")
 
 

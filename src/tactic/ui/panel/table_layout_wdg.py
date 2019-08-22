@@ -9166,7 +9166,6 @@ class TableGroupManageWdg(BaseRefreshWdg):
             if config.get_view() != 'definition':
                 continue
             file_path = config.get_file_path()
-            #print("file_path: ", file_path)
             if file_path and file_path.endswith("DEFAULT-conf.xml") or file_path == 'generated':
                 continue
 

@@ -456,8 +456,7 @@
     <display class="LinkWdg">
       <class_name>tactic.ui.tools.PipelineToolWdg</class_name>
       <pipeline>project</pipeline>
-      <width>1100</width>
-      <height>600</height>
+      <window_resize_offset>128</window_resize_offset>
     </display>
   </element>
 
