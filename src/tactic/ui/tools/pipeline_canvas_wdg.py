@@ -563,8 +563,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             //spt.pipeline.set_top(bvr.src_el.getElement(".spt_pipeline_top"));
 
-            console.log(key, "KEY");
-
             if (key == "a") {
                 spt.pipeline.fit_to_canvas();
             }
