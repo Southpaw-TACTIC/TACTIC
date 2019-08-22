@@ -824,21 +824,26 @@ class TopWdg(Widget):
 
     
         from pyasm.security import Site
-        from pyasm.prod.biz import ProdSetting
         site = Site.get_site()
 
         master_enabled = Config.get_value("master", "enabled")
-        master_site = ProdSetting.get_value_by_key("master/site")
+        forwarding_type = Config.get_value("master", "forwarding_type")
+        if forwarding_type == "xmlrpc_only":
+            master_enabled = "false"
+        
+        master_site = Config.get_value("master", "site")
+        master_project_code = Config.get_value("master", "project_code")
+        
         master_url = Config.get_value("master", "url")
         master_url = master_url + "/tactic/default/Api/"
+        
         security = Environment.get_security()
         ticket = security.get_ticket()
-
         if ticket:
-            master_login_ticket = ticket.get_value("ticket")
+            login_ticket = ticket.get_value("ticket")
         else:
-            master_login_ticket = ""
-        master_project_code = Config.get_value("master", "project_code")
+            login_ticket = ""
+        
 
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
@@ -861,7 +866,7 @@ class TopWdg(Widget):
         env.set_master_project_code('%s');
         env.set_master_site('%s');
         ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
-		master_enabled, master_url, master_login_ticket, master_project_code, master_site))
+		master_enabled, master_url, login_ticket, master_project_code, master_site))
         top.add(script)
 
 
