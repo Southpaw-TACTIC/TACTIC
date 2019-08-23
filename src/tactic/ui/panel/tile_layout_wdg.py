@@ -754,7 +754,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             var class_name = 'tactic.ui.tools.SObjectDetailWdg';
             var kwargs = {
                 search_key: search_key,
-                tab_element_names: bvr.detail_element_names
+                tab_element_names: bvr.detail_element_names,
+                show_thumb: 'false'
             };
 
             var element_name = search_code;
