@@ -404,20 +404,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var outline = bvr.src_el.getElement(".spt_outline");
             outline_pos = outline.getPosition(bvr.src_el);
             outline_size = outline.getSize();
-            console.log("outline");
-            console.log(outline_pos);
 
             var container_size = container.getSize();
 
             // find out where it hit the target
             var x = mouse_411.curr_x - pos.x;
             var y = mouse_411.curr_y - pos.y;
-            console.log("pos: " + x + ", " + y);
 
             var dx = (x - outline_pos.x - outline_size.x/2) * canvas_size.x / container_size.x / ratio;
             var dy = (y - outline_pos.y - outline_size.y/2) * canvas_size.y / container_size.y / ratio;
-
-            console.log(dx + ", " + dy);
 
             spt.pipeline.move_all_nodes(-dx, -dy);
             spt.pipeline.move_all_folders(-dx, -dy);
@@ -469,6 +464,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         top.add(outer)
         outer.add_class("spt_pipeline_resize")
         outer.add_class("spt_resizable")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if window_resize_offset:
+            outer.add_class("spt_window_resize")
+            outer.add_attr("spt_window_resize_offset", window_resize_offset)
 
 
         outer.add_style("overflow: hidden")
@@ -751,7 +751,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                         var pos = data.pos;
                         var node_type = data.node_type;
                         var new_pos = { x: pos.x+mouse_pos.x, y: pos.y+mouse_pos.y};
-                        console.log(new_pos);
                         var new_node = spt.pipeline.add_node(new_node_name, new_pos.x, new_pos.y, { node_type: node_type, });
                         new_nodes.push(new_node);
                         spt.pipeline.select_node(new_node);
@@ -1352,7 +1351,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         if self.is_editable == True:
             from tactic.ui.container.smart_menu_wdg import SmartMenu
-            SmartMenu.assign_as_local_activator( node, 'SIMPLE_NODE_CTX')
+            SmartMenu.assign_as_local_activator( node, 'NODE_CTX')
 
         offset = 0
 
@@ -6484,7 +6483,12 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var xml_doc = spt.parse_xml(pipeline_xml);
     var pipeline_name = pipeline.name;
     var pipeline_type = pipeline.type;
-    var pipeline_data = JSON.parse(pipeline.data) || {};
+    
+    var pipeline_data = {}
+    if (typeof(pipeline.data) === "string") {
+        pipeline_data = JSON.parse(pipeline.data);
+    }
+    
 
     var node_index = pipeline_data.node_index || 0;
 
@@ -7021,7 +7025,6 @@ spt.pipeline.set_status_color = function(search_key) {
     server.p_execute_cmd(cmd, kwargs)
     .then( function(ret_val) {
         var info = ret_val.info;
-        console.log(info);
         var group_name = spt.pipeline.get_current_group();
         var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
@@ -7030,10 +7033,8 @@ spt.pipeline.set_status_color = function(search_key) {
         for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
             var process = spt.pipeline.get_node_name(node);
-            console.log(process);
 
             var color = info[process]
-            console.log(color);
             if (!color) {
                 color = default_color;
                 node.setStyle("opacity", "0.5");

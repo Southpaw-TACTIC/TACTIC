@@ -1933,6 +1933,7 @@ spt.tab.view_definition = function(bvr) {
 
             
             content_div.add_style("width: 100%")
+            # content_div.add_style("height: 100%")
             #content_div.add_style("box-sizing: border_box")
             content_div.add_style("text-align: left")
             
@@ -2003,7 +2004,7 @@ spt.tab.view_definition = function(bvr) {
                 content_div.add_style("display: none")
             content_div.add(widget)
             content_div.add_style("width: 100%")
-            #content_div.add_style("height: 100%")
+            # content_div.add_style("height: 100%")
             content_div.add_style("text-align: left")
             content_top.add(content_div)
 
@@ -2072,7 +2073,7 @@ spt.tab.view_definition = function(bvr) {
         content_div.add_attr("spt_tab_id", self.unique_id)
         content_div.add("")
         content_div.add_style("width: 100%")
-        #content_div.add_style("height: 100%")
+        # content_div.add_style("height: 100%")
         content_div.add_style("text-align: left")
         template_div.add(content_div)
 
