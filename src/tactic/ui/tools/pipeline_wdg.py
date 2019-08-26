@@ -6601,11 +6601,9 @@ class NewProcessInfoCmd(Command):
 
 
     def handle_action(self):
-
         is_admin = Environment.get_security().is_admin()
-
-        action_kwargs = self.kwargs.get("action") or {}
-
+        
+        action_kwargs = self.kwargs.get("default") or {}
         action = action_kwargs.get("action") or "create_new"
         script = action_kwargs.get("script")
         script_path = action_kwargs.get("script_path")
