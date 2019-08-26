@@ -5667,6 +5667,10 @@ spt.pipeline.fit_to_node = function(node) {
 spt.pipeline.take_snapshot = function(container) {
 
     var el = spt.pipeline.top;
+    if (el.isLoading) return;
+
+    el.isLoading = true;
+
     var c = spt.pipeline.get_canvas();
     spt.pipeline.fit_to_canvas();
     var scale = spt.pipeline.get_scale();
@@ -5699,6 +5703,7 @@ spt.pipeline.take_snapshot = function(container) {
             canvas.setStyle("height", height);
 
             spt.pipeline.match_snapshot();
+            el.isLoading = false;
 
         });
 
