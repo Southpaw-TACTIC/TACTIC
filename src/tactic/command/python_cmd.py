@@ -107,7 +107,7 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
         results = self.get_results()
 
         # set info and description
-        self.info['spt_ret_val'] = results 
+        self.info = results 
         class_name = self.__class__.__name__
         if script_path:
             desc = 'Run %s with script path [%s]' % (class_name, script_path)
