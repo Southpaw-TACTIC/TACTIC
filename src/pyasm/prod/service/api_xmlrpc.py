@@ -10,12 +10,13 @@
 #
 #
 
-__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
+__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', 'RemoteApiException']
 
 import decimal
 import shutil, os, types, sys, thread
 import re, random
 import datetime, time
+import requests
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -43,6 +44,13 @@ class ApiClientCmd(Command):
 class ApiException(Exception):
     pass
 
+
+class RemoteApiException(Exception):
+
+    def __init__(self, error):
+        self.class_name = error.get('type')
+        self.message = error.get('message')
+        self.args = error.get('args')
 
 
 
@@ -151,8 +159,12 @@ def get_full_cmd(self, meth, ticket, args):
                 transaction = super(ApiClientCmd,self2).get_transaction()
                 return transaction
 
-            state = TransactionState.get_by_ticket(ticket)
-            transaction_id = state.get_state("transaction")
+            try:
+                state = TransactionState.get_by_ticket(ticket)
+                transaction_id = state.get_state("transaction")
+            except Exception as e:
+                transaction_id = None
+          
             if not transaction_id:
                 return Command.get_transaction(self2)
 
@@ -276,6 +288,8 @@ QUERY_METHODS = {
     'get_upload_file_size': 0,
     'get_doc_link': 0,
     'get_interaction_count': 0,
+    'get_plugin_dir': 0,
+    'get_by_code': 0,
 }
 
 TRANS_OPTIONAL_METHODS = {
@@ -307,7 +321,6 @@ def xmlrpc_decorator(meth):
                 Container.put(data_key, state) 
 
 
-
     def new(self, original_ticket, *args, **kwargs):
         results = None
         try:
@@ -323,7 +336,8 @@ def xmlrpc_decorator(meth):
 
 
             try:
-                #if meth.__name__ in QUERY_METHODS:
+                multi_site = Config.get_value("master", "enabled")
+
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
@@ -333,8 +347,19 @@ def xmlrpc_decorator(meth):
                     else:
                         cmd = get_full_cmd(self, meth, ticket, args)
 
+                    if multi_site and meth.__name__ == "execute_cmd" and args[0]:
+                        if args[0] != "tactic.ui.app.DynamicUpdateCmd": 
+                            cmd_class = Common.create_from_class_path(args[0], {}, {})
+                            if cmd_class.is_update() == True:
+                                #FIXME: Extra dict is appended to args list 
+                                result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                                return self.browser_res(meth, result)
                 else:
-                    cmd = get_full_cmd(self, meth, ticket, args)
+                    if multi_site:
+                        result = self.redirect_to_server(ticket, meth.__name__, args)
+                        return self.browser_res(meth, result)
+                    else: 
+                        cmd = get_full_cmd(self, meth, ticket, args)
 
                 profile_flag = False
 
@@ -411,11 +436,7 @@ def xmlrpc_decorator(meth):
         try:
             # NOTE: add in a special requirement for get_widget() because
             # of the bizarre 4096 byte limitation on responseXML in the browser
-            web = WebContainer.get_web()
-            if (web and web.get_app_name() == "Browser" \
-                    and meth.__name__ not in ['get_widget'] \
-                    and self.get_language() == 'javascript'):
-                results = jsondumps(results)
+            results = self.browser_res(meth, results)
 
             # handle special cases for c#
             #elif self.get_language() == 'c#':
@@ -1005,6 +1026,42 @@ class ApiXMLRPC(BaseApiXMLRPC):
         log = DebugLog.log(level,message,category)
         return True
 
+
+
+    def browser_res(self, meth, result):
+
+        web = WebContainer.get_web()
+        if (web and web.get_app_name() == "Browser" \
+                and meth.__name__ not in ['get_widget'] \
+                and self.get_language() == 'javascript'):
+            result = jsondumps(result)
+
+        return result
+
+
+
+    def redirect_to_server(self, ticket, meth, args):
+        '''Uses REST call to redirect API call to remote server.'''
+
+        project_code = Config.get_value("master", "project_code")
+        url = Config.get_value("master", "url") 
+        rest_url = url + "/" + project_code + "/REST/"
+       
+ 
+        args = jsondumps(args)
+        data = {
+            'login_ticket': ticket,
+            'method': meth,
+            'args' : args
+        }
+       
+        r = requests.post(rest_url, data=data)
+        ret_val = r.json()
+        error = ret_val.get("error")
+        if error:
+            raise RemoteApiException(error)
+        else: 
+            return ret_val
 
 
 
