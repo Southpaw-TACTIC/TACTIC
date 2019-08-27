@@ -79,7 +79,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 position: absolute;
                 right: -400px;
                 transition: 0.25s;
-                top: 43px;
+                top: 33px;
                 bottom: 0px;
                 border: 1px solid #ccc;
                 //height: 600;
@@ -92,14 +92,14 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             .spt_pipeline_tool_top .search-results {
                 position: absolute;
-                right: 4;
+                right: 9;
                 height: 144px;
                 width: 163px;
                 background: white;
                 border: 1px solid #ccc;
                 box-shadow: 0px 2px 4px 0px #ccc;
                 z-index: 1000;
-                top: 40;
+                top: 29;
                 overflow-y: auto;
             }
 
@@ -705,6 +705,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 pipeline_list_top.add_class("spt_window_resize")
                 pipeline_list_top.add_attr("spt_window_resize_offset", window_resize_offset)
                 pipeline_list_top.add_style("overflow-y: auto")
+            else:
+                pipeline_list_top.add_style("height", "600")
 
             list_kwargs = {
                 "save_event": save_event,
@@ -730,7 +732,6 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
             if use_document_pipeline in [True, "true"]:
-                window_resize_offset = self.kwargs.get("window_resize_offset")
                 pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
                 pipeline_list_content.add_attr("mode", "document")
             else:
@@ -738,7 +739,6 @@ class PipelineToolWdg(BaseRefreshWdg):
                 pipeline_list_content.add_attr("mode", "list")
             pipeline_list_content.add(pipeline_list)
 
-            window_resize_offset = self.kwargs.get("window_resize_offset")
             widget = PipelineProcessTypeWdg(window_resize_offset=window_resize_offset)
             widget.add_class("spt_pipeline_nodes")
             widget.add_style("display: none")
@@ -751,7 +751,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
         show_help = self.kwargs.get('show_help') or True
         width = self.kwargs.get("width")
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        window_resize_offset = None #self.kwargs.get("window_resize_offset") or None
         width = "100%"
         pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'), window_resize_offset=window_resize_offset)
         right.add(pipeline_wdg)
@@ -7186,7 +7186,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
             .spt_pipeline_editor_top .spt_pipeline_editor_shelf .search-box {
                 float: right;
-                margin-top:3px;
+                margin: 3px;
                 height: 26px;
                 padding: 2px 6px;
                 width: 164px;
@@ -7482,7 +7482,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         for i in range(0, 3):
             spacing_div = DivWdg()
             spacing_divs.append(spacing_div)
-            spacing_div.add_style("height: 31px")
+            spacing_div.add_style("height: 32px")
             spacing_div.add_style("width: 2px")
             spacing_div.add_style("margin: 0 10 0 20")
             spacing_div.add_style("border-style: solid")
@@ -9580,6 +9580,11 @@ class PipelineDocumentWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_document")
         top.add_style("height: 100%")
 
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if (window_resize_offset):
+            top.add_class("spt_window_resize_offset")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
+
         project_code = Project.get_project_code()
         top.add_attr("spt_project_code", project_code)
 
@@ -10543,8 +10548,6 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         styles = HtmlElement.style('''
 
             .spt_process_select_top {
-                border: 1px solid #ccc;
-                width: 250px;
                 box-sizing: border-box;
             }
 
@@ -10562,6 +10565,11 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
         top.add_class("spt_process_select_top")
         top.add_style("overflow-y: auto")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        if (window_resize_offset):
+            top.add_class("spt_window_resize")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
 
         # get all of the custom process node types
         search = Search("config/widget_config")
