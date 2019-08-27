@@ -7517,9 +7517,9 @@ class NodeRenameWdg(BaseRefreshWdg):
             var title = popup.getElement(".spt_popup_title");
             title.setStyle("display", "none");
 
-            var top = bvr.src_el.getParent(".spt_rename_node");
-            top.rename = function () {
-                var inp = top.getElement(".spt_node_name_input");
+            var input_top = bvr.src_el.getParent(".spt_rename_node");
+            input_top.rename = function () {
+                var inp = this.getElement(".spt_node_name_input");
                 var name = inp.value;
                 
                 var node = popup.activator;
@@ -7527,8 +7527,8 @@ class NodeRenameWdg(BaseRefreshWdg):
 
                 spt.popup.close(popup);
 
-                var top = node.getParent(".spt_pipeline_top");
-                top.hot_key_state = true;
+                var pipeline_top = node.getParent(".spt_pipeline_top");
+                pipeline_top.hot_key_state = true;
             }
 
 

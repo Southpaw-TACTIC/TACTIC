@@ -2909,7 +2909,7 @@ class NewConnectorInfoWdg(BaseRefreshWdg):
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_pipeline_connector_info");
-            var value = bvr.src_el.value;'
+            var value = bvr.src_el.value;
 
             var connector = top.connector;
             if (!connector) return;
