@@ -869,7 +869,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         window_resize_offset = self.kwargs.get("window_resize_offset")
         if window_resize_offset:
             canvas.add_class("spt_window_resize")
-            canvas.add_attr("spt_window_resize_offset", window_resize_offset)
+            canvas.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
 
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
