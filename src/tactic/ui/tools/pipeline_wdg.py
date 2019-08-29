@@ -6459,11 +6459,6 @@ spt.pipeline_properties.set_properties2 = function(prop_top, node, properties) {
 
 class PipelineSaveCbk(Command):
     '''Callback executed when the Save button or other Save menu items are pressed in Project Workflow'''
-
-    def __init__(self, **kwargs):
-        super(PipelineSaveCbk, self).__init__(**kwargs)
-        self.update = True
-
     def get_title(self):
         return "Save a pipeline"
 

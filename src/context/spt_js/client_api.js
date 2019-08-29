@@ -2175,7 +2175,7 @@ TacticServerStub.get_master = function() {
     var env = spt.Environment.get();
     var master_slave_setup = env.get_master_enabled();
 
-    if (['true', true].indexOf(master_slave_setup) > -1) {
+    if (master_slave_setup) {
         this.server = new TacticServerStub();
         var master_slave_setup = env.get_master_enabled();
         var url = env.get_master_url();

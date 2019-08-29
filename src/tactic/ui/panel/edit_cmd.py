@@ -100,8 +100,6 @@ class EditCmd(Command):
         self.search_type = None
         self.sobject = kwargs.get("sobject")
 
-        self.update = True
-
 
     def get_sobject(self):
         return self.sobject
@@ -414,10 +412,6 @@ class EditCmd(Command):
 
 class EditMultipleCmd(Command):
     '''Do multiple edits in a single call'''
-
-    def __init__(self, **kwargs):
-        super(EditMultipleCmd, self).__init__(**kwargs)
-        self.update = True
 
     def execute(self):
         """
