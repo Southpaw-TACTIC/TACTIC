@@ -21,12 +21,7 @@ from pyasm.widget import IconWdg, TextWdg, BaseInputWdg, PasswordWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 from pyasm.command import Command
 
-import re, string
-
-import six
-basestring = six.string_types
-
-
+import random, re, string
 
 try:
     import numbers
@@ -102,20 +97,8 @@ class TextInputWdg(BaseInputWdg):
 
     def get_input_group_wdg(self):
         input_group = DivWdg()
-        width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
-        height = self.height
-        try:
-            height = int(height)
-            height = str(height) + "px"
-        except ValueError:
-            pass
-        input_group.add_style("width: %s" % width)
-        input_group.add_style("height: %s" % height)
+        input_group.add_style("width: %s" % self.width)
+        input_group.add_style("height: %s" % self.height)
         input_group.add_style("margin-right: 5px")
 
         return input_group
@@ -252,8 +235,7 @@ class TextInputWdg(BaseInputWdg):
         self.height = height
 
 
-        super(TextInputWdg, self).__init__(self.name)
-
+        super(TextInputWdg, self).__init__()
 
         self.icon = self.kwargs.get("icon")
         self.icon_pos = self.kwargs.get("icon_pos")
@@ -270,13 +252,8 @@ class TextInputWdg(BaseInputWdg):
             self.width = str(self.width).replace("px", "")
             if not self.width.endswith("%"):
                 self.width = int(self.width)
-        width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
-        self.text.add_style("width: %s" % width)
+
+        self.text.add_style("width: %s" % self.width)
 
 
     def add_style(self, name, value=None):
@@ -285,7 +262,7 @@ class TextInputWdg(BaseInputWdg):
 
         if not value:
             name, value = re.split(":\ ?", name)
-        
+
         if name == 'width':
             self.width = value
             self.text.add_style(name, value)
@@ -369,8 +346,7 @@ class TextInputWdg(BaseInputWdg):
                     
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
-                    if not Common.IS_Pv3:
-                        display = unicode(display, errors='ignore').encode('utf-8')
+                    display = unicode(display, errors='ignore').encode('utf-8')
 
                 format_str = self.get_option("display_format")
                 if format_str:
@@ -445,14 +421,7 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            
-            width = self.width
-            try:
-                width = int(width)
-                width = str(width) + "px"
-            except ValueError:
-                pass
-            edit_div.add_style("margin-left: %s" % width)
+            edit_div.add_style("margin-left: %s" % self.width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -497,14 +466,7 @@ class TextInputWdg(BaseInputWdg):
         input_group = self.get_input_group_wdg()
 
         div.add(input_group)
-       
-        height = self.height
-        try:
-            height = int(height)
-            height = str(height) + "px"
-        except ValueError:
-            pass
-        self.text.add_style("height: %s" % height)
+        self.text.add_style("height: %s" % self.height)
 
         icon_styles = self.kwargs.get("icon_styles")
         icon_class = self.kwargs.get("icon_class")
@@ -743,54 +705,13 @@ class LookAheadTextInputWdg(TextInputWdg):
 
     ARGS_KEYS = TextInputWdg.ARGS_KEYS.copy()
     ARGS_KEYS.update({
-        'validate': {
-            'description': 'whether to activate the validate action, which defaults to true with value_column set',
-            'type': 'SelectWdg',
-            'order': 10,
-            'values': 'true|false',
-            'category': 'Options'
-        },
-        'results_class_name': {
-            'description': 'widget used to draw results from look ahead.',
-            'type': 'TextWdg',
-            'order': 11,
-            'default': 'tactic.ui.input.TextInputResultsWdg',
-            'category': 'Options'
-
-        },
-        'search_type': {
-            'description': 'search type used in search to draw results',
-            'type': 'TextWdg',
-            'order': 12,
-            'category': 'Options'
-        },
-        'value_column': {
-            'description': 'column used as input value',
-            'type': 'TextWdg',
-            'order': 13,
-            'category': 'Options'
-        },
-        'column': {
-            'description': 'column used as input label and results label',
-            'type': 'TextWdg',
-            'order': 14,
-            'category': 'Options'
-        },
-        'do_search': { 
-            'description': 'when true, the resutls widget will use search to create results.',
-            'type': 'SelectWdg',
-            'values': 'true|false',
-            'default': 'true',
-            'order': 15,
-            'category': 'Options'
-        },
-        'script_path': {
-            'description': 'when do_search is false, override results using custom Python script. \
-                    Script should return either list of values, or tuple of values and labels.',
-            'type': 'TextWdg',
-            'order': 16,
-            'category': 'Options'
-        }
+          'validate': {
+        'description': 'whether to activate the validate action, which defaults to true with value_column set',
+        'type': 'SelectWdg',
+        'order': 10,
+        'values': 'true|false',
+        'category': 'Options'
+    }
     })
     
 
@@ -842,17 +763,6 @@ class LookAheadTextInputWdg(TextInputWdg):
         if not results_on_blur:
             results_on_blur = "none"
 
-        neglect_label_value = self.kwargs.get("neglect_label_value")
-        if neglect_label_value:
-            self.text.add_behavior({
-                'type': 'load',
-                'cbjs_action': '''
-
-                bvr.src_el.removeClass("spt_input");
-
-                '''
-                })
-
         self.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -895,8 +805,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             if (kwargs.validate != false) {
                 //src_el.setStyle("background", "#A99");
                 src_el.addClass("spt_invalid");
-            } else {
-                src_el.value = '';
             }
         }
         else {
@@ -925,7 +833,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
        
 
     if (value) {
-        var expr = "@GET(" +search_type+ "['" +value_column+ "','" +value+ "'].code)";
+        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
     }
     else {
         var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "'].code)";
@@ -959,7 +867,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'do_search': do_search,
             'results_on_blur': results_on_blur,
             'cbjs_action': '''
-         
+          
             // put a delay in here so that a click in the results
             // has time to register
             var validate = bvr.validate == 'True';
@@ -972,21 +880,19 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 spt.text_input.last_index = 0;
                 spt.text_input.index = -1;
 
-                var hidden_el = top.getElement(".spt_text_value");
-                if (bvr.src_el.value) {
-                    var display_value = bvr.src_el.value;
-                    var value = hidden_el.value;
-                    
-                    if (bvr.value_column) {
+                // if there is value_column and something in the input, it tries to validate 
+                if (bvr.value_column) {
+                    var hidden_el = top.getElement(".spt_text_value");
+                    if (bvr.src_el.value) {
+                        var display_value = bvr.src_el.value;
+                        var value = hidden_el.value;
                         var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
                         spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
                     } else {
-                        hidden_el.value = display_value; 
+                        hidden_el.value ='';
                     }
-                } else {
-                    hidden_el.value ='';
+                        
                 }
-                    
             }, 250 );
 
             '''
@@ -995,10 +901,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         self.hidden = HiddenWdg(self.name)
         self.top.add(self.hidden)
         self.hidden.add_class("spt_text_value")
-
-        multiple_hidden = self.kwargs.get("multiple_hidden")
-        if multiple_hidden:
-            self.hidden.add_attr("spt_is_multiple", "true")
 
 
         class_name = self.kwargs.get("class")
@@ -1132,10 +1034,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                         if (el) {
                             var display = el.getAttribute('spt_display');
                             display = JSON.parse(display);
-
-                            if (!display)
-                                display = bvr.src_el.getAttribute("spt_label");
-
                             var value =  el.getAttribute('spt_value');
                             if (!display) {
                                 display = value;
@@ -1366,9 +1264,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             var display = bvr.src_el.getAttribute("spt_display");
             display = JSON.parse(display);
 
-            if (!display)
-                display = bvr.src_el.getAttribute("spt_label");
-
             var value = bvr.src_el.getAttribute("spt_value");
             if (!display) {
                 display = value;
@@ -1417,14 +1312,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
             sobject = Search.get_by_search_key(value_key)
 
-            if sobject:
-                display = sobject.get_value(column)
-                value = sobject.get_value(value_column, auto_convert=False)
+            display = sobject.get_value(column)
+            value = sobject.get_value(value_column, auto_convert=False)
 
-                
-                self.text.set_value(display)
-                if value != None:
-                    self.hidden.set_value(value)
+            
+            self.text.set_value(display)
+            if value != None:
+                self.hidden.set_value(value)
 
 
         elif search_key and search_key != "None":
@@ -1510,7 +1404,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 from tactic.command import PythonCmd
                 kwargs = {'value' : value}
                 cmd = PythonCmd(script_path=script_path, **kwargs)
-                Command.execute_cmd(cmd)
+                results = cmd.execute()
         
             except Exception as e:
                 print(e)
@@ -1518,8 +1412,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             else:
 
-                results = cmd.get_info()
-                
                 # expect it to return a tuple of 2 lists or a single list
                 if isinstance(results, tuple):
                     display_results = results[0]
@@ -1612,11 +1504,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
             info_div.add_style("max-width: 225px")
 
 
-            second_value = result.get_value("title", no_exception=True)
-            if not second_value:
-                second_value = result.get_value(second_column)
 
-            #second_value = result.get_value(second_column)
+            second_value = result.get_value(second_column)
+            second_value = result.get_value("title")
             if second_value == display:
                 pass
             elif second_value:
@@ -1655,7 +1545,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
             display = labels[i]
             div = self.get_result_wdg(display)
             div.add_attr("spt_value", values[i])
-            div.add_attr("spt_label", labels[i])
             top.add(div)
         if not results:
             div = DivWdg()
@@ -1997,7 +1886,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_style("padding: 3px")
             div.add_style("cursor: pointer")
             
-            if not Common.IS_Pv3 and isinstance(keywords, str):
+            if isinstance(keywords, str):
                 keywords = unicode(keywords, errors='ignore')
 
             if len(keywords) > self.DISPLAY_LENGTH:
