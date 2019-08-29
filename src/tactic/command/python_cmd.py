@@ -26,6 +26,11 @@ import os
 
 class PythonCmd(Command):
 
+    def can_run(self, source="api"):
+        if source == "api":
+            return False
+
+
     def get_results(self):
         code = self.kwargs.get("code")
         script_path = self.kwargs.get("script_path")
@@ -72,21 +77,21 @@ class PythonCmd(Command):
 spt_mako_results['spt_ret_val'] = spt_run_code()
 %%>
 ''' % code
-        
+ 
 
         #template = Template(code, output_encoding='utf-8', input_encoding='utf-8')
         try:
             template = Template(code)
             template.render(server=server,spt_mako_results=spt_mako_results, kwargs=self.kwargs,**self.kwargs)
-        except Exception, e:
-            print "Error in Mako code: "
-            print exceptions.text_error_template().render()
-            print "---"
-            print "Code:"
-            print code
-            print "---"
+        except Exception as e:
+            print(e)
+            print("Error in Mako code: ")
+            print(exceptions.text_error_template().render())
+            print("---")
+            print("Code:")
+            print(code)
+            print("---")
             raise
-            raise CommandExitException(e)
 
         return spt_mako_results['spt_ret_val']
 
@@ -102,7 +107,7 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
         results = self.get_results()
 
         # set info and description
-        self.info['spt_ret_val'] = results 
+        self.info = results 
         class_name = self.__class__.__name__
         if script_path:
             desc = 'Run %s with script path [%s]' % (class_name, script_path)
@@ -122,6 +127,12 @@ class PythonTrigger(Trigger):
         self.kwargs = kwargs
         self.ret_val = None
         self.script_path = self.kwargs.get("script_path")
+
+
+    def can_run(self, source="api"):
+        if source == "api":
+            return False
+
 
 
     def set_script_path(self, script_path):
@@ -204,7 +215,7 @@ if __name__ == '__main__':
     cmd = PythonCmd(script_path='trigger/note')
     
     cmd.execute()
-    print time.time() - start
+    print(time.time() - start)
 
 
 

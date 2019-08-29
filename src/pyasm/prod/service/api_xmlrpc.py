@@ -356,7 +356,7 @@ def xmlrpc_decorator(meth):
                                 return self.browser_res(meth, result)
                 else:
                     if multi_site:
-                        result = self.redirect_to_server(ticket, meth.__name__, args)
+                        result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
                         return self.browser_res(meth, result)
                     else: 
                         cmd = get_full_cmd(self, meth, ticket, args)
@@ -1057,7 +1057,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
        
         r = requests.post(rest_url, data=data)
         ret_val = r.json()
-        error = ret_val.get("error")
+       
+        error = None 
+        if isinstance(ret_val, dict):
+            error = ret_val.get("error")
+        
         if error:
             raise RemoteApiException(error)
         else: 
