@@ -14,7 +14,7 @@ __all__ = ['ExceptionLog']
 
 from pyasm.common import *
 from search import *
-from sql import DbContainer
+from sql import DbContainer, SqlException
 
 import sys,traceback
 
@@ -53,8 +53,16 @@ class ExceptionLog(SObject):
         exception_log.set_value("class", exception.__class__.__name__)
         exception_log.set_value("message", message)
         exception_log.set_value("stack_trace", stacktrace_str)
+           
         exception_log.commit()
-
+        
+        try:
+            exception_log.commit()
+        except SqlException as e:
+            # This will occur on read-only database
+            # TODO: Forward exceptions to master database
+            print("Failed to log exception: ", e)
+ 
         del tb, stacktrace
 
         return exception_log
@@ -71,6 +79,5 @@ class ExceptionLog(SObject):
         stacktrace_str = stacktrace_str.replace("\\", "/")
         return stacktrace_str
     get_stack_trace = staticmethod(get_stack_trace)
-
 
 
