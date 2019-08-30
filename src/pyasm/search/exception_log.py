@@ -54,8 +54,6 @@ class ExceptionLog(SObject):
         exception_log.set_value("message", message)
         exception_log.set_value("stack_trace", stacktrace_str)
            
-        exception_log.commit()
-        
         try:
             exception_log.commit()
         except SqlException as e:
