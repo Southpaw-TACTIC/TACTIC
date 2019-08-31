@@ -1122,10 +1122,10 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # run a nodes complete trigger
         status = self.input.get("status")
-        self.log_message(self.sobject, self.process, 'complete')
-        self.set_all_tasks(self.sobject, self.process, 'complete')
+        self.log_message(self.sobject, self.process, status)
+        self.set_all_tasks(self.sobject, self.process, status)
 
-        self.run_callback(self.pipeline, self.process, 'complete')
+        self.run_callback(self.pipeline, self.process, status)
 
         process_obj = self.pipeline.get_process(self.process)
 
