@@ -680,6 +680,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 'mode': mode,
                 'cbjs_action':  '''
 
+                document.activeElement.blur();
+
                 if (bvr.mode == "inline") {
                 }
                 else {
