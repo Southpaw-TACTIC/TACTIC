@@ -960,34 +960,29 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'results_on_blur': results_on_blur,
             'cbjs_action': '''
          
-            // put a delay in here so that a click in the results
-            // has time to register
             var validate = bvr.validate == 'True';
             var do_search = bvr.do_search == 'true';
-            setTimeout( function() {
-                var top = bvr.src_el.getParent(".spt_input_text_top");
-                var el = top.getElement(".spt_input_text_results");
-                el.setStyle("display", bvr.results_on_blur);
+            var top = bvr.src_el.getParent(".spt_input_text_top");
+            var el = top.getElement(".spt_input_text_results");
+            el.setStyle("display", bvr.results_on_blur);
 
-                spt.text_input.last_index = 0;
-                spt.text_input.index = -1;
+            spt.text_input.last_index = 0;
+            spt.text_input.index = -1;
 
-                var hidden_el = top.getElement(".spt_text_value");
-                if (bvr.src_el.value) {
-                    var display_value = bvr.src_el.value;
-                    var value = hidden_el.value;
-                    
-                    if (bvr.value_column) {
-                        var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
-                    } else {
-                        hidden_el.value = display_value; 
-                    }
+            var hidden_el = top.getElement(".spt_text_value");
+            if (bvr.src_el.value) {
+                var display_value = bvr.src_el.value;
+                var value = hidden_el.value;
+
+                if (bvr.value_column) {
+                    var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
+                    spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
                 } else {
-                    hidden_el.value ='';
+                    hidden_el.value = display_value;
                 }
-                    
-            }, 250 );
+            } else {
+                hidden_el.value ='';
+            }
 
             '''
         } )
