@@ -1584,7 +1584,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         var item = behavior_elements[i];
                         var inputs = spt.api.get_input_values(item, null, false);
                         var behavior_name = inputs.behavior_name[0];
-                        var behavior_is_relay = inputs.behavior_is_relay[0];
+                        var behavior_is_relay = inputs.behavior_is_relay;
                         var behavior_event = inputs.behavior_event[0];
                         var behavior_event_name = inputs.behavior_event_name[0];
 
@@ -1596,7 +1596,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         }
 
                         behavior += '<behavior '
-                        
                         if (behavior_name && behavior_is_relay == 'on') {
                             behavior += 'relay_class="'+behavior_name+'" ';
                         } else if (behavior_name) {
