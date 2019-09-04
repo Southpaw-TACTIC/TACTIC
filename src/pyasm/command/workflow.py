@@ -1289,6 +1289,18 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
+class WorkflowDisabledNodeHandler(BaseWorkflowNodeHandler):
+
+    def handle_pending(self):
+        if not self.check_inputs():
+            return
+
+        return self.handle_not_required()
+
+    def handle_complete(self):
+        return self.handle_not_required()
+
+
 
 
 class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
@@ -1855,7 +1867,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         process = self.input.get("process")
         sobject = self.input.get("sobject")
 
-        # attributes for this process
+        # attributes for this process (DEPRECATED)
         process_obj = pipeline.get_process(process)
         related_search_type = process_obj.get_attribute("search_type")
         related_status = process_obj.get_attribute("status")
@@ -1863,7 +1875,11 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         related_scope = process_obj.get_attribute("scope")
         related_wait = process_obj.get_attribute("wait")
 
-        # get the node's triggers
+        related_pipeline_code = None
+
+        process_sobj = None
+
+        # get the node process sobject
         if not related_search_type:
             search = Search("config/process")
             search.add_filter("process", process)
@@ -1871,11 +1887,19 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             process_sobj = search.get_sobject()
 
             workflow = process_sobj.get_json_value("workflow", {})
-            related_search_type = workflow.get("search_type")
-            related_process = workflow.get("process")
-            related_status = workflow.get("status")
-            related_scope = workflow.get("scope")
-            related_wait = workflow.get("wait")
+            version = workflow.get("version") or 1
+
+            if version == 2:
+                settings = workflow.get("default")
+            else:
+                settings = workflow
+
+            related_search_type = settings.get("related_search_type")
+            related_process = settings.get("related_process")
+            related_status = settings.get("related_status")
+            related_scope = settings.get("related_scope")
+            related_wait = settings.get("related_wait")
+            related_pipeline_code = settings.get("related_pipeline_code")
 
 
         if not related_search_type:
@@ -1892,6 +1916,9 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         # override related_status with status passed in
         if status:
             related_status = status
+        elif not related_status:
+            related_status = "pending"
+
 
 
         if related_search_type.startswith("@"):
@@ -1907,24 +1934,46 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
         for related_sobject in related_sobjects:
-
-            # if the related_sobject is already complete, don't do anything
-            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
-            message_sobj = Search.get_by_code("sthpw/message", key)
-            if message_sobj:
-                value = message_sobj.get_value("message")
-                if related_status.lower() in ["revise", "reject"]:
-                    pass
-                elif value == "complete" and value not in ['revise', 'reject']:
-                    continue
+            if related_sobject.get_search_key() == sobject.get_search_key():
+                same_sobject = True
+            else:
+                same_sobject = False
 
 
-            # This is for unittests which don't necessarily commit changes
+            # This is for unittests which don't necessarily commit changes, otherwise
+            # it's harmless
             related_sobject = Search.get_by_search_key(related_sobject.get_search_key())
 
-            related_pipeline = Pipeline.get_by_sobject(related_sobject)
+
+            if not same_sobject:
+                # if the related_sobject is already complete, don't do anything
+                key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+                message_sobj = Search.get_by_code("sthpw/message", key)
+                if message_sobj:
+                    value = message_sobj.get_value("message")
+                    if related_status.lower() in ["revise", "reject"]:
+                        pass
+                    elif value == "complete" and value not in ['revise', 'reject']:
+                        continue
+
+                # get the workflow for the specfic sobject called
+                related_pipeline = Pipeline.get_by_sobject(related_sobject)
+
+
+            # if the related sobject is the same as the original sobject, then we
+            # are just calling a different workflow with the same sobject
+            else:
+                # Need to find related process_sobj
+                search = Search("config/process")
+                search.add_filter("process", related_process)
+                search.add_filter("pipeline_code", related_pipeline_code)
+                related_process_sobj = search.get_sobject()
+
+                related_pipeline = Pipeline.get_by_code(related_pipeline_code)
+
+
+            # if not related process is specified, then get the first one
             if not related_process:
-                # get the first one
                 related_processes = related_pipeline.get_processes()
                 related_process = related_processes[0]
 
@@ -1936,7 +1985,6 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
                     event = "process|%s" % related_status.lower()
                 else:
                     event = "process|%s" % related_status
-
 
             # inputs are reversed as it sends the message
             input = {
@@ -2221,55 +2269,39 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             process = parts[-1]
 
         process_obj = pipeline.get_process(process)
+        if not process_obj:
+            msg = "ERROR: pipeline [%s] does not have a process [%s]" % (pipeline.get_code(), process)
+            raise Exception(msg)
+
 
         node_type = process_obj.get_type()
 
-        if node_type == "action":
+        state = "active"
+
+        if state == "disabled":
+            handler = WorkflowDisabledNodeHandler(input=self.input)
+        elif node_type == "action":
             handler = WorkflowActionNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "approval":
             handler = WorkflowApprovalNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type in ["manual", "node"]:
             handler = WorkflowManualNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "hierarchy":
             handler = WorkflowHierarchyNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "input":
             handler = WorkflowOutputNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "output":
             handler = WorkflowOutputNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "condition":
             handler = WorkflowConditionNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "progress":
             handler = WorkflowProgressNodeHandler(input=self.input)
-            return handler.handle_pending()
-
         else:
             handler = self.get_handler(node_type)
-            return handler.handle_pending()
 
-        """
-        else:
-            process_type = Search.get_by_code("sthpw/process_type", node_type)
-            #handle_class = process_type.get_value("info_handler_class")
-            handle_class = process_type.get_value("node_handler_class")
-            handler = Common.create_from_class_path(handle_class, self.input)
-            handler.handle_pending()
-        """
-
-
-
-
-        # Make sure the below is completely deprecated
-        assert(False)
+        return handler.handle_pending()
 
 
 
@@ -2326,9 +2358,6 @@ class ProcessActionTrigger(BaseProcessTrigger):
         else:
             handler = self.get_handler(node_type)
             return handler.handle_action()
-
-        # Make sure the below is completely deprecated
-        assert(False)
 
 
 

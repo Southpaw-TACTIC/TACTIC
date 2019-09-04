@@ -1032,11 +1032,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add(progress)
 
 
-        endpoint = self.get_endpoint_node("output", node_type="output")
-        template_div.add(endpoint)
+        #endpoint = self.get_endpoint_node("output", node_type="output")
+        #template_div.add(endpoint)
 
-        endpoint = self.get_endpoint_node("input", node_type="input")
-        template_div.add(endpoint)
+        #endpoint = self.get_endpoint_node("input", node_type="input")
+        #template_div.add(endpoint)
 
         """
 	Add template of connector panel
@@ -1346,10 +1346,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             width = width
             height = height + 40
         elif node_type == "dependency":
-            border_radius =  5
+            border_radius = 15
             #width = width
             height = 60
-            width = 80
+            width = 100
         elif node_type == "progress":
             border_radius =  30
             #width = width
@@ -1940,6 +1940,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #return icon
 
 
+    """
     def get_endpoint_node(self, name, node_type ):
 
         node = DivWdg()
@@ -2012,7 +2013,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.add_default_node_behaviors(node, text)
 
         return node
-
+    """
 
 
 
@@ -2777,6 +2778,7 @@ spt.pipeline.get_canvas = function() {
 
 
 spt.pipeline.get_screen = function() {
+
     var top = spt.pipeline.top;
     var screen = spt.pipeline.get_data().screen;
     if (!screen) {
@@ -2789,9 +2791,9 @@ spt.pipeline.get_screen = function() {
 }
 
 spt.pipeline.get_screen_nodes = function() {
+
     var screen_nodes = spt.pipeline.get_data().screen_nodes;
     if (!screen_nodes) {
-        console.log("find them");
         var screen = spt.pipeline.get_screen();
         screen_nodes = screen.getElements(".spt_screen_node");
         spt.pipeline.get_data().screen_nodes = screen_nodes;
@@ -3599,8 +3601,8 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
     var new_node = spt.behavior.clone(template);
     if (is_unknown) {
-            // change it from "unknown"
-            new_node.setAttribute("spt_node_type", node_type);
+        // change it from "unknown"
+        new_node.setAttribute("spt_node_type", node_type);
     }
     new_node.spt_node_type = node_type;
 
@@ -4415,6 +4417,8 @@ spt.pipeline.move_all_nodes = function(rel_x, rel_y) {
         // FIXME: this is slow: need to optimize
         spt.pipeline.move_to(node, new_pos.x, new_pos.y);
     }
+
+
 
     spt.pipeline.redraw_canvas();
 
@@ -5658,11 +5662,17 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         nodes = spt.pipeline.get_nodes_by_group(group_name);
     }
 
+
+    // fint the to left node
     var top = null;
     var left = null;
     var bottom = null;
     var right = null;
     for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].getStyle("display") == "none") {
+            continue;
+        }
+
         var pos = spt.pipeline.get_position(nodes[i]);
         if (left == null || pos.x < left) {
             left = pos.x;
@@ -5710,6 +5720,17 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var dy = - top + zero_pos_y;
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
+
+
+    // handle screen node
+    var screen_nodes = spt.pipeline.get_screen_nodes();
+    screen_nodes.forEach( function(screen_node) {
+        if (screen_node.move_by) {
+            screen_node.move_by(dx, dy);
+        }
+    } );
+
+
 
 }
 
@@ -5764,6 +5785,16 @@ spt.pipeline.fit_to_node = function(node) {
 
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
+
+
+    // handle screen node
+    var screen_nodes = spt.pipeline.get_screen_nodes();
+    screen_nodes.forEach( function(screen_node) {
+        if (screen_node.move_by) {
+            screen_node.move_by(dx, dy);
+        }
+    } );
+
 
 
 }
