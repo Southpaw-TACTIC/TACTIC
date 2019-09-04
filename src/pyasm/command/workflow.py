@@ -958,7 +958,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
         key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
-        message_sobj = Search.get_by_code("sthpw/message", key)
+        search = Search("sthpw/message")
+        search.add_filter('code', key)
+        message_sobj = search.get_sobject()
         if message_sobj:
             message = message_sobj.get_json_value("message")
             if message not in ["complete", "not_required"]:

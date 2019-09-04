@@ -199,7 +199,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border: 0px;
                 height: 100%;
                 padding: 6px 8px;
-                width: 200px;
+                width: 100%;
                 border-right: 1px solid #ccc;
             }
 
@@ -322,7 +322,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             container.add_style("display: flex")
             container.add_style("flex-wrap: nowrap")
             container.add_style("align-items: stretch")
-            container.add_style("align-columns: stretch")
+            container.add_style("align-content: stretch")
             container.add_style("width: 100%")
             # container.add_style("height: 100%")
             container.add_color("background", "background")
@@ -1056,7 +1056,6 @@ class PipelineListWdg(BaseRefreshWdg):
         self.set_as_panel(top)
         top.add_style("position: relative")
         top.add_style("padding: 0px 0px")
-        top.add_style("overflow-y: auto")
 
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
         if window_resize_offset:
@@ -1124,7 +1123,6 @@ class PipelineListWdg(BaseRefreshWdg):
 
         inner.add_style("width: 100%")
         inner.add_style("height: auto")
-        inner.add_style("max-height: 500px")
 
 
         # add in a context menu
@@ -4678,7 +4676,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_text.add_style('margin-top: 10px')
         script_text.add_style('font-size: 1.2em')
         script_text.set_option("read_only", "true")
-        script_text.add_style("background", "#EEE");
+        script_text.add_style("background", "#EEE")
         script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
         script_editor.add(script_text)
@@ -9599,11 +9597,6 @@ class PipelineDocumentWdg(BaseRefreshWdg):
         top = self.top
         top.add_class("spt_pipeline_document")
         top.add_style("height: 100%")
-
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
-        if (window_resize_offset):
-            top.add_class("spt_window_resize_offset")
-            top.add_attr("spt_window_resize_offset", window_resize_offset)
 
         project_code = Project.get_project_code()
         top.add_attr("spt_project_code", project_code)

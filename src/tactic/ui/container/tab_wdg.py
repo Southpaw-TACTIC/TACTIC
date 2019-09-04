@@ -440,7 +440,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
             var update_data = {
                 expression: expression,
-                search_key: search_key
+                expr_key: search_key
             };
 
             spt.update.add(count_div, update_data);
@@ -2654,14 +2654,16 @@ spt.tab.view_definition = function(bvr) {
                 sobject = None
 
             if sobject:
+
                 value = Search.eval(count, sobject)
+
                 count_wdg.add(value)
                 if count_color:
                     count_wdg.add_style("background", count_color)
 
                 count_wdg.add_update( {
                     'expression': count,
-                    'search_key': search_key,
+                    'expr_key': search_key,
                 } )
 
 

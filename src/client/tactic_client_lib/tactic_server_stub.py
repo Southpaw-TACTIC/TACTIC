@@ -401,7 +401,7 @@ class TacticServerStub(object):
             # non project-based search_key
             search_type, code = search_key.split('?')
         codes = code.split('=')
-        assert len(codes) == 2;
+        assert len(codes) == 2
         return search_type, codes[1]
 
     def get_home_dir(self):
