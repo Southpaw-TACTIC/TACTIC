@@ -111,7 +111,7 @@ class WorkflowCmd(Command):
         pipeline = SearchType.create("sthpw/pipeline")
         pipeline.set_pipeline(pipeline_xml)
         pipeline_id = Common.randint(0, 10000000)
-        #pipeline.set_value("code", "test%s" % pipeline_id)
+        pipeline.set_value("code", "test%s" % pipeline_id)
         #pipeline.set_id(pipeline_id)
         #pipeline.set_value("id", pipeline_id)
         pipeline.set_value("pipeline", pipeline_xml)
