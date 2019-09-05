@@ -464,6 +464,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         top.add(outer)
         outer.add_class("spt_pipeline_resize")
         outer.add_class("spt_resizable")
+        outer.add_style("position: relative")
 
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
         if window_resize_offset:
@@ -802,10 +803,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # inner is used to scale
         inner = DivWdg()
         outer.add(inner)
-        #outer.add_color("background", "background", -2)
+
         inner.add_class("spt_pipeline_scale")
         inner.add_style("z-index: 100")
-        inner.add_style("position: relative")
+        #inner.add_style("position: relative")
+
+        inner.add_style("box-sizing: border-box")
+        inner.add_style("position: absolute")
+        inner.add_style("top: 0px")
+        inner.add_style("left: 0px")
 
 
         # load the js
@@ -846,6 +852,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas = DivWdg()
         inner.add(canvas)
         #canvas.add_style("border: solid 1px blue")
+        canvas.add_style("box-sizing: border-box")
 
         width = self.width
         try:
@@ -865,17 +872,33 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("height: %s" % height)
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
+        
+        canvas_size_wdg = DivWdg()
+        inner.add(canvas_size_wdg)
+        canvas_size_wdg.add_style("display: none")
+        canvas_size_wdg.add_class("spt_pipeline_canvas_size")
+        canvas_size_wdg.add_style("position: absolute")
+        canvas_size_wdg.add_style("top: 0px")
+        canvas_size_wdg.add_style("left: 0px")
+        canvas_size_wdg.add_style("width: %s" % width)
+        canvas_size_wdg.add_style("height: %s" % height)
+
+        canvas_size_wdg.add_style("border: solid 1px green")
+        canvas_size_wdg.add_style("pointer-events: none")
 
 
         window_resize_offset = self.kwargs.get("window_resize_offset")
         if window_resize_offset:
             canvas.add_class("spt_window_resize")
             canvas.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
+            #canvas_size_wdg.add_class("spt_window_resize")
+            #canvas_size_wdg.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
+
 
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
             canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
-
+            #canvas_size_wdg.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
         canvas.add_behavior( {
         "type": 'drag',
@@ -1189,8 +1212,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         from pyasm.web import Canvas
         canvas = Canvas()
         canvas.add_class("spt_pipeline_paint")
-        #canvas.add_style("float: left")
-        canvas.add_style("position: relative")
+        #canvas.add_style("position: relative")
+        canvas.add_style("position: absolute")
+        canvas.add_style("box-sizing: border-box")
+        canvas.add_style("border: solid 1px red")
+        canvas.add_style("top: 0px")
+        canvas.add_style("right: 0px")
 
         height = self.height
         try:
@@ -1198,7 +1225,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             height = str(height) + "px"
         except ValueError:
             pass
-        canvas.add_style("margin-top: -%s" % height)
+
+        #canvas.add_style("margin-top: -%s" % height)
+
+
+        canvas.set_style("height: 100%")
+
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
         canvas.set_attr("spt_background_color", self.background_color)
@@ -5630,7 +5662,7 @@ spt.pipeline.set_size = function(width, height) {
     paint.setAttribute("width", ""+width);
     if (height) {
         paint.setAttribute("height", ""+height);
-        paint.setStyle("margin-top", "" + (-height));
+        //paint.setStyle("margin-top", "" + (-height));
     }
     canvas.setStyle("width", ""+width);
     if (height) {
