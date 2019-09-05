@@ -879,6 +879,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
+        "is_editable": str(self.is_editable),
 	    "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
@@ -937,6 +938,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         paint.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
+        "is_editable": str(self.is_editable),
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
@@ -5256,6 +5258,9 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
+        if (bvr.is_editable == 'False') {
+            return;
+        }
         if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
             return;
         }
@@ -5302,6 +5307,9 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
+        if (bvr.is_editable == 'False') {
+            return;
+        }
         spt.pipeline.canvas_drag_init = false;
 
         spt.pipeline.canvas_drag_mode = "canvas";
@@ -7561,6 +7569,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             if (key == 'enter') {
                 var top = bvr.src_el.getParent(".spt_rename_node");
                 top.rename();
+                spt.named_events.fire_event('pipeline|change', {});
             }
 
             '''
@@ -7575,6 +7584,7 @@ class NodeRenameWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_rename_node");
             top.rename();
+            spt.named_events.fire_event('pipeline|change', {});
 
             '''
             })
