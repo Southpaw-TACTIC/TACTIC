@@ -4534,6 +4534,7 @@ spt.pipeline.drag_connector_setup = function(evt, bvr, mouse_411) {
 
 
     spt.pipeline.last_connector.set_from_node(from_node);
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -4642,7 +4643,6 @@ spt.pipeline.detect_cycle = function() {
 }
 
 spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
-
     var drop_on_el = spt.get_event_target(evt);
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
     var from_node = bvr.src_el.getParent(".spt_pipeline_node");
