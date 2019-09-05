@@ -1221,7 +1221,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         reject_processes = self.input.get("reject_process") or []
 
         # send revise single to previous processes
-        input_processes = self.pipeline.get_input_processes(self.process)
+        input_processes = self.pipeline.get_input_processes(self.process, to_attr="input")
         for input_process in input_processes:
             input_process = input_process.get_name()
 
