@@ -806,12 +806,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         inner.add_class("spt_pipeline_scale")
         inner.add_style("z-index: 100")
-        #inner.add_style("position: relative")
-
         inner.add_style("box-sizing: border-box")
         inner.add_style("position: absolute")
         inner.add_style("top: 0px")
         inner.add_style("left: 0px")
+        inner.add_style("pointer-events: none")
 
 
         # load the js
@@ -848,11 +847,26 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 '''
             } )
 
+
+
+
+        # create a size widget for the node canvas
+        canvas_size_wdg = DivWdg()
+        inner.add(canvas_size_wdg)
+        #canvas_size_wdg.add_style("display: none")
+        canvas_size_wdg.add_class("spt_pipeline_canvas_size")
+        canvas_size_wdg.add_style("width: %s" % width)
+        canvas_size_wdg.add_style("height: %s" % height)
+
+        #canvas_size_wdg.add_style("border: solid 1px green")
+        canvas_size_wdg.add_style("pointer-events: none")
+
+
+
+
         # create a canvas where all the nodes are drawn
         canvas = DivWdg()
         inner.add(canvas)
-        #canvas.add_style("border: solid 1px blue")
-        canvas.add_style("box-sizing: border-box")
 
         width = self.width
         try:
@@ -870,35 +884,33 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_class("spt_pipeline_canvas")
         canvas.add_style("width: %s" % width)
         canvas.add_style("height: %s" % height)
+
+        canvas.add_style("width: 0px")
+        canvas.add_style("height: 0px")
+        canvas.add_style("box-sizing: border-box")
+        #canvas.add_style("border: solid 1px red")
+
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
-        
-        canvas_size_wdg = DivWdg()
-        inner.add(canvas_size_wdg)
-        canvas_size_wdg.add_style("display: none")
-        canvas_size_wdg.add_class("spt_pipeline_canvas_size")
-        canvas_size_wdg.add_style("position: absolute")
-        canvas_size_wdg.add_style("top: 0px")
-        canvas_size_wdg.add_style("left: 0px")
-        canvas_size_wdg.add_style("width: %s" % width)
-        canvas_size_wdg.add_style("height: %s" % height)
+        canvas.add_style("position: absolute")
+        canvas.add_style("top: 0px")
+        canvas.add_style("left: 0px")
 
-        canvas_size_wdg.add_style("border: solid 1px green")
-        canvas_size_wdg.add_style("pointer-events: none")
+        canvas.add_style("pointer-events: auto")
 
 
         window_resize_offset = self.kwargs.get("window_resize_offset")
         if window_resize_offset:
-            canvas.add_class("spt_window_resize")
-            canvas.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
-            #canvas_size_wdg.add_class("spt_window_resize")
-            #canvas_size_wdg.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
+            #canvas.add_class("spt_window_resize")
+            #canvas.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
+            canvas_size_wdg.add_class("spt_window_resize")
+            canvas_size_wdg.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
 
 
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
-            canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
-            #canvas_size_wdg.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+            #canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+            canvas_size_wdg.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
         canvas.add_behavior( {
         "type": 'drag',
@@ -1230,6 +1242,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         canvas.set_style("height: 100%")
+        canvas.set_style("width: 100%")
 
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
@@ -2689,6 +2702,7 @@ spt.pipeline.set_top = function(top) {
 spt.pipeline._init = function() {
     var top = spt.pipeline.top;
     var canvas = top.getElement(".spt_pipeline_canvas");
+    var canvas_size = top.getElement(".spt_pipeline_canvas_size");
 
     var allow_cycle = top.getAttribute("spt_allow_cycle");
     if (allow_cycle) {
@@ -2714,10 +2728,12 @@ spt.pipeline._init = function() {
         data.translate = {x: 0, y: 0};
     }
     data.canvas = canvas;
+    data.canvas_size = canvas_size;
     data.paint = paint;
     data.screen = screen;
     data.screen_nodes = screen.getElements(".spt_screen_node");
     data.ctx = ctx;
+
 
     var connector_panel_data = top.getAttribute("spt_connector_panel_data");
     if (connector_panel_data) {
@@ -2729,11 +2745,11 @@ spt.pipeline._init = function() {
 
     // FIXME: need this delay because the table seems to resize itself somewhere
     setTimeout( function() {
-        var size = canvas.getSize();
+        var size = canvas_size.getSize();
         if (size.x == 0 || size.y == 0) {
             return;
         }
-        spt.pipeline.set_size(size.x, size.y);
+        //spt.pipeline.set_size(size.x, size.y);
     }, 500);
 }
 
@@ -3613,7 +3629,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 
     if (typeof(x) == 'undefined' || x == null) {
-            var size = canvas.getSize();
+            var size = spt.pipeline.get_canvas_size();
             var scale = spt.pipeline.get_scale();
             x = size.x/3 + nodes.length*15*scale;
             y = size.y/3 + nodes.length*10*scale;
@@ -4332,7 +4348,7 @@ spt.pipeline.add_folder = function(group_name, color, title) {
     new_folder.spt_group = group_name;
 
 
-    var size = canvas.getSize();
+    var size = spt.pipeline.get_canvas_size();
     var x = size.x/3 + folders.length*15;
     var y = size.y/3 + folders.length*10;
     spt.pipeline.move_to(new_folder, x, y);
@@ -4372,9 +4388,10 @@ spt.pipeline.set_folder_color = function(folder, color) {
 
 spt.pipeline.get_canvas_size = function(node) {
     // find the relative pos on the canvas
-    var canvas = spt.pipeline.get_canvas();
-    var canvas_size = canvas.getSize();
-    return canvas_size;
+    var data = spt.pipeline.get_data();
+    var canvas_size = data.canvas_size;
+    var size = canvas_size.getSize();
+    return size;
 }
 
 
@@ -5652,8 +5669,13 @@ spt.pipeline.center_node = function(node) {
 spt.pipeline.set_size = function(width, height) {
     var top = spt.pipeline.top;
     var canvas = spt.pipeline.get_canvas();
+
+
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
+
+    var canvas = outer.getElement(".spt_pipeline_canvas_size");
+
     outer.setStyle("width", ""+width);
     if (height) {
         outer.setStyle("height", ""+height);
@@ -5720,8 +5742,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         }
     }
 
-    var canvas = spt.pipeline.get_canvas();
-    var size = canvas.getSize();
+    var size = spt.pipeline.get_canvas_size();
     var hsize = right - left + 100;
     var hscale = size.x / hsize;
     var vsize = bottom - top + 40;
@@ -5804,8 +5825,7 @@ spt.pipeline.fit_to_node = function(node) {
 
     var node = nodes[0];
 
-    var canvas = spt.pipeline.get_canvas();
-    var size = canvas.getSize();
+    var size = spt.pipeline.get_canvas_size();
     var positions = spt.pipeline.get_position(node);
 
     // hard coded info width (400)
@@ -5864,7 +5884,7 @@ spt.pipeline.take_snapshot = function(container) {
             //document.body.appendChild(canvas);
             container.appendChild(canvas);
 
-            var size = canvas.getSize();
+            var size = spt.pipeline.get_canvas_size();
             var scale = size.x / 300;
             var width = 300;
             var height = size.y / scale;
@@ -5993,9 +6013,11 @@ spt.pipeline.resize_drag_motion = function(evt, bvr, mouse_411) {
     outer = top.getElement(".spt_pipeline_resize")
     paint.setAttribute("width", ""+width);
     paint.setAttribute("height", ""+height);
-    paint.setStyle("margin-top", "" + (-height));
+    //paint.setStyle("margin-top", "" + (-height));
     canvas.setStyle("width", ""+width);
     canvas.setStyle("height", ""+height);
+
+
     spt.pipeline.redraw_canvas();
     spt.pipeline.last_mouse_pos = mouse_pos;
 }
@@ -6140,7 +6162,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
         // the curves back
-        var size = canvas.getSize();
+        var size = spt.pipeline.get_canvas_size();
         var width = size.x;
         var height = size.y;
 
@@ -6320,7 +6342,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
         // the curves back
-        var size = canvas.getSize();
+        var size = spt.pipeline.get_canvas_size();
         width = size.x;
         height = size.y;
 

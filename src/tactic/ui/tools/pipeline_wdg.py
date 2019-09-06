@@ -375,8 +375,11 @@ class PipelineToolWdg(BaseRefreshWdg):
                 spt.pipeline.set_size(size.x);
                 container.last_size = size;
             }
-            var interval_id = setInterval( resize, 250);
-            top.interval_id = interval_id;
+            //var interval_id = setInterval( resize, 250);
+            //top.interval_id = interval_id;
+            setTimeout( function() {
+                resize();
+            }, 2000);
             '''
             } )
 
