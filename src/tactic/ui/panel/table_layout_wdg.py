@@ -1836,11 +1836,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             if (evt.shift == true) return;
 
             spt.table.set_table(bvr.src_el);
-            var row = bvr.src_el.getParent(".spt_table_row");
-            if (row.hasClass("spt_table_selected")) {
-                spt.table.unselect_row(row);
+            var table = bvr.src_el.getParent(".spt_table_table");
+            var items = table.getElements(".spt_table_select");
+            if (items) {
+                for (var i=0; i<items.length; i++) {
+                    spt.table.unselect_row(items[i]);
+                }
             }
             else {
+                var row = bvr.src_el.getParent(".spt_table_row");
                 spt.table.select_row(row);
             }
         '''

@@ -623,6 +623,52 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             } else if (key == "t") {
                 spt.process_tool.toggle_side_bar(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                if (top) {
+                    var search_el = top.getElement(".spt_pipeline_type_search");
+                    search_el.focus();
+                }
+
+            } else if (key == "h") {
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var left = toolTop.getElement(".spt_pipeline_tool_left");
+                var right = toolTop.getElement(".spt_pipeline_tool_right");
+                var show_button = toolTop.getElement(".spt_show_sidebar");
+                var hide_button = toolTop.getElement(".spt_hide_sidebar");
+                console.log(show_button);
+                console.log(hide_button);
+                
+                if (right.classList.contains("spt_full_screen")){
+                    right.removeClass("spt_full_screen");
+                    console.log('exit full screen');
+
+                    left.setStyle("margin-left", "0px");
+                    left.setStyle("opacity", "1");
+                    right.setStyle("margin-left", "20.3%");
+                    right.setStyle("width", "79%");
+                    left.gone = false;
+                    setTimeout(function(){
+                        left.setStyle("z-index", "");
+                    }, 250);
+
+                    hide_button.setStyle("display", "");
+                    show_button.setStyle("display", "none");
+                } else {
+                    right.addClass("spt_full_screen");
+                    console.log('enter full screen');
+                    left.setStyle("margin-left", "-21%");
+                    left.setStyle("opacity", "0");
+                    right.setStyle("margin-left", "0px");
+                    right.setStyle("width", "100%");
+                    left.gone = true;
+                    setTimeout(function(){
+                        left.setStyle("z-index", "-1");
+                    }, 250);
+
+                    hide_button.setStyle("display", "none");
+                    show_button.setStyle("display", "");
+                }
+                
 
             } else if (key == "q") {
                 spt.process_tool.show_side_bar(bvr.src_el);

@@ -601,6 +601,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 var left = toolTop.getElement(".spt_pipeline_tool_left");
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
+                
+                right.addClass("spt_full_screen");
 
                 left.setStyle("margin-left", "-21%");
                 left.setStyle("opacity", "0");
@@ -629,6 +631,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 var left = toolTop.getElement(".spt_pipeline_tool_left");
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
 
+                right.removeClass("spt_full_screen");
+
                 left.setStyle("margin-left", "0px");
                 left.setStyle("opacity", "1");
                 right.setStyle("margin-left", "20.3%");
@@ -638,7 +642,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                     left.setStyle("z-index", "");
                 }, 250);
 
-                bvr.src_el.setStyle("display", "none")
+                bvr.src_el.setStyle("display", "none");
 
                 '''})
 
@@ -1484,7 +1488,7 @@ class PipelineListWdg(BaseRefreshWdg):
         
         pipeline_div.add_attr("title", description)
 
-        color = pipeline_div.get_color("background", -20)
+        color = pipeline_div.get_color("background", -10)
         pipeline_div.add_behavior( {
             'type': 'hover',
             'color': color,
@@ -1643,11 +1647,32 @@ class PipelineListWdg(BaseRefreshWdg):
         '''
         } )
 
+        color = pipeline_div.get_color("background", -20)
+
+        from pyasm.web import HtmlElement
+        style = HtmlElement.style()
+        pipeline_div.add(style)
+        style.add('''
+        .spt_pipeline_selected {
+            background: %s;
+        }
+        ''' % color)
+
         
         pipeline_div.add_behavior( {'type': 'click_up',
             
             'event': 'pipeline_%s|click' %pipeline_code,
             'cbjs_action': '''
+             var top = bvr.src_el.getParent(".spt_pipeline_list_top");
+             var items = top.getElements(".spt_pipeline_selected");
+
+             if (items){
+                 for (var i=0; i<items.length; i++) {
+                     items[i].removeClass("spt_pipeline_selected");
+                 }
+             }
+
+             bvr.src_el.addClass("spt_pipeline_selected");
              spt.named_events.fire_event(bvr.event, bvr);
              spt.command.clear();
              spt.pipeline.fit_to_canvas();
@@ -10757,6 +10782,7 @@ spt.process_tool.toggle_side_bar = function(activator) {
         el2.setStyle("display", "");
         document.removeClass("selected");
         search.addClass("selected");
+        search.focus();
     }
 
 }
