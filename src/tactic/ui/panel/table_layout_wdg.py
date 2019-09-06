@@ -1837,16 +1837,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             spt.table.set_table(bvr.src_el);
             var table = bvr.src_el.getParent(".spt_table_table");
-            var items = table.getElements(".spt_table_select");
-            if (items) {
-                for (var i=0; i<items.length; i++) {
-                    spt.table.unselect_row(items[i]);
+            var items = bvr.src_el.getElements(".spt_table_selected");
+            var row = bvr.src_el.getParent(".spt_table_row");
+
+            for (var i=0; i<items.length; i++) {
+                if (items[i] == row) {
+                    continue;
+                } else {
+                    spt.table.unselect_row();
                 }
             }
-            else {
-                var row = bvr.src_el.getParent(".spt_table_row");
-                spt.table.select_row(row);
-            }
+            
+            spt.table.select_row(row);
         '''
         } )
 
@@ -4398,12 +4400,8 @@ spt.table.select_row = function(row) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
     }
-
-    var current_color = row.getAttribute("spt_hover_background");
-
-    if (!current_color) {
-        current_color = row.getStyle("background-color")
-    }
+    
+    current_color = row.getStyle("background-color");
     if (!spt.has_class(row,'spt_table_selected')) {
 
         row.setAttribute("spt_last_background", current_color);
@@ -4416,7 +4414,7 @@ spt.table.select_row = function(row) {
 
 
 spt.table.unselect_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box_selected");
         cell.addClass("look_dg_row_select_box");

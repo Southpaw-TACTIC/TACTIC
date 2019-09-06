@@ -1540,6 +1540,7 @@ class PipelineListWdg(BaseRefreshWdg):
         var editor_top = top.getElement(".spt_pipeline_editor_top");
 
 
+
         var ok = function () {
             editor_top.removeClass("spt_has_changes");
 
@@ -1653,7 +1654,7 @@ class PipelineListWdg(BaseRefreshWdg):
         style = HtmlElement.style()
         pipeline_div.add(style)
         style.add('''
-        .spt_pipeline_selected {
+        .spt_pipeline_tool_left .spt_pipeline_selected {
             background: %s;
         }
         ''' % color)
@@ -9720,135 +9721,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             
                 
             '''    
-        })  
+        })
+  
 
-
-        el.add_relay_behavior({
-            'type': 'click',
-            'bvr_match_class': 'spt_document_item',
-            'project_code': Project.get_project_code(),
-            'cbjs_action': '''
-
-            if (bvr.src_el.hasClass("spt_unsaved_item")) {
-                var input = bvr.src_el.getElement(".spt_document_input");
-                input.focus();
-                return;
-            }
-
-            var layout = bvr.src_el.getParent(".spt_layout");
-            spt.table.set_layout(layout);
-            spt.table.unselect_all_rows();
-            var row = bvr.src_el.getParent(".spt_table_row_item");
-            spt.table.select_row(row);
-
-            var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
-            var title = bvr.src_el.getAttribute("spt_title");
-
-            var top = null;
-            // they could be different when inserting or just clicked on
-            top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            if (!top) {
-                top = spt.get_element(document, '.spt_pipeline_tool_top');
-            }
-
-            // clear search
-            if (top) {
-                var info = top.getElement(".spt_node_search");
-                if (info) info.value = "";
-            }
-
-            // dont load again if pipeline already loaded
-            if (top.pipeline_code == pipeline_code) return;
-            top.pipeline_code = pipeline_code;
-
-            var editor_top = top.getElement(".spt_pipeline_editor_top");
-
-            var ok = function () {
-                spt.named_events.fire_event('pipeline|hide_info', {});
-
-                editor_top.removeClass("spt_has_changes");
-
-                var wrapper = top.getElement(".spt_pipeline_wrapper");
-                spt.pipeline.init_cbk(wrapper);
-
-                var start_el = top.getElement(".spt_pipeline_editor_start")
-                start_el.setStyle("display", "none")
-
-                spt.pipeline.clear_canvas();
-
-                spt.pipeline.import_pipeline(pipeline_code);
-
-
-                // add to the current list
-                var value = pipeline_code;
-                var title = title;
-
-                spt.pipeline.set_current_group(value);
-
-                editor_top.removeClass("spt_has_changes");
-                
-                
-                spt.command.clear();
-
-
-            };
-
-            var save = function(){
-                editor_top.removeClass("spt_has_changes");
-                var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-                spt.pipeline.init_cbk(wrapper);
-
-                var group_name = spt.pipeline.get_current_group();
-                
-                var data = spt.pipeline.get_data();
-                var color = data.colors[group_name];
-
-                var group = spt.pipeline.get_group(group_name);
-                var default_template = data.default_templates[group_name];
-                var node_index = group.get_data("node_index");
-                var pipeline_data = {
-                    default_template: default_template,
-                    node_index: node_index
-                };
-
-                server = TacticServerStub.get();
-                spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
-                
-                var xml = spt.pipeline.export_group(group_name);
-                var search_key = server.build_search_key("sthpw/pipeline", group_name);
-                try {
-                    var args = {
-                        search_key: search_key, 
-                        pipeline: xml, 
-                        color: color,
-                        project_code: bvr.project_code, 
-                        pipeline_data: pipeline_data
-                    };
-                    server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
-                    spt.named_events.fire_event('pipeline|save', {});
-
-                    editor_top.removeClass("spt_has_changes");  
-                    spt.command.clear();
-                } catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-
-                spt.app_busy.hide();
-            }
-
-
-            var current_group_name = spt.pipeline.get_current_group();
-            var group_name = pipeline_code;
-            if (editor_top && editor_top.hasClass("spt_has_changes")) {
-                spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
-            } else {
-                ok();
-            }
-
-
-            '''
-
-            })
 
         el.add_relay_behavior({
             'type': 'blur',
@@ -9939,6 +9814,173 @@ class PipelineDocumentItem(BaseRefreshWdg):
         top.add_class("vertical-centered")
         top.add_attr("spt_pipeline_code", pipeline_code)
         top.add_attr("spt_title", label)
+
+        top.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+             var row = bvr.src_el.getParent(".spt_table_row");
+             
+             row.addClass("spt_table_selected");
+
+             var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
+             var title = bvr.src_el.getAttribute("spt_title");
+             var event = "pipeline_" + pipeline_code + "|click";
+
+             var temp = {
+                 "pipeline_code": pipeline_code,
+                 "title" : title,
+             }
+
+             var kwargs = {};
+             kwargs.options = temp;
+             
+             spt.named_events.fire_event(event, kwargs);
+             spt.command.clear();
+             spt.pipeline.fit_to_canvas();
+
+             '''
+             })
+
+        top.add_behavior({
+            'type': 'listen',
+            'event_name': 'pipeline_%s|click' % pipeline_code,
+            'project_code': Project.get_project_code(),
+            'cbjs_action': '''
+
+            if (bvr.src_el.hasClass("spt_unsaved_item")) {
+                var input = bvr.src_el.getElement(".spt_document_input");
+                input.focus();
+                return;
+            }
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            spt.table.unselect_all_rows();
+            var row = bvr.src_el.getParent(".spt_table_row_item");
+            spt.table.select_row(row);
+
+            var pipeline_code = bvr.firing_data.pipeline_code;
+            var title = bvr.firing_data.title;
+
+            var top = null;
+            // they could be different when inserting or just clicked on
+            top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            if (!top) {
+                top = spt.get_element(document, '.spt_pipeline_tool_top');
+            }
+
+            // clear search
+            if (top) {
+                var info = top.getElement(".spt_node_search");
+                if (info) info.value = "";
+            }
+
+            // dont load again if pipeline already loaded
+            if (top.pipeline_code == pipeline_code) return;
+            top.pipeline_code = pipeline_code;
+
+            var editor_top = top.getElement(".spt_pipeline_editor_top");
+
+            var ok = function () {
+                spt.named_events.fire_event('pipeline|hide_info', {});
+
+                editor_top.removeClass("spt_has_changes");
+
+                var wrapper = top.getElement(".spt_pipeline_wrapper");
+                spt.pipeline.init_cbk(wrapper);
+
+                var start_el = top.getElement(".spt_pipeline_editor_start")
+                start_el.setStyle("display", "none")
+
+                spt.pipeline.clear_canvas();
+
+                spt.pipeline.import_pipeline(pipeline_code);
+
+
+                // add to the current list
+                var value =  bvr.firing_data.pipeline_code;
+                var title = bvr.firing_data.title;
+
+                
+                var text = top.getElement(".spt_pipeline_editor_current2");
+
+                var html = "<span class='hand spt_document_item' spt_title='" + title + "' spt_pipeline_code='" + value + "'>" + title + "</span>";
+
+
+                var breadcrumb = bvr.breadcrumb;
+                if (breadcrumb) {
+                    text.innerHTML = breadcrumb + " / " + html;
+                }
+                else {
+                    text.innerHTML = html;
+                }
+
+                spt.pipeline.set_current_group(value);
+
+                editor_top.removeClass("spt_has_changes");
+                
+                
+                spt.command.clear();
+
+
+            };
+
+            var save = function(){
+                editor_top.removeClass("spt_has_changes");
+                var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+                spt.pipeline.init_cbk(wrapper);
+
+                var group_name = spt.pipeline.get_current_group();
+                
+                var data = spt.pipeline.get_data();
+                var color = data.colors[group_name];
+
+                var group = spt.pipeline.get_group(group_name);
+                var default_template = data.default_templates[group_name];
+                var node_index = group.get_data("node_index");
+                var pipeline_data = {
+                    default_template: default_template,
+                    node_index: node_index
+                };
+
+                server = TacticServerStub.get();
+                spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
+                
+                var xml = spt.pipeline.export_group(group_name);
+                var search_key = server.build_search_key("sthpw/pipeline", group_name);
+                try {
+                    var args = {
+                        search_key: search_key, 
+                        pipeline: xml, 
+                        color: color,
+                        project_code: bvr.project_code, 
+                        pipeline_data: pipeline_data
+                    };
+                    server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
+                    spt.named_events.fire_event('pipeline|save', {});
+
+                    editor_top.removeClass("spt_has_changes");  
+                    spt.command.clear();
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
+
+                spt.app_busy.hide();
+            }
+
+
+            var current_group_name = spt.pipeline.get_current_group();
+            var group_name = pipeline_code;
+            if (editor_top && editor_top.hasClass("spt_has_changes")) {
+                spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
+            } else {
+                ok();
+            }
+
+
+            '''
+
+        })
 
         open_wdg = DivWdg()
         top.add(open_wdg)

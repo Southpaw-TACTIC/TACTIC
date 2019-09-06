@@ -329,7 +329,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas_title.add_style("position: absolute")
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
-        canvas_title.add_style("left: 0px")
+        canvas_title.add_style("left: 50%")
+        canvas_title.add_style('transform: translateX(-50%)')
         canvas_title.add_style("z-index: 150")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
@@ -358,6 +359,32 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             parent.innerHTML = html.join(" / ");
             '''
         } )
+
+        canvas_title.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_document_item',
+            'cbjs_action': '''
+            spt.pipeline.clear_canvas();
+            var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
+            spt.pipeline.import_pipeline(pipeline_code);
+
+            var pipeline_name = bvr.src_el.innerHTML;
+
+            var parent = bvr.src_el.getParent(".spt_pipeline_editor_current2");
+            var els = parent.getElements(".spt_document_item");
+
+            var html = [];
+            for (var i = 0; i < els.length; i++) {
+                html.push(els[i].outerHTML);
+                if (els[i].innerHTML == pipeline_name) {
+                    break;
+                }
+            }
+
+            parent.innerHTML = html.join(" / ");
+            '''
+        } )
+
         canvas_title.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_pipeline_link',
@@ -635,12 +662,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
                 var show_button = toolTop.getElement(".spt_show_sidebar");
                 var hide_button = toolTop.getElement(".spt_hide_sidebar");
-                console.log(show_button);
-                console.log(hide_button);
                 
                 if (right.classList.contains("spt_full_screen")){
                     right.removeClass("spt_full_screen");
-                    console.log('exit full screen');
 
                     left.setStyle("margin-left", "0px");
                     left.setStyle("opacity", "1");
@@ -655,7 +679,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                     show_button.setStyle("display", "none");
                 } else {
                     right.addClass("spt_full_screen");
-                    console.log('enter full screen');
                     left.setStyle("margin-left", "-21%");
                     left.setStyle("opacity", "0");
                     right.setStyle("margin-left", "0px");
