@@ -602,7 +602,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 var left = toolTop.getElement(".spt_pipeline_tool_left");
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
                 
-                right.addClass("spt_full_screen");
+                right.addClass("spt_left_toggle");
 
                 left.setStyle("margin-left", "-21%");
                 left.setStyle("opacity", "0");
@@ -631,7 +631,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 var left = toolTop.getElement(".spt_pipeline_tool_left");
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
 
-                right.removeClass("spt_full_screen");
+                right.removeClass("spt_left_toggle");
 
                 left.setStyle("margin-left", "0px");
                 left.setStyle("opacity", "1");
@@ -1650,7 +1650,6 @@ class PipelineListWdg(BaseRefreshWdg):
 
         color = pipeline_div.get_color("background", -20)
 
-        from pyasm.web import HtmlElement
         style = HtmlElement.style()
         pipeline_div.add(style)
         style.add('''
@@ -9904,7 +9903,7 @@ class PipelineDocumentItem(BaseRefreshWdg):
                 
                 var text = top.getElement(".spt_pipeline_editor_current2");
 
-                var html = "<span class='hand spt_document_item' spt_title='" + title + "' spt_pipeline_code='" + value + "'>" + title + "</span>";
+                var html = "<span class='hand spt_pipeline_link' spt_title='" + title + "' spt_pipeline_code='" + value + "'>" + title + "</span>";
 
 
                 var breadcrumb = bvr.breadcrumb;

@@ -361,31 +361,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
         canvas_title.add_relay_behavior( {
-            'type': 'click',
-            'bvr_match_class': 'spt_document_item',
-            'cbjs_action': '''
-            spt.pipeline.clear_canvas();
-            var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
-            spt.pipeline.import_pipeline(pipeline_code);
-
-            var pipeline_name = bvr.src_el.innerHTML;
-
-            var parent = bvr.src_el.getParent(".spt_pipeline_editor_current2");
-            var els = parent.getElements(".spt_document_item");
-
-            var html = [];
-            for (var i = 0; i < els.length; i++) {
-                html.push(els[i].outerHTML);
-                if (els[i].innerHTML == pipeline_name) {
-                    break;
-                }
-            }
-
-            parent.innerHTML = html.join(" / ");
-            '''
-        } )
-
-        canvas_title.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_pipeline_link',
             'cbjs_action': '''
@@ -653,6 +628,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 if (top) {
                     var search_el = top.getElement(".spt_pipeline_type_search");
+                    // FIXME: focus not working when using the hot key
                     search_el.focus();
                 }
 
@@ -663,8 +639,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var show_button = toolTop.getElement(".spt_show_sidebar");
                 var hide_button = toolTop.getElement(".spt_hide_sidebar");
                 
-                if (right.classList.contains("spt_full_screen")){
-                    right.removeClass("spt_full_screen");
+                if (right.classList.contains("spt_left_toggle")){
+                    right.removeClass("spt_left_toggle");
 
                     left.setStyle("margin-left", "0px");
                     left.setStyle("opacity", "1");
@@ -678,7 +654,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                     hide_button.setStyle("display", "");
                     show_button.setStyle("display", "none");
                 } else {
-                    right.addClass("spt_full_screen");
+                    right.addClass("spt_left_toggle");
                     left.setStyle("margin-left", "-21%");
                     left.setStyle("opacity", "0");
                     right.setStyle("margin-left", "0px");
@@ -944,11 +920,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if window_resize_xoffset:
             canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
+        if self.is_editable:
+            is_editable = "true"
+        else:
+            is_editable = 'false'
 
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
-        "is_editable": str(self.is_editable),
+        "is_editable": is_editable,
 	    "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
@@ -1007,7 +987,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         paint.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
-        "is_editable": str(self.is_editable),
+        "is_editable": is_editable,
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
@@ -5327,7 +5307,7 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
-        if (bvr.is_editable == 'False') {
+        if (bvr.is_editable == 'false') {
             return;
         }
         if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
@@ -5376,7 +5356,7 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
-        if (bvr.is_editable == 'False') {
+        if (bvr.is_editable == 'false') {
             return;
         }
         spt.pipeline.canvas_drag_init = false;

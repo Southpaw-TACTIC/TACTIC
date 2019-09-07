@@ -837,6 +837,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         column_widths = self.kwargs.get("column_widths")
         if not column_widths:
             column_widths = []
+        else:
+            column_widths = column_widths.split(", ")
 
 
 
@@ -876,6 +878,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         default_width = 120
         min_width = 45
         #expand_full_width = False
+
         for i, item_width in enumerate(reversed(column_widths)):
 
             if item_width == "auto":
@@ -1836,19 +1839,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             if (evt.shift == true) return;
 
             spt.table.set_table(bvr.src_el);
-            var table = bvr.src_el.getParent(".spt_table_table");
-            var items = bvr.src_el.getElements(".spt_table_selected");
             var row = bvr.src_el.getParent(".spt_table_row");
 
-            for (var i=0; i<items.length; i++) {
-                if (items[i] == row) {
-                    continue;
-                } else {
-                    spt.table.unselect_row();
-                }
+            if (row.hasClass("spt_table_selected")) {
+                spt.table.unselect_row(row);
             }
-            
-            spt.table.select_row(row);
+            else {
+                spt.table.select_row(row);
+            }
         '''
         } )
 
@@ -4395,13 +4393,14 @@ spt.table.get_group_cells = function(element_name, tr) {
 spt.table.last_selected_row = null;
 
 spt.table.select_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
     }
     
-    current_color = row.getStyle("background-color");
+    var current_color = row.getAttribute("spt_hover_background");
+    
     if (!spt.has_class(row,'spt_table_selected')) {
 
         row.setAttribute("spt_last_background", current_color);

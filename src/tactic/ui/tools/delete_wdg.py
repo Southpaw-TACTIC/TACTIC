@@ -215,10 +215,6 @@ class DeleteToolWdg(BaseRefreshWdg):
                 }
 
                 spt.notify.show_message("Delete complete");
-                var input = {'search_keys': bvr.search_keys};
-                var temp = {};
-                temp.options = input;
-                spt.named_events.fire_event('delete|complete', temp);
             },
             on_error: function(e) {
                 spt.notify.show_message("Error on delete");

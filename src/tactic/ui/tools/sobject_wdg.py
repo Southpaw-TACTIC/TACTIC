@@ -183,15 +183,9 @@ class SObjectDetailWdg(BaseRefreshWdg):
         self.sobject = self.get_sobject()
 
         if not self.sobject:
-            search_key = self.kwargs.get("search_key") or ""
-            title = self.kwargs.get("title_view") or self.kwargs.get("tab_element_names") or 'Job'
             
             widget = DivWdg()
-            if search_key.startswith('workflow/job'):
-                widget.add(title + " has been removed.")
-                widget.add_style("font-size: 15px")
-            else:
-                widget.add("SObject does not exist or no longer exists")
+            widget.add("SObject does not exist or no longer exists")
             
             widget.add_style("margin: 100px auto")
             widget.add_style("width: 300px")
