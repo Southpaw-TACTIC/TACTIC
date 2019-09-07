@@ -838,7 +838,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if not column_widths:
             column_widths = []
         else:
-            column_widths = column_widths.split(", ")
+            if isinstance(column_widths, basestring):
+                column_widths = column_widths.split(", ")
 
 
 
