@@ -9008,6 +9008,17 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
             var color = bvr.src_el.value;
             spt.pipeline.set_node_property(node, "color", color);
+            
+            var color1 = spt.css.modify_color_value(color, +10);
+            var color2 = spt.css.modify_color_value(color, -10);
+
+            if (spt.pipeline.get_node_type(node) == "condition") {
+                angle = 225;
+            } else {
+                angle = 180;
+            }
+
+            node.getElement(".spt_content").setStyle("background", "linear-gradient("+angle+"deg, "+color1+", 70%, "+color2+")");
 
             spt.named_events.fire_event('pipeline|change', {});
  
@@ -10619,8 +10630,8 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = self.top
-        top.add_style("min-width: 200px")
-        top.add_style("max-width: 300px")
+        # top.add_style("min-width: 200px")
+        # top.add_style("max-width: 300px")
 
         top.add_class("spt_process_select_top")
         top.add_style("overflow-y: auto")
@@ -10883,13 +10894,26 @@ spt.process_tool.show_side_bar = function(activator) {
             node_container.add_style("width: 80px")
             node_container.add_style("height: 60px")
             node_container.add_style("overflow: hidden")
+            node_container.add_style("position: relative")
+            node_container.add_style("border: 1px solid #eee")
 
 
 
             node_scale.add_style("transform-origin: top left")
-            node_scale.add_style("transform: scale(0.5, 0.5)")
-            node_scale.add_style("margin-top: 10px")
-            node_scale.add_style("margin-left: 15px")
+            node_scale.add_class("spt_node_scale")
+
+            style = HtmlElement.style()
+            style.add('''
+            .spt_node_scale {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+            }
+            ''')
+            node_scale.add(style)
+
+            # node_scale.add_style("margin-top: 12px")
+            # node_scale.add_style("margin-left: 20px")
 
             node_wdg = None
             if (view in ['approval', 'condition', 'hierarchy', 'dependency', 'progress', 'action', 'manual']):
@@ -10900,6 +10924,7 @@ spt.process_tool.show_side_bar = function(activator) {
                     node_wdg = pipeline_canvas_wdg.get_approval_node("approval")
                 elif (view == 'condition'):
                     node_wdg = pipeline_canvas_wdg.get_condition_node("condition")
+                    # node_wdg.add_style("margin: 12px auto auto 12px !important")
                 elif (view == 'action'):
                     node_wdg = pipeline_canvas_wdg.get_node("action", node_type="action")
                 elif (view == 'hierarchy'):
@@ -10916,10 +10941,16 @@ spt.process_tool.show_side_bar = function(activator) {
                 node_wdg.add_class("spt_custom_node")
             else:
                 node_wdg = custom_node.get_display_widget("node", display_options)
+            
+            if (view == 'asset_check') or (view == 'expression') or (view == 'simple_condition'):
+                node_scale.add_style("transform: scale(0.5, 0.5) translate(-50%, -50%)")
+            else:
+                node_wdg.add_style("transform: translate(-50%, -50%)")
+                node_scale.add_style("transform: scale(0.5, 0.5)")
 
             node_scale.add(node_wdg)
             node_wdg.add_style("z-index: 0")
-
+            
             
 
             item_div = DivWdg()
@@ -10929,6 +10960,7 @@ spt.process_tool.show_side_bar = function(activator) {
             item_div.add_color("background", "background")
 
             item_div.add_style("border-radius: 3px")
+            item_div.add_style("text-align: center")
             item_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.1)")
 
             item_div.add_attr("spt_node_type", view)
@@ -10943,7 +10975,7 @@ spt.process_tool.show_side_bar = function(activator) {
 
             data_div = DivWdg()
             content_div.add(data_div)
-            data_div.add_style("width: 140px")
+            data_div.add_style("width: 80%")
             data_div.add_style("overflow-y: auto")
 
             title_div = DivWdg()
