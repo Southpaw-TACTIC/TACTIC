@@ -375,11 +375,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 spt.pipeline.set_size(size.x);
                 container.last_size = size;
             }
-            //var interval_id = setInterval( resize, 250);
-            //top.interval_id = interval_id;
-            setTimeout( function() {
-                resize();
-            }, 2000);
+            var interval_id = setInterval( resize, 250);
+            top.interval_id = interval_id;
             '''
             } )
 
@@ -6874,7 +6871,8 @@ class ProcessInfoCmd(Command):
         data = process_sobj.get_json_value("workflow") or {}
 
         subpipeline_code = self.kwargs.get("subpipeline")
-        process_sobj.set_value("subpipeline_code", subpipeline_code)
+        if subpipeline_code:
+            process_sobj.set_value("subpipeline_code", subpipeline_code)
         process_sobj.commit()
 
         task_creation = self.kwargs.get("task_creation") or "subtasks_only"
@@ -7016,13 +7014,16 @@ class NewProcessInfoCmd(Command):
             handled.add(cbk_class)
 
         # custom save handler
-        custom = self.kwargs.get("_custom")
+        # FIXME: not sure why there was a check for _custom
+        #custom = self.kwargs.get("_custom")
+        custom = True
         if custom:
             # Get custom save cmd via node_type
             from pyasm.command import CustomProcessConfig
             try:
                 cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
-                return cmd.execute()
+                if cmd:
+                    return cmd.execute()
             except Exception as e:
                 print
                 print("Failed saving node for node type [%s]:" % node_type)
@@ -9348,6 +9349,7 @@ class PipelineSaveCbk(Command):
 
         for i in range(len(process_nodes)):
             node = process_nodes[i]
+
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")

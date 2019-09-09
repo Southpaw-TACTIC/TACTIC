@@ -12,7 +12,7 @@
 
 __all__ = ['TypeTableElementWdg', 'TemplateElementWdg', 'GeneralPublishElementWdg','NotificationTriggerElementWdg','CheckinButtonElementWdg','CheckoutButtonElementWdg','RecipientElementWdg']
 
-import types, re
+import types, re, six
 
 from pyasm.common import TacticException, Container, Date, jsonloads, jsondumps
 from pyasm.search import Search, SearchKey, SObject
@@ -135,7 +135,7 @@ class TypeTableElementWdg(SimpleTableElementWdg):
             else:
                 display.add("&nbsp;")
         else:
-            if not isinstance(value, basestring):
+            if not isinstance(value, six.string_types):
                 display = DivWdg()
                 display.add_style("float: right")
                 display.add_style("padding-right: 3px")

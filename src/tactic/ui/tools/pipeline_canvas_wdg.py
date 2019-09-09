@@ -848,12 +848,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             } )
 
 
-
-
         # create a size widget for the node canvas
         canvas_size_wdg = DivWdg()
         inner.add(canvas_size_wdg)
-        #canvas_size_wdg.add_style("display: none")
         canvas_size_wdg.add_class("spt_pipeline_canvas_size")
         canvas_size_wdg.add_style("width: %s" % width)
         canvas_size_wdg.add_style("height: %s" % height)
@@ -2745,11 +2742,12 @@ spt.pipeline._init = function() {
 
     // FIXME: need this delay because the table seems to resize itself somewhere
     setTimeout( function() {
-        var size = canvas_size.getSize();
+        //var size = canvas_size.getSize();
+        var size = top.getSize();
         if (size.x == 0 || size.y == 0) {
             return;
         }
-        //spt.pipeline.set_size(size.x, size.y);
+        spt.pipeline.set_size(size.x, size.y);
     }, 500);
 }
 
@@ -5565,6 +5563,10 @@ spt.pipeline.zoom_drag_action = function(evt, bvr, mouse_411) {
 }
 
 spt.pipeline.set_scale = function(scale) {
+
+    if (scale == 0) {
+        scale = 1;
+    }
 
     // set an arbitrary max scale so drawing optimizations don't start showing up
     if (scale > 3) return;

@@ -283,6 +283,11 @@ class DocumentWdg(BaseRefreshWdg):
             sobjects = []
 
 
+        view = document.get("view")
+        if view:
+            kwargs['view'] = view
+
+
         layout_wdg = ViewPanelWdg(
             **kwargs
         )

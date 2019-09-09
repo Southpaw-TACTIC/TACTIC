@@ -1300,7 +1300,7 @@ class TableDropUndo(Base):
         Xml.set_attribute(sobject_node,"search_type", search_type)
         Xml.set_attribute(sobject_node,"action", "drop")
 
-        from search import SearchType
+        from .search import SearchType
         #st_obj = SearchType.get(search_type)
         #seq_max = st_obj.sequence_nextval()
 

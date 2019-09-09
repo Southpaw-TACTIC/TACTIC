@@ -572,6 +572,8 @@ class TacticSchedulerThread(threading.Thread):
 
                 # ??? Why get process code from data (and not process column)
                 process_code = data.get("process")
+                if not process_code:
+                    process_code = trigger_sobj.get_value("process")
 
                 if not trigger_class and not process_code:
                     print("WARNING: Skipping trigger [%s] ... no execution defined" % trigger_sobj.get_code() )
@@ -581,7 +583,7 @@ class TacticSchedulerThread(threading.Thread):
                 data['project_code'] = trigger_sobj.get_project_code()
 
 
-                if process_code:
+                if not process_code:
                     print("WARNING: Skipping process trigger [%s] ... not implemented" % trigger_sobj.get_code() )
                     continue
 
@@ -652,6 +654,7 @@ class TacticSchedulerThread(threading.Thread):
         elif trigger_type == 'interval':
 
             interval = data.get("interval")
+
             #delay = data.get("delay")
             delay = 0 # currently interferes with "delayed" mode delay attr
 
@@ -687,7 +690,6 @@ class TacticSchedulerThread(threading.Thread):
         elif trigger_type == "daily":
 
             from dateutil import parser
-
             args['time'] = parser.parse( data.get("time") )
 
             if data.get("weekdays"):
@@ -695,7 +697,6 @@ class TacticSchedulerThread(threading.Thread):
 
             self.scheduler.add_daily_task(task, **args)
 
-            #self.scheduler.add_daily_task(task, time, mode="threaded", weekdays=range(1,7))
 
         elif trigger_type == "weekly":
             #self.scheduler.add_weekly_task(task, weekday, time, mode='threaded'):

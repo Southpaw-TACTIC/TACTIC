@@ -65,7 +65,7 @@ class TableSchemaDumper(object):
         impl = sql.get_database_impl()
 
 
-        columns = info.keys()
+        columns = list(info.keys())
         columns.sort()
 
         # if the table does not exist, there are no columns
@@ -141,7 +141,7 @@ class TableSchemaDumper(object):
             mode = constraint.get("mode")
             if not name:
                 name = "%s_%s_idx" % (name, "_".join(columns))
-            f.write('''table.add_constraint(%s, mode="%s")\n''' % (columns, mode))
+            f.write('''table.add_constraint(%s, mode="%s")\n''' % (jsondumps(columns), mode))
             #def add_constraint(self, columns, mode="UNIQUE"):
 
 
