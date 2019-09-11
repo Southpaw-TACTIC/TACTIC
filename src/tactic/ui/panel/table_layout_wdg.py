@@ -839,7 +839,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             column_widths = []
         else:
             if isinstance(column_widths, basestring):
-                column_widths = column_widths.split(", ")
+                column_widths = column_widths.split(",")
 
 
 
@@ -3273,7 +3273,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                             if (!layout.isVisible()) return;
                             spt.table.set_layout(layout);
-
+                            
                             var rows = spt.table.get_all_rows();
                             for (var i = 0; i < rows.length; i++) {
 
@@ -8451,7 +8451,6 @@ spt.table.export = function(mode) {
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
     var search_values_dict;
-
     spt.table.set_layout(layout);
     var header = spt.table.get_header_row();
     // include header input for widget specific settings
@@ -8600,7 +8599,6 @@ spt.table.load_data = function(sobjects) {
   for (var i = 0; i < r_sobjects.length; i++) {
 
     var sobject = sobjects[i];
-
     var row = spt.table.add_new_item();
     var insert_row = spt.table.get_insert_row();
 

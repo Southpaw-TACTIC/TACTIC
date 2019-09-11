@@ -1647,9 +1647,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
+                var search_type = top.getAttribute("spt_search_type");
+                var element_names = null;
+
+                if (search_type == "workflow/job_type") {
+                    element_names = "name,description";
+                }
+
                 var kwargs = {
                   search_type: search_type,
+                  element_names: element_names,
                   parent_key: bvr.parent_key,
                   view: bvr.view,
                   mode: 'insert',
