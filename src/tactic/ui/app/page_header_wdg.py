@@ -1051,10 +1051,10 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         data2 = plugin_util.get_plugins_data("theme")
 
+       
+        data = dict(list(data.items()) + list(data2.items()))
 
-        data = dict(data.items() + data2.items())
-
-        themes = data.keys()
+        themes = list(data.keys())
         themes.sort()
 
 
