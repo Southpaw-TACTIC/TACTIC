@@ -367,6 +367,7 @@ class ResetOptionsCmd(Command):
 
 
             # auto pass generation
+            from pyasm.common import Common
             unique_code = ''.join([ Common.randchoice('abcdefghijklmno12345') for i in xrange(0, 5)])
             auto_password = unique_code
 
