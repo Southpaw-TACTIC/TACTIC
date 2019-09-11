@@ -111,7 +111,7 @@ class NewPasswordCmd(Command):
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
             web.set_form_value("is_err", "true")
-            web.set_form_value(CodeConfirmationWdg.MSG, error_msg)
+            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, error_msg)
             raise TacticException(error_msg)
             return False
         return True
@@ -128,7 +128,7 @@ class NewPasswordCmd(Command):
         login = Login.get_by_login(self.login, use_upn=True)
         if not login:
             web.set_form_value("is_err", "true")
-            web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
+            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
             return
 
         if password == confirm_password:
@@ -137,7 +137,7 @@ class NewPasswordCmd(Command):
             login.commit()
         else:
             web.set_form_value("is_err", "true")
-            web.set_form_value(CodeConfirmationWdg.MSG, 'The entered passwords do not match.')
+            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'The entered passwords do not match.')
             return
 
 
@@ -335,7 +335,7 @@ class ResetOptionsCmd(Command):
         if self.login =='admin':
             error_msg = "You are not allowed to reset admin password."
             web.set_form_value("is_err", "true")
-            web.set_form_value(CodeConfirmationWdg.MSG, error_msg)
+            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, error_msg)
             raise TacticException(error_msg)
             return False
         return True
@@ -357,12 +357,12 @@ class ResetOptionsCmd(Command):
             login = Login.get_by_login(self.login, use_upn=True)
             if not login:
                 web.set_form_value("is_err", "true")
-                web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
+                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
                 return
             email = login.get_value('email')
             if not email:
                 web.set_form_value("is_err", "true")
-                web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
+                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
                 return
 
 
@@ -371,7 +371,7 @@ class ResetOptionsCmd(Command):
             unique_code = ''.join([ Common.randchoice('abcdefghijklmno12345') for i in xrange(0, 5)])
             auto_password = unique_code
 
-            msg = CodeConfirmationWdg.RESET_MSG
+            msg = BaseSignInWdg.RESET_COMPLETE_MSG
 
             # send the email
             try:
@@ -399,7 +399,7 @@ class ResetOptionsCmd(Command):
             except TacticException as e:
                 msg = "Failed to send an email for your new password. Reset aborted."
                 web.set_form_value("is_err", "true")
-                web.set_form_value(CodeConfirmationWdg.MSG, msg)
+                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, msg)
                 raise
 
             # handle windows domains
