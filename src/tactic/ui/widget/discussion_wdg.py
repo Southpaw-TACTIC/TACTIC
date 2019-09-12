@@ -1402,7 +1402,10 @@ class DiscussionWdg(BaseRefreshWdg):
             process_top.add_class("spt_discussion_process_top")
             process_top.add_class("self_context")
             process_top.add_class("hand")
-            process_top.add_attr("self_context", context.encode('utf-8'))
+
+            if not Common.IS_Pv3:
+                context = context.encode("UTF-8")
+            process_top.add_attr("self_context", context)
 
             update_mode = self.kwargs.get("update_mode") or "load"
             process_top.add_attr("spt_update_mode", update_mode)
@@ -1548,7 +1551,7 @@ class DiscussionWdg(BaseRefreshWdg):
             content.add_style("min-height: 150px")
             content.add_class("spt_discussion_content")
             content.add_color("background", "background")
-            
+
             # context and parent_key are for dynamic update
             process_wdg.add_behavior( {
                 'type': 'load',
@@ -1763,6 +1766,23 @@ class NoteCollectionWdg(BaseRefreshWdg):
         context_count = 0
 
         width = self.kwargs.get("width") or "100%"
+
+        # reorder notes so that they are in chronological order
+        from functools import cmp_to_key
+
+        def notes_sort(a, b):
+            at = a.get("timestamp")
+            bt = b.get("timestamp")
+            if at > bt:
+                return 1
+            elif at == bt:
+                return 0
+            else:
+                return -1
+
+        notes.sort( key=cmp_to_key(notes_sort) )
+        notes.reverse()
+
 
         for i, note in enumerate(notes):
 
@@ -2018,7 +2038,9 @@ class NoteWdg(BaseRefreshWdg):
             div.add_style("margin-left: 40px")
             div.add_style("border-left: solid 2px #DDD")
 
-        div.add_attr("self_context", context.encode("UTF-8"))
+        if not Common.IS_Pv3:
+            context = context.encode("UTF-8")
+        div.add_attr("self_context", context)
 
         from pyasm.security import Login
         user = Login.get_by_code(login)
