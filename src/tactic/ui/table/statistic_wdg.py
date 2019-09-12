@@ -567,7 +567,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
         DAY = self.DAY
         HOUR = self.HOUR
-        status = sobject.get_value("status")
+        status = sobject.get_value("status") or ""
 
         if isinstance(value, six.string_types):
             due_date = parser.parse(value)

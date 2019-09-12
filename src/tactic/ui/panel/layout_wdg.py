@@ -40,7 +40,7 @@ from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.common import BaseConfigWdg
 
 
-import sys, traceback
+import sys, traceback, six
 
 
 
@@ -853,6 +853,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             display_title = full_title
             
 
+            target = self.kwargs.get("target") or None
 
             #menu_item.add_attr("title", full_title)
             menu_item.add(checkbox)
@@ -860,33 +861,44 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             menu_item.add(display_title)
             menu_item.add_behavior({
             'type': "click_up", 
+            'target_id': self.target_id,
+            'target': target,
+            'element_name': element_name,
+            'widget_idx': widget_idx,
             'cbjs_action': '''
 
             var panel;
+
             var popup = bvr.src_el.getParent(".spt_popup");
-            if (popup) {
+
+            if (bvr.target) {
+                var parent = bvr.src_el.getParent("."+bvr.target);
+                panel = parent.getElement(".spt_layout");
+                console.log(panel);
+            }
+            else if (popup) {
                 var panel = popup.panel;
                 if (!panel) {
                     var activator = popup.activator;
                     if (activator) {
-                        panel = activator.getParent(".spt_panel");
+                        panel = activator.getParent(".spt_layout");
                     }
                 }
             }
-
             if (!panel) {
-                panel = document.id('%s');
+                panel = document.id(bvr.target_id);
             }
+
 
             if (!panel) {
                 spt.alert('Please re-open the Column Manager');
                 return;
             }
             var table = panel.getElement(".spt_table");
-            spt.dg_table.toggle_column_cbk(table,'%s','%s');
+            spt.dg_table.toggle_column_cbk(table,bvr.element_name,bvr.widget_idx);
             cb = bvr.src_el.getElement('input[type=checkbox]');
             cb.checked=!cb.checked;
-            ''' % (self.target_id, element_name, widget_idx )
+            '''
             })
 
 
@@ -908,7 +920,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
     def get_display(self):
         top = self.top
-        top.add_style("width: 400px")
+
+        width = self.kwargs.get("width") or 400
+        top.add_style("width: %spx" % width)
 
         search_type = self.kwargs.get("search_type")
         search_type_obj = SearchType.get(search_type)
@@ -917,6 +931,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         self.current_elements = self.kwargs.get('element_names')
         if not self.current_elements:
             self.current_elements = []
+        else:
+            if isinstance(self.current_elements, six.string_types):
+                self.current_elements = self.current_elements.split(",")
 
 
         # for testing purposes
@@ -931,6 +948,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         self.extra_elements = self.kwargs.get("extra_element_names")
         if self.extra_elements:
+            if isinstance(self.extra_elements, six.string_types):
+                self.extra_elements = self.extra_elements.split(",")
             self.all_element_names = self.current_elements[:]
             self.all_element_names.extend(self.extra_elements)
         else:
