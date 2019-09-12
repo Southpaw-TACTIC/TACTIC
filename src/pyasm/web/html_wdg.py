@@ -990,10 +990,12 @@ class HtmlElement(Widget):
                 data_type = SearchType.get_column_type(sobject.get_search_type(), column)
                 if data_type in ["timestamp","time"]: 
                     # convert to user timezone
-                    if not SObject.is_day_column(column):
+                    if not SObject.is_day_column(column) and value:
                         # This date is assumed to be GMT
                         date = parser.parse(value)
                         value = cls.get_timezone_value(date)
+                    else:
+                        pass
 
 
             elif compare:

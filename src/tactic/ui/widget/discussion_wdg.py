@@ -1783,6 +1783,10 @@ class NoteCollectionWdg(BaseRefreshWdg):
         notes.sort( key=cmp_to_key(notes_sort) )
         notes.reverse()
 
+        # for some reason, default_num_notes can become 'undefined' string.
+        if self.default_num_notes == "undefined":
+            self.default_num_notes = 0
+
 
         for i, note in enumerate(notes):
 
