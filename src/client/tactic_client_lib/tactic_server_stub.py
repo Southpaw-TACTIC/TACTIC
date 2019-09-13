@@ -17,6 +17,7 @@
 import datetime
 import re
 import os, getpass, shutil, sys, urllib, types, hashlib
+import six
 
 
 try:
@@ -1151,7 +1152,7 @@ class TacticServerStub(object):
         results = self.server.query(self.ticket, search_type, filters, columns,
                                   order_bys, show_retired, limit, offset,
                                   single, distinct, return_sobjects, parent_key)
-        if not return_sobjects and isinstance(results, basestring):
+        if not return_sobjects and isinstance(results, six.string_types):
             results = eval(results)
         return results
 
