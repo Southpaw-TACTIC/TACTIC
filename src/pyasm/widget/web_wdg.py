@@ -2095,7 +2095,7 @@ class WebLoginWdg2(BaseSignInWdg):
 
 
         web = WebContainer.get_web()
-        msg = web.get_form_value(self.LOGIN_MSG)
+        msg = web.get_form_value(self.LOGIN_MSG_LABEL)
 
         allow_change_admin = self.kwargs.get("allow_change_admin")
         if allow_change_admin in [False, 'false']:
@@ -2115,7 +2115,7 @@ class WebLoginWdg2(BaseSignInWdg):
             if admin_login and admin_login.get_value('s_status') =='retired':
                 admin_login.reactivate()
                 web = WebContainer.get_web()
-                web.set_form_value(self.LOGIN_MSG, "admin user has been reactivated.")
+                web.set_form_value(self.LOGIN_MSG_LABEL, "admin user has been reactivated.")
                 admin_password = admin_log.get_value("password")
                 if admin_password == Login.get_default_encrypted_password():
                     change_admin = True
@@ -2167,7 +2167,7 @@ class WebLoginWdg2(BaseSignInWdg):
        
         if hosts and len(hosts) != len(domains):
             msg = 'When specified, the number of IP_address has to match the number of domains'
-            web.set_form_value(self.LOGIN_MSG, msg)
+            web.set_form_value(self.LOGIN_MSG_LABEL, msg)
 
         host = web.get_http_host()
         if host.find(':') != -1:
@@ -2291,7 +2291,7 @@ class WebLoginWdg2(BaseSignInWdg):
                 forgot_password_container.add(link)
 
 
-        div.add(HiddenWdg(self.LOGIN_MSG))
+        div.add(HiddenWdg(self.LOGIN_MSG_LABEL))
         div.add(self.get_content_styles())
         return div
 
