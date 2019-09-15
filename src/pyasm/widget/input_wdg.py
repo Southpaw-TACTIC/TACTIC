@@ -1515,11 +1515,11 @@ class SelectWdg(BaseInputWdg):
         if current_values:
 
             if not isinstance(value, basestring):
-                value = str(value)
+                value = unicode(value)
 
             cur_value = current_values[0]
             if not isinstance(cur_value, basestring):
-                cur_value = str(cur_value)
+                cur_value = unicode(cur_value)
             return value == cur_value
         else:
             return False

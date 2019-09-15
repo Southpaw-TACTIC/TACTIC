@@ -868,7 +868,7 @@ class Common(Base):
 
         else:
             # for integer and floats
-            return str(in_string)
+            return unicode(in_string)
     process_unicode_string = staticmethod(process_unicode_string)
 
 

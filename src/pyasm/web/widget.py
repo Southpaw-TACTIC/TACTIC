@@ -222,9 +222,9 @@ class Widget(object):
         if type(widget) in types.StringTypes:
             widget = StringWdg(widget)
         elif type(widget)==types.IntType or type(widget)==types.FloatType:
-            widget = StringWdg(str(widget))
+            widget = StringWdg(unicode(widget))
         elif not isinstance(widget,Widget):
-            widget = StringWdg(str(widget))
+            widget = StringWdg(unicode(widget))
 
 
         if name:

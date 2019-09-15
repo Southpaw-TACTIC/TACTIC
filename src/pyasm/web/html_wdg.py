@@ -178,7 +178,7 @@ class HtmlElement(Widget):
         elif isinstance(value, unicode):
             self.attrs[name] = value.encode('utf-8')
         else:
-            self.attrs[name] = str(value)
+            self.attrs[name] = unicode(value)
 
 
     def add_attr(self, name, value):
