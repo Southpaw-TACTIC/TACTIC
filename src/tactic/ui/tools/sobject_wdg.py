@@ -777,6 +777,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 ''' % values)
 
             elif tab == "pipeline":
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 config_xml.append('''
                 <element name="pipeline" title="Workflow">
                   <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
@@ -2107,7 +2108,10 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
                 'search_key': pipeline.get_search_key(),
                 'interval': 3,
                 'value': True,
-                'cbjs_action': '''spt.panel.refresh_element(bvr.src_el)'''
+                'cbjs_action': '''
+                console.log("refreshing");
+                //spt.panel.refresh_element(bvr.src_el);
+                '''
             } )
 
 
@@ -2219,6 +2223,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
             var search_key = bvr.search_key;
             if (search_key) {
+                console.log("running set status color");
                 spt.pipeline.set_status_color(search_key);
             }
 

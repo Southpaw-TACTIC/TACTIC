@@ -1477,6 +1477,8 @@ spt.edit.save_changes = function(content, search_key, extra_data, values, trigge
 spt.edit.edit_form_cbk = function( evt, bvr )
 {
     // first fire a named event
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.log(bvr);
     var named_event = bvr.named_event;
     spt.named_events.fire_event(named_event, bvr);
     var content = bvr.src_el.getParent(".spt_edit_top");
@@ -1502,8 +1504,8 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     // this is needed as bvr turns null on error
     var src_el = bvr.src_el;
     try {
-
         var ret_val = server.execute_cmd(class_name, args, values);
+        console.log("running server 11111111111111111111111111111111111111");
         var info = ret_val.info;
 
         // add a callback after save
@@ -1515,6 +1517,8 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         if (bvr.refresh == "true") {
             //refresh the panel above content
             var panel = spt.get_parent(content,'.spt_panel');
+            console.log("3333333333333333333333");
+            console.log(panel);
             if (panel) spt.panel.refresh(panel);
         }
         else {
@@ -1523,6 +1527,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         // refresh the row
 
         if (bvr.mode == 'edit') {
+            console.log("here");
             update_event = "update|" + bvr.search_key;
             
             spt.named_events.fire_event(update_event, {});

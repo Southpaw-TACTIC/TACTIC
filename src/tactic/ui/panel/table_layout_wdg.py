@@ -569,7 +569,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 self.view_editable = True
 
 
-
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(view_editable)
+        print(admin_edit)
         self.color_maps = self.get_color_maps()
 
         from pyasm.web import WebContainer
@@ -1985,6 +1987,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         is_editable = self.kwargs.get("is_editable")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(self.kwargs)
+        print(is_editable)
 
         # Edit behavior
         if is_editable in [False, 'false']:
@@ -2000,7 +2005,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             is_editable = False
             self.view_editable = False
 
-
+        print(is_editable)
         if is_editable:
             table.add_relay_behavior( {
                 'type': 'click',
@@ -4879,6 +4884,8 @@ spt.table.add_row = function(kwargs) {
 }
 
 spt.table.add_new_item = function(kwargs) {
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.log(kwargs);
 
     if (typeof(kwargs) == 'undefined') {
         kwargs = {};
@@ -4891,28 +4898,32 @@ spt.table.add_new_item = function(kwargs) {
 
     var search_type = layout.getAttribute("spt_search_type");
 
-    var row;
-    var position;
     var table = spt.table.get_table();
+    console.log(layout);
+    console.log(table);
+    console.log(search_type);
     if (kwargs.row) {
-        row = kwargs.row;
-        position = "after";
+        var row = kwargs.row;
+        var position = "after";
     }
     else if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
-            row = table.getElement(".spt_table_header_row");
+            var row = table.getElement(".spt_table_header_row");
         }
         else {
-            row = rows[rows.length-1];
+            var row = rows[rows.length-1];
         }
-        position = "after";
+        var position = "after";
 
     }
     else {
-        row = table.getElement(".spt_table_row");
-        position = "before";
+        var row = table.getElement(".spt_table_row");
+        var position = "before";
     }
+
+    console.log(row);
+    console.log(position);
 
 
 
@@ -4974,12 +4985,17 @@ spt.table.add_new_item = function(kwargs) {
     spt.remove_class(clone, 'spt_clone');
 
     // fire a client event
-    var tableId = spt.table.layout.getAttribute("spt_table_id");
+    var tableId = table.getAttribute("id");
+
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
 
-    var event = "insertX|"+search_type;
+    console.log("event1: " + event);
+
+    var event = "insert|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
+
+    console.log("event2: " + event);
 
     // find the no items row
     no_items = table.getElement(".spt_table_no_items");
