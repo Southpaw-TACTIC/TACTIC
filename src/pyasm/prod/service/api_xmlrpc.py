@@ -64,6 +64,25 @@ LAST_RSS = System().memory_usage().get('rss')
 def get_simple_cmd(self, meth, ticket, args):
     class ApiClientCmd(Command):
 
+
+        def __init__(self2, **kwargs):
+            super(ApiClientCmd, self2).__init__(**kwargs)
+            
+            self2.print_info = False
+            
+            first_arg = args[0]
+
+            if meth.__name__ == 'get_widget':
+                if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
+                    self2.print_info = True
+            elif meth.__name__ == 'execute_cmd':
+                first_arg = args[0]
+                if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.DynamicUpdateCmd") == -1:
+                    self2.print_info = True
+            else:
+                self2.print_info = True
+            
+            
         def get_title(self):
             return "Client API"
 
@@ -77,13 +96,15 @@ def get_simple_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
            
             if self.get_protocol() != "local":
-                print "request_id: ", request_id
-                now = datetime.datetime.now()
                 
-                def print_info(self2, args):
+                def print_primary_info(self2, args):
+                    print "request_id: ", request_id
+                    
                     from pyasm.security import Site
                     if Site.get_site():
                         print "site: ", Site.get_site()
+                    
+                    now = datetime.datetime.now()
                     print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
                     print "user: ", Environment.get_user_name()
                     print "simple method: ", meth
@@ -93,18 +114,8 @@ def get_simple_cmd(self, meth, ticket, args):
                     Common.pretty_print(args)
 
 
-                self.print_info = True
-                
-                if meth.__name__ == 'get_widget':
-                    first_arg = args[0]
-                    if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
-                        print_info(self2, args)
-                elif meth.__name__ == 'execute_cmd':
-                    if self.print_info == True:
-                        print_info(self2, args)
-                else:
-                    print_info(self2, args)
-                
+                if self2.print_info:
+                    print_primary_info(self2, args)
                 
             try:
                 # Do a security check
@@ -119,15 +130,21 @@ def get_simple_cmd(self, meth, ticket, args):
                 self2.results = exec_meth(self, ticket, meth, args)
             finally:
                 if self.get_protocol() != "local":
+                    
+                    def print_secondary_info(duration, request_id, rss, increment):
+                        print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
+                        print "Memory: %s KB" % rss
+                        print "Increment: %s KB" % increment
+                        
                     duration = time.time() - self2.start_time
-                    print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
                     REQUEST_COUNT += 1
                     rss = System().memory_usage().get("rss")
                     increment = rss - LAST_RSS
-                    print "Memory: %s KB" % rss
-                    print "Increment: %s KB" % increment
                     #print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
                     LAST_RSS = rss
+                    
+                    if self2.print_info:
+                        print_secondary_info(duration, request_id, rss, increment)
 
 
 
@@ -159,12 +176,8 @@ def get_full_cmd(self, meth, ticket, args):
                 transaction = super(ApiClientCmd,self2).get_transaction()
                 return transaction
 
-            try:
-                state = TransactionState.get_by_ticket(ticket)
-                transaction_id = state.get_state("transaction")
-            except Exception as e:
-                transaction_id = None
-          
+            state = TransactionState.get_by_ticket(ticket)
+            transaction_id = state.get_state("transaction")
             if not transaction_id:
                 return Command.get_transaction(self2)
 
@@ -341,12 +354,9 @@ def xmlrpc_decorator(meth):
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
-                    idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
-                    if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
-                        cmd = get_simple_cmd(self, meth, ticket, args)
-                    else:
-                        cmd = get_full_cmd(self, meth, ticket, args)
-
+                    cmd = None
+                    
+                    # If multi-site is enabled, redirect commands flagged as update.
                     if multi_site and meth.__name__ == "execute_cmd" and args[0]:
                         if args[0] != "tactic.ui.app.DynamicUpdateCmd": 
                             cmd_class = Common.create_from_class_path(args[0], {}, {})
@@ -354,6 +364,16 @@ def xmlrpc_decorator(meth):
                                 #FIXME: Extra dict is appended to args list 
                                 result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
                                 return self.browser_res(meth, result)
+                         
+                        cmd = get_simple_cmd(self, meth, ticket, args)
+                        
+                    else:            
+                        idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
+                        if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                            cmd = get_simple_cmd(self, meth, ticket, args)
+                        else:
+                            cmd = get_full_cmd(self, meth, ticket, args)
+
                 else:
                     if multi_site:
                         result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
