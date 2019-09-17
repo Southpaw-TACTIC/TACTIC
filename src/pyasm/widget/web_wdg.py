@@ -1556,7 +1556,9 @@ class WebLoginWdg(Widget):
 
 
 class BaseSignInWdg(Widget):
-
+    LOGIN_MSG_LABEL = 'login_message'
+    RESET_MSG_LABEL = 'reset_msg'
+    RESET_COMPLETE_MSG = 'Reset completed.'
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -1752,6 +1754,12 @@ class BaseSignInWdg(Widget):
         
 
     def get_display(self):
+        '''
+            Return the login container.
+
+            When overriding for custom login screens, embed result of get_content() in this return value.
+        '''
+
         override_logo = self.kwargs.get('override_logo') == "true"
         override_company_name = self.kwargs.get('override_company_name') == "true"
             
@@ -1850,9 +1858,235 @@ class BaseSignInWdg(Widget):
 
 class WebLoginWdg2(BaseSignInWdg):
 
-    LOGIN_MSG = 'login_message'
+    def get_content_styles(self):
+        '''Styling for content (form) box, may be overrided.'''
+
+        styles = HtmlElement.style('''
+            .password-inputs {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .password-inputs .sign-in-btn {
+                align-self: center;
+            }
+
+            .reset-container {
+              display: flex;
+              flex-direction: column;
+            }
+
+            .sign-in-btn.email-reset-btn {
+              align-self: flex-start;
+            }
+
+            .code-msg-container {
+              margin: 20 0;
+              color: #666;
+              font-size: 12px;
+              text-align: left;
+            }
+
+            .msg-user {
+              text-decoration: underline;
+            }
+
+            .spt_code_div {
+              display: flex;
+              flex-direction: column;
+            }
+        ''')
+
+        return styles
 
     def get_content(self):
+        '''Determine appropriate form content based on web form data and return it.'''
+
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+
+        reset_password = web.get_form_value('reset_password') == 'true'
+        reset_request = web.get_form_value('reset_request') == 'true'
+        send_code = web.get_form_value('send_code') == 'true'
+
+        back_to_login = web.get_form_value("back_to_login") == 'true'
+        if back_to_login:
+            reset_password = False
+            reset_request = False
+            send_code = False
+
+        if reset_password:
+            code = web.get_form_value('code')
+            login_name = web.get_form_value('login')
+            login = Login.get_by_login(login_name, use_upn=True)
+
+            code_correct = False
+            if login:
+                data = login.get_json_value('data')
+                if data:
+                    temporary_code = data.get('temporary_code')
+                    if code == temporary_code:
+                        code_correct = True
+                        return self.get_new_password_content()
+            if not code_correct:
+                return self.get_code_confirmation_content()
+        elif send_code:
+            return self.get_code_confirmation_content()
+        elif reset_request:
+            return self.get_reset_options_content()
+        else:
+            return self.get_login_content()
+
+    def get_new_password_content(self):
+        '''Return new password form.'''
+
+        web = WebContainer.get_web()
+        login_name = web.get_form_value('login')
+        hidden = HiddenWdg('login', login_name)
+
+        div = DivWdg()
+        div.add_style("margin: 0px 0px")
+        div.add(hidden)
+
+
+        # hidden element in the form to pass message that this was not
+        # actually a typical submitted form, but rather the result
+        # of a login page
+        div.add( HiddenWdg("is_from_login", "yes") )
+        div.add_style("font-size: 10px")
+
+        login_div = DivWdg()
+        div.add(login_div)
+        login_div.add_class("password-inputs")
+
+        password_container = DivWdg()
+        login_div.add(password_container)
+        password_container.add_class("sign-in-input")
+        password_container.add("<div class='label'>Password</div>")
+
+        password_wdg = PasswordWdg("my_password")
+        password_container.add(password_wdg)
+
+        confirm_password_container = DivWdg()
+        login_div.add(confirm_password_container)
+        confirm_password_container.add_class("sign-in-input")
+        confirm_password_container.add("<div class='label'>Confirm Password</div>")
+
+        confirm_password_wdg = PasswordWdg("confirm_password")
+        confirm_password_container.add(confirm_password_wdg)
+
+        reset_button = DivWdg('Reset')
+        login_div.add(reset_button)
+        reset_button.add_class("sign-in-btn hand")
+        reset_button.add_attr('title', 'Reset Password')
+        reset_button.add_event("onclick", "document.form.elements['new_password'].value='true'; document.form.submit()")
+
+        hidden = HiddenWdg("new_password")
+        login_div.add(hidden)
+
+        div.add(self.get_content_styles())
+
+        return div
+
+    def get_code_confirmation_content(self):
+        '''Return code confirmation form.'''
+
+        web = WebContainer.get_web()
+        login_name = web.get_form_value('reset_login')
+        hidden = HiddenWdg('login', login_name)
+
+        div = DivWdg()
+        div.add_style("margin: 0px 0px")
+
+        div.add(hidden)
+
+        # hidden element in the form to pass message that this was not
+        # actually a typical submitted form, but rather the result
+        # of a login page
+        div.add( HiddenWdg("is_from_login", "yes") )
+        div.add_style("font-size: 10px")
+        div.add_class("reset-container")
+        
+        code_div = DivWdg()
+        div.add(code_div)
+        code_div.add_class("spt_code_div")
+
+        code_div.add("<div class='code-msg-container'>A code was sent to <span class='msg-user'>%s</span>'s email. Please enter the code to reset your password:</div>" % login_name)
+        
+        code_container = DivWdg()
+        code_div.add(code_container)
+        code_container.add_class("sign-in-input")
+        code_container.add("<div class='label'>Code</div>")
+
+        code_wdg = TextWdg("code")
+        code_container.add(code_wdg)
+
+        next_button = DivWdg('Next')
+        code_div.add(next_button)
+        next_button.add_class('sign-in-btn hand')
+        next_button.add_attr('title', 'Next')
+        next_button.add_event("onclick", "document.form.elements['reset_password'].value='true'; document.form.submit()")
+
+        hidden = HiddenWdg('reset_password')
+        code_div.add(hidden)
+
+        div.add(self.get_content_styles())
+        
+        return div
+  
+    def get_reset_options_content(self):
+        '''Return reset options form.'''
+
+        web = WebContainer.get_web()
+        login_name = web.get_form_value('login')
+        reset_login_name = web.get_form_value('reset_login')
+        hidden = HiddenWdg('login', login_name)
+
+        div = DivWdg()
+        div.add_style("margin: 0px 0px")
+
+        div.add(hidden)
+
+        # hidden element in the form to pass message that this was not
+        # actually a typical submitted form, but rather the result
+        # of a login page
+        div.add( HiddenWdg("is_from_login", "yes") )
+        div.add_style("font-size: 10px")
+        div.add_class("reset-container")
+
+        reset_div = DivWdg()
+        div.add(reset_div)
+        reset_div.add_class("spt_reset_div")
+
+        name_container = DivWdg()
+        reset_div.add(name_container)
+        name_container.add_class("sign-in-input")
+        name_container.add("<div class='label'>Name</div>")
+
+        name_wdg = TextWdg("reset_login")
+        name_container.add(name_wdg)
+        if reset_login_name:
+            name_wdg.set_value(reset_login_name)
+        elif login_name:
+            name_wdg.set_value(login_name)
+
+        # build the button manually
+        email_reset_btn = DivWdg('Reset via Email')
+        reset_div.add(email_reset_btn)
+        email_reset_btn.add_class('sign-in-btn hand')
+        email_reset_btn.add_attr('title', 'Reset via Email')
+        email_reset_btn.add_event('onclick',"document.form.elements['send_code'].value='true'; document.form.submit()")
+
+        hidden = HiddenWdg('send_code')
+        div.add(hidden)
+
+        div.add(self.get_content_styles())
+        
+        return div
+  
+    def get_login_content(self):
+        '''Return default login form.'''
+
         name_label = self.kwargs.get('name_label') or "Name"
         password_label = self.kwargs.get('password_label') or "Password"
         override_password = self.kwargs.get('override_password') == "true"
@@ -1861,7 +2095,7 @@ class WebLoginWdg2(BaseSignInWdg):
 
 
         web = WebContainer.get_web()
-        msg = web.get_form_value(self.LOGIN_MSG)
+        msg = web.get_form_value(self.LOGIN_MSG_LABEL)
 
         allow_change_admin = self.kwargs.get("allow_change_admin")
         if allow_change_admin in [False, 'false']:
@@ -1881,7 +2115,7 @@ class WebLoginWdg2(BaseSignInWdg):
             if admin_login and admin_login.get_value('s_status') =='retired':
                 admin_login.reactivate()
                 web = WebContainer.get_web()
-                web.set_form_value(self.LOGIN_MSG, "admin user has been reactivated.")
+                web.set_form_value(self.LOGIN_MSG_LABEL, "admin user has been reactivated.")
                 admin_password = admin_log.get_value("password")
                 if admin_password == Login.get_default_encrypted_password():
                     change_admin = True
@@ -1933,7 +2167,7 @@ class WebLoginWdg2(BaseSignInWdg):
        
         if hosts and len(hosts) != len(domains):
             msg = 'When specified, the number of IP_address has to match the number of domains'
-            web.set_form_value(self.LOGIN_MSG, msg)
+            web.set_form_value(self.LOGIN_MSG_LABEL, msg)
 
         host = web.get_http_host()
         if host.find(':') != -1:
@@ -2038,8 +2272,7 @@ class WebLoginWdg2(BaseSignInWdg):
             msg = 'Your session has expired. Please login again.'
 
         if msg:
-            from tactic.ui.widget import CodeConfirmationWdg
-            if msg == CodeConfirmationWdg.RESET_MSG:
+            if msg == WebLoginWdg2.RESET_COMPLETE_MSG:
                 err_msg_container.add(IconWdg("INFO", IconWdg.INFO))
 
             err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
@@ -2049,7 +2282,7 @@ class WebLoginWdg2(BaseSignInWdg):
             forgot_password_container.add(hidden)
 
             authenticate_class = Config.get_value("security", "authenticate_class")
-            if msg != CodeConfirmationWdg.RESET_MSG and not authenticate_class:
+            if msg != WebLoginWdg2.RESET_COMPLETE_MSG and not authenticate_class:
                 access_msg = "Forgot your password?"
                 login_value = web.get_form_value('login')
                 js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
@@ -2058,8 +2291,8 @@ class WebLoginWdg2(BaseSignInWdg):
                 forgot_password_container.add(link)
 
 
-        div.add(HiddenWdg(self.LOGIN_MSG))
-        
+        div.add(HiddenWdg(self.LOGIN_MSG_LABEL))
+        div.add(self.get_content_styles())
         return div
 
 
