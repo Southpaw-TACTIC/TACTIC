@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:fyhp:q", ["site","force","yes","help","project=","quiet"])
-    except getopt.error, msg:
+    except getopt.error as msg:
         print(msg)
         sys.exit(2)
     # process options
@@ -81,7 +81,7 @@ if __name__ == '__main__':
         if is_forced:
             msg = "Upgrading to version [%s] with force option" % current_version
         if not is_confirmed:
-	    answer = raw_input(" %s. Continue (y/n): " %msg)
+            answer = input(" %s. Continue (y/n): " %msg)
             if answer == "y":
                 pass
             elif answer == 'n':
