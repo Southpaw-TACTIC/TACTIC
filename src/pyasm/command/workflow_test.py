@@ -74,6 +74,9 @@ class WorkflowCmd(Command):
             Workflow().init()
 
 
+            self._test_namespace_dependency()
+
+
             # FIXM:: these are currently broken
             #self._test_check()
             #self._test_progress_reject()
@@ -1018,6 +1021,53 @@ class WorkflowCmd(Command):
             self.assertEquals( "complete", person.get_value("z") )
 
         self.assertEquals( "complete", city.get_value("c") )
+
+
+
+
+    def _test_namespace_dependency(self):
+
+        # create a dummy sobject
+        city = SearchType.create("unittest/city")
+
+        city_pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="action" name="b"/>
+          <process type="action" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        city_pipeline, city_processes = self.get_pipeline(city_pipeline_xml)
+
+        city.set_value("pipeline_code", city_pipeline.get_code())
+        city.commit()
+
+
+        tasks = Task.add_initial_tasks(city, namespace="city")
+
+
+
+
+
+        """
+        # run a workflow under a namespace
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": city_pipeline,
+            "sobject": city,
+            "process": process,
+            "namespace": "whatever"
+        }
+        Trigger.call(self, "process|pending", output)
+        """
+        pass
+
+
+
 
 
 

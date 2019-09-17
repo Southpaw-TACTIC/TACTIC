@@ -1123,18 +1123,24 @@ class Task(SObject):
 
             properties = workflow.get("properties") or {}
 
-            task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
-            if task_creation == "none":
-                continue
-
-
             if process_type in ['hierarchy']:
-                subpipeline_code = process_sobject.get("subpipeline_code")
+
+
+                if version_2:
+                    settings = workflow.get("default")
+                    task_creation = settings.get("task_creation")
+                    subpipeline_code = settings.get("subpipeline_code")
+                else:
+                    task_creation = properties.get("task_creation")
+                    subpipeline_code = process_sobject.get("subpipeline_code")
+
+
+                if task_creation == "none":
+                    continue
 
                 # subtasks_only, top_only, all, none
                 subtasks = []
                 if task_creation in ['subtasks_only', 'all']:
-
                     # create the subtasks
                     if subpipeline_code:
                         subtasks = Task.add_initial_tasks(sobject, subpipeline_code, start_date=start_date, parent_process=process_name, status=status )
@@ -1150,6 +1156,13 @@ class Task(SObject):
                 if subtasks:
                     diff = subtasks[-1].get_datetime_value("bid_end_date") - subtasks[0].get_datetime_value("bid_start_date")
                     duration = diff.days
+
+            else:
+
+                task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
+                if task_creation == "none":
+                    continue
+
 
 
 
@@ -1669,7 +1682,13 @@ class TaskGenerator(object):
 
         # if this process has hierarchy, then create the subtasks
         if process_type in ['hierarchy']:
-            subpipeline_code = process_sobject.get("subpipeline_code")
+            if version_2:
+                settings = workflow.get("default")
+                task_creation = settings.get("task_creation")
+                subpipeline_code = settings.get("subpipeline")
+            else:
+                task_creation = properties.get("task_creation")
+                subpipeline_code = process_sobject.get("subpipeline_code")
 
 
             # subtasks_only, top_only, all, none
