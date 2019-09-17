@@ -23,7 +23,7 @@ from pyasm.biz import Project
 from pyasm.command import Workflow, Command
 from pyasm.security import Site
 
-import time, datetime, types
+import time, datetime, types, six
 
 
 
@@ -84,6 +84,7 @@ class Scheduler(object):
             initialdelay=delay,
             processmethod=mode, args=None, kw=None )
 
+
     def add_interval_task(self, task, interval, mode='threaded',delay=0):
         action = task._do_execute
         self._process_task(task, mode)
@@ -94,9 +95,9 @@ class Scheduler(object):
         self.tasks[task.get_name()] = scheduler_task
 
 
-    def add_daily_task(self, task, time, mode="threaded", weekdays=range(1,8)):
+    def add_daily_task(self, task, time, mode="threaded", weekdays=list(range(1,8))):
 
-        if isinstance(time, basestring):
+        if isinstance(time, six.string_types):
             hour, minute = time.split(":")
             hour = int(hour)
             minute = int(minute)
@@ -109,10 +110,11 @@ class Scheduler(object):
         action = task._do_execute
         self._process_task(task, mode)
 
-        self.scheduler.add_daytime_task(
+        scheduler_task = self.scheduler.add_daytime_task(
             action=action, taskname=task.get_name(),
             weekdays=weekdays, monthdays=None, timeonday=timeonday,
             processmethod=mode, args=None, kw=None )
+        self.tasks[task.get_name()] = scheduler_task
 
     def add_weekly_task(self, task, weekday, time, mode='threaded'):
 
@@ -121,10 +123,12 @@ class Scheduler(object):
         action = task._do_execute
         self._process_task(task, mode)
 
-        self.scheduler.add_daytime_task(
+        scheduler_taks = self.scheduler.add_daytime_task(
             action=action, taskname=task.get_name(),
             weekdays=weekdays, monthdays=None, timeonday=timeonday,
             processmethod=mode, args=None, kw=None )
+
+        self.tasks[task.get_name()] = scheduler_task
 
 
     def start(self):

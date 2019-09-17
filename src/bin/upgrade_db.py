@@ -21,6 +21,8 @@ from pyasm.search import Search, DbContainer, SObject, Sql
 from pyasm.search.upgrade import Upgrade
 from pyasm.common import Container, Environment
 
+raw_input = input
+
 
 
 if __name__ == '__main__':
@@ -81,7 +83,7 @@ if __name__ == '__main__':
         if is_forced:
             msg = "Upgrading to version [%s] with force option" % current_version
         if not is_confirmed:
-            answer = input(" %s. Continue (y/n): " %msg)
+            answer = raw_input(" %s. Continue (y/n): " %msg)
             if answer == "y":
                 pass
             elif answer == 'n':

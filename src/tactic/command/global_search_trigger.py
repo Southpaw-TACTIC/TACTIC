@@ -297,7 +297,10 @@ class GlobalSearchTrigger(Trigger):
             if 'collection' in keywords_data:
                 collection_keywords_data = keywords_data.get('collection')
 
-                collection_keywords_data_values = [x.encode('utf-8','replace') for x in collection_keywords_data.values() if x]
+                if not Common.IS_Pv3:
+                    collection_keywords_data_values = [x.encode('utf-8','replace') for x in collection_keywords_data.values() if x]
+                else:
+                    collection_keywords_data_values = [x for x in collection_keywords_data.values() if x]
                 collection_keywords = " ".join(collection_keywords_data_values)
                 collection_keywords = " ".join(set(collection_keywords.split(" ")))
                 collection_keywords = collection_keywords.lower()

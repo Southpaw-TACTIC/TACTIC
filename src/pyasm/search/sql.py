@@ -3546,6 +3546,9 @@ class CreateTable(Base):
 
 
     def add_constraint(self, columns, mode="UNIQUE"):
+        if isinstance(columns, six.string_types):
+            columns = [columns]
+
         constraint = {
             'columns': columns,
             'mode': mode
@@ -3721,7 +3724,7 @@ class DropTable(Base):
 
 
         # dump the table to a file and store it in cache
-        from sql_dumper import TableSchemaDumper
+        from .sql_dumper import TableSchemaDumper
         dumper = TableSchemaDumper(self.search_type)
         try:
             # should i use mode='sobject'? it defaults to 'sql'

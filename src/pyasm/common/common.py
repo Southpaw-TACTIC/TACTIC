@@ -664,7 +664,7 @@ class Common(Base):
             a list of sorted values is returned '''
         keys = list(dct.keys())
         keys.sort(reverse=reverse)
-        return map(dct.get, keys)
+        return list(map(dct.get, keys))
     sort_dict = staticmethod(sort_dict)
 
     def get_dict_list(dct):

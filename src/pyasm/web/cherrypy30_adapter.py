@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['CherryPyException', 'CherryPyAdapter']
+__all__ = ['CherryPyException', 'CherryPyAdapter', "get_app_server"]
 
 
 import types, os, re

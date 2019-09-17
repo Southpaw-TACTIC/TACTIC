@@ -255,12 +255,10 @@ class FileNaming(object):
 
         try:
             file_name = eval( "self.%s()" % func_name)
+        except AttributeError as e:
+            pass
         except Exception as e:
-            if e[0].find("object has no attribute '%s'"%func_name) != -1:
-                file_name = self.get_default()
-            
-            else:
-                raise
+            raise
 
         file_name = Common.get_filesystem_name(file_name)
 

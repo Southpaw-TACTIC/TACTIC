@@ -3172,9 +3172,6 @@ class ProcessInfoWdg(BaseRefreshWdg):
         elif node_type == 'unknown':
             widget = UnknownInfoWdg(**self.kwargs)
 
-        elif node_type == 'progress':
-            widget = ProgressInfoWdg(**self.kwargs)
-
         else:
             from pyasm.command import CustomProcessConfig
             widget = CustomProcessConfig.get_info_handler(node_type, self.kwargs)
@@ -3195,6 +3192,10 @@ class ProcessInfoWdg(BaseRefreshWdg):
 
 
 class BaseInfoWdg(BaseRefreshWdg):
+
+    def set_as_section_top(self, widget):
+        widget.add_class("spt_section_top")
+        SessionalProcess.add_relay_session_behavior(widget)
 
 
     def get_description_wdg(self):
@@ -5677,10 +5678,8 @@ class DependencyInfoWdg(BaseInfoWdg):
         top = self.top
         top.add_style("padding: 20px 0px")
         top.add_class("spt_dependency_top")
-        self.initialize_session_behavior(top)
 
         top.add_class("spt_section_top")
-        SessionalProcess.add_relay_session_behavior(top)
 
 
         title_wdg = self.get_title_wdg(process, node_type)
@@ -5691,9 +5690,12 @@ class DependencyInfoWdg(BaseInfoWdg):
         top.add(settings_wdg)
         settings_wdg.add_style("padding: 10px")
 
+        SessionalProcess.add_relay_session_behavior(settings_wdg)
+
 
         # FIXME: HARD CODED
         search_type = "vfx/asset"
+        search_type = "workflow/job"
 
         project = Project.get()
         search_type_sobjs = project.get_search_types(include_multi_project=True)
@@ -5712,16 +5714,13 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Notify Search Type</b>")
+        settings_wdg.add("<b>Send Message to Related Items::</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
-
-        self.add_session_behavior(select, "select", "spt_dependency_top", "related_search_type")
-
-        settings_wdg.add("<span style='opacity: 0.6'>This will set a dependency on the stype</span>")
+        settings_wdg.add("<span style='opacity: 0.6'>This will send a message to the selected items</span>")
         settings_wdg.add("<br/>")
 
 
@@ -5738,20 +5737,42 @@ class DependencyInfoWdg(BaseInfoWdg):
         radio.set_checked()
         scope_div.add(" Only Related Items<br/>")
 
-        self.add_session_behavior(radio, "radio", "spt_dependency_top", "related_scope")
-
         radio = RadioWdg("related_scope")
         radio.add_attr("value", "global")
         scope_div.add(radio)
         scope_div.add(" All Items")
         scope_div.add("<br/>")
 
-        self.add_session_behavior(radio, "radio", "spt_dependency_top", "related_scope")
-
         search = Search("sthpw/pipeline")
         search.add_filter("search_type", search_type)
         related_pipelines = search.get_sobjects()
 
+
+
+        # workflows list
+        values = set()
+        labels = set()
+        for related_pipeline in related_pipelines:
+            values.add(related_pipeline.get_code())
+            labels.add(related_pipeline.get_value("name"))
+        values = list(values)
+        labels = list(labels)
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<b>To Workflow</b>")
+        select = SelectWdg("related_pipeline_code")
+        settings_wdg.add(select)
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+        select.add_empty_option("-- Select --")
+
+        settings_wdg.add("<span style='opacity: 0.6'>Determines which process to connect to</span>")
+        settings_wdg.add("<br/>")
+
+
+
+
+        
         values = set()
         for related_pipeline in related_pipelines:
             related_process_names = related_pipeline.get_process_names()
@@ -5761,6 +5782,7 @@ class DependencyInfoWdg(BaseInfoWdg):
         values = list(values)
         values.sort()
 
+
         settings_wdg.add("<br/>")
         settings_wdg.add("<b>To Process</b>")
         select = SelectWdg("related_process")
@@ -5768,12 +5790,11 @@ class DependencyInfoWdg(BaseInfoWdg):
         select.set_option("values", values)
         select.add_empty_option("-- Select --")
 
-        self.add_session_behavior(select, "select", "spt_dependency_top", "related_process")
-
         settings_wdg.add("<span style='opacity: 0.6'>Determines which process to connect to</span>")
         settings_wdg.add("<br/>")
 
         
+
 
 
 
@@ -5784,7 +5805,6 @@ class DependencyInfoWdg(BaseInfoWdg):
         select.set_option("values", "Pending|Action|Complete")
         select.add_empty_option("-- Select --")
 
-        self.add_session_behavior(select, "select", "spt_dependency_top", "related_status")
 
         settings_wdg.add("<span style='opacity: 0.6'>Determines which status to set the process to.</span>")
         settings_wdg.add("<br/>")
@@ -5801,17 +5821,17 @@ class DependencyInfoWdg(BaseInfoWdg):
         select.set_option("values", "false|true")
         #select.add_empty_option("-- Select --")
 
-        self.add_session_behavior(select, "select", "spt_dependency_top", "related_wait")
 
         settings_wdg.add("<span style='opacity: 0.6'>Determines if this process will wait until it receives a complete signal (from another dependency) or set to complete automatically")
         settings_wdg.add("<br/>")
-
 
 
         settings_wdg.add("<br clear='all'/>")
 
 
         return top
+
+
 
 
     def get_default_kwargs(self):
@@ -6851,7 +6871,8 @@ class ProcessInfoCmd(Command):
         data = process_sobj.get_json_value("workflow") or {}
 
         subpipeline_code = self.kwargs.get("subpipeline")
-        process_sobj.set_value("subpipeline_code", subpipeline_code)
+        if subpipeline_code:
+            process_sobj.set_value("subpipeline_code", subpipeline_code)
         process_sobj.commit()
 
         task_creation = self.kwargs.get("task_creation") or "subtasks_only"
@@ -6993,13 +7014,16 @@ class NewProcessInfoCmd(Command):
             handled.add(cbk_class)
 
         # custom save handler
-        custom = self.kwargs.get("_custom")
+        # FIXME: not sure why there was a check for _custom
+        #custom = self.kwargs.get("_custom")
+        custom = True
         if custom:
             # Get custom save cmd via node_type
             from pyasm.command import CustomProcessConfig
             try:
                 cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
-                return cmd.execute()
+                if cmd:
+                    return cmd.execute()
             except Exception as e:
                 print
                 print("Failed saving node for node type [%s]:" % node_type)
@@ -9325,6 +9349,7 @@ class PipelineSaveCbk(Command):
 
         for i in range(len(process_nodes)):
             node = process_nodes[i]
+
             process = None
             process_code = xml.get_attribute(node, "process_code")
             process_name = xml.get_attribute(node, "name")
