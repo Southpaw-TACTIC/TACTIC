@@ -32,21 +32,8 @@ from pyasm.common import Environment, Common, Date, Config, jsonloads, jsondumps
 from pyasm.search import Search, DbContainer, SearchType
 from pyasm.command import Workflow
 
-if Common.IS_Pv3:
-    python = Config.get_value("services", "python3")
-    if not python:
-        python = os.environ.get('PYTHON3')
 
-    if not python:
-        python = 'python3'
-
-else:
-    python = Config.get_value("services", "python")
-    if not python:
-        python = os.environ.get('PYTHON')
-
-    if not python:
-        python = 'python'
+python = Common.get_python()
 
 
 STARTUP_EXEC = '%s "%s/src/bin/startup.py"' % (python, tactic_install_dir)
