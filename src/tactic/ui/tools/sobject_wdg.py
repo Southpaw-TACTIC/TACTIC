@@ -777,7 +777,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
                 ''' % values)
 
             elif tab == "pipeline":
-                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 config_xml.append('''
                 <element name="pipeline" title="Workflow">
                   <display class='tactic.ui.tools.TaskDetailPipelineWrapperWdg'>
@@ -2109,8 +2108,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
                 'interval': 3,
                 'value': True,
                 'cbjs_action': '''
-                console.log("refreshing");
-                //spt.panel.refresh_element(bvr.src_el);
+                spt.panel.refresh_element(bvr.src_el);
                 '''
             } )
 

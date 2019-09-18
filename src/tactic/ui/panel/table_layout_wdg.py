@@ -569,9 +569,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 self.view_editable = True
 
 
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(view_editable)
-        print(admin_edit)
         self.color_maps = self.get_color_maps()
 
         from pyasm.web import WebContainer
@@ -1987,9 +1984,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         is_editable = self.kwargs.get("is_editable")
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(self.kwargs)
-        print(is_editable)
 
         # Edit behavior
         if is_editable in [False, 'false']:
@@ -2005,7 +1999,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             is_editable = False
             self.view_editable = False
 
-        print(is_editable)
         if is_editable:
             table.add_relay_behavior( {
                 'type': 'click',
@@ -4884,8 +4877,6 @@ spt.table.add_row = function(kwargs) {
 }
 
 spt.table.add_new_item = function(kwargs) {
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.log(kwargs);
 
     if (typeof(kwargs) == 'undefined') {
         kwargs = {};
@@ -4899,9 +4890,6 @@ spt.table.add_new_item = function(kwargs) {
     var search_type = layout.getAttribute("spt_search_type");
 
     var table = spt.table.get_table();
-    console.log(layout);
-    console.log(table);
-    console.log(search_type);
     if (kwargs.row) {
         var row = kwargs.row;
         var position = "after";
@@ -4922,8 +4910,6 @@ spt.table.add_new_item = function(kwargs) {
         var position = "before";
     }
 
-    console.log(row);
-    console.log(position);
 
 
 
@@ -4990,12 +4976,9 @@ spt.table.add_new_item = function(kwargs) {
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
 
-    console.log("event1: " + event);
 
-    var event = "insert|"+search_type;
+    var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
-
-    console.log("event2: " + event);
 
     // find the no items row
     no_items = table.getElement(".spt_table_no_items");
