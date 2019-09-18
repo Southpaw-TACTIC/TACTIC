@@ -2145,7 +2145,8 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             div.add(title)
 
         kwargs = {
-            'width': "auto",
+            #'width': "auto",
+            'width': 600,
             'height': height,
             'show_title': show_title,
             'pipeline': pipeline_code,

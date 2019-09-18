@@ -207,13 +207,15 @@ class CherryPyAdapter(WebEnvironment):
                 return [values]
             elif not values:
                 return []
-            elif not IS_Pv3 and isinstance(values, list):
-                # Only needed in python 2
+            elif isinstance(values, list):
                 new_values = []
-                for value in values:
-                    if isinstance(value, unicode):
-                        value = self._process_unicode(value)
-                    new_values.append(value)
+                if not IS_Pv3:
+                    for value in values:
+                        if isinstance(value, unicode):
+                            value = self._process_unicode(value)
+                        new_values.append(value)
+                else:
+                    new_values = values
                 return new_values
             else:
                 return [values]

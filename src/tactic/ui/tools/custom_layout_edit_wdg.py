@@ -1328,6 +1328,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     td = table.add_cell()
                     td.add_style("vertical-align: top")
 
+
                     header_div = DivWdg()
                     td.add(header_div)
                     header_div.add_style("display: flex")

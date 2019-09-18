@@ -1213,7 +1213,7 @@ class TitleTopWdg(TopWdg):
         body.add("</form>\n")
 
         if web.is_admin_page():
-            from tactic_branding_wdg import TacticCopyrightNoticeWdg
+            from .tactic_branding_wdg import TacticCopyrightNoticeWdg
             copyright = TacticCopyrightNoticeWdg()
             body.add(copyright)
 

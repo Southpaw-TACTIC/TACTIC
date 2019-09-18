@@ -466,6 +466,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         top.add(outer)
         outer.add_class("spt_pipeline_resize")
         outer.add_class("spt_resizable")
+        outer.add_style("position: relative")
 
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
         if window_resize_offset:
@@ -504,6 +505,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add(hot_key_div)
         hot_key_div.add_style("margin-left: -5000px")
         hot_key_div.add_style("position: absolute")
+        #hot_key_div.add_style("z-index: 1000")
 
         hot_key_input = TextInputWdg(name="hot_key_input")
         hot_key_div.add(hot_key_input)
@@ -530,7 +532,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         } )
  
-
         outer.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''
@@ -847,10 +848,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # inner is used to scale
         inner = DivWdg()
         outer.add(inner)
-        #outer.add_color("background", "background", -2)
+
         inner.add_class("spt_pipeline_scale")
         inner.add_style("z-index: 100")
-        inner.add_style("position: relative")
+        inner.add_style("box-sizing: border-box")
+        inner.add_style("position: absolute")
+        inner.add_style("top: 0px")
+        inner.add_style("left: 0px")
+        inner.add_style("pointer-events: none")
 
 
         # load the js
@@ -887,6 +892,20 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 '''
             } )
 
+
+        # create a size widget for the node canvas
+        canvas_size_wdg = DivWdg()
+        inner.add(canvas_size_wdg)
+        canvas_size_wdg.add_class("spt_pipeline_canvas_size")
+        canvas_size_wdg.add_style("width: %s" % width)
+        canvas_size_wdg.add_style("height: %s" % height)
+
+        #canvas_size_wdg.add_style("border: solid 1px green")
+        canvas_size_wdg.add_style("pointer-events: none")
+
+
+
+
         # create a canvas where all the nodes are drawn
         canvas = DivWdg()
         inner.add(canvas)
@@ -907,29 +926,46 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_class("spt_pipeline_canvas")
         canvas.add_style("width: %s" % width)
         canvas.add_style("height: %s" % height)
+
+        canvas.add_style("width: 0px")
+        canvas.add_style("height: 0px")
+        canvas.add_style("box-sizing: border-box")
+        #canvas.add_style("border: solid 1px red")
+
         canvas.add_style("z-index: 200")
         canvas.set_attr("spt_background_color", self.background_color)
+        canvas.add_style("position: absolute")
+        canvas.add_style("top: 0px")
+        canvas.add_style("left: 0px")
+
+        canvas.add_style("pointer-events: auto")
 
 
         window_resize_offset = self.kwargs.get("window_resize_offset")
         if window_resize_offset:
-            canvas.add_class("spt_window_resize")
-            canvas.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
+            #canvas.add_class("spt_window_resize")
+            #canvas.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
+            canvas_size_wdg.add_class("spt_window_resize")
+            canvas_size_wdg.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
+
 
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
             canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+            #canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+            canvas_size_wdg.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
         if self.is_editable:
             is_editable = "true"
         else:
             is_editable = 'false'
+            
 
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
         "is_editable": is_editable,
-	    "drag_el": '@',
+        "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
@@ -950,11 +986,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 spt.pipeline.init(bvr);
                 var scale = spt.pipeline.get_scale();
                 if (evt.wheel < 0) {
-                    spt.pipeline.set_scale( scale / 1.1 );
+                    var scale = scale / 1.1;
                 }
                 else {
-                    spt.pipeline.set_scale( scale * 1.1 );
+                    var scale = scale * 1.1;
                 }
+                spt.pipeline.set_scale( scale );
+
             '''
             } )
 
@@ -1080,11 +1118,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         template_div.add(progress)
 
 
-        endpoint = self.get_endpoint_node("output", node_type="output")
-        template_div.add(endpoint)
+        #endpoint = self.get_endpoint_node("output", node_type="output")
+        #template_div.add(endpoint)
 
-        endpoint = self.get_endpoint_node("input", node_type="input")
-        template_div.add(endpoint)
+        #endpoint = self.get_endpoint_node("input", node_type="input")
+        #template_div.add(endpoint)
 
         """
 	Add template of connector panel
@@ -1191,6 +1229,43 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         } )
 
 
+
+        # add a screenspace div for items that do not move with scroll
+        screen_div = DivWdg()
+        outer.add(screen_div)
+        screen_div.add_class("spt_screen")
+        screen_div.add_style("width: 100%")
+        screen_div.add_style("height: 100%")
+        screen_div.add_style("overflow: hidden")
+        screen_div.add_style("top: 0px")
+        screen_div.add_style("left: 0px")
+        screen_div.add_style("position: absolute")
+        screen_div.add_style("z-index: 10")
+
+        screen_div.add_behavior( {
+        "type": 'drag',
+        "mouse_btn": 'LMB',
+        "drag_el": '@',
+        "cb_set_prefix": 'spt.pipeline.canvas_drag'
+        } )
+
+
+        if self.kwargs.get("use_mouse_wheel") in [True, 'true']:
+            screen_div.add_behavior( {
+            "type": 'wheel',
+            "cbjs_action": '''
+                spt.pipeline.init(bvr);
+                var scale = spt.pipeline.get_scale();
+                if (evt.wheel < 0) {
+                    spt.pipeline.set_scale( scale / 1.1 );
+                }
+                else {
+                    spt.pipeline.set_scale( scale * 1.1 );
+                }
+            '''
+            } )
+
+
         return top
 
 
@@ -1200,8 +1275,12 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         from pyasm.web import Canvas
         canvas = Canvas()
         canvas.add_class("spt_pipeline_paint")
-        #canvas.add_style("float: left")
-        canvas.add_style("position: relative")
+        #canvas.add_style("position: relative")
+        canvas.add_style("position: absolute")
+        canvas.add_style("box-sizing: border-box")
+        canvas.add_style("border: solid 1px red")
+        canvas.add_style("top: 0px")
+        canvas.add_style("right: 0px")
 
         height = self.height
         try:
@@ -1209,7 +1288,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             height = str(height) + "px"
         except ValueError:
             pass
-        canvas.add_style("margin-top: -%s" % height)
+
+        #canvas.add_style("margin-top: -%s" % height)
+
+
+        canvas.set_style("height: 100%")
+        canvas.set_style("width: 100%")
+
         canvas.set_attr("width", self.width)
         canvas.set_attr("height", self.height)
         canvas.set_attr("spt_background_color", self.background_color)
@@ -1357,10 +1442,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             width = width
             height = height + 40
         elif node_type == "dependency":
-            border_radius =  5
+            border_radius = 15
             #width = width
             height = 60
-            width = 80
+            width = 100
         elif node_type == "progress":
             border_radius =  30
             #width = width
@@ -1951,6 +2036,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         #return icon
 
 
+    """
     def get_endpoint_node(self, name, node_type ):
 
         node = DivWdg()
@@ -2023,7 +2109,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         self.add_default_node_behaviors(node, text)
 
         return node
-
+    """
 
 
 
@@ -2667,6 +2753,7 @@ spt.pipeline.set_top = function(top) {
 spt.pipeline._init = function() {
     var top = spt.pipeline.top;
     var canvas = top.getElement(".spt_pipeline_canvas");
+    var canvas_size = top.getElement(".spt_pipeline_canvas_size");
 
     var allow_cycle = top.getAttribute("spt_allow_cycle");
     if (allow_cycle) {
@@ -2682,6 +2769,7 @@ spt.pipeline._init = function() {
     }
     var paint = top.getElement(".spt_pipeline_paint");
     var ctx = paint.getContext('2d');
+    var screen = top.getElement(".spt_screen");
 
     var data = top.spt_data;
     if (typeof(data) == 'undefined') {
@@ -2691,8 +2779,12 @@ spt.pipeline._init = function() {
         data.translate = {x: 0, y: 0};
     }
     data.canvas = canvas;
+    data.canvas_size = canvas_size;
     data.paint = paint;
+    data.screen = screen;
+    data.screen_nodes = screen.getElements(".spt_screen_node");
     data.ctx = ctx;
+
 
     var connector_panel_data = top.getAttribute("spt_connector_panel_data");
     if (connector_panel_data) {
@@ -2704,7 +2796,8 @@ spt.pipeline._init = function() {
 
     // FIXME: need this delay because the table seems to resize itself somewhere
     setTimeout( function() {
-        var size = canvas.getSize();
+        //var size = canvas_size.getSize();
+        var size = top.getSize();
         if (size.x == 0 || size.y == 0) {
             return;
         }
@@ -2784,6 +2877,30 @@ spt.pipeline.get_canvas = function() {
 }
 
 
+spt.pipeline.get_screen = function() {
+
+    var top = spt.pipeline.top;
+    var screen = spt.pipeline.get_data().screen;
+    if (!screen) {
+        screen = top.getElement(".spt_screen");
+        if (screen) {
+            spt.pipeline.get_data().screen = screen;
+        }
+    }
+    return screen;
+}
+
+spt.pipeline.get_screen_nodes = function() {
+
+    var screen_nodes = spt.pipeline.get_data().screen_nodes;
+    if (!screen_nodes) {
+        var screen = spt.pipeline.get_screen();
+        screen_nodes = screen.getElements(".spt_screen_node");
+        spt.pipeline.get_data().screen_nodes = screen_nodes;
+    }
+    return screen_nodes;
+}
+ 
 
 spt.pipeline.get_ctx = function() {
     return spt.pipeline.get_data().ctx;
@@ -2941,6 +3058,17 @@ spt.pipeline.clear_canvas = function() {
     }
 
     spt.pipeline.redraw_canvas();
+
+
+    // remove screen nodes
+    var screen = top.getElement(".spt_screen");
+    if (screen) {
+        var els = screen.getElements(".spt_screen_node");
+        els.forEach( function(el) {
+            spt.behavior.destroy_element(el);
+        } );
+    }
+
 }
 
 
@@ -3525,10 +3653,10 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     if (!node_type) {
             var default_node_type = top.getAttribute("spt_default_node_type");
             if (default_node_type) {
-                    node_type = default_node_type;
+                node_type = default_node_type;
             }
             else {
-                    node_type = "manual";
+                node_type = "manual";
             }
     }
 
@@ -3553,7 +3681,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
 
     if (typeof(x) == 'undefined' || x == null) {
-            var size = canvas.getSize();
+            var size = spt.pipeline.get_canvas_size();
             var scale = spt.pipeline.get_scale();
             x = size.x/3 + nodes.length*15*scale;
             y = size.y/3 + nodes.length*10*scale;
@@ -3573,8 +3701,8 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
 
     var new_node = spt.behavior.clone(template);
     if (is_unknown) {
-            // change it from "unknown"
-            new_node.setAttribute("spt_node_type", node_type);
+        // change it from "unknown"
+        new_node.setAttribute("spt_node_type", node_type);
     }
     new_node.spt_node_type = node_type;
 
@@ -4272,7 +4400,7 @@ spt.pipeline.add_folder = function(group_name, color, title) {
     new_folder.spt_group = group_name;
 
 
-    var size = canvas.getSize();
+    var size = spt.pipeline.get_canvas_size();
     var x = size.x/3 + folders.length*15;
     var y = size.y/3 + folders.length*10;
     spt.pipeline.move_to(new_folder, x, y);
@@ -4312,9 +4440,10 @@ spt.pipeline.set_folder_color = function(folder, color) {
 
 spt.pipeline.get_canvas_size = function(node) {
     // find the relative pos on the canvas
-    var canvas = spt.pipeline.get_canvas();
-    var canvas_size = canvas.getSize();
-    return canvas_size;
+    var data = spt.pipeline.get_data();
+    var canvas_size = data.canvas_size;
+    var size = canvas_size.getSize();
+    return size;
 }
 
 
@@ -4389,6 +4518,8 @@ spt.pipeline.move_all_nodes = function(rel_x, rel_y) {
         // FIXME: this is slow: need to optimize
         spt.pipeline.move_to(node, new_pos.x, new_pos.y);
     }
+
+
 
     spt.pipeline.redraw_canvas();
 
@@ -5289,6 +5420,19 @@ spt.pipeline.canvas_drag_setup = function(evt, bvr, mouse_411) {
     spt.pipeline.init(bvr);
     spt.pipeline.orig_translate = spt.pipeline.get_translate();
 
+
+    var screen = spt.pipeline.get_screen();
+    if (screen) {
+        var screen_nodes = screen.getElements(".spt_screen_node");
+        screen_nodes.forEach( function(screen_node) {
+            if (screen_node.canvas_drag_motion) {
+                screen_node.canvas_drag_setup();
+            }
+        } );
+    }
+
+
+
     spt.body.hide_focus_elements(evt);
 
     spt.pipeline.draw_skip = 0;
@@ -5327,7 +5471,15 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
     }
 
 
-
+    var screen = spt.pipeline.top.getElement(".spt_screen");
+    if (screen) {
+        var screen_nodes = screen.getElements(".spt_screen_node");
+        screen_nodes.forEach( function(screen_node) {
+            if (screen_node.canvas_drag_motion) {
+                screen_node.canvas_drag_motion(dx, dy);
+            }
+        } );
+    }
 
     var orig_translate = spt.pipeline.orig_translate;
     spt.pipeline.set_translate(orig_translate.x+dx, orig_translate.y+dy);
@@ -5472,6 +5624,10 @@ spt.pipeline.zoom_drag_action = function(evt, bvr, mouse_411) {
 
 spt.pipeline.set_scale = function(scale) {
 
+    if (scale == 0) {
+        scale = 1;
+    }
+
     // set an arbitrary max scale so drawing optimizations don't start showing up
     if (scale > 3) return;
 
@@ -5492,6 +5648,19 @@ spt.pipeline.set_scale = function(scale) {
     scale_el.setStyle("-moz-transform", transform_str)
     scale_el.setStyle("-webkit-transform", transform_str)
     scale_el.setStyle("transform", transform_str)
+
+
+
+    var screen = spt.pipeline.get_screen();
+    if (screen) {
+        //screen.setStyle("transform", "scaleY("+scale+")");
+        var els = spt.pipeline.get_screen_nodes();
+        els.forEach( function(el) {
+            el.set_scale(scale);
+        } );
+    }
+
+
 
     //TweenLite.to(scale_el, 0.2, {scale: scale});
 
@@ -5562,8 +5731,13 @@ spt.pipeline.center_node = function(node) {
 spt.pipeline.set_size = function(width, height) {
     var top = spt.pipeline.top;
     var canvas = spt.pipeline.get_canvas();
+
+
     var paint = spt.pipeline.get_paint();
     outer = top.getElement(".spt_pipeline_resize")
+
+    var canvas = outer.getElement(".spt_pipeline_canvas_size");
+
     outer.setStyle("width", ""+width);
     if (height) {
         outer.setStyle("height", ""+height);
@@ -5572,7 +5746,7 @@ spt.pipeline.set_size = function(width, height) {
     paint.setAttribute("width", ""+width);
     if (height) {
         paint.setAttribute("height", ""+height);
-        paint.setStyle("margin-top", "" + (-height));
+        //paint.setStyle("margin-top", "" + (-height));
     }
     canvas.setStyle("width", ""+width);
     if (height) {
@@ -5604,11 +5778,17 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         nodes = spt.pipeline.get_nodes_by_group(group_name);
     }
 
+
+    // fint the to left node
     var top = null;
     var left = null;
     var bottom = null;
     var right = null;
     for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].getStyle("display") == "none") {
+            continue;
+        }
+
         var pos = spt.pipeline.get_position(nodes[i]);
         if (left == null || pos.x < left) {
             left = pos.x;
@@ -5624,8 +5804,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         }
     }
 
-    var canvas = spt.pipeline.get_canvas();
-    var size = canvas.getSize();
+    var size = spt.pipeline.get_canvas_size();
     var hsize = right - left + 100;
     var hscale = size.x / hsize;
     var vsize = bottom - top + 40;
@@ -5646,12 +5825,8 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     spt.pipeline.set_scale(scale);
 
     // zero position at the specified scale
-    //var zero_pos_x = size.x/2 - size.x/2 * scale;
-    //var zero_pos_y = size.y/2 - size.y/2 * scale;
-
-
-    var zero_pos_x = 100;
-    var zero_pos_y = 100;
+    //var zero_pos_x = 100;
+    //var zero_pos_y = 100;
 
     var zero_pos_x = size.x/2 - hsize/2 - 100;
     var zero_pos_y = size.y/2 - vsize/2;
@@ -5660,6 +5835,16 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var dy = - top + zero_pos_y;
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
+
+
+    // handle screen node
+    var screen_nodes = spt.pipeline.get_screen_nodes();
+    screen_nodes.forEach( function(screen_node) {
+        if (screen_node.move_by) {
+            screen_node.move_by(dx, dy);
+        }
+    } );
+
 
 
 }
@@ -5702,8 +5887,7 @@ spt.pipeline.fit_to_node = function(node) {
 
     var node = nodes[0];
 
-    var canvas = spt.pipeline.get_canvas();
-    var size = canvas.getSize();
+    var size = spt.pipeline.get_canvas_size();
     var positions = spt.pipeline.get_position(node);
 
     // hard coded info width (400)
@@ -5715,6 +5899,16 @@ spt.pipeline.fit_to_node = function(node) {
 
     spt.pipeline.move_all_nodes(dx, dy);
     spt.pipeline.move_all_folders(dx, dy);
+
+
+    // handle screen node
+    var screen_nodes = spt.pipeline.get_screen_nodes();
+    screen_nodes.forEach( function(screen_node) {
+        if (screen_node.move_by) {
+            screen_node.move_by(dx, dy);
+        }
+    } );
+
 
 
 }
@@ -5752,7 +5946,7 @@ spt.pipeline.take_snapshot = function(container) {
             //document.body.appendChild(canvas);
             container.appendChild(canvas);
 
-            var size = canvas.getSize();
+            var size = spt.pipeline.get_canvas_size();
             var scale = size.x / 300;
             var width = 300;
             var height = size.y / scale;
@@ -5881,9 +6075,11 @@ spt.pipeline.resize_drag_motion = function(evt, bvr, mouse_411) {
     outer = top.getElement(".spt_pipeline_resize")
     paint.setAttribute("width", ""+width);
     paint.setAttribute("height", ""+height);
-    paint.setStyle("margin-top", "" + (-height));
+    //paint.setStyle("margin-top", "" + (-height));
     canvas.setStyle("width", ""+width);
     canvas.setStyle("height", ""+height);
+
+
     spt.pipeline.redraw_canvas();
     spt.pipeline.last_mouse_pos = mouse_pos;
 }
@@ -6028,7 +6224,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
         // the curves back
-        var size = canvas.getSize();
+        var size = spt.pipeline.get_canvas_size();
         var width = size.x;
         var height = size.y;
 
@@ -6208,7 +6404,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
         // the curves back
-        var size = canvas.getSize();
+        var size = spt.pipeline.get_canvas_size();
         width = size.x;
         height = size.y;
 
@@ -6545,12 +6741,12 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
     var xml_doc = spt.parse_xml(pipeline_xml);
     var pipeline_name = pipeline.name;
     var pipeline_type = pipeline.type;
-    
-    var pipeline_data = {}
-    if (typeof(pipeline.data) === "string") {
-        pipeline_data = JSON.parse(pipeline.data);
+    if (typeOf(pipeline.data) == "string") {
+        var pipeline_data = JSON.parse(pipeline.data) || {};
     }
-    
+    else {
+        var pipeline_data = pipeline.data || {};
+    }
 
     var node_index = pipeline_data.node_index || 0;
 
