@@ -2222,7 +2222,6 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
             var search_key = bvr.search_key;
             if (search_key) {
-                console.log("running set status color");
                 spt.pipeline.set_status_color(search_key);
             }
 
