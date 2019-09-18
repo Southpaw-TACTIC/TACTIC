@@ -4971,7 +4971,7 @@ spt.table.add_new_item = function(kwargs) {
     spt.remove_class(clone, 'spt_clone');
 
     // fire a client event
-    var tableId = table.getAttribute("id");
+    var tableId = spt.table.layout.getAttribute("spt_table_id");
 
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
