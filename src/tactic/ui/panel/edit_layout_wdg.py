@@ -18,7 +18,7 @@ from pyasm.widget import ThumbWdg, IconWdg, WidgetConfigView
 from tactic.ui.container import SmartMenu
 from pyasm.biz import Task, Pipeline, ProjectSetting
 
-from table_layout_wdg import TableLayoutWdg
+from .table_layout_wdg import TableLayoutWdg
 from tactic.ui.widget import SingleButtonWdg
 
 import os

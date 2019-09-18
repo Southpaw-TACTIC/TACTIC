@@ -32,7 +32,7 @@ try:
     from PIL import Image
     HAS_PIL = True
     # Test to see if imaging actually works
-    import _imaging
+    from PIL import _imaging
 except:
     HAS_PIL = False
 
@@ -285,17 +285,50 @@ class BaseMetadataParser(object):
         return data
     
    
-    def get_parser_by_path(cls, path):
+    def get_parser_by_path(cls, path, prefs={}):
         ext = File.get_extension(path)
+
+        # video parsers and availability
+        video_parser_mapping = {
+            "FFMPEG": HAS_FFMPEG,
+            "PIL": HAS_PIL
+        }
+
+        # image parsers and availability
+        image_parser_mapping = {
+            "ImageMagick": HAS_IMAGEMAGICK,
+            "PIL": HAS_PIL,
+            "EXIF": HAS_EXIF,
+            "FFMPEG" : HAS_FFMPEG
+        }
+
+        # parsers for other file types and availability
+        other_parser_mapping = {
+            "ImageMagick": HAS_IMAGEMAGICK,
+            "PIL": HAS_PIL,
+            "EXIF": HAS_EXIF,
+            "FFMPEG" : HAS_FFMPEG
+        }
 
         parser_str = None
 
+        # for each file type, check if preferred (in order) parsers are available,
+        # otherwise check in a default order
         if ext in File.VIDEO_EXT:
+            for pref in prefs.get("video", []):
+                if video_parser_mapping.get(pref, False):
+                    return cls.get_parser(pref, path)
+
             if HAS_FFMPEG:
                 parser_str = "FFMPEG"
             else:
                 parser_str = "PIL"
-        else:
+
+        elif ext in File.IMAGE_EXT:
+            for pref in prefs.get("image", []):
+                if image_parser_mapping.get(pref, False):
+                    return cls.get_parser(pref, path)
+
             if HAS_IMAGEMAGICK:
                 parser_str = "ImageMagick"
             elif HAS_PIL:
@@ -304,6 +337,21 @@ class BaseMetadataParser(object):
                 parser_str = "EXIF"
             elif HAS_FFMPEG:
                 parser_str = "FFMPEG"
+
+        else:
+            for pref in prefs.get("other", []):
+                if other_parser_mapping.get(pref, False):
+                    return cls.get_parser(pref, path)
+
+            if HAS_IMAGEMAGICK:
+                parser_str = "ImageMagick"
+            elif HAS_PIL:
+                parser_str = "PIL"
+            elif HAS_EXIF:
+                parser_str = "EXIF"
+            elif HAS_FFMPEG:
+                parser_str = "FFMPEG"
+
         return cls.get_parser(parser_str, path)
     get_parser_by_path = classmethod(get_parser_by_path)
 

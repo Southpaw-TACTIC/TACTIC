@@ -19,6 +19,36 @@ from pyasm.search.upgrade.project import *
 class ConfigUpgrade(BaseUpgrade):
 
 
+    def upgrade_v4_7_0_a10_002(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "spt_authenticate" ALTER COLUMN "data" TYPE jsonb USING data::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "spt_authenticate" ALTER COLUMN "data" TYPE json;
+            ''')
+
+
+
+    def upgrade_v4_7_0_a10_001(self):
+        self.run_sql('''
+        CREATE TABLE "spt_authenticate" (
+            "id" serial PRIMARY KEY,
+            "code" character varying(256),
+            name character varying(256),
+            description text,
+            "type" character varying(256),
+            "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
+            login character varying(256),
+            s_status varchar(32),
+            CONSTRAINT "spt_authenticate_code_idx" UNIQUE ("code")
+        );
+        ''')
+
+
+
+
     #
     # 4.7.0.a08
     #

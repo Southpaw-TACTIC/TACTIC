@@ -15,7 +15,7 @@ __all__ = ['UploadServerWdg']
 
 import os, string, sys
 
-from pyasm.common import Environment, TacticException
+from pyasm.common import Environment, TacticException, Common
 from pyasm.biz import File
 from pyasm.search import SearchType
 from pyasm.web import *
@@ -85,7 +85,8 @@ class UploadServerWdg(Widget):
         # it has been JSON dumped as unicode code points, so this decode
         # step would be necessary
         try:
-            file_name = file_name.decode('unicode-escape')
+            if not Common.IS_Pv3:
+                file_name = file_name.decode('unicode-escape')
         except UnicodeEncodeError as e:
             pass
         except UnicodeError as e:
