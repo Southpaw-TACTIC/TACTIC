@@ -738,6 +738,9 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
             line = line.strip()
             parts = line.split("=")
+            if len(parts) < 2:
+                continue
+
             name = parts[0]
             value = parts[1]
 
