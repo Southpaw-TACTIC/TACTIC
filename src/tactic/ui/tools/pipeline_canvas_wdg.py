@@ -1240,6 +1240,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         screen_div.add_behavior( {
         "type": 'drag',
+        "is_editable": is_editable,
         "mouse_btn": 'LMB',
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
@@ -1691,7 +1692,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
-
         
         if (self.add_node_behaviors):
             self.add_default_node_behaviors(node, text)
@@ -2022,6 +2022,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.set_current_position(node);
         '''
         } )
+
 
 
 
@@ -7363,7 +7364,6 @@ spt.pipeline.set_status_color = function(search_key) {
 
 
 spt.pipeline.set_task_color = function(group_name) {
-
     if (!group_name) {
         group_name = spt.pipeline.get_current_group();
     }

@@ -4221,7 +4221,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
         var row = activator;
         var search_key = row.get("spt_search_key");
 
-        console.log(search_key);
+
 
 
         var server = TacticServerStub.get();
@@ -4361,6 +4361,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
             spt.table.remove_hidden_row(activator);
         }
         Effects.fade_out(tbody, 500, on_complete);
+        spt.named_events.fire_event("delete|" + search_type, {})
     }
 
     popup.spt_on_post_delete = on_post_delete;
