@@ -959,7 +959,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             is_editable = "true"
         else:
             is_editable = 'false'
-            
+        
+        # add custom canvas behaviors on the canvas div instead
 
         canvas.add_behavior( {
         "type": 'drag',
@@ -969,7 +970,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
-
+        
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -996,7 +997,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
             } )
 
-
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -1009,10 +1009,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # create the paint where all the connectors are drawn
         paint = self.get_paint()
 
-        # add custom canvas behaviors on the canvas div instead
-        self.canvas_behaviors = self.get_canvas_behaviors()
-        for canvas_behavior in self.canvas_behaviors:
-            canvas.add_behavior( canvas_behavior )
 
 
         #paint.add_style("border: solid 1px blue");
@@ -1249,6 +1245,17 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
+        self.canvas_behaviors = self.get_canvas_behaviors()
+        for canvas_behavior in self.canvas_behaviors:
+            behavior_type = canvas_behavior.get("type")
+            behavior_action = canvas_behavior.get("cbjs_action")
+            screen_div.add_behavior({
+                "type": behavior_type,
+                "cbjs_action": '''
+                %s
+                ''' % behavior_action
+            })
+
 
         if self.kwargs.get("use_mouse_wheel") in [True, 'true']:
             screen_div.add_behavior( {
@@ -1307,9 +1314,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.init(bvr);
         '''
         } )
-
-
-
 
 
         return canvas
