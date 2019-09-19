@@ -2253,6 +2253,12 @@ class WebLoginWdg2(BaseSignInWdg):
         username_container.add("<div class='label'>%s</div>" % name_label)
 
         text_wdg = TextWdg("login")
+        
+        login_placeholder = self.kwargs.get("login_placeholder")
+        if login_placeholder:
+            text_wdg.add_attr("placeholder", login_placeholder)
+        
+        
         username_container.add(text_wdg)
 
         if self.hidden:
@@ -2283,6 +2289,10 @@ class WebLoginWdg2(BaseSignInWdg):
 
         password_wdg = PasswordWdg("password")
         password_container.add(password_wdg)
+        
+        password_placeholder = self.kwargs.get("password_placeholder")
+        if password_placeholder:
+            password_wdg.add_attr("placeholder", password_placeholder)
 
         if change_admin:
             password_container2 = DivWdg()
