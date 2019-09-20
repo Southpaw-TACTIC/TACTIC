@@ -7379,7 +7379,6 @@ spt.pipeline.set_status_color = function(search_key) {
 
 
 spt.pipeline.set_task_color = function(group_name) {
-    console.log("here");
     if (!group_name) {
         group_name = spt.pipeline.get_current_group();
     }
