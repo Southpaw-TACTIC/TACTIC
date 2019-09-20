@@ -235,10 +235,10 @@ class PipelineToolWdg(BaseRefreshWdg):
             "type": "listen",
             "event_name": "delete|sthpw/pipeline",
             "cbjs_action": '''
-            spt.panel.refresh_element(bvr.src_el);
-            setTimeout(function(){
+            var on_complete = function() {
                 window.onresize();
-            }, 3000);
+            }
+            spt.panel.refresh_element(bvr.src_el, {}, {callback: on_complete});
             
             '''
         })

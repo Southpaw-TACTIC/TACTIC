@@ -7287,8 +7287,8 @@ spt.pipeline.set_status_color = function(search_key) {
     }
     server.p_execute_cmd(cmd, kwargs)
     .then( function(ret_val) {
-        var info = ret_val.info[0];
-        var search_keys = ret_val.info[1];
+        var info = ret_val.info.process_colors;
+        var search_keys = ret_val.info.task_search_keys;
         var group_name = spt.pipeline.get_current_group();
         var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
@@ -7308,7 +7308,6 @@ spt.pipeline.set_status_color = function(search_key) {
 
             spt.update.add( node, {
                 search_key: search_keys[process],
-                interval: 3,
                 return: "sobject",
                 cbjs_action: `
                     var server = TacticServerStub.get();
@@ -7728,8 +7727,9 @@ class PipelineGetStatusColorsCmd(Command):
                     color = default_color
 
             process_colors[process] = color
-
-        return process_colors, task_search_keys
+        
+        self.info['process_colors'] = process_colors
+        self.info['task_search_keys'] = task_search_keys
 
 
 
