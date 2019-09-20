@@ -1198,6 +1198,9 @@ spt.dg_table.table_action_cbk = function(element, table_id ) {
 // manipulate the view.
 //
 spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
+
+    alert("spt.dg_table.view_action_cbk is deprecated")
+
     var table;
     if (! table_id) {
         var activator = spt.smenu.get_activator(bvr);
@@ -1357,6 +1360,7 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
 // Callback that gets executed when "Save My/Project View As" is selected
 // DEPRECATED: this has been moved inline
 spt.dg_table.save_view_cbk = function(table_id, login) {
+    alert("spt.dg_table.save_view_cbk is deprecated")
 
     var table = document.id(table_id);
     var top = table.getParent(".spt_view_panel");
@@ -2502,6 +2506,9 @@ spt.dg_table.search_action_cbk = function(element ) {
 
 // callback to save the parameters of the search
 spt.dg_table.save_search_cbk = function(evt, bvr) {
+
+    alert("spt.dg_table.save_search_cbk is deprecated");
+
     var src_el = bvr.src_el;
     var panel = src_el.getParent(".spt_view_panel");
     var search_wdg = panel.getElement(".spt_search");
@@ -2513,6 +2520,7 @@ spt.dg_table.save_search_cbk = function(evt, bvr) {
 
 spt.dg_table.get_search_values = function(search_top) {
 
+    alert("spt.dg_table.get_search_values is deprecated");
 
     // get all of the search input values
     var new_values = [];
@@ -2560,10 +2568,6 @@ spt.dg_table.get_search_values = function(search_top) {
         }
     }
 
-
-
-
-
     // convert to json
     var json_values = JSON.stringify(new_values);
     return json_values;
@@ -2573,6 +2577,8 @@ spt.dg_table.get_search_values = function(search_top) {
 
 
 spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
+
+    alert("spt.dg_table.save_search is deprecated");
 
     var json_values = spt.dg_table.get_search_values(search_wdg);
 
@@ -4488,357 +4494,11 @@ spt.dg_table._toggle_commit_btn = function(el, hide)
 }
 
 
-spt.dg_table.update_row = function(evt, bvr)
-{
-    spt.alert("DEPRECATED: spt.dg_table.update_row()")
-
-/*
-    var src_el = bvr.src_el;
-    if( bvr.src_activator_el ) {
-        src_el = bvr.src_activator_el;
-    }
-    var update_current_only = bvr['update_current_only'];
-
-    var orig_table = src_el.getParent('.spt_table');
-
-
-    
-    //if it is just updating the current cell only
-    var cell_only = bvr.cell_only;
-
-    var top = src_el.getParent(".spt_table_top");
-    var table = top.getElement('.spt_table_content');
-    var tbodies = top.getElements(".spt_table_tbody");
-
-    // if it updates only the table at the current level
-    if (update_current_only ==true) {
-        tbodies = top.getElements(".spt_table_tbody[id^='" + table.id+"']");
-    }
-    
-    var tr = null;
-
-    var server = TacticServerStub.get_master();
-    server.start({title:"Inserting/Updating entries"});
-    var is_insert = false;
-    
-    var search_type = null;
-    // process the td
-    var process_td = function(td, element_names, values, info ){
-        var name = td.getAttribute("spt_element_name");
-        if (name == null) {
-            return;
-        }
-
-        // detect if the element has changed value and if so,
-        // remember the value for update
-        if ( td.hasClass("spt_value_changed")) {
-            var column = td.getAttribute("spt_input_column");
-            if (column == null) {
-                column = name;
-            }
-            var value = td.getAttribute("spt_input_value");
-            value = value.strip();
-            element_names.push(name);
-            values[column] = value;
-            //td.removeClass("spt_value_changed");
-
-                
-            //add to the values here for gantt and inline elements
-            if (td.getAttribute("spt_input_type") =='inline') {
-                var xx = spt.api.Utility.get_input_values(td, '.spt_data', false);
-                values['data'] = xx;
-            }
-            else if (td.getAttribute("spt_input_type") =='gantt') {
-                //var gantt_values = spt.api.Utility.get_input_values(td);
-                var gantt_values = spt.api.Utility.get_input_values(td, '.spt_gantt_data', false);
-                values['gantt_data'] = gantt_values['gantt_data'];
-            }
-            else if (td.hasClass('spt_uber_notes')) {
-                var option_el = td.getElement('.spt_uber_note_option');
-                var note_options = spt.api.Utility.get_input_values(option_el, '.spt_input', false);
-                values[column + '_option'] = note_options;
-
-            }
-
-        }
-
-        if (td.hasClass('spt_uber_notes')) {
-            info['is_uber_notes'] = true;
-
-        }
-
-    }
-    // run update or insert for a row
-    var run_update = function(search_key, top, tbody, element_names, values, info)
-    {
-        var table = top.getElement('.spt_table_content');
-        // mode=insert does not have .spt_table_content
-        if (! table)
-            table = top.getElement('.spt_table');
-
-        // if nothing has changed, exit out
-        if (element_names.length == 0) {
-            //spt.alert("nothing changed");
-            return;
-        }
-
-
-        if( search_key.match( /\-1$/ ) ) {
-            is_insert = true;
-        }
-
-        // break search type apart
-        search_type = search_key.split("?")[0];
-
-        var result = {};
-
-        // handle the special case of uber notes
-        if (info['is_uber_notes'] == true) {
-            result = spt.dg_table.update_uber_notes(table, search_type, element_names, values, info);
-        }
-        else 
-        {
-            if( is_insert ) {
-                spt.js_log.debug( "New record ... inserting row into database." );
-
-                // find out if there is a grouping
-                var group = tbody.getPrevious(".spt_table_group");
-                var kwargs = {'use_id' : 'true'};
-                var parent_key = '';
-                if (group != null) {
-                    parent_key = group.getAttribute("spt_search_key");
-                    if (parent_key != null) {
-                        kwargs['parent_key'] = parent_key;
-                    }
-                }
-                // If grouping is not used, take the table top's parent_key
-                else {
-                    var table_parent_key = top.getAttribute("spt_parent_key");
-                    if (table_parent_key) {
-                        parent_key = table_parent_key;
-                        kwargs['parent_key'] = parent_key;
-                    }
-                }
-                // Get the various state variables                    
-                var state = top.getAttribute("spt_state");
-                if (state != null) {
-                    kwargs['state'] = state;
-                }
-
-
-                // execute the edit_cmd
-                var class_name = 'tactic.ui.panel.EditCmd';
-                var args = {
-                    search_key: search_key,
-                    view: 'edit_item',
-                    element_names: element_names,
-                    input_prefix: '__NONE__'
-
-                }
-                if (parent_key != null) {
-                    args['parent_key'] = parent_key
-                }
-
-
-                // do the insert
-                result = server.execute_cmd(class_name, args, values)
-
-                search_key = result.info['search_key'];
-
-                //result = server.insert( search_type, values, kwargs );
-                //search_key = result['__search_key__'];
-                if (typeof(search_key) == "undefined") {
-                    return;
-                }
-
-            }
-
-            else {
-                //use id to build search key returned
-                //var kwargs = {'use_id' : true};
-                //spt.js_log.debug( "Existing record ... updating database!" );
-                //result = server.update( search_key, values, kwargs );
-                var class_name = 'tactic.ui.panel.EditCmd';
-                var args = {
-                    search_key: search_key,
-                    view: 'edit_item',
-                    element_names: element_names,
-                    input_prefix: '__NONE__'
-
-                }
-                result = server.execute_cmd(class_name, args, values)
-            }
-            info['update_count'] += 1;
-        }
-
-        tbody.setAttribute("spt_search_key", search_key);
-        //if succeed, return true to determine whether to redraw row
-        return true;
-        
-    }
-
-    //main function
-    try {
-        // a hash that goes with run_update and process_td to collect information for the main function 
-        var info ={};
-
-        // Get cousin widgets: these widgets are top widgets that the update
-        // will gather the values
-        var inputs = top.getAttribute("spt_save_inputs");
-        var input_data = {};
-        if (inputs != null) {
-            inputs_list = inputs.split("|");
-            for (var i = 0; i < inputs_list.length; i++) {
-                var parts = inputs_list[i].split("/");
-                var input_parent = src_el.getParent("."+parts[0]);
-                var input_wdg = input_parent.getElement("."+parts[1]);
-                input_data = spt.api.get_input_values(input_wdg);
-            }
-        }
-        info['update_count'] = 0;
-        if (cell_only == true) {
-            var td = bvr.src_el.getParent(".spt_table_td")
-            var tbody = td.getParent(".spt_table_tbody");
-            var search_key = tbody.getAttribute("spt_search_key");
-            var values = {};
-            var element_names = []; 
-            process_td(td, element_names, values, info);
-            run_update(search_key, top, tbody, element_names, values, info);
-
-            //TODO: update just this one cell
-            if (info['is_uber_notes'] == true) {
-                var note_top = bvr.src_el.getParent(".spt_note_top");
-                spt.panel.refresh(note_top, {}, true);
-                tbody.removeClass("spt_value_changed");
-            }
-        }
-        else {
-            // this only skips the insert/edit row in main table update
-            // in multi embedded situation, it relies on continue below to skip
-            for (var count = 2; count < tbodies.length; count++) {
-                var tbody = tbodies[count];
-                if ( ! tbody.hasClass("spt_value_changed")) {
-                    continue;
-                }
-                tr = tbody.getElement(".spt_table_tr")
-                var tds = tr.getElements(".spt_table_td");
-
-
-                // reset the row
-                tbody.removeClass("spt_value_changed");
-             
-                var search_key = tbody.getAttribute("spt_search_key");
-                var values = {};
-                var element_names = [];
-                for (var i = 0; i < tds.length; i++) {
-                    var td = tds[i];
-                    process_td(td, element_names, values, info);
-
-                }
-
-                // add input data to the update.  This input data is
-                // supporting data for the updates provided by widgets
-                values['input_data'] = JSON.stringify(input_data);
-
-                var success = run_update(search_key, top, tbody, element_names, values, info);
-                if (!success) 
-                    continue;
-
-                // refresh the row.  The element names are set to ensure that
-                // the table row is refreshed with the same elements as is
-                // currently visible
-                var fade = false;
-                var table = tbody.getParent(".spt_table");
-                var element_names = spt.dg_table.get_element_names(table);
-                var element_names_str = element_names.join(",");
-                tbody.setAttribute("spt_element_names", element_names_str);
-
-                var refresh = tbody.getAttribute("spt_refresh");
-
-                // special case for uber notes
-                // 
-                if (info['is_uber_notes'] == true) {
-                    var top_div = tbody.getParent(".spt_uber_notes_top");
-                    spt.panel.refresh(top_div,{}, fade);
-                }
-                else {
-                    if (refresh == 'table') {
-                        // do nothing
-                        //spt.panel.refresh(table, {}, fade);
-                    }
-                    else {
-                        spt.panel.refresh(tbody, null, fade);
-                    }
-                }
-
-
-                //td.removeClass("spt_value_changed");
-
-            }
-        }
-        //does not apply for notes_sheet or it will get the main_body_table 
-        if (info['is_uber_notes'] == true) 
-            orig_table = null;
-        // make the commit button disappear
-        if( orig_table ) {
-            spt.dg_table._toggle_commit_btn(orig_table, true);
-        } else {
-            spt.dg_table._toggle_commit_btn(src_el, true);
-        }
-
-        var update_count = info.update_count;
-
-        // if search_type is null, it means nothing was changed on this table level
-        // which is common for multi-level table updates
-        if (!search_type && update_count == 0) {
-            server.finish({description: '0 items processed'});
-            return;
-        }
-
-        if (is_insert)
-            server.finish({description: 'Added '+update_count+' Items for ['+ search_type+']'});
-        else
-            server.finish({description: 'Updated '+update_count+' Items for ['+ search_type+']'});
-
-    } catch(e) {
-        spt.error("Error: " + spt.exception.handler(e));
-        if (tr != null) {
-            tr.setStyle("background-color", "#300");
-            td.setStyle("background-color", "#311");
-        }
-
-        // make the commit button disappear
-        //spt.dg_table._toggle_commit_btn(src_el, true)
-
-        // finish the transaction.  If there is an error, then the 
-        // previous updates will commit fine.
-        server.finish();
-        throw(e);
-    }
-
-
-    // inserts will update the given table id with the proper search
-    if ( is_insert ) {
-        // NOTE: disabling this again.  DO NOT ENABLE.  It still works poorly in
-        // a number of areas. ie: UberNotes, insert mode popups, etc>
-        //var event_name = "insert|" + search_type;
-        //spt.named_events.fire_event(event_name, {});
-        //spt.dg_table.search_cbk( {}, {'panel': top, 'src_el': table} );
-        var refresh = tbody.getAttribute("spt_refresh")
-        if (refresh == 'table') {
-            spt.panel.refresh(table, {}, false);
-        }
-        else if (refresh == 'search') {
-            spt.dg_table.search_cbk( {}, {'src_el': table} );
-        }
-    }
-*/    
-}
 
 spt.dg_table.update_uber_notes = function(table, search_type, element_names, values, info) {
 
     spt.table.alert("DEPRECATED: spt.dg_table.update_uber_notes");
-
+/*
     var server = TacticServerStub.get();
 
     // get the search type from tbody above the tbody.
@@ -4884,137 +4544,9 @@ spt.dg_table.update_uber_notes = function(table, search_type, element_names, val
         }
     }
     return result;
-
+*/
         
 }
-
-
-
-
-spt.dg_table.find_adjacent_cell = function( start_cell_el, direction )
-{
-    spt.table.alert("DEPRECATED: spt.dg_table.find_adjacent_cell");
-    // direction is 'left', 'right', 'up', 'down' ...
-
-    var direction_map = { 'left': 'previous', 'right': 'next' };
-
-    var sibling_td = null;
-    var td = start_cell_el;
-
-    if( td.tagName != "TD" ) {
-        td = td.getParent("td");
-    }
-    if( direction == 'left' || direction == 'right' )
-    {
-        var match_fn = function( node ) {
-            if( document.id(node).hasClass("cell_left") && document.id(node).hasAttribute("spt_element_name") ) {
-                return true;
-            }
-            return false;
-        };
-
-        sibling_td = spt.find_closest_sibling_by_tag( td, direction_map[direction], "TD", match_fn );
-        if( sibling_td ) {
-            spt.js_log.debug( "+++ Sibling TD found going " + direction + "!" );
-        }
-        else {
-            spt.js_log.debug( "--- No sibling TD found going " + direction + "!" );
-        }
-    }
-
-    return sibling_td;
-}
-
-
-
-
-spt.dg_table.order_table = function(element_name, order) {
-    spt.table.alert("DEPRECATED: spt.dg_table.order_table");
-
-    var panel_id = "main_body";
-    var table = document.id(panel_id+"_table");
-
-    var children = table.getChildren();
-
-    // figure out which column represents this element
-    var cell_index = 4;
-    var first_row = document.id(table.rows[0]);
-    for (var i = 0; i < first_row.cells.length; i++ ) {
-        var spt_element_name = first_row.cells[i].getAttribute('spt_element_name');
-        if (spt_element_name == element_name) {
-            cell_index = i;
-            break;
-        }
-    }
-
-
-    // determine whether to reverse or not
-    var header = first_row.cells[cell_index];
-    if (order == undefined)
-        order = header.getAttribute("spt_order");
-        if (order =="reverse") {
-            order = "forward";
-        }
-        else if (order =="forward") {
-            order = "reverse";
-        }
-    if (order == undefined) {
-        order = "forward";
-    }
-    header.setAttribute("spt_order", order);
-
-    //var type = "integer";
-    var type = "string";
-
-
-    // defined the sort function
-    sort_by = function(a,b) {
-        // FIXME: this is a little complicated!!
-        var element = a.getChildren()[0].getChildren()[cell_index];
-        var value = element.getAttribute('spt_input_value');
-        var element2 = b.getChildren()[0].getChildren()[cell_index];
-        var value2 = element2.getAttribute('spt_input_value');
-
-        if (type == "integer") {
-            value = parseInt(value);
-            value2 = parseInt(value2);
-        }
-
-        return (value===value2) ? 0 : (value>value2) ? 1 : -1;
-    }
-
-
-    // have to copy the rows to manipulate
-    rows = [];
-    for (var i = 3; i < children.length; i++ ) {
-        rows.push(children[i]);
-    }
-    rows.sort(sort_by);
-    if (order == "reverse") {
-        rows.reverse();
-    }
-    for (var i = 0; i < rows.length; i++ ) {
-        table.appendChild( rows[i] );
-    }
-
-
-    // remove all the arrows and replace the image
-    var images = first_row.getElements(".spt_order_icon");
-    for (var i = 0; i < images.length; i++) {
-        images[i].src = "/context/icons/common/order_array_empty_1.png";
-    }
-
-    var image = first_row.getChildren()[cell_index].getElement(".spt_order_icon");
-    if (order == "reverse") {
-        image.src = "/context/icons/common/order_array_up_1.png";
-    }
-    else {
-        image.src = "/context/icons/common/order_array_down_1.png";
-    }
-    
-    return;
-}
-
 
 
 

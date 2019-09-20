@@ -93,7 +93,7 @@ class Common(Base):
 
     def get_python(cls):
         from .config import Config
-        python = Config.get_value("services", "python3")
+        python = Config.get_value("services", "python")
 
         if not python:
             python = os.environ.get('PYTHON')

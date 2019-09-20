@@ -1516,7 +1516,7 @@ class Pipeline(SObject):
         context_dict = Pipeline.get_process_name_dict(search_type, project_code, is_group_restricted, sobject=sobject)
         labels = []
         values = []
-        keys = context_dict.keys()
+        keys = list(context_dict.keys())
         keys.sort()
         process_values = Common.sort_dict(context_dict)
         for idx, value in enumerate(process_values):

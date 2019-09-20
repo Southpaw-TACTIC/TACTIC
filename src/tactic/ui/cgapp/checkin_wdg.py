@@ -723,7 +723,7 @@ class AssetCheckinWdg(CheckinWdg):
 
 
 
-        from app_init_wdg import PyMayaInit, PyXSIInit, PyHoudiniInit
+        from .app_init_wdg import PyMayaInit, PyXSIInit, PyHoudiniInit
         if WebContainer.get_web().get_selected_app() == 'Maya':
             app = PyMayaInit()
         elif WebContainer.get_web().get_selected_app() == 'XSI':
@@ -1634,7 +1634,7 @@ class ShotCheckinWdg(CheckinWdg):
         else:
             div = Widget() 
 
-        from app_init_wdg import PyMayaInit, PyXSIInit, PyHoudiniInit
+        from .app_init_wdg import PyMayaInit, PyXSIInit, PyHoudiniInit
         if WebContainer.get_web().get_selected_app() == 'Maya':
             app = PyMayaInit()
         elif WebContainer.get_web().get_selected_app() == 'XSI':

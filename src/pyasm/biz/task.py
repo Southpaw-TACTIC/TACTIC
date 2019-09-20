@@ -461,7 +461,11 @@ class Task(SObject):
 
 
     def get_name(self, long=False):
-        return "%s (%s)" % (self.get_value("process"), self.get_id())
+        process = self.get_value("process", no_exception=True) or ""
+        if process:
+            return "%s (%s)" % (process, self.get_code())
+        else:
+            return "%s" % (self.get_code())
 
 
     def get_assigned(self):
@@ -1117,7 +1121,10 @@ class Task(SObject):
 
             assigned_login_group = attrs.get("assigned_login_group") or None
 
-            workflow = process_sobject.get_json_value("workflow") or {}
+            if not process_sobject:
+                workflow = {}
+            else:
+                workflow = process_sobject.get_json_value("workflow") or {}
             version = workflow.get("version") or 1
             version_2 = version in [2, '2']
 
