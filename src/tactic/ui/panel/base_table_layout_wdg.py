@@ -231,12 +231,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # generate it. parent_key could be none if the expression evaluates to None
             expression = self.kwargs.get('expression')
             if expression:
-                if self.search_key and (self.search_key not in ["%s", 'None']):
-                    start_sobj = Search.get_by_search_key(self.search_key)
-                else:
-                    start_sobj = None
-
-                self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
+                self.expr_sobjects = Search.eval(expression, list=True)
                 parser = ExpressionParser() 
                 related = parser.get_plain_related_types(expression)
 
