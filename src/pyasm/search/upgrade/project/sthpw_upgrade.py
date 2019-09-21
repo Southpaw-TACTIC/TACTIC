@@ -838,7 +838,7 @@ IMPORTANT NOTICE:
 
             ''')
 
-            confirm = raw_input("Run now? (y/n):")
+            confirm = input("Run now? (y/n):")
             if not confirm in ['y', 'Y', 'yes', 'Yes']:
                 return
 
