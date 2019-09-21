@@ -1151,6 +1151,8 @@ class IngestUploadWdg(BaseRefreshWdg):
     def get_ingest_button(self):
 
         div = DivWdg()
+       
+
 
         library_mode = self.kwargs.get("library_mode") or False
         dated_dirs = self.kwargs.get("dated_dirs") or False
@@ -1187,9 +1189,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         progress_el.innerHTML = String(percent) + "%";
         progress_el.setStyle("background", "#f0ad4e");
 
-        // hide the upload files button
-        upload_button = top.getElement(".spt_upload_files_top");
-        upload_button.setStyle("display", "none");
+        // to prevent another upload via multiple clicks.
+        // we will detect this in button click behaviour.
+        bvr.src_el.in_progress = true;
         '''
 
 
@@ -1218,7 +1220,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             progress_top.setStyle("margin-top", "-30px");
         }, 0);
 
-        spt.panel.refresh(top);
+    
+        ingest_btn_top = top.getElement(".spt_ingest_btn");
+        ingest_btn = ingest_btn_top.getElement(".spt_action_button");
+        ingest_btn.in_progress = false;
+        
+         
         '''
 
 
@@ -1237,7 +1244,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 script_found = False
                 oncomplete_script = "alert('Error: oncomplete script not found');"
 
-        
+
         if self.kwargs.get("oncomplete_script"):
             oncomplete_script += self.kwargs.get("oncomplete_script")
         if self.kwargs.get("on_complete"):
@@ -1398,9 +1405,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             progress_el.setStyle("background", "#F00");
             spt.message.stop_interval(message_key);
 
-            // display the upload files button again.
-            upload_button = top.getElement(".spt_upload_files_top");
-            upload_button.setStyle("display", "");
+            // set in_progress variable back to false.
+            // so we can upload again.
+            bvr.src_el.in_progress = false;
         }
 
 
@@ -1450,6 +1457,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         #upload_div.add_style("margin-bottom: 20px")
 
 
+        button.add_class("spt_ingest_btn")
 
         upload_div.add("<br clear='all'/>")
 
@@ -1495,6 +1503,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
+
+            // upload in progress, prevent another upload through
+            // multiple clicks.
+            if (bvr.src_el.in_progress == true) {
+                return;
+            }
 
             var file_els = top.getElements(".spt_upload_file");
             var num_files = file_els.length;

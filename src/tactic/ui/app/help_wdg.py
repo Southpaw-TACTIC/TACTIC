@@ -182,8 +182,12 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         #layout = CustomLayoutWdg(html=html, base_dir=rel_dir)
         #html = layout.get_buffer_display()
 
-        
-        tree = Xml.parse_html(html)
+        try:
+            tree = Xml.parse_html(html)
+        except Exception as e:
+            print("WARNING: ", e)
+            # some crazy encoding for python 3.   Not sure why?
+            tree = Xml.parse_html(str(html.encode()))
         
         xml = Xml(doc=tree)
 
