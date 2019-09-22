@@ -324,6 +324,7 @@ class ChartGrid(BaseRefreshWdg):
         else:
             rotate_x_axis = False
 
+
         top.add_behavior( {
             'type': 'load',
             'mode': mode,

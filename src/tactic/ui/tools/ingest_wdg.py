@@ -1040,26 +1040,9 @@ class IngestUploadWdg(BaseRefreshWdg):
             var ret_val = server.execute_cmd(cmd, kwargs);
             var info = ret_val.info;
 
-            var num_sequences = 0;
-            for (var i = 0; i < info.length; i++) {
-                if (info[i].is_sequence) {
-                    num_sequences += 1;
-                }
-            }
-
             var ok = function() {
                 var upload_button = top.getElement(".spt_upload_files_top");
                 upload_button.setStyle("display", "");
-            }
-
-            if (num_sequences > 0) {
-                spt.confirm(num_sequences + " Sequences detected.  Do you wish to group these files as sequences?", function() {
-                    spt.named_events.fire_event("set_ingest_update_mode", {
-                        options: {
-                            value: 'sequence'
-                        }
-                    } );
-                });
             }
 
             ok();
@@ -1769,26 +1752,9 @@ spt.ingest.select_files = function(top, files, normal_ext) {
     var ret_val = server.execute_cmd(cmd, kwargs);
     var info = ret_val.info;
 
-    var num_sequences = 0;
-    for (var i = 0; i < info.length; i++) {
-        if (info[i].is_sequence) {
-            num_sequences += 1;
-        }
-    }
-
     var ok = function() {
         var upload_button = top.getElement(".spt_upload_files_top");
         upload_button.setStyle("display", "");
-    }
-
-    if (num_sequences > 0) {
-        spt.confirm(num_sequences + " Sequences detected.  Do you wish to group these files as sequences?", function() {
-            spt.named_events.fire_event("set_ingest_update_mode", {
-                options: {
-                    value: 'sequence'
-                }
-            } );
-        });
     }
 
     ok();

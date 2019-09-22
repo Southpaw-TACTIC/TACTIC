@@ -821,14 +821,18 @@ class StringWdg(Widget):
 
         # write directly to the StringIO
         if not IS_Pv3:
-            if type(self.string) == types.UnicodeType:
+            if isinstance(self.string, unicode):
                 self.string = Common.process_unicode_string(self.string)
         html.get_buffer().write(self.string)
     
 class ClassWdg(Widget):
     def __init__(self, class_type=None):
         self.widgets = []
-        assert type(class_type) == types.TypeType
+        if IS_Pv3:
+            assert isinstance(class_type, type)
+        else:
+            assert isinstance(class_type, types.TypeType)
+
         self.class_type = class_type
     
     def do_search(self):
@@ -846,7 +850,7 @@ class ClassWdg(Widget):
 class MethodWdg(Widget):
     def __init__(self, method =''):
         self.widgets = []
-        assert type(method) == types.MethodType
+        assert isinstance(method, types.MethodType)
         self.method = method
     def do_search(self):
         pass
@@ -876,7 +880,7 @@ class Html(Base):
     def write(self, html):
         if isinstance(html, basestring):
             self._buffer.write(html)
-        #elif type(html) == types.IntType:
+        #elif isinstance(html, int):
         elif isinstance(html, (int, float)):
             self._buffer.write( str(html) )
         elif isinstance(html,Html):
@@ -957,7 +961,7 @@ class Url(Base):
         options_list = []
         for name,value in self.options.items():
 
-            if type(value) == types.ListType:
+            if isinstance(value, list):
                 for item in value:
                     if not isinstance(value, basestring):
                         value = str(value)

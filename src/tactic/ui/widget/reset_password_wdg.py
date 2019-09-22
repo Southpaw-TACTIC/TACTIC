@@ -383,8 +383,8 @@ class ResetOptionsCmd(Command):
                     if not sender_email:
                         from pyasm.common import Config
                         sender_email = Config.get_value("services", "mail_default_admin_email")
-                    else:
-                        sender_email = 'support@southpawtech.com'
+                    if not sender_email:
+                        sender_email = Config.get_value("services", "mail_user")
                 recipient_emails = [email]
                 email_msg = 'Your TACTIC password reset code is:\n\n%s' % auto_password
                 email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject='TACTIC password change')

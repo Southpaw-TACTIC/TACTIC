@@ -18,6 +18,7 @@ __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'Pip
 import re
 import os
 import ast
+import six
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment, Common, jsonloads
@@ -1061,7 +1062,7 @@ class PipelineListWdg(BaseRefreshWdg):
         self.save_new_event = self.kwargs.get("save_new_event")
 
         self.settings = self.kwargs.get("settings") or []
-        if self.settings and isinstance(self.settings, basestring):
+        if self.settings and isinstance(self.settings, six.string_types):
             self.settings = self.settings.split("|")
 
 
