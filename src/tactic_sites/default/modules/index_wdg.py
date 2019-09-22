@@ -131,11 +131,13 @@ class IndexWdg2(Widget):
 
         tr, td = table.add_row_cell()
         logo_div = DivWdg()
-        logo_div.add_gradient("background", "background3", -5, -10)
+        #logo_div.add_gradient("background", "background", -5, -10)
+        logo_div.add_color("background", "#999")
         td.add(logo_div)
         logo = TacticLogoWdg()
         logo_div.add(logo)
         logo_div.add_style("margin: -6 -6 6 -6")
+        logo_div.add_style("text-align: center")
 
 
         app_name = WebContainer.get_web().get_app_name()
@@ -193,7 +195,7 @@ class IndexWdg2(Widget):
             title_div.add_style("padding: 5px")
             title_div.add_style("font-weight: bold")
             title_div.add("Getting Started ...")
-            title_div.add_gradient("background", "background", -10)
+            title_div.add("<hr/>")
 
             projects_div = DivWdg()
             projects_div.add_style("padding: 20px")
@@ -246,7 +248,7 @@ class IndexWdg2(Widget):
 
 
         elif projects:
-            num_projets = 0
+            num_projects = 0
             for i, project in enumerate(projects):
 
                 category = project.get_value("category")
@@ -396,7 +398,8 @@ class IndexWdg2(Widget):
             title_div.add_style("margin: -8px -6px 20px -6px")
             title_div.add_style("font-weight: bold")
             title_div.add("Getting Started ...")
-            title_div.add_gradient("background", "background", -10)
+            title_div.add("<hr/>")
+            #title_div.add_gradient("background", "background", -10)
 
             projects_div = DivWdg()
             projects_div.add_style("padding: 20px")
@@ -405,10 +408,16 @@ class IndexWdg2(Widget):
             projects_div.add("No Projects have been created ...<br/><br/>")
             projects_div.add_style("font-size: 22px")
 
+            action_div = DivWdg()
+            projects_div.add(action_div)
+            action_div.add_style("text-align: center")
+            projects_div.add(action_div)
+
             action = ActionButtonWdg(title='Create Project >>', size='large')
+            action_div.add(action)
+            action.add_style("display: inline-block")
             action.add_style("margin-left: auto")
             action.add_style("margin-right: auto")
-            projects_div.add(action)
             action.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -422,9 +431,12 @@ class IndexWdg2(Widget):
             #href = HtmlElement.href(HtmlElement.h2('Admin Site'), ref='/tactic/admin/')
             #admin_div.add(href)
             #admin_div.add_border()
-            admin_div.add_style("font-size: 16px")
-            admin_div.add_style("font-weight: bold")
+            admin_div.add_style("font-size: 12px")
+            #admin_div.add_style("font-weight: bold")
+            admin_div.add_style("text-decoration: underline")
             admin_div.add_style("height: 30px")
+            admin_div.add_style("float: right")
+            admin_div.add_style("margin-right: 10px")
 
             link_div = DivWdg()
             link_div.add_class("hand")
