@@ -17,6 +17,7 @@
 import datetime
 import re
 import os, getpass, shutil, sys, urllib, types, hashlib
+import six
 
 
 try:
@@ -401,7 +402,7 @@ class TacticServerStub(object):
             # non project-based search_key
             search_type, code = search_key.split('?')
         codes = code.split('=')
-        assert len(codes) == 2;
+        assert len(codes) == 2
         return search_type, codes[1]
 
     def get_home_dir(self):
@@ -1151,7 +1152,7 @@ class TacticServerStub(object):
         results = self.server.query(self.ticket, search_type, filters, columns,
                                   order_bys, show_retired, limit, offset,
                                   single, distinct, return_sobjects, parent_key)
-        if not return_sobjects and isinstance(results, basestring):
+        if not return_sobjects and isinstance(results, six.string_types):
             results = eval(results)
         return results
 

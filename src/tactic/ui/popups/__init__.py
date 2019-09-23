@@ -14,6 +14,6 @@
 #from help_popup_wdg import *
 #from action_bar_wdg import *
 
-from transaction_popup_wdg import *
+from .transaction_popup_wdg import *
 
 

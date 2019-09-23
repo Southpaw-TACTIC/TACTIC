@@ -3062,7 +3062,10 @@ class SObject(object):
         if self.has_updates and name in self.update_data:
             if is_data:
                 attr_data = self.update_data.get(name) or {}
-                return attr_data.get(attr)
+                if len(parts) > 2:
+                    return attr_data.get(parts[1]).get(parts[2])
+                else:
+                    return attr_data.get(attr)
             else:
                 return self.update_data[name]
 
@@ -3071,7 +3074,13 @@ class SObject(object):
             value = self.data[name]
 
             if value and is_data:
-                value = value.get(attr)
+                if len(parts) > 2:
+                    value = value.get(parts[1]).get(parts[2])
+                else:
+                    value = value.get(attr)
+
+
+
 
             # NOTE: We should support datetime natively, however a lot
             # of basic operations don't work with datetime so we would always

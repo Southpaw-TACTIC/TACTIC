@@ -54,6 +54,7 @@ class Install:
             
 
             lines = program.stderr.readlines()
+            lines = [x.decode() for x in lines]
             line = '\n'.join(lines)
             if os.name =='nt' and line.find('is not recognized') != -1:
                 if self.database_type == 'PostgresSQL':
@@ -63,7 +64,7 @@ class Install:
                 else:
                     raise InstallException('Please put the SQL command shell for the database in your PATH environment variable. When you are finished, run install.py again.')
           
-	except KeyboardInterrupt, e:
+        except KeyboardInterrupt as e:
             print("Exiting...")
             sys.exit(0)
 
@@ -114,7 +115,7 @@ class Install:
         if line.find('connected to database') != -1:
             print("Database '%s' already exists. Do you want to drop the database '%s' and continue?, If you choose 'y', It will be backed up to the current directory.  (y/n)" %(project_code, project_code))
             print
-            answer = raw_input("(n) -> " )
+            answer = input("(n) -> " )
             if answer in ['y','Y']:
                 # can't read from config file at this point, just make these default assumptions
                 db_host = 'localhost'
@@ -242,11 +243,11 @@ class Install:
             if install_db:
                 self.check_db_program()
 
-            	self.check_db_exists(project_code)
+                self.check_db_exists(project_code)
             # install the necessary files to python directory
             self.install_to_python(install_defaults)
         
-        except InstallException, e:
+        except InstallException as e:
             print("Error: %s" %e.__str__())
             print
             print("Exiting...")
@@ -320,7 +321,7 @@ class Install:
                 print("... already exists. Please remove first")
                 raise InstallException("Database '%s' already exists" % project_code)
                 db_exists = True
-        except DatabaseException, e:
+        except DatabaseException as e:
             pass
             
         if not db_exists:
@@ -560,7 +561,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             print
             print("Please enter the base path of the Tactic installation:")
             print
-            tactic_base_dir = raw_input("(%s) -> " % default_base_dir)
+            tactic_base_dir = input("(%s) -> " % default_base_dir)
             if not tactic_base_dir:
                 tactic_base_dir = default_base_dir
             print
@@ -598,11 +599,11 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 print
                 print("Please enter the user Apache Web Server is run under:")
                 print
-                tactic_apache_user = raw_input("(%s) -> " % default_apache_user)
+                tactic_apache_user = input("(%s) -> " % default_apache_user)
                 if not tactic_apache_user:
                     tactic_apache_user = default_apache_user
                 print 
-	    else:
+            else:
                 tactic_apache_user = default_apache_user
 
             self.tactic_apache_user = tactic_apache_user
@@ -634,7 +635,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 os.makedirs(self.tactic_site_dir)
             if not os.path.exists(self.tactic_data_dir):
                 os.makedirs(self.tactic_data_dir)
-        except OSError, e:
+        except OSError as e:
             if e.__str__().find('Access is denied') != -1:
 
                 print("Permission error to create directories")
@@ -651,7 +652,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             print
             print("Please enter TACTIC user:")
             print
-            self.tactic_user = raw_input("(%s) -> " % default_tactic_user)
+            self.tactic_user = input("(%s) -> " % default_tactic_user)
             if not self.tactic_user:
                 self.tactic_user = default_install_dir
             self.tactic_group = self.tactic_user
@@ -733,9 +734,9 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             if not os.path.exists(dst):
                 shutil.copytree(src, dst)
 
-        except OSError, e:
+        except OSError as e:
             raise InstallException(e)
-        except IOError, e:
+        except IOError as e:
             raise InstallException(e)
 
         if os.name != 'nt':
@@ -758,14 +759,14 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
             if os.path.exists(src_dir):
                 print
-                output = raw_input("Custom install directory [%s] already exists. It will be removed and copied over. Continue? (y/n) -> "%src_dir)
+                output = input("Custom install directory [%s] already exists. It will be removed and copied over. Continue? (y/n) -> "%src_dir)
                 if output.lower() not in ['yes', 'y']:
                     print("Installation has been stopped.")
                     sys.exit(2)
                 else:
                     try:
                         shutil.rmtree(src_dir)
-                    except OSError, e:
+                    except OSError as e:
                         print
                         print("Errors in removing directories.")
                         raise InstallException(e)
@@ -796,21 +797,21 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         print
  
         has_crypto = False
-	try:
-	    import Cryptodome
-	    has_crypto = True
-	except ImportError:
-	    try:
-		import Crypto
-		has_crypto = True
-		print("Cryptodome is reccomended over Crypto since Crypto is not actively maintained.")
-	    except ImportError:
-		pass
+        try:
+            import Cryptodome
+            has_crypto = True
+        except ImportError:
+            try:
+                import Crypto
+                has_crypto = True
+                print("Cryptodome is reccomended over Crypto since Crypto is not actively maintained.")
+            except ImportError:
+                pass
 
-	if not has_crypto:
-	    print("ERROR: Cannot import Cryptodome or Crypto python module.  Please Install.")
-	    print
-	    raise
+        if not has_crypto:
+            print("ERROR: Cannot import Cryptodome or Crypto python module.  Please Install.")
+            print("\n")
+            raise
 
         try:
            #import Image

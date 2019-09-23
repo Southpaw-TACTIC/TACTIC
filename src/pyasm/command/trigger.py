@@ -530,7 +530,7 @@ class Trigger(Command):
                             kwargs[name] = value
 
 
-                    from subprocess_trigger import SubprocessTrigger
+                    from .subprocess_trigger import SubprocessTrigger
                     trigger = SubprocessTrigger()
                     trigger.set_mode(mode)
                     if not project_code:

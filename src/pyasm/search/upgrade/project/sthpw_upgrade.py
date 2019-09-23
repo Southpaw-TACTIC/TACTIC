@@ -12,6 +12,7 @@
 
 __all__ = ['SthpwUpgrade']
 
+from pyasm.common import Common
 
 from pyasm.search.upgrade.project import *
 
@@ -277,7 +278,13 @@ class SthpwUpgrade(BaseUpgrade):
             import dateutil.zoneinfo
 
             zi_path = os.path.abspath(os.path.dirname(dateutil.zoneinfo.__file__))
-            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, 'zoneinfo-2008e.tar.gz'))
+
+            if not Common.IS_Pv3:
+                basename = "zoneinfo-2008e.tar.gz"
+            else:
+                basename = "dateutil-zoneinfo.tar.gz"
+
+            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, basename))
             zonenames = zonesfile.getnames()
             return zonenames
 
@@ -831,7 +838,7 @@ IMPORTANT NOTICE:
 
             ''')
 
-            confirm = raw_input("Run now? (y/n):")
+            confirm = input("Run now? (y/n):")
             if not confirm in ['y', 'Y', 'yes', 'Yes']:
                 return
 

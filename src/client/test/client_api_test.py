@@ -528,6 +528,9 @@ class ClientApiTest(unittest.TestCase):
 
         self.server.insert('config/custom_script', script_entry)
         results = self.server.execute_python_script("uni/unittest_script", kwargs = {'x':5, 'y':6})
+        
+        # FIXME: Python script no returns spt_ret_val
+        # self.assertEquals(5, results['info'])
         self.assertEquals(5, results['info']['spt_ret_val'])
 
 

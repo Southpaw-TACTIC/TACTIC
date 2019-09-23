@@ -183,8 +183,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
         self.sobject = self.get_sobject()
 
         if not self.sobject:
+            
             widget = DivWdg()
             widget.add("SObject does not exist or no longer exists")
+            
             widget.add_style("margin: 100px auto")
             widget.add_style("width: 300px")
             widget.add_style("height: 60px")
@@ -2105,7 +2107,9 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
                 'search_key': pipeline.get_search_key(),
                 'interval': 3,
                 'value': True,
-                'cbjs_action': '''spt.panel.refresh_element(bvr.src_el)'''
+                'cbjs_action': '''
+                spt.panel.refresh_element(bvr.src_el);
+                '''
             } )
 
 
@@ -2141,7 +2145,8 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             div.add(title)
 
         kwargs = {
-            'width': "auto",
+            #'width': "auto",
+            'width': 600,
             'height': height,
             'show_title': show_title,
             'pipeline': pipeline_code,

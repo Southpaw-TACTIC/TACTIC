@@ -459,7 +459,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 else:
                     result = ''
         else:
-          
+
             result = parser.eval(expression, sobject, vars=self.vars, single=ret_single, list=ret_list, show_retired=self.show_retired)
 
 

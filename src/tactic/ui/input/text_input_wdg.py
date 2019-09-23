@@ -743,13 +743,54 @@ class LookAheadTextInputWdg(TextInputWdg):
 
     ARGS_KEYS = TextInputWdg.ARGS_KEYS.copy()
     ARGS_KEYS.update({
-          'validate': {
-        'description': 'whether to activate the validate action, which defaults to true with value_column set',
-        'type': 'SelectWdg',
-        'order': 10,
-        'values': 'true|false',
-        'category': 'Options'
-    }
+        'validate': {
+            'description': 'whether to activate the validate action, which defaults to true with value_column set',
+            'type': 'SelectWdg',
+            'order': 10,
+            'values': 'true|false',
+            'category': 'Options'
+        },
+        'results_class_name': {
+            'description': 'widget used to draw results from look ahead.',
+            'type': 'TextWdg',
+            'order': 11,
+            'default': 'tactic.ui.input.TextInputResultsWdg',
+            'category': 'Options'
+
+        },
+        'search_type': {
+            'description': 'search type used in search to draw results',
+            'type': 'TextWdg',
+            'order': 12,
+            'category': 'Options'
+        },
+        'value_column': {
+            'description': 'column used as input value',
+            'type': 'TextWdg',
+            'order': 13,
+            'category': 'Options'
+        },
+        'column': {
+            'description': 'column used as input label and results label',
+            'type': 'TextWdg',
+            'order': 14,
+            'category': 'Options'
+        },
+        'do_search': { 
+            'description': 'when true, the resutls widget will use search to create results.',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'default': 'true',
+            'order': 15,
+            'category': 'Options'
+        },
+        'script_path': {
+            'description': 'when do_search is false, override results using custom Python script. \
+                    Script should return either list of values, or tuple of values and labels.',
+            'type': 'TextWdg',
+            'order': 16,
+            'category': 'Options'
+        }
     })
     
 
@@ -919,35 +960,29 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'results_on_blur': results_on_blur,
             'cbjs_action': '''
          
-            console.log(bvr);
-            // put a delay in here so that a click in the results
-            // has time to register
             var validate = bvr.validate == 'True';
             var do_search = bvr.do_search == 'true';
-            setTimeout( function() {
-                var top = bvr.src_el.getParent(".spt_input_text_top");
-                var el = top.getElement(".spt_input_text_results");
-                el.setStyle("display", bvr.results_on_blur);
+            var top = bvr.src_el.getParent(".spt_input_text_top");
+            var el = top.getElement(".spt_input_text_results");
+            el.setStyle("display", bvr.results_on_blur);
 
-                spt.text_input.last_index = 0;
-                spt.text_input.index = -1;
+            spt.text_input.last_index = 0;
+            spt.text_input.index = -1;
 
-                var hidden_el = top.getElement(".spt_text_value");
-                if (bvr.src_el.value) {
-                    var display_value = bvr.src_el.value;
-                    var value = hidden_el.value;
-                    
-                    if (bvr.value_column) {
-                        var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
-                    } else {
-                        hidden_el.value = display_value; 
-                    }
+            var hidden_el = top.getElement(".spt_text_value");
+            if (bvr.src_el.value) {
+                var display_value = bvr.src_el.value;
+                var value = hidden_el.value;
+
+                if (bvr.value_column) {
+                    var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
+                    spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
                 } else {
-                    hidden_el.value ='';
+                    hidden_el.value = display_value;
                 }
-                    
-            }, 250 );
+            } else {
+                hidden_el.value ='';
+            }
 
             '''
         } )
@@ -1317,6 +1352,16 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
+        # default event order is mousedown>blur>mouseup
+        # we don't want a blur preceding mouseup
+        results_div.add_relay_behavior( {
+            'type': "mousedown",
+            'bvr_match_class': 'spt_input_text_result',
+            'cbjs_action': '''
+            evt.preventDefault();
+            '''
+        } )
+
         # this is when the user clicks on a result item
         # it doesn't do a search right away, it fires the lookahead|<sType> event
         results_div.add_relay_behavior( {
@@ -1478,8 +1523,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             else:
 
-                info = cmd.get_info()
-                results = info.get('spt_ret_val')
+                results = cmd.get_info()
                 
                 # expect it to return a tuple of 2 lists or a single list
                 if isinstance(results, tuple):

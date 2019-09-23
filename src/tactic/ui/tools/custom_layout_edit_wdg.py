@@ -521,7 +521,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         left_div.add_relay_behavior( { 
-            'type': 'mouseup',
+            'type': 'click',
             'bvr_match_class': 'spt_custom_layout_item',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
@@ -587,7 +587,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         left_div.add_style("width: 100%")
 
 
-        web = WebContainer.get_web();
+        web = WebContainer.get_web()
         #folder_states = web.get_form_value("folder_states")
         folder_states = self.kwargs.get("folder_state")
         if folder_states:
@@ -1328,6 +1328,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     td = table.add_cell()
                     td.add_style("vertical-align: top")
 
+
                     header_div = DivWdg()
                     td.add(header_div)
                     header_div.add_style("display: flex")
@@ -1584,7 +1585,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         var item = behavior_elements[i];
                         var inputs = spt.api.get_input_values(item, null, false);
                         var behavior_name = inputs.behavior_name[0];
-                        var behavior_is_relay = inputs.behavior_is_relay[0];
+                        var behavior_is_relay = inputs.behavior_is_relay;
                         var behavior_event = inputs.behavior_event[0];
                         var behavior_event_name = inputs.behavior_event_name[0];
 
@@ -1596,7 +1597,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         }
 
                         behavior += '<behavior '
-                        
                         if (behavior_name && behavior_is_relay == 'on') {
                             behavior += 'relay_class="'+behavior_name+'" ';
                         } else if (behavior_name) {
