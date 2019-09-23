@@ -601,6 +601,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 var left = toolTop.getElement(".spt_pipeline_tool_left");
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
+                
+                right.addClass("spt_left_toggle");
 
                 left.setStyle("margin-left", "-21%");
                 left.setStyle("opacity", "0");
@@ -629,6 +631,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 var left = toolTop.getElement(".spt_pipeline_tool_left");
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
 
+                right.removeClass("spt_left_toggle");
+
                 left.setStyle("margin-left", "0px");
                 left.setStyle("opacity", "1");
                 right.setStyle("margin-left", "20.3%");
@@ -638,7 +642,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                     left.setStyle("z-index", "");
                 }, 250);
 
-                bvr.src_el.setStyle("display", "none")
+                bvr.src_el.setStyle("display", "none");
 
                 '''})
 
@@ -1484,7 +1488,7 @@ class PipelineListWdg(BaseRefreshWdg):
         
         pipeline_div.add_attr("title", description)
 
-        color = pipeline_div.get_color("background", -20)
+        color = pipeline_div.get_color("background", -10)
         pipeline_div.add_behavior( {
             'type': 'hover',
             'color': color,
@@ -1534,6 +1538,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
         var editor_top = top.getElement(".spt_pipeline_editor_top");
+
 
 
         var ok = function () {
@@ -1643,11 +1648,31 @@ class PipelineListWdg(BaseRefreshWdg):
         '''
         } )
 
+        color = pipeline_div.get_color("background", -20)
+
+        style = HtmlElement.style()
+        pipeline_div.add(style)
+        style.add('''
+        .spt_pipeline_tool_left .spt_pipeline_selected {
+            background: %s;
+        }
+        ''' % color)
+
         
         pipeline_div.add_behavior( {'type': 'click_up',
             
             'event': 'pipeline_%s|click' %pipeline_code,
             'cbjs_action': '''
+             var top = bvr.src_el.getParent(".spt_pipeline_list_top");
+             var items = top.getElements(".spt_pipeline_selected");
+
+             if (items){
+                 for (var i=0; i<items.length; i++) {
+                     items[i].removeClass("spt_pipeline_selected");
+                 }
+             }
+
+             bvr.src_el.addClass("spt_pipeline_selected");
              spt.named_events.fire_event(bvr.event, bvr);
              spt.command.clear();
              spt.pipeline.fit_to_canvas();
@@ -9007,6 +9032,17 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
             var color = bvr.src_el.value;
             spt.pipeline.set_node_property(node, "color", color);
+            
+            var color1 = spt.css.modify_color_value(color, +10);
+            var color2 = spt.css.modify_color_value(color, -10);
+
+            if (spt.pipeline.get_node_type(node) == "condition") {
+                angle = 225;
+            } else {
+                angle = 180;
+            }
+
+            node.getElement(".spt_content").setStyle("background", "linear-gradient("+angle+"deg, "+color1+", 70%, "+color2+")");
 
             spt.named_events.fire_event('pipeline|change', {});
  
@@ -9720,135 +9756,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             
                 
             '''    
-        })  
+        })
+  
 
-
-        el.add_relay_behavior({
-            'type': 'click',
-            'bvr_match_class': 'spt_document_item',
-            'project_code': Project.get_project_code(),
-            'cbjs_action': '''
-
-            if (bvr.src_el.hasClass("spt_unsaved_item")) {
-                var input = bvr.src_el.getElement(".spt_document_input");
-                input.focus();
-                return;
-            }
-
-            var layout = bvr.src_el.getParent(".spt_layout");
-            spt.table.set_layout(layout);
-            spt.table.unselect_all_rows();
-            var row = bvr.src_el.getParent(".spt_table_row_item");
-            spt.table.select_row(row);
-
-            var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
-            var title = bvr.src_el.getAttribute("spt_title");
-
-            var top = null;
-            // they could be different when inserting or just clicked on
-            top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            if (!top) {
-                top = spt.get_element(document, '.spt_pipeline_tool_top');
-            }
-
-            // clear search
-            if (top) {
-                var info = top.getElement(".spt_node_search");
-                if (info) info.value = "";
-            }
-
-            // dont load again if pipeline already loaded
-            if (top.pipeline_code == pipeline_code) return;
-            top.pipeline_code = pipeline_code;
-
-            var editor_top = top.getElement(".spt_pipeline_editor_top");
-
-            var ok = function () {
-                spt.named_events.fire_event('pipeline|hide_info', {});
-
-                editor_top.removeClass("spt_has_changes");
-
-                var wrapper = top.getElement(".spt_pipeline_wrapper");
-                spt.pipeline.init_cbk(wrapper);
-
-                var start_el = top.getElement(".spt_pipeline_editor_start")
-                start_el.setStyle("display", "none")
-
-                spt.pipeline.clear_canvas();
-
-                spt.pipeline.import_pipeline(pipeline_code);
-
-
-                // add to the current list
-                var value = pipeline_code;
-                var title = title;
-
-                spt.pipeline.set_current_group(value);
-
-                editor_top.removeClass("spt_has_changes");
-                
-                
-                spt.command.clear();
-
-
-            };
-
-            var save = function(){
-                editor_top.removeClass("spt_has_changes");
-                var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-                spt.pipeline.init_cbk(wrapper);
-
-                var group_name = spt.pipeline.get_current_group();
-                
-                var data = spt.pipeline.get_data();
-                var color = data.colors[group_name];
-
-                var group = spt.pipeline.get_group(group_name);
-                var default_template = data.default_templates[group_name];
-                var node_index = group.get_data("node_index");
-                var pipeline_data = {
-                    default_template: default_template,
-                    node_index: node_index
-                };
-
-                server = TacticServerStub.get();
-                spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
-                
-                var xml = spt.pipeline.export_group(group_name);
-                var search_key = server.build_search_key("sthpw/pipeline", group_name);
-                try {
-                    var args = {
-                        search_key: search_key, 
-                        pipeline: xml, 
-                        color: color,
-                        project_code: bvr.project_code, 
-                        pipeline_data: pipeline_data
-                    };
-                    server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
-                    spt.named_events.fire_event('pipeline|save', {});
-
-                    editor_top.removeClass("spt_has_changes");  
-                    spt.command.clear();
-                } catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-
-                spt.app_busy.hide();
-            }
-
-
-            var current_group_name = spt.pipeline.get_current_group();
-            var group_name = pipeline_code;
-            if (editor_top && editor_top.hasClass("spt_has_changes")) {
-                spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
-            } else {
-                ok();
-            }
-
-
-            '''
-
-            })
 
         el.add_relay_behavior({
             'type': 'blur',
@@ -9939,6 +9849,173 @@ class PipelineDocumentItem(BaseRefreshWdg):
         top.add_class("vertical-centered")
         top.add_attr("spt_pipeline_code", pipeline_code)
         top.add_attr("spt_title", label)
+
+        top.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+             var row = bvr.src_el.getParent(".spt_table_row");
+             
+             row.addClass("spt_table_selected");
+
+             var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
+             var title = bvr.src_el.getAttribute("spt_title");
+             var event = "pipeline_" + pipeline_code + "|click";
+
+             var temp = {
+                 "pipeline_code": pipeline_code,
+                 "title" : title,
+             }
+
+             var kwargs = {};
+             kwargs.options = temp;
+             
+             spt.named_events.fire_event(event, kwargs);
+             spt.command.clear();
+             spt.pipeline.fit_to_canvas();
+
+             '''
+             })
+
+        top.add_behavior({
+            'type': 'listen',
+            'event_name': 'pipeline_%s|click' % pipeline_code,
+            'project_code': Project.get_project_code(),
+            'cbjs_action': '''
+
+            if (bvr.src_el.hasClass("spt_unsaved_item")) {
+                var input = bvr.src_el.getElement(".spt_document_input");
+                input.focus();
+                return;
+            }
+
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            spt.table.unselect_all_rows();
+            var row = bvr.src_el.getParent(".spt_table_row_item");
+            spt.table.select_row(row);
+
+            var pipeline_code = bvr.firing_data.pipeline_code;
+            var title = bvr.firing_data.title;
+
+            var top = null;
+            // they could be different when inserting or just clicked on
+            top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            if (!top) {
+                top = spt.get_element(document, '.spt_pipeline_tool_top');
+            }
+
+            // clear search
+            if (top) {
+                var info = top.getElement(".spt_node_search");
+                if (info) info.value = "";
+            }
+
+            // dont load again if pipeline already loaded
+            if (top.pipeline_code == pipeline_code) return;
+            top.pipeline_code = pipeline_code;
+
+            var editor_top = top.getElement(".spt_pipeline_editor_top");
+
+            var ok = function () {
+                spt.named_events.fire_event('pipeline|hide_info', {});
+
+                editor_top.removeClass("spt_has_changes");
+
+                var wrapper = top.getElement(".spt_pipeline_wrapper");
+                spt.pipeline.init_cbk(wrapper);
+
+                var start_el = top.getElement(".spt_pipeline_editor_start")
+                start_el.setStyle("display", "none")
+
+                spt.pipeline.clear_canvas();
+
+                spt.pipeline.import_pipeline(pipeline_code);
+
+
+                // add to the current list
+                var value =  bvr.firing_data.pipeline_code;
+                var title = bvr.firing_data.title;
+
+                
+                var text = top.getElement(".spt_pipeline_editor_current2");
+
+                var html = "<span class='hand spt_pipeline_link' spt_title='" + title + "' spt_pipeline_code='" + value + "'>" + title + "</span>";
+
+
+                var breadcrumb = bvr.breadcrumb;
+                if (breadcrumb) {
+                    text.innerHTML = breadcrumb + " / " + html;
+                }
+                else {
+                    text.innerHTML = html;
+                }
+
+                spt.pipeline.set_current_group(value);
+
+                editor_top.removeClass("spt_has_changes");
+                
+                
+                spt.command.clear();
+
+
+            };
+
+            var save = function(){
+                editor_top.removeClass("spt_has_changes");
+                var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+                spt.pipeline.init_cbk(wrapper);
+
+                var group_name = spt.pipeline.get_current_group();
+                
+                var data = spt.pipeline.get_data();
+                var color = data.colors[group_name];
+
+                var group = spt.pipeline.get_group(group_name);
+                var default_template = data.default_templates[group_name];
+                var node_index = group.get_data("node_index");
+                var pipeline_data = {
+                    default_template: default_template,
+                    node_index: node_index
+                };
+
+                server = TacticServerStub.get();
+                spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
+                
+                var xml = spt.pipeline.export_group(group_name);
+                var search_key = server.build_search_key("sthpw/pipeline", group_name);
+                try {
+                    var args = {
+                        search_key: search_key, 
+                        pipeline: xml, 
+                        color: color,
+                        project_code: bvr.project_code, 
+                        pipeline_data: pipeline_data
+                    };
+                    server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
+                    spt.named_events.fire_event('pipeline|save', {});
+
+                    editor_top.removeClass("spt_has_changes");  
+                    spt.command.clear();
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
+
+                spt.app_busy.hide();
+            }
+
+
+            var current_group_name = spt.pipeline.get_current_group();
+            var group_name = pipeline_code;
+            if (editor_top && editor_top.hasClass("spt_has_changes")) {
+                spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
+            } else {
+                ok();
+            }
+
+
+            '''
+
+        })
 
         open_wdg = DivWdg()
         top.add(open_wdg)
@@ -10578,8 +10655,8 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = self.top
-        top.add_style("min-width: 200px")
-        top.add_style("max-width: 300px")
+        # top.add_style("min-width: 200px")
+        # top.add_style("max-width: 300px")
 
         top.add_class("spt_process_select_top")
         top.add_style("overflow-y: auto")
@@ -10782,6 +10859,7 @@ spt.process_tool.toggle_side_bar = function(activator) {
         el2.setStyle("display", "");
         document.removeClass("selected");
         search.addClass("selected");
+        search.focus();
     }
 
 }
@@ -10841,13 +10919,26 @@ spt.process_tool.show_side_bar = function(activator) {
             node_container.add_style("width: 80px")
             node_container.add_style("height: 60px")
             node_container.add_style("overflow: hidden")
+            node_container.add_style("position: relative")
+            node_container.add_style("border: 1px solid #eee")
 
 
 
             node_scale.add_style("transform-origin: top left")
-            node_scale.add_style("transform: scale(0.5, 0.5)")
-            node_scale.add_style("margin-top: 10px")
-            node_scale.add_style("margin-left: 15px")
+            node_scale.add_class("spt_node_scale")
+
+            style = HtmlElement.style()
+            style.add('''
+            .spt_node_scale {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+            }
+            ''')
+            node_scale.add(style)
+
+            # node_scale.add_style("margin-top: 12px")
+            # node_scale.add_style("margin-left: 20px")
 
             node_wdg = None
             if (view in ['approval', 'condition', 'hierarchy', 'dependency', 'progress', 'action', 'manual']):
@@ -10858,6 +10949,7 @@ spt.process_tool.show_side_bar = function(activator) {
                     node_wdg = pipeline_canvas_wdg.get_approval_node("approval")
                 elif (view == 'condition'):
                     node_wdg = pipeline_canvas_wdg.get_condition_node("condition")
+                    # node_wdg.add_style("margin: 12px auto auto 12px !important")
                 elif (view == 'action'):
                     node_wdg = pipeline_canvas_wdg.get_node("action", node_type="action")
                 elif (view == 'hierarchy'):
@@ -10874,10 +10966,16 @@ spt.process_tool.show_side_bar = function(activator) {
                 node_wdg.add_class("spt_custom_node")
             else:
                 node_wdg = custom_node.get_display_widget("node", display_options)
+            
+            if (view == 'asset_check') or (view == 'expression') or (view == 'simple_condition'):
+                node_scale.add_style("transform: scale(0.5, 0.5) translate(-50%, -50%)")
+            else:
+                node_wdg.add_style("transform: translate(-50%, -50%)")
+                node_scale.add_style("transform: scale(0.5, 0.5)")
 
             node_scale.add(node_wdg)
             node_wdg.add_style("z-index: 0")
-
+            
             
 
             item_div = DivWdg()
@@ -10887,6 +10985,7 @@ spt.process_tool.show_side_bar = function(activator) {
             item_div.add_color("background", "background")
 
             item_div.add_style("border-radius: 3px")
+            item_div.add_style("text-align: center")
             item_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.1)")
 
             item_div.add_attr("spt_node_type", view)
@@ -10901,7 +11000,7 @@ spt.process_tool.show_side_bar = function(activator) {
 
             data_div = DivWdg()
             content_div.add(data_div)
-            data_div.add_style("width: 140px")
+            data_div.add_style("width: 80%")
             data_div.add_style("overflow-y: auto")
 
             title_div = DivWdg()

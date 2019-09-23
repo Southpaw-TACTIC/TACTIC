@@ -864,16 +864,16 @@ class RadialProgressWdg(BaseRefreshWdg):
         if not color:
             color = '#1b458b'
 
-
         size = self.kwargs.get("size") or 60
         line_width = self.kwargs.get("line_width") or 6
         font_size = None
 
         if font_size:
             top.add_style("font-size: %s" % font_size)
-
-        top.add_style("width", size)
-        top.add_style("height", size)
+        
+        size_str = str(size) + "px"
+        top.add_style("width", size_str)
+        top.add_style("height", size_str)
         top.add_style("position: relative")
 
         canvas = Canvas()
@@ -951,7 +951,7 @@ class RadialProgressWdg(BaseRefreshWdg):
             div.add("%s%%" % percent)
         div.add_style("position: absolute")
         div.add_color("color", "color")
-        div.add_style("width", size)
+        div.add_style("width", size_str)
         div.add_style("text-align: center")
         div.add_style("font-size: 1.2em")
         #div.add_style("font-weight: bold")

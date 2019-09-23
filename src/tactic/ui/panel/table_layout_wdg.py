@@ -569,7 +569,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 self.view_editable = True
 
 
-
         self.color_maps = self.get_color_maps()
 
         from pyasm.web import WebContainer
@@ -837,6 +836,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         column_widths = self.kwargs.get("column_widths")
         if not column_widths:
             column_widths = []
+        else:
+            if isinstance(column_widths, basestring):
+                column_widths = column_widths.split(",")
 
 
 
@@ -876,6 +878,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         default_width = 120
         min_width = 45
         #expand_full_width = False
+
         for i, item_width in enumerate(reversed(column_widths)):
 
             if item_width == "auto":
@@ -1837,6 +1840,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             spt.table.set_table(bvr.src_el);
             var row = bvr.src_el.getParent(".spt_table_row");
+
             if (row.hasClass("spt_table_selected")) {
                 spt.table.unselect_row(row);
             }
@@ -1994,7 +1998,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             is_editable = False
             self.view_editable = False
-
 
         if is_editable:
             table.add_relay_behavior( {
@@ -3268,7 +3271,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                             if (!layout.isVisible()) return;
                             spt.table.set_layout(layout);
-
+                            
                             var rows = spt.table.get_all_rows();
                             for (var i = 0; i < rows.length; i++) {
 
@@ -4389,17 +4392,14 @@ spt.table.get_group_cells = function(element_name, tr) {
 spt.table.last_selected_row = null;
 
 spt.table.select_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
     }
-
+    
     var current_color = row.getAttribute("spt_hover_background");
-
-    if (!current_color) {
-        current_color = row.getStyle("background-color")
-    }
+    
     if (!spt.has_class(row,'spt_table_selected')) {
 
         row.setAttribute("spt_last_background", current_color);
@@ -4412,7 +4412,7 @@ spt.table.select_row = function(row) {
 
 
 spt.table.unselect_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box_selected");
         cell.addClass("look_dg_row_select_box");
@@ -4889,28 +4889,27 @@ spt.table.add_new_item = function(kwargs) {
 
     var search_type = layout.getAttribute("spt_search_type");
 
-    var row;
-    var position;
     var table = spt.table.get_table();
     if (kwargs.row) {
-        row = kwargs.row;
-        position = "after";
+        var row = kwargs.row;
+        var position = "after";
     }
     else if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
-            row = table.getElement(".spt_table_header_row");
+            var row = table.getElement(".spt_table_header_row");
         }
         else {
-            row = rows[rows.length-1];
+            var row = rows[rows.length-1];
         }
-        position = "after";
+        var position = "after";
 
     }
     else {
-        row = table.getElement(".spt_table_row");
-        position = "before";
+        var row = table.getElement(".spt_table_row");
+        var position = "before";
     }
+
 
 
 
@@ -4973,8 +4972,10 @@ spt.table.add_new_item = function(kwargs) {
 
     // fire a client event
     var tableId = spt.table.layout.getAttribute("spt_table_id");
+
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
+
 
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
@@ -8449,7 +8450,6 @@ spt.table.export = function(mode) {
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
     var search_values_dict;
-
     spt.table.set_layout(layout);
     var header = spt.table.get_header_row();
     // include header input for widget specific settings
@@ -8598,7 +8598,6 @@ spt.table.load_data = function(sobjects) {
   for (var i = 0; i < r_sobjects.length; i++) {
 
     var sobject = sobjects[i];
-
     var row = spt.table.add_new_item();
     var insert_row = spt.table.get_insert_row();
 
