@@ -882,8 +882,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 continue
 
             if isinstance(item_width, basestring):
-                item_width = item_width.replace("px", "")
-                item_width = int(item_width)
+                if item_width.endswith("px"):
+                    item_width = item_width.replace("px", "")
+                    item_width = int(float(item_width))
+                elif item_width.endswith("%"):
+                    continue
+                else:
+                    item_width = int(float(item_width))
 
 
             if i == 0 and expand_full_width:
@@ -1105,6 +1110,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         init_load_num = self.kwargs.get('init_load_num')
 
         if not init_load_num:
+            init_load_num = 4
+        elif init_load_num == 'null':
             init_load_num = 4
         else:
             init_load_num = int(init_load_num)
@@ -1654,13 +1661,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_layout");
                     var version = top.getAttribute("spt_version");
-                    if (version == "2") {
-                        spt.table.set_layout(top);
-                        spt.table.run_search();
-                    }
-                    else {
-                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                    }
+                    spt.table.set_layout(top);
+                    spt.table.run_search();
                 '''
             } )
 
@@ -8434,6 +8436,400 @@ spt.table.load_search = function(search_view, kwargs) {
 }
 
 
+
+/*
+ * Saving views
+ */
+
+
+
+// Callback that gets executed when "Save My/Project View As" is selected
+spt.table.save_view_cbk = function(table_id, login) {
+
+    var table = document.id(table_id);
+    var top = table.getParent(".spt_view_panel");
+    // it may not always be a View Panel top
+    if (!top) top = table.getParent(".spt_table_top");
+    
+    //var search_wdg = top.getElement(".spt_search");
+
+    // TODO: Will this break on embedded tables now?????  Maybe not
+    // because the first instance is probably what we want ... however,
+    // a little tenous
+    //var view_info = top.getElement(".spt_save_top");
+    var view_info = top.getElement(".spt_new_view_top");
+
+    var values;
+    if (view_info != null) {
+        values = spt.api.Utility.get_input_values(view_info , null, false);
+    }
+    else {
+        // NOTE: this is deprecated
+        var aux_content = top.getElement(".spt_table_aux_content")
+        values = spt.api.Utility.get_input_values(aux_content , null, false);
+    }
+    // rename view
+    var new_view = values["save_view_name"];
+    var new_title = values["save_view_title"];
+    var same_as_title = values["same_as_title"] == 'on';
+    //var save_a_link = values["save_a_link"] == 'on';
+  
+    var save_mode = values['save_mode'];
+    if (!save_mode) {
+        var save_project_views = values['save_project_views'] == 'on';
+        if (save_project_views) {
+            save_mode = 'save_project_views';
+        }
+        var save_my_views = values['save_my_views'] == 'on';
+        if (save_my_views) {
+            save_mode = 'save_my_views';
+        }
+        var save_view_only = values['save_view_only'] == 'on';
+        if (save_view_only) {
+            save_mode = 'save_view_only';
+        }
+    }
+
+    if (same_as_title) {
+        new_view = new_title;
+    }
+
+    if (spt.input.has_special_chars(new_view)) {
+        spt.alert("The name contains special characters. Do not use empty spaces.");  
+        return;
+    }
+    if (new_view == "") {
+        spt.alert("Empty view name not permitted");
+        return;
+    }
+    
+    if ((/^(saved_search|link_search)/i).test(new_view)) {
+        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
+        return;
+    }
+    var table = document.getElementById(table_id);
+    if (!table) {
+        spt.alert('This command requires a Table in the main viewing area');
+        return;
+    }
+    var table_search_type = table.getAttribute("spt_search_type");
+    var table_view = table.getAttribute("spt_view");
+    var last_element = top.getAttribute("spt_element_name");
+
+
+    var kwargs = {'login' : login, 'new_title' : new_title, 
+        'element_name': new_view,
+        'last_element_name': last_element,
+        'save_mode': save_mode,
+    } 
+
+    spt.app_busy.show( 'Saving View', new_title );
+    var rtn = spt.table.save_view(table_id, table_view, kwargs);
+    spt.app_busy.hide();
+
+    if (!rtn)
+        return;
+    
+    return true;
+}
+
+//verify matching spt_view
+// NOTE: this is not really used anymore
+spt.table.is_embedded = function(table){
+    var top = table.getParent(".spt_view_panel");
+    // top is null if it's a pure Table Layout
+    if (!top) return false;
+
+    var panel_table_view = top.getAttribute('spt_view');
+    var table_view = table.getAttribute('spt_view');
+    var panel_search_type = top.getAttribute("spt_search_type");
+    var table_search_type = table.getAttribute("spt_search_type");
+     
+    var is_embedded = false;
+    if (panel_table_view != table_view || panel_search_type != table_search_type) {
+        //spt.alert('Embedded table view saving not supported yet');
+        is_embedded = true;
+       
+    }
+    return is_embedded;
+}
+
+spt.table.save_view = function(table, new_view, kwargs)
+{
+    try {
+        if (typeOf(table) == "string") {
+            table = document.id(table_id);
+        }
+
+        var top = table.getParent(".spt_view_panel");
+        var search_wdg = top ? top.getElement(".spt_search"): null;
+
+        var save_mode = kwargs['save_mode'];
+
+        if (spt.table.is_embedded(table)) {
+            //spt.alert('Embedded table view saving not supported yet');
+            var login = kwargs.login;
+            spt.dg_table.get_size_info(table, new_view, login);
+            return false;
+        }
+        
+        var table_search_type = table.getAttribute("spt_search_type");
+
+
+        var dis_options = {};
+
+
+        var login = kwargs.login;
+        var save_as_personal = (save_mode == 'save_my_views') ? true : false;
+
+
+        var side_bar_view = 'project_view';
+        if (save_as_personal) {
+            side_bar_view = 'my_view_' + login;
+        }
+
+        // start a transaction
+        var server = TacticServerStub.get();
+        var title = side_bar_view + " updated from: " + new_view;
+        server.start({"title": "Saving View", "description": "Saving View: " +  title});
+      
+        var element_name = new_view;
+        var unique = kwargs.unique;
+
+        // Save My View allows to save over the current view if it is already a personal view
+        // or if the user is admin, he can save over anything
+        if (kwargs.element_name ) {
+            element_name = kwargs.element_name;
+        }
+        var new_title = kwargs.new_title;
+
+
+        var last_element_name = kwargs.last_element_name;
+
+        // If it is saving as a new personal view, we try to append login name
+        if (save_as_personal) {
+            //only do this to search_view to make it easier to retrieve a search for my_view_<user>
+            if (login && !(/\./).test(element_name) ) {
+                element_name = login + '.' + element_name;
+            }
+        }
+
+        var custom_search_view = null;
+        if (search_wdg) {
+            var search_view = 'link_search:'+ element_name;
+            // auto generate a new search for this view
+            search_wdg.setAttribute("spt_search_view", search_view);
+            spt.table.save_search(search_wdg, search_view, {'unique': kwargs.unique, 'personal': save_as_personal});
+
+            custom_search_view = search_wdg.getAttribute('spt_custom_search_view');
+        }
+        // add to the project views
+        var search_type = "SideBarWdg";
+        var class_name = "LinkWdg";
+       
+        var simple_search_view = top ? top.getAttribute('spt_simple_search_view'): null;
+        var insert_view = top ? top.getAttribute('spt_insert_view'): null;
+        var edit_view = top ? top.getAttribute('spt_edit_view'): null;
+        var layout = top ? top.getAttribute('spt_layout'): null;
+      
+      
+        dis_options['search_type'] = table_search_type;
+        dis_options['view'] = element_name;
+        dis_options['search_view'] = search_view;
+        if (custom_search_view)
+            dis_options['custom_search_view'] = custom_search_view;
+        if (simple_search_view)
+            dis_options['simple_search_view'] = simple_search_view;
+        if (insert_view)
+            dis_options['insert_view'] = insert_view;
+        if (edit_view)
+            dis_options['edit_view'] = edit_view;
+        if (layout)
+            dis_options['layout'] = layout;
+        
+        // redefine kwargs
+        var kwargs = {};
+        kwargs['login'] = null;
+        if (save_as_personal) 
+            kwargs['login'] = login;
+        kwargs['class_name'] = class_name; 
+        kwargs['display_options'] = dis_options;
+        
+        kwargs['unique'] = unique;
+
+
+        // these are the server oprations
+
+
+        // Copy the value of the "icon" attribute from the previous XML widget
+        // config.
+        var icon = null;
+        var widget_config_before = server.get_config_definition(search_type, "definition", last_element_name);
+        // Skip if there is no previous matching XML widget config.
+        if (widget_config_before != "") {
+            xmlDoc = spt.parse_xml(widget_config_before);
+            var elem_nodes = xmlDoc.getElementsByTagName("element");
+
+            if (elem_nodes.length > 0) {
+                var attr_node = elem_nodes[0].getAttributeNode("icon")
+
+                // Skip if there is no icon to copy over from the old link.
+                if (attr_node != null) {
+                    icon = attr_node.nodeValue;
+                }
+
+                // keep title
+                if ( save_mode == 'save_view_only' ) {
+                    var title_node = elem_nodes[0].getAttributeNode("title")
+                    if (title_node)
+                        new_title = title_node.nodeValue;
+                }
+
+            }
+        }
+
+
+        if (new_title)
+            kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
+
+         
+        // add the definiton to the list
+        var info = server.add_config_element(search_type, "definition", element_name, kwargs);
+        var unique_el_name = info['element_name'];
+        
+        //raw and static_table layout has no checkbox in the first row
+        var first_idx = 1;
+        if (['raw_table','static_table'].contains(layout))
+            first_idx = 0;
+
+        // create the view for this table
+        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
+         
+        //if (side_bar_view && save_a_link) {
+        if (save_mode != 'save_view_only') {
+            var kwargs2 = save_as_personal ? {'login': login } : {};
+           
+            server.add_config_element(search_type, side_bar_view, unique_el_name, kwargs2);
+        }
+        server.finish();
+
+        spt.panel.refresh("side_bar");
+    } catch(e) {
+        spt.alert(spt.exception.handler(e));
+        return false;
+    }
+    return true;
+    
+}
+
+
+spt.table.get_search_values = function(search_top) {
+
+
+    // get all of the search input values
+    var new_values = [];
+    if (search_top) {
+        var search_containers = search_top.getElements('.spt_search_filter')
+        for (var i = 0; i < search_containers.length; i++) {
+            var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+            new_values.push(values);
+        }
+
+        var ops = search_top.getElements(".spt_op");
+
+        // special code for ops
+        var results = [];
+        var levels = [];
+        var modes = [];
+        var op_values = [];
+        for (var i = 0; i < ops.length; i++) {
+            var op = ops[i];
+            var level = op.getAttribute("spt_level");
+            level = parseInt(level);
+            var op_value = op.getAttribute("spt_op");
+            results.push( [level, op_value] );
+            var op_mode = op.getAttribute("spt_mode");
+            levels.push(level);
+            op_values.push(op_value);
+            modes.push(op_mode);
+
+        }
+        var values = {
+            prefix: 'search_ops',
+            levels: levels,
+            ops: op_values,
+            modes: modes
+        };
+        new_values.push(values);
+
+        // find the table/simple search as well
+        var panel = search_top.getParent(".spt_view_panel");
+        var table_searches = panel.getElements(".spt_table_search");
+        for (var i = 0; i < table_searches.length; i++) {
+            var table_search = table_searches[i];
+            var values = spt.api.Utility.get_input_values(table_search,null,false);
+            new_values.push(values);
+        }
+    }
+
+    // convert to json
+    var json_values = JSON.stringify(new_values);
+    return json_values;
+
+}
+
+
+
+spt.table.save_search = function(search_wdg, search_view, kwargs) {
+
+    var json_values = spt.table.get_search_values(search_wdg);
+
+    // build the search view
+    var search_type = search_wdg.getAttribute("spt_search_type");
+
+    /*
+    var view_text = document.id('save_search_text');
+    if (search_view == undefined) {
+        search_view = view_text.value;
+    }
+    */
+    if (search_view == "") {
+        search_view = search_wdg.getAttribute("spt_search_view");
+    }
+
+    if (search_view == "") {
+        spt.alert("No name specified for saved search");
+        return;
+    }
+
+
+    var options = {
+        'search_type': search_type,
+        'display': 'block',
+        'view': search_view,
+        'unique': kwargs.unique,
+        'personal': kwargs.personal
+    };
+
+    // replace the search widget
+    var server = TacticServerStub.get();
+
+    var class_name = "tactic.ui.app.SaveSearchCbk";
+    server.execute_cmd(class_name, options, json_values);
+
+    /*
+    if (document.id('save_search_wdg'))
+        document.id('save_search_wdg').style.display = 'none';
+    */
+
+
+}
+
+
+
+
+
+
 /*
  * Export to CSV tools
  */
@@ -8500,7 +8896,7 @@ spt.table.export = function(mode) {
             return;
         }
 
-        var search_values = spt.dg_table.get_search_values(search_wdg);
+        var search_values = spt.table.get_search_values(search_wdg);
         search_values_dict['json'] = search_values;
 
     }
@@ -8525,10 +8921,7 @@ spt.table.export = function(mode) {
 
     else {
         title = 'Export Selected items from "' + search_type + '" list ';
-        if (version == 2)
-            var selected_rows = spt.table.get_selected_rows();
-        else
-            var selected_rows = spt.dg_table.get_selected(table,  {'include_embedded_tables': true} );
+        var selected_rows = spt.table.get_selected_rows();
         var sel_search_keys = [];
 
         related_views = []
@@ -8542,7 +8935,6 @@ spt.table.export = function(mode) {
                 related_views.push(parent_view);
         }
 
-        //var sel_tr_list = spt.dg_table.get_selected( table.get('id') );
         if( sel_search_keys.length == 0 ) {
             spt.alert('No rows selected for exporting to CSV ... skipping "Export Selected" action.');
             return;

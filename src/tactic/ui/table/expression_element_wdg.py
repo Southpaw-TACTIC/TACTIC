@@ -460,14 +460,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     result = ''
         else:
 
-            print("sobject: ", sobject.get_code())
-            print("expression: ", expression)
-          
             result = parser.eval(expression, sobject, vars=self.vars, single=ret_single, list=ret_list, show_retired=self.show_retired)
             result = Search.eval(expression, sobject)
-            print("result: ", result)
-            print("\n")
-
 
 
         # if the result has a get_display_value call, then use that.

@@ -959,7 +959,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # add custom canvas behaviors on the canvas div instead
         self.canvas_behaviors = self.get_canvas_behaviors()
         for canvas_behavior in self.canvas_behaviors:
-            canvas.add_behavior( canvas_behavior )
+            outer.add_behavior( canvas_behavior )
 
 
         #paint.add_style("border: solid 1px blue");
@@ -1210,6 +1210,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 }
             '''
             } )
+
+
+        # add custom canvas behaviors on the canvas div instead
+        # NOTE: at the momen the screen_div is at the top, we need to add the behaviors
+        # here.
+        self.canvas_behaviors = self.get_canvas_behaviors()
+        for canvas_behavior in self.canvas_behaviors:
+            screen_div.add_behavior( canvas_behavior )
 
 
         return top

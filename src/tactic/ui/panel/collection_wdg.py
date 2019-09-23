@@ -152,59 +152,65 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         content_div.add_style("padding: 5px")
         content_div.add_style("padding-bottom: 0px")
 
-        custom_cbk = {}
-        custom_cbk['enter'] = '''
+        if collections:
 
-            var top = bvr.src_el.getParent(".spt_dialog");
-            var input = top.getElement(".spt_main_search");
-            var search_value = input.value.toLowerCase();
-            var collections = top.getElements(".spt_collection_div");
 
-            var num_result = 0;
-            var no_results_el = top.getElement(".spt_no_results");
+            custom_cbk = {}
+            custom_cbk['enter'] = '''
 
-            for (i = 0; i < collections.length; i++) {
-                // Access the Collection title (without number count) 
-                var collection_title = collections[i].getElement(".spt_collection_checkbox").getAttribute("collection_name").toLowerCase();
-                if (collection_title.indexOf(search_value) != '-1') {
-                    collections[i].style.display = "block";
-                    num_result += 1;
+                var top = bvr.src_el.getParent(".spt_dialog");
+                var input = top.getElement(".spt_main_search");
+                var search_value = input.value.toLowerCase();
+                var collections = top.getElements(".spt_collection_div");
+
+                var num_result = 0;
+                var no_results_el = top.getElement(".spt_no_results");
+
+                for (i = 0; i < collections.length; i++) {
+                    // Access the Collection title (without number count) 
+                    var collection_title = collections[i].getElement(".spt_collection_checkbox").getAttribute("collection_name").toLowerCase();
+                    if (collection_title.indexOf(search_value) != '-1') {
+                        collections[i].style.display = "block";
+                        num_result += 1;
+                    }
+                    else {
+                        collections[i].style.display = "none";
+                    }
+                }
+                // if no search results, show "no_results_el"
+                if (num_result == 0) {
+                    for (i = 0; i < collections.length; i++) {
+                        collections[i].style.display = "none";
+                    }
+                    no_results_el.style.display = "block";
                 }
                 else {
-                    collections[i].style.display = "none";
+                    no_results_el.style.display = "none";
                 }
-            }
-            // if no search results, show "no_results_el"
-            if (num_result == 0) {
-                for (i = 0; i < collections.length; i++) {
-                    collections[i].style.display = "none";
-                }
-                no_results_el.style.display = "block";
-            }
-            else {
-                no_results_el.style.display = "none";
-            }
 
-        '''
-        filters = []
-        filters.append(("_is_collection",True))
-        filters.append(("status","Verified"))
-        text = LookAheadTextInputWdg(
-            search_type = search_type,
-            column="name",
-            icon_pos="right",
-            width="100%",
-            height="30px",
-            hint_text="Filter collections...",
-            value_column="name",
-            filters=filters,
-            custom_cbk=custom_cbk,
-            is_collection=True,
-            validate='false'
-        )
-        text.add_class("spt_main_search")
+            '''
+            filters = []
+            filters.append(("_is_collection",True))
+            filters.append(("status","Verified"))
+            text = LookAheadTextInputWdg(
+                search_type = search_type,
+                column="name",
+                icon_pos="right",
+                width="100%",
+                height="30px",
+                hint_text="Filter collections...",
+                value_column="name",
+                filters=filters,
+                custom_cbk=custom_cbk,
+                is_collection=True,
+                validate='false'
+            )
+            text.add_class("spt_main_search")
+            content_div.add(text)
 
-        content_div.add(text)
+        else:
+            pass
+
         # set minimum if there is at least one collection
         if len(collections) > 0:
             content_div.add_style("min-height: 300px")
@@ -219,8 +225,10 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         no_results_div.add_color("color", "color", 50)
         no_results_div.add_style("font: normal bold 1.1em arial,serif")
         no_results_div.add("No collections found.")
-        no_results_div.add_style("display: none")
-        no_results_div.add_style("margin: 10px 0px 0px 10px")
+        if collections:
+            no_results_div.add_style("display: none")
+        no_results_div.add_style("margin: 10px auto 20px auto")
+        no_results_div.add_style("text-align: center")
         no_results_div.add_class("spt_no_results")
 
         for collection in collections:
@@ -285,10 +293,13 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
 
 
         add_button = DivWdg()
-        add_button.add("Add")
+        if not collections:
+            add_button.add_style("display: none")
+        add_button.add("Add Items to Selected")
         add_button.add_style("margin: 0px 10px 10px 10px")
-        add_button.add_style("width: 50px")
-        add_button.add_class("btn btn-primary")
+        add_button.add_style("width: 100px")
+        add_button.add_style("height: 20px")
+        add_button.add_class("btn btn-default")
         dialog.add(add_button)
 
         add_button.add_behavior( {
@@ -916,7 +927,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
         no_results_div.add_style("font: normal bold 1.1em arial,serif")
         no_results_div.add("No collections found.")
         no_results_div.add_style("display: none")
-        no_results_div.add_style("margin: 10px 0px 0px 10px")
+        no_results_div.add_style("margin: 30px auto")
         no_results_div.add_class("spt_no_results")
 
         from tactic.ui.panel import ThumbWdg2

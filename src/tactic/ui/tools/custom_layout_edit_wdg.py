@@ -1304,6 +1304,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     if i == 0:
                         tr.add_class("spt_behavior_template")
                         tr.add_style("display: none")
+                        tr.add_class("SPT_TEMPLATE")
                     else:
                         tr.add_class("spt_behavior_item")
                        
