@@ -461,7 +461,6 @@ class ExpressionElementWdg(TypeTableElementWdg):
         else:
 
             result = parser.eval(expression, sobject, vars=self.vars, single=ret_single, list=ret_list, show_retired=self.show_retired)
-            result = Search.eval(expression, sobject)
 
 
         # if the result has a get_display_value call, then use that.

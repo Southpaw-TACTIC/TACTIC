@@ -91,6 +91,23 @@ class Common(Base):
         return IS_Pv3
     is_python3 = classmethod(is_python3)
 
+    def get_python(cls):
+        from .config import Config
+        python = Config.get_value("services", "python3")
+
+        if not python:
+            python = os.environ.get('PYTHON')
+
+        if not python:
+            if cls.IS_Pv3:
+                python = 'python3'
+            else:
+                python = "python"
+
+        return python
+
+    get_python = classmethod(get_python)
+
 
 
     def get_next_sobject_code(sobject, column):

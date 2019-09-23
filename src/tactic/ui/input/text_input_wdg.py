@@ -1352,6 +1352,16 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
+        # default event order is mousedown>blur>mouseup
+        # we don't want a blur preceding mouseup
+        results_div.add_relay_behavior( {
+            'type': "mousedown",
+            'bvr_match_class': 'spt_input_text_result',
+            'cbjs_action': '''
+            evt.preventDefault();
+            '''
+        } )
+
         # this is when the user clicks on a result item
         # it doesn't do a search right away, it fires the lookahead|<sType> event
         results_div.add_relay_behavior( {
