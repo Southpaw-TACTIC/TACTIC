@@ -11,7 +11,7 @@
 
 __all__ = ['CustomInfoWdg', 'CustomInfoInputWdg', 'CustomInfoAction', 'CustomTableWdg', 'PrefixParentCodeTrigger']
 
-import types
+import types, six
 
 from pyasm.common import *
 from pyasm.search import Search
@@ -199,7 +199,7 @@ class CustomTableWdg(Widget):
         search_type = self.options.get("search_type")
         view = self.options.get("view")
         filter = self.options.get("filter")
-        if type(filter) in types.StringTypes:
+        if isinstance(filter, six.string_types):
             filters = [filter]
         elif not filter:
             filters = []

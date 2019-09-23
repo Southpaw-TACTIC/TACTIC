@@ -264,6 +264,7 @@ class Search(Base):
         if api_mode in ['open', '', None]:
             return
 
+        # Commented our for testing
         #if user in ['admin']:
         #    return
 
@@ -533,7 +534,6 @@ class Search(Base):
         for filter in filters:
             if not filter:
                 continue
-            #if type(filter) in types.StringTypes or len(filter) == 1:
             if isinstance(filter, basestring) or len(filter) == 1:
                 # straight where clause not allowed
                 if isinstance(filter, basestring):
@@ -1242,11 +1242,9 @@ class Search(Base):
             start_date >= date <= end_date + 1 day
         '''
 
-        #if start_date and type(start_date) in types.StringTypes:
         if start_date and isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        #if end_date and type(end_date) in types.StringTypes:
         if end_date and isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
@@ -1282,11 +1280,9 @@ class Search(Base):
           start_col < end_date and end_col > end_date
         '''
 
-        #if type(start_date) in types.StringTypes:
         if isinstance(start_date, basestring):
             from dateutil import parser
             start_date = parser.parse(start_date)
-        #if type(end_date) in types.StringTypes:
         if isinstance(end_date, basestring):
             from dateutil import parser
             end_date = parser.parse(end_date)
@@ -2505,7 +2501,6 @@ class SObject(object):
                 self.search_type_obj = self
                 self.full_search_type = "sthpw/search_object"
 
-            #elif type(search_type) in types.StringTypes:
             elif isinstance(search_type, basestring):
                 self.search_type_obj = SearchType.get(search_type)
                 self.full_search_type = Project.get_full_search_type(search_type)
@@ -3067,7 +3062,10 @@ class SObject(object):
         if self.has_updates and name in self.update_data:
             if is_data:
                 attr_data = self.update_data.get(name) or {}
-                return attr_data.get(attr)
+                if len(parts) > 2:
+                    return attr_data.get(parts[1]).get(parts[2])
+                else:
+                    return attr_data.get(attr)
             else:
                 return self.update_data[name]
 
@@ -3076,7 +3074,13 @@ class SObject(object):
             value = self.data[name]
 
             if value and is_data:
-                value = value.get(attr)
+                if len(parts) > 2:
+                    value = value.get(parts[1]).get(parts[2])
+                else:
+                    value = value.get(attr)
+
+
+
 
             # NOTE: We should support datetime natively, however a lot
             # of basic operations don't work with datetime so we would always
@@ -3659,7 +3663,7 @@ class SObject(object):
             if SearchType.column_exists(self.full_search_type, "search_id"):
                 sobj_id = sobject.get_id()
             
-                if isinstance(sobj_id, int) or isinstance(sobj_id, long):
+                if isinstance(sobj_id, six.integer_types):
                     self.set_value("search_id", sobj_id )
                 else:
                     self.set_value("search_code", sobj_id )

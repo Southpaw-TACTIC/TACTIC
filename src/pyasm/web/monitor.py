@@ -15,7 +15,7 @@
 __all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'ASyncThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, subprocess, re
+import os, sys, threading, time, urllib, subprocess, re, six
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
@@ -32,11 +32,10 @@ from pyasm.common import Environment, Common, Date, Config, jsonloads, jsondumps
 from pyasm.search import Search, DbContainer, SearchType
 from pyasm.command import Workflow
 
-python = Config.get_value("services", "python")
-if not python:
-    python = os.environ.get('PYTHON')
-if not python:
-    python = 'python'
+
+python = Common.get_python()
+
+
 STARTUP_EXEC = '%s "%s/src/bin/startup.py"' % (python, tactic_install_dir)
 STARTUP_DEV_EXEC = '%s "%s/src/bin/startup_dev.py"' % (python, tactic_install_dir)
 
@@ -466,6 +465,34 @@ class TacticTimedThread(threading.Thread):
                 break
 
 
+from tactic.command import Scheduler, SchedulerTask
+from pyasm.biz import Project
+class TimedTask(SchedulerTask):
+    def __init__(self, **kwargs):
+        super(TimedTask, self).__init__(**kwargs)
+        #self.timed_triggers = kwargs.get("timed_triggers")
+        self.trigger = kwargs.get("trigger")
+        self.index = kwargs.get("index")
+        self.project_code = kwargs.get("project_code")
+
+    def execute(self):
+        try:
+            #Batch()
+            #Command.execute_cmd(timed_trigger)
+
+            Project.set_project(self.project_code)
+            #self.timed_triggers[self.index].execute()
+            self.trigger.execute()
+        except Exception as e:
+            raise
+        finally:
+            DbContainer.commit_thread_sql()
+            DbContainer.close_thread_sql()
+            DbContainer.close_all()
+
+
+
+
  
 class TacticSchedulerThread(threading.Thread):
 
@@ -473,6 +500,8 @@ class TacticSchedulerThread(threading.Thread):
         self.dev_mode = False
 
         self.site = site
+
+        self.scheduler = None
 
         super(TacticSchedulerThread,self).__init__()
 
@@ -485,24 +514,14 @@ class TacticSchedulerThread(threading.Thread):
     def set_dev(self, mode):
         self.dev_mode = mode
 
-    def run(self):
-        time.sleep(3)
 
-        # set the site
-        if self.site:
-            from pyasm.security import Site
-            site = self.site
-            Site.set_site(site)
-
-        # NOTE: not sure why we have to do a batch here
-        from pyasm.security import Batch
-        Batch(login_code="admin")
+    def get_timed_triggers(self):
 
         timed_triggers = []
 
+        # find all of the projects (except the admin project)
         from pyasm.biz import Project
         search = Search("sthpw/project")
-        # only requires the admin project
         search.add_filter('code', 'sthpw', op='!=')
         projects = search.get_sobjects()
 
@@ -549,23 +568,28 @@ class TacticSchedulerThread(threading.Thread):
 
 
                 data = trigger_sobj.get_json_value("data")
+
+                # ??? Why get process code from data (and not process column)
                 process_code = data.get("process")
+                if not process_code:
+                    process_code = trigger_sobj.get_value("process")
 
                 if not trigger_class and not process_code:
-                    print("Skipping trigger [%s] ... no execution defined" % trigger_sobj.get_code() )
+                    print("WARNING: Skipping trigger [%s] ... no execution defined" % trigger_sobj.get_code() )
                     continue
 
 
                 data['project_code'] = trigger_sobj.get_project_code()
 
 
-                if process_code:
-                    print("Skipping process trigger [%s] ... not implemented" % trigger_sobj.get_code() )
+                if not process_code:
+                    print("WARNING: Skipping process trigger [%s] ... not implemented" % trigger_sobj.get_code() )
                     continue
 
                 try:
                     timed_trigger = Common.create_from_class_path(trigger_class, [], data)
                     timed_trigger.set_input(data)
+                    timed_trigger.set_trigger_sobj(trigger_sobj)
                     has_triggers = True
 
                 except ImportError:
@@ -582,113 +606,204 @@ class TacticSchedulerThread(threading.Thread):
                 print("Found [%s] scheduled triggers in site [%s] - project [%s]..." % (project_triggers_count, site, project_code))
 
 
-
-        from tactic.command import Scheduler, SchedulerTask
-        scheduler = Scheduler.get()
-
-        scheduler.start_thread()
+        return timed_triggers
 
 
 
-        class TimedTask(SchedulerTask):
-            def __init__(self, **kwargs):
-                super(TimedTask, self).__init__(**kwargs)
-                self.index = kwargs.get("index")
-                self.project_code = kwargs.get("project_code")
+    def add_trigger(self, timed_trigger):
 
-            def execute(self):
+        data = timed_trigger.get_input()
+        if not data:
+            return
+
+        """
+        data = {
+            'type': 'interval',
+            'interval': 10,
+            'delay': 0,
+            'mode': 'threaded'
+        }
+        """
+        project_code = data.get("project_code")
+        name = timed_trigger.get_trigger_sobj().get_code()
+        task = TimedTask(name=name, trigger=timed_trigger, project_code=project_code)
+
+        args = {}
+        if data.get("mode"):
+            args['mode'] = data.get("mode")
+
+        # FIXME: should decide on one
+        trigger_type = data.get("interval_type")
+        if not trigger_type:
+            trigger_type = data.get("type")
+
+        if trigger_type == 'delayed':
+            delay = data.get("delay") or 0
+            if delay:
+                delay = int(delay)
+                delay = delay * 60 # minutes
+
+            args = {
+                'delay': delay,
+            }
+
+            self.scheduler.add_single_task(task, **args)
+
+
+        elif trigger_type == 'interval':
+
+            interval = data.get("interval")
+
+            #delay = data.get("delay")
+            delay = 0 # currently interferes with "delayed" mode delay attr
+
+            # make sure interval and delays are not strings
+            if isinstance(interval, six.string_types):
                 try:
-                    #Batch()
-                    #Command.execute_cmd(timed_trigger)
+                    interval = int(interval)
+                except:
+                    interval = None
 
-                    Project.set_project(self.project_code)
-                    timed_triggers[self.index].execute()
-                except Exception as e:
-                    raise
-                finally:
-                    DbContainer.close_thread_sql()
-                    DbContainer.commit_thread_sql()
-                    DbContainer.close_all()
+            if not interval:
+                print("WARNING: interval not specified")
+                return
+
+
+            if isinstance(delay, six.string_types):
+                try:
+                    delay = int(delay)
+                except:
+                    delay = None
+
+            if not delay:
+                delay = 3
+
+            args = {
+                'interval': interval,
+                'delay': delay,
+            }
+
+            self.scheduler.add_interval_task(task, **args)
+
+
+        elif trigger_type == "daily":
+
+            from dateutil import parser
+            args['time'] = parser.parse( data.get("time") )
+
+            if data.get("weekdays"):
+                args['weekdays'] = eval( data.get("weekdays") )
+
+            self.scheduler.add_daily_task(task, **args)
+
+
+        elif trigger_type == "weekly":
+            #self.scheduler.add_weekly_task(task, weekday, time, mode='threaded'):
+            args['time'] = parser.parse( data.get("time") )
+
+            if data.get("weekday"):
+                args['weekday'] = eval( data.get("weekday") )
+
+            self.scheduler.add_weekly_task(task, **args)
+
+
+    def run(self):
+        time.sleep(3)
+
+        # set the site
+        if self.site:
+            from pyasm.security import Site
+            site = self.site
+            Site.set_site(site)
+
+        from pyasm.security import Batch
+        Batch(login_code="admin")
+
+        # get all of the timed triggers
+        timed_triggers = self.get_timed_triggers()
+
+
+        # star the scheduler
+        from tactic.command import Scheduler, SchedulerTask
+        from pyasm.biz import Project
+        self.scheduler = Scheduler.get()
+        self.scheduler.start_thread()
 
 
         for idx, timed_trigger in enumerate(timed_triggers):
-
-            data = timed_trigger.get_input()
-            if not data:
-                continue
-
-            """
-            data = {
-                'type': 'interval',
-                'interval': 10,
-                'delay': 0,
-                'mode': 'threaded'
-            }
-            """
-
-            project_code = data.get("project_code")
-            task = TimedTask(index=idx, project_code=project_code)
-
-            args = {}
-            if data.get("mode"):
-                args['mode'] = data.get("mode")
-
-            trigger_type = data.get("type")
-
-            if trigger_type == 'interval':
-
-                interval = data.get("interval")
-                delay = data.get("delay")
-
-                # make sure interval and delays are not strings
-                if isinstance(interval, basestring):
-                    try:
-                        interval = int(interval)
-                    except:
-                        interval = None
-
-                if not interval:
-                    continue
+            self.add_trigger(timed_trigger)
 
 
-                if isinstance(delay, basestring):
-                    try:
-                        delay = int(delay)
-                    except:
-                        delay = None
 
-                if not delay:
-                    delay = 3
-
-                args = {
-                    'interval': interval,
-                    'delay': delay,
-                }
-
-                scheduler.add_interval_task(task, **args)
+        class RefreshTask(SchedulerTask):
+            def __init__(self, **kwargs):
+                self.triggers = kwargs.get("triggers")
+                super(RefreshTask, self).__init__(**kwargs)
 
 
-            elif trigger_type == "daily":
+            def execute(self2):
+                try:
+                    old_names = set([x.get_trigger_sobj().get_code() for x in self2.triggers])
 
-                from dateutil import parser
+                    new_timed_triggers = self.get_timed_triggers()
+                    new_names = set([x.get_trigger_sobj().get_code() for x in new_timed_triggers])
 
-                args['time'] = parser.parse( data.get("time") )
+                    added = new_names.difference(old_names)
+                    removed = old_names.difference(new_names)
 
-                if data.get("weekdays"):
-                    args['weekdays'] = eval( data.get("weekdays") )
+                    # add any changed ones
+                    search = Search("sthpw/change_timestamp")
+                    new_processes = [x.get_trigger_sobj().get("process") for x in new_timed_triggers]
+                    search.add_filters("search_code", new_processes)
+                    search.add_filter("timestamp", "now() - '10 seconds'::INTERVAL", quoted=False, op=">")
+                    changes = search.get_sobjects()
+                    for change in changes:
+                        search_code = change.get("search_code")
+                        for t in new_timed_triggers:
+                            if t.get_trigger_sobj().get("process") == search_code:
+                                name = t.get_trigger_sobj().get_code()
+                                added.add(name)
+                                removed.add(name)
+                                break
 
-                scheduler.add_daily_task(task, **args)
 
-                #scheduler.add_daily_task(task, time, mode="threaded", weekdays=range(1,7))
+                    for remove in removed:
+                        print("Removing [%s]" % remove)
+                        task_names = self.scheduler.get_task_names()
+                        if remove not in task_names:
+                            print("WARNING: [%s] not in scheduler" % remove)
+                            continue
+                        self.scheduler.cancel_task(remove)
 
-            elif trigger_type == "weekly":
-                #scheduler.add_weekly_task(task, weekday, time, mode='threaded'):
-                args['time'] = parser.parse( data.get("time") )
 
-                if data.get("weekday"):
-                    args['weekday'] = eval( data.get("weekday") )
+                    for add in added:
+                        print("Adding [%s]" % add)
+                        n = [x.get_trigger_sobj().get_code() for x in new_timed_triggers]
+                        index = n.index(add)
+                        timed_trigger = new_timed_triggers[index]
+                        self.add_trigger(timed_trigger)
 
-                scheduler.add_weekly_task(task, **args)
+
+                    # reset to the new list of triggers
+                    self2.triggers = new_timed_triggers
+
+
+                except Exception as e:
+                    raise
+                finally:
+                    DbContainer.commit_thread_sql()
+                    DbContainer.close_thread_sql()
+                    DbContainer.close_all()
+
+        refresh_task = RefreshTask(name="__refresh__", triggers=timed_triggers)
+        args = {
+            'interval': 10,
+            'delay': 3,
+        }
+        self.scheduler.add_interval_task(refresh_task, **args)
+
+
+
 
 
 
@@ -927,11 +1042,12 @@ class TacticMonitor(object):
         tactic_timed_thread.start()
         tactic_threads.append(tactic_timed_thread)
 
+
+
         # create a separate thread for scheduler processes
         if not start_scheduler:
             start_scheduler = Config.get_value("services", "scheduler")
         if start_scheduler in ['true', True]:
-            
             sites = Config.get_value("services", "scheduler_sites")
             if sites:
                 sites = re.split("[|,]", sites)

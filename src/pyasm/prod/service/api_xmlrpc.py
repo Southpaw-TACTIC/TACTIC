@@ -23,7 +23,6 @@ except:
     import thread
 import re, random
 import datetime, time
-import requests
 
 IS_Pv3 = sys.version_info[0] > 2
 
@@ -349,6 +348,7 @@ def xmlrpc_decorator(meth):
                 Container.put(data_key, state) 
 
 
+
     def new(self, original_ticket, *args, **kwargs):
         results = None
         try:
@@ -375,6 +375,15 @@ def xmlrpc_decorator(meth):
                     if meth_name in API_MODE.get("closed"):
                         allowed = True
 
+                if api_mode == "query":
+                    if meth_name in API_MODE.get("query"):
+                        allowed = True
+
+                if not allowed:
+                    raise Exception("Permission Denied [%s] [%s]" % (meth.__name__, args))
+
+
+            try:
                 if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif meth.__name__ in TRANS_OPTIONAL_METHODS:
@@ -383,27 +392,9 @@ def xmlrpc_decorator(meth):
                         cmd = get_simple_cmd(self, meth, ticket, args)
                     else:
                         cmd = get_full_cmd(self, meth, ticket, args)
-                    
-                        
-                    multi_site = Config.get_value("master", "enabled")
-                    if multi_site and args[0] != "tactic.ui.app.DynamicUpdateCmd":
-                        test = self.redirect_to_server(args)
-                        cmd = Common.create_from_class_path(args[0], {}, {})
-                        print ("---------new", test, cmd.is_update())
 
-                        return test
-                        
                 else:
                     cmd = get_full_cmd(self, meth, ticket, args)
-
-                '''
-                multi_site = Config.get_value("master", "enabled")
-                cmd_class = Common.create_from_class_path(args[0], {}, {})
-                
-                if multi_site and cmd_class.is_update():
-                    res = self.redirect_to_server(args)
-                    return res
-                '''
 
                 profile_flag = False
 
@@ -456,15 +447,21 @@ def xmlrpc_decorator(meth):
                 stacktrace_str = "".join(stacktrace)
                 print("-"*50)
                 print(stacktrace_str)
-                message = e.message
+                try:
+                    message = e.message
+                except:
+                    message = str(e)
            
                 if not message:
                     message = e.__str__()
 
-                if isinstance(message, unicode):
-                    error_msg = message.encode('utf-8')
-                elif isinstance(message, str):
-                    error_msg = unicode(message, errors='ignore').encode('utf-8')
+                if not Common.IS_Pv3:
+                    if isinstance(message, unicode):
+                        error_msg = message.encode('utf-8')
+                    elif isinstance(message, str):
+                        error_msg = unicode(message, errors='ignore').encode('utf-8')
+                    else:
+                        error_msg = message
                 else:
                     error_msg = message
                 print("Error: ", error_msg)
@@ -1017,33 +1014,6 @@ class CustomApi(BaseApiXMLRPC):
 
 class ApiXMLRPC(BaseApiXMLRPC):
     '''Client Api'''
-
-
-    #@trace_decorator
-    def redirect_to_server(self, args):
-
-        master_ticket = Config.get_value("master", "login_ticket")
-        url = Config.get_value("master", "rest_url")
-        cmd = args[0]
-        kwargs = args[1]
-
-        if type(kwargs) == dict:
-            kwargs = jsondumps(kwargs)
-
-        data = {
-            'login_ticket': master_ticket,
-            'method': 'execute_cmd',
-            'class_name': cmd,
-            "args" : kwargs,
-        }
-
-        r = requests.post(url, data=data)
-        print("------", cmd, type(args[1]), args[1])
-        ret_val = r.json()
-        #result = ret_val.get("info")
-
-        return ret_val
-
 
     #@trace_decorator
     def get_ticket(self, login_name, password, site=None):
@@ -5554,6 +5524,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 f.close()
                 data = jsonloads(data)
                 class_name = data.get("class_name")
+                static_kwargs = data.get("kwargs") or {}
+                if static_kwargs:
+                    print("Adding kwargs: %s" % static_kwargs)
+                    for n, v in static_kwargs.items():
+                        args[n] = v
+
                 login = data.get("login")
                 current_login = Environment.get_user_name()
                 if login != current_login:

@@ -91,6 +91,23 @@ class Common(Base):
         return IS_Pv3
     is_python3 = classmethod(is_python3)
 
+    def get_python(cls):
+        from .config import Config
+        python = Config.get_value("services", "python3")
+
+        if not python:
+            python = os.environ.get('PYTHON')
+
+        if not python:
+            if cls.IS_Pv3:
+                python = 'python3'
+            else:
+                python = "python"
+
+        return python
+
+    get_python = classmethod(get_python)
+
 
 
     def get_next_sobject_code(sobject, column):
@@ -664,7 +681,7 @@ class Common(Base):
             a list of sorted values is returned '''
         keys = list(dct.keys())
         keys.sort(reverse=reverse)
-        return map(dct.get, keys)
+        return list(map(dct.get, keys))
     sort_dict = staticmethod(sort_dict)
 
     def get_dict_list(dct):
@@ -1555,7 +1572,6 @@ class Marshaller:
     def set_class(self, class_path):
         if not class_path:
             self.class_path = None
-        #elif type(class_path) in types.StringTypes:
         elif isinstance(class_path, basestring):
             self.class_path = class_path
         elif type(class_path) == types.TypeType:
@@ -1720,7 +1736,7 @@ class RollbackImporter:
         print("uninstall ....")
         __builtin__.__import__ = self.realImport
         for modname, modinfo in self.newModules.items():
-            if not self.previousModules.has_key(modname):
+            if modname not in self.previousModules:
                 # Force reload when modname next imported
                 print("modname: ", modname)
                 if not sys.modules.get(modname):

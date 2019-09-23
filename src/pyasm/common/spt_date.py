@@ -423,7 +423,7 @@ class SPTDate(object):
 
         # less than an hour
         elif diff.seconds < 60 * 60:
-            minutes = diff.seconds / 60
+            minutes = int(diff.seconds / 60)
             if minutes == 1:
                 value = "1 minute %s" % txt
             else:

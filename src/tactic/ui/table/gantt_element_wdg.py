@@ -630,7 +630,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # find the pixels per day
-        pixel_per_day = self.percent_per_day * self.total_width / 100;
+        pixel_per_day = self.percent_per_day * self.total_width / 100
 
 
         year_display = self.kwargs.get("year_display")

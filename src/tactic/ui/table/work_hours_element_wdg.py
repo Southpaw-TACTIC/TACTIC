@@ -265,10 +265,10 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
 
         self.dates = list(rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date))
 
-        for idx in xrange(0,8):
+        for idx in range(0,8):
             self.summary_st[idx] = {}
 
-        for idx in xrange(0,8):
+        for idx in range(0,8):
             self.summary_ot[idx] = {}
 
     def get_default_cbk(self):

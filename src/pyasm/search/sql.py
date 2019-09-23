@@ -179,7 +179,6 @@ class Sql(Base):
             user = db_resource.get_user()
             password = db_resource.get_password()
         else:
-            #assert type(database_name) in types.StringTypes
             # allow unicode
             assert isinstance(database_name, basestring)
         self.database_name = database_name
@@ -358,7 +357,7 @@ class Sql(Base):
         if use_cache:
             columns = Container.get_dict("Sql:table_columns", key)
             if columns:
-                return columns[:]
+                return list(columns)
 
             # use global cache
             if database == 'sthpw':
@@ -370,8 +369,7 @@ class Sql(Base):
                 if cache:
                     columns = cache.get_value_by_key("columns", table)
                     if columns != None:
-                        return columns[:]
-                        #return columns
+                        return list(columns)
 
         impl = self.get_database_impl()
         columns = impl.get_columns(db_resource, table)
@@ -379,7 +377,7 @@ class Sql(Base):
         if use_cache:
             Container.put_dict("Sql:table_columns", key, columns)
 
-        return columns[:]
+        return list(columns)
 
 
     def get_table_info(self):
@@ -3548,6 +3546,9 @@ class CreateTable(Base):
 
 
     def add_constraint(self, columns, mode="UNIQUE"):
+        if isinstance(columns, six.string_types):
+            columns = [columns]
+
         constraint = {
             'columns': columns,
             'mode': mode
@@ -3723,7 +3724,7 @@ class DropTable(Base):
 
 
         # dump the table to a file and store it in cache
-        from sql_dumper import TableSchemaDumper
+        from .sql_dumper import TableSchemaDumper
         dumper = TableSchemaDumper(self.search_type)
         try:
             # should i use mode='sobject'? it defaults to 'sql'

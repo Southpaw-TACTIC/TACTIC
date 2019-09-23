@@ -926,7 +926,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
             var options = bvr.options;
             var class_name = 'tactic.ui.app.SearchTypeCreatorCmd';
-            var values = spt.api.Utility.get_input_values(top);
+            var values = spt.api.Utility.get_input_values(top, null, false);
 
             var search_type = values.search_type_name;
             options.search_type = search_type[0];
@@ -1021,7 +1021,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         from tactic.ui.manager import FormatDefinitionEditWdg
         option = {
         'name': 'xxx',
-        'values': 'integer|float|percent|currency|date|time|scientific|boolean|text|timecode',
+        'values': 'integer|float|percent|currency|date|time|scientific|boolean|text|timecode|json',
         }
         format_wdg = FormatDefinitionEditWdg(option=option)
         td = column_wdg.add_cell(format_wdg)
@@ -1044,7 +1044,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         #type_select.set_option("values", "varchar(256)|varchar(1024)|integer|float|text|timestamp")
         option = {
         'name': 'xxx',
-        'values': 'integer|float|percent|currency|date|time|scientific|boolean|text|timecode',
+        'values': 'integer|float|percent|currency|date|time|scientific|boolean|text|timecode|json',
         }
         format_wdg = FormatDefinitionEditWdg(option=option)
         td = column_wdg.add_cell(format_wdg)
@@ -1723,6 +1723,7 @@ class SearchTypeCreatorCmd(Command):
         create.add("keywords", "text")
         create.add("login", "varchar")
         create.add("timestamp", "timestamp")
+        create.add("data", "json")
         create.add("s_status", "varchar")
         create.add_constraint(["code"], mode="UNIQUE")
 

@@ -213,6 +213,7 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
 //    the input elements below the element specified by element_id
 //
 spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
+
     if (filter == undefined)
         filter = ".spt_input";
 
@@ -233,12 +234,17 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
             continue;
         }
 
+        // behavior for different input types
+        if (input.type == "checkbox")
+            input.checked = value == "on" ? true : false;
+        else if (input.type == "radio")
+            input.checked = value == input.value ? true : false;
+
+
         // if array assign values one by one
-        if (Array.isArray(value)) {
+        else if (Array.isArray(value)) {
             var index = extras[name+"set_input_values2_index"] || 0;
             var length = value.length;
-
-            console.log(value, index, input);
 
             if (index > length-1)
                 continue
@@ -250,12 +256,6 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
         } else {
             input.value = value;
         }
-
-        // behavior for different input types
-        if (input.type == "checkbox")
-            input.checked = value == "on" ? true : false;
-        if (input.type == "radio")
-            input.checked = value == input.value ? true : false;
     }
 
     /*

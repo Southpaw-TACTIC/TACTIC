@@ -1518,6 +1518,7 @@ spt.advanced_search.saved.labels = bvr.labels;
         saved_header.add(saved_searches_input)
         saved_searches_input.add_class("spt_saved_searches_input")
         saved_searches_input.add_style("display", "none")
+        saved_searches_input.add_attr("placeholder", "Find saved search")
 
         saved_searches_input.add_behavior({
             'type': 'load',

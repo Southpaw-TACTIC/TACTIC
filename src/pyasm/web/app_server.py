@@ -244,112 +244,61 @@ class BaseAppServer(Base):
         body.add_color("background", "background")
         body.add_color("color", "color")
 
-        reset_password = web.get_form_value('reset_password') == 'true'
-        reset_request = web.get_form_value('reset_request') == 'true'
-        new_password = web.get_form_value('new_password') == 'true'
-        resend_code = web.get_form_value('resend_code') == 'true'
-        send_code = web.get_form_value('send_code') == 'true'
-        is_err = web.get_form_value('is_err') == 'true'
+        reset_msg = web.get_form_value('reset_msg')
+        if reset_msg:
+            web.set_form_value(WebLoginWdg2.LOGIN_MSG_LABEL, reset_msg)
 
-        back_to_login = web.get_form_value("back_to_login") == 'true'
-        if back_to_login:
-            reset_password = False
-            reset_request = False
-            send_code = False
-
-        from tactic.ui.widget import CodeConfirmationWdg, NewPasswordWdg, ResetOptionsWdg
-        if reset_password:
-            if is_err:
-                top.add(CodeConfirmationWdg())
+        web_wdg = None
+        sudo = Sudo()
+        try:
+            # get the project from the url because we are still 
+            # in the admin project at this stage
+            current_project = web.get_context_name()
+            try:
+                if current_project != "default":
+                    project = Project.get_by_code(current_project)
+                    assert project
+            except Exception as e:
+                pass
             else:
-                code = web.get_form_value('code')
-                login_name = web.get_form_value('login')
-                login = Login.get_by_login(login_name, use_upn=True)
 
-                code_correct = False
-                if login:
-                    data = login.get_json_value('data')
-                    if data:
-                        temporary_code = data.get('temporary_code')
-                        if code == temporary_code:
-                            code_correct = True
-                            top.add(NewPasswordWdg())
-                        else:
-                            web.set_form_value(CodeConfirmationWdg.MSG, "The code entered was incorrect")
-                    else:
-                        web.set_form_value(CodeConfirmationWdg.MSG, "The code has not been initialized. Please try again.")
-                else:
-                    web.set_form_value(CodeConfirmationWdg.MSG, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.' % login_name)
-                if not code_correct:
-                    top.add(CodeConfirmationWdg())
-        elif send_code:
-            if is_err:
-                top.add(ResetOptionsWdg())
-            else:
-                top.add(CodeConfirmationWdg())
-        elif resend_code:
-            top.add(CodeConfirmationWdg())
-        elif reset_request:
-            top.add(ResetOptionsWdg())
-        else:
-            if new_password and is_err:
-                top.add(NewPasswordWdg())
-            else:
-                reset_msg = web.get_form_value('reset_msg')
-                if reset_msg:
-                    web.set_form_value(WebLoginWdg2.LOGIN_MSG, reset_msg)
-
-                web_wdg = None
-                sudo = Sudo()
-                try:
-                    # get the project from the url because we are still 
-                    # in the admin project at this stage
-                    current_project = web.get_context_name()
+                # custom global site login widget
+                if not current_project or current_project == "default":
+                    current_project = Project.get_default_project()
+                if current_project and current_project != "default":
                     try:
-                        if current_project != "default":
-                            project = Project.get_by_code(current_project)
-                            assert project
-                    except Exception as e:
-                        pass
-                    else:
-
-                        # custom global site login widget
-                        if not current_project or current_project == "default":
-                            current_project = Project.get_default_project()
-                        if current_project and current_project != "default":
-                            try:
-                                Project.set_project(current_project)
-                            except SecurityException as e:
-                                print(e)
-                                if 'is not permitted to view project' not in e.__str__():
-                                    raise
+                        Project.set_project(current_project)
+                    except SecurityException as e:
+                        print(e)
+                        if 'is not permitted to view project' not in e.__str__():
+                            raise
 
 
-                            if not web_wdg:
-                                web_wdg = site_obj.get_login_wdg()
-
-                            if web_wdg:
-                                if not isinstance(web_wdg, basestring):
-                                    web_wdg = web_wdg.get_buffer_display()
-                                top.add(web_wdg)
-                        else:
-                            web_wdg = None
-
-                    # display default web login
                     if not web_wdg:
-                        # get login screen from Site
-                        link = "/%s" % "/".join(self.hash)
-                        web_wdg = site_obj.get_login_wdg(link)
-                        if not web_wdg:
-                            # else get the default one
-                            web_wdg = WebLoginWdg2(allow_change_admin=allow_change_admin, hide_back_btn=True)
-                        
-                        top.add(web_wdg)
+                        web_wdg = site_obj.get_login_wdg()
 
-                finally:
-                    # sudo out of scope here
-                    sudo.exit()
-                    pass
+                    if web_wdg:
+                        if not isinstance(web_wdg, basestring):
+                            web_wdg = web_wdg.get_buffer_display()
+                        top.add(web_wdg)
+                else:
+                    web_wdg = None
+
+            # display default web login
+            if not web_wdg:
+                # get login screen from Site
+                link = "/%s" % "/".join(self.hash)
+                web_wdg = site_obj.get_login_wdg(link)
+                if not web_wdg:
+                    # else get the default one
+                    web_wdg = WebLoginWdg2(allow_change_admin=allow_change_admin, hide_back_btn=True)
+                
+                top.add(web_wdg)
+
+        finally:
+            # sudo out of scope here
+            sudo.exit()
+            pass
 
 
         # create a web app and run it through the pipeline
@@ -1001,7 +950,7 @@ class BaseAppServer(Base):
         # NOTE: this needs to happen after the body is put in a Container
         page = self.get_page_widget()
         page.set_as_top()
-        if type(page) in types.StringTypes:
+        if isinstance(page, six.string_types):
             page = StringWdg(page)
 
         application.add(page, 'content')

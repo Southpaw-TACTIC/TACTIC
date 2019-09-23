@@ -521,7 +521,7 @@ class SmartMenu(object):
             SmartMenu.assign_as_local_activator( html_wdg, subset_tag_suffix )
         html_wdg.add_event( "oncontextmenu",
                                  "return spt.smenu.show_on_context_click_cbk(event);" )
-        html_wdg.add_class( "SPT_SMENU_CONTAINER" )
+        html_wdg.add_class( "SPT_SMENU_CONTAINER")
     attach_smart_context_menu = staticmethod(attach_smart_context_menu)
 
 

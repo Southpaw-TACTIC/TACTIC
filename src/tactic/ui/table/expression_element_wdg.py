@@ -173,6 +173,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
         self.alt_expression = None
         self.alt_result = None
 
+        self.report_value = None
+
         self.cache_results = None
 
 
@@ -369,6 +371,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
         elif self.alt_result:
             td.add_attr("spt_input_value", self.value)
 
+        if self.report_value:
+            td.add_attr("spt_report_value", self.report_value)
+
         super(ExpressionElementWdg,self).handle_td(td)
 
 
@@ -377,10 +382,18 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
+
     def _get_result(self, sobject, expression):
         '''get the result of the expression'''
 
         element_name = self.get_name()
+
+        mode = self.get_option("data_mode")
+        if mode == "report":
+            value = sobject.get_value(element_name)
+            return value
+
+
 
         use_cache = self.kwargs.get("use_cache")
         if use_cache == "true":
@@ -446,7 +459,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 else:
                     result = ''
         else:
-          
+
             result = parser.eval(expression, sobject, vars=self.vars, single=ret_single, list=ret_list, show_retired=self.show_retired)
 
 
@@ -713,6 +726,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 div.add( display_result )
                 div.add_style("min-height: 15px")
                 outer.add_style("width: 100%")
+
+
+                self.report_value = display_result
 
 
 

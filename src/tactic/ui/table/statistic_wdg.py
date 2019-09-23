@@ -21,7 +21,7 @@ from pyasm.widget import FilterSelectWdg, FilterCheckboxWdg, IconButtonWdg, Icon
 #from input_wdg import HiddenWdg, CalendarInputWdg
 #from layout_wdg import TableWdg
 
-import datetime, re
+import datetime, re, six
 from dateutil import parser
 from tactic.ui.common import BaseTableElementWdg
 
@@ -512,6 +512,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         self.set_option('filter_name', self.due_date_col)
 
 
+
     def add_value_update(self, value_wdg, sobject, name):
         value_wdg.add_update( {
             'search_key': sobject.get_search_key(),
@@ -532,6 +533,23 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
             '''
         } )
 
+    def get_value(self):
+        sobject = self.get_current_sobject()
+        if not sobject:
+            sobject = self.sobject
+
+
+        # get value directly from sobject (ie: don't calculate)
+        mode = self.get_option("data_mode") or ""
+
+        # we need a mode that gets the value directly from the sobject
+        if mode == "report":
+            value = sobject.get_value(self.get_name(), no_exception=True) or ""
+        else:
+            value = sobject.get_value(self.due_date_col)
+
+        return value
+
 
     def init_data(self):
 
@@ -539,7 +557,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         if not sobject:
             sobject = self.sobject
 
-        value = sobject.get_value(self.due_date_col)
+        value = self.get_value()
         if not value:
             self.mode = ""
             self.diff = ""
@@ -549,9 +567,12 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
         DAY = self.DAY
         HOUR = self.HOUR
-        status = sobject.get_value("status")
+        status = sobject.get_value("status") or ""
 
-        due_date = parser.parse(value)
+        if isinstance(value, six.string_types):
+            due_date = parser.parse(value)
+        else:
+            due_date = value
 
         import calendar
         from datetime import datetime, timedelta
@@ -637,6 +658,9 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         #else:
         #    td.add_style("background: #FFF")
 
+        td.add_attr("spt_input_value", self.get_value())
+
+
         super(TaskDaysDueElementWdg, self).handle_td(td)
            
 
@@ -702,7 +726,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
         #self.init_data()
 
-        value = sobject.get_value(self.due_date_col)
+        value = self.get_value()
         if not value:
             div.add("<div style='margin: 0px auto; opacity: 0.3; text-align: center'>no date</div>")
             return div

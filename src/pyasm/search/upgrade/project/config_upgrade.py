@@ -19,6 +19,56 @@ from pyasm.search.upgrade.project import *
 class ConfigUpgrade(BaseUpgrade):
 
 
+    def upgrade_v4_7_0_a10_002(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "spt_authenticate" ALTER COLUMN "data" TYPE jsonb USING data::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "spt_authenticate" ALTER COLUMN "data" TYPE json;
+            ''')
+
+
+
+    def upgrade_v4_7_0_a10_001(self):
+        self.run_sql('''
+        CREATE TABLE "spt_authenticate" (
+            "id" serial PRIMARY KEY,
+            "code" character varying(256),
+            name character varying(256),
+            description text,
+            "type" character varying(256),
+            "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
+            login character varying(256),
+            s_status varchar(32),
+            CONSTRAINT "spt_authenticate_code_idx" UNIQUE ("code")
+        );
+        ''')
+
+
+
+
+    #
+    # 4.7.0.a08
+    #
+    def upgrade_v4_7_0_a08_002(self):
+        self.run_sql('''
+        ALTER TABLE "spt_process_state" ALTER COLUMN "status" TYPE varchar(256);
+        ''')
+
+
+    def upgrade_v4_7_0_a08_001(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE jsonb USING state::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "spt_process_state" ALTER COLUMN "state" TYPE json;
+            ''')
+
+
     #
     # 4.7.0.a01
     #
@@ -44,8 +94,8 @@ class ConfigUpgrade(BaseUpgrade):
                 "search_type" character varying(256),
                 "search_code" character varying(256),
                 "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
-                "status" jsonb,
-                "state" character varying(256),
+                "state" jsonb,
+                "status" character varying(256),
                 "data" jsonb,
                 "s_status" character varying(32),
                 CONSTRAINT "spt_pipeline_info_code_idx" UNIQUE ("code")

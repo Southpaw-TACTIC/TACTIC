@@ -449,6 +449,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view = view.replace("/", ".")
         
         search_key = self.kwargs.get("search_key")
+        print("search_key: ", search_key)
 
         if view == '__new__':
             cur_config = None
@@ -520,7 +521,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         left_div.add_relay_behavior( { 
-            'type': 'mouseup',
+            'type': 'click',
             'bvr_match_class': 'spt_custom_layout_item',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
@@ -586,7 +587,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         left_div.add_style("width: 100%")
 
 
-        web = WebContainer.get_web();
+        web = WebContainer.get_web()
         #folder_states = web.get_form_value("folder_states")
         folder_states = self.kwargs.get("folder_state")
         if folder_states:
@@ -1327,6 +1328,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     td = table.add_cell()
                     td.add_style("vertical-align: top")
 
+
                     header_div = DivWdg()
                     td.add(header_div)
                     header_div.add_style("display: flex")
@@ -1581,9 +1583,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     for (var i = 0; i < behavior_elements.length; i++) {
                         
                         var item = behavior_elements[i];
-                        var inputs = spt.api.get_input_values(item);
+                        var inputs = spt.api.get_input_values(item, null, false);
                         var behavior_name = inputs.behavior_name[0];
-                        var behavior_is_relay = inputs.behavior_is_relay[0];
+                        var behavior_is_relay = inputs.behavior_is_relay;
                         var behavior_event = inputs.behavior_event[0];
                         var behavior_event_name = inputs.behavior_event_name[0];
 
@@ -1595,7 +1597,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                         }
 
                         behavior += '<behavior '
-                        
                         if (behavior_name && behavior_is_relay == 'on') {
                             behavior += 'relay_class="'+behavior_name+'" ';
                         } else if (behavior_name) {
@@ -1981,7 +1982,13 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
              
 
             var top = activator.getParent(".spt_custom_layout_top");
-            spt.panel.refresh(top);
+
+            //spt.panel.refresh(top);
+            var states_el = top.getElement(".spt_folder_states");
+            var state_value = states_el.value;
+            spt.panel.refresh_element(top, {folder_state: state_value});
+
+
             spt.app_busy.hide();
         ''' } )
         """
@@ -2007,11 +2014,22 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             var class_name = 'tactic.ui.tools.CustomLayoutActionCbk';
 
             var server = TacticServerStub.get();
-            server.execute_cmd(class_name, kwargs);
+            server.p_execute_cmd(class_name, kwargs)
+            .then( function(ret_val) {
 
-            var top = activator.getParent(".spt_custom_layout_top");
-            spt.panel.refresh(top);
-            spt.app_busy.hide();
+                var info = ret_val.info;
+
+                var search_key = info.search_key;
+                var view = info.view;
+
+                var top = activator.getParent(".spt_custom_layout_top");
+
+                //spt.panel.refresh(top);
+                var states_el = top.getElement(".spt_folder_states");
+                var state_value = states_el.value;
+                spt.panel.refresh_element(top, {folder_state: state_value, search_key: search_key, view: view});
+
+            } );
         ''' } )
 
 
@@ -2049,7 +2067,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 top.setAttribute("spt_widget_type", "");
 
                 var top = activator.getParent(".spt_custom_layout_top");
-                spt.panel.refresh(top);
+                //spt.panel.refresh(top);
+
+                var states_el = top.getElement(".spt_folder_states");
+                var state_value = states_el.value;
+                spt.panel.refresh_element(top, {folder_state: state_value});
+
                 spt.app_busy.hide();
             ''' } )
 
@@ -3829,5 +3852,8 @@ class CustomLayoutActionCbk(Command):
         new_config.set_value("config", config_xml)
         new_config.set_value("view", new_view)
         new_config.commit()
+
+        self.info['search_key'] = new_config.get_search_key()
+        self.info['view'] = new_view
 
 

@@ -106,7 +106,7 @@ class File(SObject):
                 'wm','wvx','ogg','webm','mkv','m4v','mxf','f4v','rmvb', 'gif']
 
     #IMAGE_EXT = ['jpg','png','tif','tiff','gif','dds','dcm']
-    IMAGE_EXT = ['jpg','jpeg', 'png','tif','tiff','dds','dcm']
+    IMAGE_EXT = ['jpg','jpeg', 'png','tif','tiff','dds','dcm', 'bmp']
 
 
 
@@ -159,21 +159,21 @@ class File(SObject):
     def get_lib_dir(self,snapshot=None):
         '''go through the stored snapshot_code to get the actual path'''
         code = self.get_value("snapshot_code")
-        from snapshot import Snapshot
+        from .snapshot import Snapshot
         snapshot = Snapshot.get_by_code(code)
         return snapshot.get_lib_dir()
 
     def get_env_dir(self,snapshot=None):
         '''go through the stored snapshot_code to get the actual path'''
         code = self.get_value("snapshot_code")
-        from snapshot import Snapshot
+        from .snapshot import Snapshot
         snapshot = Snapshot.get_by_code(code)
         return snapshot.get_env_dir()
 
     def get_web_dir(self,snapshot=None):
         '''go through the stored snapshot_code to get the actual path'''
         code = self.get_value("snapshot_code")
-        from snapshot import Snapshot
+        from .snapshot import Snapshot
         snapshot = Snapshot.get_by_code(code)
         return snapshot.get_web_dir()
 

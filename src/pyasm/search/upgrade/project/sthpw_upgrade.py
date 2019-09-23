@@ -12,11 +12,26 @@
 
 __all__ = ['SthpwUpgrade']
 
+from pyasm.common import Common
 
 from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+
+    #
+    # 4.7.0.a08
+    #
+
+    def upgrade_v4_7_0_a08_001(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "pipeline" ADD COLUMN data jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "pipeline" ADD COLUMN data json;
+            ''')
 
 
     #
@@ -263,7 +278,13 @@ class SthpwUpgrade(BaseUpgrade):
             import dateutil.zoneinfo
 
             zi_path = os.path.abspath(os.path.dirname(dateutil.zoneinfo.__file__))
-            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, 'zoneinfo-2008e.tar.gz'))
+
+            if not Common.IS_Pv3:
+                basename = "zoneinfo-2008e.tar.gz"
+            else:
+                basename = "dateutil-zoneinfo.tar.gz"
+
+            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, basename))
             zonenames = zonesfile.getnames()
             return zonenames
 
@@ -817,7 +838,7 @@ IMPORTANT NOTICE:
 
             ''')
 
-            confirm = raw_input("Run now? (y/n):")
+            confirm = input("Run now? (y/n):")
             if not confirm in ['y', 'Y', 'yes', 'Yes']:
                 return
 

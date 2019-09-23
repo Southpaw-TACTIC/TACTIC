@@ -2169,6 +2169,10 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         class_name = options.get("class_name")
         widget_key = options.get("widget_key")
         if widget_key:
+
+            if not widget_key.isalnum():
+                widget_key = "code"
+            
             class_name = WidgetClassHandler().get_display_handler(widget_key)
             options['class_name'] = class_name
 
@@ -2952,8 +2956,12 @@ class ViewPanelWdg(BaseRefreshWdg):
                 impl = SearchType.get_database_impl_by_search_type(search_type)
                 if impl.get_database_type() == "MongoDb":
                     self.element_names = impl.get_default_columns()
-            except SearchException:
-                raise
+            except SearchException as e:
+                print("ERROR: %s" % e)
+                div = DivWdg("ERROR: %s" % e)
+                return div
+                #raise
+
 
 
            
@@ -2983,7 +2991,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # define the top widget
         top = self.top
-        top.add_class("spt_view_panel_top");
+        top.add_class("spt_view_panel_top")
 
         inner = DivWdg()
         top.add(inner)
@@ -2994,7 +3002,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             inner.add_behavior({
                 'type': 'load',
                 'cbjs_action': self.get_onload_js()
-            });
+            })
 
 
 
@@ -3233,6 +3241,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_label_view = self.kwargs.get("group_label_view")
         group_label_class = self.kwargs.get("group_label_class")
         expand_mode = self.kwargs.get("expand_mode")
+        data_mode = self.kwargs.get("data_mode")
         show_name_hover = self.kwargs.get("show_name_hover")
         op_filters = self.kwargs.get("op_filters")
         show_collection_tool = self.kwargs.get("show_collection_tool")
@@ -3248,6 +3257,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         if default_data:
             if isinstance(default_data, dict):
                 default_data = jsondumps(default_data)
+        collapse_default = self.kwargs.get("collapse_default")
+        collapse_level = self.kwargs.get("collapse_level")
 
 
         is_inner = self.kwargs.get("is_inner")
@@ -3275,6 +3286,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout = search_type_obj.get_value("default_layout", no_exception=True)
         if not layout:
             layout = 'default'
+        
 
         search = self.kwargs.get("search")
 
@@ -3341,6 +3353,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "keywords_columns": keywords_columns,
             "filter": filter,
             "expand_mode": expand_mode,
+            "data_mode": data_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
             "show_collection_tool": show_collection_tool,
@@ -3354,7 +3367,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             #"search_wdg": search_wdg
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,
+            "collapse_default": collapse_default,
+            "collapse_level": collapse_level
         }
+
+
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 
@@ -3459,6 +3476,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = self.kwargs.get("upload_mode")
             kwargs['process'] = self.kwargs.get("process")
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
+            kwargs['window_resize_offset'] = self.kwargs.get("window_resize_offset")
             from .collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 

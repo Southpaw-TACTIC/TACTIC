@@ -1058,6 +1058,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
         Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/moment.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/moment-timezone.min.js" % spt_js_url)
+        Container.append_seq("Page:js", "%s/html2canvas.js" % spt_js_url)
         
         Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
         # viewer.js from pdfjs may not be needed in the future. For now,
@@ -1212,7 +1213,7 @@ class TitleTopWdg(TopWdg):
         body.add("</form>\n")
 
         if web.is_admin_page():
-            from tactic_branding_wdg import TacticCopyrightNoticeWdg
+            from .tactic_branding_wdg import TacticCopyrightNoticeWdg
             copyright = TacticCopyrightNoticeWdg()
             body.add(copyright)
 

@@ -1,144 +1,181 @@
-###########################################################
-#
-# Copyright (c) 2005, Southpaw Technology
-#                     All Rights Reserved
-#
-# PROPRIETARY INFORMATION.  This software is proprietary to
-# Southpaw Technology, and is not to be reproduced, transmitted,
-# or disclosed in any way without written permission.
-#
-#
-#
+
+from __future__ import print_function
+
+import sys, os
+
+sys.path.insert(0, "/spt/tactic/tactic_data/plugins")
+sys.path.insert(0, "/spt/tactic/tactic/3rd_party/common/site-packages")
+sys.path.insert(0, "/spt/tactic/tactic/3rd_party/python2/site-packages")
 
 import tacticenv
 
-from pyasm.common import Environment, SPTDate
-from pyasm.security import Batch, Security
-Batch()
+from pyasm.common import Environment
+from pyasm.search import Search
 
-from tactic_client_lib import TacticServerStub
-
-import os, sys, xmlrpclib, datetime
-from mod_python import apache, Cookie
-
+try:
+    import urlparse
+except:
+    from urllib import parse as urlparse
 
 
-# This will ensure that any asset requires a valid ticket
+def authenticate(environ):
+
+    cookie = environ.get("HTTP_COOKIE")
+    cookies = cookie.split(";")
 
 
-def accesshandler(request):
-
-    cookies = Cookie.get_cookies(request)
-
-    # if login ticket cookie does not exist, then deny
-    if not cookies.has_key('login_ticket'):
-        # just refuse access
-        return apache.HTTP_FORBIDDEN
-
-    ticket = cookies['login_ticket'].value
-    if not ticket:
-        return apache.HTTP_FORBIDDEN
-
-    server = TacticServerStub.get(protocol='local')
-    expr = "@SOBJECT(sthpw/ticket['ticket','%s'])" % ticket
-    sobject = server.eval(expr, single=True)
-    now = SPTDate.now()
-    expiry = sobject.get("expiry")
-    if expiry and expiry < str(now):
-        return apache.HTTP_FORBIDDEN
-
-    request.add_common_vars()
-    path = str(request.subprocess_env['REQUEST_URI'])
-    if path == None:
-        return apache.HTTP_FORBIDDEN
+    login_ticket = None
+    for cookie in cookies:
+        cookie = cookie.strip()
+        if not cookie:
+            return None
+        (name, value) = cookie.split("=")
+        if name == "login_ticket" and value:
+            login_ticket = value
+            break
 
 
-    # FIXME: find some mechanism which is more acceptable ... like /icons
-    #if path.find("_icon_") != -1:
-    #    return apache.OK
-
-    return apache.OK
+    if not login_ticket:
+        return None
 
 
+    from spt.modules.portal.master_project import PortalSite
+    from pyasm.security import Batch, XmlRpcInit
 
-def outputfilter_example(filter):
-    s = filter.read()
-    while s:
-        filter.write(s.upper())
-        s = filter.read()
-    if s is None:
-        filter.close()
-
-
-from PIL import Image, ImageChops, ImageFont, ImageDraw
-from cStringIO import StringIO
-
-from pyasm.security import Ticket
-from pyasm.security.watermark import Watermark
-from datetime import datetime
-
-def outputfilter_watermark(filter):
-
-    s_in = None
-    s_out = None
     try:
-        s_in = StringIO(filter.read())
-        im_in = Image.open(s_in)
-        if im_in.size[0] <= 240 and im_in.size[1] <= 120:
-            filter.write(s_in.getvalue())
-            return
-
-        # if this is a sub request, then don't process again
-        req = filter.req
-        if req.main:
-            filter.write(s_in.getvalue())
-            return
-
-        cookies = Cookie.get_cookies(req)
-        ticket = cookies['login_ticket'].value
-        query = req.parsed_uri[apache.URI_QUERY]
+        XmlRpcInit(ticket=login_ticket)
+    except Exception as e:
+        print("Authenticate Error: ", e)
+        return None
 
 
-        if query == "watermark=false":
-            filter.write(s_in.getvalue())
-            ticket_sobj = Ticket.get_by_valid_key(ticket)
 
-            # if this is not a valid ticket, then just exit with no image
-            if not ticket_sobj:
-                return
+    #from pyasm.common import Environment
+    #user = Environment.get_user_name().encode()
+    #print("user: ", user)
 
-            # TODO: need fancier algorithm here
-            if ticket_sobj.get_value("login") == 'admin':
-                filter.write(s_in.getvalue())
-                return
-
-        sizex = im_in.size[0]
-        sizey = im_in.size[1]
-        max_res = 240
-        max_width = 640
-        im_in = im_in.resize( (max_res, int(sizey/(sizex/float(max_res)))) )
-        im_in = im_in.resize( (max_width, int(sizey/(sizex/float(max_width)))) )
-
-        # add the watermark
-        watermark = Watermark()
-        now = datetime.today().strftime("%Y/%m/%d, %H:%M")
-        texts = ['Do Not Copy', ticket, now]
-        sizes = [20, 10, 10, 20, 20]
-
-        mark = watermark.generate(texts, sizes)
-        im_out = watermark.execute(im_in, mark, 'tile', 0.5)
+    return login_ticket
 
 
-        s_out = StringIO()
-        im_out.save(s_out, format='jpeg')
-        filter.write(s_out.getvalue())
+def error403(msg, start_response):
 
+    redirect = False
+    if redirect:
+        status = "300 Redirect"
+        output = ""
+        response_headers = [
+            ('Location', '/default/user/sign_in')
+        ]
+
+
+    else:
+        status = '200 OK'
+
+
+        output = '''
+        <h1>%s</h1>
+        '''  % msg
+
+        response_headers = [
+                ('Content-Type', 'text/html'),
+                ('Content-Length', str(len(output))),
+        ]
+
+    start_response(status, response_headers)
+    return [output]
+
+
+
+
+
+def application(environ, start_response):
+    import time
+    start = time.time()
+
+    # check that the url is ok
+    request_uri = environ.get("REQUEST_URI")
+    #uri_path = request_uri.replace("/wsgi/security/", "")
+    uri_path = request_uri.lstrip("/assets/")
+
+    parts = uri_path.split("/")
+    if not len(parts) > 3:
+        return error403("Url not valid", start_response)
+
+
+    # FIXME: this does not work on non Portal sites
+    if parts[0] == "assets":
+        site = ""
+        project_code = parts[1]
+    else: 
+        site = parts[0]
+        #assert(parts[1] == "assets")
+        project_code = parts[2]
+
+
+    # authenticate the user
+    login_ticket = authenticate(environ)
+    if not login_ticket:
+        return error403("Authentication Failed", start_response)
+
+
+    from pyasm.security import Site
+    from pyasm.biz import Project
+    try:
+        site_obj = Site.set_site(site)
+        Project.set_project(project_code)
+    except Exception as e:
+        print("Error Site: ", e)
+        return error403(e, start_response)
     finally:
-        if s_in:
-            s_in.close()
-        if s_out:
-            s_out.close()
+        if site_obj:
+            Site.pop_site()
 
-    
+    #print("site", site)
+    #print("project_code", project_code)
 
-    
+
+
+
+    if not login_ticket:
+
+        status = '200 OK'
+        output = '''
+        <h1>Not a valid ticket</h1>
+        ''' 
+
+        response_headers = [('Content-Type', 'text/html'),
+                            ('Content-Length', str(len(output))),
+        ]
+
+        start_response(status, response_headers)
+        return [output]
+
+
+
+    # validate that this person can see this site
+
+    end = time.time()
+    diff = end - start
+
+    status = '200 OK'
+
+    base_dir = "/spt/data/sites"
+    path = "%s/%s" % (base_dir, uri_path)
+
+    path = urlparse.unquote(path)
+    basename = os.path.basename(path)
+
+    response_headers = [
+            ('X-Sendfile', '%s' % path),
+            #('Content-Type', 'image/jpg'),
+    ]
+
+    output = ""
+
+
+    start_response(status, response_headers)
+    return [output]
+
+
+
+

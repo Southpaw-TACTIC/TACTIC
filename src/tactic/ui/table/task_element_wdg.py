@@ -801,6 +801,11 @@ bvr.src_el.addEvent('change:relay(.spt_task_status_select)',
     function(evt, src_el) {
         spt.task_element.status_change_cbk(evt, {src_el: src_el} );
     } )
+    
+bvr.src_el.addEvent('change:relay(.spt_task_assigned_select)',
+    function(evt, src_el) {
+        spt.task_element.status_change_cbk(evt, {src_el: src_el} );
+    } )
 
 spt.task_element.status_change_cbk = function(evt, bvr) {
 
@@ -2109,7 +2114,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         process_colors = self.process_colors.get(pipeline_code)
-        if process_colors and process_colors.has_key(process):
+        if process_colors and process in process_colors:
             tmp_color = process_colors[process]
             if tmp_color:
                 process_color = tmp_color
@@ -2141,7 +2146,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 context_div.add_color("color", 'color')
             proc = task.get_value("process")
             label_dict = self.label_dict.get(pipeline_code)
-            if label_dict and label_dict.has_key(proc):
+            if label_dict and proc in label_dict:
                 context_div.add(label_dict[proc])
 
         if not self.context_color_mode:
@@ -2481,7 +2486,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         assignee = self.assignee
                         assignee_labels = self.assignee_labels
 
-                    select.add_class('spt_task_status_select')
+                    select.add_class('spt_task_assigned_select')
+                    select.add_attr("spt_context", context)
                     select.add_empty_option('-- Assigned --')
                     select.set_option('values', assignee) 
                     select.set_option('labels', assignee_labels) 
@@ -2539,9 +2545,37 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             '''
                     select.add_update(update)
 
+                    # TODO: while convenient, this is extremely heavy
+                    select.add_behavior( {
+                        'type': 'change',
+                        'color': status_colors,
+                        'cbjs_action': '''
+                        var status_colors = bvr.color;
+                        var value = bvr.src_el.value;
+                        bvr.src_el.style.background = status_colors[value];
+                        var context = bvr.src_el.getAttribute("spt_context");
+                        var layout = bvr.src_el.getParent(".spt_layout");
+                        spt.table.set_layout(layout);
+                        var rows = spt.table.get_selected_rows();
+                        for (var i = 0; i < rows.length; i++) {
+                            var row = rows[i];
+                            var elements = row.getElements(".spt_task_assigned_select");
+                            for (var j = 0; j < elements.length; j++) {
+                                var el = elements[j];
+                                if (el == bvr.src_el) {
+                                    continue;
+                                }
 
-
-
+                                var el_context = el.getAttribute("spt_context");
+                                if (el_context == context) {
+                                    el.value = value;
+                                    spt.task_element.status_change_cbk(evt, {src_el: el});
+                                }
+                            }
+                        }
+    
+                        '''
+                    } )
 
                 else:
                     

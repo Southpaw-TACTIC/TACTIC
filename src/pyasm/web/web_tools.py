@@ -387,6 +387,10 @@ class WikiUtil(object):
             m = url_pat.search(text)
            
             text = re.sub(url_pat, r"<a href='\1\2\3'><u>[\1\2...]</u></a>", text)
+
+        if text == None:
+            text = ""
+
         return text
 
 

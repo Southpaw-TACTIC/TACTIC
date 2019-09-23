@@ -398,7 +398,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #args_keys = self.get_args_keys()
         args_keys = self.ARGS_KEYS
         for key in kwargs.keys():
-            #if not args_keys.has_key(key):
             if key not in args_keys:
                 #raise TacticException("Key [%s] not in accepted arguments" % key)
                 pass
@@ -854,7 +853,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 new_settings[item] = True
             settings = new_settings
 
-        #if settings.has_key("gear") and settings.get("gear") == True:
         if 'gear' in settings and settings.get("gear") == True:
             gear_settings = self.kwargs.get("gear_settings")
             if isinstance(gear_settings, basestring):
@@ -890,7 +888,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if settings.get(name) in [None, False, "false"]:
                 # if not in settings, then the default is false
                 default = False
-            #if not settings.has_key(name):
             if name not in settings:
                 value = settings_default.get(name)
             else:
@@ -947,7 +944,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div = DivWdg() 
         div.add_class("SPT_DTS")
         #div.add_style("overflow: hidden")
-        div.add_style("padding-top: 3px")
+        div.add_style("padding-top: 2px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
 
@@ -1513,7 +1510,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         browser = web.get_browser()
         import os
         if browser == 'Qt' and os.name != 'nt':
-            height = "41px"
+            height = "38px"
         elif scale != 1:
             xx.add_style("position: absolute")
             xx.add_color("backgroud","background")
@@ -1524,7 +1521,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #div.add_style("opacity: 0.6")
             height = "32px"
         else:
-            height = "41px"
+            height = "38px"
             #div.add_style("opacity: 0.6")
 
 
@@ -1650,7 +1647,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
+                var search_type = top.getAttribute("spt_search_type");
+
                 var kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,
@@ -1894,6 +1892,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
             button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
+            button.add_class("spt_table_search_button")
             div.add(button)
 
 
