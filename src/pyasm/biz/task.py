@@ -1121,7 +1121,10 @@ class Task(SObject):
 
             assigned_login_group = attrs.get("assigned_login_group") or None
 
-            workflow = process_sobject.get_json_value("workflow") or {}
+            if not process_sobject:
+                workflow = {}
+            else:
+                workflow = process_sobject.get_json_value("workflow") or {}
             version = workflow.get("version") or 1
             version_2 = version in [2, '2']
 
