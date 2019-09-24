@@ -296,11 +296,12 @@ class SearchWdg(BaseRefreshWdg):
             if isinstance(filter, str):
                 filter = jsonloads(filter)
 
-            if type(filter) == types.DictType:
+            
+            if type(filter) == dict:
                 self.config = self.get_default_filter_config()
                 filter_data = FilterData([filter])
                 filter_data.set_to_cgi()
-            elif type(filter) == types.ListType:
+            elif type(filter) == list:
                 self.config = self.get_default_filter_config()
                 filter_data = FilterData(filter)
                 filter_data.set_to_cgi()
