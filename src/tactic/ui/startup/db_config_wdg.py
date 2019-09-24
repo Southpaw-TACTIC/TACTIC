@@ -260,7 +260,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         category = "checkin"
 
 
-        options=checkin_keys[:]
+        options=list(checkin_keys)[:]
 
         self._remove_item_from_list(options,'win32_server_handoff_dir')
         self._remove_item_from_list(options,'linux_server_handoff_dir')
