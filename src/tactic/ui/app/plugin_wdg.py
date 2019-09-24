@@ -1660,12 +1660,12 @@ class PluginEditWdg(BaseRefreshWdg):
             'type': 'click_up', 
             'plugin_code': self.code,
             'cbjs_action': '''
-            spt.notify.show_message("Reloading Plugin");
 
             if (!confirm("WARNING: Reload plugin ["+bvr.plugin_code+"]?")) {
                 spt.api.app_busy_hide();
                 return;
             }
+            spt.notify.show_message("Reloading Plugin");
 
             var top = bvr.src_el.getParent(".spt_plugin_edit");
             var search_key = top.getAttribute("spt_search_key");
