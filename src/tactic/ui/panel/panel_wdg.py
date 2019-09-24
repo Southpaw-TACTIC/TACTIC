@@ -3707,96 +3707,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
     def get_display(self):
        
-        js_action = "spt.dg_table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
-
-        js_actionX = '''
-
-    var table_id = bvr.table_id;
-    var table = document.id(table_id);
-    var top = table.getParent(".spt_view_panel");
-    // it may not always be a View Panel top
-    if (!top) top = table.getParent(".spt_table_top");
-    
-    var view_info = top.getElement(".spt_save_top");
-
-    var values = spt.api.Utility.get_input_values(view_info , null, false);
-
-    // rename view
-    var new_view = values["save_view_name"];
-    var new_title = values["save_view_title"];
-    var same_as_title = values["same_as_title"] == 'on';
-    //var save_a_link = values["save_a_link"] == 'on';
-  
-    var save_mode = values['save_mode'];
-    if (!save_mode) {
-        var save_project_views = values['save_project_views'] == 'on';
-        if (save_project_views) {
-            save_mode = 'save_project_views';
-        }
-        var save_my_views = values['save_my_views'] == 'on';
-        if (save_my_views) {
-            save_mode = 'save_my_views';
-        }
-        var save_view_only = values['save_view_only'] == 'on';
-        if (save_view_only) {
-            save_mode = 'save_view_only';
-        }
-    }
-
-    if (same_as_title) {
-        new_view = new_title;
-    }
-
-    if (spt.input.has_special_chars(new_view)) {
-        spt.alert("The name contains special characters. Do not use empty spaces.");  
-        return;
-    }
-    if (new_view == "") {
-        spt.alert("Empty view name not permitted");
-        return;
-    }
-    
-    if ((/^(saved_search|link_search)/i).test(new_view)) {
-        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
-        return;
-    }
-    var table = document.getElementById(table_id);
-    if (!table) {
-        spt.alert('This command requires a Table in the main viewing area');
-        return;
-    }
-    var table_search_type = table.getAttribute("spt_search_type");
-    var table_view = table.getAttribute("spt_view");
-    var last_element = top.getAttribute("spt_element_name");
-
-
-    var kwargs = {
-        'new_title' : new_title, 
-        'element_name': new_view,
-        'last_element_name': last_element,
-        'save_mode': save_mode,
-    } 
-
-
-    var class_name = 'tactic.ui.panel.ViewPanelSaveCbk';
-    var server = TacticServerStub.get();
-    var rtn = server.execute_cmd(class_name, kwargs);
-
-
-    if (!rtn)
-        return;
-
-
-    spt.hide(document.id(bvr.dialog_id));
-    var top = bvr.src_el.getParent(".spt_new_view_top");
-    spt.api.Utility.clear_inputs(top);
-    
-    return true;
-
-
-        '''
-
-
+        js_action = "spt.table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
 
         # create the buttons
         save_button = ActionButtonWdg(title='Save')
@@ -3804,7 +3715,6 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         'type': 'click_up',
         'dialog_id': self.kwargs.get("dialog_id"),
         'table_id': self.table_id,
-        #'cbjs_action': js_action,
         'cbjs_action':  '''
             var ret_val = %s;
             if (ret_val) {
@@ -3835,6 +3745,8 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         div.add_style("width: 280px")
         div.add_style("padding: 15px")
         div.add_color("color", "color")
+
+        div.add_style("display", "block")
 
         title_div = DivWdg("View Title: ")
         title_div.add_style('width: 100px')

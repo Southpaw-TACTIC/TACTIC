@@ -211,6 +211,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
     <connect from="sthpw/ticket" to="sthpw/login" relationship='code' from_col='login' to_col='login'/>
     <connect from="sthpw/status_log" to="sthpw/task" type='hierarchy' relationship='search_type'/>
+    <connect from="sthpw/status_log" to="sthpw/login" relationship='code' from_col='login' to_col='login'/>
 
  
 
