@@ -1303,7 +1303,7 @@ spt.tab.view_definition = function(bvr) {
                 height: auto;
                 float: left;
                 position: relative;
-                z-index: 2;
+                z-index: 1;
                 margin-bottom: -1px;
             }
 

@@ -1237,11 +1237,11 @@ class IngestUploadWdg(BaseRefreshWdg):
                 script_found = False
                 oncomplete_script = "alert('Error: oncomplete script not found');"
 
-
+        
         if self.kwargs.get("oncomplete_script"):
-            oncomplete_script = self.kwargs.get("oncomplete_script")
+            oncomplete_script += self.kwargs.get("oncomplete_script")
         if self.kwargs.get("on_complete"):
-            oncomplete_script = self.kwargs.get("on_complete")
+            oncomplete_script += self.kwargs.get("on_complete")
 
 
 

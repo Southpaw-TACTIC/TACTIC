@@ -20,6 +20,8 @@ from pyasm.widget import CheckboxWdg, HintWdg, SelectWdg, IconWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg
 
+import six
+
 class AddTaskWdg(BaseRefreshWdg):
     '''A Widget that allows bulk adding of tasks for selected sobjects'''
 
@@ -55,7 +57,7 @@ class AddTaskWdg(BaseRefreshWdg):
             return True
         else:
             self.search_key_list = self.kwargs.get('search_key_list')
-            if self.search_key_list and isinstance(self.search_key_list, basestring):
+            if self.search_key_list and isinstance(self.search_key_list, six.string_types):
                 self.search_key_list = eval(self.search_key_list)
 
     def get_display(self):

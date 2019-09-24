@@ -61,7 +61,7 @@ if __name__ == '__main__':
     import getopt
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
-    except getopt.error, msg:
+    except getopt.error as msg:
         print(msg)
         sys.exit(2)
 
