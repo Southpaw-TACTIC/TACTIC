@@ -1647,7 +1647,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
+                var search_type = top.getAttribute("spt_search_type");
+
                 var kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,

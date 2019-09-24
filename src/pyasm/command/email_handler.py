@@ -86,53 +86,50 @@ class EmailHandler(object):
 
         if expr:
             sudo = Sudo()
+            try:
+                env_sobjects = self.env_sobjects.copy()
 
-            env_sobjects = self.env_sobjects.copy()
+                parts = expr.split("\n")
 
-            #if expr.startswith("@"):
-            #    logins = Search.eval(expr, list=True, env_sobjects=env)
-            #else:
-            parts = expr.split("\n")
+                # go through each login and evaluate each
+                logins = []
+                for part in parts:
 
-            # go through each login and evaluate each
-            logins = []
-            for part in parts:
+                    if part.startswith("#"):
+                        continue
+                    if not part:
+                        continue
 
-                if part.startswith("#"):
-                    continue
-                if not part:
-                    continue
+                    if part.startswith("@") or part.startswith("{"):
+                        results = Search.eval(part, list=True, env_sobjects=env_sobjects)
+                        # clear the container after each expression eval
+                        ExpressionParser.clear_cache()
+                        # these can just be login names, get the actual Logins
+                        if results:
+                            if isinstance(results[0], six.string_types):
+                                login_sobjs = Search.eval("@SOBJECT(sthpw/login['login','in','%s'])" %'|'.join(results),  list=True)
+                                login_list = SObject.get_values(login_sobjs, 'login')
 
-                if part.startswith("@") or part.startswith("{"):
-                    results = Search.eval(part, list=True, env_sobjects=env_sobjects)
-                    # clear the container after each expression eval
-                    ExpressionParser.clear_cache()
-                    # these can just be login names, get the actual Logins
-                    if results:
-                        if isinstance(results[0], six.string_types):
-                            login_sobjs = Search.eval("@SOBJECT(sthpw/login['login','in','%s'])" %'|'.join(results),  list=True)
-                            login_list = SObject.get_values(login_sobjs, 'login')
+                                for result in results:
+                                    # the original result could be an email address already
+                                    if result not in login_list:
+                                        logins.append(result)
 
-                            for result in results:
-                                # the original result could be an email address already
-                                if result not in login_list:
-                                    logins.append(result)
+                                if login_sobjs:
+                                    logins.extend( login_sobjs )
+                            else:
+                                logins.extend(results)
 
-                            if login_sobjs:
-                                logins.extend( login_sobjs )
-                        else:
-                            logins.extend(results)
-
-                elif part.find("@") != -1:
-                    # this is just an email address
-                    logins.append( part )
-                elif part:
-                    # this is a group
-                    group = LoginGroup.get_by_code(part)
-                    if group:
-                        logins.extend( group.get_logins() )
-
-            del sudo
+                    elif part.find("@") != -1:
+                        # this is just an email address
+                        logins.append( part )
+                    elif part:
+                        # this is a group
+                        group = LoginGroup.get_by_code(part)
+                        if group:
+                            logins.extend( group.get_logins() )
+            finally:
+                sudo.exit()
         else:
             notification_id = self.notification.get_id()
             logins = GroupNotification.get_logins_by_id(notification_id)

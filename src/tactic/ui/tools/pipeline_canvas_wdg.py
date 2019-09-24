@@ -329,7 +329,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas_title.add_style("position: absolute")
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
-        canvas_title.add_style("left: 0px")
+        canvas_title.add_style("left: 50%")
+        canvas_title.add_style('transform: translateX(-50%)')
         canvas_title.add_style("z-index: 150")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
@@ -358,6 +359,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             parent.innerHTML = html.join(" / ");
             '''
         } )
+
         canvas_title.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_pipeline_link',
@@ -624,6 +626,49 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             } else if (key == "t") {
                 spt.process_tool.toggle_side_bar(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                if (top) {
+                    var search_el = top.getElement(".spt_pipeline_type_search");
+                    // FIXME: focus not working when using the hot key
+                    search_el.focus();
+                }
+
+            } else if (key == "h") {
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var left = toolTop.getElement(".spt_pipeline_tool_left");
+                var right = toolTop.getElement(".spt_pipeline_tool_right");
+                var show_button = toolTop.getElement(".spt_show_sidebar");
+                var hide_button = toolTop.getElement(".spt_hide_sidebar");
+                
+                if (right.classList.contains("spt_left_toggle")){
+                    right.removeClass("spt_left_toggle");
+
+                    left.setStyle("margin-left", "0px");
+                    left.setStyle("opacity", "1");
+                    right.setStyle("margin-left", "20.3%");
+                    right.setStyle("width", "79%");
+                    left.gone = false;
+                    setTimeout(function(){
+                        left.setStyle("z-index", "");
+                    }, 250);
+
+                    hide_button.setStyle("display", "");
+                    show_button.setStyle("display", "none");
+                } else {
+                    right.addClass("spt_left_toggle");
+                    left.setStyle("margin-left", "-21%");
+                    left.setStyle("opacity", "0");
+                    right.setStyle("margin-left", "0px");
+                    right.setStyle("width", "100%");
+                    left.gone = true;
+                    setTimeout(function(){
+                        left.setStyle("z-index", "-1");
+                    }, 250);
+
+                    hide_button.setStyle("display", "none");
+                    show_button.setStyle("display", "");
+                }
+                
 
             } else if (key == "q") {
                 spt.process_tool.show_side_bar(bvr.src_el);
@@ -906,17 +951,26 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
+            canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
             #canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
             canvas_size_wdg.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+
+        if self.is_editable:
+            is_editable = "true"
+        else:
+            is_editable = 'false'
+        
+        # add custom canvas behaviors on the canvas div instead
 
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
+        "is_editable": is_editable,
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
-
+        
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -943,7 +997,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
             } )
 
-
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -959,7 +1012,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # add custom canvas behaviors on the canvas div instead
         self.canvas_behaviors = self.get_canvas_behaviors()
         for canvas_behavior in self.canvas_behaviors:
-            canvas.add_behavior( canvas_behavior )
+            outer.add_behavior( canvas_behavior )
 
 
         #paint.add_style("border: solid 1px blue");
@@ -972,6 +1025,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         paint.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
+        "is_editable": is_editable,
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
@@ -1195,6 +1249,17 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
+        self.canvas_behaviors = self.get_canvas_behaviors()
+        for canvas_behavior in self.canvas_behaviors:
+            behavior_type = canvas_behavior.get("type")
+            behavior_action = canvas_behavior.get("cbjs_action")
+            screen_div.add_behavior({
+                "type": behavior_type,
+                "cbjs_action": '''
+                %s
+                ''' % behavior_action
+            })
+
 
         if self.kwargs.get("use_mouse_wheel") in [True, 'true']:
             screen_div.add_behavior( {
@@ -1210,6 +1275,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 }
             '''
             } )
+
+
+        # add custom canvas behaviors on the canvas div instead
+        # NOTE: at the momen the screen_div is at the top, we need to add the behaviors
+        # here.
+        self.canvas_behaviors = self.get_canvas_behaviors()
+        for canvas_behavior in self.canvas_behaviors:
+            screen_div.add_behavior( canvas_behavior )
 
 
         return top
@@ -1253,9 +1326,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.init(bvr);
         '''
         } )
-
-
-
 
 
         return canvas
@@ -4660,6 +4730,7 @@ spt.pipeline.drag_connector_setup = function(evt, bvr, mouse_411) {
 
 
     spt.pipeline.last_connector.set_from_node(from_node);
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -4768,7 +4839,6 @@ spt.pipeline.detect_cycle = function() {
 }
 
 spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
-
     var drop_on_el = spt.get_event_target(evt);
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
     var from_node = bvr.src_el.getParent(".spt_pipeline_node");
@@ -5397,6 +5467,9 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
+        if (bvr.is_editable == 'false') {
+            return;
+        }
         if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
             return;
         }
@@ -5451,6 +5524,9 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
+        if (bvr.is_editable == 'false') {
+            return;
+        }
         spt.pipeline.canvas_drag_init = false;
 
         spt.pipeline.canvas_drag_mode = "canvas";
@@ -7754,6 +7830,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             if (key == 'enter') {
                 var top = bvr.src_el.getParent(".spt_rename_node");
                 top.rename();
+                spt.named_events.fire_event('pipeline|change', {});
             }
 
             '''
@@ -7768,6 +7845,7 @@ class NodeRenameWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_rename_node");
             top.rename();
+            spt.named_events.fire_event('pipeline|change', {});
 
             '''
             })

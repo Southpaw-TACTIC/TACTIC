@@ -524,7 +524,8 @@ class LoginGroup(Login):
                     login_code = login.get_value("login")
                     login_codes.add(login_code)
             else:
-                print("This group [%s] no longer exists" %group_name)
+                #print("This group [%s] no longer exists" %group_name)
+                pass
 
         results = list(login_codes)
         groups_dict[login_name] = results
