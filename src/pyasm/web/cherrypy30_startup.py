@@ -274,7 +274,7 @@ class CherryPyStartup(CherryPyStartup20):
 
             from pyasm.web import WebContainer, DivWdg
             from pyasm.widget import Error404Wdg
-            from cherrypy30_adapter import CherryPyAdapter
+            from .cherrypy30_adapter import CherryPyAdapter
 
             # clear the buffer
             WebContainer.clear_buffer()
