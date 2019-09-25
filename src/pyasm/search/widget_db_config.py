@@ -69,7 +69,16 @@ class WidgetDbConfig(SObject):
                     print("WARNING: ", e)
 
                 self.xml = Xml()
-                self.xml.read_string(config_xml)
+
+                try:
+                    self.xml.read_string(config_xml)
+                except Exception as e:
+                    # this is bad xml
+                    print(config_xml)
+                    print("\n")
+                    print("WARNING: ", e)
+
+
             else:
                 self.xml = self.get_xml_value("config")
 

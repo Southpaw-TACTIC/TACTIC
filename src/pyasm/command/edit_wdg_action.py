@@ -14,7 +14,7 @@
 __all__ = ["DatabaseAction", "DefaultValueDatabaseAction", "MultiDatabaseAction", 'NonEmptyAction', 'RegexAction', "NullAction", "PasswordAction", "IsCurrentAction", "NamespaceAction", 'UniqueValueAction', 'LoginAction', 'GroupNameAction', "UploadAction", "AddToBinAction", "PerforceUploadAction", "FileUploadException", "MultiUploadAction", "MultiZipUploadAction",  "CommandNameAction", "RepoPathAction", "RepoPathPerAssetAction", 'ProjectCreateAction', 'DateAction', 'TimeAction', 'TaskDateAction','XmlAction' ]
 
 
-import os, shutil, string, types, hashlib, re, zipfile
+import os, shutil, string, types, hashlib, re, zipfile, six
 
 
 from pyasm.common import *
@@ -288,7 +288,7 @@ class DatabaseAction(Command):
                 else:
                     value = SPTDate.add_local_timezone(value)
         elif col_type in ["float", "integer"]:
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 value = value.replace(",", "")
                 if value.startswith("$"):
                     value = value.lstrip("$")
