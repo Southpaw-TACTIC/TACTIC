@@ -20,6 +20,8 @@ from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Canvas
 
 from tactic.ui.common import BaseRefreshWdg
 
+import six
+
 
 class SampleBarChartWdg(BaseRefreshWdg):
 
@@ -708,7 +710,7 @@ class ChartLegend(BaseRefreshWdg):
         if not labels:
             return top
 
-        if isinstance(labels, basestring):
+        if isinstance(labels, six.string_types):
             labels = labels.split("|")
 
 

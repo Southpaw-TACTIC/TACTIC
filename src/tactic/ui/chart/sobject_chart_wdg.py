@@ -134,6 +134,7 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
+
         expression = web.get_form_value("expression")
         if not expression:
             expression = self.kwargs.get("expression")
@@ -146,8 +147,18 @@ class SObjectChartWdg(BaseChartWdg):
 
         self.search_keys = self.kwargs.get("search_keys")
 
+       
 
-        if expression:
+        document = self.kwargs.get("document")
+        if document:
+            if isinstance(document, six.string_types):
+                document = jsonloads(document)
+            from tactic.ui.panel import Document
+            doc = Document()
+            self.sobjects = doc.get_sobjects_from_document(document)
+
+
+        elif expression:
             self.sobjects = Search.eval(expression)
         elif self.search_type and self.search_type.startswith("@SOBJECT("):
             self.sobjects = Search.eval(self.search_type)
@@ -347,7 +358,7 @@ class SObjectChartWdg(BaseChartWdg):
 
 
         # draw a legend
-        from chart_wdg import ChartLegend
+        from .chart_wdg import ChartLegend
         legend = ChartLegend(labels=self.elements)
         top.add(legend)
         #legend.add_style("width: 200px")
