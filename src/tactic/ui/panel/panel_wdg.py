@@ -2170,8 +2170,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         widget_key = options.get("widget_key")
         if widget_key:
 
-            if not widget_key.isalnum():
-                widget_key = "code"
+            #if not widget_key.isalnum():
+            #    widget_key = "code"
             
             class_name = WidgetClassHandler().get_display_handler(widget_key)
             options['class_name'] = class_name
@@ -2888,6 +2888,11 @@ class ViewPanelWdg(BaseRefreshWdg):
 
     }
 
+
+    def __init__(self, **kwargs):
+        if not kwargs.get("search_type"):
+            raise Exception("No search type provided")
+        return super(ViewPanelWdg, self).__init__(**kwargs)
 
 
     def get_display(self):
