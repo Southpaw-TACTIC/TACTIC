@@ -2099,18 +2099,6 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_wrapper")
 
         pipeline = Pipeline.get_by_code(pipeline_code)
-        if pipeline:
-
-            update_wdg = DivWdg()
-            top.add(update_wdg)
-            update_wdg.add_update( {
-                'search_key': pipeline.get_search_key(),
-                'interval': 3,
-                'value': True,
-                'cbjs_action': '''
-                spt.panel.refresh_element(bvr.src_el);
-                '''
-            } )
 
 
 
@@ -2132,6 +2120,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         height = self.kwargs.get("height") or 500
         show_title = self.kwargs.get("show_title")
         window_resize_offset = self.kwargs.get("window_resize_offset")
+        search_key = self.kwargs.get("search_key")
 
         show_title = self.kwargs.get("show_title")
         if show_title not in [False, 'false']:
@@ -2145,7 +2134,7 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             div.add(title)
 
         kwargs = {
-            #'width': "auto",
+            'search_key': search_key,
             'width': 600,
             'height': height,
             'show_title': show_title,

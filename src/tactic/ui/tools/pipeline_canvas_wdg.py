@@ -1244,6 +1244,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         screen_div.add_behavior( {
         "type": 'drag',
+        "is_editable": is_editable,
         "mouse_btn": 'LMB',
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
@@ -1703,7 +1704,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
-
         
         if (self.add_node_behaviors):
             self.add_default_node_behaviors(node, text)
@@ -2034,6 +2034,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.set_current_position(node);
         '''
         } )
+
 
 
 
@@ -7298,7 +7299,8 @@ spt.pipeline.set_status_color = function(search_key) {
     }
     server.p_execute_cmd(cmd, kwargs)
     .then( function(ret_val) {
-        var info = ret_val.info;
+        var info = ret_val.info.process_colors;
+        var search_keys = ret_val.info.task_search_keys;
         var group_name = spt.pipeline.get_current_group();
         var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
@@ -7314,6 +7316,19 @@ spt.pipeline.set_status_color = function(search_key) {
                 node.setStyle("opacity", "0.5");
             }
             spt.pipeline.set_color(node, color);
+
+
+            spt.update.add( node, {
+                search_key: search_keys[process],
+                return: "sobject",
+                cbjs_action: `
+                    var server = TacticServerStub.get();
+                    var status_colors = server.get_task_status_colors().task;
+                    var status = bvr.value.status;
+                    var color = status_colors[status];
+                    spt.pipeline.set_color(bvr.src_el, color);
+                `
+            } )
         }
  
     } );
@@ -7375,7 +7390,6 @@ spt.pipeline.set_status_color = function(search_key) {
 
 
 spt.pipeline.set_task_color = function(group_name) {
-
     if (!group_name) {
         group_name = spt.pipeline.get_current_group();
     }
@@ -7677,11 +7691,14 @@ class PipelineGetStatusColorsCmd(Command):
 
         # get all of the tass for this sobject
         tasks = Task.get_by_sobject(sobject)
+        task_search_keys = {}
 
-        tasks_dict = {};
+        tasks_dict = {}
         for task in tasks:
             process = task.get_value("process")
             tasks_dict[process] = task
+            task_search_key = task.get_search_key()
+            task_search_keys[process] = (task_search_key)
 
         pipeline_code = sobject.get("pipeline_code")
         pipeline = Pipeline.get_by_sobject(sobject)
@@ -7722,8 +7739,9 @@ class PipelineGetStatusColorsCmd(Command):
                     color = default_color
 
             process_colors[process] = color
-
-        return process_colors
+        
+        self.info['process_colors'] = process_colors
+        self.info['task_search_keys'] = task_search_keys
 
 
 
