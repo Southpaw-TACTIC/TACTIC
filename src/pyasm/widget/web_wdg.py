@@ -1895,6 +1895,8 @@ class WebLoginWdg2(BaseSignInWdg):
               display: flex;
               flex-direction: column;
             }
+
+
         ''')
 
         return styles
@@ -2069,6 +2071,9 @@ class WebLoginWdg2(BaseSignInWdg):
             name_wdg.set_value(reset_login_name)
         elif login_name:
             name_wdg.set_value(login_name)
+
+        if self.kwargs.get("login_placeholder"):
+            name_wdg.add_attribute("placeholder", "Enter Login")
 
         # build the button manually
         email_reset_btn = DivWdg('Reset via Email')
