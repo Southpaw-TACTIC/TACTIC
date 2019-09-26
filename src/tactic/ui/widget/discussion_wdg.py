@@ -447,8 +447,6 @@ class DiscussionWdg(BaseRefreshWdg):
             else
                 spt.toggle_show_hide(add_note);
 
-            //new Fx.Tween(add_note,{duration:"short"}).start('margin-top', 0);
-
             // select the appropriate context or process
             var select = add_note.getElement(".spt_add_note_process");
             if (select) {

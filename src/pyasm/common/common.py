@@ -73,6 +73,8 @@ except ImportError:
         def default(self, obj):
             if isinstance(obj, (datetime.date, datetime.datetime)):
                 return obj.isoformat()
+            elif Common.IS_Pv3 and isinstance(obj, dict_keys):
+                return json.JSONEncoder.default(self, list(obj))
             elif ObjectId and isinstance(obj, ObjectId):
                 return str(obj)
             else:
