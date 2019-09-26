@@ -4400,7 +4400,10 @@ spt.table.select_row = function(row) {
         cell.addClass("look_dg_row_select_box_selected");
     }
     
-    var current_color = row.getAttribute("spt_hover_background");
+    var current_color = row.getAttribute("spt_last_background");
+    if (!current_color){
+        current_color = row.getAttribute("spt_hover_background");
+    }
     
     if (!spt.has_class(row,'spt_table_selected')) {
 
