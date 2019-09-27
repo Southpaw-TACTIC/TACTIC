@@ -1228,7 +1228,11 @@ spt.behavior._construct_behaviors = function( el_list, data )
             var bvr_spec_list = el.bvr_spec_list;
         }
         else {
-            var stmt = 'var bvr_spec_list = ' + el.getAttribute("SPT_BVR_LIST") + ';';
+            var bvr_list = el.bvr_list;
+            if (!bvr_list) {
+	        bvr_list = el.getAttribute("SPT_BVR_LIST");
+            }
+            var stmt = 'var bvr_spec_list = ' + bvr_list + ';';
             stmt = stmt.replace(/\&quot\;/g, '"');
             eval(stmt);
 
@@ -1239,6 +1243,16 @@ spt.behavior._construct_behaviors = function( el_list, data )
                     el.removeAttribute("SPT_BVR_LIST");
                     el.removeAttribute("SPT_BVR_TYPE_LIST");
                     el.removeAttribute("spt_bvr_list");
+                    el.removeClass("SPT_BVR");
+                }
+                else {
+		/* Not sure why this doesn't work
+                    el.bvr_list = el.getAttribute("SPT_BVR_LIST");
+                    el.bvr_spec_list = bvr_spec_list;
+                    el.removeAttribute("SPT_BVR_LIST");
+                    el.removeAttribute("spt_bvr_list");
+                    el.removeAttribute("SPT_BVR_TYPE_LIST");
+		*/
                 }
             }
         }
