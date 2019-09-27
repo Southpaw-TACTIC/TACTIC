@@ -2086,7 +2086,10 @@ spt.dg_table._search_cbk = function(evt, bvr)
             }
             var search_dict = {'json' : JSON.stringify(new_values)};
         }
-        spt.panel.refresh(table_top, search_dict);
+        var on_complete = function(){
+            window.onresize();
+        }
+        spt.panel.refresh(table_top, search_dict, {call_back: on_complete});
         return;
     }
 
@@ -2271,6 +2274,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var default_data = target.getAttribute("spt_default_data") || "";
 
     var height = target.getAttribute("spt_height") || "";
+    var window_resize_offset = target.getAttribute("spt_window_resize_offset")
     var element_names;
     var column_widths = [];
     var search_keys = [];
@@ -2361,6 +2365,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'badge_view': badge_view,
         'extra_data': extra_data,
         'default_data': default_data,
+        'window_resize_offset': window_resize_offset,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -2443,8 +2448,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
         return;
     }
     spt.kbd.clear_handler_stack();
+    var on_complete = function(){
+        window.onresize();
+    }
 
-    spt.panel.load(target, class_name, args, search_values_dict, {fade: fade});
+    spt.panel.load(target, class_name, args, search_values_dict, {fade: fade, callback: on_complete});
 
      // for reference on how to use ctags
     

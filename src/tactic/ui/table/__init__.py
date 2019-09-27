@@ -30,6 +30,7 @@ from .gantt_element_wdg import *
 
 from .subcontext_wdg import *
 from .task_element_wdg import *
+from .projected_schedule_wdg import *
 
 from .statistic_wdg import *
 from .work_hours_element_wdg import *
@@ -43,4 +44,5 @@ from .project_wdg import *
 from .metadata_element_wdg import *
 
 from .custom_layout_element_wdg import *
+
 
