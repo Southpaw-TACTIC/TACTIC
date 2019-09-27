@@ -756,7 +756,7 @@ class Task(SObject):
     def create(cls, sobject, process, description="", assigned="", supervisor="",\
             status=None, depend_id=None, project_code=None, pipeline_code='', \
             start_date=None, end_date=None, context='', bid_duration=8, \
-            task_type=None, triggers=True, assigned_group=""):
+            task_type=None, triggers=True, assigned_group="", commit=True):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
@@ -815,10 +815,11 @@ class Task(SObject):
         if assigned_group:
             task.set_value("assigned_group", assigned_group)
 
-        task.commit(triggers=triggers)
+        if commit == True:
+            task.commit(triggers=triggers)
 
-        # log the status creation event
-        StatusLog.create(task, status)
+            # log the status creation event
+            StatusLog.create(task, status)
 
         return task
     create = classmethod(create)
@@ -1470,7 +1471,7 @@ class TaskAutoSchedule(object):
 
 
 
-
+__all__.extend(["TaskGenerator"])
 class TaskGenerator(object):
     '''Class to handle various auto schedule methods'''
 
@@ -1480,9 +1481,28 @@ class TaskGenerator(object):
         self.process_tasks = {}
         self.tasks = []
 
+        self.generate_mode = kwargs.get("generate_mode")
+        self.completion_date = None
+
+    def update_completion_date(self, date=None):
+        ''' If date is greater then completion date, use new date as completion.'''
+        if not date:
+            self.completion_date = date
+            return
+
+        if not self.completion_date:
+            self.completion_date = date
+
+        if date > self.completion_date:
+            self.completion_date = date
+
+        return self.completion_date
+
+    def get_completion_date(self):
+        return self.completion_date
 
 
-    def execute(self, sobject, pipeline, parent_process=None, start_date=None, end_date=None):
+    def execute(self, sobject, pipeline, parent_process=None, start_date=None, end_date=None, today=None):
 
         self.sobject = sobject
 
@@ -1493,18 +1513,33 @@ class TaskGenerator(object):
         self.start_date = start_date
         self.end_date = end_date
         self.parent_process = parent_process
-
-
+       
+        self.update_completion_date()
+ 
+        # Scheduling comparison 
+        self.today = today
 
         # remember which ones already exist
-        existing_tasks = Task.get_by_sobject(sobject, order=False)
-
+        existing_tasks = Task.get_by_sobject(sobject, order=False) 
         self.existing_task_set = set()
         for x in existing_tasks:
-            key = '%s:%s' %(x.get_value('process'),x.get_value("context"))
+            process = x.get_process()
+            context = x.get_value("context")
+            key = '%s:%s' % (process, context)
             self.existing_task_set.add(key)
-
-
+            
+        
+        # Store pre-existing tasks seperately 
+        # for schedule projection comparison
+        preexisting_tasks = existing_tasks
+        self.preexisting_task_set = self.existing_task_set
+        self.preexisting_tasks_by_process = {}
+        for task in preexisting_tasks:
+            self.preexisting_tasks_by_process[task.get_process()] = task
+       
+        # For schedule projection, ignore existing tasks.
+        if self.generate_mode in ["projected_schedule", "schedule"]:
+            self.existing_task_set = set()
 
 
 
@@ -1708,10 +1743,19 @@ class TaskGenerator(object):
                     subpipeline = Pipeline.get_by_code(subpipeline_code)
 
                     if subpipeline:
-                        generator = TaskGenerator()
-                        subtasks = generator.execute(self.sobject, subpipeline, start_date=self.start_date, parent_process=process_name)
-
+                        generator = TaskGenerator(self.generate_mode)
+                        subtasks = generator.execute(
+                            self.sobject, 
+                            subpipeline, 
+                            start_date=self.start_date, 
+                            parent_process=process_name,
+                            today=self.today
+                        )
+ 
                         self.tasks.extend(subtasks)
+                        
+                        completion_date = generator.get_completion_date()
+                        self.update_completion_date(completion_date)
 
 
 
@@ -1766,7 +1810,13 @@ class TaskGenerator(object):
         assigned = ""
         descripton = ""
         mode = "standard"
+        
+        # TODO: Remove this variable
+        # This must be always true for multi-input processes
+        # because Duplicate check does not look at 
+        # Pre-existing tasks and newly created tasks seperately.
         skip_duplicate = True
+        
 
 
         pipeline = self.pipeline
@@ -1829,21 +1879,47 @@ class TaskGenerator(object):
 
             # determine the start and end date of the task
             start_date = self.start_date
-            end_date = self.start_date + timedelta(days=0) # make a copy
+            
+           
+            # - Projected schedule must take into account 
+            #   existing tasks and current time
+            # - Regular schedule is based on workflow
+            if self.generate_mode == "projected_schedule":
+               
+                existing_task = self.preexisting_tasks_by_process.get(process_name)
+                status = existing_task.get_value("status")
+                
+                end_date = self.start_date + timedelta(days=0) # make a copy
 
-            skip_weekends = True
-            if skip_weekends:
-                # add duration of days that aren't weekdays
-                end_date = SPTDate.add_business_days(self.start_date, duration)
+                skip_weekends = True
+                if skip_weekends:
+                    # add duration of days that aren't weekdays
+                    end_date = SPTDate.add_business_days(self.start_date, duration)
+                else:
+                    # for a task to be x days long, we need duration x-1.
+                    end_date += timedelta(days=(duration-1))
+
+
             else:
-                # for a task to be x days long, we need duration x-1.
-                end_date += timedelta(days=(duration-1))
+
+                end_date = self.start_date + timedelta(days=0) # make a copy
+
+                skip_weekends = True
+                if skip_weekends:
+                    # add duration of days that aren't weekdays
+                    end_date = SPTDate.add_business_days(self.start_date, duration)
+                else:
+                    # for a task to be x days long, we need duration x-1.
+                    end_date += timedelta(days=(duration-1))
+
 
             # shift the end date outside of the weekend
             if end_date.weekday() == 5:
                 end_date = self.start_date + timedelta(days=2)
             if start_date.weekday() == 6:
                 end_date = self.start_date + timedelta(days=1)
+
+
 
             # get from XML data
             assigned_group = properties.get("assigned_group") if version_2 else workflow.get("assigned_group")
@@ -1883,13 +1959,12 @@ class TaskGenerator(object):
                     continue
                 context = self._get_context(process_name, context)
 
+                task_commit = True
+                if self.generate_mode in ["projected_schedule", "schedule"]:
+                    task_commit = False
 
-                #import time
-                #start = time.time()
                 triggers = "none"
-                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_group)
-                #print("process: ", full_process_name)
-                #print("time: ", time.time() - start)
+                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_group, commit=task_commit)
 
                 # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )
@@ -1901,6 +1976,8 @@ class TaskGenerator(object):
 
                 # set a new end_date
                 self.end_date = end_date
+
+                self.update_completion_date(end_date)
 
 
             # set the start date to after the end_date
@@ -2008,6 +2085,7 @@ class Milestone(SObject):
 
 
         return defaults
+
 
 
 

@@ -73,7 +73,7 @@ class WorkflowCmd(Command):
         try:
             Workflow().init()
 
-
+            """
             self._test_namespace_dependency()
 
 
@@ -102,6 +102,8 @@ class WorkflowCmd(Command):
             self._test_trigger()
             self._test_approval()
             self._test_dependency()
+            """
+            self._test_projected_schedule()
 
 
         except Exception as e:
@@ -1395,6 +1397,102 @@ class WorkflowCmd(Command):
         self.assertEquals("Do It", sobject.get_value("b"))
 
 
+    def _test_projected_schedule(self):
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/city")
+        sobject.set_value("code", "test")
+
+        # simple condition
+        pipeline_xml = '''
+        <pipeline>
+          <process type="manual" name="a"/>
+          <process type="manual" name="b"/>
+          <process type="manual" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+
+        '''
+
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+        pipeline_code = pipeline.get_code()
+        sobject.set_value("pipeline_code", pipeline_code)
+
+        start_date = "2019-01-01 00:00:00"
+
+        # Why does schedule start at 12pm?
+        # Why is there a day difference between end date and next start date?
+        tasks = Task.add_initial_tasks(sobject, start_date=start_date)
+        tasks_by_process = {}
+        for task in tasks:
+            if task.get_process() == "a":
+                self.assertEquals("2019-01-01 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-04 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "b":
+                self.assertEquals("2019-01-07 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-10 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "c":
+                self.assertEquals("2019-01-11 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-16 12:00:00", task.get_value("bid_end_date"))
+            tasks_by_process[task.get_process()] = task
+
+       
+        from tactic.ui.table import GetProjectedScheduleCmd       
+        # Test if no tasks are complete but past first task due date
+        today = "2019-01-08 12:00:00"
+        cmd = GetProjectedScheduleCmd(sobject=sobject, start_date=start_date, today=today)
+        virtual_tasks = cmd.execute().get("tasks")
+        for task in virtual_tasks:
+            if task.get_process() == "a":
+                self.assertEquals("2019-01-01 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-08 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "b":
+                self.assertEquals("2019-01-09 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-14 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "c":
+                self.assertEquals("2019-01-15 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-18 12:00:00", task.get_value("bid_end_date"))
+
+        # Test if first task is complete past original due date
+        first_task = tasks_by_process.get("a")
+        first_task.set_value("status", "Complete")
+        first_task.set_value("actual_end_date", "2019-01-08 12:00:00")
+        first_task.commit()
+        
+        cmd = GetProjectedScheduleCmd(sobject=sobject, start_date=start_date, today=today)
+        virtual_tasks = cmd.execute().get("tasks")
+        for task in virtual_tasks:
+            if task.get_process() == "a":
+                self.assertEquals("2019-01-01 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-08 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "b":
+                self.assertEquals("2019-01-09 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-14 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "c":
+                self.assertEquals("2019-01-15 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-18 12:00:00", task.get_value("bid_end_date"))
+ 
+        # Test if second task is complete before original due date
+        second_task = tasks_by_process.get("b")
+        second_task.set_value("status", "Complete")
+        second_task.set_value("actual_end_date", "2019-01-09 12:00:00")
+        second_task.commit()
+       
+        today = "2019-01-09 12:00:00"
+        cmd = GetProjectedScheduleCmd(sobject=sobject, start_date=start_date, today=today)
+        virtual_tasks = cmd.execute().get("tasks")
+        for task in virtual_tasks:
+            if task.get_process() == "a":
+                self.assertEquals("2019-01-01 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-08 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "b":
+                self.assertEquals("2019-01-09 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-09 12:00:00", task.get_value("bid_end_date"))
+            elif task.get_process() == "c":
+                self.assertEquals("2019-01-10 12:00:00", task.get_value("bid_start_date"))
+                self.assertEquals("2019-01-15 12:00:00", task.get_value("bid_end_date"))
+              
+        
 
 
 
