@@ -990,12 +990,12 @@ class TopWdg(Widget):
 
         version = Environment.get_release_version()
 
-        #ui_mode = "bootstrap_material"
-        ui_mode = ProjectSetting.get_value_by_key("feature/ui_mode") or "default"
-        if ui_mode == "default":
+        #ui_library = "bootstrap_material"
+        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "default"
+        if ui_library == "default":
             Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
 
-        elif ui_mode == "bootstrap":
+        elif ui_library == "bootstrap":
 
             # TEST: new version of bootstrap
             widget.add('''
@@ -1016,7 +1016,7 @@ class TopWdg(Widget):
 
 
 
-        elif mode == "bootstrap_material":
+        elif ui_library == "bootstrap_material":
             # TEST bootstrap material design
             widget.add('''
 
