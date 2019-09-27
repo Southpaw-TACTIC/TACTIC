@@ -756,25 +756,25 @@ class Task(SObject):
     def create(cls, sobject, process, description="", assigned="", supervisor="",\
             status=None, depend_id=None, project_code=None, pipeline_code='', \
             start_date=None, end_date=None, context='', bid_duration=8, \
-            task_type=None, triggers=True, assigned_group="", commit=True):
+            task_type=None, triggers=True, assigned_group="", commit=True, temp=False):
 
 
         task = SearchType.create( cls.SEARCH_TYPE )
         task.set_parent(sobject)
 
-        task.set_value("process", process )
+        task.set_value("process", process, temp=temp)
         if description:
-            task.set_value("description", description )
+            task.set_value("description", description, temp=temp)
         if assigned != None:
-            task.set_value("assigned", assigned)
+            task.set_value("assigned", assigned, temp=temp)
 
         if supervisor != None:
-            task.set_value("supervisor", supervisor)
+            task.set_value("supervisor", supervisor, temp=temp)
 
         if not project_code:
             project_code = sobject.get_project_code()
-        task.set_value("project_code", project_code )
-        task.set_value("pipeline_code", pipeline_code)
+        task.set_value("project_code", project_code, temp=temp)
+        task.set_value("pipeline_code", pipeline_code, temp=temp)
 
         if not status:
             pipeline = task.get_pipeline()
@@ -783,37 +783,37 @@ class Task(SObject):
                 status = process_names[0]
 
         if status:
-            task.set_value("status", status)
+            task.set_value("status", status, temp=temp)
 
         if bid_duration:
-            task.set_value("bid_duration", bid_duration)
+            task.set_value("bid_duration", bid_duration, temp=temp)
 
 
         if start_date:
-            task.set_value("bid_start_date", start_date)
+            task.set_value("bid_start_date", start_date, temp=temp)
         if end_date:
-            task.set_value("bid_end_date", end_date)
+            task.set_value("bid_end_date", end_date, temp=temp)
         # auto map context as process as the default
         #if not context:
         #    context = process
         # let get_defaults() set the context properly instead of auto-map
         if context:
-            task.set_value("context", context)
+            task.set_value("context", context, temp=temp)
 
         # DEPRECATED
         if depend_id:
-            task.set_value("depend_id", depend_id)
+            task.set_value("depend_id", depend_id, temp=temp)
 
         # created by
         if task.has_value('login'):
             user = Environment.get_user_name()
-            task.set_value('login', user)
+            task.set_value('login', user, temp=temp)
 
         if task_type:
-            task.set_value("task_type", task_type)
+            task.set_value("task_type", task_type, temp=temp)
 
         if assigned_group:
-            task.set_value("assigned_group", assigned_group)
+            task.set_value("assigned_group", assigned_group, temp=temp)
 
         if commit == True:
             task.commit(triggers=triggers)
@@ -1502,12 +1502,16 @@ class TaskGenerator(object):
         return self.completion_date
 
 
-    def execute(self, sobject, pipeline, parent_process=None, start_date=None, end_date=None, today=None):
+    def execute(self, sobject, pipeline, parent_process=None, start_date=None, end_date=None, \
+            today=None, existing_tasks=None, process_sobjects=None):
 
         self.sobject = sobject
 
         self.pipeline = pipeline
-        self.process_sobjects = pipeline.get_process_sobjects()
+        if not process_sobjects:
+            process_sobjects = pipeline.get_process_sobjects()
+        self.process_sobjects = process_sobjects
+
 
         self.first_start_date = start_date
         self.start_date = start_date
@@ -1520,7 +1524,9 @@ class TaskGenerator(object):
         self.today = today
 
         # remember which ones already exist
-        existing_tasks = Task.get_by_sobject(sobject, order=False) 
+        if not existing_tasks:
+            existing_tasks = Task.get_by_sobject(sobject, order=False) 
+        
         self.existing_task_set = set()
         for x in existing_tasks:
             process = x.get_process()
@@ -1956,11 +1962,28 @@ class TaskGenerator(object):
                 context = self._get_context(process_name, context)
 
                 task_commit = True
+                task_temp = False
                 if self.generate_mode in ["projected_schedule", "schedule"]:
                     task_commit = False
+                    task_temp = True
 
                 triggers = "none"
-                new_task = Task.create(self.sobject, full_process_name, description, pipeline_code=pipeline_code, start_date=start_date, end_date=end_date, context=context, bid_duration=bid_duration,assigned=assigned, task_type=task_type, triggers=triggers, assigned_group=assigned_group, commit=task_commit)
+                new_task = Task.create(
+                    self.sobject, 
+                    full_process_name, 
+                    description, 
+                    pipeline_code=pipeline_code, 
+                    start_date=start_date, 
+                    end_date=end_date, 
+                    context=context, 
+                    bid_duration=bid_duration,
+                    assigned=assigned, 
+                    task_type=task_type, 
+                    triggers=triggers, 
+                    assigned_group=assigned_group, 
+                    commit=task_commit,
+                    temp=task_temp
+                )
 
                 # this avoids duplicated tasks for process connecting to multiple processes
                 new_key = '%s:%s' %(new_task.get_value('process'), new_task.get_value("context") )

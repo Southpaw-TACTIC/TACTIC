@@ -75,7 +75,6 @@ class WorkflowCmd(Command):
         try:
             Workflow().init()
 
-            """
             self._test_namespace_dependency()
 
 
@@ -104,7 +103,6 @@ class WorkflowCmd(Command):
             self._test_trigger()
             self._test_approval()
             self._test_dependency()
-            """
             self._test_projected_schedule()
 
 
