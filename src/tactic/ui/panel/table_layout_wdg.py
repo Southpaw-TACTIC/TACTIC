@@ -6847,7 +6847,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
             var new_rows = dummy.getElements(".spt_table_row");
-            console.log(new_rows);
             // the insert row is not included here any more
             for (var i = 0; i < new_rows.length; i++) {
                 // remove the hidden row, if there is one
@@ -6916,7 +6915,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     if (kw.json)
         kwargs.values['json'] = kw.json;
     
-    console.log(class_name, kwargs);
     server.async_get_widget(class_name, kwargs);
 }
 

@@ -2886,7 +2886,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 if (collection_selected) {
                     var top = bvr.src_el.getParent(".spt_collection_top");
                     var collection_left = top.getElement(".spt_collection_left_side");
-                    console.log("hello2");
                     spt.panel.refresh(collection_left);
                 }
             }
@@ -2895,7 +2894,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             }
             
             if (!dst_top.hasClass("spt_collection_item")) {
-                console.log("hello");
                 spt.table.refresh_rows([dst_top], null, null);
             } 
         }
