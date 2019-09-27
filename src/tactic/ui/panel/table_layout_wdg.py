@@ -6835,6 +6835,10 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // behaviors are only process when in the actual dom
             //spt.behavior.replace_inner_html(dummy, widget_html);
             dummy.innerHTML = widget_html;
+            
+            // HACK for tile layout 
+            dummy = spt.behavior.clone(dummy);
+
 
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
@@ -6843,6 +6847,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
             var new_rows = dummy.getElements(".spt_table_row");
+            console.log(new_rows);
             // the insert row is not included here any more
             for (var i = 0; i < new_rows.length; i++) {
                 // remove the hidden row, if there is one
@@ -6910,6 +6915,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     if (kw.json)
         kwargs.values['json'] = kw.json;
+    
+    console.log(class_name, kwargs);
     server.async_get_widget(class_name, kwargs);
 }
 

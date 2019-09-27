@@ -12,31 +12,9 @@
 
 __all__ = ['ProjectedCompletionWdg', 'GetProjectedScheduleCmd']
 
-"""
-import re, time, types
-from dateutil import rrule
-from dateutil import parser
-import datetime
-import functools
-
-from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException, SPTDate
-from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema, ProjectSetting
-from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
-from pyasm.security import Sudo
-from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
-
-from .button_wdg import ButtonElementWdg
-
-
-from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
-from tactic.ui.widget import IconButtonWdg, RadialProgressWdg
-
-from .table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
-
 import six
-basestring = six.string_types
-"""
-
+from dateutil import parser
+from datetime import datetime
 from pyasm.biz import TaskGenerator, Pipeline
 from pyasm.common import SPTDate
 from pyasm.command import Command
@@ -67,15 +45,26 @@ class ProjectedCompletionWdg(BaseTableElementWdg):
 
 
     def preprocess(self):
+         
         for sobj in self.sobjects:
-            self.dates[sobj.get_search_key()] = sobj.get_value("due_date")
+        
+            start_date = sobj.get_value("start_date")
+            
+            cmd = GetProjectedScheduleCmd(
+                sobject=sobj,
+                start_date=start_date,
+            )
+            completion_date = cmd.execute().get("completion_date")
+            self.dates[sobj.get_search_key()] = completion_date
 
 
     def get_display(self):
         
         sobject = self.get_current_sobject()
  
-        value = self.dates[sobject.get_search_key()]
+        value = self.dates.get(sobject.get_search_key())
+        if not value:
+            value = ""
          
         value_wdg = DivWdg()
         value_wdg.add(value)
@@ -92,20 +81,24 @@ class GetProjectedScheduleCmd(Command):
         if not pipeline:
             pipeline = Pipeline.get_by_sobject(sobject)
 
-        start_date = self.kwargs.get("start_date")
-        
-        from dateutil import parser
-        start_date = parser.parse(start_date)
-
-        today = self.kwargs.get("today")
-
-        generator = TaskGenerator(generate_mode="projected_schedule")
-        tasks = generator.execute(sobject, pipeline, start_date=start_date, today=today)
-        completion_date = generator.get_completion_date()
-        print completion_date
-        
-        completion_date = None
+        completion_date = ""
         tasks = []
+
+        if pipeline: 
+            start_date = self.kwargs.get("start_date")
+            today = self.kwargs.get("today") or datetime.today()
+            
+            if isinstance(start_date, six.string_types):
+                start_date = parser.parse(start_date)
+            
+            if isinstance(today, six.string_types):
+                today = parser.parse(today)
+                
+
+            generator = TaskGenerator(generate_mode="projected_schedule")
+            tasks = generator.execute(sobject, pipeline, start_date=start_date, today=today)
+            completion_date = generator.get_completion_date()
+            
         self.info = {
             'completion_date': completion_date,
             'tasks': tasks        

@@ -1880,44 +1880,40 @@ class TaskGenerator(object):
             # determine the start and end date of the task
             start_date = self.start_date
             
-           
             # - Projected schedule must take into account 
             #   existing tasks and current time
             # - Regular schedule is based on workflow
             if self.generate_mode == "projected_schedule":
                
-                existing_task = self.preexisting_tasks_by_process.get(process_name)
-                status = existing_task.get_value("status")
-                
-                end_date = self.start_date + timedelta(days=0) # make a copy
+                preexisting_task = self.preexisting_tasks_by_process.get(process_name)
+                status = preexisting_task.get_value("status")
 
-                skip_weekends = True
-                if skip_weekends:
-                    # add duration of days that aren't weekdays
-                    end_date = SPTDate.add_business_days(self.start_date, duration)
+                if status == "Complete":
+                    actual_end_date = preexisting_task.get_datetime_value("actual_end_date")
+                    if actual_end_date:
+                        end_date = actual_end_date
+                    else:
+                        end_date = SPTDate.add_business_days(self.start_date, duration)
                 else:
-                    # for a task to be x days long, we need duration x-1.
-                    end_date += timedelta(days=(duration-1))
 
+                    # Calculate proper end date, then compare with today.
+                    end_date = SPTDate.add_business_days(self.start_date, duration)
+
+                    # If task isn't done, asssume it's finishing today
+                    if end_date < self.today:
+                        end_date = self.today
 
             else:
 
-                end_date = self.start_date + timedelta(days=0) # make a copy
-
-                skip_weekends = True
-                if skip_weekends:
-                    # add duration of days that aren't weekdays
-                    end_date = SPTDate.add_business_days(self.start_date, duration)
-                else:
-                    # for a task to be x days long, we need duration x-1.
-                    end_date += timedelta(days=(duration-1))
-
+                end_date = SPTDate.add_business_days(self.start_date, duration)
+ 
 
             # shift the end date outside of the weekend
             if end_date.weekday() == 5:
                 end_date = self.start_date + timedelta(days=2)
             if start_date.weekday() == 6:
                 end_date = self.start_date + timedelta(days=1)
+            
 
 
 
