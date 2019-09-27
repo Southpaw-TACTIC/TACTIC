@@ -29,7 +29,7 @@ class ProjectedCompletionWdg(BaseTableElementWdg):
 
     ARGS_KEYS = {
         'start_column': {
-            'description': 'Column containing schedule start date',
+            'description': 'Column for schedule start date',
             'type': 'TextWdg',
             'order': '01'
         },
@@ -100,6 +100,10 @@ class ProjectedCompletionWdg(BaseTableElementWdg):
 
     def preprocess(self):
 
+        start_column = self.kwargs.get("start_column")
+        if not start_column:
+            start_column = "start_date"
+        
         tasks_by_code, pipelines_by_code, processes_by_pipeline = self.get_data()
         for sobj in self.sobjects:
         
@@ -107,7 +111,7 @@ class ProjectedCompletionWdg(BaseTableElementWdg):
             pipeline = pipelines_by_code.get(sobj.get_value("pipeline_code"))
             process_sobjects = processes_by_pipeline.get(pipeline.get_code())
 
-            start_date = sobj.get_value("start_date")
+            start_date = sobj.get_value(start_column)
             
             cmd = GetProjectedScheduleCmd(
                 sobject=sobj,
@@ -125,6 +129,8 @@ class ProjectedCompletionWdg(BaseTableElementWdg):
         sobject = self.get_current_sobject()
  
         value = self.dates.get(sobject.get_search_key())
+        if value:
+            value = SPTDate.get_display_date(value) 
         if not value:
             value = ""
          
