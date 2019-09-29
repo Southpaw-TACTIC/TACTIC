@@ -1151,6 +1151,8 @@ class IngestUploadWdg(BaseRefreshWdg):
     def get_ingest_button(self):
 
         div = DivWdg()
+       
+
 
         library_mode = self.kwargs.get("library_mode") or False
         dated_dirs = self.kwargs.get("dated_dirs") or False
@@ -1218,7 +1220,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             progress_top.setStyle("margin-top", "-30px");
         }, 0);
 
-        spt.panel.refresh(top);
+    
+        ingest_btn_top = top.getElement(".spt_ingest_btn");
+        ingest_btn = ingest_btn_top.getElement(".spt_action_button");
+        ingest_btn.in_progress = false;
+        
+         
         '''
 
 
@@ -1450,6 +1457,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         #upload_div.add_style("margin-bottom: 20px")
 
 
+        button.add_class("spt_ingest_btn")
 
         upload_div.add("<br clear='all'/>")
 
