@@ -1019,7 +1019,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.value = '';
                     var rnd = Math.floor(Math.random()*100001)
                     select.name = select.name + rnd;
-
+                    
                     spt.task_element.status_change_cbk(evt, {src_el: select});
                 }
                 else {
@@ -2347,6 +2347,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             var el_context = el.getAttribute("spt_context");
                             if (el_context == context) {
                                 el.value = value;
+                                el.style.background = status_colors[value];
                                 spt.task_element.status_change_cbk(evt, {src_el: el});
                             }
                         }
