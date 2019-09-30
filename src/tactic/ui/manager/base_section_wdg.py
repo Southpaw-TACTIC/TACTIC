@@ -110,7 +110,7 @@ class BaseSectionWdg(BaseRefreshWdg):
         content_div.add_class("spt_side_bar_content")
         content_div.add_attr("spt_view", view)
 
-        if type(view) in types.StringTypes:
+        if isinstance(view, types.StringTypes):
             view = [view]
 
         view_margin_top = '4px'

@@ -2453,11 +2453,11 @@ class TacticServerStub(object):
         [/code]
 
         '''
-        if type(file_path) != types.ListType:
+        if not isinstance(file_path, list):
             file_paths = [file_path]
         else:
             file_paths = file_path
-        if type(file_type) != types.ListType:
+        if not isinstance(file_type, list):
             file_types = [file_type]
         else:
             file_types = file_type
