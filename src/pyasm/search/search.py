@@ -5724,7 +5724,9 @@ class SObject(object):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
 
         if self.get_base_search_type() == "sthpw/virtual":
-            columns = self.data.keys()
+            columns = set(self.data.keys())
+            columns.update( self.update_data.keys() )
+            columns = list(columns)
         elif not columns:
             columns = SearchType.get_columns(self.get_search_type())
 

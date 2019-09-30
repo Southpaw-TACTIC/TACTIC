@@ -39,6 +39,9 @@ class Document(object):
         self.document = {}
         self.document['content'] = []
 
+        if self.kwargs.get("type"):
+            self.document["type"] = self.kwargs.get("type")
+
         if self.kwargs.get("document"):
             self.document = jsonloads(self.kwargs.get("document") )
 
@@ -90,10 +93,14 @@ class Document(object):
 
         if item_type == "sobject":
             sobject = item.get("sobject")
+            if sobject.get("__search_key__"):
+                search_key = sobject.get("__search_key__")
 
             if sobject or search_key:
 
-                if not sobject:
+                if search_key.startswith("sthpw/virtual"):
+                    pass
+                elif not sobject and search_key:
                     sobject = Search.get_by_search_key(search_key)
 
                 if not sobject:
@@ -222,6 +229,7 @@ class Document(object):
 
             item = {}
             content.append(item)
+            item['type'] = "sobject"
 
             sobject_dict = sobject.get_sobject_dict()
 
