@@ -8454,7 +8454,7 @@ spt.table.load_search = function(search_view, kwargs) {
 
 // Callback that gets executed when "Save My/Project View As" is selected
 spt.table.save_view_cbk = function(table_id, login) {
-
+   
     var table = document.id(table_id);
     var top = table.getParent(".spt_view_panel");
     // it may not always be a View Panel top
@@ -8563,18 +8563,19 @@ spt.table.is_embedded = function(table){
     return is_embedded;
 }
 
-spt.table.save_view = function(table, new_view, kwargs)
-{
+spt.table.save_view = function(table, new_view, kwargs) {
+
+    var server;
     try {
         if (typeOf(table) == "string") {
-            table = document.id(table_id);
+            table = document.id(table);
         }
 
         var top = table.getParent(".spt_view_panel");
         var search_wdg = top ? top.getElement(".spt_search"): null;
 
         var save_mode = kwargs['save_mode'];
-
+ 
         if (spt.table.is_embedded(table)) {
             //spt.alert('Embedded table view saving not supported yet');
             var login = kwargs.login;
@@ -8701,7 +8702,6 @@ spt.table.save_view = function(table, new_view, kwargs)
         if (new_title)
             kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
 
-         
         // add the definiton to the list
         var info = server.add_config_element(search_type, "definition", element_name, kwargs);
         var unique_el_name = info['element_name'];
@@ -8724,6 +8724,8 @@ spt.table.save_view = function(table, new_view, kwargs)
 
         spt.panel.refresh("side_bar");
     } catch(e) {
+        if (server) server.abort();
+        
         spt.alert(spt.exception.handler(e));
         return false;
     }
