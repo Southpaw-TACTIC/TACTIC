@@ -6095,7 +6095,7 @@ class SearchType(SObject):
 
         # right now, the type is the table type
         type = column_info.get("data_type")
-        size = column_info.get("size")
+        size = column_info.get("size") or 256
 
         if type == "varchar" and size > 256:
             type = "text"
