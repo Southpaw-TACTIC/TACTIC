@@ -1210,6 +1210,30 @@ class Search(Base):
                     else:
                         self.add_filters("id", values, op=op)
 
+        elif relationship in ['instance']:
+
+            # add_relationship_filter(self, search, op='in', delay_null=False, use_multidb=None)
+
+            from_col = attrs['from_col']
+            to_col = attrs['to_col']
+
+            instance_type = attrs.get("instance_type")
+            assert instance_type
+
+            self.add_join(instance_type, search_type)
+            self.add_join(related_type, instance_type)
+
+            search_type_obj = SearchType.get(search_type)
+            related_type_obj = SearchType.get(related_type)
+
+            table = search_type_obj.get_table()
+            related_table = related_type_obj.get_table()
+            self.add_column("*", table=table)
+            self.add_column("code", table=related_table, as_column="_related_code")
+
+            s_values = search.get_sobject_codes()
+            self.add_filters(to_col, s_values, table=related_table)
+
         else:
             raise SearchException("Relationship [%s] not supported" % relationship)
 

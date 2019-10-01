@@ -1894,8 +1894,6 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         return " ".join(parts)
 
 
-
-
     def create_database(self, database):
         '''create a database.  This is done by a system command'''
 
@@ -1909,25 +1907,16 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         from pyasm.search import DbResource
         db_resource = DbResource.get_default(database)
 
+        # use PGPASSWORD environment variable to prevent createdb from interactively asking for a password
+        pw_env = os.environ
+        pw_env['PGPASSWORD'] = db_resource.get_password()
+
         create = 'createdb %s -E UNICODE "%s"' % (self._get_db_info(db_resource), database)
         print("create: ", create)
-        cmd = os.popen(create)
-        result = cmd.readlines()
-        cmd.close()
-
-        # Psql 8.3 doesn't have outputs on creation
-        if not result:
-            return
-            #raise Exception("Error creating database '%s'" % database)
-
-
-
-        if result[0] == "CREATE DATABASE":
-            print("success")
-        elif result[0].endswith("already exists"):
-            print("already exists")
-        else:
-            print("no returned result from database creation (psql 8.2+)")
+        child = subprocess.Popen(create, shell=True, env=pw_env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = child.communicate()
+        if child.returncode != 0:
+            raise Exception("Error creating database '%s': %s" % (database, stderr))
 
 
     def drop_database(self, db_resource):
@@ -1974,6 +1963,9 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         DbContainer.release_thread_sql()
         """
 
+        # use PGPASSWORD environment variable to prevent dropdb from interactively asking for a password
+        os.environ['PGPASSWORD'] = db_resource.get_password()
+
         cmds = ['dropdb']
         cmds.extend(info.split(' '))
         # has to str() to avoid unicode str
@@ -1983,7 +1975,7 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         #cmd = os.popen(drop_cmd, 'r')
         #result = cmd.readlines()
         #cmd.close()
-        popen =  subprocess.Popen(cmds, shell=False, stdout=subprocess.PIPE)
+        popen = subprocess.Popen(cmds, shell=False, stdout=subprocess.PIPE)
         popen.wait()
         output = ''
         value = popen.communicate()

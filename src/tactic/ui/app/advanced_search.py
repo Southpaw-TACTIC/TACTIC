@@ -1706,6 +1706,7 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        hide_save_buttons = self.kwargs.get("hide_save_buttons")
         prefix = self.kwargs.get("prefix")
         mode = self.kwargs.get("mode")
 
@@ -1713,26 +1714,27 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
         buttons_container.add_class("spt_advanced_search_buttons")
         self.add_relay_behaviors(buttons_container)
 
-        # Save buttons
-        save_buttons = DivWdg()
-        buttons_container.add(save_buttons)
-        save_buttons.add_class("save-buttons")
+        if hide_save_buttons not in ["true", True]:
+            # Save buttons
+            save_buttons = DivWdg()
+            buttons_container.add(save_buttons)
+            save_buttons.add_class("save-buttons")
 
-        save_button = DivWdg("Save")
-        save_buttons.add(save_button)
-        save_button.add_class("spt_save_button spt_save save-button enabled hand")
-        save_button.add_style("margin-right: 5px;")
+            save_button = DivWdg("Save")
+            save_buttons.add(save_button)
+            save_button.add_class("spt_save_button spt_save save-button enabled hand")
+            save_button.add_style("margin-right: 5px;")
 
-        save_as_button = DivWdg("Save As")
-        save_buttons.add(save_as_button)
-        save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand ")
-        save_as_button.add_attr("spt_action", "save_as")
+            save_as_button = DivWdg("Save As")
+            save_buttons.add(save_as_button)
+            save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand ")
+            save_as_button.add_attr("spt_action", "save_as")
 
-        if mode == "save":
-            save_button.add_attr("spt_action", "save_as")
-            save_as_button.add_style("display: none")
-        else:
-            save_button.add_attr("spt_action", "save")
+            if mode == "save":
+                save_button.add_attr("spt_action", "save_as")
+                save_as_button.add_style("display: none")
+            else:
+                save_button.add_attr("spt_action", "save")
 
         # Search button
         search_button = DivWdg("Search")
