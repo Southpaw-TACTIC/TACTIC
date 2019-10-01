@@ -181,9 +181,11 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
             widget_config_xml = '''<config>
             <table>
+            <element name="test_column" title="Test Column">
+                <display class="spt.modules.workflow.apps.report.TestTableElementWdg"/>
+            </element>
             <element name="raw_data" title="Raw Data">
-                <display widget="raw_data">
-                </display>
+                <display widget="raw_data"/>
             </element>
             <element name="task_duration" title="Work Hour">
                 <display class="tactic.ui.table.WorkHoursElementWdg"/>
@@ -1898,7 +1900,19 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         widget_config_xml = self.kwargs.get("widget_config_xml")
         if widget_config_xml:
             widget_config = WidgetConfig.get(view="table", xml=widget_config_xml)
-            class_values = widget_config.get_element_names()
+            element_names = widget_config.get_element_names()
+
+            class_values = []
+            for element_name in element_names:
+                handler = widget_config.get_display_handler(element_name)
+                if not handler:
+                    class_values.append(element_name)
+                else:
+                    class_values.append(handler)
+
+
+
+
             class_labels = widget_config.get_element_titles()
 
 
@@ -2402,24 +2416,28 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         #if widget_key and widget_key not in ['__class__', 'custom_layout']:
 
 
-
         if widget_key and widget_key not in ['__class__']:
 
-            display_class = ""
+            if widget_key.find(".") != -1:
+                # This is really a class
+                display_class = widget_key
 
-            # get from a config xml
-            #config_view = "custom_config"
-            #config = WidgetConfig.get(view, xml=xml)
-            config_xml = self.kwargs.get("config_xml")
-            if config_xml:
-                handler = WidgetConfig.get("table", xml=config_xml)
-                display_class = handler.get_display_handler(widget_key)
+            else:
+                display_class = ""
+
+                # get from a config xml
+                #config_view = "custom_config"
+                #config = WidgetConfig.get(view, xml=xml)
+                config_xml = self.kwargs.get("config_xml")
+                if config_xml:
+                    handler = WidgetConfig.get("table", xml=config_xml)
+                    display_class = handler.get_display_handler(widget_key)
 
 
-            if not display_class:
-                # or get from the central class handler
-                handler = TableElementClassHandler()
-                display_class = handler.get_display_handler(widget_key)
+                if not display_class:
+                    # or get from the central class handler
+                    handler = TableElementClassHandler()
+                    display_class = handler.get_display_handler(widget_key)
 
 
         if not display_class:
@@ -2477,9 +2495,6 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 
 
 
-
-
-
         if not class_options:
             class_options = {}
             import_stmt = Common.get_import_from_class_path(display_class)
@@ -2497,6 +2512,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 error = DivWdg()
                 error.add_style('color: red')
                 error.add("WARNING: %s" % str(e) )
+                top.add(error)
 
             else:            
                 try:
@@ -2515,7 +2531,6 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     category_options = eval("%s.get_category_keys()" % display_class)
                 except Exception as e:
                     pass
-
 
 
         # special consideration is made for Custom Layouts where options
@@ -3116,9 +3131,15 @@ class SimpleElementDefinitionCbk(Command):
 
 
         # create the display_node
+        # FIXME: only admin should be allowed to save here
         display_node = element_xml.create_element("display")
         if widget_key and widget_key != '__class__':
-            element_xml.set_attribute(display_node, "widget", widget_key)
+
+            # HACK: if there is a "." in the key, this this is really a class
+            if widget_key.find(".") != -1:
+                element_xml.set_attribute(display_node, "class", widget_key)
+            else:
+                element_xml.set_attribute(display_node, "widget", widget_key)
             element_xml.append_child(root, display_node)
         elif display_class:
             element_xml.set_attribute(display_node, "class", display_class)

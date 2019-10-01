@@ -652,7 +652,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if self.sobject:
             # only set if the value does not exist as a key.  This widget should
             # not be able to change existing data of an sobject
-            self.sobject.set_value(name, result)
+            self.sobject.set_value(name, result, no_exception=True)
 
 
         outer = DivWdg()
