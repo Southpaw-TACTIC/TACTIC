@@ -600,6 +600,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 		 })
 
+
+                 template_tile.destroy()
+
 		'''
 	    })
 

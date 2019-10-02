@@ -618,7 +618,6 @@ class SearchWdg(BaseRefreshWdg):
 
 
         top_class = self.kwargs.get("top_class")
-        top_class = "spt_whatever_top"
 
         top = self.top
         top.add_class("spt_search_top")

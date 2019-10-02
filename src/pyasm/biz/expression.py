@@ -1314,7 +1314,7 @@ class MethodMode(ExpressionParser):
                             if arg_result:
                                 results += arg_result
 
-                    #elif type(arg_results) == types.DictType:
+                    #elif isinstance(arg_results, dict):
                     #    sobjects = self.get_flat_cache()
                     #    results = self.sum(sobjects, column)
 
@@ -1361,7 +1361,7 @@ class MethodMode(ExpressionParser):
                     # evaluate expression
                     mode = ExpressionMode()
                     arg_results = self.dive(mode, expression=arg)
-                    if type(arg_results) == types.ListType:
+                    if isinstance(arg_results, list):
                         results = 0
                         for arg_result in arg_results:
                             results += arg_result

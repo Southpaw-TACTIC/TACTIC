@@ -124,7 +124,7 @@ spt.update.display = function(el, column, value) {
     }
     setTimeout( function() {
         div.destroy();
-    }, 3000 );
+    }, 500 );
 
 }
 

@@ -455,7 +455,7 @@ class CellEditWdg(BaseRefreshWdg):
         # main element
         if self.sobject.has_value(column):
             value = self.sobject.get_value(column)
-            if self.element_type == 'time' and value and type(value) in types.StringTypes:
+            if self.element_type == 'time' and value and isinstance(value, six.string_types):
                 # FIXME: this should use date util
                 try:
                     tmp, value = value.split(" ")

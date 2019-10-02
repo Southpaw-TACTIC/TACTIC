@@ -22,7 +22,7 @@ from pyasm.widget import SelectWdg, TextWdg
 from pyasm.search import Search, SearchType
 from tactic.ui.common import BaseRefreshWdg
 
-import types
+import types, six
 
 
 from .chart_data import ChartData, ChartElement
@@ -76,7 +76,7 @@ class BarChartWdg(BaseRefreshWdg):
             if not self.elements:
                 self.elements = web.get_form_value("elements")
 
-        if isinstance(self.elements,basestring):
+        if isinstance(self.elements, six.string_types):
             if self.elements:
                 self.elements = self.elements.split('|')
             else:
@@ -94,7 +94,7 @@ class BarChartWdg(BaseRefreshWdg):
         if self.search_type and self.search_type.startswith("@SOBJECT("):
             self.sobjects = Search.eval(self.search_type)
         elif self.search_keys:
-            if isinstance(self.search_keys, basestring):
+            if isinstance(self.search_keys, six.string_types):
                 self.search_keys = eval(self.search_keys)
             self.sobjects = Search.get_by_search_keys(self.search_keys)
         else:
@@ -157,7 +157,7 @@ class BarChartWdg(BaseRefreshWdg):
                 except:
                     value = 0
 
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 if value.endswith("%"):
                     value = float( value.replace("%",'') )
                 else:
@@ -222,8 +222,8 @@ class BarChartWdg(BaseRefreshWdg):
         print("chart_labels: ", chart_labels)
         print("element: ", element_values)
 
-        from chart_wdg import ChartWdg as XXChartWdg
-        from chart_wdg import ChartData as XXChartData
+        from .chart_wdg import ChartWdg as XXChartWdg
+        from .chart_wdg import ChartData as XXChartData
 
 
         chart = XXChartWdg(
