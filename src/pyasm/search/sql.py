@@ -986,7 +986,7 @@ class Sql(Base):
         elif isinstance(value, list):
             value = value[0]
             value = value.replace("'", "''")
-        elif value_type == types.MethodType:
+        elif isinstance(value_type, types.MethodType):
             raise SqlException("Value passed in was an <instancemethod>")
         #elif value_type in [types.FloatType, types.IntType]:
         elif isinstance(value_type, (float, int)):
