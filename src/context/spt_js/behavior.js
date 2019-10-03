@@ -1234,6 +1234,8 @@ spt.behavior._construct_behaviors = function( el_list, data )
             }
             var stmt = 'var bvr_spec_list = ' + bvr_list + ';';
             stmt = stmt.replace(/\&quot\;/g, '"');
+            stmt = stmt.replace(/\&amp;quot\;/g, '"');
+            stmt = stmt.replace(/\&amp\;/g, '&');
             eval(stmt);
 
             if (spt.behavior.remove_bvr_attrs) {
