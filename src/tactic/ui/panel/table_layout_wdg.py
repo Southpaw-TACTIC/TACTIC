@@ -4403,6 +4403,9 @@ spt.table.select_row = function(row) {
     var current_color = row.getAttribute("spt_last_background");
     if (!current_color){
         current_color = row.getAttribute("spt_hover_background");
+        if (!current_color){
+            current_color = row.getStyle("background-color");
+        }
     }
     
     if (!spt.has_class(row,'spt_table_selected')) {
