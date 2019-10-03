@@ -184,6 +184,15 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             <element name="test_column" title="Test Column">
                 <display class="spt.modules.workflow.apps.report.TestTableElementWdg"/>
             </element>
+            <element name="count_in_status" title="Count in Status">
+                <display class="spt.modules.workflow.apps.report.CountStatusElementWdg"/>
+            </element>
+            <element name="process_timing" title="Process Timing">
+                <display class="spt.modules.workflow.apps.report.ProcessTimingElementWdg"/>
+            </element>
+            <element name="workflow_timing" title="Workflow Timing">
+                <display class="spt.modules.workflow.apps.report.TestTableElementWdg"/>
+            </element>
             <element name="raw_data" title="Raw Data">
                 <display widget="raw_data"/>
             </element>

@@ -215,6 +215,8 @@ class TaskStatusChangeTrigger(Trigger):
         # handle the approve case (which really means complete)
         if status in ["approved", "not_required"]:
             status = "complete"
+        elif status == "in_progress":
+            status = "action"
 
 
         # The task may have a hierarchy in it.  This is denoted by a / (or .) delimiter.
@@ -721,12 +723,12 @@ class BaseProcessTrigger(Trigger):
 
             search = Search("config/process_state")
             search.add_sobject_filter(sobject)
-            #search.add_filter("process", process)
-            process_states = search.get_sobjects()
+            cache_process_states = search.get_sobjects()
 
-            for process_state in process_states:
-                process = process_state.get_value("process")
-                process_states_dict[process] = process_state
+            for cache_process_state in cache_process_states:
+                cache_process = cache_process_state.get_value("process")
+                process_states_dict[cache_process] = cache_process_state
+
 
         process_state = process_states_dict.get(process)
         if not process_state:
@@ -751,11 +753,9 @@ class BaseProcessTrigger(Trigger):
 
         # TODO use process state.
         # status and state will be transitioned to process_state (instead of messaging)
-        """
         process_state = self.get_process_state(sobject, process)
         process_state.set_value("status", status)
         process_state.commit()
-        """
 
 
 
@@ -1407,8 +1407,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         # store the state so that it can be remembered until the next status change
         self.store_state()
 
-
-        Trigger.call(self, "process|action", output=self.input)
+        if not self.tasks:
+            Trigger.call(self, "process|action", output=self.input)
 
 
     def get_mapped_status(self, process_obj, status="Pending"):
@@ -1443,11 +1443,13 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             full_process_name = self.get_full_process_name(self.process)
             self.tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
 
+
         # go to complete if there are no tasks
         if not self.tasks:
             Trigger.call(self, "process|complete", output=self.input)
 
         else:
+            process = self.input.get("process")
             # store the state
             self.store_state()
             self.log_message(self.sobject, self.process, "in_progress")
@@ -1455,7 +1457,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_complete(self):
 
-        status = "complete"
+        #status = "complete"
+        status = self.input.get("status") or "complete"
 
         # restore the state of the node
         state = self.restore_state()
