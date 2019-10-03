@@ -648,19 +648,22 @@ class SearchWdg(BaseRefreshWdg):
         filter_top.add_color("color", "color")
         self.set_as_panel(filter_top)
 
-        # Saved Searches
-        saved_item_action = self.kwargs.get("saved_item_action")
-        saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action, top_class=top_class)
-        container.add(saved_searches)
+        hide_advanced_search = self.kwargs.get("hide_advanced_search")
 
-        # Save widget
-        overlay = DivWdg()
-        top.add(overlay)
-        overlay.add_class("overlay")
-        overlay.add_style("display: none")
+        if hide_advanced_search not in ['true', True]:
+            # Saved Searches
+            saved_item_action = self.kwargs.get("saved_item_action")
+            saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action, top_class=top_class)
+            container.add(saved_searches)
 
-        save_top = AdvancedSearchSaveWdg(search_type=self.search_type)
-        top.add(save_top)
+            # Save widget
+            overlay = DivWdg()
+            top.add(overlay)
+            overlay.add_class("overlay")
+            overlay.add_style("display: none")
+
+            save_top = AdvancedSearchSaveWdg(search_type=self.search_type)
+            top.add(save_top)
 
         # Styles
         top.add(self.get_styles())
@@ -857,7 +860,7 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         search_action = self.kwargs.get("search_action")
         save_mode = "save_as" if self.filter else "save"
-        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class)
+        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class, hide_save_buttons=hide_advanced_search)
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
