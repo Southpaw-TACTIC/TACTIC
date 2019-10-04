@@ -51,7 +51,7 @@ class Handler(object):
 
         # if this is still a dictionary and it has __VALUE__ in it, the
         # get that value
-        if isinstance(current, dict) and "__VALUE__" in current:
+        if type(current) == types.DictionaryType and current.has_key("__VALUE__"):
             current = current.get("__VALUE__")
 
         if type(current) == types.ListType:
