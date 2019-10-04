@@ -150,6 +150,7 @@ class SObjectChartWdg(BaseChartWdg):
 
      
         # handle documents
+        document = None
         document_key = self.kwargs.get("document_key")
         if document_key:
             document_sobj = Search.get_by_search_key(document_key)

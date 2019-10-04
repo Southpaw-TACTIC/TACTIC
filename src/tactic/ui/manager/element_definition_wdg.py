@@ -191,7 +191,10 @@ class ElementDefinitionWdg(BaseRefreshWdg):
                 <display class="spt.modules.workflow.apps.report.ProcessTimingElementWdg"/>
             </element>
             <element name="workflow_timing" title="Workflow Timing">
-                <display class="spt.modules.workflow.apps.report.TestTableElementWdg"/>
+                <display class="spt.modules.workflow.apps.report.WorkflowTimingElementWdg"/>
+            </element>
+            <element name="longest_process" title="Longest Process">
+                <display class="spt.modules.workflow.apps.report.LongestProcessElementWdg"/>
             </element>
             <element name="raw_data" title="Raw Data">
                 <display widget="raw_data"/>

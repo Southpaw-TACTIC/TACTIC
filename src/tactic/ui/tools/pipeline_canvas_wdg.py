@@ -159,7 +159,7 @@ class BaseNodeWdg(BaseRefreshWdg):
 
             icon = self.get_icon()
 
-            if icon.startswith("fa_"):
+            if icon.startswith("fa-"):
                 top.add("<div style='position: absolute; top: 0px; left: 0px'><i class='fa %s fa-5x'> </i></div>" % icon)
                 top.add_attr("spt_border_color", "transparent")
                 top.add_style("border-color: transparent")
@@ -3843,7 +3843,15 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
         spt.pipeline.set_node_kwarg(new_node, "version", 2);
 
-    new_node.has_changes = true;
+
+    if (kwargs.is_loading) {
+        new_node.has_changes = false;
+    }
+    else {
+        new_node.has_changes = true;
+    }
+
+
     spt.named_events.fire_event('pipeline|change', {});
 
     // if folder hide folder
@@ -7124,6 +7132,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
             select_node: false,
             node_type: node_type,
             new: false,
+            is_loading: true,
         }
 
         // split the name

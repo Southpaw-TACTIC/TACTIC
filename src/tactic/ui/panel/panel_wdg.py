@@ -3254,6 +3254,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         gear_settings = self.kwargs.get("gear_settings")
         shelf_view = self.kwargs.get("shelf_view")
         badge_view = self.kwargs.get("badge_view")
+        filter_view = self.kwargs.get("filter_view")
         extra_data = self.kwargs.get("extra_data")
         if extra_data:
             if isinstance(extra_data, dict):
@@ -3357,6 +3358,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "keywords": keywords,
             "keywords_columns": keywords_columns,
             "filter": filter,
+            "filter_view": filter_view,
             "expand_mode": expand_mode,
             "data_mode": data_mode,
             "show_name_hover": show_name_hover,
