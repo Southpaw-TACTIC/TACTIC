@@ -334,7 +334,11 @@ def xmlrpc_decorator(meth):
                         cmd = get_full_cmd(self, meth, ticket, args)
 
                 else:
-                    cmd = get_full_cmd(self, meth, ticket, args)
+                    if multi_site:
+                        result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                        return self.browser_res(meth, result)
+                    else: 
+                        cmd = get_full_cmd(self, meth, ticket, args)
 
                 profile_flag = False
 
@@ -1005,6 +1009,46 @@ class ApiXMLRPC(BaseApiXMLRPC):
         log = DebugLog.log(level,message,category)
         return True
 
+
+
+    def browser_res(self, meth, result):
+
+        web = WebContainer.get_web()
+        if (web and web.get_app_name() == "Browser" \
+                and meth.__name__ not in ['get_widget'] \
+                and self.get_language() == 'javascript'):
+            result = jsondumps(result)
+
+        return result
+
+
+
+    def redirect_to_server(self, ticket, meth, args):
+        '''Uses REST call to redirect API call to remote server.'''
+
+        project_code = Config.get_value("master", "project_code")
+        url = Config.get_value("master", "url") 
+        rest_url = url + "/" + project_code + "/REST/"
+       
+ 
+        args = jsondumps(args)
+        data = {
+            'login_ticket': ticket,
+            'method': meth,
+            'args' : args
+        }
+       
+        r = requests.post(rest_url, data=data)
+        ret_val = r.json()
+       
+        error = None 
+        if isinstance(ret_val, dict):
+            error = ret_val.get("error")
+        
+        if error:
+            raise RemoteApiException(error)
+        else: 
+            return ret_val
 
 
 
