@@ -8594,6 +8594,7 @@ spt.table.save_view = function(table, new_view, kwargs) {
 
         var login = kwargs.login;
         var save_as_personal = (save_mode == 'save_my_views') ? true : false;
+        var extra_data = kwargs.extra_data;
 
 
         var side_bar_view = 'project_view';
@@ -8715,7 +8716,8 @@ spt.table.save_view = function(table, new_view, kwargs) {
             first_idx = 0;
 
         // create the view for this table
-        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
+        var update_data = extra_data;
+        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx, update_data);
          
         //if (side_bar_view && save_a_link) {
         if (save_mode != 'save_view_only') {
