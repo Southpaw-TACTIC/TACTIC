@@ -18,6 +18,7 @@ __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'Pip
 import re
 import os
 import ast
+import six
 from tactic.ui.common import BaseRefreshWdg
 
 from pyasm.common import Environment, Common, jsonloads
@@ -58,8 +59,9 @@ class PipelineToolWdg(BaseRefreshWdg):
                 left: 0px;
                 transition: .25s;
                 border: 1px solid #ccc;
+                border-width: 0px 1px 1px 1px;
                 width: 20%;
-                //height:100%;
+                height:100%;
             }
 
             .spt_pipeline_tool_right {
@@ -230,7 +232,17 @@ class PipelineToolWdg(BaseRefreshWdg):
         top = self.top
         self.set_as_panel(top)
         top.add_class("spt_pipeline_tool_top")
-        #top.add_style("margin-top: 10px")
+        top.add_behavior({
+            "type": "listen",
+            "event_name": "delete|sthpw/pipeline",
+            "cbjs_action": '''
+            var on_complete = function() {
+                window.onresize();
+            }
+            spt.panel.refresh_element(bvr.src_el, {}, {callback: on_complete});
+            
+            '''
+        })
 
         inner = DivWdg()
         inner.add(self.get_styles())
@@ -772,6 +784,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         start_div.add_style("top: 0px")
         start_div.add_style("background: rgba(240,240,240,0.8)")
         start_div.add_border()
+        start_div.add_style("border-width: 0px 1px 1px 1px")
         start_div.add_style("z-index: 0")
         start_div.add_style("box-sizing: border-box")
 
@@ -1049,7 +1062,7 @@ class PipelineListWdg(BaseRefreshWdg):
         self.save_new_event = self.kwargs.get("save_new_event")
 
         self.settings = self.kwargs.get("settings") or []
-        if self.settings and isinstance(self.settings, basestring):
+        if self.settings and isinstance(self.settings, six.string_types):
             self.settings = self.settings.split("|")
 
 
@@ -7513,7 +7526,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg.add_style("overflow-x: hidden")
         shelf_wdg.add_style("min-width: 400px")
         shelf_wdg.add_style("border: 1px solid #ccc")
-        shelf_wdg.add_style("border-width: 1 1 0 1")
+        shelf_wdg.add_style("border-width: 0 1 0 1")
 
         show_shelf = self.kwargs.get("show_shelf")
         show_shelf = True

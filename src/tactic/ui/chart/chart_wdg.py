@@ -20,6 +20,8 @@ from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Canvas
 
 from tactic.ui.common import BaseRefreshWdg
 
+import six
+
 
 class SampleBarChartWdg(BaseRefreshWdg):
 
@@ -321,6 +323,7 @@ class ChartGrid(BaseRefreshWdg):
             rotate_x_axis = True
         else:
             rotate_x_axis = False
+
 
         top.add_behavior( {
             'type': 'load',
@@ -708,7 +711,7 @@ class ChartLegend(BaseRefreshWdg):
         if not labels:
             return top
 
-        if isinstance(labels, basestring):
+        if isinstance(labels, six.string_types):
             labels = labels.split("|")
 
 

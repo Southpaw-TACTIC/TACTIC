@@ -163,7 +163,7 @@ class DirNaming(object):
         # Now either create is True or relative_dir has been cleared in the db
         # first check the db, so we build up the naming
 
-        if type(self.naming_expr) == types.DictType:
+        if isinstance(self.naming_expr, dict):
             override_naming_expr = self.naming_expr.get("override")
             default_naming_expr = self.naming_expr.get("default")
         else:

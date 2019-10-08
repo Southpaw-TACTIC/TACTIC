@@ -4429,7 +4429,13 @@ spt.table.select_row = function(row) {
         cell.addClass("look_dg_row_select_box_selected");
     }
     
-    var current_color = row.getAttribute("spt_hover_background");
+    var current_color = row.getAttribute("spt_last_background");
+    if (!current_color){
+        current_color = row.getAttribute("spt_hover_background");
+        if (!current_color){
+            current_color = row.getStyle("background-color");
+        }
+    }
     
     if (!spt.has_class(row,'spt_table_selected')) {
 
@@ -6861,6 +6867,10 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // behaviors are only process when in the actual dom
             //spt.behavior.replace_inner_html(dummy, widget_html);
             dummy.innerHTML = widget_html;
+            
+            // HACK for tile layout 
+            dummy = spt.behavior.clone(dummy);
+
 
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
@@ -6936,6 +6946,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     if (kw.json)
         kwargs.values['json'] = kw.json;
+    
     server.async_get_widget(class_name, kwargs);
 }
 
@@ -8475,7 +8486,7 @@ spt.table.load_search = function(search_view, kwargs) {
 
 // Callback that gets executed when "Save My/Project View As" is selected
 spt.table.save_view_cbk = function(table_id, login) {
-
+   
     var table = document.id(table_id);
     var top = table.getParent(".spt_view_panel");
     // it may not always be a View Panel top
@@ -8584,18 +8595,19 @@ spt.table.is_embedded = function(table){
     return is_embedded;
 }
 
-spt.table.save_view = function(table, new_view, kwargs)
-{
+spt.table.save_view = function(table, new_view, kwargs) {
+
+    var server;
     try {
         if (typeOf(table) == "string") {
-            table = document.id(table_id);
+            table = document.id(table);
         }
 
         var top = table.getParent(".spt_view_panel");
         var search_wdg = top ? top.getElement(".spt_search"): null;
 
         var save_mode = kwargs['save_mode'];
-
+ 
         if (spt.table.is_embedded(table)) {
             //spt.alert('Embedded table view saving not supported yet');
             var login = kwargs.login;
@@ -8611,6 +8623,7 @@ spt.table.save_view = function(table, new_view, kwargs)
 
         var login = kwargs.login;
         var save_as_personal = (save_mode == 'save_my_views') ? true : false;
+        var extra_data = kwargs.extra_data;
 
 
         var side_bar_view = 'project_view';
@@ -8722,7 +8735,6 @@ spt.table.save_view = function(table, new_view, kwargs)
         if (new_title)
             kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
 
-         
         // add the definiton to the list
         var info = server.add_config_element(search_type, "definition", element_name, kwargs);
         var unique_el_name = info['element_name'];
@@ -8733,7 +8745,8 @@ spt.table.save_view = function(table, new_view, kwargs)
             first_idx = 0;
 
         // create the view for this table
-        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
+        var update_data = extra_data;
+        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx, update_data);
          
         //if (side_bar_view && save_a_link) {
         if (save_mode != 'save_view_only') {
@@ -8745,6 +8758,8 @@ spt.table.save_view = function(table, new_view, kwargs)
 
         spt.panel.refresh("side_bar");
     } catch(e) {
+        if (server) server.abort();
+        
         spt.alert(spt.exception.handler(e));
         return false;
     }

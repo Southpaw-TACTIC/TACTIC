@@ -13,10 +13,10 @@
 
 __all__ = ["BaseChartWdg", "SObjectChartWdg", "CalendarChartWdg"]
 
-from pyasm.common import Environment, Common, jsonloads
+from pyasm.common import Environment, Common, jsonloads, jsondumps
 from pyasm.biz import Project
 from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Table
-from pyasm.widget import SelectWdg, TextWdg
+from pyasm.widget import SelectWdg, TextWdg, TextAreaWdg
 from pyasm.search import Search, SearchType
 from tactic.ui.common import BaseRefreshWdg
 
@@ -134,6 +134,7 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
+
         expression = web.get_form_value("expression")
         if not expression:
             expression = self.kwargs.get("expression")
@@ -147,7 +148,33 @@ class SObjectChartWdg(BaseChartWdg):
         self.search_keys = self.kwargs.get("search_keys")
 
 
-        if expression:
+     
+        # handle documents
+        document_key = self.kwargs.get("document_key")
+        if document_key:
+            document_sobj = Search.get_by_search_key(document_key)
+            document_col = self.kwargs.get("document_col")
+            if not document_col:
+                document_col = "data"
+
+            document = document_sobj.get_json_value(document_col)
+        elif self.kwargs.get("document"):
+            document = self.kwargs.get("document")
+
+        if document:
+            if isinstance(document, six.string_types):
+                document = jsonloads(document)
+            from tactic.ui.panel import Document
+            doc = Document()
+
+            document_type = document.get("type")
+            if document_type != "chart":
+                raise Exception("Document is not a chart")
+
+            self.sobjects = doc.get_sobjects_from_document(document)
+
+
+        elif expression:
             self.sobjects = Search.eval(expression)
         elif self.search_type and self.search_type.startswith("@SOBJECT("):
             self.sobjects = Search.eval(self.search_type)
@@ -298,7 +325,6 @@ class SObjectChartWdg(BaseChartWdg):
                 data.append(value)
 
 
-
         width = self.kwargs.get("width")
         if not width:
             width = '800px'
@@ -336,7 +362,8 @@ class SObjectChartWdg(BaseChartWdg):
             chart_type='bar',
             #legend=self.elements,
             labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)]
+            label_values=[i+0.5 for i,x in enumerate(chart_labels)],
+            rotate_x_axis = self.kwargs.get("rotate_x_axis")
         )
         chart_div.add(chart)
 
@@ -347,7 +374,7 @@ class SObjectChartWdg(BaseChartWdg):
 
 
         # draw a legend
-        from chart_wdg import ChartLegend
+        from .chart_wdg import ChartLegend
         legend = ChartLegend(labels=self.elements)
         top.add(legend)
         #legend.add_style("width: 200px")
@@ -768,11 +795,24 @@ class CalendarChartWdg(BaseChartWdg):
 
         element_count = 0
 
+        # create a bunch of sobjects out of the data
+        data_sobjects = []
+        for i, chart_label in enumerate(chart_labels):
+            data_sobject = SearchType.create("sthpw/virtual")
+            data_sobject.set_value("id", i)
+            data_sobject.set_value("code", chart_label)
+            data_sobjects.append(data_sobject)
+
+
         x_data=[i+0.5 for i,x in enumerate(chart_labels)]
         for i, element in enumerate(elements):
 
 
             data_values = self.get_data_values(self.dates_dict, dates, element, self.sobjects)
+
+            for j, data_sobject in enumerate(data_sobjects):
+                data_sobject.set_value("value", data_values[j])
+
 
             chart_data = ChartData(
                 chart_type=chart_type,
@@ -782,6 +822,17 @@ class CalendarChartWdg(BaseChartWdg):
             )
             chart.add(chart_data)
             element_count += 1
+
+
+
+        
+        from tactic.ui.panel import Document
+        document = Document(type="chart")
+        data = document.generate_document(data_sobjects)
+        text_area = TextAreaWdg(name="document")
+        top.add(text_area)
+        text_area.set_value(jsondumps(data))
+        text_area.add_style("display: none")
 
 
 
@@ -795,6 +846,14 @@ class CalendarChartWdg(BaseChartWdg):
         else:
             # draw back to front
             chart_data.reverse()
+
+
+
+        #from tactic.ui.panel import Document
+        #doc = Document()
+        #data = document.generate_document(sobjects)
+        #print("data: ", data)
+
 
         for options in chart_data:
 

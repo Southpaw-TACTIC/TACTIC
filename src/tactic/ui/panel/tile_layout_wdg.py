@@ -600,6 +600,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 		 })
 
+
+                 template_tile.destroy()
+
 		'''
 	    })
 
@@ -2254,6 +2257,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_tile_wdg(self, sobject):
 
+        is_collection = sobject.get_value('_is_collection', no_exception=True)
+
         div = DivWdg()
 
         
@@ -2293,7 +2298,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_search_key_v2", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
         div.add_attr("spt_search_code", sobject.get_code())
-        div.add_attr("spt_is_collection", sobject.get_value('_is_collection', no_exception=True))
+        div.add_attr("spt_is_collection", is_collection)
         display_value = sobject.get_display_value(long=True)
         div.add_attr("spt_display_value", display_value)
 
@@ -2361,65 +2366,66 @@ class TileLayoutWdg(ToolLayoutWdg):
         # add a div on the bottom
         div.add_style("position: relative")
 
-        tool_div = DivWdg()
-        div.add(tool_div)
-        tool_div.add_style("display: none")
-        tool_div.add_class("spt_tile_tool_top")
+        if not is_collection:
+            tool_div = DivWdg()
+            div.add(tool_div)
+            tool_div.add_style("display: none")
+            tool_div.add_class("spt_tile_tool_top")
 
-        lib_path = thumb.get_lib_path()
-        if lib_path:
-            size = Common.get_dir_info(lib_path).get("size")
-            from pyasm.common import FormatValue
-            size = FormatValue().get_format_value(size, "KB")
-        else:
-            size = 0
+            lib_path = thumb.get_lib_path()
+            if lib_path:
+                size = Common.get_dir_info(lib_path).get("size")
+                from pyasm.common import FormatValue
+                size = FormatValue().get_format_value(size, "KB")
+            else:
+                size = 0
 
-        size_div = DivWdg()
-        tool_div.add(size_div)
-        size_div.add(size)
-        size_div.add_style("float: right")
-        size_div.add_style("margin-top: 3px")
-
-
-
-        #tool_div.add_style("position: absolute")
-        tool_div.add_style("position: relative")
-        #tool_div.add_style("top: 30px")
-        tool_div.add_style("background: #FFF")
-        tool_div.add_style("color: #000")
-        tool_div.add_style("height: 21px")
-        tool_div.add_style("padding: 2px 5px")
-        tool_div.add_style("margin-top: -26px")
-        tool_div.add_border(size="0px 1px 1px 1px")
-
-        path = thumb.get_path()
-
-        try:
-            path = thumb.snapshot.get_web_path_by_type("main")
-        except:
-            path = path
-        if path:
-            href = HtmlElement.href()
-            href.add_attr("href", path)
-            tool_div.add(href)
+            size_div = DivWdg()
+            tool_div.add(size_div)
+            size_div.add(size)
+            size_div.add_style("float: right")
+            size_div.add_style("margin-top: 3px")
 
 
-            basename = os.path.basename(path)
-            href.add_attr("download", basename)
+
+            #tool_div.add_style("position: absolute")
+            tool_div.add_style("position: relative")
+            #tool_div.add_style("top: 30px")
+            tool_div.add_style("background: #FFF")
+            tool_div.add_style("color: #000")
+            tool_div.add_style("height: 21px")
+            tool_div.add_style("padding: 2px 5px")
+            tool_div.add_style("margin-top: -26px")
+            tool_div.add_border(size="0px 1px 1px 1px")
+
+            path = thumb.get_path()
+
+            try:
+                path = thumb.snapshot.get_web_path_by_type("main")
+            except:
+                path = path
+            if path:
+                href = HtmlElement.href()
+                href.add_attr("href", path)
+                tool_div.add(href)
 
 
-            icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
-            icon.add_class("hand")
-            href.add(icon)
-            """
-            icon.add_behavior( {
-                'type': 'clickX',
-                'path': path,
-                'cbjs_action': '''
-                alert(bvr.path); 
-                '''
-            } )
-            """
+                basename = os.path.basename(path)
+                href.add_attr("download", basename)
+
+
+                icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+                icon.add_class("hand")
+                href.add(icon)
+                """
+                icon.add_behavior( {
+                    'type': 'clickX',
+                    'path': path,
+                    'cbjs_action': '''
+                    alert(bvr.path); 
+                    '''
+                } )
+                """
 
 
 

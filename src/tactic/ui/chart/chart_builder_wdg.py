@@ -54,7 +54,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
             self.x_axis = 'code'
 
         self.y_axis = self.kwargs.get("y_axis")
-        if type(self.y_axis) == types.ListType:
+        if isinstance(self.y_axis, list):
             self.y_axis = "|".join( self.y_axis )
 
         self.chart_type = self.kwargs.get("chart_type")

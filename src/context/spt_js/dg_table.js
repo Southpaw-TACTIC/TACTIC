@@ -1024,7 +1024,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
-spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
+spt.dg_table.get_size_info = function(table_id, view, login, first_idx, update_data={})
 {
     var table = document.id(table_id);
 
@@ -1120,9 +1120,8 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
     config_obj = server.get_unique_sobject( config_search_type, data );
     var config_search_key = config_obj["__search_key__"];
 
-    //redefine data
-    var data = {'config': config };
-    config_obj = server.update(config_search_key, data);
+    update_data['config'] = config;
+    config_obj = server.update(config_search_key, update_data);
 
     return config;
    
@@ -2086,7 +2085,10 @@ spt.dg_table._search_cbk = function(evt, bvr)
             }
             var search_dict = {'json' : JSON.stringify(new_values)};
         }
-        spt.panel.refresh(table_top, search_dict);
+        var on_complete = function(){
+            window.onresize();
+        }
+        spt.panel.refresh(table_top, search_dict, {call_back: on_complete});
         return;
     }
 
@@ -2271,6 +2273,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var default_data = target.getAttribute("spt_default_data") || "";
 
     var height = target.getAttribute("spt_height") || "";
+    var window_resize_offset = target.getAttribute("spt_window_resize_offset")
     var element_names;
     var column_widths = [];
     var search_keys = [];
@@ -2361,6 +2364,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'badge_view': badge_view,
         'extra_data': extra_data,
         'default_data': default_data,
+        'window_resize_offset': window_resize_offset,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -2443,8 +2447,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
         return;
     }
     spt.kbd.clear_handler_stack();
+    var on_complete = function(){
+        window.onresize();
+    }
 
-    spt.panel.load(target, class_name, args, search_values_dict, {fade: fade});
+    spt.panel.load(target, class_name, args, search_values_dict, {fade: fade, callback: on_complete});
 
      // for reference on how to use ctags
     
@@ -4227,7 +4234,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
         var row = activator;
         var search_key = row.get("spt_search_key");
 
-        console.log(search_key);
+
 
 
         var server = TacticServerStub.get();
@@ -4367,6 +4374,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
             spt.table.remove_hidden_row(activator);
         }
         Effects.fade_out(tbody, 500, on_complete);
+        spt.named_events.fire_event("delete|" + search_type, {})
     }
 
     popup.spt_on_post_delete = on_post_delete;

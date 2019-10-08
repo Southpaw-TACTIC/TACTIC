@@ -118,7 +118,9 @@ spt.update.display = function(el, column, value) {
     // check for parent spt_cell_edit
     if (column) {
         var cell_edit = el.getParent('.spt_cell_edit');
-        cell_edit.setAttribute('spt_input_value', value);
+        if (cell_edit) {
+            cell_edit.setAttribute('spt_input_value', value);
+        }
     }
     setTimeout( function() {
         div.destroy();

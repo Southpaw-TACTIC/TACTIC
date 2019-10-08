@@ -14,7 +14,7 @@ __all__ = ['ExpressionElementWdg', "ExpressionValueElementWdg"]
 
 import types, re
 
-from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps, SPTDate
+from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps, SPTDate, Common
 from pyasm.search import Search, SearchKey, SearchType
 from pyasm.security import Sudo
 from pyasm.web import DivWdg, Widget
@@ -477,7 +477,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 if isinstance(res, datetime.datetime):
                     res = SPTDate.convert_to_local(res)
                     res = str(res)
-                elif not isinstance(res, basestring): 
+                elif not Common.IS_Pv3 and not isinstance(res, basestring): 
                     res = unicode(res).encode('utf-8','ignore')
 
                 encoded_result.append(res)
@@ -652,7 +652,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if self.sobject:
             # only set if the value does not exist as a key.  This widget should
             # not be able to change existing data of an sobject
-            self.sobject.set_value(name, result)
+            self.sobject.set_value(name, result, no_exception=True)
 
 
         outer = DivWdg()

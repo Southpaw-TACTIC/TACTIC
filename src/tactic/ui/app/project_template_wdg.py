@@ -346,10 +346,12 @@ class ProjectTemplateEditWdg(BaseRefreshWdg):
         #project = Project.get()
 
         # import the transaction data
-        from tactic.command import PluginInstaller
-        installer = PluginInstaller(manifest=manifest_xml)
+        from tactic.command import PluginInstaller, PluginTools
+        #installer = PluginInstaller(manifest=manifest_xml)
+
+        tools = PluginTools(xml=manifest_xml, verbose=False)
         project_path = "%s/%s" % (template_dir, "sthpw_project.spt")
-        jobs = installer.import_data(project_path, commit=False)
+        jobs = tools.import_data(project_path, commit=False)
         project = jobs[0]
 
         project_code = project.get_code()

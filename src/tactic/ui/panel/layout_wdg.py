@@ -455,7 +455,7 @@ class CellEditWdg(BaseRefreshWdg):
         # main element
         if self.sobject.has_value(column):
             value = self.sobject.get_value(column)
-            if self.element_type == 'time' and value and type(value) in types.StringTypes:
+            if self.element_type == 'time' and value and isinstance(value, six.string_types):
                 # FIXME: this should use date util
                 try:
                     tmp, value = value.split(" ")
@@ -849,8 +849,12 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 title = title
 
 
-            full_title = "%s &nbsp; <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % ( title, element_name)
-            display_title = full_title
+            #full_title = "%s &nbsp; <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % ( title, element_name)
+            #display_title = full_title
+            full_title = "%s (%s)" % ( title, element_name)
+            display_title = title
+            menu_item.add_attr("title", full_title)
+
             
 
             target = self.kwargs.get("target") or None

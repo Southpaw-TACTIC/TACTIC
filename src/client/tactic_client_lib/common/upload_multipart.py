@@ -77,29 +77,33 @@ class UploadMultipart(object):
                 ("action", action),
             ]
             if self.ticket:
-                fields.append( ("ticket", self.ticket) )
-                fields.append( ("login_ticket", self.ticket) )
+                fields.append(("ticket", self.ticket))
+                fields.append(("login_ticket", self.ticket))
                 basename = os.path.basename(path)
                 from json import dumps as jsondumps
-                if sys.stdout.encoding:
+
+                # Workaround for python inside Maya, maya.Output has no sys.stdout.encoding property
+                if getattr(sys.stdout, "encoding", None) is not None and sys.stdout.encoding:
                     basename = basename.decode(sys.stdout.encoding)
+                else:
+                    import locale
+                    basename = basename.decode(locale.getpreferredencoding())
+
                 basename = jsondumps(basename)
                 basename = basename.strip('"')
                 # the first index begins at 0
-                fields.append( ("file_name0", basename) )
+                fields.append(("file_name0", basename))
 
             if self.subdir:
-                fields.append( ("subdir", self.subdir) )
-	    
-            files = [("file", path, buffer)]
-            (status, reason, content) = self.upload(self.server_url,fields,files)
+                fields.append(("subdir", self.subdir))
 
-            
+            files = [("file", path, buffer)]
+            (status, reason, content) = self.upload(self.server_url, fields, files)
+
             if reason != "OK":
-                raise TacticUploadException("Upload of '%s' failed: %s %s" % (path, status, reason) )
+                raise TacticUploadException("Upload of '%s' failed: %s %s" % (path, status, reason))
 
             count += 1
-
 
         f.close()
 
@@ -109,7 +113,7 @@ class UploadMultipart(object):
         try:
             while 1:
                 try:
-                    ret_value = self.posturl(url,fields,files)
+                    ret_value = self.posturl(url, fields, files)
 
                     return ret_value
                 except socket.error as e:
