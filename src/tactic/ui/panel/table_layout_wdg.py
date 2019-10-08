@@ -146,7 +146,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '07'
         },
-        'advanced_search': {
+        'show_advanced_search': {
             'description': 'Flag to determine whether or not to show the advanced Search button',
             'category': 'Optional',
             'type': 'SelectWdg',

@@ -2668,7 +2668,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "order": '04',
             'category': 'Display'
         },
-        "show_search": {
+        "show_advanced_search": {
             'description': "determines whether to show the Advanced Search button in the shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
@@ -3076,11 +3076,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         else:
             use_last_search = True
         
-        show_search = self.kwargs.get('show_search')
-        if show_search in [False,'false']:
-            show_search = 'false'
+        show_advanced_search = self.kwargs.get('show_advanced_search')
+        if show_advanced_search in [False,'false']:
+            show_advanced_search = 'false'
         else:
-            show_search = 'true'
+            show_advanced_search = 'true'
 
         search_limit = self.kwargs.get("search_limit")
         run_search_bvr = self.kwargs.get('run_search_bvr') 
@@ -3178,11 +3178,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             
             # display search button when shelf is not shown
             if show_shelf in [True, 'true', ""]:
-                show_search = False
+                show_advanced_search = False
             else:
-                show_search = True
+                show_advanced_search = True
             
-            kwargs['show_search'] = show_search
+            kwargs['show_advanced_search'] = show_advanced_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
             inner.add(simple_search_wdg)
@@ -3304,7 +3304,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "width": width,
             "target_id": target_id,
             "schema_default_view": schema_default_view,
-            "show_search": show_search,
+            "show_advanced_search": show_advanced_search,
             "show_keyword_search": show_keyword_search,
             "show_search_limit": show_search_limit,
             "search_limit_mode": search_limit_mode,
