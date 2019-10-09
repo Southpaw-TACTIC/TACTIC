@@ -328,14 +328,9 @@ class SearchWdg(BaseRefreshWdg):
 
         
         # NOTE: this is only used to maintain backwards compatibility
-        # plus it is needed for link_search: which contains the filter_config (old way of doing it)
-        if not self.config:# and self.view:
-            """
-            if ':' in self.view: # avoid view of a SearchWdg like link_search:<search_type>:<view>
-                search_view = custom_search_view
-            else:
-                search_view = self.view
-            """
+        # plus it is needed for link_search, which contains the filter_config
+        # (old way of doing it)
+        if not self.config:
             search_view = custom_search_view
             config_view = WidgetConfigView.get_by_search_type(self.search_type, view=search_view)
             # get the self.config first for the display of SearchWdg

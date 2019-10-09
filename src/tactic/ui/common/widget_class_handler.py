@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ['WidgetClassHandler']
+__all__ = ['WidgetClassHandler', 'TableElementClassHandler']
 
 import tacticenv
 
@@ -206,6 +206,113 @@ class WidgetClassHandler(object):
             attrs[name] = value
 
         return attrs
+
+
+
+class TableElementClassHandler(WidgetClassHandler):
+    def __init__(self):
+
+        key = "TableElementClassHandler:config"
+        self.config = Container.get(key)
+        if self.config != None:
+            return
+
+        base_config = '''
+        <config>
+        <widget_definition>
+
+        <element name='simple'>
+            <display class='tactic.ui.common.SimpleTableElementWdg'/>
+        </element>
+
+        <element name='default'>
+            <display class='tactic.ui.common.SimpleTableElementWdg'/>
+        </element>
+
+
+
+        <element name='raw_data' help='main'>
+            <display class='tactic.ui.common.RawTableElementWdg'/>
+        </element>
+
+
+        <element name='format' help='format-element-wdg'>
+            <display class='tactic.ui.table.FormatElementWdg'/>
+        </element>
+
+
+        <element name='expression' help='search'>
+            <display class='tactic.ui.table.ExpressionElementWdg'/>
+        </element>
+
+        <element name='expression_value' help='expression-value-element-wdg'>
+            <display class='tactic.ui.table.ExpressionValueElementWdg'/>
+        </element>
+
+        <element name='link' help='link-element-wdg'>
+            <display class='tactic.ui.table.LinkElementWdg'/>
+        </element>
+
+        <element name='completion' help='task-completion-wdg'>
+            <display class='tactic.ui.table.TaskCompletionWdg'/>
+        </element>
+
+        <element name='gantt' help='gantt-wdg'>
+            <display class='tactic.ui.table.GanttElementWdg'/>
+        </element>
+        <element name='button'>
+            <display class='tactic.ui.table.ButtonElementWdg'/>
+        </element>
+
+
+        <element name='custom_layout' help='custom-layout-wdg'>
+            <display class='tactic.ui.table.CustomLayoutElementWdg'/>
+        </element>
+
+        <element name='freeform_layout'>
+            <display class='tactic.ui.table.FreeFormLayoutElementWdg'/>
+        </element>
+
+        <element name='delete'>
+            <display class='tactic.ui.table.DeleteElementWdg'/>
+        </element>
+
+
+        <element name='explorer'>
+            <display class='tactic.ui.table.ExploreElementWdg'/>
+        </element>
+
+        <element name='hidden_row'>
+            <display class='tactic.ui.table.HiddenRowElementWdg'/>
+        </element>
+
+        <element name='drop_item' help='drop-element-wdg'>
+            <display class='tactic.ui.table.DropElementWdg'/>
+        </element>
+
+        <element name='file_list'>
+            <display class="tactic.ui.table.SObjectFilesElementWdg"/>
+        </element>
+
+        <element name='metadata'>
+            <display class="tactic.ui.table.MetadataElementWdg"/>
+        </element>
+
+        <element name='python'>
+            <display class="tactic.ui.table.PythonElementWdg"/>
+        </element>
+
+        </widget_definition>
+        </config>
+        '''
+        from pyasm.widget import WidgetConfig
+        self.config = WidgetConfig.get(view='widget_definition', xml=base_config)
+
+        Container.put(key, self.config)
+
+
+
+
 
 
 if __name__ == '__main__':
