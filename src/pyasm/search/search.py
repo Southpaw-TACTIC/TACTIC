@@ -3335,7 +3335,7 @@ class SObject(object):
         return info
 
 
-    def set_value(self, name, value, quoted=True, temp=False):
+    def set_value(self, name, value, quoted=True, temp=False, no_exception=False):
         '''set the value of this sobject. It is
         not commited to the database'''
 
@@ -3376,7 +3376,10 @@ class SObject(object):
 
         # explicitly test for None (empty string is ok)
         if value == None:
-            raise SObjectException("Value for [%s] is None" % name)
+            if no_exception == False:
+                raise SObjectException("Value for [%s] is None" % name)
+            else:
+                return
 
         # convert an xml object to its string value
         if isinstance(value, Xml):
@@ -6119,7 +6122,7 @@ class SearchType(SObject):
 
         # right now, the type is the table type
         type = column_info.get("data_type")
-        size = column_info.get("size")
+        size = column_info.get("size") or 256
 
         if type == "varchar" and size > 256:
             type = "text"

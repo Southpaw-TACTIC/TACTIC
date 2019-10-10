@@ -222,7 +222,7 @@ class ADSearchWdg(BaseRefreshWdg):
                 }
 
                 import simplejson
-                print("outpu: ", output0
+                print("outpu: ", output0)
                 ad_users = simplejson.loads(output)
                 for ad_user in ad_users:
 
