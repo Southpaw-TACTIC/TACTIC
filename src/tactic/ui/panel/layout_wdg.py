@@ -1074,6 +1074,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             defined_element_names.extend(config_element_names)
 
 
+        # remove duplicate elements
+        self.all_element_names = list(set(self.all_element_names))
+
         if self.all_element_names:
             self.all_element_names.sort()
             title = 'Columns'
