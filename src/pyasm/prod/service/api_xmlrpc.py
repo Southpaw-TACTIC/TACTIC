@@ -324,6 +324,9 @@ def xmlrpc_decorator(meth):
 
             try:
                 #if meth.__name__ in QUERY_METHODS:
+                
+                multi_site = Config.get_value("master", "enabled")
+
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
