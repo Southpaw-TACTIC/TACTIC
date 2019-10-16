@@ -196,6 +196,14 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             <element name="longest_process" title="Longest Process">
                 <display class="spt.modules.workflow.apps.report.LongestProcessElementWdg"/>
             </element>
+            <element name="format" title="Formatted Value"/>
+            <element name="expression" title="Expression"/>
+            </table>
+            </config>'''
+
+
+            widget_config_xml = '''<config>
+            <table>
             <element name="user_performance" title="User Performance">
                 <display class="spt.modules.workflow.apps.report.UserProcessTimingElementWdg"/>
             </element>
@@ -203,6 +211,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             <element name="expression" title="Expression"/>
             </table>
             </config>'''
+ 
 
             table_display = config.get_display_widget('View Mode', extra_options={"widget_config_xml": widget_config_xml })
 
