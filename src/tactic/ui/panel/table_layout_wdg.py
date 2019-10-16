@@ -146,7 +146,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '07'
         },
-        'advanced_search': {
+        'show_advanced_search': {
             'description': 'Flag to determine whether or not to show the advanced Search button',
             'category': 'Optional',
             'type': 'SelectWdg',
@@ -8594,6 +8594,7 @@ spt.table.save_view = function(table, new_view, kwargs) {
 
         var login = kwargs.login;
         var save_as_personal = (save_mode == 'save_my_views') ? true : false;
+        var extra_data = kwargs.extra_data;
 
 
         var side_bar_view = 'project_view';
@@ -8715,7 +8716,8 @@ spt.table.save_view = function(table, new_view, kwargs) {
             first_idx = 0;
 
         // create the view for this table
-        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
+        var update_data = extra_data;
+        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx, update_data);
          
         //if (side_bar_view && save_a_link) {
         if (save_mode != 'save_view_only') {
@@ -9117,9 +9119,170 @@ spt.table.open_ingest_tool = function(search_type) {
 }
 
 
+// Document export (imported from document api)
+spt.table.export_document = function(kwargs) {
+
+    if (!kwargs) {
+        kwargs = {};
+    }
+
+    max_group_level = kwargs.max_group_level;
+    if (typeof(max_group_level) == 'undefined') {
+        max_group_level = -1;
+    }
+
+
+    var min_group_level = kwargs.min_group_level;
+    if (typeof(min_group_level) == 'undefined') {
+        min_group_level = 0;
+    }
+
+
+    var table = spt.table.get_table()
+    var rows = table.getElements(".spt_table_row_item");
+
+    var document = {};
+    document['type'] = 'table';
+
+    // may not be necessary outside of PipeLineWdg?
+    document['new_group_count'] = 0;
+
+    var content = [];
+    document['content'] = content;
+
+    for (var i = 0; i < rows.length; i++) {
+
+        var row = rows[i];
+
+        // Check for clone row
+        if (row.hasClass("spt_clone")) {
+            break;
+        }
+
+        // Check for dynamic row
+        if (row.getAttribute("spt_dynamic") == "true") continue;
+        if (row.getAttribute("spt_deleted") == "true") continue;
+
+        var group_level = row.getAttribute("spt_group_level");
+        if (max_group_level != -1 && group_level > max_group_level) {
+            continue;
+        }
+        if (group_level < min_group_level) {
+            continue;
+        }
 
 
 
+
+
+        var item = {};
+
+        if (row.hasClass("spt_table_group_row")) {
+            var row_type = "group";
+        }
+        else if (row.hasClass("spt_table_row")) {
+            var row_type = "item";
+        }
+        else if (row.hasClass("spt_table_insert_row")) {
+            var row_type = "item";
+            item["new"] = true;
+        }
+        else if (row.hasClass("spt_table_group_insert_row")) {
+            var row_type = "group";
+            item["new"] = true;
+        }
+
+
+        var children = row.getAttribute("spt_children");
+        if (children) {
+            item["children"] = children;
+        }
+
+
+        if (!group_level) {
+            group_level = 0;
+        }
+        item["group_level"] = parseInt(group_level);
+
+        if (row_type == "group") {
+            if (row.getAttribute("spt_deleted") == "true") {
+                break;
+            }
+
+            item["type"] = "group";
+
+            var swap_top = row.getElement(".spt_swap_top");
+            var state = swap_top.getAttribute("spt_state");
+            item["state"] = state;
+
+            var title_wdg = row.getElement(".spt_table_group_title");
+            if (title_wdg) {
+                var label_wdg = title_wdg.getElement(".spt_group_label");
+                if (label_wdg) {
+                    item["title"] = label_wdg.innerHTML;
+                }
+                else {
+                    item["title"] = title_wdg.innerHTML;
+                }
+            }
+        } else {
+
+            if (kwargs.mode == "report") {
+                var element_names = spt.table.get_element_names();
+                var cells = row.getElements(".spt_cell_edit");
+                var index = 0;
+                var data = {};
+                data["id"] = i;
+                cells.forEach( function(cell) {
+                    var element_name = element_names[index];
+                    var value = cell.getAttribute("spt_report_value");
+                    if (value == null) {
+                        value = cell.getAttribute("spt_input_value");
+                    }
+                    data[element_name] = value;
+                    index += 1;
+                } );
+                item["type"] = "sobject";
+                item["sobject"] = data;
+            }
+            else {
+                var search_key = row.getAttribute("spt_search_key_v2");
+                item["type"] = "sobject";
+                item["search_key"] = search_key;
+            }
+
+
+        }
+
+        content.push(item);
+
+    }
+
+
+    // export state
+
+    var layout = spt.table.get_layout();
+    var els = layout.getElements(".spt_state_save");
+
+    if (els.length != 0) {
+        document.state = {};
+    }
+
+    for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var state_name = el.getAttribute("spt_state_name");
+        var state_data = el.getAttribute("spt_state_data");
+        if (state_data != null) {
+            state_data = JSON.parse(state_data);
+        }
+        else {
+            state_data = {};
+        }
+
+        document.state[state_name] = state_data;
+    }
+    return document
+}
             '''
 
         if self.kwargs.get('temp') != True:

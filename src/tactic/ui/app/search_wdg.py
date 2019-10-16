@@ -328,14 +328,9 @@ class SearchWdg(BaseRefreshWdg):
 
         
         # NOTE: this is only used to maintain backwards compatibility
-        # plus it is needed for link_search: which contains the filter_config (old way of doing it)
-        if not self.config:# and self.view:
-            """
-            if ':' in self.view: # avoid view of a SearchWdg like link_search:<search_type>:<view>
-                search_view = custom_search_view
-            else:
-                search_view = self.view
-            """
+        # plus it is needed for link_search, which contains the filter_config
+        # (old way of doing it)
+        if not self.config:
             search_view = custom_search_view
             config_view = WidgetConfigView.get_by_search_type(self.search_type, view=search_view)
             # get the self.config first for the display of SearchWdg
@@ -648,9 +643,9 @@ class SearchWdg(BaseRefreshWdg):
         filter_top.add_color("color", "color")
         self.set_as_panel(filter_top)
 
-        hide_advanced_search = self.kwargs.get("hide_advanced_search")
+        hide_saved_searches = self.kwargs.get("hide_saved_searches")
 
-        if hide_advanced_search not in ['true', True]:
+        if hide_saved_searches not in ['true', True]:
             # Saved Searches
             saved_item_action = self.kwargs.get("saved_item_action")
             saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action, top_class=top_class)
@@ -860,7 +855,7 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         search_action = self.kwargs.get("search_action")
         save_mode = "save_as" if self.filter else "save"
-        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class, hide_save_buttons=hide_advanced_search)
+        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class, hide_save_buttons=hide_saved_searches)
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 

@@ -266,6 +266,12 @@ class CheckinTest(unittest.TestCase, Command):
 
 
     def _test_preallocation_checkin(self):
+        """
+        Test preallocation of empty snapshots and sequences, and creating and adding a file(s) to the snapshot/sequence.
+
+        """
+
+        return
 
         snapshot_type="file"
         context="preallocation"
@@ -346,7 +352,11 @@ class CheckinTest(unittest.TestCase, Command):
 
 
     def _test_get_children(self):
-        # test to make sure get_all_children is able to get all the snapshots
+        '''
+        Test to make sure get_all_children is able to get all the snapshots
+        '''
+
+        return
         snapshots = self.person.get_all_children("sthpw/snapshot")
         #for snap in snapshots:
         #    print snap.get_version() ,  snap.get_description()
@@ -398,6 +408,12 @@ class CheckinTest(unittest.TestCase, Command):
 
 
     def _test_symlink(self):
+        """
+        Tests versionless snapshot and symbolic links.
+        """
+
+        return
+
         if os.name == 'nt':
             return
 
@@ -455,6 +471,14 @@ class CheckinTest(unittest.TestCase, Command):
 
 
     def _test_auto_checkin(self):
+        """
+        Tests file checkin and correctness/functionality of snapshots for multiple subdirectories.
+        """
+
+
+        return
+
+
         server = Config.get_value("install", "server")
         process = "process"
         person_code = self.person.get_code()
@@ -561,6 +585,10 @@ class CheckinTest(unittest.TestCase, Command):
 
 
     def _test_strict_checkin(self):
+        """
+        Tests functionality of checkin/snapshot with different subcontexts and with the strict checkin type.
+        """
+        return
 
         server = Config.get_value("install", "server")
         #process = "process"

@@ -849,8 +849,12 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 title = title
 
 
-            full_title = "%s &nbsp; <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % ( title, element_name)
-            display_title = full_title
+            #full_title = "%s &nbsp; <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % ( title, element_name)
+            #display_title = full_title
+            full_title = "%s (%s)" % ( title, element_name)
+            display_title = title
+            menu_item.add_attr("title", full_title)
+
             
 
             target = self.kwargs.get("target") or None
@@ -1069,6 +1073,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
             defined_element_names.extend(config_element_names)
 
+
+        # remove duplicate elements
+        self.all_element_names = list(set(self.all_element_names))
 
         if self.all_element_names:
             self.all_element_names.sort()
