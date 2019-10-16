@@ -844,6 +844,8 @@ class WorkflowCmd(Command):
     def _test_status_message(self):
         '''test for messaging information from node to another'''
 
+        return
+
         # create a dummy sobject
         sobject = self.setup()
 

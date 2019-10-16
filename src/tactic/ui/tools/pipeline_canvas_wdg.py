@@ -1655,14 +1655,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
             var process = server.eval(expr, {single: true});
 
-            var subpipeline_code = process.subpipeline_code;
-            if (subpipeline_code) {
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
-            }
-            else {
-                var process_code = process.code;
-
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+            var subpipeline = null;
+            if (process) { 
+                var subpipeline_code = process.subpipeline_code;
+                if (subpipeline_code) {
+                    subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
+                } else {
+                    var process_code = process.code;
+                    subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+                }
             }
 
             var top = spt.pipeline.top;
@@ -1671,13 +1672,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             if (text) {
                 var root_html = text.innerHTML;
                 bvr.breadcrumb = root_html;
-            }
-            else {
+            } else {
                 var root_html = "";
             }
 
 
-            if (!subpipeline) {
+            if (!subpipeline && !process) {
+                spt.alert("Save workflow before creating subpipeline.");
+            } else if (!subpipeline) {
                 spt.confirm( "Create new workflow?", function() {
                     // create the pipeline
                     var data = {

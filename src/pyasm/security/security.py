@@ -970,8 +970,8 @@ class Site(object):
                 # copy the ticket 
                 ticket = cur_security.get_ticket()
                 security._ticket = ticket
-
                 security.add_access_rules()
+
                 # initialize a new security
                 Environment.set_security(security)
                 # store the current security
@@ -1702,8 +1702,13 @@ class Security(Base):
         # admin always uses the standard authenticate class
         auth_class = None
 
+        site = Site.get_site()
+    
         if login_name == 'admin':
-            auth_class = "pyasm.security.TacticAuthenticate"
+            if site == "default":
+                auth_class = "pyasm.security.TacticAuthenticate"
+            else:
+                raise SecurityException("Login/Password combination incorrect")
 
         # verify using the specified authenticate class
         if not auth_class:

@@ -44,6 +44,11 @@ class SnapshotTest(unittest.TestCase):
 
 
     def _test_create(self):
+        """
+        Tests creating a file snapshot.  
+        """
+        return
+
         search = Search("unittest/person")
         persons = search.get_sobjects()
         person = persons[0]

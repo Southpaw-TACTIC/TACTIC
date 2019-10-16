@@ -1024,7 +1024,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
-spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
+spt.dg_table.get_size_info = function(table_id, view, login, first_idx, update_data={})
 {
     var table = document.id(table_id);
 
@@ -1120,9 +1120,8 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
     config_obj = server.get_unique_sobject( config_search_type, data );
     var config_search_key = config_obj["__search_key__"];
 
-    //redefine data
-    var data = {'config': config };
-    config_obj = server.update(config_search_key, data);
+    update_data['config'] = config;
+    config_obj = server.update(config_search_key, update_data);
 
     return config;
    
