@@ -3088,6 +3088,35 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 "cb_set_prefix": 'spt.document.drag_row'
             } )
 
+            tr.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                 var row = bvr.src_el;
+                 row.addClass("spt_table_selected");
+
+                 var item = bvr.src_el.getElement(".spt_document_item");
+                 var pipeline_code = item.getAttribute("spt_pipeline_code");
+                 var title = item.getAttribute("spt_title");
+                 var event = "pipeline_" + pipeline_code + "|click";
+
+                 var temp = {
+                     "pipeline_code": pipeline_code,
+                     "title" : title,
+                 }
+
+                 var kwargs = {};
+                 kwargs.options = temp;
+
+                 spt.named_events.fire_event(event, kwargs);
+                 spt.command.clear();
+                 spt.pipeline.fit_to_canvas();
+
+                 '''
+                 })
+
+
+
 
 
         min_height = 25
