@@ -13,7 +13,7 @@
 
 __all__ = ['FormatValueWdg']
 
-import re
+import re, six
 
 from pyasm.common import TimeCode, FormatValue
 from pyasm.web import DivWdg
@@ -78,6 +78,8 @@ class FormatValueWdg(BaseRefreshWdg):
             } )
 
         elif format == '-$1,234.00':
+            if isinstance(value, six.string_types):
+                value = float(value.replace("$", ""))
             if value < 0:
                 div.add_style("color: red")
                 div.add("(%s)" % display_value.replace("-", ""))

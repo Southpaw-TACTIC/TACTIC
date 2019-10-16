@@ -184,14 +184,23 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             <element name="test_column" title="Test Column">
                 <display class="spt.modules.workflow.apps.report.TestTableElementWdg"/>
             </element>
-            <element name="raw_data" title="Raw Data">
-                <display widget="raw_data"/>
+            <element name="count_in_status" title="Count in Status">
+                <display class="spt.modules.workflow.apps.report.CountStatusElementWdg"/>
             </element>
-            <element name="task_duration" title="Work Hour">
-                <display class="tactic.ui.table.WorkHoursElementWdg"/>
+            <element name="process_timing" title="Process Timing">
+                <display class="spt.modules.workflow.apps.report.ProcessTimingElementWdg"/>
+            </element>
+            <element name="workflow_timing" title="Workflow Timing">
+                <display class="spt.modules.workflow.apps.report.WorkflowTimingElementWdg"/>
+            </element>
+            <element name="longest_process" title="Longest Process">
+                <display class="spt.modules.workflow.apps.report.LongestProcessElementWdg"/>
+            </element>
+            <element name="user_performance" title="User Performance">
+                <display class="spt.modules.workflow.apps.report.UserProcessTimingElementWdg"/>
             </element>
             <element name="format" title="Formatted Value"/>
-            <element name="gantt" title="Gantt"/>
+            <element name="expression" title="Expression"/>
             </table>
             </config>'''
 

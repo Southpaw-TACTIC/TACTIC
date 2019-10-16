@@ -396,8 +396,12 @@ class SearchWdg(BaseRefreshWdg):
         element_names = self.config.get_element_names()
         #element_names = ["Keywords", "Related"]
 
+        extra_options = {
+            "search_type": self.search_type,
+        }
+
         for element_name in element_names:
-            filter = self.config.get_display_widget(element_name)
+            filter = self.config.get_display_widget(element_name, extra_options=extra_options)
 
             if filter and filter.is_visible():
                 self.filters.append(filter)
