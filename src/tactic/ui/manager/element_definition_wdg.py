@@ -196,14 +196,11 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             <element name="longest_process" title="Longest Process">
                 <display class="spt.modules.workflow.apps.report.LongestProcessElementWdg"/>
             </element>
-            <element name="raw_data" title="Raw Data">
-                <display widget="raw_data"/>
-            </element>
-            <element name="task_duration" title="Work Hour">
-                <display class="tactic.ui.table.WorkHoursElementWdg"/>
+            <element name="user_performance" title="User Performance">
+                <display class="spt.modules.workflow.apps.report.UserProcessTimingElementWdg"/>
             </element>
             <element name="format" title="Formatted Value"/>
-            <element name="gantt" title="Gantt"/>
+            <element name="expression" title="Expression"/>
             </table>
             </config>'''
 
