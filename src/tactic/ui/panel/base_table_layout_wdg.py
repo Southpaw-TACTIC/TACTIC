@@ -235,7 +235,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
-                self.expr_sobjects = Search.eval(expression, sobjects=start_sobj, list=True)
+                self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
                 parser = ExpressionParser() 
                 related = parser.get_plain_related_types(expression)
 
