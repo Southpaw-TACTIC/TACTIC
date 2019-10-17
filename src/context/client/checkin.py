@@ -79,7 +79,7 @@ class Checkin(object):
         self.options[name] = value
 
     def get_option(self, name):
-        if self.options.has_key(name):
+        if name in self.options:
             return self.options[name]
         else:
             return ""
@@ -91,7 +91,7 @@ class Checkin(object):
             self.handlers[name] = value
 
     def get_handler(self, name):
-        if self.handlers.has_key(name):
+        if name in self.handlers:
             return self.handlers[name]
         else:
             return ""

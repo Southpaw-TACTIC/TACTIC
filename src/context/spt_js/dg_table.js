@@ -2272,6 +2272,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var extra_data = target.getAttribute("spt_extra_data") || "";
     var default_data = target.getAttribute("spt_default_data") || "";
 
+    var filter_view = target.getAttribute("spt_filter_view") || "";
+
     var height = target.getAttribute("spt_height") || "";
     var window_resize_offset = target.getAttribute("spt_window_resize_offset")
     var element_names;
@@ -2362,6 +2364,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'gear_settings': gear_settings,
         'shelf_view': shelf_view,
         'badge_view': badge_view,
+        'filter_view': filter_view,
         'extra_data': extra_data,
         'default_data': default_data,
         'window_resize_offset': window_resize_offset,

@@ -356,7 +356,7 @@ class SObjectUploadCmd(Command):
             sobject_key = sobject.get_search_key()
 
             # add all of the files to the sobject code
-            if not self.sobject_dict.has_key(sobject_key):
+            if sobject_key not in self.sobject_dict:
                 self.sobject_dict[sobject_key] = []
             self.sobject_dict[sobject_key].append(filename)
 
