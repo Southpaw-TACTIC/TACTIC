@@ -75,6 +75,8 @@ class WorkflowCmd(Command):
         try:
             Workflow().init()
 
+
+            
             self._test_namespace_dependency()
 
 
@@ -83,6 +85,7 @@ class WorkflowCmd(Command):
             #self._test_progress_reject()
             #self._test_progress()
 
+            
             self._test_manual()
             self._test_multi_task()
 
@@ -93,9 +96,11 @@ class WorkflowCmd(Command):
 
             self._test_custom_status()
             self._test_messaging()
-
+            
             self._test_hierarchy()
             #self._test_js()
+            
+            
             self._test_task()
             self._test_action_process()
             self._test_choice()
@@ -104,7 +109,7 @@ class WorkflowCmd(Command):
             self._test_approval()
             self._test_dependency()
             self._test_projected_schedule()
-
+            
 
         except Exception as e:
             print("Error: ", e)
@@ -905,8 +910,8 @@ class WorkflowCmd(Command):
         <pipeline>
           <process type="action" name="start"/>
           <process type="action" name="suba"/>
-          <process type="action" name="subb"/>
-          <process type="action" name="subc"/>
+          <process type="manual" name="subb"/>
+          <process type="manual" name="subc"/>
           <process type="action" name="end"/>
           <connect from="start" to="suba"/>
           <connect from="suba" to="subb"/>
@@ -947,7 +952,70 @@ class WorkflowCmd(Command):
         self.assertEquals( "complete", sobject.get_value("subc"))
         self.assertEquals( "complete", sobject.get_value("end"))
 
-        
+
+    def _test_hierarchyx(self):
+
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process type="action" name="a"/>
+          <process type="hierarchy" name="b"/>
+          <process type="hierarchy" name="c"/>
+          <process type="action" name="d"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+          <connect from="c" to="d"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+
+
+        # create the sub pipeline
+        subpipeline_xml = '''
+        <pipeline>
+          <process type="action" name="start"/>
+          <process type="action" name="a"/>
+          <process type="action" name="b"/>
+          <process type="action" name="c"/>
+          <process type="action" name="end"/>
+          <connect from="start" to="a"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+          <connect from="c" to="end"/>
+        </pipeline>
+        '''
+        subpipeline, subprocesses = self.get_pipeline(subpipeline_xml)
+        #subpipeline.set_value("parent_process", parent_process.get_code())
+        subpipeline.commit()
+        subpipeline_code = subpipeline.get_code()
+
+        p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+
+        p = processes.get("c")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(self, "process|pending", output)
+
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b"))
+        self.assertEquals( "complete", sobject.get_value("c"))
+        self.assertEquals( "complete", sobject.get_value("start"))
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b"))
+        self.assertEquals( "complete", sobject.get_value("c"))
+        self.assertEquals( "complete", sobject.get_value("end"))
 
 
     def _test_dependency(self):

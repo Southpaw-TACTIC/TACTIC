@@ -1086,8 +1086,6 @@ class Task(SObject):
         # New task generator
 
 
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa")
-
         use_new_generator = True
         if use_new_generator and not processes:
             task_generator = TaskGenerator()
@@ -1737,7 +1735,6 @@ class TaskGenerator(object):
         if process_type in ['hierarchy']:
             if version_2:
                 settings = workflow.get("default")
-                print ("@@@@@@@@@@@@",  workflow)
                 task_creation = settings.get("task_creation")
                 subpipeline_code = settings.get("subpipeline")
             else:
