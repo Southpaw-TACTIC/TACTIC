@@ -2644,7 +2644,6 @@ spt.tab.view_definition = function(bvr) {
 
             state = self.kwargs.get("state") or {}
             search_key = state.get("search_key")
-
             if not search_key:
                 search_key = self.kwargs.get("search_key")
 
@@ -2680,7 +2679,7 @@ spt.tab.view_definition = function(bvr) {
         #     #title_div.add_style("width: auto")
 
 
-        title_div.add_class("spt_tab_header_label");
+        title_div.add_class("spt_tab_header_label")
         display_title = title
         title_div.add(display_title)
         header.add(title_div)

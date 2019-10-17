@@ -617,8 +617,7 @@ class LoginGroup(Login):
             if project_codes:
                 for project_code in project_codes:
                     xml.append('''<rule group="project" code="%s" access="allow"/>''' % project_code)
-            else:
-                xml.append('''<rule group="project" code="*" access="allow"/>''')
+            xml.append('''<rule group="project" code="*" access="allow"/>''')
             xml.append('''<rule group="search_type" code="*" access="allow"/>''')
             xml.append('''<rule group="link" element="*" access="allow"/>''')
             xml.append('''<rule group="gear_menu" submenu="*" label="*" access="allow"/>''')
