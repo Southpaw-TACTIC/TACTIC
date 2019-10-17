@@ -5650,12 +5650,10 @@ class HierarchyInfoWdg(BaseInfoWdg):
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
-        select.add_empty_option("-- Select --")
+        #@@select.add_empty_option("-- Select --")
 
 
         self.add_session_behavior(select, "select", "spt_hierarchy_top", "task_creation")
-
-
         settings_wdg.add("<span style='opacity: 0.6'>Determine whether tasks of the referenced workflow are created when generating an inital schedule</span>")
 
         settings_wdg.add("<br/>")
@@ -5686,6 +5684,9 @@ class HierarchyInfoWdg(BaseInfoWdg):
         process_sobj = self.process_sobj
         description = process_sobj.get_value("description")
         kwargs["description"] = description
+
+
+        print ("--------------123", kwargs)
 
         return kwargs
 
@@ -7170,6 +7171,8 @@ class NewProcessInfoCmd(Command):
     def handle_hierarchy(self):
 
         hierarchy_kwargs = self.kwargs.get("hierarchy") or {}
+
+        print("HANDLE HIERARCHY", hierarchy_kwargs)
 
         subpipeline_code = hierarchy_kwargs.get("subpipeline")
         if subpipeline_code:
@@ -8990,6 +8993,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         text_name = "task_creation"
         check = CheckboxWdg(text_name)
+        check.set_checked()
         self.add_session_behavior(check, "checkbox", "spt_pipeline_properties_top", text_name)
 
         th = table.add_cell(check)
