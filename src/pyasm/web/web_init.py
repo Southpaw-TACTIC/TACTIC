@@ -207,6 +207,14 @@ class WebInit(Common):
         Trigger.append_static_trigger(trigger, startup=True)
 
 
+        event = "change|config/process_state|status"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", "pyasm.web.web_init.StatusLogTrigger")
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=True)
+
+
 
         # FIXME: should this be here??
         from pyasm.command.workflow import Workflow

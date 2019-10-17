@@ -397,9 +397,12 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-                # FIMXE: maybe should move this down into get_filter_wdg
+                # TODO: maybe should move this down into get_filter_wdg
                 try:
-                    widget = self.filter_template_config.get_display_widget(element_name)
+                    extra_options = {
+                        "filter_search_type": self.search_type
+                    }
+                    widget = self.filter_template_config.get_display_widget(element_name, extra_options=extra_options)
                 except:
                     continue
                 template_div.set_name(element_name)
@@ -546,8 +549,6 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         else:
             column_indexes = self.get_column_indexes(self.search_type)
-
-        print("cccc: ", column_indexes)
 
 
         hidden = HiddenWdg("%s_column_indexes" % self.prefix, column_indexes )
@@ -871,7 +872,11 @@ class GeneralFilterWdg(BaseFilterWdg):
             name_div.add_style("width: 100px")
             name_div.add_style("width: 120px")
 
-            widget = self.filter_template_config.get_display_widget(filter_type)
+
+            extra_options = {
+                "filter_search_type": self.search_type
+            }
+            widget = self.filter_template_config.get_display_widget(filter_type, extra_options=extra_options)
             widget.set_values(filter_data_map)
             widget.set_name(filter_type)
 
@@ -1193,14 +1198,20 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         element_names = []
-        element_names.insert(0, "Column Filter")
-        element_names.insert(2, "Related Filter")
+        #element_names.insert(0, "Column Filter")
+        #element_names.insert(2, "Related Filter")
         if self.filter_template_config:
             config_element_names = self.filter_template_config.get_element_names()
             element_names.extend(config_element_names)
 
+        element_names.append("Column Filter")
+        element_names.append("Related Filter")
 
         for element_name in element_names:
+
+            if self.filter_template_config and element_name == "Column Filter":
+                action_div.add("<hr/>")
+
             title = Common.get_display_title(element_name)
             element_div = DivWdg()
             element_div.add_class("spt_new_filter_item")
@@ -1218,8 +1229,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             else:
                 element_div.add_attr("spt_filter_type", element_name)
 
-            if self.filter_template_config and element_name == "Related Filter":
-                action_div.add("<hr/>")
 
 
 
@@ -1878,9 +1887,13 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             filter_type = values.get("filter_type")
             if filter_type and not filter_type.startswith("_"):
-                widget = self.filter_template_config.get_display_widget(filter_type)
-                widget.set_values(values)
-                widget.alter_search(search)
+                if self.filter_template_config:
+                    widget = self.filter_template_config.get_display_widget(filter_type)
+                    widget.set_values(values)
+                    widget.alter_search(search)
+                else:
+                    print("WARNING: filter config does not exist")
+
                 continue
 
 

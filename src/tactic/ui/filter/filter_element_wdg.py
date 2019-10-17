@@ -1074,6 +1074,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         self.filter_search_type = self.get_option("filter_search_type")
         if not self.filter_search_type:
             self.filter_search_type = self.overall_search_type
+
         div = DivWdg()
         div.add_style("position: relative")
 
@@ -1133,7 +1134,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                             raise SetupException("Keyword Filter column [%s] does not exist"%name)
             self.columns = [name]
         
-
 
 
 
