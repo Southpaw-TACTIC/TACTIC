@@ -146,8 +146,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '07'
         },
-        'show_advanced_search': {
+        'show_search': {
             'description': 'Flag to determine whether or not to show the advanced Search button',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '18'
+        },
+        'advanced_search': {
+            'description': '(DEPRECATED) Use show_search instead',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
