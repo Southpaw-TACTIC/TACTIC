@@ -34,17 +34,16 @@ class FormatElementWdg(SimpleTableElementWdg):
         #'type': 'SelectWdg',
         'type': 'tactic.ui.manager.FormatDefinitionEditWdg',
         'values': 'integer|float|percent|currency|date|time|scientific|boolean|text|timecode',
-        'category': 'Options',
+        'category': 'Required',
         'default': 'text',
-        'order': 0
+        'order': 1
     },
     'total_summary': {
         'description': 'Determines a calculation for the bottom row',
         'type': 'SelectWdg',
         'values': 'count|total|average',
-        #'category': 'Summary'
-        'category': 'Options',
-        'order': 1
+        'category': 'Misc',
+        'order': 2
     },
     'format': {
         'description': 'display format',
@@ -54,11 +53,10 @@ class FormatElementWdg(SimpleTableElementWdg):
 
     'constraint': {
         'description': 'Determines what kind of index is put onto the created column',
-        #'category': 'Database',
         'type': 'SelectWdg',
         'values': 'unique|indexed',
-        'order': 2,
-        'category': 'Options',
+        'order': 3,
+        'category': 'Misc',
     }
 
     }

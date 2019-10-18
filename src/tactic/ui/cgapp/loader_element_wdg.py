@@ -127,7 +127,6 @@ class LoaderElementWdg(BaseTableElementWdg):
         dict = self.get_current_aux_data()
         output_snapshots = input_snapshots = None
         # the check for key is needed since snapshot can be None
-        #if dict and dict.has_key('%s_snapshots' %mode):
         test_mode = "%s_snapshots" % mode
         if dict and test_mode in dict:
             if mode == 'output':

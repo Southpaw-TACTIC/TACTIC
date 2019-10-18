@@ -387,6 +387,7 @@ class NamingTest(unittest.TestCase):
 
         preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon same.iff',ext='iff')
 
+        import datetime
         today = datetime.datetime.today()
         today = datetime.datetime(today.year, today.month, today.day)
         today = today.strftime("%Y-%m-%d")
@@ -527,8 +528,8 @@ class NamingTest(unittest.TestCase):
             elif idx ==1:
                 self.assertEquals(file.get('type'), 'houdini')
                 self.assertEquals(file.get('base_type'), 'directory')
-                self.assertEquals(file.get('md5'), '')
-                self.assertEquals(file.get('file_name'), '')
+                self.assertEquals(file.get('md5'), None)
+                self.assertEquals(file.get('file_name'), None)
 
     def _test_dir_naming(self):
 

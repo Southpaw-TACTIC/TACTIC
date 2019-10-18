@@ -21,15 +21,12 @@ try:
 except:
     # Python 2.7
     import thread
-import re, random
-import datetime, time
-
-IS_Pv3 = sys.version_info[0] > 2
-
+import re
+import random
+import datetime
+import time
 import six
 basestring = six.string_types
-
-
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -44,7 +41,8 @@ from pyasm.web import WebContainer, Palette, Widget
 from pyasm.widget import WidgetConfigView
 from pyasm.web.app_server import XmlrpcServer
 
-MAXINT =  2**31-1
+MAXINT = 2**31-1
+
 
 class ApiClientCmd(Command):
     def get_title(self):
@@ -928,13 +926,13 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
 
                     elif isinstance(value, str):
-                        if not IS_Pv3:
+                        if not Common.IS_Pv3:
                             # this could be slow, but remove bad characters
                             value2 = unicode(value, errors='ignore')
                         else:
                             value2 = value
 
-                    elif not IS_Pv3 and isinstance(value, unicode):
+                    elif not Common.IS_Pv3 and isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
                             value2 = value.encode("utf-8")
@@ -1668,7 +1666,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         '''
         results = []
-
         project = Project.get_project_code()
         search = Search(search_type)
 
@@ -1735,20 +1732,19 @@ class ApiXMLRPC(BaseApiXMLRPC):
             else:
                 # return a single empty sobject (empty dict)
                 ret_results = {}
-        
 
         if self.get_language() == 'python':
             if self.get_protocol() == 'local':
                 return ret_results
             else:
-                if isinstance(ret_results, unicode):
-                    return ret_results.encode('utf-8')
-                elif isinstance(ret_results, basestring):
-                    return unicode(ret_results, errors='ignore').encode('utf-8')
-                else: 
-                    # could be a list or dictionary, for quick operation, str struction is the best 
-                    # for xmlrpc transfer
-                    return str(ret_results)
+                if not Common.IS_Pv3:
+                    if isinstance(ret_results, unicode):
+                        return ret_results.encode('utf-8')
+                    elif isinstance(ret_results, basestring):
+                        return unicode(ret_results, errors='ignore').encode('utf-8')
+                # could be a list or dictionary, for quick operation, str conversion is the best
+                # for xmlrpc transfer
+                return str(ret_results)
         else:
             return ret_results
 
@@ -2285,15 +2281,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if self.get_protocol() == 'local':
                 return results
             else:
-                if isinstance(results, unicode):
-                    return results.encode('utf-8')
-                elif isinstance(results, basestring):
-                    return unicode(results, errors='ignore').encode('utf-8')
-                else: 
-                    # could be a list or dictionary, for quick operation, str struction is the best 
-                    # for xmlrpc transfer
-                    return str(results)
-            
+                if not Common.IS_Pv3:
+                    if isinstance(results, unicode):
+                        return results.encode('utf-8')
+                    elif isinstance(results, basestring):
+                        return unicode(results, errors='ignore').encode('utf-8')
+                # could be a list or dictionary, for quick operation, str conversion is the best
+                # for xmlrpc transfer
+                return str(results)
         else:
             return results
 

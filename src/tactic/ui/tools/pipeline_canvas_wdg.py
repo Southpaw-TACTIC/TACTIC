@@ -134,7 +134,10 @@ class BaseNodeWdg(BaseRefreshWdg):
 
         top.add_style("margin: 0px auto")
 
+
+
         shape = self.get_shape()
+
         if shape == "star":
             self.set_star_shape()
 
@@ -152,6 +155,21 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("transform: rotate(-45deg)")
             top.add_style("width", str(height)+"px")
 
+        elif shape == "image":
+
+            icon = self.get_icon()
+
+            if icon.startswith("fa-"):
+                top.add("<div style='position: absolute; top: 0px; left: 0px'><i class='fa %s fa-5x'> </i></div>" % icon)
+                top.add_attr("spt_border_color", "transparent")
+                top.add_style("border-color: transparent")
+            else:
+                top.add("<div style=''><img style='width: 100%%' src='%s'/></div>" % icon)
+                top.add_style("overflow: hidden")
+                top.add_style("border-radius: %spx" % border_radius)
+
+            top.add_style("background: transparent")
+
         else:
             top.add_style("border-radius: %spx" % border_radius)
 
@@ -162,6 +180,10 @@ class BaseNodeWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_style("overflow: hidden")
         top.add(content_div)
+
+
+        if shape == "image":
+            content_div.add_style("display: none")
 
         content = self.get_content()
         content_div.add(content)
@@ -1633,14 +1655,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
             var process = server.eval(expr, {single: true});
 
-            var subpipeline_code = process.subpipeline_code;
-            if (subpipeline_code) {
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
-            }
-            else {
-                var process_code = process.code;
-
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+            var subpipeline = null;
+            if (process) { 
+                var subpipeline_code = process.subpipeline_code;
+                if (subpipeline_code) {
+                    subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
+                } else {
+                    var process_code = process.code;
+                    subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+                }
             }
 
             var top = spt.pipeline.top;
@@ -1649,13 +1672,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             if (text) {
                 var root_html = text.innerHTML;
                 bvr.breadcrumb = root_html;
-            }
-            else {
+            } else {
                 var root_html = "";
             }
 
 
-            if (!subpipeline) {
+            if (!subpipeline && !process) {
+                spt.alert("Save workflow before creating subpipeline.");
+            } else if (!subpipeline) {
                 spt.confirm( "Create new workflow?", function() {
                     // create the pipeline
                     var data = {
@@ -3733,10 +3757,10 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     var label = new_node.getElement(".spt_label");
     var input = new_node.getElement(".spt_input");
     if (label) {
-            label.innerHTML = label_str;
+        label.innerHTML = label_str;
     }
     if (input) {
-            input.value = label_str;
+        input.value = label_str;
     }
     new_node.setAttribute("spt_element_name", name);
     new_node.spt_name = name;
@@ -3821,7 +3845,15 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
         spt.pipeline.set_node_kwarg(new_node, "version", 2);
 
-    new_node.has_changes = true;
+
+    if (kwargs.is_loading) {
+        new_node.has_changes = false;
+    }
+    else {
+        new_node.has_changes = true;
+    }
+
+
     spt.named_events.fire_event('pipeline|change', {});
 
     // if folder hide folder
@@ -7127,6 +7159,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
             select_node: false,
             node_type: node_type,
             new: false,
+            is_loading: true,
         }
 
         // split the name

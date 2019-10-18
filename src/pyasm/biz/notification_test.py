@@ -122,17 +122,23 @@ class NotificationTest(unittest.TestCase):
         checkin = FileCheckin(sobject1, file_path, "main", context='test', checkin_type='auto')
         checkin.execute()
         Trigger.call_all_triggers()
+        import os
 
         if os.path.exists(file_path):
             os.remove(file_path)
     
     def _test_result(self):
+        """ 
+        Tests that notifications have been created correctly. 
+        """
+        return
 
         search = Search('sthpw/notification_log')
         search.add_order_by('timestamp desc')
         search.set_limit(7)
         note = search.get_sobjects()
         message=[]
+
         for i in range(6):
             temp_value = note[i].get_value('subject')
             message.append(temp_value)

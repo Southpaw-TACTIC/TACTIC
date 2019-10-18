@@ -9751,21 +9751,21 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             var server = TacticServerStub.get_master();
 
             var on_complete = function() {
-                var projectCode = bvr.src_el.getAttribute("spt_project_code");
-                var searchType = bvr.src_el.getAttribute("spt_search_type");
+                var projectCode = bvr.src_el.getAttribute("spt_project_code");  
+                var searchType = bvr.src_el.getAttribute("spt_search_type");   
                 var doc = spt.document.export();
-                var document_cmd = "tactic.ui.panel.DocumentSaveCmd"
-                var document_kwargs = {
-                    view: "document",
-                    document: doc,
-                    search_type: searchType,
-                    project_code: projectCode,
-                }
-
+                var document_cmd = "tactic.ui.panel.DocumentSaveCmd"   
+                var document_kwargs = { 
+                    view: "document",   
+                    document: doc,  
+                    search_type: searchType,    
+                    project_code: projectCode,  
+                }   
                 server.p_execute_cmd(document_cmd, document_kwargs);
             }
 
             var src_el = bvr.firing_element;
+
             if (src_el.hasClass("spt_table_group_row")) {
                 on_complete();
                 return;
@@ -9860,6 +9860,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             })
 
 
+
 class PipelineDocumentItem(BaseRefreshWdg):
 
 
@@ -9878,32 +9879,6 @@ class PipelineDocumentItem(BaseRefreshWdg):
         top.add_class("vertical-centered")
         top.add_attr("spt_pipeline_code", pipeline_code)
         top.add_attr("spt_title", label)
-
-        top.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
-             var row = bvr.src_el.getParent(".spt_table_row");
-
-             row.addClass("spt_table_selected");
-
-             var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
-             var title = bvr.src_el.getAttribute("spt_title");
-             var event = "pipeline_" + pipeline_code + "|click";
-
-             var temp = {
-                 "pipeline_code": pipeline_code,
-                 "title" : title,
-             }
-
-             var kwargs = {};
-             kwargs.options = temp;
-
-             spt.named_events.fire_event(event, kwargs);
-             spt.command.clear();
-             spt.pipeline.fit_to_canvas();
-
-             '''
-             })
 
         top.add_behavior({
             'type': 'listen',

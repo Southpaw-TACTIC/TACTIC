@@ -397,9 +397,12 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
 
-                # FIMXE: maybe should move this down into get_filter_wdg
+                # TODO: maybe should move this down into get_filter_wdg
                 try:
-                    widget = self.filter_template_config.get_display_widget(element_name)
+                    extra_options = {
+                        "filter_search_type": self.search_type
+                    }
+                    widget = self.filter_template_config.get_display_widget(element_name, extra_options=extra_options)
                 except:
                     continue
                 template_div.set_name(element_name)
@@ -501,8 +504,9 @@ class GeneralFilterWdg(BaseFilterWdg):
                 element_names = self.element_names
                 for element_name in element_names:
                     filter_type_wdg = DivWdg()
-                    filter_type_wdg.add_style("float: left")
                     filter_type_wdg.add_class("spt_filter_type_wdg")
+                    filter_type_wdg.add_style("display: flex")
+                    filter_type_wdg.add_style("align-items: center")
 
                     filter = self.config.get_display_widget(element_name)
                     filter_type_wdg.add(filter)
@@ -544,8 +548,8 @@ class GeneralFilterWdg(BaseFilterWdg):
                 column_indexes[str(element_name)] = i
 
         else:
-
             column_indexes = self.get_column_indexes(self.search_type)
+
 
         hidden = HiddenWdg("%s_column_indexes" % self.prefix, column_indexes )
         hidden.set_class("spt_filter_indexes")
@@ -592,7 +596,9 @@ class GeneralFilterWdg(BaseFilterWdg):
             else:
                 type_index = 0
 
-            column_indexes[column.encode('UTF-8')] = type_index
+            if not Common.IS_Pv3:
+                column = column.encode('UTF-8')
+            column_indexes[column] = type_index
 
         # add the expression entry
         column_indexes["_expression"] = 4
@@ -866,7 +872,11 @@ class GeneralFilterWdg(BaseFilterWdg):
             name_div.add_style("width: 100px")
             name_div.add_style("width: 120px")
 
-            widget = self.filter_template_config.get_display_widget(filter_type)
+
+            extra_options = {
+                "filter_search_type": self.search_type
+            }
+            widget = self.filter_template_config.get_display_widget(filter_type, extra_options=extra_options)
             widget.set_values(filter_data_map)
             widget.set_name(filter_type)
 
@@ -933,7 +943,9 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             # get filter
             if self.mode == 'custom':
-                filter_type_wdg = SpanWdg()
+                filter_type_wdg = DivWdg()
+                filter_type_wdg.add_style("display: flex")
+                filter_type_wdg.add_style("align-items: center")
                 filter_type_wdg.add_class("spt_filter_type_wdg")
 
                 if column and column in self.element_names:
@@ -1186,14 +1198,20 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         element_names = []
-        element_names.insert(0, "Column Filter")
-        element_names.insert(2, "Related Filter")
+        #element_names.insert(0, "Column Filter")
+        #element_names.insert(2, "Related Filter")
         if self.filter_template_config:
             config_element_names = self.filter_template_config.get_element_names()
             element_names.extend(config_element_names)
 
+        element_names.append("Column Filter")
+        element_names.append("Related Filter")
 
         for element_name in element_names:
+
+            if self.filter_template_config and element_name == "Column Filter":
+                action_div.add("<hr/>")
+
             title = Common.get_display_title(element_name)
             element_div = DivWdg()
             element_div.add_class("spt_new_filter_item")
@@ -1211,8 +1229,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             else:
                 element_div.add_attr("spt_filter_type", element_name)
 
-            if self.filter_template_config and element_name == "Related Filter":
-                action_div.add("<hr/>")
 
 
 
@@ -1347,10 +1363,11 @@ class GeneralFilterWdg(BaseFilterWdg):
         #column_select.add_event("onchange", "spt.dg_table.set_filter(this, '%s')" % self.prefix)
         column_select.add_behavior({
             'type': 'change',
+            'prefix': self.prefix,
             'cbjs_action': '''
 
             selector = bvr.src_el;
-            prefix = "%s"
+            prefix = bvr.prefix;
 
             // get the column type mapping
             var filter_top = selector.getParent(".spt_filter_top");
@@ -1382,9 +1399,9 @@ class GeneralFilterWdg(BaseFilterWdg):
             var filter_type_wdg = filter.getElement(".spt_filter_type_wdg");
             filter.replaceChild( clone, filter.getElement(".spt_filter_type_wdg") );
 
-            clone.style.display = "inline";
+            //clone.style.display = "inline";
 
-            ''' % self.prefix
+            '''
             })
         self.set_filter_value(column_select, filter_index)
         filter_selector.add(column_select, "selector"  )
@@ -1418,6 +1435,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_span.add_style("float: left")
         filter_span.add_class("spt_filter_type_wdg")
         filter_span.add_style("display: flex")
+        filter_span.add_style("align-items: center")
         filter_span.add_color("color", "color")
 
         web = WebContainer.get_web()
@@ -1516,6 +1534,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         elif type in  ['time','timestamp','datetime2']:
             relations = ["is newer than", "is older than", "is on", "is empty", "is not empty"]
             labels = ["is after", "is before", "is on", "is empty", "is not empty"]
+
             relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_option("labels", labels)
@@ -1534,25 +1553,25 @@ class GeneralFilterWdg(BaseFilterWdg):
             another_select.add_empty_option("-- Select --")
             another_select.set_option("values", options)
             another_select.set_option("labels", labels)
-            another_select.add_style("width: 80px")
+            another_select.add_style("width: 100px")
             another_select.set_persist_on_submit()
             self.set_filter_value(another_select, filter_index)
             filter_span.add(another_select)
 
-            or_div = DivWdg(" or &nbsp; ", css='small spt_time_filter')
-            or_div.add_style('width','20px')
-            or_div.add_style('float','left')
+            or_div = DivWdg(" or ", css='spt_time_filter')
+            or_div.add_style('margin','0px 10')
+            #or_div.add_style('float','left')
             filter_span.add(or_div)
             from tactic.ui.widget import CalendarInputWdg
             value_cal = CalendarInputWdg("%s_value" % self.prefix)
             value_cal.add_class('spt_time_filter')
-            value_cal.add_style("float", "left")
+            value_cal.add_style("height: 30px")
 
             value_cal.set_option('show_activator', True)
             #value_cal.set_option('show_text', True)
             value_cal.set_option('show_time', True)
 
-            value_cal.get_top().add_styles('float: right;width: 230px')
+            #value_cal.get_top().add_styles('float: right;width: 230px')
             value_cal.set_persist_on_submit()
 
             self.set_filter_value(value_cal, filter_index)
@@ -1868,9 +1887,13 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             filter_type = values.get("filter_type")
             if filter_type and not filter_type.startswith("_"):
-                widget = self.filter_template_config.get_display_widget(filter_type)
-                widget.set_values(values)
-                widget.alter_search(search)
+                if self.filter_template_config:
+                    widget = self.filter_template_config.get_display_widget(filter_type)
+                    widget.set_values(values)
+                    widget.alter_search(search)
+                else:
+                    print("WARNING: filter config does not exist")
+
                 continue
 
 

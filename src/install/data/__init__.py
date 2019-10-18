@@ -37,7 +37,6 @@ def get_temp_dir():
 from .tactic_paths import *
 
 # give a chance for the user to override Tactic location
-#if not os.environ.has_key('TACTIC_INSTALL_DIR'):
 if 'TACTIC_INSTALL_DIR' not in os.environ:
     # set some paths
     install_dir = TACTIC_INSTALL_DIR
@@ -46,14 +45,12 @@ else:
     # get it from the environment
     install_dir = os.environ["TACTIC_INSTALL_DIR"]
 
-#if not os.environ.has_key('TACTIC_SITE_DIR'):
 if 'TACTIC_SITE_DIR' not in os.environ:
     site_dir = TACTIC_SITE_DIR
     os.environ['TACTIC_SITE_DIR'] = site_dir
 else:
     site_dir = os.environ["TACTIC_SITE_DIR"]
 
-#if not os.environ.has_key('TACTIC_DATA_DIR'):
 if 'TACTIC_DATA_DIR' not in os.environ:
     data_dir = TACTIC_DATA_DIR
     os.environ['TACTIC_DATA_DIR'] = data_dir
@@ -63,7 +60,6 @@ else:
 
 
 # give a chance for the user to override Tactic config path
-#if site_dir and not os.environ.has_key('TACTIC_CONFIG_PATH'):
 if site_dir and 'TACTIC_CONFIG_PATH' not in os.environ:
     if os.name == 'nt':
         osname = "win32"

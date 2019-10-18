@@ -1024,7 +1024,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
-spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
+spt.dg_table.get_size_info = function(table_id, view, login, first_idx, update_data={})
 {
     var table = document.id(table_id);
 
@@ -1120,9 +1120,8 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
     config_obj = server.get_unique_sobject( config_search_type, data );
     var config_search_key = config_obj["__search_key__"];
 
-    //redefine data
-    var data = {'config': config };
-    config_obj = server.update(config_search_key, data);
+    update_data['config'] = config;
+    config_obj = server.update(config_search_key, update_data);
 
     return config;
    
@@ -2273,6 +2272,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var extra_data = target.getAttribute("spt_extra_data") || "";
     var default_data = target.getAttribute("spt_default_data") || "";
 
+    var filter_view = target.getAttribute("spt_filter_view") || "";
+
     var height = target.getAttribute("spt_height") || "";
     var window_resize_offset = target.getAttribute("spt_window_resize_offset")
     var element_names;
@@ -2363,6 +2364,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'gear_settings': gear_settings,
         'shelf_view': shelf_view,
         'badge_view': badge_view,
+        'filter_view': filter_view,
         'extra_data': extra_data,
         'default_data': default_data,
         'window_resize_offset': window_resize_offset,

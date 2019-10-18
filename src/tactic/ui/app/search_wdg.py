@@ -328,14 +328,9 @@ class SearchWdg(BaseRefreshWdg):
 
         
         # NOTE: this is only used to maintain backwards compatibility
-        # plus it is needed for link_search: which contains the filter_config (old way of doing it)
-        if not self.config:# and self.view:
-            """
-            if ':' in self.view: # avoid view of a SearchWdg like link_search:<search_type>:<view>
-                search_view = custom_search_view
-            else:
-                search_view = self.view
-            """
+        # plus it is needed for link_search, which contains the filter_config
+        # (old way of doing it)
+        if not self.config:
             search_view = custom_search_view
             config_view = WidgetConfigView.get_by_search_type(self.search_type, view=search_view)
             # get the self.config first for the display of SearchWdg
@@ -401,8 +396,12 @@ class SearchWdg(BaseRefreshWdg):
         element_names = self.config.get_element_names()
         #element_names = ["Keywords", "Related"]
 
+        extra_options = {
+            "search_type": self.search_type,
+        }
+
         for element_name in element_names:
-            filter = self.config.get_display_widget(element_name)
+            filter = self.config.get_display_widget(element_name, extra_options=extra_options)
 
             if filter and filter.is_visible():
                 self.filters.append(filter)
@@ -648,19 +647,22 @@ class SearchWdg(BaseRefreshWdg):
         filter_top.add_color("color", "color")
         self.set_as_panel(filter_top)
 
-        # Saved Searches
-        saved_item_action = self.kwargs.get("saved_item_action")
-        saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action, top_class=top_class)
-        container.add(saved_searches)
+        hide_saved_searches = self.kwargs.get("hide_saved_searches")
 
-        # Save widget
-        overlay = DivWdg()
-        top.add(overlay)
-        overlay.add_class("overlay")
-        overlay.add_style("display: none")
+        if hide_saved_searches not in ['true', True]:
+            # Saved Searches
+            saved_item_action = self.kwargs.get("saved_item_action")
+            saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action, top_class=top_class)
+            container.add(saved_searches)
 
-        save_top = AdvancedSearchSaveWdg(search_type=self.search_type)
-        top.add(save_top)
+            # Save widget
+            overlay = DivWdg()
+            top.add(overlay)
+            overlay.add_class("overlay")
+            overlay.add_style("display: none")
+
+            save_top = AdvancedSearchSaveWdg(search_type=self.search_type)
+            top.add(save_top)
 
         # Styles
         top.add(self.get_styles())
@@ -857,7 +859,7 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         search_action = self.kwargs.get("search_action")
         save_mode = "save_as" if self.filter else "save"
-        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class)
+        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class, hide_save_buttons=hide_saved_searches)
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
