@@ -8595,8 +8595,42 @@ spt.table.is_embedded = function(table){
     return is_embedded;
 }
 
-spt.table.save_view = function(table, new_view, kwargs) {
+spt.table.simple_save_view = function (table, view_name, kwargs) {
+    try {
+        if (typeOf(table) == "string") {
+            table = document.id(table);
+        }
 
+        var top = table.getParent(".spt_view_panel");
+        var layout = top ? top.getAttribute('spt_layout'): null;
+        var search_wdg = top ? top.getElement(".spt_search"): null;
+
+        // save search view
+        if (search_wdg) {
+            var search_view = 'link_search:'+ view_name;
+            // auto generate a new search for this view
+            search_wdg.setAttribute("spt_search_view", search_view);
+            spt.table.save_search(search_wdg, search_view, {});
+        }
+
+
+        // save view
+
+        //raw and static_table layout has no checkbox in the first row
+        var first_idx = 1;
+        if (['raw_table','static_table'].contains(layout))
+            first_idx = 0;
+        var update_data = kwargs.extra_data;
+        spt.dg_table.get_size_info(table, view_name, null, first_idx, update_data);
+
+    } catch(e) {
+        spt.alert(spt.exception.handler(e));
+        return false;
+    }
+    return true;
+}
+
+spt.table.save_view = function(table, new_view, kwargs) {
     var server;
     try {
         if (typeOf(table) == "string") {
