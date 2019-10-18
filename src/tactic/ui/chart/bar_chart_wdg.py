@@ -35,6 +35,7 @@ class BarChartWdg(BaseRefreshWdg):
     'chart_type': 'line|bar|area - type of chart',
     'width': 'The starting width of the chart',
     'search_keys': 'List of search keys to display',
+    'document': 'Document to display',
     'x_axis': 'The x_axis element',
     'y_axis': 'List of elements to put on the y_axis'
     }
@@ -91,7 +92,17 @@ class BarChartWdg(BaseRefreshWdg):
 
 
         self.search_keys = self.kwargs.get("search_keys")
-        if self.search_type and self.search_type.startswith("@SOBJECT("):
+        self.document = self.kwargs.get("document")
+
+        if self.document:
+            from tactic.ui.panel import Document
+            doc = Document()
+            if isinstance(self.document, six.string_types):
+                self.document = self.document.replace("'", '"')
+                self.document = jsonloads(self.document)
+            self.sobjects = doc.get_sobjects_from_document(self.document)
+
+        elif self.search_type and self.search_type.startswith("@SOBJECT("):
             self.sobjects = Search.eval(self.search_type)
         elif self.search_keys:
             if isinstance(self.search_keys, six.string_types):
@@ -154,6 +165,8 @@ class BarChartWdg(BaseRefreshWdg):
 
                 try:
                     value = widget.get_text_value()
+                    if value:
+                        value = float(value)
                 except:
                     value = 0
 

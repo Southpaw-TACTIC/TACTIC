@@ -35,7 +35,8 @@ class ChartBuilderWdg(BaseRefreshWdg):
     'x_axis': 'the x-axis element',
     'y_axis': 'the y-axis elements',
     'kwargs': 'JSON formatted data which will be translated into kwargs',
-    'search_keys': 'list of search keys to display'
+    'search_keys': 'list of search keys to display',
+    'document': 'document to be charted',
     }
 
     def get_display(self):
@@ -62,12 +63,16 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         # get any search keys if any are passed in
         self.search_keys = self.kwargs.get("search_keys")
+        self.document = self.kwargs.get("document")
 
 
         top = DivWdg()
         top.add_class("spt_chart_builder")
         top.add_color("background", "background")
         top.add_border()
+
+        top.add_style("min-width: 600px")
+        top.add_style("min-height: 400px")
 
 
 
@@ -249,7 +254,8 @@ class ChartBuilderWdg(BaseRefreshWdg):
             'chart_type': self.chart_type,
             'search_type': self.search_type,
             'width': width,
-            'search_keys': self.search_keys
+            'search_keys': self.search_keys,
+            'document': self.document,
         }
 
         chart_div = DivWdg()

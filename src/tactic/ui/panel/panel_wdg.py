@@ -3177,10 +3177,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             show_shelf = self.kwargs.get("show_shelf")
             
             # display search button when shelf is not shown
+            """
             if show_shelf in [True, 'true', ""]:
                 show_advanced_search = False
             else:
                 show_advanced_search = True
+            """
+
+
             
             kwargs['show_advanced_search'] = show_advanced_search
 

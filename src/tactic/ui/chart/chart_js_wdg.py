@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['ChartJsWdg', 'SampleBarCharJstWdg']
+__all__ = ['ChartJsWdg', 'SampleBarChartJsWdg']
 
 from pyasm.common import Environment, Common, jsonloads
 from pyasm.search import Search
@@ -25,7 +25,7 @@ import six
 from .chart_wdg import ChartData
 
 
-class SampleBarChartWdg(BaseRefreshWdg):
+class SampleBarChartJsWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
     'width': {
@@ -288,36 +288,36 @@ var data = bvr.data;
 
 var datasets = bvr.datasets;
 
-datasets[0].backgroundColor = [
-    window.chartColors.red,
-    window.chartColors.orange,
-    window.chartColors.yellow,
-    window.chartColors.green,
-    window.chartColors.blue,
-    window.chartColors.red,
-    window.chartColors.orange,
-    window.chartColors.yellow,
-    window.chartColors.green,
-    window.chartColors.blue,
-    window.chartColors.red,
-    window.chartColors.orange,
-    window.chartColors.yellow,
-    window.chartColors.green,
-    window.chartColors.blue,
-    window.chartColors.red,
-    window.chartColors.orange,
-    window.chartColors.yellow,
-    window.chartColors.green,
-    window.chartColors.blue,
-
-
-]
-
-
-
-
-
 var chart_type = bvr.chart_type;
+if (chart_type == "pie" || chart_type == "doughnut") {
+    // FIXME: make this more automatic for pie charts
+    datasets[0].backgroundColor = [
+        window.chartColors.red,
+        window.chartColors.orange,
+        window.chartColors.yellow,
+        window.chartColors.green,
+        window.chartColors.blue,
+        window.chartColors.red,
+        window.chartColors.orange,
+        window.chartColors.yellow,
+        window.chartColors.green,
+        window.chartColors.blue,
+        window.chartColors.red,
+        window.chartColors.orange,
+        window.chartColors.yellow,
+        window.chartColors.green,
+        window.chartColors.blue,
+        window.chartColors.red,
+        window.chartColors.orange,
+        window.chartColors.yellow,
+        window.chartColors.green,
+        window.chartColors.blue,
+    ]
+}
+
+
+
+
 
 var color = Chart.helpers.color;
 var barChartData = {
@@ -341,6 +341,13 @@ window.myBar = new Chart(ctx, {
             title: {
                 display: true,
                 text: title
+            },
+            plugins: {
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    offset: -5
+                }
             }
     }
 });

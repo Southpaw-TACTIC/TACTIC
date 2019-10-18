@@ -177,43 +177,11 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
         elif self.is_insert == 'view_only':
 
-            # TEST TEST
+            column_config_view = self.kwargs.get("column_config_view")
+            #column_config_view = "login_report_columns"
+            #column_config_view = "job_report_columns"
 
-            widget_config_xml = '''<config>
-            <table>
-            <element name="test_column" title="Test Column">
-                <display class="spt.modules.workflow.apps.report.TestTableElementWdg"/>
-            </element>
-            <element name="count_in_status" title="Count in Status">
-                <display class="spt.modules.workflow.apps.report.CountStatusElementWdg"/>
-            </element>
-            <element name="process_timing" title="Process Timing">
-                <display class="spt.modules.workflow.apps.report.ProcessTimingElementWdg"/>
-            </element>
-            <element name="workflow_timing" title="Workflow Timing">
-                <display class="spt.modules.workflow.apps.report.WorkflowTimingElementWdg"/>
-            </element>
-            <element name="longest_process" title="Longest Process">
-                <display class="spt.modules.workflow.apps.report.LongestProcessElementWdg"/>
-            </element>
-            <element name="format" title="Formatted Value"/>
-            <element name="expression" title="Expression"/>
-            </table>
-            </config>'''
-
-
-            widget_config_xml = '''<config>
-            <table>
-            <element name="user_performance" title="User Performance">
-                <display class="spt.modules.workflow.apps.report.UserProcessTimingElementWdg"/>
-            </element>
-            <element name="format" title="Formatted Value"/>
-            <element name="expression" title="Expression"/>
-            </table>
-            </config>'''
- 
-
-            table_display = config.get_display_widget('View Mode', extra_options={"widget_config_xml": widget_config_xml })
+            table_display = config.get_display_widget('View Mode', extra_options={"column_config_view": column_config_view })
 
             inner_div.add(table_display)
             submit_input = self.get_submit_input()
@@ -864,10 +832,13 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                 display_class = self.kwargs.get('display_handler')
 
 
-            widget_config_xml = self.kwargs.get("widget_config_xml")
-            if widget_config_xml:
+            column_config_view = self.kwargs.get("column_config_view")
+
+            if column_config_view:
                 class_labels = None
                 class_values = None
+
+                default_class=''
 
             else:
 
@@ -876,9 +847,9 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
                 class_values = ['', 'raw_data', 'default', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', 'python', '__class__']
 
 
+                default_class='format'
 
-            default_class='format'
-            widget_class_wdg = WidgetClassSelectorWdg(widget_key=widget_key, display_class=display_class, display_options=display_options,class_labels=class_labels,class_values=class_values, prefix='option', default_class=default_class, show_action=False, element_name=element_name, widget_config_xml=widget_config_xml)
+            widget_class_wdg = WidgetClassSelectorWdg(widget_key=widget_key, display_class=display_class, display_options=display_options,class_labels=class_labels,class_values=class_values, prefix='option', default_class=default_class, show_action=False, element_name=element_name, column_config_view=column_config_view)
             attr_wdg.add(widget_class_wdg)
 
 
@@ -1906,8 +1877,8 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         # display extra options (ie: CustomLayoutElementWdg)
         element_name = self.kwargs.get("element_name")
 
-        class_labels = self.kwargs.get("class_labels")
-        class_values = self.kwargs.get("class_values")
+        class_labels = self.kwargs.get("class_labels") or []
+        class_values = self.kwargs.get("class_values") or []
         default_class = self.kwargs.get("default_class")
         prefix = self.kwargs.get("prefix")
         if not prefix:
@@ -1915,23 +1886,26 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
 
 
-        widget_config_xml = self.kwargs.get("widget_config_xml")
-        if widget_config_xml:
-            widget_config = WidgetConfig.get(view="table", xml=widget_config_xml)
-            element_names = widget_config.get_element_names()
+        column_config_view = self.kwargs.get("column_config_view")
+        if column_config_view:
+            search = Search("config/widget_config")
+            search.add_filter("view", column_config_view)
+            search.add_filter("category", "ElementDefinitionWdg")
+            column_config = search.get_sobject()
 
-            class_values = []
-            for element_name in element_names:
-                handler = widget_config.get_display_handler(element_name)
-                if not handler:
-                    class_values.append(element_name)
-                else:
-                    class_values.append(handler)
+            if column_config:
+                element_names = column_config.get_element_names()
+
+                class_values = []
+                for element_name in element_names:
+                    handler = column_config.get_display_handler(element_name)
+                    if not handler:
+                        class_values.append(element_name)
+                    else:
+                        class_values.append(handler)
 
 
-
-
-            class_labels = widget_config.get_element_titles()
+                class_labels = column_config.get_element_titles()
 
 
         if default_class and not widget_key and not display_class:
@@ -2199,7 +2173,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         #if not display_class:
         #    display_class = "pyasm.widget.SimpleTableElementWdg"
         #display_class = "tactic.ui.panel.ViewPanelWdg"
-        widget_options_wdg = WidgetClassOptionsWdg(widget_key=widget_key, display_class=display_class, display_options=display_options, prefix=prefix, element_name=element_name, config_xml=widget_config_xml)
+        widget_options_wdg = WidgetClassOptionsWdg(widget_key=widget_key, display_class=display_class, display_options=display_options, prefix=prefix, element_name=element_name, column_config_view=column_config_view)
         table.add_row()
         td = table.add_cell()
         td.add(widget_options_wdg)
@@ -2446,10 +2420,16 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 # get from a config xml
                 #config_view = "custom_config"
                 #config = WidgetConfig.get(view, xml=xml)
-                config_xml = self.kwargs.get("config_xml")
-                if config_xml:
-                    handler = WidgetConfig.get("table", xml=config_xml)
-                    display_class = handler.get_display_handler(widget_key)
+
+                column_config_view = self.kwargs.get("column_config_view")
+                if column_config_view:
+                    search = Search("config/widget_config")
+                    search.add_filter("view", column_config_view)
+                    search.add_filter("category", "ElementDefinitionWdg")
+                    column_config = search.get_sobject()
+
+                    if column_config:
+                        display_class = column_config.get_display_handler(widget_key)
 
 
                 if not display_class:
