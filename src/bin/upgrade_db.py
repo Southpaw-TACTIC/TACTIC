@@ -19,9 +19,10 @@ from pyasm.biz import Project
 from pyasm.command import Command
 from pyasm.search import Search, DbContainer, SObject, Sql
 from pyasm.search.upgrade import Upgrade
-from pyasm.common import Container, Environment
+from pyasm.common import Container, Environment, Common
 
-raw_input = input
+if Common.is_python3():
+    raw_input = input
 
 
 
