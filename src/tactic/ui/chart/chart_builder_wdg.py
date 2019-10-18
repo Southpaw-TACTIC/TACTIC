@@ -150,7 +150,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         type_div = DivWdg()
         #type_div.add_style("padding: 3px")
         type_select = SelectWdg("chart_type")
-        type_select.set_option("values", "line|bar|area|horizontalBar|pie|doughnut")
+        type_select.set_option("values", "line|bar|stacked|stacked_horizontal|horizontalBar|pie|doughnut")
         if self.chart_type:
             type_select.set_value(self.chart_type)
         type_div.add(type_select)

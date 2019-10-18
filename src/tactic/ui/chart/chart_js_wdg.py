@@ -212,19 +212,6 @@ class ChartJsWdg(BaseRefreshWdg):
         chart_type = self.kwargs.get("chart_type") or "bar"
         #chart_type = "horizontalBar"
 
-        """
-        chart_type = "stacked"
-        scales: {
-            xAxes: [{
-                stacked: true,
-            }],
-            yAxes: [{
-                stacked: true
-            }]
-        }
-        """
-
-
 
 
         datasets = []
@@ -272,7 +259,30 @@ class ChartJsWdg(BaseRefreshWdg):
                     item['type'] = 'doughtnut'
 
 
+        options = {}
 
+
+        if chart_type in ["stacked", "stacked_horizontal"]:
+
+            options["scales"] = {
+                "xAxes": [{
+                    "stacked": True,
+                }],
+                "yAxes": [{
+                    "stacked": True
+                }]
+            }
+            for item in datasets:
+                if chart_type == "stacked":
+                    item['type'] = 'bar'
+                elif chart_type == "stacked_horizontal":
+                    item['type'] = 'horizontalBar'
+
+
+            if chart_type == "stacked":
+                chart_type = "bar"
+            else:
+                chart_type = "horizontalBar"
 
 
         # initialize the canvas
@@ -280,6 +290,7 @@ class ChartJsWdg(BaseRefreshWdg):
             'type': 'load',
             'chart_type': chart_type,
             'title': title,
+            'options': options,
             'datasets': datasets,
             'labels': labels,
             'cbjs_action': '''
@@ -289,6 +300,7 @@ var data = bvr.data;
 var datasets = bvr.datasets;
 
 var chart_type = bvr.chart_type;
+
 if (chart_type == "pie" || chart_type == "doughnut") {
     // FIXME: make this more automatic for pie charts
     datasets[0].backgroundColor = [
@@ -328,28 +340,37 @@ var barChartData = {
 
 var title = bvr.title || ""
 
+var options = bvr.options;
+
+options.responsive = true;
+
+options.legend = {
+    position: 'top',
+};
+
+
+if (title) {
+    options.title = {
+        display: true,
+        text: title
+    }
+}
+
+
+options.plugins = {
+    datalabels: {
+        anchor: 'end',
+        align: 'top',
+        offset: -5
+    }
+}
+
 
 var ctx = bvr.src_el.getContext('2d');
 window.myBar = new Chart(ctx, {
     type: chart_type,
     data: barChartData,
-    options: {
-            responsive: true,
-            legend: {
-                position: 'top',
-            },
-            title: {
-                display: true,
-                text: title
-            },
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    offset: -5
-                }
-            }
-    }
+    options: options,
 });
 
             '''
