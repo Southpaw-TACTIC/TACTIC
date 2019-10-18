@@ -2947,7 +2947,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         open_icon = "FA_FOLDER_OPEN_O"
         closed_icon = "FA_FOLDER_O"
         group_icon_styles = ""
-        if extra_data:
+        if extra_data and isinstance(extra_data, basestring):
             try:
                 extra_data = jsonloads(extra_data)
             except:
