@@ -144,9 +144,9 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
-        self.search_type = web.get_form_value("search_type")
-        if not self.search_type:
-            self.search_type = self.kwargs.get("search_type")
+        #self.search_type = web.get_form_value("search_type")
+        #if not self.search_type:
+        self.search_type = self.kwargs.get("search_type")
 
         self.search_keys = self.kwargs.get("search_keys")
 

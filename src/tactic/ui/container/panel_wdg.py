@@ -10,13 +10,13 @@
 #
 #
 
-__all__ = ['PanelWdg', 'UserPageSelectWdg', 'UserPageCreatorWdg', 'UserPageCreatorCmd']
+__all__ = ['PanelWdg', 'UserPanelSelectWdg', 'UserPanelCreatorWdg', 'UserPanelCreatorCmd']
 
 import tacticenv
 
 from pyasm.common import Common, Xml, Environment
 from pyasm.search import Search, SObject, SearchType
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, ButtonWdg
 from pyasm.widget import WidgetConfig
 from pyasm.command import Command
 
@@ -31,6 +31,8 @@ class PanelWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        self.view = self.kwargs.get("view")
+
         top = self.top
         top.add_class("spt_panel_layout_top")
         self.set_as_panel(top)
@@ -38,11 +40,109 @@ class PanelWdg(BaseRefreshWdg):
         inner = DivWdg()
         top.add(inner)
 
+        inner.add_behavior( {
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+        } )
 
-        self.view = self.kwargs.get("view")
+
+        is_owner = True
+        #is_owner = False
 
 
-        # Define some views that are pages.  Pages are views that are self
+        if is_owner:
+            shelf = DivWdg()
+            inner.add(shelf)
+            shelf.add_style("display: flex")
+
+            btn = ButtonWdg()
+            btn.add_class("btn btn-default")
+            btn.add_style("height: 30px")
+            btn.add_style("margin: 3px 5px")
+            shelf.add(btn)
+            btn.add_behavior( {
+                'type': 'click',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_panel_layout_top");
+                var content_els = top.getElements(".spt_panel_content");
+                content_els.forEach( function(el) {
+                    el.setStyle("display", "none");
+                    
+                } )
+                '''
+            } )
+            btn.add("Hide")
+
+
+            btn = ButtonWdg()
+            btn.add_class("btn btn-default")
+            btn.add_style("height: 30px")
+            btn.add_style("margin: 3px 5px")
+            shelf.add(btn)
+            btn.add_behavior( {
+                'type': 'click',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_panel_layout_top");
+                var content_els = top.getElements(".spt_panel_content");
+                content_els.forEach( function(el) {
+                    el.setStyle("display", "");
+                    
+                } )
+                '''
+            } )
+            btn.add("Show")
+
+
+
+
+            btn = ButtonWdg()
+            shelf.add(btn)
+            btn.add("Save")
+            btn.add_class("btn btn-default")
+            btn.add_style("height: 30px")
+            btn.add_style("margin: 3px 5px")
+
+            btn.add_behavior( {
+                'type': 'click',
+                'view': self.view,
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_panel_layout_top");
+
+                var panels = top.getElements(".spt_panel_content");
+
+                for (var i = 0; i < panels.length; i++) {
+                    var panel = panels[i];
+                    var content = panel.getElement(".spt_panel");
+                    if (content == null) {
+                        continue;
+                    }
+                    var class_name = content.getAttribute("spt_class_name");
+                    var kwargs = spt.panel.get_element_options(content);
+
+                    element_name = "panel_" + i;
+
+                    try {
+                        var server = TacticServerStub.get();
+                        server.add_config_element("PanelLayoutWdg", bvr.view, element_name, { class_name: class_name, display_options: kwargs, unique: false });
+                    }
+                    catch(e) {
+                        alert(e);
+                        throw(e);
+                    }
+
+                }
+
+                '''
+            } )
+
+
+
+
+
+
+
+
+        # Define some views that are pages.  Panels are views that are self
         # contained and do not require arguments.  They are often created
         # by users
         search = Search("config/widget_config")
@@ -125,15 +225,13 @@ class PanelWdg(BaseRefreshWdg):
             grid = (3,1)
 
 
-        is_owner = True
-        #is_owner = False
-
 
         table = DivWdg() 
         inner.add(table)
-        table.add_style("margin: 0px 0px 20px 00px")
+        table.add_style("margin: 0px 0px 20px 0px")
         table.add_style("box-sizing: border-box")
 
+        table.add_style("position: relative")
 
         if is_owner:
             menu = self.get_action_menu()
@@ -149,12 +247,12 @@ class PanelWdg(BaseRefreshWdg):
         row.add_style("box-sizing: border-box")
         row.add_style("display: flex")
         row.add_style("flex-wrap: wrap")
+        #row.add_style("justify-content: space-between")
 
+        row.add_class("spt_panel_container")
 
 
         for y in range(grid[1]):
-            num_cols = grid[0]
-            size = 12 / num_cols
 
             for x in range(grid[0]):
                 col = DivWdg()
@@ -164,15 +262,19 @@ class PanelWdg(BaseRefreshWdg):
                 col.add_style("overflow: auto")
                 col.add_style("min-width: 200px")
 
-                col.add_style("max-width: 45%")
+                col.add_style("max-width: 50%")
 
                 col.add_class("spt_panel_top")
 
+                outer = DivWdg()
+                col.add(outer)
+                outer.add_class("spt_outer")
+                outer.add_style("position: relative")
 
 
                 if is_owner:
                     header = DivWdg()
-                    col.add(header)
+                    outer.add(header)
 
                     menu_wdg = DivWdg()
                     header.add(menu_wdg)
@@ -220,57 +322,37 @@ class PanelWdg(BaseRefreshWdg):
 
 
                 if is_owner:
+                    title_div = DivWdg()
+                    header.add(title_div)
+                    title_div.add_style("width: 100px")
+
                     if title:
-                        header.add(title)
+                        title_div.add(title)
                     else:
-                        header.add("Panel: %s,%s" % (x, y))
+                        title_div.add("Panel: %s,%s" % (x, y))
 
 
-                    header.add_behavior( {
-                        'type': 'click',
-                        'cbjs_action': '''
-                        var panel = bvr.src_el.getParent(".spt_panel_top");
-                        var clone = spt.behavior.clone(panel);
-
-                        var size = panel.getSize();
-                        clone.makeDraggable();
-
-                        document.id(document.body).appendChild(clone);
-                        clone.setStyle("position", "absolute");
-                        clone.setStyle("border", "solid 1px blue");
-                        clone.setStyle("top", "0px");
-                        clone.setStyle("left", "0px");
-                        clone.setStyle("z-index", "1000");
-                        clone.setStyle("opacity", "0.7");
-                        clone.setStyle("box-shadow", "0px 0px 5px rgb(0,0,0,0.1)");
-
-
-                        setTimeout( function() {
-                            clone.setStyle("width", size.x);
-                            clone.setStyle("height", size.y);
-                            clone.setStyle("min-width", size.x);
-                            clone.setStyle("min-height", size.y);
-                            clone.setStyle("max-width", size.x);
-                            clone.setStyle("max-height", size.y);
-                        });
-                        '''
+                    title_div.add_behavior( {
+                    'type': 'drag',
+                    "drag_el": '@.getParent(".spt_panel_top")',
+                    "cb_set_prefix": 'spt.panel_container.drag'
                     } )
 
-                    col.add("<hr/>")
+                    outer.add("<hr/>")
 
                 content = DivWdg()
-                col.add(content)
+                outer.add(content)
                 content.add_class("spt_panel_content")
                 content.add_style("min-height: 200px")
                 content.add_style("min-width: 200px")
                 content.add_style("margin: 5px")
                 content.add_style("box-sizing: border-box")
 
-                col.add_style("border: solid 1px #DDD")
-                col.add_style("border-radius: 3px")
-                col.add_style("padding: 10px")
-                col.add_style("margin: 0px 10px 15px 10px")
-                col.add_style("background: #FFF")
+                outer.add_style("border: solid 1px #DDD")
+                outer.add_style("border-radius: 3px")
+                outer.add_style("padding: 10px")
+                outer.add_style("margin: 0px 10px 15px 10px")
+                outer.add_style("background: #FFF")
 
 
                 content.add_style("max-height: 400px;")
@@ -278,8 +360,28 @@ class PanelWdg(BaseRefreshWdg):
 
                 content.add(element)
 
-
                 index += 1
+
+
+                """
+                if is_owner and False:
+                    outer.add_style("position: relative")
+                    resize_div = DivWdg()
+                    resize_div.add('''<img title="Resize" border="0" src="/context/icons/custom/resize.png" style="margin-right: 3px">''')
+                    outer.add(resize_div)
+                    resize_div.add_style("position: absolute")
+                    resize_div.add_style("bottom: 0px")
+                    resize_div.add_style("right: 0px")
+
+
+                    resize_div.add_behavior( {
+                    'type': 'drag',
+                    "drag_el": '@.getParent(".spt_panel_top")',
+                    "cb_set_prefix": 'spt.panel_container.resize_drag'
+                    } )
+                """
+
+
 
         if self.kwargs.get("is_refresh"):
             return inner
@@ -295,15 +397,15 @@ class PanelWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
 
-        menu_item = MenuItem(type='action', label="Create New Page")
+        menu_item = MenuItem(type='action', label="Create New Panel")
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click',
             'cbjs_action': '''
-            var class_name = 'tactic.ui.container.panel_wdg.UserPageCreatorWdg';
+            var class_name = 'tactic.ui.container.panel_wdg.UserPanelCreatorWdg';
             var kwargs = {
             }
-            spt.panel.load_popup("Page Creator", class_name, kwargs);
+            spt.panel.load_popup("Panel Creator", class_name, kwargs);
             '''
         } )
 
@@ -312,14 +414,15 @@ class PanelWdg(BaseRefreshWdg):
         view_filter = "pages.%s.%%" % login
 
 
-        menu_item = MenuItem(type='action', label="Edit Page")
+        """
+        menu_item = MenuItem(type='action', label="Edit Panel")
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click',
             'view_filter': view_filter,
             'cbjs_action': '''
             spt.tab.set_main_body_tab();
-            title = "Page Editor";
+            title = "Panel Editor";
             var class_name = 'tactic.ui.tools.CustomLayoutEditWdg';
             var kwargs = {
                 view_filter: bvr.view_filter
@@ -327,10 +430,11 @@ class PanelWdg(BaseRefreshWdg):
             spt.tab.add_new(title, title, class_name, kwargs);
             '''
         } )
+        """
 
 
 
-        menu_item = MenuItem(type='action', label="Reload Page")
+        menu_item = MenuItem(type='action', label="Reload Panel")
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click',
@@ -384,35 +488,21 @@ class PanelWdg(BaseRefreshWdg):
 
 
 
-        menu_item = MenuItem(type='action', label='Delete Page')
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_panel_top");
-            spt.behavior.destroy_element(top);
-
-            '''
-        } )
-        menu.add(menu_item)
-
-
-
-
 
 
         if len(self.pages) > 5:
 
 
-            menu_item = MenuItem(type='action', label='Load Page')
+            menu_item = MenuItem(type='action', label='Load Panel')
             menu.add(menu_item)
             menu_item.add_behavior( {
                 'cbjs_action': '''
                 var activator = spt.smenu.get_activator(bvr);
-                var class_name = 'tactic.ui.container.panel_wdg.UserPageSelectWdg';
+                var class_name = 'tactic.ui.container.panel_wdg.UserPanelSelectWdg';
                 var kwargs = {
                     view: bvr.page,
                 }
-                var popup = spt.panel.load_popup("Load Page", class_name, kwargs);
+                var popup = spt.panel.load_popup("Load Panel", class_name, kwargs);
                 popup.activator = activator;
 
                 '''
@@ -422,7 +512,7 @@ class PanelWdg(BaseRefreshWdg):
             #menu.add(menu_item)
         else:
 
-            menu_item = MenuItem(type='title', label='Pages')
+            menu_item = MenuItem(type='title', label='Panels')
             menu.add(menu_item)
 
             for page in self.pages:
@@ -446,9 +536,23 @@ class PanelWdg(BaseRefreshWdg):
 
 
 
+        menu_item = MenuItem(type='action', label='Remove Panel')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_panel_top");
+            spt.behavior.destroy_element(top);
+
+            '''
+        } )
+        menu.add(menu_item)
 
 
 
+
+
+
+        """
         menu_item = MenuItem(type='title', label='Layouts')
         menu.add(menu_item)
 
@@ -465,12 +569,145 @@ class PanelWdg(BaseRefreshWdg):
                 spt.panel.refresh(top);
                 '''
             } )
-
+        """
 
         return menu
 
 
-class UserPageSelectWdg(BaseRefreshWdg):
+
+    def get_onload_js(self):
+
+        return '''
+spt.panel_container = {};
+
+spt.panel_container.top = null;
+spt.panel_container.clone = null;
+spt.panel_container.start_pos = null;
+spt.panel_container.mouse_start_pos = null;
+spt.panel_container.drop_on_el = null;
+
+spt.panel_container.drag_setup = function(evt, bvr, mouse_411) {
+    var panel_top = bvr.src_el.getParent(".spt_panel_top");
+    spt.panel_container.top = panel_top;
+
+    var top = bvr.src_el.getParent(".spt_panel_container");
+
+    var start_pos = panel_top.getPosition(top);
+    spt.panel_container.start_pos = start_pos;
+    spt.panel_container.mouse_start_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+
+    var clone = spt.behavior.clone(panel_top);
+    spt.panel_container.clone = clone;
+
+    var size = panel_top.getSize();
+
+    panel_top.setStyle("opacity", "0.3");
+
+    top.appendChild(clone);
+    clone.setStyle("position", "absolute");
+    clone.setStyle("z-index", "1000");
+
+    var outer = clone.getElement(".spt_outer");
+    outer.setStyle("box-shadow", "0px 0px 15px rgb(0,0,0,0.1)");
+
+    clone.setStyle("pointer-events", "none");
+    clone.setStyle("overflow", "hidden");
+
+    clone.setStyle("width", size.x);
+    clone.setStyle("height", size.y);
+    clone.setStyle("min-width", size.x);
+    clone.setStyle("min-height", size.y);
+    clone.setStyle("max-width", size.x);
+    clone.setStyle("max-height", size.y);
+
+    clone.setStyle("top", start_pos.y);
+    clone.setStyle("left", start_pos.x);
+
+    top.setStyle("cursor", "move");
+
+}
+
+spt.panel_container.drag_motion = function(evt, bvr, mouse_411) {
+    var mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+
+    var dx = mouse_pos.x - spt.panel_container.mouse_start_pos.x;
+    var dy = mouse_pos.y - spt.panel_container.mouse_start_pos.y;
+
+    var clone = spt.panel_container.clone;
+
+    var start_pos = spt.panel_container.start_pos;
+    clone.setStyle("left", start_pos.x + dx);
+    clone.setStyle("top", start_pos.y + dy);
+
+    var last_drop_on_el = spt.panel_container.drop_on_el;
+    
+    var drop_on_el = spt.get_event_target(evt);
+    if (!drop_on_el.hasClass("spt_panel_top")) {
+        drop_on_el = drop_on_el.getParent(".spt_panel_top");
+    }
+    if (drop_on_el) {
+        spt.panel_container.drop_on_el = drop_on_el;
+        drop_on_el.setStyle("border-right", "solid 3px blue");
+    }
+
+
+    if (last_drop_on_el && last_drop_on_el != drop_on_el) {
+        last_drop_on_el.setStyle("border-right", "");
+    }
+
+}
+
+spt.panel_container.drag_action = function(evt, bvr, mouse_411) {
+
+    var panel_top = spt.panel_container.top;
+    var drop_on_el = spt.panel_container.drop_on_el;
+    if (drop_on_el) {
+        panel_top.inject(drop_on_el, "after");
+    }
+
+
+    panel_top.setStyle("pointer-events", "");
+    panel_top.setStyle("z-index", "0");
+    panel_top.setStyle("opacity", "1.0");
+
+    var clone = spt.panel_container.clone;
+    spt.behavior.destroy_element(clone);
+
+
+    var last_drop_on_el = spt.panel_container.drop_on_el;
+    last_drop_on_el.setStyle("border-right", "");
+
+
+    var top = bvr.src_el.getParent(".spt_panel_container");
+    top.setStyle("cursor", "");
+}
+
+
+
+
+spt.panel_container.resize_drag_setup = function(evt, bvr, mouse_411) {
+}
+
+spt.panel_container.resize_drag_motion = function(evt, bvr, mouse_411) {
+}
+
+spt.panel_container.resize_drag_action = function(evt, bvr, mouse_411) {
+    var top = bvr.src_el.getParent(".spt_panel_top");
+    var content = top.getElement(".spt_panel_content");
+    content.setStyle("width", "1000px");
+    content.setStyle("height", "500px");
+}
+        '''
+
+
+
+
+
+
+
+
+
+class UserPanelSelectWdg(BaseRefreshWdg):
 
     def get_display(self):
 
@@ -568,7 +805,7 @@ class UserPageSelectWdg(BaseRefreshWdg):
 
 
 
-class UserPageCreatorWdg(BaseRefreshWdg):
+class UserPanelCreatorWdg(BaseRefreshWdg):
 
     def get_display(self):
 
@@ -578,7 +815,7 @@ class UserPageCreatorWdg(BaseRefreshWdg):
         top.add_style("margin: 20px")
         top.add_class("spt_page_creator_top")
 
-        top.add("<div style='font-size: 16px'>Page Creator</div>")
+        top.add("<div style='font-size: 16px'>Panel Creator</div>")
 
         top.add("<hr/>")
 
@@ -620,7 +857,7 @@ class UserPageCreatorWdg(BaseRefreshWdg):
  
 
 
-        button = ActionButtonWdg(title="Save Page", width=150)
+        button = ActionButtonWdg(title="Save Panel", width=150)
         button_div.add(button)
         button.add_behavior( {
             'type': 'click',
@@ -628,7 +865,7 @@ class UserPageCreatorWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_page_creator_top");
             var values = spt.api.get_input_values(top, null, false);
 
-            var class_name = 'tactic.ui.container.panel_wdg.UserPageCreatorCmd';
+            var class_name = 'tactic.ui.container.panel_wdg.UserPanelCreatorCmd';
             var server = TacticServerStub.get();
             server.execute_cmd(class_name, values);
 
@@ -643,7 +880,7 @@ class UserPageCreatorWdg(BaseRefreshWdg):
         return top
 
 
-class UserPageCreatorCmd(Command):
+class UserPanelCreatorCmd(Command):
 
     def execute(self):
 
@@ -692,7 +929,7 @@ class UserPageCreatorCmd(Command):
         config = search.get_sobject()
 
         if config:
-            raise Exception("Page with name [%s] already exists" % name)
+            raise Exception("Panel with name [%s] already exists" % name)
 
 
         option_xml = []
