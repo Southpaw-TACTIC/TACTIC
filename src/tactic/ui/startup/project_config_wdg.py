@@ -494,7 +494,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="View", icon=IconWdg.ZOOM)
+            button = IconButtonWdg(title="View", icon="FA_SEARCH")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -549,7 +549,7 @@ class SearchTypePanel(BaseRefreshWdg):
             SwitchLayoutMenu(search_type=search_type, activator=arrow_button, cbk=cbk, is_refresh=False)
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Add", icon=IconWdg.ADD)
+            button = IconButtonWdg(title="Add", icon="FA_PLUS")
             td.add(button)
             button.add_behavior( {
                 'type': 'listen',
@@ -632,7 +632,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Import", icon=IconWdg.IMPORT)
+            button = IconButtonWdg(title="Import", icon="FA_UPLOAD")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -653,7 +653,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Custom Columns", icon=IconWdg.COLUMNS)
+            button = IconButtonWdg(title="Custom Columns", icon="FA_COLUMNS")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -674,7 +674,8 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Workflow", icon=IconWdg.PIPELINE)
+            button = IconButtonWdg(title="Workflow", icon="FA_SITEMAP")
+            button.add_class("fa-rotate-270")
             button.add_style("float: left")
             td.add(button)
 
@@ -706,7 +707,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Notifications", icon=IconWdg.MAIL)
+            button = IconButtonWdg(title="Notifications", icon="FA_ENVELOPE")
             button.add_style("float: left")
             td.add(button)
 
@@ -741,7 +742,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Triggers", icon=IconWdg.ARROW_OUT)
+            button = IconButtonWdg(title="Triggers", icon="FA_BOLT")
             td.add(button)
             button.add_style("float: left")
 
@@ -775,7 +776,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Edit Searchable Type", icon=IconWdg.EDIT)
+            button = IconButtonWdg(title="Edit Searchable Type", icon="FA_EDIT")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',

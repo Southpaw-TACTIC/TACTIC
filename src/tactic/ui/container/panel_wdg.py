@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['PanelWdg', 'UserPanelSelectWdg', 'UserPanelCreatorWdg', 'UserPanelCreatorCmd']
+__all__ = ['PanelWdg', 'SavePanelCmd', 'UserPanelSelectWdg', 'UserPanelCreatorWdg', 'UserPanelCreatorCmd']
 
 import tacticenv
 
@@ -54,7 +54,12 @@ class PanelWdg(BaseRefreshWdg):
             shelf = DivWdg()
             inner.add(shelf)
             shelf.add_style("display: flex")
+            #shelf.add_style("float: right")
+            #shelf.add_style("margin-top: -50px")
 
+            shelf.add_class("spt_shelf")
+
+            """
             btn = ButtonWdg()
             btn.add_class("btn btn-default")
             btn.add_style("height: 30px")
@@ -71,7 +76,7 @@ class PanelWdg(BaseRefreshWdg):
                 } )
                 '''
             } )
-            btn.add("Hide")
+            btn.add("Hide Content")
 
 
             btn = ButtonWdg()
@@ -90,14 +95,39 @@ class PanelWdg(BaseRefreshWdg):
                 } )
                 '''
             } )
-            btn.add("Show")
+            btn.add("Show Content")
+            """
+
+
+            btn = ButtonWdg()
+            shelf.add(btn)
+            btn.add("Add Panel")
+            btn.add_class("btn btn-default")
+            btn.add_style("height: 30px")
+            btn.add_style("margin: 3px 5px")
+
+            btn.add_behavior( {
+                'type': 'click',
+                'view': self.view,
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_panel_layout_top");
+
+                var panel_container = top.getElement(".spt_panel_container");
+                var template = panel_container.getElement(".SPT_TEMPLATE");
+                var clone = spt.behavior.clone(template);
+                clone.inject(template, "after");
+                clone.setStyle("display", "");
+                clone.removeClass("SPT_TEMPLATE");
+                '''
+            } )
+
 
 
 
 
             btn = ButtonWdg()
             shelf.add(btn)
-            btn.add("Save")
+            btn.add("Save Panels")
             btn.add_class("btn btn-default")
             btn.add_style("height: 30px")
             btn.add_style("margin: 3px 5px")
@@ -110,6 +140,14 @@ class PanelWdg(BaseRefreshWdg):
 
                 var panels = top.getElements(".spt_panel_content");
 
+                var server = TACTIC.get();
+
+                var kwargs = {};
+                kwargs.view = bvr.view;
+
+                var data = [];
+                kwargs.data = data;
+
                 for (var i = 0; i < panels.length; i++) {
                     var panel = panels[i];
                     var content = panel.getElement(".spt_panel");
@@ -117,21 +155,72 @@ class PanelWdg(BaseRefreshWdg):
                         continue;
                     }
                     var class_name = content.getAttribute("spt_class_name");
-                    var kwargs = spt.panel.get_element_options(content);
+                    var options = spt.panel.get_element_options(content);
+
+                    var data_item = {};
+                    data.push(data_item);
+                    data_item.class_name = class_name;
+                    data_item.options = options;
 
                     element_name = "panel_" + i;
-
-                    try {
-                        var server = TacticServerStub.get();
-                        server.add_config_element("PanelLayoutWdg", bvr.view, element_name, { class_name: class_name, display_options: kwargs, unique: false });
-                    }
-                    catch(e) {
-                        alert(e);
-                        throw(e);
-                    }
+                    data_item.element_name = element_name;
 
                 }
 
+                var class_name = "tactic.ui.container.SavePanelCmd";
+                server.p_execute_cmd(class_name, kwargs)
+                .then( function() {
+                    spt.notify.show_message("Panel Layout Saved");
+                } );
+
+                '''
+            } )
+
+
+            btn = ButtonWdg()
+            shelf.add(btn)
+            btn.add("Edit Layout")
+            btn.add_class("btn btn-default")
+            btn.add_style("height: 30px")
+            btn.add_style("margin: 3px 5px")
+
+            btn.add_behavior( {
+                'type': 'click',
+                'cbjs_action': '''
+
+                var top = bvr.src_el.getParent(".spt_panel_layout_top");
+                var panel_top = top.getElement(".spt_panel_container");
+
+                var panels = panel_top.getElements(".spt_panel_top");
+
+                if (panel_top.hasClass("spt_edit_mode")) {
+                    panel_top.setStyle("transform", "scale(1.0)");
+                    panel_top.removeClass("spt_edit_mode");
+
+                    panels.forEach( function(panel) {
+                        var drag = panel.getElement(".spt_drag");
+                        drag.setStyle("display", "none");
+                    } )
+
+                    panel_top.setStyle("border", "none");
+                    panel_top.setStyle("padding", "0px");
+                    panel_top.setStyle("background", "transparent");
+                }
+                else {
+                    panel_top.setStyle("transform", "scale(0.33)");
+                    panel_top.setStyle("transform-origin", "top");
+                    panel_top.addClass("spt_edit_mode");
+
+
+                    panels.forEach( function(panel) {
+                        var drag = panel.getElement(".spt_drag");
+                        drag.setStyle("display", "");
+                    } )
+
+                    panel_top.setStyle("border", "solid 10px #DDD");
+                    panel_top.setStyle("padding", "30px");
+                    panel_top.setStyle("background", "#999");
+                }
                 '''
             } )
 
@@ -209,7 +298,7 @@ class PanelWdg(BaseRefreshWdg):
 
             config = WidgetConfig.get(view="elements", xml=config_xml)
 
-
+        """
         grid = self.kwargs.get("grid")
         if not grid:
             grid = config.get_view_attribute("grid")
@@ -223,6 +312,7 @@ class PanelWdg(BaseRefreshWdg):
 
         else:
             grid = (3,1)
+        """
 
 
 
@@ -251,135 +341,171 @@ class PanelWdg(BaseRefreshWdg):
 
         row.add_class("spt_panel_container")
 
+        element_name = element_names.insert(0, "TEMPLATE")
 
-        for y in range(grid[1]):
+        for element_name in element_names:
+            col = DivWdg()
+            row.add(col)
 
-            for x in range(grid[0]):
-                col = DivWdg()
-                row.add(col)
-                #col.add_class("col-sm-%s" % size)
-                col.add_style("box-sizing: border-box")
-                col.add_style("overflow: auto")
-                col.add_style("min-width: 200px")
+            col.add_style("box-sizing: border-box")
+            col.add_style("overflow: auto")
+            col.add_style("min-width: 200px")
 
-                col.add_style("max-width: 50%")
+            col.add_style("max-width: 50%")
 
-                col.add_class("spt_panel_top")
+            col.add_class("spt_panel_top")
 
-                outer = DivWdg()
-                col.add(outer)
-                outer.add_class("spt_outer")
-                outer.add_style("position: relative")
+            outer = DivWdg()
+            col.add(outer)
+            outer.add_class("spt_outer")
+            outer.add_style("position: relative")
+
+            drag = DivWdg()
+            outer.add(drag)
+            drag.add_class("spt_drag")
+            drag.add_style("position: absolute")
+            drag.add_style("display: none")
+            drag.add_style("top: 0px")
+            drag.add_style("left: 0px")
+            drag.add_style("height: 100%")
+            drag.add_style("width: 100%")
+            drag.add_style("background: #000")
+            drag.add_style("opacity: 0.05")
+            drag.add_style("z-index: 200")
+
+            drag.add_behavior( {
+            'type': 'drag',
+            "drag_el": '@.getParent(".spt_panel_top")',
+            "cb_set_prefix": 'spt.panel_container.drag'
+            } )
+
+            #outer.add_style("pointer-events: none")
 
 
-                if is_owner:
-                    header = DivWdg()
-                    outer.add(header)
 
-                    menu_wdg = DivWdg()
-                    header.add(menu_wdg)
-                    menu_wdg.add_style("float: right")
-                    menu_wdg.add("<i class='fa fa-bars'> </i>")
-                    menu_wdg.add_class("hand")
-                    menu_wdg.add_style("margin: 0px 5px")
+            if is_owner:
+                header = DivWdg()
+                outer.add(header)
 
-                    SmartMenu.add_smart_menu_set( menu_wdg, { 'BUTTON_MENU': menu } )
-                    SmartMenu.assign_as_local_activator( menu_wdg, "BUTTON_MENU", True )
+                menu_wdg = DivWdg()
+                header.add(menu_wdg)
+                menu_wdg.add_style("float: right")
+                menu_wdg.add("<i class='fa fa-bars'> </i>")
+                menu_wdg.add_class("hand")
+                menu_wdg.add_style("margin: 0px 5px")
+
+                SmartMenu.add_smart_menu_set( menu_wdg, { 'BUTTON_MENU': menu } )
+                SmartMenu.assign_as_local_activator( menu_wdg, "BUTTON_MENU", True )
 
 
-                element = None
-                title = None
-                if index < len(element_names):
-                    element_name = element_names[index]
-                    #element_name = "%s,%s" % (x,y)
+            element = None
+            title = None
 
-                    element = config.get_display_widget(element_name)
-                    title = config.get_element_title(element_name)
-                    if not title:
-                        title = Common.get_display_title(element_name)
+            if index == 0:
+                # Skip the template
+                title = "TEMPLATE"
+                col.add_class("SPT_TEMPLATE")
+                col.add_style("display: none")
 
-                if not element:
+
+            elif index < len(element_names):
+                element_name = element_names[index]
+                #element_name = "%s,%s" % (x,y)
+
+                element = config.get_display_widget(element_name)
+                title = config.get_element_title(element_name)
+                if not title:
+                    title = Common.get_display_title(element_name)
+
+            if not element:
+                element = DivWdg()
+                element.add("No content")
+                element.add_style("height: 30px")
+                element.add_style("width: 80%")
+                element.add_style("text-align: center")
+                element.add_style("margin: 10px")
+                element.add_style("box-sizing: border-box")
+                element.add_border()
+
+                element.add_behavior( {
+                    'type': 'click',
+                    'cbjs_action': '''
+                    alert("No content");
+                    '''
+                } )
+            else:
+                try:
+                    element = element.get_buffer_display()
+                except:
+
                     element = DivWdg()
                     element.add("No content")
-                    element.add_style("height: 30px")
-                    element.add_style("width: 80%")
+                    element.add_style("height: 100%")
+                    element.add_style("width: 100%")
                     element.add_style("text-align: center")
-                    element.add_style("margin: 10px")
-                    element.add_style("box-sizing: border-box")
                     element.add_border()
+
+
+
+            if is_owner:
+                title_div = DivWdg()
+                header.add(title_div)
+                title_div.add_style("width: 100px")
+
+                if title:
+                    title_div.add(title)
                 else:
-                    try:
-                        element = element.get_buffer_display()
-                    except:
-
-                        element = DivWdg()
-                        element.add("No content")
-                        element.add_style("height: 100%")
-                        element.add_style("width: 100%")
-                        element.add_style("text-align: center")
-                        element.add_border()
+                    title_div.add("Panel: %s,%s" % (x, y))
 
 
+                title_div.add_behavior( {
+                'type': 'drag',
+                "drag_el": '@.getParent(".spt_panel_top")',
+                "cb_set_prefix": 'spt.panel_container.drag'
+                } )
 
-                if is_owner:
-                    title_div = DivWdg()
-                    header.add(title_div)
-                    title_div.add_style("width: 100px")
+                outer.add("<hr/>")
 
-                    if title:
-                        title_div.add(title)
-                    else:
-                        title_div.add("Panel: %s,%s" % (x, y))
+            content = DivWdg()
+            outer.add(content)
+            content.add_class("spt_panel_content")
+            content.add_style("min-height: 200px")
+            content.add_style("min-width: 200px")
+            content.add_style("margin: 5px")
+            content.add_style("box-sizing: border-box")
 
-
-                    title_div.add_behavior( {
-                    'type': 'drag',
-                    "drag_el": '@.getParent(".spt_panel_top")',
-                    "cb_set_prefix": 'spt.panel_container.drag'
-                    } )
-
-                    outer.add("<hr/>")
-
-                content = DivWdg()
-                outer.add(content)
-                content.add_class("spt_panel_content")
-                content.add_style("min-height: 200px")
-                content.add_style("min-width: 200px")
-                content.add_style("margin: 5px")
-                content.add_style("box-sizing: border-box")
-
-                outer.add_style("border: solid 1px #DDD")
-                outer.add_style("border-radius: 3px")
-                outer.add_style("padding: 10px")
-                outer.add_style("margin: 0px 10px 15px 10px")
-                outer.add_style("background: #FFF")
+            outer.add_style("border: solid 1px #DDD")
+            outer.add_style("border-radius: 3px")
+            outer.add_style("padding: 10px")
+            outer.add_style("margin: 0px 10px 15px 10px")
+            outer.add_style("background: #FFF")
 
 
-                content.add_style("max-height: 400px;")
-                content.add_style("overflow: auto")
+            content.add_style("max-height: 400px;")
+            content.add_style("overflow: auto")
 
-                content.add(element)
+            content.add(element)
 
-                index += 1
-
-
-                """
-                if is_owner and False:
-                    outer.add_style("position: relative")
-                    resize_div = DivWdg()
-                    resize_div.add('''<img title="Resize" border="0" src="/context/icons/custom/resize.png" style="margin-right: 3px">''')
-                    outer.add(resize_div)
-                    resize_div.add_style("position: absolute")
-                    resize_div.add_style("bottom: 0px")
-                    resize_div.add_style("right: 0px")
+            index += 1
 
 
-                    resize_div.add_behavior( {
-                    'type': 'drag',
-                    "drag_el": '@.getParent(".spt_panel_top")',
-                    "cb_set_prefix": 'spt.panel_container.resize_drag'
-                    } )
-                """
+            """
+            if is_owner and False:
+                outer.add_style("position: relative")
+                resize_div = DivWdg()
+                resize_div.add('''<img title="Resize" border="0" src="/context/icons/custom/resize.png" style="margin-right: 3px">''')
+                outer.add(resize_div)
+                resize_div.add_style("position: absolute")
+                resize_div.add_style("bottom: 0px")
+                resize_div.add_style("right: 0px")
+
+
+                resize_div.add_behavior( {
+                'type': 'drag',
+                "drag_el": '@.getParent(".spt_panel_top")',
+                "cb_set_prefix": 'spt.panel_container.resize_drag'
+                } )
+            """
 
 
 
@@ -408,6 +534,7 @@ class PanelWdg(BaseRefreshWdg):
             spt.panel.load_popup("Panel Creator", class_name, kwargs);
             '''
         } )
+
 
 
         login = Environment.get_user_name()
@@ -581,6 +708,7 @@ class PanelWdg(BaseRefreshWdg):
 spt.panel_container = {};
 
 spt.panel_container.top = null;
+spt.panel_container.container_top = null;
 spt.panel_container.clone = null;
 spt.panel_container.start_pos = null;
 spt.panel_container.mouse_start_pos = null;
@@ -591,8 +719,15 @@ spt.panel_container.drag_setup = function(evt, bvr, mouse_411) {
     spt.panel_container.top = panel_top;
 
     var top = bvr.src_el.getParent(".spt_panel_container");
+    spt.panel_container.container_top = top;
 
     var start_pos = panel_top.getPosition(top);
+
+    if (top.hasClass("spt_edit_mode")) {
+        start_pos.x *= 3;
+        start_pos.y *= 3;
+    }
+
     spt.panel_container.start_pos = start_pos;
     spt.panel_container.mouse_start_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
 
@@ -632,6 +767,12 @@ spt.panel_container.drag_motion = function(evt, bvr, mouse_411) {
 
     var dx = mouse_pos.x - spt.panel_container.mouse_start_pos.x;
     var dy = mouse_pos.y - spt.panel_container.mouse_start_pos.y;
+
+    var top = spt.panel_container.container_top;
+    if (top.hasClass("spt_edit_mode")) {
+        dx = dx * 3;
+        dy = dy * 3;
+    }
 
     var clone = spt.panel_container.clone;
 
@@ -699,6 +840,39 @@ spt.panel_container.resize_drag_action = function(evt, bvr, mouse_411) {
 }
         '''
 
+
+
+class SavePanelCmd(Command):
+
+    def execute(self):
+
+        data = self.kwargs.get("data")
+
+        view = self.kwargs.get("view")
+
+        search = Search("config/widget_config")
+        search.add_filter("view", view)
+        config = search.get_sobject()
+
+        if not config:
+            config = SearchType.create("config/widget_config")
+            config.set_value("view", view)
+
+        config.commit()
+
+
+        for item in data:
+            print(item)
+            name = item.get("element_name")
+
+            class_name = item.get("class_name")
+            display_options = item.get("options")
+
+            config.append_display_element(name, cls_name=class_name, options=display_options)
+
+        config.commit()
+
+        print("config: ", config.get_xml().to_string() )
 
 
 
