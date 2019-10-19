@@ -16,7 +16,7 @@ import tacticenv
 
 from pyasm.common import Common, Xml, Environment
 from pyasm.search import Search, SObject, SearchType
-from pyasm.web import DivWdg, ButtonWdg
+from pyasm.web import DivWdg, ButtonWdg, HtmlElement
 from pyasm.widget import WidgetConfig
 from pyasm.command import Command
 
@@ -56,14 +56,26 @@ class PanelWdg(BaseRefreshWdg):
             shelf.add_style("display: flex")
             #shelf.add_style("float: right")
             #shelf.add_style("margin-top: -50px")
+            shelf.add_style("font-size: 9px")
 
             shelf.add_class("spt_shelf")
+
+            style = HtmlElement.style()
+            shelf.add(style)
+            style.add('''
+            .spt_panel_layout_top .spt_shelf .btn {
+                font-size: 12px;
+                height: 30px;
+                margin: 3px 5px;
+            }
+            ''')
+
+
+
 
             """
             btn = ButtonWdg()
             btn.add_class("btn btn-default")
-            btn.add_style("height: 30px")
-            btn.add_style("margin: 3px 5px")
             shelf.add(btn)
             btn.add_behavior( {
                 'type': 'click',
@@ -81,8 +93,6 @@ class PanelWdg(BaseRefreshWdg):
 
             btn = ButtonWdg()
             btn.add_class("btn btn-default")
-            btn.add_style("height: 30px")
-            btn.add_style("margin: 3px 5px")
             shelf.add(btn)
             btn.add_behavior( {
                 'type': 'click',
@@ -103,8 +113,6 @@ class PanelWdg(BaseRefreshWdg):
             shelf.add(btn)
             btn.add("Add Panel")
             btn.add_class("btn btn-default")
-            btn.add_style("height: 30px")
-            btn.add_style("margin: 3px 5px")
 
             btn.add_behavior( {
                 'type': 'click',
@@ -129,8 +137,6 @@ class PanelWdg(BaseRefreshWdg):
             shelf.add(btn)
             btn.add("Save Panels")
             btn.add_class("btn btn-default")
-            btn.add_style("height: 30px")
-            btn.add_style("margin: 3px 5px")
 
             btn.add_behavior( {
                 'type': 'click',
@@ -181,8 +187,6 @@ class PanelWdg(BaseRefreshWdg):
             shelf.add(btn)
             btn.add("Edit Layout")
             btn.add_class("btn btn-default")
-            btn.add_style("height: 30px")
-            btn.add_style("margin: 3px 5px")
 
             btn.add_behavior( {
                 'type': 'click',
@@ -323,10 +327,6 @@ class PanelWdg(BaseRefreshWdg):
 
         table.add_style("position: relative")
 
-        if is_owner:
-            menu = self.get_action_menu()
-            #SmartMenu.add_smart_menu_set( top, { 'BUTTON_MENU': menu } )
-
         element_names = config.get_element_names()
 
         index = 0
@@ -351,6 +351,7 @@ class PanelWdg(BaseRefreshWdg):
             col.add_style("overflow: auto")
             col.add_style("min-width: 200px")
 
+            # TODO: max-width should be set by the widget
             col.add_style("max-width: 50%")
 
             col.add_class("spt_panel_top")
@@ -359,6 +360,7 @@ class PanelWdg(BaseRefreshWdg):
             col.add(outer)
             outer.add_class("spt_outer")
             outer.add_style("position: relative")
+            outer.add_style("overflow: hidden")
 
             drag = DivWdg()
             outer.add(drag)
@@ -386,6 +388,7 @@ class PanelWdg(BaseRefreshWdg):
             if is_owner:
                 header = DivWdg()
                 outer.add(header)
+                header.add_class("spt_header")
 
                 menu_wdg = DivWdg()
                 header.add(menu_wdg)
@@ -394,8 +397,24 @@ class PanelWdg(BaseRefreshWdg):
                 menu_wdg.add_class("hand")
                 menu_wdg.add_style("margin: 0px 5px")
 
-                SmartMenu.add_smart_menu_set( menu_wdg, { 'BUTTON_MENU': menu } )
-                SmartMenu.assign_as_local_activator( menu_wdg, "BUTTON_MENU", True )
+                menu_wdg.add_behavior( {
+                    'type': 'click',
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_header");
+                    var menu = top.getElement(".spt_menu_top");
+                    menu.setStyle("display", "");
+                    spt.body.add_focus_element(menu);
+
+                    '''
+                } )
+
+                menu = self.get_action_menu()
+                menu.add_style("position: absolute")
+                menu.add_style("display: none")
+                menu.add_style("right: 5px")
+                menu.add_style("top: 30px")
+                header.add(menu)
+
 
 
             element = None
@@ -489,15 +508,14 @@ class PanelWdg(BaseRefreshWdg):
             index += 1
 
 
-            """
-            if is_owner and False:
+            if is_owner:
                 outer.add_style("position: relative")
                 resize_div = DivWdg()
                 resize_div.add('''<img title="Resize" border="0" src="/context/icons/custom/resize.png" style="margin-right: 3px">''')
                 outer.add(resize_div)
                 resize_div.add_style("position: absolute")
-                resize_div.add_style("bottom: 0px")
-                resize_div.add_style("right: 0px")
+                resize_div.add_style("bottom: 1px")
+                resize_div.add_style("right: -2px")
 
 
                 resize_div.add_behavior( {
@@ -505,7 +523,6 @@ class PanelWdg(BaseRefreshWdg):
                 "drag_el": '@.getParent(".spt_panel_top")',
                 "cb_set_prefix": 'spt.panel_container.resize_drag'
                 } )
-            """
 
 
 
@@ -518,12 +535,47 @@ class PanelWdg(BaseRefreshWdg):
 
     def get_action_menu(self):
 
-        from .menu_wdg import Menu, MenuItem
-        menu = Menu(width=180)
-        menu_item = MenuItem(type='title', label='Actions')
-        menu.add(menu_item)
+        menu = DivWdg()
+        menu.add_style("width: 180")
+        menu.add_style("background", "#FFF")
+        menu.add_style("border: solid 1px #DDD")
+        menu.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
+        menu.add_style("z-index: 1000")
+        menu.add_style("text-align: center")
 
-        menu_item = MenuItem(type='action', label="Create New Panel")
+        menu.add_class("spt_menu_top")
+
+        style = HtmlElement.style()
+        menu.add(style)
+        style.add('''
+        .spt_panel_layout_top .spt_menu_top .spt_menu_item {
+            padding: 10px;
+            border-bottom: solid 1px #DDD;
+            cursor: pointer;
+        }
+        ''')
+
+
+        menu.add_relay_behavior( {
+            'type': 'mouseenter',
+            'bvr_match_class': 'spt_menu_item',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "#EEE");
+            '''
+        } )
+        menu.add_relay_behavior( {
+            'type': 'mouseleave',
+            'bvr_match_class': 'spt_menu_item',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("background", "");
+            '''
+        } )
+
+
+        """
+        menu_item = DivWdg()
+        menu_item.add_class("spt_menu_item")
+        menu_item.add("Create New Panel")
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click',
@@ -534,15 +586,61 @@ class PanelWdg(BaseRefreshWdg):
             spt.panel.load_popup("Panel Creator", class_name, kwargs);
             '''
         } )
-
+        """
 
 
         login = Environment.get_user_name()
         view_filter = "pages.%s.%%" % login
 
 
+        if len(self.pages) > 5:
+
+
+            menu_item = DivWdg()
+            menu_item.add_class("spt_menu_item")
+            menu.add(menu_item)
+            menu_item.add("Load Content")
+            menu_item.add_behavior( {
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.container.panel_wdg.UserPanelSelectWdg';
+                var kwargs = {
+                    view: bvr.page,
+                }
+                var popup = spt.panel.load_popup("Load Panel", class_name, kwargs);
+                popup.activator = bvr.src_el;
+
+                '''
+            } )
+
+        else:
+
+            for page in self.pages:
+                menu_item = DivWdg()
+                menu_item.add(page)
+                menu_item.add_class("spt_menu_item")
+                menu_item.add_behavior( {
+                    'page': page,
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_panel_top");
+                    var content = top.getElement(".spt_panel_content");
+
+                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                    var kwargs = {
+                        view: bvr.page,
+                    }
+                    spt.panel.load(content, class_name, kwargs);
+
+                    '''
+                } )
+                menu.add(menu_item)
+
+
+
+
         """
-        menu_item = MenuItem(type='action', label="Edit Panel")
+        menu_item = DivWdg()
+        menu_item.add_class("spt_menu_item")
+        menu_item.add("Edit Panel")
         menu.add(menu_item)
         menu_item.add_behavior( {
             'type': 'click',
@@ -561,8 +659,10 @@ class PanelWdg(BaseRefreshWdg):
 
 
 
-        menu_item = MenuItem(type='action', label="Reload Panel")
+        menu_item = DivWdg()
+        menu_item.add_class("spt_menu_item")
         menu.add(menu_item)
+        menu_item.add("Reload Panel")
         menu_item.add_behavior( {
             'type': 'click',
             'cbjs_action': '''
@@ -576,8 +676,10 @@ class PanelWdg(BaseRefreshWdg):
 
 
 
-        menu_item = MenuItem(type='action', label="Save Layout")
+        menu_item = DivWdg()
+        menu_item.add_class("spt_menu_item")
         menu.add(menu_item)
+        menu_item.add("Save Layout")
         menu_item.add_behavior( {
             'type': 'click',
             'view': self.view,
@@ -617,88 +719,57 @@ class PanelWdg(BaseRefreshWdg):
 
 
 
-        if len(self.pages) > 5:
-
-
-            menu_item = MenuItem(type='action', label='Load Panel')
-            menu.add(menu_item)
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-                var class_name = 'tactic.ui.container.panel_wdg.UserPanelSelectWdg';
-                var kwargs = {
-                    view: bvr.page,
-                }
-                var popup = spt.panel.load_popup("Load Panel", class_name, kwargs);
-                popup.activator = activator;
-
-                '''
-            } )
-
-            #menu_item = MenuItem(type='separator')
-            #menu.add(menu_item)
-        else:
-
-            menu_item = MenuItem(type='title', label='Panels')
-            menu.add(menu_item)
-
-            for page in self.pages:
-                menu_item = MenuItem(type='action', label=page)
-                menu_item.add_behavior( {
-                    'page': page,
-                    'cbjs_action': '''
-                    var activator = spt.smenu.get_activator(bvr);
-                    var top = activator.getParent(".spt_panel_top");
-                    var content = top.getElement(".spt_panel_content");
-
-                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
-                    var kwargs = {
-                        view: bvr.page,
-                    }
-                    spt.panel.load(content, class_name, kwargs);
-
-                    '''
-                } )
-                menu.add(menu_item)
-
-
-
-        menu_item = MenuItem(type='action', label='Remove Panel')
+        menu_item = DivWdg()
+        menu.add(menu_item)
+        menu_item.add("<< Move Left")
+        menu_item.add_class("spt_menu_item")
         menu_item.add_behavior( {
             'cbjs_action': '''
-            var activator = spt.smenu.get_activator(bvr);
-            var top = activator.getParent(".spt_panel_top");
+            var top = bvr.src_el.getParent(".spt_panel_top");
+            var prev = top.getPrevious();
+            if (prev) {
+                top.inject(prev, "before");
+            }
+            '''
+        } )
+
+
+
+        menu_item = DivWdg()
+        menu.add(menu_item)
+        menu_item.add("Move Right >>")
+        menu_item.add_class("spt_menu_item")
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_panel_top");
+            var next = top.getNext();
+            if (next) {
+                top.inject(next, "after");
+            }
+            '''
+        } )
+
+
+
+
+
+
+        menu_item = DivWdg()
+        menu.add(menu_item)
+        menu_item.add("Remove Panel")
+        menu_item.add_class("spt_menu_item")
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_panel_top");
             spt.behavior.destroy_element(top);
 
             '''
         } )
-        menu.add(menu_item)
 
-
-
-
-
-
-        """
-        menu_item = MenuItem(type='title', label='Layouts')
-        menu.add(menu_item)
-
-        for item in ['1x1','2x1','3x1','4x1','1x2','2x2','3x2','4x2','Custom']:
-
-            menu_item = MenuItem(type='action', label=item)
-            menu.add(menu_item)
-            menu_item.add_behavior( {
-                'item': item,
-                'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-                var top = activator.getParent(".spt_panel_layout_top");
-                top.setAttribute("spt_grid", bvr.item);
-                spt.panel.refresh(top);
-                '''
-            } )
-        """
 
         return menu
+
+
 
 
 
@@ -827,16 +898,31 @@ spt.panel_container.drag_action = function(evt, bvr, mouse_411) {
 
 
 spt.panel_container.resize_drag_setup = function(evt, bvr, mouse_411) {
+    var panel_top = bvr.src_el.getParent(".spt_panel_top");
+    var top = panel_top.getElement(".spt_panel_content");
+    spt.panel_container.top = top;
+
+    var start_size = top.getSize();
+    spt.panel_container.start_size = start_size;
+
+    spt.panel_container.mouse_start_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
 }
 
 spt.panel_container.resize_drag_motion = function(evt, bvr, mouse_411) {
+    var mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+
+    var dx = mouse_pos.x - spt.panel_container.mouse_start_pos.x;
+    var dy = mouse_pos.y - spt.panel_container.mouse_start_pos.y;
+
+    var top = spt.panel_container.top;
+    var start_size = spt.panel_container.start_size;
+
+    top.setStyle("width", start_size.x + dx);
+    top.setStyle("height", start_size.y + dy);
+
 }
 
 spt.panel_container.resize_drag_action = function(evt, bvr, mouse_411) {
-    var top = bvr.src_el.getParent(".spt_panel_top");
-    var content = top.getElement(".spt_panel_content");
-    content.setStyle("width", "1000px");
-    content.setStyle("height", "500px");
 }
         '''
 
@@ -858,9 +944,23 @@ class SavePanelCmd(Command):
             config = SearchType.create("config/widget_config")
             config.set_value("view", view)
 
+        # reset the xml and commit
+        config_xml = '''<config>
+<%s>
+</%s>
+</config>''' % (view, view)
+
+        config.set_value("config", config_xml)
         config.commit()
 
+        # because setting the xml doesn't reset the sobject properly, we have
+        # to re-search the sobject ... will have to fix later
+        search = Search("config/widget_config")
+        search.add_filter("view", view)
+        config = search.get_sobject()
 
+
+        # add all of the config items
         for item in data:
             print(item)
             name = item.get("element_name")
@@ -870,10 +970,17 @@ class SavePanelCmd(Command):
 
             config.append_display_element(name, cls_name=class_name, options=display_options)
 
+        # have to set the value manually
+        config_str = config.get_xml().to_string(pretty=True,tree=True)
+
+        # for some reason the xml is not formatted properly.  Create a new xml object
+        # to format it
+        xml = Xml()
+        xml.read_string(config_str)
+        config_str = xml.to_string()
+
+        config.set_value("config", config_str)
         config.commit()
-
-        print("config: ", config.get_xml().to_string() )
-
 
 
 
