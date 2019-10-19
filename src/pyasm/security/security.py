@@ -1704,7 +1704,7 @@ class Security(Base):
         site = Site.get_site()
     
         if login_name == 'admin':
-            if site == "default":
+            if site == "" or site == "default":
                 auth_class = "pyasm.security.TacticAuthenticate"
             else:
                 raise SecurityException("Login/Password combination incorrect")
