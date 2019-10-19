@@ -946,7 +946,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             self.is_admin = False
         else:
             self.is_admin = Environment.get_security().is_admin()
-        self.is_admin = False
 
 
 

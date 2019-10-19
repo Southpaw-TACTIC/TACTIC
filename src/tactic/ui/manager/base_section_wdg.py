@@ -11,7 +11,7 @@
 #
 __all__ = ["BaseSectionWdg"]
 
-import os, types
+import os, types, six
 
 from pyasm.common import Common, Environment, Container, Xml, XmlException
 from pyasm.biz import Project
@@ -110,7 +110,7 @@ class BaseSectionWdg(BaseRefreshWdg):
         content_div.add_class("spt_side_bar_content")
         content_div.add_attr("spt_view", view)
 
-        if isinstance(view, types.StringTypes):
+        if isinstance(view, six.string_types):
             view = [view]
 
         view_margin_top = '4px'

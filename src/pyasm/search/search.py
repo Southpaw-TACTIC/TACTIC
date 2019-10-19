@@ -589,7 +589,7 @@ class Search(Base):
 
 
 
-                if op == "in between":
+                if op in ["in between", "between"]:
                     self.add_date_range_filter(name, start, end, table=table)
 
 

@@ -17,7 +17,6 @@ import subprocess
 import re
 import os.path
 
-PYTHON_EXE = 'python'
 
 class InstallException(Exception):
     pass
@@ -33,9 +32,9 @@ class Install:
 
     def check_db_program(self):
         try:
-            print
+            print()
             print("Verifying the database is installed. The default is no password if you have followed the instructions to not require a password. If you see it asking for 'Password for user postgres', you should close this window and make the database not require a password first (refer to our install documentation) and resume the installation.")
-            print
+            print()
 
             # Determine database type.
             # Run command query and exit.
@@ -114,7 +113,7 @@ class Install:
         
         if line.find('connected to database') != -1:
             print("Database '%s' already exists. Do you want to drop the database '%s' and continue?, If you choose 'y', It will be backed up to the current directory.  (y/n)" %(project_code, project_code))
-            print
+            print()
             answer = input("(n) -> " )
             if answer in ['y','Y']:
                 # can't read from config file at this point, just make these default assumptions
@@ -127,7 +126,7 @@ class Install:
                 os.system(backup_cmd)
                 self.backup_msg =  "Database 'sthpw' is backed up to [%s/%s]" %(current_dir, backup_name)
                 if self.backup_msg:
-                    print
+                    print()
                     print(self.backup_msg)
 
 
@@ -217,7 +216,12 @@ class Install:
             # install the windows service
             current_dir = self.get_current_dir()
             service_path = '"%s/src/install/service/win32_service.py" install'%current_dir
-            os.system(PYTHON_EXE + ' %s' %service_path)
+
+            from pyasm.common import Config
+            python_exe = Config.get_value("services", "python")
+            if not python_exe:
+                python_exe = "python3"
+            os.system(python_exe + ' %s' %service_path)
 
 
     def execute(self, install_db=True, install_defaults=False, database_type='PostgresSQL', port_num='5432'):
@@ -249,9 +253,9 @@ class Install:
         
         except InstallException as e:
             print("Error: %s" %e.__str__())
-            print
+            print()
             print("Exiting...")
-            print
+            print()
             sys.exit(2)
 
         self.update_tactic_configs()
@@ -312,7 +316,7 @@ class Install:
 
         # check if database exists
         print("Creating database '%s' ..." % project_code)
-        print
+        print()
 
         db_exists = False
         from pyasm.search import DatabaseException
@@ -361,7 +365,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
        
         print("Upgrading the database schema in quiet mode...")
-        print
+        print()
 
         from pyasm.search.upgrade import Upgrade
         from pyasm.security import Batch
@@ -373,15 +377,15 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         version.replace('.', '_')
         upgrade = Upgrade(version, is_forced=True, project_code=None, quiet=True)
         upgrade.execute()
-        #print os.system('python \"%s/src/bin/upgrade_db.py\" -f -q -y'%install_dir)
+        #print(os.system('python \"%s/src/bin/upgrade_db.py\" -f -q -y'%install_dir))
 
-        print
-        print
+        print()
+        print()
         print("*** Installation of TACTIC completed at [%s] ***" %self.tactic_base_dir)
-        print
-        print
+        print()
+        print()
         #if self.backup_msg:
-        #    print self.backup_msg
+        #    print(self.backup_msg)
 
         if os.name != 'nt':
             print("Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. /etc/httpd/conf.d/"%self.apache_conf_path)
@@ -389,24 +393,24 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         else:
             print("Next, please install the Apache Web Server and then copy the Apache config extension [%s] to the Apache web server config area. e.g. C:/Program Files/Apache Software Foundation/Apache2.2/conf/"%self.apache_conf_path)
     
-        print
+        print()
         print("Depending on the OS, you may need to add the following line to the main config file [httpd.conf] shipped with Apache as well:")
 
 
-        print
+        print()
         if os.name == 'nt':
             print("Include conf/tactic_win32.conf")
         else:
             print("Include conf.d/*.conf")
-        print
+        print()
 
     def print_header(self):
-        print
-        print
+        print()
+        print()
         print("*"*20)
         print("Tactic Installation")
         print("*"*20)
-        print
+        print()
 
 
     def get_user(self):
@@ -558,13 +562,13 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         
         # set tactic install dir
         if not install_defaults:
-            print
+            print()
             print("Please enter the base path of the Tactic installation:")
-            print
+            print()
             tactic_base_dir = input("(%s) -> " % default_base_dir)
             if not tactic_base_dir:
                 tactic_base_dir = default_base_dir
-            print
+            print()
     
             # only for windows
             if os.name == 'nt': 
@@ -596,13 +600,13 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         if os.name != 'nt':
             default_apache_user = self.get_default_web_server_user()
             if not install_defaults:
-                print
+                print()
                 print("Please enter the user Apache Web Server is run under:")
-                print
+                print()
                 tactic_apache_user = input("(%s) -> " % default_apache_user)
                 if not tactic_apache_user:
                     tactic_apache_user = default_apache_user
-                print 
+                print ()
             else:
                 tactic_apache_user = default_apache_user
 
@@ -610,7 +614,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             user_id  =  self.check_web_server_user(tactic_apache_user) 
             if user_id == False:
                 print("User [%s] does not exist in the system. Exiting..." %tactic_apache_user)
-                print
+                print()
                 sys.exit(2)
 
 
@@ -649,9 +653,9 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         if not os.name == "nt":
             default_tactic_user = "apache"
             default_tactic_group = "apache"
-            print
+            print()
             print("Please enter TACTIC user:")
-            print
+            print()
             self.tactic_user = input("(%s) -> " % default_tactic_user)
             if not self.tactic_user:
                 self.tactic_user = default_install_dir
@@ -767,11 +771,11 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                     try:
                         shutil.rmtree(src_dir)
                     except OSError as e:
-                        print
+                        print()
                         print("Errors in removing directories.")
                         raise InstallException(e)
 
-            print
+            print()
             print("Copying files to the install directory... It may take several minutes.")
             shutil.copytree(current_dir, src_dir)
 
@@ -784,7 +788,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 os.unlink(self.tactic_install_dir)
 
             if not os.path.exists(self.tactic_install_dir):
-                print
+                print()
                 print("Creating a symlink at [%s]..." % self.tactic_install_dir)
                 os.symlink(self.tactic_src_dir, self.tactic_install_dir)
             
@@ -792,9 +796,9 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
 
 
     def check_modules(self, install_db):
-        print
+        print()
         print("Verifying Python modules are properly installed..." )
-        print
+        print()
  
         has_crypto = False
         try:
@@ -818,20 +822,20 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
            from PIL import Image 
         except ImportError:
             print("ERROR: Cannot import Python Imaging Library. Please Install.")
-            print
+            print()
             raise
             
         #try:
         #    from Ft.Xml.XPath import Evaluate
         #except ImportError:
-        #    print "ERROR: Cannot import Python 4Suite Xml module.  Please Install."
-        #    print
+        #    print("ERROR: Cannot import Python 4Suite Xml module.  Please Install.")
+        #    print()
         #    raise
         try:
             from lxml import etree
         except ImportError:
             print("ERROR: Cannot import lxml.  Please Install.")
-            print
+            print()
             raise
  
 
@@ -843,7 +847,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 import pyodbc
             except ImportError:
                 print("ERROR: Cannot import Python Database module (pgdb or pyscopg2 or pyodbc).  Please install.")
-                print
+                print()
                 raise
 
         try:
@@ -854,14 +858,14 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
                 import simplejson
             except ImportError:
                 print("ERROR: Cannot import simplejson module.  Please Install.")
-                print
+                print()
                 raise
         if os.name == 'nt':
             try:
                 import win32serviceutil
             except ImportError:
                 print("ERROR: Cannot import Python Database module (win32serviceutil).  Please Install py-win32.")
-                print
+                print()
                 raise
 
 
@@ -891,7 +895,7 @@ if __name__ == '__main__':
         install_db = True
     elif install_db == "false" or install_db == "False":
         install_db = False
-        print
+        print()
         print("  (Database Schema: You have indicated not to install the database schema.)")
     else:
         install_db = True

@@ -24,6 +24,8 @@ from tactic.ui.container import SmartMenu
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg
 
+import six
+
 
 class PanelWdg(BaseRefreshWdg):
 
@@ -113,19 +115,23 @@ class PanelWdg(BaseRefreshWdg):
             grid = config.get_view_attribute("grid")
 
         if grid:
-            if isinstance(grid, basestring):
-                grid = [int(x) for x in grid.split("x")]
+            if isinstance(grid, six.string_types):
+                if grid == "custom":
+                    grid = (2,2)
+                else:
+                    grid = [int(x) for x in grid.split("x")]
 
         else:
             grid = (3,1)
 
 
         is_owner = True
+        #is_owner = False
 
 
         table = DivWdg() 
         inner.add(table)
-        table.add_style("margin: 20px")
+        table.add_style("margin: 0px 0px 20px 00px")
         table.add_style("box-sizing: border-box")
 
 
@@ -136,21 +142,29 @@ class PanelWdg(BaseRefreshWdg):
         element_names = config.get_element_names()
 
         index = 0
-        for y in range(grid[1]):
-            row = DivWdg()
-            table.add(row)
-            row.add_class("row")
-            row.add_style("box-sizing: border-box")
 
+        row = DivWdg()
+        table.add(row)
+        row.add_class("row")
+        row.add_style("box-sizing: border-box")
+        row.add_style("display: flex")
+        row.add_style("flex-wrap: wrap")
+
+
+
+        for y in range(grid[1]):
             num_cols = grid[0]
             size = 12 / num_cols
 
             for x in range(grid[0]):
                 col = DivWdg()
                 row.add(col)
-                col.add_class("col-sm-%s" % size)
+                #col.add_class("col-sm-%s" % size)
                 col.add_style("box-sizing: border-box")
                 col.add_style("overflow: auto")
+                col.add_style("min-width: 200px")
+
+                col.add_style("max-width: 45%")
 
                 col.add_class("spt_panel_top")
 
@@ -165,6 +179,7 @@ class PanelWdg(BaseRefreshWdg):
                     menu_wdg.add_style("float: right")
                     menu_wdg.add("<i class='fa fa-bars'> </i>")
                     menu_wdg.add_class("hand")
+                    menu_wdg.add_style("margin: 0px 5px")
 
                     SmartMenu.add_smart_menu_set( menu_wdg, { 'BUTTON_MENU': menu } )
                     SmartMenu.assign_as_local_activator( menu_wdg, "BUTTON_MENU", True )
@@ -184,9 +199,11 @@ class PanelWdg(BaseRefreshWdg):
                 if not element:
                     element = DivWdg()
                     element.add("No content")
-                    element.add_style("height: 100%")
-                    element.add_style("width: 100%")
+                    element.add_style("height: 30px")
+                    element.add_style("width: 80%")
                     element.add_style("text-align: center")
+                    element.add_style("margin: 10px")
+                    element.add_style("box-sizing: border-box")
                     element.add_border()
                 else:
                     try:
@@ -207,13 +224,57 @@ class PanelWdg(BaseRefreshWdg):
                         header.add(title)
                     else:
                         header.add("Panel: %s,%s" % (x, y))
+
+
+                    header.add_behavior( {
+                        'type': 'click',
+                        'cbjs_action': '''
+                        var panel = bvr.src_el.getParent(".spt_panel_top");
+                        var clone = spt.behavior.clone(panel);
+
+                        var size = panel.getSize();
+                        clone.makeDraggable();
+
+                        document.id(document.body).appendChild(clone);
+                        clone.setStyle("position", "absolute");
+                        clone.setStyle("border", "solid 1px blue");
+                        clone.setStyle("top", "0px");
+                        clone.setStyle("left", "0px");
+                        clone.setStyle("z-index", "1000");
+                        clone.setStyle("opacity", "0.7");
+                        clone.setStyle("box-shadow", "0px 0px 5px rgb(0,0,0,0.1)");
+
+
+                        setTimeout( function() {
+                            clone.setStyle("width", size.x);
+                            clone.setStyle("height", size.y);
+                            clone.setStyle("min-width", size.x);
+                            clone.setStyle("min-height", size.y);
+                            clone.setStyle("max-width", size.x);
+                            clone.setStyle("max-height", size.y);
+                        });
+                        '''
+                    } )
+
                     col.add("<hr/>")
 
                 content = DivWdg()
                 col.add(content)
                 content.add_class("spt_panel_content")
-                content.add_style("min-height: 200px;")
+                content.add_style("min-height: 200px")
+                content.add_style("min-width: 200px")
+                content.add_style("margin: 5px")
+                content.add_style("box-sizing: border-box")
 
+                col.add_style("border: solid 1px #DDD")
+                col.add_style("border-radius: 3px")
+                col.add_style("padding: 10px")
+                col.add_style("margin: 0px 10px 15px 10px")
+                col.add_style("background: #FFF")
+
+
+                content.add_style("max-height: 400px;")
+                content.add_style("overflow: auto")
 
                 content.add(element)
 
@@ -229,7 +290,7 @@ class PanelWdg(BaseRefreshWdg):
 
     def get_action_menu(self):
 
-        from menu_wdg import Menu, MenuItem
+        from .menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
@@ -322,6 +383,23 @@ class PanelWdg(BaseRefreshWdg):
 
 
 
+
+        menu_item = MenuItem(type='action', label='Delete Page')
+        menu_item.add_behavior( {
+            'cbjs_action': '''
+            var activator = spt.smenu.get_activator(bvr);
+            var top = activator.getParent(".spt_panel_top");
+            spt.behavior.destroy_element(top);
+
+            '''
+        } )
+        menu.add(menu_item)
+
+
+
+
+
+
         if len(self.pages) > 5:
 
 
@@ -365,6 +443,10 @@ class PanelWdg(BaseRefreshWdg):
                     '''
                 } )
                 menu.add(menu_item)
+
+
+
+
 
 
         menu_item = MenuItem(type='title', label='Layouts')
@@ -453,6 +535,7 @@ class UserPageSelectWdg(BaseRefreshWdg):
             pages_div.add(page_div)
             page_div.add_class("spt_user_page_item")
             page_div.add_style("padding: 3px")
+            page_div.add_style("box-sizing: border-box")
             page_div.add_class("tactic_hover")
             page_div.add_attr("spt_page", page)
             page_div.add_class("hand")
