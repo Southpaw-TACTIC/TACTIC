@@ -2339,7 +2339,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         creator = SearchTypeCreatorCmd(**kwargs)
         creator.execute()
 
-        sobject = creator.get_sobject()
+        sobject = creator.get_search_type_obj()
         sobject_dict = self._get_sobject_dict(sobject)
         return sobject_dict
 
