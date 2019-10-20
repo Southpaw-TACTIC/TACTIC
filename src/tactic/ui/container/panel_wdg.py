@@ -20,6 +20,8 @@ from pyasm.web import DivWdg, ButtonWdg, HtmlElement
 from pyasm.widget import WidgetConfig
 from pyasm.command import Command
 
+from pyasm.security import Sudo
+
 from tactic.ui.container import SmartMenu
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg
@@ -443,6 +445,7 @@ class PanelWdg(BaseRefreshWdg):
                 element.add_style("width: 80%")
                 element.add_style("text-align: center")
                 element.add_style("margin: 10px")
+                element.add_style("padding: 5px")
                 element.add_style("box-sizing: border-box")
                 element.add_border()
 
@@ -931,6 +934,8 @@ spt.panel_container.resize_drag_action = function(evt, bvr, mouse_411) {
 class SavePanelCmd(Command):
 
     def execute(self):
+
+        sudo = Sudo()
 
         data = self.kwargs.get("data")
 

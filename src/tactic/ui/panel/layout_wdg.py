@@ -925,6 +925,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
     def get_display(self):
         top = self.top
 
+
         width = self.kwargs.get("width") or 400
         top.add_style("width: %spx" % width)
 
