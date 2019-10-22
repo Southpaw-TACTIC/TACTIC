@@ -24,7 +24,7 @@
 <!-- external services -->
 <services>
     <mailserver></mailserver>
-    <python>python</python>
+    <python>python3</python>
     <python_path></python_path>
     <render_submit_class></render_submit_class>
     <render_dispatcher></render_dispatcher>
