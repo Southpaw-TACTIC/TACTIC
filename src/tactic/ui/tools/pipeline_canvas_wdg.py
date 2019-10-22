@@ -572,6 +572,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_pipeline_top");
             if ( top.hot_key_state == false) return;
 
+            console.log(bvr.src_el);
             bvr.src_el.focus();
             '''
 
@@ -582,6 +583,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         outer.add_behavior( {
+            
             'type': 'keyup',
             'cbjs_action': '''
             var key = evt.key;
@@ -701,7 +703,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 container.scale = scale;
 
             } else if (key == "n") {
-
+                
                 var canvas = spt.pipeline.get_canvas();
                 var groups = canvas.getElements(".spt_pipeline_group");
                 if (groups.length) {
@@ -800,7 +802,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             } else if (evt.control == true && key == "v") {
 
                 var selected = spt.pipeline.get_selected_nodes();
-
+                
                 spt.pipeline.unselect_all_nodes();
                 var nodes = spt.pipeline.clipboard;
                 if (nodes) {
@@ -845,7 +847,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             '''
         } )
-
 
 
 
@@ -1368,6 +1369,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 width: 200px;
                 height: 100px;
                 display: flex;
+                text-align:center;
                 align-items: center;
                 justify-content: center;
 
@@ -1432,7 +1434,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         #group_div.add_style("font-weight: bold")
 
-        button = DivWdg("Click here to add your first node. Use the <i class='fa fa-wrench'></i> to add more nodes.")
+        button = DivWdg("Click here !!!!!!!!!!! 222222to add your first node. Use the <i class='fa fa-wrench'></i> to add more nodes.")
         content_div.add( button )
 
 
@@ -5822,6 +5824,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var nodes = null;
     if (typeof(group_name) == 'undefined') {
         nodes = spt.pipeline.get_all_nodes();
+        folder = spt.pipeline.get_all_folders();
     }
     else {
         nodes = spt.pipeline.get_nodes_by_group(group_name);
@@ -5833,12 +5836,10 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     var left = null;
     var bottom = null;
     var right = null;
-    for (var i = 0; i < nodes.length; i++) {
-        if (nodes[i].getStyle("display") == "none") {
-            continue;
-        }
 
-        var pos = spt.pipeline.get_position(nodes[i]);
+    if(nodes.length == 0){
+
+        var pos = spt.pipeline.get_position(folder[0]);
         if (left == null || pos.x < left) {
             left = pos.x;
         }
@@ -5851,6 +5852,29 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         if (bottom == null || pos.y > bottom) {
             bottom = pos.y
         }
+
+
+        }
+        else{
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].getStyle("display") == "none") {
+                    continue;
+                }
+
+                var pos = spt.pipeline.get_position(nodes[i]);
+                if (left == null || pos.x < left) {
+                    left = pos.x;
+                }
+                if (top == null || pos.y < top) {
+                    top = pos.y;
+                }
+                if (right == null || pos.x > right) {
+                    right = pos.x
+                }
+                if (bottom == null || pos.y > bottom) {
+                    bottom = pos.y
+                }
+            }
     }
 
     var size = spt.pipeline.get_canvas_size();

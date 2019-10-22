@@ -40,6 +40,8 @@ from client.tactic_client_lib import TacticServerStub
 
 from .pipeline_canvas_wdg import PipelineCanvasWdg
 
+
+
 class PipelineToolWdg(BaseRefreshWdg):
     '''This is the entire tool, including the sidebar and tabs, used to
     edit the various pipelines that exists'''
@@ -49,10 +51,13 @@ class PipelineToolWdg(BaseRefreshWdg):
         self.search_type = self.kwargs.get('search_type')
         self.search_key = self.kwargs.get('search_key')
 
-
+        
     def get_styles(self):
 
         styles = HtmlElement.style('''
+
+
+            
 
             .spt_pipeline_tool_left {
                 position: absolute;
@@ -74,7 +79,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 transition: .25s;
             }
 
-            .spt_pipeline_tool_info {
+            .spt_pipeline_tool_info{
                 max-width: 400px;
                 width: 400px;
                 min-width: 400px;
@@ -92,7 +97,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 overflow-y: auto;
             }
 
-            .spt_pipeline_tool_top .search-results {
+            .spt_pipeline_tool_top .search-results{
                 position: absolute;
                 right: 9;
                 height: 144px;
@@ -221,6 +226,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border-radius: 2px;
                 border: 1px solid #ccc;
             }
+
+            
 
             ''')
 
@@ -807,6 +814,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         right.add_style("position: relative")
 
 
+        
 
         # NOTE: the canvas in PipelineCanvasWdg requires a set size ... it does not respond
         # well to sizes like 100% or auto.  Unless this is fixed, we cannot have a table
@@ -815,9 +823,15 @@ class PipelineToolWdg(BaseRefreshWdg):
         #info.add_style("display: none")
         info.add_class("spt_pipeline_tool_info")
         info.add_class("spt_panel")
+        
+       
 
+        
         info_wdg = DivWdg()
         info.add(info_wdg)
+
+        
+
 
         info_wdg.add_border()
         info_wdg.add_style("height: 100%")
@@ -830,20 +844,31 @@ class PipelineToolWdg(BaseRefreshWdg):
         else:
             show_info_tab = True
 
-
+        
         inner.add_behavior( {
         'type': 'listen',
         'event_name': 'pipeline|show_info',
         'cbjs_action': '''
 
+ 
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        top.hot_key_state = false;
+
         var info = top.getElement(".spt_pipeline_tool_info");
         info.setStyle("right", "0px");
+        var top = bvr.src_el.getParent(".spt_pipeline_top");
+        
+        
+
+        var input = bvr.src_el.getElement(".spt_hot_key");
+        
+        input.blur();
+
 
         '''
 
         } )
-
+        
 
         inner.add_behavior( {
         'type': 'listen',
@@ -9864,6 +9889,31 @@ class PipelineDocumentItem(BaseRefreshWdg):
         top.add_class("vertical-centered")
         top.add_attr("spt_pipeline_code", pipeline_code)
         top.add_attr("spt_title", label)
+
+        top.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+             var row = bvr.src_el.getParent(".spt_table_row");
+             
+             row.addClass("spt_table_selected");
+             var pipeline_code = bvr.src_el.getAttribute("spt_pipeline_code");
+             var title = bvr.src_el.getAttribute("spt_title");
+             var event = "pipeline_" + pipeline_code + "|click";
+
+             var temp = {
+                 "pipeline_code": pipeline_code,
+                 "title" : title,
+             }
+
+             var kwargs = {};
+             kwargs.options = temp;
+             
+             spt.named_events.fire_event(event, kwargs);
+             spt.command.clear();
+             spt.pipeline.fit_to_canvas();
+
+             '''
+             })
 
         top.add_behavior({
             'type': 'listen',
