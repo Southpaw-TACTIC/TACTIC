@@ -128,8 +128,6 @@ class TabEditWdg(BaseRefreshWdg):
             element_div.add_class("hand")
 
             element_div.add_behavior( {
-
-                abcd
                 'type': 'click_up',
                 'view': view,
                 'element_name': element_name,
