@@ -8953,8 +8953,7 @@ spt.table.export = function(mode) {
     }
     else if (bvr.mode=='export_displayed') {
         title = 'Export displayed items from "' + search_type + '" list ';
-        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
-        var tbodies = table.getElements(css);
+        var tbodies = table.getElements(".spt_table_row");
         for (var k=0; k < tbodies.length; k++) {
             if (tbodies[k].getStyle('display') == 'none'){
                 continue;
@@ -9319,6 +9318,13 @@ spt.table.export_document = function(kwargs) {
     }
     return document
 }
+
+
+
+
+
+
+
             '''
 
         if self.kwargs.get('temp') != True:
