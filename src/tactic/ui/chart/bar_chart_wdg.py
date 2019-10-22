@@ -35,6 +35,7 @@ class BarChartWdg(BaseRefreshWdg):
     'chart_type': 'line|bar|area - type of chart',
     'width': 'The starting width of the chart',
     'search_keys': 'List of search keys to display',
+    'document': 'Document to display',
     'x_axis': 'The x_axis element',
     'y_axis': 'List of elements to put on the y_axis'
     }
@@ -91,7 +92,17 @@ class BarChartWdg(BaseRefreshWdg):
 
 
         self.search_keys = self.kwargs.get("search_keys")
-        if self.search_type and self.search_type.startswith("@SOBJECT("):
+        self.document = self.kwargs.get("document")
+
+        if self.document:
+            from tactic.ui.panel import Document
+            doc = Document()
+            if isinstance(self.document, six.string_types):
+                self.document = self.document.replace("'", '"')
+                self.document = jsonloads(self.document)
+            self.sobjects = doc.get_sobjects_from_document(self.document)
+
+        elif self.search_type and self.search_type.startswith("@SOBJECT("):
             self.sobjects = Search.eval(self.search_type)
         elif self.search_keys:
             if isinstance(self.search_keys, six.string_types):
@@ -129,7 +140,7 @@ class BarChartWdg(BaseRefreshWdg):
 
         for element in self.elements:
 
-            if element.startswith("{") and element.endswith("}"):
+            if (element.startswith("{") and element.endswith("}")) or element.startswith("@"):
                 expr = element.strip("{}")
                 value = Search.eval(expr, sobject, single=True)
                 labels.append(element)
@@ -154,6 +165,8 @@ class BarChartWdg(BaseRefreshWdg):
 
                 try:
                     value = widget.get_text_value()
+                    if value:
+                        value = float(value)
                 except:
                     value = 0
 
@@ -219,10 +232,22 @@ class BarChartWdg(BaseRefreshWdg):
                 element_values.append(value)
 
 
-        print("chart_labels: ", chart_labels)
-        print("element: ", element_values)
+        self.colors = self.kwargs.get("colors")
+        if not self.colors:
+            self.colors = [
+                'rgba(0,255,0,0.5)',
+                'rgba(0,0,255,0.5)',
+                'rgba(255,0,0,0.5)',
+                'rgba(255,255,0,0.5)',
+                'rgba(0,255,255,0.5)',
+                'rgba(255,0,255,0.5)',
+            ]
+ 
 
-        from .chart_wdg import ChartWdg as XXChartWdg
+
+        #from .chart_wdg import ChartWdg as XXChartWdg
+        from .chart_js_wdg import ChartJsWdg as XXChartWdg
+
         from .chart_wdg import ChartData as XXChartData
 
 
@@ -231,17 +256,23 @@ class BarChartWdg(BaseRefreshWdg):
             width="600px",
             chart_type=self.chart_type,
             labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)]
+            label_values=[i+0.5 for i,x in enumerate(chart_labels)],
+            rotate_x_axis=True,
         )
-        chart.add_gradient("background", "background", 5, -20)
+        chart.add_color("background", "background")
         top.add(chart)
 
-        data = XXChartData(
-            color="rgba(128, 0, 0, 1.0)",
-            data=element_values,
-            x_data=[i+0.5 for i,x in enumerate(chart_labels)]
-        )
-        chart.add(data)
+        count = 0
+        for element_values in element_data:
+            label = labels[count]
+            data = XXChartData(
+                label=label,
+                color=self.colors[count%5],
+                data=element_values,
+                x_data=[i+0.5 for i,x in enumerate(chart_labels)]
+            )
+            chart.add(data)
+            count += 1
 
         """
         data = XXChartData(
@@ -257,79 +288,6 @@ class BarChartWdg(BaseRefreshWdg):
         return top
 
         
-
-        """
-        # look at the max value and adjust
-        import math
-        if not self.max_value:
-            self.max_value = 10
-
-        exp = int( math.log10(self.max_value) ) -1
-        top_value = math.pow(10, exp+1)
-        steps = math.pow(10, exp) * 5
-
-        while top_value < self.max_value*1.1:
-            top_value += steps
-
-        self.max_value = top_value
-        if top_value / steps < 5:
-            steps = steps / 5
-        elif top_value / steps > 20:
-            steps = steps * 2
-        self.steps = steps
-
-
-
-
-        rotate = 45
-        if rotate:
-            chart_labels = [{'colour': '#999999', 'text': x, 'rotate': rotate} for x in chart_labels]
-
-        chart_data = ChartData()
-        x_axis = {
-            "labels": {
-              "labels": chart_labels
-            },
-            'colour': '#999999',
-        }
-        chart_data.set_value('x_axis', x_axis)
-
-        y_axis = {
-            'max': self.max_value,
-            'min': self.min_value,
-            'steps': self.steps,
-            'colour': '#999999',
-        }
-        chart_data.set_value('y_axis', y_axis)
-
-
-        # create an element in the chart
-
-        colors = ['#000099', '#009900', '#999900', '#009999', '#990099', '#990000', '#009900', '#000099', '#999900', '#990000']
-        while len(element_data) >= len(colors):
-            colors.extend(colors)
-
-
-        for i, element_values in enumerate(element_data):
-            color = colors[i]
-            label = labels[i]
-
-            # create the element
-            element = ChartElement(self.chart_type)
-            element.set_values(element_values)
-            chart_data.add_element(element)
-
-
-            element.set_param("colour", color)
-            element.set_param("text", label)
-
-
-        # draw the chart
-        chart = ChartWdg(chart=chart_data, width=self.width)
-        top.add(chart)
-        return top
-
-        """
 
 
 
