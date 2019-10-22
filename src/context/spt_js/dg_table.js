@@ -1024,12 +1024,12 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
-spt.dg_table.get_size_info = function(table_id, view, login, first_idx, update_data={})
+spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
 {
     var table = document.id(table_id);
-
+    var definition_view = table.getAttribute("spt_view");
     if (view == undefined) {
-        view = table.getAttribute("spt_view");
+        view = definition_view;
     }
     var panel = table.getParent(".spt_table_top");
     var view_attrs = panel.getAttribute("spt_view_attrs");
@@ -1110,6 +1110,47 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, update_d
 
     var server = TacticServerStub.get();
 
+    // copy definitions
+    if (kwargs.save_definitions) {
+        var definitions = server.eval("@GET(config/widget_config['search_type', '" + search_type + "']['view', '" + definition_view + "'].config)", {single: true});
+
+        if (definitions) {
+            // work with XML docs for convenience
+            var definition_xml = spt.parse_xml(definitions);
+            var config_xml = spt.parse_xml(config);
+
+            // get all elements to check for definitions, and all available definitions respectively
+            var config_elements = config_xml.getElementsByTagName("element");
+            var definition_elements = Array.prototype.slice.call(definition_xml.getElementsByTagName("element"), 0);
+
+            // for each element in the new config, copy the element definition
+            for (var i = 0; i < config_elements.length; i++) {
+
+                // check if a definition with the same name exists
+                var definition_element = definition_elements.filter(function(el) {
+                    return config_elements[i].getAttribute("name") == el.getAttribute("name");
+                });
+
+                if (definition_element.length > 0) {
+                    definition_element = definition_element[0];
+
+                    // copy over the definition, prioritizing newly defined attribute values (just width for now) and using the unmodified ones from the
+                    // definition
+                    var attributes = config_elements[i].getAttributeNames();
+
+                    for (var j = 0; j < attributes.length; j++) {
+                        definition_element.setAttribute(attributes[j], config_elements[i].getAttribute(attributes[j]))
+                    }
+
+                    config_elements[i].outerHTML = definition_element.outerHTML;
+                }
+            }
+
+            // re-serialize the config with the definitions
+            config = new XMLSerializer().serializeToString(config_xml);
+        }
+    }
+
     var config_search_type = 'config/widget_config';
     var code = view;
     var data = {'view': view, 'search_type': search_type };
@@ -1120,8 +1161,16 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, update_d
     config_obj = server.get_unique_sobject( config_search_type, data );
     var config_search_key = config_obj["__search_key__"];
 
-    update_data['config'] = config;
-    config_obj = server.update(config_search_key, update_data);
+    //redefine data
+    var data = {};
+    var extra_data = kwargs.extra_data;
+    for (var key in extra_data) {
+      data[key] = extra_data[key];
+    }
+    data['config'] = config;
+    config_obj = server.update(config_search_key, data);
+
+    // may have to set the new view name on the table?
 
     return config;
    
