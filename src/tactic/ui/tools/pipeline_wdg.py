@@ -9177,8 +9177,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         else:
             task_creation = self.workflow.get("task_creation")
         
-        task_creation = False if self.workflow.get("task_creation") == "false" else "test"
-        
         autocreate_task = True if self.workflow.get("autocreate_task") == True else False
 
         return {
