@@ -514,6 +514,9 @@ class CherryPyStartup(CherryPyStartup20):
             context_dir = "%s/sites/%s/context" % (context_dir, project)
 
 
+        if site and site != 'default':
+            from pyasm.security import Site
+            Site.update_project(project, site)
 
         if not os.path.exists(context_dir):
             return
@@ -531,7 +534,7 @@ class CherryPyStartup(CherryPyStartup20):
 
             context = context_dir.replace(".py", "")
             contexts.append(context)
-
+        
         for context in contexts:
             try:
 
