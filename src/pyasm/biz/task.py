@@ -1735,8 +1735,12 @@ class TaskGenerator(object):
         if process_type in ['hierarchy']:
             if version_2:
                 settings = workflow.get("default")
+                if not settings:
+                    return
+
                 task_creation = settings.get("task_creation")
                 subpipeline_code = settings.get("subpipeline")
+
             else:
                 task_creation = properties.get("task_creation")
                 subpipeline_code = process_sobject.get("subpipeline_code")

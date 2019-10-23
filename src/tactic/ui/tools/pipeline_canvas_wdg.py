@@ -1657,7 +1657,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             var subpipeline = null;
             if (process) { 
-                var subpipeline_code = process.subpipeline_code;
+                var subpipeline_code = node.properties.settings.default.subpipeline;
                 if (subpipeline_code) {
                     subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
                 } else {
@@ -1705,7 +1705,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
             else {
                 subpipeline_code = subpipeline.code;
-
+                
                 spt.pipeline.clear_canvas();
                 spt.pipeline.import_pipeline(subpipeline_code);
 
@@ -4089,6 +4089,7 @@ spt.pipeline.get_node_kwargs = function(node) {
     var type = spt.pipeline.get_node_type(node);
     type = "settings";
     var property = node.properties;
+
     if (property) return property[type] || {};
     return {};
 }
@@ -4118,8 +4119,9 @@ spt.pipeline.add_node_on_save = function(node, name, value) {
 }
 
 // Supports both kwargs and multi kwargs
-spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4129,8 +4131,9 @@ spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4154,8 +4157,9 @@ spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4165,8 +4169,9 @@ spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
