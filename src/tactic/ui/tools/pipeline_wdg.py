@@ -5673,7 +5673,10 @@ class HierarchyInfoWdg(BaseInfoWdg):
         subpipeline = process_sobj.get_value("subpipeline_code")
 
         workflow = self.workflow
-        task_creation = workflow.get("default").get("task_creation") or "subtasks_only"
+
+        task_creation = "subtasks_only"
+        if workflow.get("default"):
+            task_creation = workflow.get("default").get("task_creation")
 
         kwargs["subpipeline"] = subpipeline
         kwargs["task_creation"] = task_creation
@@ -7168,8 +7171,13 @@ class NewProcessInfoCmd(Command):
     def handle_hierarchy(self):
 
         hierarchy_kwargs = self.kwargs.get("hierarchy") or {}
-        
         subpipeline_code = hierarchy_kwargs.get("subpipeline")
+
+        if not subpipeline_code:
+            default = self.kwargs.get("default")
+            if default:
+                subpipeline_code = default.get("subpipeline")
+
         if subpipeline_code:
             self.process_sobj.set_value("subpipeline_code", subpipeline_code)
 
