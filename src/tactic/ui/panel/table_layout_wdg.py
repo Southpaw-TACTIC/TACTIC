@@ -146,8 +146,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '07'
         },
-        'show_advanced_search': {
+        'show_search': {
             'description': 'Flag to determine whether or not to show the advanced Search button',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '18'
+        },
+        'advanced_search': {
+            'description': '(DEPRECATED) Use show_search instead',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
@@ -8946,8 +8953,7 @@ spt.table.export = function(mode) {
     }
     else if (bvr.mode=='export_displayed') {
         title = 'Export displayed items from "' + search_type + '" list ';
-        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
-        var tbodies = table.getElements(css);
+        var tbodies = table.getElements(".spt_table_row");
         for (var k=0; k < tbodies.length; k++) {
             if (tbodies[k].getStyle('display') == 'none'){
                 continue;
@@ -9312,6 +9318,13 @@ spt.table.export_document = function(kwargs) {
     }
     return document
 }
+
+
+
+
+
+
+
             '''
 
         if self.kwargs.get('temp') != True:

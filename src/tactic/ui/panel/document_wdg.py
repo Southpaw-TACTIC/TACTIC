@@ -95,10 +95,12 @@ class Document(object):
             sobject = item.get("sobject")
             if sobject.get("__search_key__"):
                 search_key = sobject.get("__search_key__")
+                if not search_key:
+                    search_key = "sthpw/virtual?id=%s" % sobject.get("id")
 
             if sobject or search_key:
 
-                if search_key.startswith("sthpw/virtual"):
+                if search_key and search_key.startswith("sthpw/virtual"):
                     pass
                 elif not sobject and search_key:
                     sobject = Search.get_by_search_key(search_key)
@@ -111,7 +113,7 @@ class Document(object):
 
                     search_type = self.kwargs.get("search_type")
                     if not search_type:
-                        search_type = "sthpw/task"
+                        search_type = "sthpw/virtual"
 
                     s = SearchType.create(search_type)
                     for n, v in sobject.items():

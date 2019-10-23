@@ -1887,7 +1887,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.filter_num_div = None
         # Search button
         search_dialog_id = self.kwargs.get("search_dialog_id")
-        show_search = self.get_setting("advanced_search")
+        
+        show_search = self.get_setting("show_search")
+        if show_search is None:
+            # advanced_search is deprecated as of 4.7
+            show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
             div = DivWdg()

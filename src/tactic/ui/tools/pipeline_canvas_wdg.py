@@ -4423,7 +4423,6 @@ spt.pipeline.get_all_folders = function() {
 }
 
 spt.pipeline.add_folder = function(group_name, color, title) {
-
     if (typeof(color) == 'undefined') {
         color = '#999';
     }

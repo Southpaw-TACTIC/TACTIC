@@ -1198,8 +1198,6 @@ spt.dg_table.table_action_cbk = function(element, table_id ) {
 //
 spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
 
-    alert("spt.dg_table.view_action_cbk is deprecated")
-
     var table;
     if (! table_id) {
         var activator = spt.smenu.get_activator(bvr);
@@ -1252,7 +1250,7 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
 
             kwargs['new_title'] = table_view;
             kwargs['save_a_link'] = false;
-            setTimeout( function() {spt.dg_table.save_view(table_id, table_view, kwargs);
+            setTimeout( function() {spt.table.save_view(table_id, table_view, kwargs);
                 spt.app_busy.hide();}, 0 )
             return;
         }
@@ -2530,7 +2528,8 @@ spt.dg_table.save_search_cbk = function(evt, bvr) {
 
 spt.dg_table.get_search_values = function(search_top) {
 
-    alert("spt.dg_table.get_search_values is deprecated");
+    //alert("spt.dg_table.get_search_values is deprecated");
+    // NOTE: used in export_matched for csv export
 
     // get all of the search input values
     var new_values = [];
