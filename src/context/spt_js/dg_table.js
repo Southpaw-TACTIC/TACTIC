@@ -1170,7 +1170,8 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
     data['config'] = config;
     config_obj = server.update(config_search_key, data);
 
-    // may have to set the new view name on the table?
+    // change view attribute of table
+    table.setAttribute("spt_view", view);
 
     return config;
    
