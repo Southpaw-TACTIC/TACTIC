@@ -22,11 +22,11 @@ class ConfigUpgrade(BaseUpgrade):
     def upgrade_v4_7_0_a10_002(self):
         if self.get_database_type() == 'PostgreSQL':
             self.run_sql('''
-            ALTER TABLE "spt_authenticate" ALTER COLUMN "data" TYPE jsonb USING data::jsonb;
+            ALTER TABLE "spt_authenticate" ADD COLUMN "data" jsonb;
             ''')
         else:
             self.run_sql('''
-            ALTER TABLE "spt_authenticate" ALTER COLUMN "data" TYPE json;
+            ALTER TABLE "spt_authenticate" ADD COLUMN "data" json;
             ''')
 
 
