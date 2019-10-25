@@ -8610,7 +8610,7 @@ spt.table.simple_save_view = function (table, view_name, kwargs) {
 
         var top = table.getParent(".spt_view_panel");
         var layout = top ? top.getAttribute('spt_layout'): null;
-        var search_wdg = top ? top.getElement(".spt_search"): null;
+        var search_wdg = kwargs.search_top? kwargs.search_top :  (top ? top.getElement(".spt_search"): null);
 
         // save search view
         if (search_wdg) {
@@ -8848,12 +8848,23 @@ spt.table.get_search_values = function(search_top) {
         new_values.push(values);
 
         // find the table/simple search as well
-        var panel = search_top.getParent(".spt_view_panel");
-        var table_searches = panel.getElements(".spt_table_search");
-        for (var i = 0; i < table_searches.length; i++) {
-            var table_search = table_searches[i];
-            var values = spt.api.Utility.get_input_values(table_search,null,false);
-            new_values.push(values);
+        var panel;
+        var top_class = search_top.getAttribute("spt_top_class");
+        if (top_class) {
+            var top = search_top.getParent("." + top_class);
+            if (top) {
+                panel = top.getElement(".spt_view_panel");
+            }
+        }
+        panel = panel? panel : search_top.getParent(".spt_view_panel");
+
+        if (panel) {
+            var table_searches = panel.getElements(".spt_table_search");
+            for (var i = 0; i < table_searches.length; i++) {
+                var table_search = table_searches[i];
+                var values = spt.api.Utility.get_input_values(table_search,null,false);
+                new_values.push(values);
+            }
         }
     }
 
