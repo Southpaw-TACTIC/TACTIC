@@ -39,10 +39,14 @@ def main():
     if os.path.exists(context_client_dir):
         shutil.rmtree(context_client_dir)
 
+    """
+    TODO: Removing doc directory gives stack trace in
+    ProjectConfigWdg
+    """
     # remove doc directory
-    doc_dir = "%s/doc" % to_dir
-    if os.path.exists(doc_dir):
-        shutil.rmtree(doc_dir)
+    #doc_dir = "%s/doc" % to_dir
+    #if os.path.exists(doc_dir):
+    #    shutil.rmtree(doc_dir)
 
     # remove deprecated directory
     deprecated_dir = "%s/src/deprecated" % to_dir
