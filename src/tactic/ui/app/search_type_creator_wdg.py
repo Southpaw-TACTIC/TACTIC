@@ -1371,12 +1371,12 @@ class SearchTypeCreatorCmd(Command):
         #self.asset_description = web.get_form_value("asset_description")
         self.asset_description = self.get_value("asset_description")
         if self.asset_description == "":
-            self.asset_description == "No description"
+            self.asset_description = "No description"
 
         #self.asset_title = web.get_form_value("asset_title")
         self.asset_title = self.get_value("asset_title")
         if self.asset_title == "":
-            self.asset_title == "No title"
+            self.asset_title = "No title"
 
         #copy_from_template = web.get_form_value("copy_from_template")
         copy_from_template = self.get_value("copy_from_template")
