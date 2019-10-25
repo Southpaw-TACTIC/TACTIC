@@ -17,6 +17,7 @@ import subprocess
 import re
 import os.path
 
+# TODO: Get Python from Common for Python3
 PYTHON_EXE = 'python'
 
 class InstallException(Exception):
@@ -700,6 +701,8 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         self.tactic_license = 'tactic-license.xml'
         if os.name != 'nt':
             self.apache_conf = 'tactic.conf'
+           
+            # TODO: Python3 should use Python3 conf
             self.tactic_conf = 'tactic_linux-conf.xml'
         else:
             self.apache_conf = 'tactic_win32.conf'
