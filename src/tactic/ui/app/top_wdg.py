@@ -712,7 +712,7 @@ class TopWdg(Widget):
                 'type': 'click_up',
                 'cbjs_action': '''
                 var ok = function(){
-                    var server = TacticServerStub.get();
+                    var server = TacticServerStub.get_master();
                     server.execute_cmd("SignOutCmd", {login: bvr.login} );
 
                     window.location.href="/";

@@ -16,6 +16,7 @@ import decimal
 import shutil, os, types, sys, thread
 import re, random
 import datetime, time
+import requests
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -324,9 +325,9 @@ def xmlrpc_decorator(meth):
 
             try:
                 #if meth.__name__ in QUERY_METHODS:
-                
-                multi_site = Config.get_value("master", "enabled")
 
+                multi_site = Config.get_value("master", "enabled")
+                
                 if QUERY_METHODS.has_key(meth.__name__):
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
@@ -338,7 +339,7 @@ def xmlrpc_decorator(meth):
 
                 else:
                     if multi_site:
-                        result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                        result = self.redirect_to_server(ticket, meth.__name__, args[:])
                         return self.browser_res(meth, result)
                     else: 
                         cmd = get_full_cmd(self, meth, ticket, args)
@@ -1031,7 +1032,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         project_code = Config.get_value("master", "project_code")
         url = Config.get_value("master", "url") 
-        rest_url = url + "/" + project_code + "/REST/"
+        rest_url = "http://" + url + "/" + project_code + "/REST/"
        
  
         args = jsondumps(args)
