@@ -13,7 +13,7 @@
 
 import tacticenv
 
-from pyasm.common import Environment, Xml, Config
+from pyasm.common import Environment, Xml, Config, Common
 from pyasm.search import DatabaseImpl
 
 from tactic.command import PluginCreator, PluginInstaller
@@ -103,9 +103,8 @@ def upgrade():
     print("Running upgrade on 'sthpw' database")
 
     install_dir = Environment.get_install_dir()
-    python = Config.get_value("services", "python")
-    if not python:
-        python = "python"
+    
+    python = Common.get_python()
 
     cmd = "%s %s/src/bin/upgrade_db.py -q -f -y -p sthpw" % (python, install_dir)
     print(cmd)

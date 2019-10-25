@@ -164,7 +164,8 @@ class Config(Base):
 
             value = jsondumps(value)
         else:
-            value = unicode(value, errors='ignore').encode('utf-8')
+            if not Common.IS_Pv3:
+                value = unicode(value, errors='ignore').encode('utf-8')
         
         xml_data.set_node_value(node, value)
 
