@@ -2884,7 +2884,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'values': 'top|bottom',
             'order' : 20,
             'category': 'Display'
-        }
+        },
+        "show_save": {
+            'description': "determines whether or not to show the save button",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '21',
+            'category': 'Display'
+        },
 
     }
 
@@ -3225,6 +3232,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_select = self.kwargs.get("show_select")
         show_refresh = self.kwargs.get("show_refresh")
         show_gear = self.kwargs.get("show_gear")
+        show_save = self.kwargs.get("show_save")
         show_expand = self.kwargs.get("show_expand")
         show_shelf = self.kwargs.get("show_shelf")
         show_header = self.kwargs.get("show_header")
@@ -3322,6 +3330,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
+            "show_save": show_save,
             "show_expand": show_expand,
             "show_shelf": show_shelf,
             "show_header": show_header,
