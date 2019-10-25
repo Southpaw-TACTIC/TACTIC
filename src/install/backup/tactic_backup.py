@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # This is a simple command line script that can be used to backup the
 # TACTIC database.  It is independent of TACTIC, so can be run on
