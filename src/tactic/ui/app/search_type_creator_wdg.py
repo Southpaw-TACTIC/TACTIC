@@ -1323,13 +1323,13 @@ class SearchTypeCreatorCmd(Command):
 
         return value
 
-
+    def get_search_type_obj(self):
+        return self.search_type_obj
 
 
     def get_sobject(self):
         return self.sobject
         
-
 
     def execute(self):
         if not self.database or not self.schema:
@@ -1513,7 +1513,7 @@ class SearchTypeCreatorCmd(Command):
     
 
     def create_config(self):
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         columns = SearchType.get_columns(search_type)
         #if self.has_pipeline:
         #    columns.remove("pipeline_code")
@@ -1757,7 +1757,7 @@ class SearchTypeCreatorCmd(Command):
             pass
         else:
             create.commit(sql)
-            TableUndo.log(self.search_type_obj.get_base_key(), database, table)
+            TableUndo.log(self.search_type_obj.get_value("search_type"), database, table)
         '''
             # add columns 
             db_resource = Project.get_db_resource_by_search_type(search_type)
@@ -1775,7 +1775,7 @@ class SearchTypeCreatorCmd(Command):
 
     def add_sidebar_views(self):
 
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         namespace, table = search_type.split("/")
         title = self.search_type_obj.get_title()
 
@@ -1850,7 +1850,7 @@ class SearchTypeCreatorCmd(Command):
         if not self.has_pipeline:
             return
 
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         namespace, table = search_type.split("/")
         project_code = Project.get_project_code()
 
@@ -1999,15 +1999,12 @@ class SearchTypeCreatorCmd(Command):
 
         naming.set_value("file_naming", file_naming_expr)
 
-
         naming.set_value("checkin_type", "auto")
 
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         naming.set_value("search_type", search_type)
 
-
         naming.commit()
-
 
         self.folder_naming = naming_expr
         self.file_naming = file_naming_expr
