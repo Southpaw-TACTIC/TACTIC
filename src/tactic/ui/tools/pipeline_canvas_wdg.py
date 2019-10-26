@@ -7623,8 +7623,10 @@ spt.pipeline.export_group = function(group_name) {
             throw(msg);
         }
         for (var key in attrs) {
-            if (['from','to'].contains(key))
-                continue;
+            
+            
+            if (["from", "to", "from_node", "to_node"].indexOf(key) > -1) continue;
+            
             xml += ' '+key+'="'+attrs[key]+'"';
         }
 
@@ -7642,6 +7644,7 @@ spt.pipeline.export_group = function(group_name) {
         }
         xml += '/>\n';
     }
+
     xml += '</'+group_type+'>\n';
 
     return xml;
