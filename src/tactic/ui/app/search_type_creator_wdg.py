@@ -921,7 +921,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             'cbjs_action':  '''
 
            
-
             var top = bvr.src_el.getParent(".spt_create_search_type_top");
 
             var options = bvr.options;
@@ -929,13 +928,17 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             var values = spt.api.Utility.get_input_values(top, null, false);
 
             var search_type = values.search_type_name;
-            options.search_type = search_type[0];
+            if (typeOf(search_type) == 'array') {
+                options.search_type = search_type[0];
+            } else {
+                options.search_type = search_type;
+            }
 
            
             var yes = function(){
                 spt.app_busy.show("Registering sType");
                 var server = TacticServerStub.get();
-                server.start({title: "Registered new sType", 'description': 'Registered new sType [' + search_type + ']'})
+                server.start({title: "Registered new sType", 'description': 'Registered new sType [' + search_type + ']'});
                 try {
                     var response = server.execute_cmd(class_name, options, values);
 
@@ -953,7 +956,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                     var event_name = "stype|create";
                     spt.named_events.fire_event(event_name, bvr );
 
-                    server.finish()
+                    server.finish();
                     
                     spt.panel.refresh("side_bar");
 
@@ -970,9 +973,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             if (search_type[0].test(/^sthpw/) )
                 spt.confirm('sthpw is designed for internal use. If you need to create an sType to be shared by other projects, you can create such sType with a different prefix. Do you still want to continue creating this sType in the sthpw database?', yes, null);
 
-            else
+            else {
                 yes();
-
+            }
             ''',
         }
         submit_input.add_behavior(behavior)
