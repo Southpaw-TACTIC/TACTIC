@@ -26,13 +26,14 @@ __all__ = ['Upgrade']
 
 class Upgrade(object):
 
-    def __init__(self, version, is_forced=True, project_code=None, quiet=False, is_confirmed=False):
+    def __init__(self, version, is_forced=True, project_code=None, site=None, quiet=False, is_confirmed=False):
         self.to_version = version
         self.is_forced = is_forced
         self.is_confirmed = is_confirmed
 
         self.project_code = project_code
         self.quiet = quiet
+        self.site = site
 
         
     def execute(self):
@@ -61,18 +62,6 @@ class Upgrade(object):
             sthpw_proj.reactivate()
 
 
-
-        current_dir = os.getcwd()
-        tmp_dir = Environment.get_tmp_dir()
-        output_file = '%s/upgrade_output.txt' % tmp_dir
-        if not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
-        elif os.path.exists(output_file):
-            os.unlink(output_file)
-        ofile = open(output_file, 'w')
-
-        import datetime
-        ofile.write('Upgrade Time: %s\n\n' %datetime.datetime.now())
 
 
 
@@ -120,6 +109,17 @@ class Upgrade(object):
             if not type:
                 type = 'default'
 
+            tmp_dir = Environment.get_tmp_dir()
+            tmp_dir = '%s/upgrade_db_log/%s/%s' % (tmp_dir, self.site, code)
+            output_file = '%s/upgrade_output.txt' % tmp_dir
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            elif os.path.exists(output_file):
+                os.unlink(output_file)
+            ofile = open(output_file, 'w')
+
+            import datetime
+            ofile.write('Upgrade Time: %s\n\n' %datetime.datetime.now())
 
             if not self.quiet:
                 print(project.get_code(), type)
@@ -135,8 +135,9 @@ class Upgrade(object):
                 ofile.write(msg)
                 print(msg)
                 ofile.write("*" * 80 + '\n\n')
+                ofile.close()
                 continue
-
+            ofile.close()
 
             upgrade = None
 
@@ -196,6 +197,12 @@ class Upgrade(object):
 
         # print the errors for each upgrade
         for cls_name, project_code, errors in error_list:
+            tmp_dir = Environment.get_tmp_dir()
+            tmp_dir = '%s/upgrade_db_log/%s/%s' % (tmp_dir, self.site, project_code)
+            output_file = '%s/upgrade_output.txt' % tmp_dir
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            ofile = open(output_file, 'a')
             if not self.quiet:
                 print("\n")
                 print("Errors for %s [%s]:" %(project_code, cls_name))
@@ -211,7 +218,7 @@ class Upgrade(object):
                 ofile.write('[%s]\n' % func)
                 ofile.write("-" * 70 + '\n')
                 ofile.write('%s\n' %error)
-        ofile.close()
+            ofile.close()
 
         if self.quiet:
             print("Please refer to the file [%s] for any upgrade messages." %output_file)

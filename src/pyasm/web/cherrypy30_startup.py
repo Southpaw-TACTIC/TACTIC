@@ -79,10 +79,30 @@ class CherryPyStartup(CherryPyStartup20):
         cherrypy.config.update({'error_page.404': self.error_page})
         cherrypy.config.update({'error_page.403': self.error_page})
 
+        # cherrypy.tree.mount(SiteUpgradeWdg, '', config=self.config)
         cherrypy.engine.start()
         cherrypy.engine.block()
 
 
+    def site_upgrade_page(self):
+        from pyasm.web import WebContainer, DivWdg
+        from pyasm.widget import Error404Wdg
+        from .cherrypy30_adapter import CherryPyAdapter
+
+        # clear the buffer
+        WebContainer.clear_buffer()
+        adapter = CherryPyAdapter()
+        WebContainer.set_web(adapter)
+
+        top = DivWdg()
+        title_div = DivWdg()
+        title_div.add("The Website is Upgrading")
+        top.add(title_div)
+        describe_div = DivWdg()
+        describe_div.add("Please waiting for a few seconds. Once the update finishes, we will redirect you to the site.")
+        top.add(describe_div)
+
+        return top.get_buffer_display()
 
 
     def error_page(self, status, message, traceback, version):
@@ -252,6 +272,19 @@ class CherryPyStartup(CherryPyStartup20):
                 if html:
                     return html
             """
+            
+            is_upgrade = False
+            tmp_dir = Environment.get_tmp_dir()
+            filename = "upgrade/upgrade_%s.txt" % site
+            try: 
+                f = open("%s/%s" % (tmp_dir, filename), "r")
+                is_upgrade = f.readline()
+                f.close()
+            except IOError:
+                print("%s not exist" % filename)
+            if is_upgrade == 'true':
+                return self.site_upgrade_page()
+
 
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
@@ -516,7 +549,23 @@ class CherryPyStartup(CherryPyStartup20):
 
         if site and site != 'default':
             from pyasm.security import Site
-            Site.update_project(project, site)
+            from pyasm.common import Config, jsondumps
+
+            subprocess_kwargs = {
+                'project_code': project,
+                'login': Environment.get_user_name(),
+                'command': "pyasm.command.upgrade.SiteUpgradeCmd",
+                'kwargs': {'project_code': project, 'site': site}
+            }
+            subprocess_kwargs_str = jsondumps(subprocess_kwargs)
+            install_dir = Environment.get_install_dir()
+            python = Config.get_value("services", "python")
+            if not python:
+                python = 'python'
+            args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
+            args.append(subprocess_kwargs_str)
+            import subprocess
+            p = subprocess.Popen(args)
 
         if not os.path.exists(context_dir):
             return
