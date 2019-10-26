@@ -1866,31 +1866,21 @@ spt.tab.view_definition = function(bvr) {
                 content_top.add_style("min-height: 500px")
 
 
-
         width = self.kwargs.get("width")
         if not width:
-            content_top.add_style("min-width: 500px")
-        else:
+            width = self.kwargs.get("min_width")
+        
+        if width:
             try:
                 width = int(width)
                 width = str(width) + "px"
             except ValueError:
                 pass
             content_top.add_style("min-width: %s" % width)
+        else:
+            content_top.add_style("width: 100%")
 
-        min_width = self.kwargs.get("min_width")
-        if min_width:
-            try:
-                min_width = int(min_width)
-                min_width = str(min_width) + "px"
-            except ValueError:
-                pass
-            content_top.add_style("min-width", min_width)
-
-
-
-
-
+ 
         content_top.add_class("tab_content_top")
 
         color_mode = self.kwargs.get("color_mode")
