@@ -85,7 +85,7 @@ class CherryPyStartup(CherryPyStartup20):
 
 
     def site_upgrade_page(self):
-        from pyasm.web import WebContainer, DivWdg
+        from pyasm.web import WebContainer, DivWdg, HtmlElement
         from pyasm.widget import Error404Wdg
         from .cherrypy30_adapter import CherryPyAdapter
 
@@ -94,14 +94,39 @@ class CherryPyStartup(CherryPyStartup20):
         adapter = CherryPyAdapter()
         WebContainer.set_web(adapter)
 
+        styles = HtmlElement.style('''
+            .spt_upgrade_top {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .spt_upgrade_title {
+                display: block;
+                font-size: 30px;
+                text-align:center;
+                font-weight: bold;
+            }
+
+            .spt_upgrade_text {
+                display:block;
+                text-align: center;
+            }
+        ''')
+
         top = DivWdg()
+        top.add_class("spt_upgrade_top")
+        top.add(styles)
         title_div = DivWdg()
+        title_div.add_class("spt_upgrade_title")
         title_div.add("The Website is Upgrading")
         top.add(title_div)
         describe_div = DivWdg()
+        describe_div.add_class("spt_upgrade_text")
         describe_div.add("Please waiting for a few seconds. Once the update finishes, we will redirect you to the site.")
         top.add(describe_div)
-
+        
         return top.get_buffer_display()
 
 
@@ -272,25 +297,27 @@ class CherryPyStartup(CherryPyStartup20):
                 if html:
                     return html
             """
-            
-            is_upgrade = False
-            tmp_dir = Environment.get_tmp_dir()
-            filename = "upgrade/upgrade_%s.txt" % site
-            try: 
-                f = open("%s/%s" % (tmp_dir, filename), "r")
-                is_upgrade = f.readline()
-                f.close()
-            except IOError:
-                print("%s not exist" % filename)
-            if is_upgrade == 'true':
-                return self.site_upgrade_page()
+            loading_page = '''<div>Reloading</div>'''
+
+            if Config.get_value("portal", "auto_upgrade") == 'true':
+                tmp_dir = Environment.get_tmp_dir()
+                filename = "upgrade/upgrade_%s_%s.txt" % (site, project_code)
+                is_upgrade = False
+                try: 
+                    f = open("%s/%s" % (tmp_dir, filename), "r")
+                    is_upgrade = f.readline()
+                    f.close()
+                except IOError:
+                    print("%s/%s not exist" % (tmp_dir, filename))
+                if is_upgrade == 'start':
+                    loading_page = self.site_upgrade_page()
 
 
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
             html_response = []
             html_response.append('''<html>''')
-            html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div>''')
+            html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'>%s''' % loading_page)
             html_response.append('''<script>document.location = "%s";</script>''' % path )
             html_response.append('''</body>''')
             html_response.append('''</html>''')
@@ -546,26 +573,26 @@ class CherryPyStartup(CherryPyStartup20):
             context_dir = Environment.get_site_dir().replace("\\", "/")
             context_dir = "%s/sites/%s/context" % (context_dir, project)
 
+        from pyasm.security import Site
+        from pyasm.common import jsondumps
 
-        if site and site != 'default':
-            from pyasm.security import Site
-            from pyasm.common import Config, jsondumps
-
-            subprocess_kwargs = {
-                'project_code': project,
-                'login': Environment.get_user_name(),
-                'command': "pyasm.command.upgrade.SiteUpgradeCmd",
-                'kwargs': {'project_code': project, 'site': site}
-            }
-            subprocess_kwargs_str = jsondumps(subprocess_kwargs)
-            install_dir = Environment.get_install_dir()
-            python = Config.get_value("services", "python")
-            if not python:
-                python = 'python'
-            args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
-            args.append(subprocess_kwargs_str)
-            import subprocess
-            p = subprocess.Popen(args)
+        if Config.get_value("portal", "auto_upgrade") == 'true':
+            if site and site != 'default':
+                subprocess_kwargs = {
+                    'project_code': project,
+                    'login': Environment.get_user_name(),
+                    'command': "pyasm.command.SiteUpgradeCmd",
+                    'kwargs': {'project_code': project, 'site': site}
+                }
+                subprocess_kwargs_str = jsondumps(subprocess_kwargs)
+                install_dir = Environment.get_install_dir()
+                python = Config.get_value("services", "python")
+                if not python:
+                    python = 'python'
+                args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
+                args.append(subprocess_kwargs_str)
+                import subprocess
+                p = subprocess.Popen(args)
 
         if not os.path.exists(context_dir):
             return
