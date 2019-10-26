@@ -41,8 +41,6 @@ So you must cut off the first character of each password when migrating.
 
 import hashlib, sys
 
-import six
-
 _ITOA64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
 IS_Pv3 = sys.version_info[0] > 2
@@ -56,15 +54,16 @@ class DrupalPasswordHasher(object):
     def encode(self, password, salt, iter_code=None):
         """The Drupal 7 method of encoding passwords"""
         
-        if isinstance(password, six.string_types):
+        try:
             b_password = password.encode("utf8")
-        else:
+        except Exception as e:
             b_password = password
 
-        if isinstance(salt, six.string_types): 
+        try:
             b_salt = salt.encode("utf8")
-        else:
+        except Exception as e:
             b_salt = salt
+
 
         if iter_code == None:
             iterations = 2 ** _ITOA64.index(self.iter_code)
