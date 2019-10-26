@@ -21,6 +21,7 @@ from tactic.ui.widget import IconButtonWdg, SingleButtonWdg
 
 from .table_layout_wdg import FastTableLayoutWdg
 
+import six 
 class ToolLayoutWdg(FastTableLayoutWdg):
 
     ARGS_KEYS = {
@@ -341,7 +342,6 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         #table = Table()
         from tactic.ui.container import ResizableTableWdg
-        from table_layout_wdg import FastTableLayoutWdg
 
         #table = ResizableTableWdg()
         table = Table()
@@ -402,7 +402,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
                           <msg>
         '''
         tool_icons = self.kwargs.get('tool_icon')
-        if isinstance(tool_icons, basestring):
+        if isinstance(tool_icons, six.string_types):
             tool_icon_lst = tool_icons.split("|")
         else:
             tool_icon_lst = None
