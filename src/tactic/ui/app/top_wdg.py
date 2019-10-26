@@ -584,11 +584,7 @@ class TopWdg(Widget):
         body = self.body
         html.add( body )
 
-        if web.is_admin_page():
-            body.add_event('onload', 'spt.onload_startup(admin=true)')
-        else:
-            body.add_event('onload', 'spt.onload_startup(admin=false)')
-
+ 
         body.add_style('overflow', 'hidden')
 
 
@@ -789,34 +785,61 @@ class TopWdg(Widget):
         '''} )
 
 
-
         # deal with the palette defined in /index which can override the palette
-        if self.kwargs.get("hash") == ():
+
+        # tactic_kbd is only true for standard TACTIC index
+        tactic_kbd = True
+
+        hash = self.kwargs.get("hash")
+        if isinstance(hash, tuple) and len(hash) > 0:
+            key = hash[0]
+            if key == "link":
+                key = "index"
+        elif hash == ():
             key = "index"
+        else:
+            key = None
+        
+        url = None
+        if key:
             search = Search("config/url")
             search.add_filter("url", "/%s/%%"%key, "like")
             search.add_filter("url", "/%s"%key)
             search.add_where("or")
             url = search.get_sobject()
-            if url:
-                xml = url.get_xml_value("widget")
-                palette_key = xml.get_value("element/@palette")
+            
+        if url:
+            xml = url.get_xml_value("widget")
 
-                # look up palette the expression for index
-                from pyasm.web import Palette
-                palette = Palette.get()
+            palette_key = xml.get_value("element/@palette")
 
-                palette.set_palette(palette_key)
-                colors = palette.get_colors()
-                colors = jsondumps(colors)
+            # Assume no TACTIC kbd functions for custom index
+            tactic_kbd = False
+            if xml.get_value("element/@tactic_kbd") in [True, "true"]:
+                tactic_kbd = True
 
-                script = HtmlElement.script('''
-                    var env = spt.Environment.get();
-                    env.set_colors(%s);
-                    env.set_palette('%s');
-                    ''' % (colors, palette_key)
-                )
-                top.add(script)
+            # look up palette the expression for index
+            from pyasm.web import Palette
+            palette = Palette.get()
+
+            palette.set_palette(palette_key)
+            colors = palette.get_colors()
+            colors = jsondumps(colors)
+
+            script = HtmlElement.script('''
+                var env = spt.Environment.get();
+                env.set_colors(%s);
+                env.set_palette('%s');
+                ''' % (colors, palette_key)
+            )
+            top.add(script)
+    
+        
+        if tactic_kbd == True:
+            body.add_event('onload', 'spt.onload_startup(admin=true)')
+        else:
+            body.add_event('onload', 'spt.onload_startup(admin=false)')
+        
 
 
         env = Environment.get()
@@ -1538,8 +1561,7 @@ class CustomTopWdg(BaseRefreshWdg):
         else:
             from tactic.ui.panel import HashPanelWdg 
             hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
-
-
+ 
         # Really, the hash widget should determine what is returned, but
         # should take the Accept into account.  It is not up to this
         # class to determine what is or isn't implemented, nor is it the
