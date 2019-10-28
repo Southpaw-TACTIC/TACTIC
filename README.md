@@ -15,5 +15,5 @@ http://tactic.southpawtech.com
 
 For packaged downloads, go directly to:
 
-http://tactic.southpawtech.com/downloads
+http://tactic.southpawtech.com/community/link/downloads
 
