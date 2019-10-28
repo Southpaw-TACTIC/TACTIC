@@ -79,15 +79,12 @@ class JSIncludes(object):
         "spt_onload_startup.js",
         "api/api.js",       # add in the new api
 
-
-        # Moved to top_wdg ... it is incompatible with require and needs to be loaded first
-        #"load-image.min.js",
-
-
         # TEST
         "mooScrollable/Scrollable.js",
 
-        #"html2canvas.js",
+        "chart/Chart.min.js",
+        "chart/utils.js",
+
 
 
     ]

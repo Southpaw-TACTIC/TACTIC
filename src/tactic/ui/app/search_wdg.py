@@ -55,7 +55,7 @@ class SearchBoxPopupWdg(BaseRefreshWdg):
         self.state  = self.kwargs.get('state')
 
         # 
-        filter_view = slef.kwargs.get("filter_view")
+        filter_view = self.kwargs.get("filter_view")
         filter_view = "job_filter"
 
         

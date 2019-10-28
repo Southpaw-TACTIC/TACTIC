@@ -837,8 +837,15 @@ class PipelineToolWdg(BaseRefreshWdg):
         'cbjs_action': '''
 
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        top.hot_key_state = false;
         var info = top.getElement(".spt_pipeline_tool_info");
         info.setStyle("right", "0px");
+        var top = bvr.src_el.getParent(".spt_pipeline_top");
+        
+        
+        var input = bvr.src_el.getElement(".spt_hot_key");
+        
+        input.blur();
 
         '''
 

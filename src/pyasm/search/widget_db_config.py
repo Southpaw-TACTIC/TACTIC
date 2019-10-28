@@ -231,27 +231,41 @@ class WidgetDbConfig(SObject):
         return attrs.get(name)
 
 
+    def get_element_titles(self):
+        '''get the title of each element in a list. If not specified, 
+        it defaults to the name of the element'''
+        # the order dictates the order of preference
+        return self.get_element_names(type='', attrs=['title'])
+
 
     def get_element_title(self, element_name):
         return self.get_element_attributes(element_name).get("title")
 
-
-
-    def get_element_names(self, type=None, attrs=[]):
-        '''get all of the element names'''
+    def get_element_names(self, type='', attrs=['name']):
+        '''get the name of each element in a list '''
+        # NOTE: have to do this long winded logic because 4Suite doesn't
+        # appear to support the != operator
         if self.view.find("@") != -1:
             xpath = "config/view[@name='%s']/element" % self.view
         else:
             xpath = "config/%s/element" % self.view
         nodes = self.xml.get_nodes(xpath)
+        ordered_names = []
 
-        ordered_nodes = []
-
+        # get them all
         for node in nodes:
-            name = Xml.get_attribute(node,"name")
-            ordered_nodes.append(name)
+            for attr_name in attrs:
+                name = Xml.get_attribute(node, attr_name)
+                if name:
+                    ordered_names.append(name)
+                    break
+            else:
+                ordered_names.append("")
 
-        return ordered_nodes
+
+        
+        return ordered_names
+
 
 
     def get_element_xml(self, element_name):
