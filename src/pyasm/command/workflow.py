@@ -723,6 +723,16 @@ class BaseProcessTrigger(Trigger):
             process_states_dict = {}
             Container.put(key, process_states_dict)
 
+            """
+            if sobject.get_base_search_type() == 'sthpw/virtual':
+                process_state = SearchType.create("config/process_state")
+                process_state.set_sobject_value(sobject)
+                process_state.set_value("process", process)
+
+                process_states_dict[process] = process_state
+                return process_state
+            """
+
             search = Search("config/process_state")
             search.add_sobject_filter(sobject)
             cache_process_states = search.get_sobjects()
@@ -755,9 +765,10 @@ class BaseProcessTrigger(Trigger):
 
         # TODO use process state.
         # status and state will be transitioned to process_state (instead of messaging)
-        process_state = self.get_process_state(sobject, process)
-        process_state.set_value("status", status)
-        process_state.commit()
+        if sobject.get_base_search_type() != "sthpw/virtual":
+            process_state = self.get_process_state(sobject, process)
+            process_state.set_value("status", status)
+            process_state.commit()
 
 
 

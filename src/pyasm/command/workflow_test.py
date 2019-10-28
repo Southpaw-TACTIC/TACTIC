@@ -1508,14 +1508,14 @@ class WorkflowCmd(Command):
         pipeline_xml = '''
         <pipeline>
           <process name="node0" type="manual"/>
-          <process name="node1" type="node"/>
+          <process name="node1" type="manual"/>
           <process name="node2" type="condition"/>
           <process name="node3" type="manual"/>
           <process name="node4" type="manual"/>
-          <connect from="node0" to="node1" from_node="node0" to_node="node1"/>
-          <connect from="node1" to="node2" from_node="node1" to_node="node2"/>
-          <connect from="node2" to="node3" from_node="node2" to_node="node3"/>
-          <connect from="node3" to="node4" from_node="node0" to_node="node4"/>
+          <connect from="node0" to="node1"/>
+          <connect from="node1" to="node2"/>
+          <connect from="node2" to="node3"/>
+          <connect from="node3" to="node4"/>
         </pipeline>
         '''
 

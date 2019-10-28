@@ -21,7 +21,7 @@ from pyasm.search import Search, DbContainer, SObject, Sql
 from pyasm.search.upgrade import Upgrade
 from pyasm.common import Container, Environment, Common
 
-if Common.is_python3():
+if Common.IS_Pv3:
     raw_input = input
 
 
