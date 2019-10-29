@@ -841,10 +841,10 @@ class PipelineToolWdg(BaseRefreshWdg):
         var info = top.getElement(".spt_pipeline_tool_info");
         info.setStyle("right", "0px");
         var top = bvr.src_el.getParent(".spt_pipeline_top");
-        
-        
+
+
         var input = bvr.src_el.getElement(".spt_hot_key");
-        
+
         input.blur();
 
         '''
@@ -6695,7 +6695,6 @@ class ProcessInfoCmd(Command):
         version = int(version_str)
         command = self.kwargs.get("command")
         if version == 1 and command:
-            print("command", command)
             action = command.get("action") or "create_new"
             script = command.get("script")
             script_path = command.get("script_path")
@@ -9758,16 +9757,16 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             var server = TacticServerStub.get_master();
 
             var on_complete = function() {
-                var projectCode = bvr.src_el.getAttribute("spt_project_code");  
-                var searchType = bvr.src_el.getAttribute("spt_search_type");   
+                var projectCode = bvr.src_el.getAttribute("spt_project_code");
+                var searchType = bvr.src_el.getAttribute("spt_search_type");
                 var doc = spt.document.export();
-                var document_cmd = "tactic.ui.panel.DocumentSaveCmd"   
-                var document_kwargs = { 
-                    view: "document",   
-                    document: doc,  
-                    search_type: searchType,    
-                    project_code: projectCode,  
-                }   
+                var document_cmd = "tactic.ui.panel.DocumentSaveCmd"
+                var document_kwargs = {
+                    view: "document",
+                    document: doc,
+                    search_type: searchType,
+                    project_code: projectCode,
+                }
                 server.p_execute_cmd(document_cmd, document_kwargs);
             }
 
