@@ -15,11 +15,14 @@
 __all__ = ['TacticThread', 'TacticTimedThread', 'WatchFolderThread', 'ASyncThread', 'TacticMonitor', 'CustomPythonProcessThread']
 
 
-import os, sys, threading, time, urllib, subprocess, re, six
+import os, sys, threading, time, subprocess, re, six
 import tacticenv
 tactic_install_dir = tacticenv.get_install_dir()
 tactic_site_dir = tacticenv.get_site_dir()
 app_server = "cherrypy"
+
+
+
 
 #try:
 #    import setproctitle
@@ -34,6 +37,11 @@ from pyasm.command import Workflow
 
 
 python = Common.get_python()
+
+if Common.IS_Pv3:
+    import urllib.request
+else:
+    import urllib
 
 
 STARTUP_EXEC = '%s "%s/src/bin/startup.py"' % (python, tactic_install_dir)
@@ -88,7 +96,6 @@ class BaseProcessThread(threading.Thread):
     def check(self):
         pass
 
-
     def _get_pid(self):
         '''Get PID from a file'''
         pid_path = self.get_pid_path()
@@ -107,7 +114,7 @@ class BaseProcessThread(threading.Thread):
 
        
     def _check(self):
-
+ 
         # This will kill the TACTIC process 
         # This is very harsh and should be used sparingly if at all
         use_restart = Config.get_value("services", "use_periodic_restart")
@@ -135,7 +142,6 @@ class BaseProcessThread(threading.Thread):
         try:
             response = self.check()
         except IOError as e:
-
             pid = self._get_pid() 
             if pid:
                 Common.kill(pid)
@@ -196,10 +202,20 @@ class TacticThread(BaseProcessThread):
 
 
     def check(self):
-        f = urllib.urlopen("http://localhost:%s/test" % self.port )
+        if Common.IS_Pv3:
+            f = urllib.request.urlopen("http://localhost:%s/test" % self.port )
+        else:
+            f = urllib.urlopen("http://localhost:%s/test" % self.port )
         response = f.readlines()
         f.close()
-        return response[0]
+        
+        result = response[0]
+        try:
+            result = result.decode()
+        except AttributeError as e:
+            pass
+
+        return result
 
 
 
@@ -1094,7 +1110,6 @@ class TacticMonitor(object):
                     for tactic_thread in self.tactic_threads:
                         tactic_thread.end = True
                     break
-
                 if self.check_interval:
                     # don't check threads during startup period
                     if not self.startup:
