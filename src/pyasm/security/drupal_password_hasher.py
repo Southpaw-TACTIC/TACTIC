@@ -53,8 +53,17 @@ class DrupalPasswordHasher(object):
 
     def encode(self, password, salt, iter_code=None):
         """The Drupal 7 method of encoding passwords"""
-        b_password = password.encode("utf8")
-        b_salt = salt.encode("utf8")
+        
+        try:
+            b_password = password.encode("utf8")
+        except Exception as e:
+            b_password = password
+
+        try:
+            b_salt = salt.encode("utf8")
+        except Exception as e:
+            b_salt = salt
+
 
         if iter_code == None:
             iterations = 2 ** _ITOA64.index(self.iter_code)
