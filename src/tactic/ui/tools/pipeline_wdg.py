@@ -5657,14 +5657,12 @@ class HierarchyInfoWdg(BaseInfoWdg):
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
-        select.add_empty_option("-- Select --")
 
 
         self.add_session_behavior(select, "select", "spt_hierarchy_top", "task_creation")
-
-
+        
+        
         settings_wdg.add("<span style='opacity: 0.6'>Determine whether tasks of the referenced workflow are created when generating an inital schedule</span>")
-
         settings_wdg.add("<br/>")
         settings_wdg.add("<br/>")
 
@@ -5682,7 +5680,10 @@ class HierarchyInfoWdg(BaseInfoWdg):
         subpipeline = process_sobj.get_value("subpipeline_code")
 
         workflow = self.workflow
-        task_creation = workflow.get("task_creation") or "subtasks_only"
+
+        task_creation = "subtasks_only"
+        if workflow.get("default"):
+            task_creation = workflow.get("default").get("task_creation")
 
         kwargs["subpipeline"] = subpipeline
         kwargs["task_creation"] = task_creation
@@ -7184,8 +7185,13 @@ class NewProcessInfoCmd(Command):
     def handle_hierarchy(self):
 
         hierarchy_kwargs = self.kwargs.get("hierarchy") or {}
-
         subpipeline_code = hierarchy_kwargs.get("subpipeline")
+
+        if not subpipeline_code:
+            default = self.kwargs.get("default")
+            if default:
+                subpipeline_code = default.get("subpipeline")
+
         if subpipeline_code:
             self.process_sobj.set_value("subpipeline_code", subpipeline_code)
 
@@ -9151,23 +9157,26 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
     def initialize_session_behavior(self, info):
 
-        kwargs = self.get_default_kwargs()
 
+        kwargs = self.get_default_kwargs()
         info.add_behavior({
             'type': 'load',
             'kwargs': kwargs,
             'cbjs_action': '''
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
-            if (version && version != 1)
-                return;
 
-            var kwargs = spt.pipeline.get_node_kwargs(node);
-            //kwargs.task_creation = bvr.kwargs.task_creation;
-            //kwargs.autocreate_task = bvr.kwargs.autocreate_task;
-            Object.assign(bvr.kwargs, kwargs);
+            if (version && version != 1) {
+                var settings = spt.pipeline.get_node_property(node, 'settings');
+                if (settings.properties) return;
+                settings['properties'] = bvr.kwargs;
+                spt.pipeline.set_node_kwargs(node, settings);
+            } else {
+                var kwargs = spt.pipeline.get_node_kwargs(node);
+                Object.assign(bvr.kwargs, kwargs);
+                spt.pipeline.set_node_kwargs(node, bvr.kwargs);            
+            }
 
-            spt.pipeline.set_node_kwargs(node, bvr.kwargs);
 
             '''
         })
@@ -9176,7 +9185,12 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
     def get_default_kwargs(self):
 
-        task_creation = False if self.workflow.get("task_creation") == False else True
+        # FIXME: find better way to detect default, not using color
+        if (not self.workflow.get("task_creation") and not self.workflow.get("color")):
+            task_creation = True
+        else:
+            task_creation = self.workflow.get("task_creation")
+        
         autocreate_task = True if self.workflow.get("autocreate_task") == True else False
 
         return {
@@ -9211,26 +9225,23 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         var node = spt.pipeline.get_info_node();
         var version = spt.pipeline.get_node_kwarg(node, 'version');
-        if (version && version != 1)
-            return;
-
+        var properties = spt.pipeline.get_node_kwargs(node).properties;
         '''
 
         load_behavior['cbjs_action'] = cbjs_action_default + '''
         spt.pipeline.set_input_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
         '''
-
         if input_type == "select":
             load_behavior['cbjs_action'] = cbjs_action_default + '''
-            spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            spt.pipeline.set_select_value_from_kwargs(node, bvr.arg_name, bvr.src_el, properties);
             '''
         elif input_type == "radio":
             load_behavior['cbjs_action'] = cbjs_action_default + '''
-            spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            spt.pipeline.set_radio_value_from_kwargs(node, bvr.arg_name, bvr.src_el, properties);
             '''
         elif input_type == "checkbox":
             load_behavior['cbjs_action'] = cbjs_action_default + '''
-            spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el);
+            spt.pipeline.set_checkbox_value_from_kwargs(node, bvr.arg_name, bvr.src_el, properties);
             '''
 
         input_wdg.add_behavior(load_behavior)
@@ -9271,8 +9282,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             change_behavior['cbjs_action'] = '''
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
-            if (version && version != 1)
-                return;
 
             var popup = bvr.src_el.getParent(".spt_popup");
             var activator = popup.activator;
@@ -9285,7 +9294,13 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             var value = true;
             if (input[bvr.arg_name] != "on") value = false;
 
-            spt.pipeline.set_node_kwarg(node, bvr.arg_name, value);
+            if (version && version != 1) {
+                var settings = spt.pipeline.get_node_property(node, 'settings');
+                settings['properties'][bvr.arg_name] = value;
+                spt.pipeline.set_node_kwargs(node, settings);
+            } else {
+                spt.pipeline.set_node_kwarg(node, bvr.arg_name, value);
+            }
 
             node.has_changes = true;
 

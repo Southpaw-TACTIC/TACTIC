@@ -1943,6 +1943,7 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(self):
+
         self.log_message(self.sobject, self.process, "in_progress")
         self.set_all_tasks(self.sobject, self.process, "in_progress")
 
@@ -1957,6 +1958,13 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
         # use child process
         subpipeline_code = process_sobj.get_value("subpipeline_code")
+
+        if not subpipeline_code:
+            workflow = process_sobj.get_value("workflow")
+            default = workflow.get('default')
+            if default:
+                subpipeline_code = default.get('subpipeline')
+
         if subpipeline_code:
             subpipeline = Search.get_by_code("sthpw/pipeline", subpipeline_code)
         else:
