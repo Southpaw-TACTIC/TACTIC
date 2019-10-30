@@ -7034,7 +7034,7 @@ class NewProcessInfoCmd(Command):
         search.add_filter("process", self.process)
         self.process_sobj = search.get_sobject()
         if not self.process_sobj:
-            print(("Process does not exist"))
+            print("Process does not exist")
             return
         self.workflow = self.process_sobj.get_json_value("workflow") or {}
 
@@ -7071,22 +7071,14 @@ class NewProcessInfoCmd(Command):
             cmd.execute()
             handled.add(cbk_class)
 
-        # custom save handler
-        # FIXME: not sure why there was a check for _custom
-        #custom = self.kwargs.get("_custom")
-        custom = True
-        if custom:
-            # Get custom save cmd via node_type
-            from pyasm.command import CustomProcessConfig
-            try:
-                cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
-                if cmd:
-                    return cmd.execute()
-            except Exception as e:
-                print
-                print("Failed saving node for node type [%s]:" % node_type)
-                print(e)
-                print
+        if node_type in ['manual', 'approval', 'action', 'condition', 'hierarchy', 'progress', 'dependancy']:
+            return
+
+        # Get custom save cmd via node_type
+        from pyasm.command import CustomProcessConfig
+        cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+        if cmd:
+            return cmd.execute()
 
 
 
