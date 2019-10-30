@@ -24,7 +24,7 @@ from pyasm.search import Search, SearchType
 from pyasm.biz import Task
 from pyasm.command import Command, Trigger
 
-from workflow import Workflow
+from .workflow import Workflow
 
 from pyasm.security import Batch
 

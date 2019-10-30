@@ -2385,7 +2385,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
         else:
 
-            if isinstance(ret_val, basestring):
+            if isinstance(ret_val, six.string_types):
                 ret_val = [ret_val]
 
             output_processes = []
