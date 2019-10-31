@@ -10729,13 +10729,18 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
 
 spt.process_tool = {};
 
+//initialising empty variables
 spt.process_tool.item_clone = null;
 spt.process_tool.item_pos = null;
 spt.process_tool.mouse_pos = null;
 spt.process_tool.item_top = null;
 
+
+//setting up the drag
 spt.process_tool.item_drag_setup = function(evt, bvr, mouse_411) {
     var el = bvr.src_el.getElement(".spt_custom_node");
+
+    //cloning and setting style
     var clone = spt.behavior.clone(el);
     clone.setStyle("position", "absolute");
     clone.setStyle("background", "#FFF");
@@ -10743,10 +10748,13 @@ spt.process_tool.item_drag_setup = function(evt, bvr, mouse_411) {
     clone.setStyle("pointer-events", "none");
     clone.inject(bvr.src_el);
 
+    
     var top = bvr.src_el.getParent(".spt_process_select_top")
     spt.process_tool.item_top = top;
 
+    //current position of mouse in co-ordinates x and y
     spt.process_tool.mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
+    
     spt.process_tool.item_pos = clone.getPosition(top);
 
     spt.process_tool.item_clone = clone;
@@ -10757,23 +10765,30 @@ spt.process_tool.item_drag_motion = function(evt, bvr, mouse_411) {
     var item_pos = spt.process_tool.item_pos;
     var top = spt.process_tool.item_top;
 
+    abs_item_pos_x = Math.abs(item_pos.x);
+    abs_item_pos_y = Math.abs(item_pos.y);
+
     var dx = mouse_411.curr_x - orig_pos.x;
     var dy = mouse_411.curr_y - orig_pos.y;
-
+    
     var scroll_el = top.getParent(".spt_popup_content");
     if (scroll_el) {
         var scroll = {x: 0, y: scroll_el.scrollTop};
-        var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-2*scroll.y};
+        var new_pos = {x: abs_item_pos_x+dx-scroll.x, y: abs_item_pos_y+dy-2*scroll.y};
+        
     }
     else {
+        
         scroll_el = top;
         var scroll = {x: 0, y: scroll_el.scrollTop};
-        var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-scroll.y};
+        var new_pos = {x: abs_item_pos_x+dx-scroll.x, y: abs_item_pos_y+dy-scroll.y};
     }
+    
 
-    spt.process_tool.item_clone.position( new_pos, {relativeTo: top} );
-    //spt.process_tool.item_clone.setStyle("top", item_pos.x+dx);
-    //spt.process_tool.item_clone.setStyle("left", item_pos.y+dy);
+    //spt.process_tool.item_clone.position( new_pos, {relativeTo: top} );
+    spt.process_tool.item_clone.setStyle("top", mouse_411.curr_y - 55);
+    spt.process_tool.item_clone.setStyle("left", mouse_411.curr_x - 190);
+   
 }
 
 spt.process_tool.item_drag_action = function(evt, bvr, mouse_411) {
