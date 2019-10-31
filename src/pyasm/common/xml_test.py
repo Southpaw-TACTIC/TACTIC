@@ -43,7 +43,7 @@ class XmlTest(unittest.TestCase):
 
 
     def _test_all(self):
-        #self._test_read_string()
+        self._test_read_string()
         self._test_attribute()
         self._test_create_doc()
         self._test_xpath()
@@ -68,18 +68,14 @@ class XmlTest(unittest.TestCase):
         xml.read_string(xml_string)
 
 
-        expected = '''<?xml version='1.0' encoding='UTF-8'?>
-<snapshot>
+        expected = '''<snapshot>
   <a>pig</a>
   <a>cow</a>
   <a>horse</a>
   <b>child</b>
-  <c name='horse'/>
+  <c name="horse"/>
 </snapshot>
 '''
-
-        print("[%s]" % xml.to_string())
-        print("[%s]" % expected)
 
         self.assertEqual(expected, xml.to_string())
 

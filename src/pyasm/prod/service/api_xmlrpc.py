@@ -3966,13 +3966,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         # file_path can be an array of files:
-        if type(file_path) != types.ListType:
+        if not isinstance(file_path, list):
             is_array = False
             file_paths = [file_path]
         else:
             is_array = True
             file_paths = file_path
-        if type(file_type) != types.ListType:
+        
+        if not isinstance(file_path, list):
             file_types = [file_type]
         else:
             file_types = file_type
