@@ -929,10 +929,11 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
     def get_display(self):
-        top = self.top
-
-        if not self.is_refresh:
-            self.set_as_panel(top)
+        # top container is a panel
+        container = self.top
+        self.set_as_panel(container)
+        top = DivWdg()
+        container.add(top)
 
         width = self.kwargs.get("width") or 400
         top.add_style("width: %spx" % width)
@@ -1172,7 +1173,11 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
  
         #popup_wdg.add(context_menu, "content")
         #return popup_wdg
-        return top
+
+        if self.is_refresh:
+            return top
+        else:
+            return container
 
 
     def get_finger_menu(self):
