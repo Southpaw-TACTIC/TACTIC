@@ -775,41 +775,33 @@ spt.document.extract_content = function(name) {
     return content.slice(start_row, end_row);
 }
 
-/* Called when row is clicked */
+
 spt.document.drag_row_setup = function(evt, bvr, mouse_411) {
-    
+
     spt.document.top = bvr.src_el.getParent(".spt_layout");
 
-    // Position of mouse when first clicked
     spt.document.first_mouse_pos = { x: mouse_411.curr_x,  y: mouse_411.curr_y };
-   
-    // Position of the row relative to the layout
     spt.document.first_pos = bvr.src_el.getPosition(spt.document.top);
 }
 
-/* Called when row is dragged */
+
 spt.document.drag_row_motion = function(evt, bvr, mouse_411) {
 
-    // Record cursors change in x and y     
     var dx = mouse_411.curr_x - spt.document.first_mouse_pos.x;
     var dy = mouse_411.curr_y - spt.document.first_mouse_pos.y;
 
-    // Ignore if cursor has barely moved
     if (Math.abs(dy) < 3) {
         return;
     }
 
-    // Check if clone is already created, if not, create clone.
-    if (!spt.document.clone) {
 
-        // Cloning the row and append to element
+    if (!spt.document.clone) {
         spt.document.clone = spt.behavior.clone(bvr.src_el);
         spt.document.clone.inject(bvr.src_el, "after");
 
-        // Gives ghost affect to original element
         bvr.src_el.setStyle("opacity", "0.3");
 
-        // Style the clone
+
         var clone = spt.document.clone;
         clone.setStyle("diplay", "inline-block");
         clone.getElement("td").setStyle("diplay", "inline-block");
@@ -839,13 +831,13 @@ spt.document.drag_row_motion = function(evt, bvr, mouse_411) {
 
     }
 
-    //where we clicked first + change 
+
+
     var pos = {
         x: spt.document.first_pos.x + dx,
         y: spt.document.first_pos.y + dy
     }
 
-    //moves the clone in y co-ordinates only , the next line notes the change and sets it relative to the top
     spt.document.clone.setStyle("top", pos.y);
     //spt.document.clone.setStyle("left", pos.x);
 

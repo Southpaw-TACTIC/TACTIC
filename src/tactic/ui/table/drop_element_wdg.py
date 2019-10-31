@@ -479,7 +479,6 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
     }
 
     var inner_html = [ "<i><b>--- Drop Contents ---</b></i><br/><pre>" ];
-    console.log("hello");
     for( var c=0; c < src_search_keys.length; c++ ) {
         var search_key = src_search_keys[c];
         if (!search_key) continue;
