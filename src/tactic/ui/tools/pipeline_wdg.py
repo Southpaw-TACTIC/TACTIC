@@ -9193,7 +9193,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
     def get_default_kwargs(self):
 
-        
+        # FIXME: find better way to detect default, not using color
         if (not self.workflow.get("task_creation") and not self.workflow.get("color")):
             task_creation = True
         else:
