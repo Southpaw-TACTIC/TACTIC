@@ -1,4 +1,3 @@
-from tactic.command import PluginUninstaller, PluginInstaller
 from pyasm.command import Command
 from pyasm.common import Environment
 from pyasm.biz import Project
@@ -17,18 +16,23 @@ class SiteUpgradeCmd(Command):
     def execute(self):
         '''Update the Plugins and Database of this project'''
         sudo = Sudo()
+        from tactic.command import PluginUninstaller, PluginInstaller
         
         project_code = self.kwargs.get("project_code") or None
         site = self.kwargs.get("site") or None
         db_update = self.kwargs.get("db_update") or None
         plugin_update = self.kwargs.get("plugin_update") or {}
-        update_status_path = "%s/upgrade/upgrade_%s_%s.txt" % (Environment.get_tmp_dir(), site, project_code)
+        tmp_dir = "%s/upgrade" % Environment.get_tmp_dir()
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+        update_status_path = "%s/upgrade_%s_%s.txt" % (tmp_dir, site, project_code)
 
         Site.set_site(site)
         Project.set_project(project_code)
 
         if db_update and project_code and site:
-            os.system("python /spt/tactic/TACTIC/src/bin/upgrade_db.py -y -f -p %s -s %s" % (project_code, site))
+            install_dir = Environment.get_install_dir()
+            os.system("python %s/src/bin/upgrade_db.py -y -f -p %s -s %s" % (install_dir, project_code, site))
 
         for code, data in plugin_update.items():
             update_status_f = open(update_status_path, 'w')

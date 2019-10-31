@@ -17,6 +17,7 @@ import sys, re, getopt, os, shutil
 #from pyasm.command import Command
 from pyasm.search import Search, SObject, DbContainer, Sql
 from pyasm.common import Container, Environment
+from pyasm.security import Site
 
 # load all the default modules
 from pyasm.search.upgrade.project import *
@@ -109,8 +110,8 @@ class Upgrade(object):
             if not type:
                 type = 'default'
 
-            tmp_dir = Environment.get_tmp_dir()
-            tmp_dir = '%s/upgrade_db_log/%s/%s' % (tmp_dir, self.site, code)
+            site_obj = Site.get(self.site)
+            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(), self.site, code)
             output_file = '%s/upgrade_output.txt' % tmp_dir
             if not os.path.exists(tmp_dir):
                 os.makedirs(tmp_dir)
@@ -197,8 +198,7 @@ class Upgrade(object):
 
         # print the errors for each upgrade
         for cls_name, project_code, errors in error_list:
-            tmp_dir = Environment.get_tmp_dir()
-            tmp_dir = '%s/upgrade_db_log/%s/%s' % (tmp_dir, self.site, project_code)
+            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(), self.site, code)
             output_file = '%s/upgrade_output.txt' % tmp_dir
             if not os.path.exists(tmp_dir):
                 os.makedirs(tmp_dir)

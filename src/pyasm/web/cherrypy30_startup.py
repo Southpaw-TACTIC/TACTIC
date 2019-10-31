@@ -17,7 +17,7 @@ import cherrypy
 
 from pyasm.web.app_server import AppServer
 
-from pyasm.common import Environment, Container, Config
+from pyasm.common import Environment, Container, Config, Common
 from pyasm.web import WebEnvironment, WebContainer, DivWdg, HtmlElement
 from pyasm.biz import Project
 from pyasm.security import Site
@@ -82,7 +82,6 @@ class CherryPyStartup(CherryPyStartup20):
         cherrypy.config.update({'error_page.404': self.error_page})
         cherrypy.config.update({'error_page.403': self.error_page})
 
-        # cherrypy.tree.mount(SiteUpgradeWdg, '', config=self.config)
         cherrypy.engine.start()
         cherrypy.engine.block()
 
@@ -131,11 +130,11 @@ class CherryPyStartup(CherryPyStartup20):
         top.add(script)
         title_div = DivWdg()
         title_div.add_class("spt_upgrade_title")
-        title_div.add("The Website is Upgrading")
+        title_div.add("Your TACTIC project is Upgrading")
         top.add(title_div)
         describe_div = DivWdg()
         describe_div.add_class("spt_upgrade_text")
-        describe_div.add("Please waiting for a few seconds. Once the update finishes, we will redirect you to the site.")
+        describe_div.add("Please wait for a few seconds. Once the upgrade finishes, we will redirect you to the project.")
         top.add(describe_div)
         
         return top.get_buffer_display()
@@ -508,23 +507,19 @@ class CherryPyStartup(CherryPyStartup20):
 
     def register_project(self, project, config, site=None, need_upgrade=[False]):
 
-
         if Config.get_value("portal", "auto_upgrade") == 'true':
 
+            from pyasm.common import Xml
+            from pyasm.security import Sudo
+            from pyasm.search import Search
+            from pyasm.common import jsondumps
 
-            if site and site != 'default':
-                from pyasm.common import Xml
-                from pyasm.security import Sudo
-                from pyasm.search import Search
-                from pyasm.common import jsondumps
+            sudo = Sudo()
 
-                sudo = Sudo()
+            db_update = False
+            plugin_update = {}
 
-                tmp_dir = Environment.get_tmp_dir()
-                upgrade_status = "%s/upgrade/upgrade_%s_%s.txt" % (tmp_dir, site, project)
-                db_update = False
-                plugin_update = {}
-
+            if project != "default" and site:
                 Site.set_site(site)
                 Project.set_project(project)
 
@@ -534,8 +529,6 @@ class CherryPyStartup(CherryPyStartup20):
                 for plugin_sobject in plugin_sobjects:
                     code = plugin_sobject.get_value("code")
                     version = plugin_sobject.get_value("version")
-                    if "stypes" in code:
-                        continue
                     plugin_dir = '%s/%s' % (Environment.get_plugin_dir(), code)
                     manifest_path = "%s/manifest.xml" % plugin_dir
                     log_path = "%s/upgrade_log.txt" % plugin_dir
@@ -547,6 +540,9 @@ class CherryPyStartup(CherryPyStartup20):
 
                         xml = Xml()
                         xml.read_string(manifest)
+                        auto_upgrade = xml.get_value("manifest/data/auto_upgrade") or None
+                        if (not auto_upgrade) or (auto_upgrade in ['false', 'False']):
+                            continue
                         latest_version = xml.get_value("manifest/data/version") or None
                         if not latest_version:
                             continue
@@ -568,7 +564,11 @@ class CherryPyStartup(CherryPyStartup20):
                         db_update = True
                         need_upgrade[0] = True
                 
-                upgrade_status_path = "%s/upgrade/upgrade_%s_%s.txt" % (Environment.get_tmp_dir(), site, project)
+                tmp_dir = "%s/upgrade" % Environment.get_tmp_dir()
+                upgrade_status = "end"
+                if not os.path.exists(tmp_dir):
+                    os.makedirs(tmp_dir)
+                upgrade_status_path = "%s/upgrade_%s_%s.txt" % (tmp_dir, site, project)
                 if os.path.exists(upgrade_status_path):
                     f = open(upgrade_status_path, 'r')
                     upgrade_status = f.readline()
@@ -588,15 +588,14 @@ class CherryPyStartup(CherryPyStartup20):
                 if need_upgrade[0] and upgrade_status != "start":
                     subprocess_kwargs_str = jsondumps(subprocess_kwargs)
                     install_dir = Environment.get_install_dir()
-                    python = Config.get_value("services", "python")
-                    if not python:
-                        python = 'python'
+                    python = Common.get_python()
                     args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
                     args.append(subprocess_kwargs_str)
                     import subprocess
                     p = subprocess.Popen(args)
         
         if need_upgrade[0]:
+            # During upgrade, project won't be registered. After project upgrade finishes, project registration can begin
             return
 
 
