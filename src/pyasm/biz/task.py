@@ -1756,7 +1756,7 @@ class TaskGenerator(object):
                     subpipeline = Pipeline.get_by_code(subpipeline_code)
 
                     if subpipeline:
-                        generator = TaskGenerator(generator_mode=self.generate_mode)
+                        generator = TaskGenerator(generate_mode=self.generate_mode)
                         subtasks = generator.execute(
                             self.sobject, 
                             subpipeline, 
