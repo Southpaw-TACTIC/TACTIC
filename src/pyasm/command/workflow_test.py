@@ -75,6 +75,8 @@ class WorkflowCmd(Command):
         try:
             Workflow().init()
 
+
+            
             self._test_namespace_dependency()
 
 
@@ -83,6 +85,7 @@ class WorkflowCmd(Command):
             #self._test_progress_reject()
             #self._test_progress()
 
+            
             self._test_manual()
             self._test_multi_task()
 
@@ -93,9 +96,11 @@ class WorkflowCmd(Command):
 
             self._test_custom_status()
             self._test_messaging()
-
+            
             self._test_hierarchy()
             #self._test_js()
+            
+            
             self._test_task()
             self._test_action_process()
             self._test_choice()
@@ -104,8 +109,8 @@ class WorkflowCmd(Command):
             self._test_approval()
             self._test_dependency()
             self._test_projected_schedule()
-
             self._test_not_required()
+
 
         except Exception as e:
             print("Error: ", e)
@@ -950,8 +955,6 @@ class WorkflowCmd(Command):
         self.assertEquals( "complete", sobject.get_value("subb"))
         self.assertEquals( "complete", sobject.get_value("subc"))
         self.assertEquals( "complete", sobject.get_value("end"))
-
-
 
 
     def _test_dependency(self):
