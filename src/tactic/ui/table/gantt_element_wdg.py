@@ -12,7 +12,7 @@
 
 __all__ = [ 'GanttElementWdg', 'GanttCbk', 'GanttLegendWdg', 'GanttLegendCbk' ]
 
-import re, time, types
+import re, time, types, six
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 
@@ -1205,9 +1205,9 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # why can these be strings??
-        if isinstance(start_sobj_date, basestring):
+        if isinstance(start_sobj_date, six.string_types):
             start_sobj_date = parser.parse(start_sobj_date)
-        if isinstance(end_sobj_date, basestring):
+        if isinstance(end_sobj_date, six.string_types):
             end_sobj_date = parser.parse(end_sobj_date)
 
 
@@ -1752,7 +1752,7 @@ class GanttElementWdg(BaseTableElementWdg):
         # this is required to fix the 1 day off issue
         one_day = datetime.timedelta(days=1)
         
-        if isinstance(date, basestring):
+        if isinstance(date, six.string_types):
             date = parser.parse(date)
 
         date = date - one_day

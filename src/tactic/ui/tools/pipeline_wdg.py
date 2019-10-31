@@ -10,9 +10,9 @@
 #
 #
 
-__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk', 
+__all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk',
 'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 'ScriptCreateWdg',
-'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 
+'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg',
 'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg', 'NewConnectorInfoWdg']
 
 import re
@@ -240,7 +240,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 window.onresize();
             }
             spt.panel.refresh_element(bvr.src_el, {}, {callback: on_complete});
-            
+
             '''
         })
 
@@ -613,7 +613,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 var left = toolTop.getElement(".spt_pipeline_tool_left");
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
-                
+
                 right.addClass("spt_left_toggle");
 
                 left.setStyle("margin-left", "-21%");
@@ -709,7 +709,7 @@ class PipelineToolWdg(BaseRefreshWdg):
 
                 '''
                 })
-            
+
             # --------------
 
             pipeline_list_top = DivWdg()
@@ -837,8 +837,15 @@ class PipelineToolWdg(BaseRefreshWdg):
         'cbjs_action': '''
 
         var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        top.hot_key_state = false;
         var info = top.getElement(".spt_pipeline_tool_info");
         info.setStyle("right", "0px");
+        var top = bvr.src_el.getParent(".spt_pipeline_top");
+
+
+        var input = bvr.src_el.getElement(".spt_hot_key");
+
+        input.blur();
 
         '''
 
@@ -918,7 +925,7 @@ class PipelineTabWdg(BaseRefreshWdg):
             load_cbjs_action = '''
             var server = TacticServerStub.get();
             var pipeline_codes = server.eval("@GET(sthpw/pipeline['search_type','%s'].code)");
-            
+
             var src_el = spt.get_element(document, '.spt_pipeline_list');
             var firing_el = src_el;
             for (var k=0; k<pipeline_codes.length; k++)
@@ -1055,7 +1062,7 @@ class PipelineTabWdg(BaseRefreshWdg):
 
 class PipelineListWdg(BaseRefreshWdg):
 
-        
+
     def init(self):
         self.save_event = self.kwargs.get("save_event")
 
@@ -1181,7 +1188,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         # project_specific pipelines
         content_div = DivWdg()
-        content_div.add_style('padding-top: 6px') 
+        content_div.add_style('padding-top: 6px')
         inner.add(content_div)
 
         try:
@@ -1272,8 +1279,8 @@ class PipelineListWdg(BaseRefreshWdg):
                     stype_div.add("<b>%s</b>" % title)
 
                     stype_content_div = DivWdg()
-                    #stype_content_div.add_style('padding-left: 8px') 
-                    stype_content_div.add_style('padding-top: 6px; padding-bottom: 3px;') 
+                    #stype_content_div.add_style('padding-left: 8px')
+                    stype_content_div.add_style('padding-top: 6px; padding-bottom: 3px;')
 
                     SwapDisplayWdg.create_swap_title(stype_div, swap, stype_content_div, is_open=True)
                     content_div.add(stype_content_div)
@@ -1335,7 +1342,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 title.add_style("padding-top: 3px")
                 inner.add(title)
                 content_div = DivWdg()
-                content_div.add_styles('padding-left: 8px; padding-top: 6px') 
+                content_div.add_styles('padding-left: 8px; padding-top: 6px')
                 SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=False)
                 inner.add(content_div)
 
@@ -1384,7 +1391,7 @@ class PipelineListWdg(BaseRefreshWdg):
                 title.add_style("padding-top: 3px")
                 inner.add(title)
                 content_div = DivWdg()
-                content_div.add_styles('padding-top: 6px') 
+                content_div.add_styles('padding-top: 6px')
                 SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=True)
                 inner.add(content_div)
 
@@ -1425,9 +1432,9 @@ class PipelineListWdg(BaseRefreshWdg):
 
 
                 title.add("<b>Site Wide Workflows</b> <i>(%s)</i><br/>" % len(pipelines))
-              
+
                 site_wide_div = DivWdg()
-                site_wide_div.add_styles('padding-top: 6px') 
+                site_wide_div.add_styles('padding-top: 6px')
                 SwapDisplayWdg.create_swap_title(title, swap, site_wide_div, is_open=False)
 
                 colors = {}
@@ -1460,11 +1467,11 @@ class PipelineListWdg(BaseRefreshWdg):
                 title.add(swap)
 
                 title.add("<b>Templates</b> <i>(%s)</i><br/>" % len(pipelines))
-              
- 
+
+
                 inner.add(title)
                 content_div = DivWdg()
-                content_div.add_styles('padding-top: 6px') 
+                content_div.add_styles('padding-top: 6px')
                 SwapDisplayWdg.create_swap_title(title, swap, content_div, is_open=False)
                 inner.add(content_div)
 
@@ -1498,7 +1505,7 @@ class PipelineListWdg(BaseRefreshWdg):
         description = pipeline.get_value("description")
         if not description:
             description = pipeline.get_code()
-        
+
         pipeline_div.add_attr("title", description)
 
         color = pipeline_div.get_color("background", -10)
@@ -1572,7 +1579,7 @@ class PipelineListWdg(BaseRefreshWdg):
             var value = bvr.pipeline_code;
             var title = bvr.title;
 
-            
+
             var text = top.getElement(".spt_pipeline_editor_current2");
 
             var html = "<span class='hand spt_pipeline_link' spt_pipeline_code='"+bvr.pipeline_code+"'>"+bvr.title+"</span>";
@@ -1591,8 +1598,8 @@ class PipelineListWdg(BaseRefreshWdg):
             //spt.named_events.fire_event('pipeline|hide_info', {});
 
             editor_top.removeClass("spt_has_changes");
-            
-            
+
+
             spt.command.clear();
 
 
@@ -1604,7 +1611,7 @@ class PipelineListWdg(BaseRefreshWdg):
             spt.pipeline.init_cbk(wrapper);
 
             var group_name = spt.pipeline.get_current_group();
-            
+
             var data = spt.pipeline.get_data();
             var color = data.colors[group_name];
 
@@ -1618,14 +1625,14 @@ class PipelineListWdg(BaseRefreshWdg):
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
-            
+
             var xml = spt.pipeline.export_group(group_name);
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
                 var args = {
-                    search_key: search_key, 
-                    pipeline: xml, 
-                    color: color, 
+                    search_key: search_key,
+                    pipeline: xml,
+                    color: color,
                     project_code: bvr.project_code,
                     pipeline_data: pipeline_data
                 };
@@ -1639,7 +1646,7 @@ class PipelineListWdg(BaseRefreshWdg):
             spt.app_busy.hide();
 
             editor_top.removeClass("spt_has_changes");
-            
+
             spt.command.clear();
 
         }
@@ -1651,11 +1658,11 @@ class PipelineListWdg(BaseRefreshWdg):
             spt.confirm("Current workflow has changes.  Do you wish to continue without saving?", save, ok, {okText: "Save", cancelText: "Don't Save"});
         //}
         //else if (current_group_name == group_name) {
-        //    spt.confirm("Reload current workflow?", ok, null); 
+        //    spt.confirm("Reload current workflow?", ok, null);
         } else {
             ok();
         }
-        
+
 
 
         '''
@@ -1671,9 +1678,9 @@ class PipelineListWdg(BaseRefreshWdg):
         }
         ''' % color)
 
-        
+
         pipeline_div.add_behavior( {'type': 'click_up',
-            
+
             'event': 'pipeline_%s|click' %pipeline_code,
             'cbjs_action': '''
              var top = bvr.src_el.getParent(".spt_pipeline_list_top");
@@ -1764,7 +1771,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
-        
+
 
         menu_item = MenuItem(type='action', label='Delete')
         menu_item.add_behavior( {
@@ -1783,7 +1790,7 @@ class PipelineListWdg(BaseRefreshWdg):
             var ok = function() {
                 server.delete_sobject(pipeline);
                 spt.panel.refresh(top);
-     
+
             }
 
             spt.confirm("Confirm to delete workflow ["+name+"]", ok);
@@ -1842,7 +1849,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
         '''
         }
- 
+
 
         return [behavior]
 
@@ -1906,7 +1913,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         var connector_prop = spt.get_element(connect_top, ".spt_connector_properties_content");
 
         var selected = spt.pipeline.get_selected();
-        
+
         if (selected.length > 0) {
 
             if  (selected[0].type == 'connector') {
@@ -1928,8 +1935,8 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
                 spt.show(no_process);
                 spt.hide(connector_prop);
             }
- */    
-        
+ */
+
         '''
         }
 
@@ -1960,7 +1967,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             var server = TacticServerStub.get();
             var process_sk = server.eval("@GET(config/process['process','" + process + "']['pipeline_code','" + pipeline_code + "'].__search_key__)", {single :true});
             var class_name = 'tactic.ui.panel.EditWdg';
-            
+
             if (process_sk) {
                 var kwargs = {
                     search_key: process_sk,
@@ -2122,7 +2129,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
             var list = top.getElement(".spt_pipeline_list");
             spt.panel.refresh(list);
- 
+
         }
 
 
@@ -2319,7 +2326,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
             group.set_color(color);
 
             spt.named_events.fire_event('pipeline|change', {});
- 
+
             '''
         } )
 
@@ -2360,7 +2367,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
         #     group.set_color(color);
 
         #     spt.named_events.fire_event('pipeline|change', {});
- 
+
         #     '''
         # } )
 
@@ -2381,7 +2388,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
         # get template from data column
         data = pipeline.get_json_value("data", no_exception=True) or {}
         default_template = data.get("default_template") or ""
-        
+
         div = DivWdg()
         div.add_class("spt_app_template_wdg")
         div.add_style("margin: 10px 10px 20px 10px")
@@ -2415,7 +2422,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
             group.set_data("default_template", default_template);
 
             spt.named_events.fire_event('pipeline|change', {});
- 
+
             '''
         } )
 
@@ -2426,12 +2433,12 @@ class PipelineInfoWdg(BaseRefreshWdg):
 class ConnectorInfoWdg(BaseRefreshWdg):
 
     def get_display(self):
-        
+
         top = self.top
-        
+
         pipeline_code = self.kwargs.get("pipeline_code")
         pipeline = Pipeline.get_by_code(pipeline_code)
-       
+
         # Custom connector info wdg
         pipeline_type = pipeline.get_value("type")
         if pipeline_type:
@@ -2443,13 +2450,13 @@ class ConnectorInfoWdg(BaseRefreshWdg):
                 handler = config.get_display_widget("info", self.kwargs)
                 top.add(handler)
                 return top
-                
+
         top.add_class("spt_pipeline_connector_info")
 
         top.add_style("padding: 20px 0px")
         top.add_color("background", "background")
         top.add_style("min-width: 300px")
-        
+
         title_wdg = DivWdg()
         top.add(title_wdg)
         title_wdg.add_style("margin: -20px 0px 10px 0px")
@@ -2460,7 +2467,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 15px 10px")
 
         top.add("<br/>")
-        
+
 
         from_node = self.kwargs.get("from_node")
         to_node = self.kwargs.get("to_node")
@@ -2506,7 +2513,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
         if not right_selected:
             right_selected = "input"
 
- 
+
         table.add_row()
 
         # handle output
@@ -2602,7 +2609,7 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
 
 
- 
+
 
         # handle input
 
@@ -2725,7 +2732,7 @@ class NewConnectorInfoWdg(BaseRefreshWdg):
         styles = HtmlElement.style('''
 
             .spt_pipeline_connector_info {
-               min-width: 300px; 
+               min-width: 300px;
             }
 
             .spt_pipeline_connector_info .spt_info_header {
@@ -2864,7 +2871,7 @@ class NewConnectorInfoWdg(BaseRefreshWdg):
 
 
     def get_display(self):
-        
+
         top = self.top
         top.add_class("spt_pipeline_connector_info")
         top.add_behavior({
@@ -2872,10 +2879,10 @@ class NewConnectorInfoWdg(BaseRefreshWdg):
             'kwargs': self.kwargs,
             'cbjs_action': self.get_onload_js()
             })
-        
+
         pipeline_code = self.kwargs.get("pipeline_code")
         pipeline = Pipeline.get_by_code(pipeline_code)
-       
+
         # Custom connector info wdg
         pipeline_type = pipeline.get_value("type")
         if pipeline_type:
@@ -2888,14 +2895,14 @@ class NewConnectorInfoWdg(BaseRefreshWdg):
                 top.add(handler)
                 return top
 
-        
+
         title_wdg = DivWdg()
         top.add(title_wdg)
         title_wdg.add_class("spt_info_header")
         title_wdg.add("Connector")
 
         top.add("<br/>")
-        
+
 
         self.from_node = self.kwargs.get("from_node")
         self.to_node = self.kwargs.get("to_node")
@@ -3180,7 +3187,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
         search_type = pipeline.get("search_type")
 
 
-        
+
         widget = None
 
         if search_type == "sthpw/task":
@@ -3281,7 +3288,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
     def get_input_output_wdg(self, pipeline, process):
-            
+
         div = DivWdg()
         div.add_style("margin: 10px")
 
@@ -3357,7 +3364,7 @@ class BaseInfoWdg(BaseRefreshWdg):
         title_edit_text.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
-            
+
             var node = spt.pipeline.get_info_node();
             var name = spt.pipeline.get_node_name(node);
             bvr.src_el.value = name;
@@ -3415,7 +3422,7 @@ class BaseInfoWdg(BaseRefreshWdg):
                 select.set_value("manual")
             else:
                 select.set_value(node_type)
-    
+
 
         else:
 
@@ -3470,7 +3477,7 @@ class BaseInfoWdg(BaseRefreshWdg):
                 var node = spt.pipeline.get_selected_node();
                 var process = spt.pipeline.get_node_name(node);
 
-                node.setStyle("box-shadow", "0px 0px 15px rgba(255,0,0,0.5)"); 
+                node.setStyle("box-shadow", "0px 0px 15px rgba(255,0,0,0.5)");
 
                 var pos = spt.pipeline.get_position(node);
 
@@ -3510,7 +3517,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
                 // select the new node
                 spt.pipeline.select_single_node(new_node);
-                
+
 
                 spt.named_events.fire_event('pipeline|change', {});
 
@@ -3654,7 +3661,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
             spt.named_events.fire_event('pipeline|change', {});
             '''
-            
+
         input_wdg.add_behavior(change_behavior)
 
 
@@ -3728,13 +3735,13 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-        #show error message if the node has not been registered 
+        #show error message if the node has not been registered
         # if not process_sobj:
         #     warning_div = DivWdg()
         #     #width = 16 makes the icon smaller
         #     warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
         #     warning_msg = "This process node has not been registered in the process table, please save your changes."
-           
+
         #     warning_div.add(warning_icon)
         #     warning_div.add(warning_msg)
         #     top.add(warning_div)
@@ -4065,7 +4072,7 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         show_language = self.kwargs.get("show_language") not in ['false', False]
 
-       
+
         div = self.top
         self.set_as_panel(div)
         div.add_class("spt_script_edit")
@@ -4081,7 +4088,7 @@ class ScriptEditWdg(BaseRefreshWdg):
             cmd_title.add_style('margin-bottom: 3px')
             cmd_div.add_style('margin-bottom: 20px')
             cmd_div.add(cmd_title)
-     
+
             cmd_text = TextInputWdg(name="on_action_class")
             cmd_text.add_style("width: 100%")
             if on_action_class:
@@ -4122,13 +4129,13 @@ class ScriptEditWdg(BaseRefreshWdg):
             script_path_div.add_style("display: none")
 
 
-        
+
         if not is_admin:
             filters = '[["language","server_js"]]'
         script_path_folder_text = LookAheadTextInputWdg(name="script_path_folder", search_type="config/custom_script", column="folder", filters=filters)
         script_path_folder_text.add_class("spt_script_path_folder")
         script_path_div.add(script_path_folder_text)
-   
+
         script_path_folder_text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
@@ -4144,9 +4151,9 @@ class ScriptEditWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_script_edit");
                 var script_path_title = top.getElement(".spt_script_path_title");
                 var is_read_only = script_path_title.getAttribute('readonly');
-                
+
                 //var bkgd = script_path_title.getStyle('background');
-                
+
                 if (code) {
                     if (is_read_only) {
                         buttons_div = top.getElement(".spt_script_edit_buttons");
@@ -4165,7 +4172,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         script_path_folder_text.add_styles("width: 120px; float: left")
         if script_obj:
             script_path_folder_text.set_value(script_path_folder)
-        
+
         script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='190')
         script_path_title_text.add_class("spt_script_path_title")
 
@@ -4193,7 +4200,7 @@ class ScriptEditWdg(BaseRefreshWdg):
                     var popup = false;
                     script = spt.CustomProject.get_script_by_path(script_path, popup);
                 }
-                if (script_path_folder && script_path_title) { 
+                if (script_path_folder && script_path_title) {
                     if (script) {
                         el.value = script;
                         spt.show(el);
@@ -4204,8 +4211,8 @@ class ScriptEditWdg(BaseRefreshWdg):
                 }
 
 
-                
-            
+
+
              }, 250);
             '''
         } )
@@ -4232,7 +4239,7 @@ class ScriptEditWdg(BaseRefreshWdg):
             select.set_option("labels", "Python|Server Javascript")
             select.set_option("values", "python|server_js")
             select.set_value(language)
-        
+
 
         div.add("<br/>")
 
@@ -4267,7 +4274,7 @@ class ScriptEditWdg(BaseRefreshWdg):
             create_edit_button.add(edit_label)
             create_edit_button.add_class("hand")
             create_edit_button.add_style("text-decoration: underline")
-            
+
             #create_edit_button = ActionButtonWdg(title=edit_label, tip="%s script"%edit_label, width="300", color="warning")
             #create_edit_button.add_style("margin: 20px auto")
 
@@ -4275,8 +4282,8 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         buttons_div = DivWdg(css='spt_script_edit_buttons')
         div.add(buttons_div)
-        
-        if (can_edit and edit_mode == True) or edit_mode == False: 
+
+        if (can_edit and edit_mode == True) or edit_mode == False:
             buttons_div.add(create_edit_button)
 
         create_edit_button.add_behavior( {
@@ -4321,7 +4328,7 @@ class ScriptEditWdg(BaseRefreshWdg):
                 spt.tab.add_new('create_new_script' , 'Create New', 'tactic.ui.tools.ScriptCreateWdg');
             }
 
-            
+
 
             '''
         } )
@@ -4329,7 +4336,7 @@ class ScriptEditWdg(BaseRefreshWdg):
         # expected script path should not match the existing script_path.
         # if they do, there is no point to show Create New
         expected_script_path = self.kwargs.get('expected_script_path')
-        
+
         if script_path and script_path != expected_script_path and show_script:
             create_new_button = ActionButtonWdg(title="Create New", tip="Create New Script", width=200)
             create_new_button.add_style("margin: 10px auto")
@@ -4343,7 +4350,7 @@ class ScriptEditWdg(BaseRefreshWdg):
                 trigger_top = bvr.src_el.getParent(".spt_script_edit");
                 script_editor = trigger_top.getElement(".spt_python_script_text");
                 buttons_div = trigger_top.getElement(".spt_script_edit_buttons");
-                
+
                 if (!bvr.edit_mode) {
                     var title_input = trigger_top.getElement(".spt_script_path_title");
                     var folder_input = trigger_top.getElement(".spt_script_path_folder");
@@ -4360,7 +4367,7 @@ class ScriptEditWdg(BaseRefreshWdg):
                 spt.tab.add_new('create_new_script' , 'Create New', 'tactic.ui.tools.ScriptCreateWdg');
                 '''
             } )
-      
+
         div.add(HtmlElement.br(2))
 
 
@@ -4368,12 +4375,12 @@ class ScriptEditWdg(BaseRefreshWdg):
         script_text.add_style('padding-top: 10px')
         if edit_mode:
             script_text.set_option("read_only", "true")
-        else:    
-            script_text.add_style("display", "none") 
+        else:
+            script_text.add_style("display", "none")
         script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
         div.add(script_text)
-                
+
         if script:
             script_text.set_value(script)
         script_text.add_style("height: 300px")
@@ -4398,15 +4405,15 @@ class ScriptCreateWdg(BaseRefreshWdg):
         div.add(title)
         div.add_style('padding: 5px')
 
-       
+
 
         script_text = TextAreaWdg("script_new")
         script_text.add_style('padding-top: 10px')
-      
+
         script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
         div.add(script_text)
-       
+
         script_text.add_style("height: 300px")
         script_text.add_style("width: 100%")
 
@@ -4489,7 +4496,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         cmd_title = DivWdg("Python Command Class (eg: tactic.command.MyCommand)")
         cmd_title.add_style('margin-bottom: 3px')
         cmd_div.add(cmd_title)
- 
+
         cmd_text = TextInputWdg(name="on_action_class")
         cmd_text.add_style("width: 100%")
         if on_action_class:
@@ -4534,13 +4541,13 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         #script_path_div.add()
         filters = ""
 
-        
+
         if not is_admin:
             filters = '[["language","server_js"]]'
         script_path_folder_text = LookAheadTextInputWdg(name="script_path_folder", search_type="config/custom_script", column="folder", filters=filters)
         script_path_folder_text.add_class("spt_script_path_folder")
         script_path_div.add(script_path_folder_text)
-   
+
         script_path_folder_text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
@@ -4559,7 +4566,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
                 var script_path_title = top.getElement(".spt_script_path_title");
                 var is_read_only = script_path_title.getAttribute('readonly');
                 var script_language = top.getElement(".spt_script_language");
-                
+
                 //var bkgd = script_path_title.getStyle('background');
 
                 if (code) {
@@ -4590,7 +4597,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_path_folder_text.add_styles("width: 120px; float: left")
         if script_obj:
             script_path_folder_text.set_value(script_path_folder)
-        
+
         script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='190')
         script_path_title_text.add_class("spt_script_path_title")
 
@@ -4641,7 +4648,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
                     spt.named_events.fire_event('pipeline|change', {});
                 }
 
-            
+
             }, 250);
 
             '''
@@ -4655,7 +4662,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             'type': "mouseup",
             'bvr_match_class': 'spt_input_text_result',
             'cbjs_action': '''
-            
+
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
             if (version && version != 1)
@@ -4718,7 +4725,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
         script_editor.add(script_text)
-                
+
         if script_obj:
             script = script_obj.get_value("script")
             script_text.set_value(script)
@@ -4790,7 +4797,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_text.add_style('padding-top: 10px')
         script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
- 
+
         script_text.add_style("height: 300px")
         script_text.add_style("width: 100%")
 
@@ -4869,7 +4876,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             change_behavior['type'] = 'change'
         elif input_type == "radio":
             change_behavior['type'] = 'change'
-            
+
         input_wdg.add_behavior(change_behavior)
 
 
@@ -4899,7 +4906,7 @@ class ActionInfoWdg(BaseInfoWdg):
             workflow = {}
         self.workflow = workflow
 
-        
+
         pipeline = Pipeline.get_by_code(pipeline_code)
 
         # get the pipeline
@@ -4941,7 +4948,7 @@ class ActionInfoWdg(BaseInfoWdg):
                     self.action = "create_new"
 
 
-    
+
                 if self.script_path:
                     folder, title = os.path.split(self.script_path)
 
@@ -5066,14 +5073,14 @@ class ActionInfoWdg(BaseInfoWdg):
 
 
         labels.append("Use Existing Script")
-        options.append("script_path") 
+        options.append("script_path")
         labels.append("Create New Script")
-        options.append("create_new") 
+        options.append("create_new")
 
         if is_admin:
             labels.append("Use Python Command Class")
-            options.append("command") 
-                    
+            options.append("command")
+
         select.set_option("labels", labels)
         select.set_option("values", options)
         if self.action:
@@ -5283,7 +5290,7 @@ class UnknownInfoWdg(BaseInfoWdg):
         pipeline_code = self.kwargs.get("pipeline_code")
         node_type = self.kwargs.get("node_type")
 
- 
+
 
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
@@ -5346,7 +5353,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         self.process_sobj = search.get_sobject()
         process_sobj = self.process_sobj
 
-        
+
         workflow = {}
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow")
@@ -5512,7 +5519,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
             'type': "mouseup",
             'bvr_match_class': 'spt_input_text_result',
             'cbjs_action': '''
-            
+
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
             if (version && version != 1)
@@ -5597,7 +5604,7 @@ class HierarchyInfoWdg(BaseInfoWdg):
         pipeline = Pipeline.get_by_code(pipeline_code)
         search_type = pipeline.get_value("search_type")
 
- 
+
         title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
@@ -5659,7 +5666,7 @@ class HierarchyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
         settings_wdg.add("<br/>")
 
- 
+
         return top
 
 
@@ -5811,7 +5818,7 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
 
-        
+
         values = set()
         for related_pipeline in related_pipelines:
             related_process_names = related_pipeline.get_process_names()
@@ -5832,7 +5839,7 @@ class DependencyInfoWdg(BaseInfoWdg):
         settings_wdg.add("<span style='opacity: 0.6'>Determines which process to connect to</span>")
         settings_wdg.add("<br/>")
 
-        
+
 
 
 
@@ -5914,14 +5921,14 @@ class ProgressInfoWdg(BaseInfoWdg):
         self.process_sobj = search.get_sobject()
         process_sobj = self.process_sobj
 
-        
+
         workflow = {}
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow")
         if not workflow:
             workflow = {}
         self.workflow = workflow
-        
+
         related_search_type = workflow.get("search_type")
         related_pipeline_code = workflow.get("pipeline_code")
         related_process = workflow.get("process")
@@ -6114,7 +6121,7 @@ class ProgressInfoWdg(BaseInfoWdg):
 
             ''')
 
- 
+
         title_wdg = self.get_title_wdg(process, node_type)
         top.add(title_wdg)
 
@@ -6163,20 +6170,20 @@ class ProgressInfoWdg(BaseInfoWdg):
 
         self.add_session_behavior(select, "select", "spt_progress_top", "related_search_type")
 
-        select.add_behavior( {  
-            'type': 'load', 
-            'project_code': project_code,   
+        select.add_behavior( {
+            'type': 'load',
+            'project_code': project_code,
             'cbjs_action': '''
 
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
             if (version && version != 1)
                 return;
-            
-            var top = bvr.src_el.getParent(".spt_progress_top");   
-            top.load_pipeline_options(bvr.src_el);  
 
-            '''    
+            var top = bvr.src_el.getParent(".spt_progress_top");
+            top.load_pipeline_options(bvr.src_el);
+
+            '''
         } )
 
         select.add_behavior( {
@@ -6324,7 +6331,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         search.add_filter("code", process_code)
 
         self.process_sobj = search.get_sobject()
-        
+
         self.workflow = {}
         if self.process_sobj:
             self.workflow = self.process_sobj.get_json_value("workflow")
@@ -6350,7 +6357,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             '''
 
             })
- 
+
         title_wdg = self.get_title_wdg(process, node_type, show_node_type_select=False)
         top.add(title_wdg)
 
@@ -6363,7 +6370,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add("<b>Task Status Action</b>")
         settings_wdg.add("<br/>")
         settings_wdg.add("<br/>")
-        
+
         title = DivWdg("When set to this status, do the following:")
         title.add_style('padding-bottom: 12px')
 
@@ -6406,22 +6413,22 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         text = TextInputWdg(name="status")
         self.add_session_behavior(text, "text", "spt_status_top", "status")
         text.add_behavior({'type': 'blur',
-            'cbjs_action': 
-            
+            'cbjs_action':
+
             '''var top = bvr.src_el.getParent('.spt_status_top');
             var map = top.getElement('.spt_task_direction');
             if (map.value && bvr.src_el.value) {
                 bvr.src_el.value = '';
                 spt.info('"Behave as" should be cleared if you want to set a custom status.');
             }'''})
-                
+
         settings_wdg.add(text)
         text.add_style("width: 100%")
 
         settings_wdg.add("<br/>")
         settings_wdg.add("<hr/>")
         settings_wdg.add("<br/>")
-        
+
         # Color
         color_div = DivWdg("<b>Color</b>:")
         color_div.add_style('padding-bottom: 2px')
@@ -6431,7 +6438,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add(container)
 
         color_wdg = container.get_color_wdg()
-        
+
         color_wdg.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -6458,7 +6465,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             spt.pipeline.set_node_property(node, "color", color);
 
             spt.named_events.fire_event('pipeline|change', {});
- 
+
             '''
         } )
 
@@ -6482,7 +6489,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         # color_input.add_behavior( {
         #     'type': 'blur',
         #     'cbjs_action': '''
-            
+
         #     var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
         #     spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
@@ -6491,12 +6498,12 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         #     spt.pipeline.set_node_property(node, "color", color);
 
         #     spt.named_events.fire_event('pipeline|change', {});
- 
+
         #     '''
         # } )
         # color_input.set_value(color)
         # settings_wdg.add(color_input)
-       
+
         settings_wdg.add("<br/>")
 
         save_button = ActionButtonWdg(title="Save", color="primary")
@@ -6515,11 +6522,11 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             values['node_type'] = 'status';
             values['process'] = bvr.process;
             values['pipeline_code'] = bvr.pipeline_code;
-            
+
             // Update process sObject
             var server = TacticServerStub.get();
             server.execute_cmd( class_name, values);
-            
+
             // Update pipeline sObject xml
             color = values['color'];
             var node = spt.pipeline.get_selected_node();
@@ -6527,7 +6534,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
                 node = spt.pipeline.get_node_by_name(bvr.process);
             }
             node.properties['color'] = color;
-            
+
             var groups = spt.pipeline.get_groups();
             for (group_name in groups) {
                 var xml = spt.pipeline.export_group(group_name);
@@ -6536,13 +6543,13 @@ class TaskStatusInfoWdg(BaseInfoWdg):
                     // Refresh the canvas to display new color.
                     spt.pipeline.remove_group(group_name);
                     spt.pipeline.unselect_all_nodes();
-                    results = server.insert_update(search_key, {'pipeline': xml}); 
+                    results = server.insert_update(search_key, {'pipeline': xml});
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
                 }
                 spt.pipeline.import_pipeline(group_name);
             }
-            
+
 
             '''
         } )
@@ -6678,11 +6685,22 @@ class ProcessInfoCmd(Command):
 
         is_admin = Environment.get_security().is_admin()
 
-
         action = self.kwargs.get("action") or "create_new"
         script = self.kwargs.get("script")
         script_path = self.kwargs.get("script_path")
         on_action_class = self.kwargs.get("on_action_class")
+
+
+        # version 1 command handling
+        version_str = self.kwargs.get('version') or 1
+        version = int(version_str)
+        command = self.kwargs.get("command")
+        if version == 1 and command:
+            action = command.get("action") or "create_new"
+            script = command.get("script")
+            script_path = command.get("script_path")
+            on_action_class = command.get("on_action_class")
+
 
         execute_mode = self.kwargs.get("execute_mode")
 
@@ -6734,9 +6752,11 @@ class ProcessInfoCmd(Command):
                 folder, title = os.path.split(script_path)
             else:
                 script_path = "%s/%s" % (folder, title)
-            
+
             if script:
                 trigger.set_value("script_path", script_path)
+            else:
+                trigger.set_value("script_path", "NULL", quoted=False)
 
             trigger.set_value("class_name", "NULL", quoted=False)
 
@@ -6855,7 +6875,7 @@ class ProcessInfoCmd(Command):
         process = self.kwargs.get("process")
 
         pipeline = Pipeline.get_by_code(pipeline_code)
-        
+
         search = Search("config/process")
         search.add_filter("pipeline_code", pipeline_code)
         search.add_filter("process", process)
@@ -6880,7 +6900,7 @@ class ProcessInfoCmd(Command):
             workflow['status'] = status
         if mapping:
             workflow['mapping'] = mapping
-   
+
         if color:
             process_sobj.set_value("color", color)
 
@@ -6920,7 +6940,7 @@ class ProcessInfoCmd(Command):
         process_sobj.set_value("workflow", data)
         self.set_description(process_sobj)
         process_sobj.commit()
- 
+
 
     def handle_progress(self):
 
@@ -7083,7 +7103,7 @@ class NewProcessInfoCmd(Command):
 
             if (isinstance(value, dict)):
                 value = self.populate_workflow({}, value)
-            
+
             workflow[key] = value
 
         return workflow
@@ -7092,7 +7112,7 @@ class NewProcessInfoCmd(Command):
 
     def handle_action(self):
         is_admin = Environment.get_security().is_admin()
-        
+
         action_kwargs = self.kwargs.get("default") or {}
         action = action_kwargs.get("action") or "create_new"
         script = action_kwargs.get("script")
@@ -7133,9 +7153,11 @@ class NewProcessInfoCmd(Command):
                 folder, title = os.path.split(script_path)
             else:
                 script_path = "%s/%s" % (folder, title)
-            
+
             if script:
                 trigger.set_value("script_path", script_path)
+            else:
+                trigger.set_value("script_path", "NULL", quoted=False)
 
             trigger.set_value("class_name", "NULL", quoted=False)
 
@@ -7270,7 +7292,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         top = self.top
         self.set_as_panel(top)
         top.add_class("spt_pipeline_editor_top")
-        
+
         has_change_action = '''
             bvr.src_el.addClass("spt_has_changes");
         '''
@@ -7369,7 +7391,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 bvr.src_el.blur();
                 results.on_complete(results);
 
-            } else { 
+            } else {
                 // Load in new search results
 
                 oldItems.forEach(function(oldItem){
@@ -7407,7 +7429,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             self.height = 600
 
 
-        
+
         canvas_top = DivWdg()
         inner.add(canvas_top)
         canvas_top.add_class("spt_pipeline_wrapper")
@@ -7500,7 +7522,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         spt.named_events.fire_event('pipeline|change', {});
         '''
         } )
- 
+
 
         # open connection dialog everytime a connection is made
         event_name = "%s|unselect_all" % self.unique_id
@@ -7515,7 +7537,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         ''' } )
 
- 
+
 
 
         if self.kwargs.get("is_refresh") == 'true':
@@ -7525,7 +7547,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
     def get_shelf_wdg(self):
- 
+
         shelf_wdg = DivWdg()
         shelf_wdg.add_class("spt_pipeline_editor_shelf")
         # shelf_wdg.add_style("padding: 5px")
@@ -7627,7 +7649,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         is_editable = self.kwargs.get("is_editable")
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
-        canvas = PipelineToolCanvasWdg(height=self.height, width=self.width, is_editable=is_editable, 
+        canvas = PipelineToolCanvasWdg(height=self.height, width=self.width, is_editable=is_editable,
             use_mouse_wheel=True, node_types=node_types, window_resize_offset=window_resize_offset)
         return canvas
 
@@ -7781,10 +7803,10 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
                 var args = {
-                    search_key: search_key, 
-                    pipeline:xml, 
-                    color:color, 
-                    description: description, 
+                    search_key: search_key,
+                    pipeline:xml,
+                    color:color,
+                    description: description,
                     project_code: bvr.project_code,
                     node_kwargs: node_kwargs,
                     pipeline_data: pipeline_data
@@ -7798,26 +7820,26 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     node.has_changes = false;
                 }
 
- 
+
 
             } catch(e) {
                 spt.alert(spt.exception.handler(e));
             }
-            
-        } 
+
+        }
 
 
         spt.app_busy.hide();
 
         '''
         } )
- 
-        icon = button.get_icon_wdg()    
+
+        icon = button.get_icon_wdg()
         # makes it glow
-        glow_action = ''' 
+        glow_action = '''
         bvr.src_el.setStyles( {
-            'outline': 'none', 
-            'border-color': '#CF7e1B', 
+            'outline': 'none',
+            'border-color': '#CF7e1B',
             'box-shadow': '0 0 20px #CF7e1b',
             'border-radius': '20px',
         });
@@ -7825,7 +7847,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         icon.add_named_listener('pipeline|change', glow_action)
 
-        unglow_action = ''' 
+        unglow_action = '''
         bvr.src_el.setStyle('box-shadow', '0 0 0 #fff');
         '''
 
@@ -7836,7 +7858,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         # DEPRECATED: never really used
         #button.set_show_arrow_menu(True)
         menu = Menu(width=200)
-        
+
 
         menu_item = MenuItem(type='action', label='Save as Site Wide Workflow')
         menu.add(menu_item)
@@ -7849,11 +7871,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         /*
         var act = spt.smenu.get_activator(bvr);
-        
-        
+
+
 
         var editor_top = act.getParent(".spt_pipeline_editor_top");
-        
+
         editor_top.removeClass("spt_has_changes");
         var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
 
@@ -7881,7 +7903,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
             server = TacticServerStub.get();
             spt.app_busy.show("Saving pipeline ["+group_name+"]",null);
-            
+
             var xml = spt.pipeline.export_group(group_name);
             var search_key = server.build_search_key("sthpw/pipeline", group_name);
             try {
@@ -7891,7 +7913,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 spt.alert(spt.exception.handler(e));
             }
             spt.named_events.fire_event('pipeline|save', {});
-        } 
+        }
         spt.app_busy.hide();
         */
         '''
@@ -7906,16 +7928,16 @@ class PipelineEditorWdg(BaseRefreshWdg):
             var cancel = null;
             var ok = function() {
             var act = spt.smenu.get_activator(bvr);
-            
+
             var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
             editor_top.removeClass("spt_has_changes");
             var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-            
+
             spt.pipeline.init_cbk(wrapper);
 
             server = TacticServerStub.get();
             var groups = spt.pipeline.get_groups();
-            
+
             for (group_name in groups) {
                 var data = spt.pipeline.get_data();
                 var color = data.colors[group_name];
@@ -7940,7 +7962,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menus = [menu.get_data()]
         SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
- 
+
 
         version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled") != "false"
 
@@ -8046,9 +8068,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             top.addClass("spt_has_changes");
             '''
         } )
- 
- 
- 
+
+
+
         menu_item = MenuItem(type='separator')
         menu.add(menu_item)
 
@@ -8070,7 +8092,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             // Add edited flag
             var editor_top = act.getParent(".spt_pipeline_editor_top");
             editor_top.addClass("spt_has_changes");
-            
+
             var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
             spt.pipeline.init_cbk(wrapper);
 
@@ -8089,9 +8111,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         menus = [menu.get_data()]
         SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
         SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
- 
 
- 
+
+
         button = ButtonNewWdg(title="Show Notifications", icon="BS_ENVELOPE")
         #button_row.add(button)
 
@@ -8120,18 +8142,18 @@ class PipelineEditorWdg(BaseRefreshWdg):
         // Add edited flag
         var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
         editor_top.addClass("spt_has_changes");
-            
+
         var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
         spt.pipeline.init_cbk(wrapper);
 
 
         var nodes = spt.pipeline.get_selected_nodes();
-        
+
         spt.pipeline.remove_nodes(nodes);
-        
+
         // this targets connectors only
         spt.pipeline.delete_selected();
-      
+
         '''
         } )
 
@@ -8145,7 +8167,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             button_row.add(button)
 
             menu = Menu(width=200)
-            
+
             menu_item = MenuItem(type='action', label='TEST')
             menu.add(menu_item)
             # no project code here
@@ -8162,7 +8184,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             menus = [menu.get_data()]
             SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
- 
+
 
         button = ButtonNewWdg(title="Show workflow info", icon="FA_INFO")
         button_row.add(button)
@@ -8209,7 +8231,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var class_name = 'tactic.ui.tools.PipelineProcessTypeWdg';
             var kwargs = {
-                 
+
             };
             spt.panel.load_popup("Process Types", class_name, kwargs);
             '''
@@ -8228,9 +8250,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
         var el = right.getElement(".spt_app_template_input_container");
 
         var position_args = {
-            position: 'upperleft', 
+            position: 'upperleft',
             relativeTo: bvr.src_el,
-            offset: { 
+            offset: {
                 y:40
             }
         }
@@ -8238,10 +8260,10 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         spt.show(el);
         spt.body.add_focus_element(el);
-      
+
         '''
         } )
- 
+
 
 
 
@@ -8280,7 +8302,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         spt.command.redo_last();
         '''
         } )
-        
+
         button = SingleButtonWdg(title="Zoom In", icon="FA_SEARCH_PLUS", show_out=False)
         button_row.add(button)
         button.add_style("float: left")
@@ -8408,9 +8430,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
             // Add edited flag
             var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
             editor_top.addClass("spt_has_changes");
-            
+
             var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
- 
+
             spt.pipeline.init_cbk(wrapper);
 
             var group_name = bvr.src_el.value;
@@ -8463,7 +8485,7 @@ class TriggerListWdg(BaseRefreshWdg):
             }
             '''
         } )
- 
+
 
         top.add(save_button)
         top.add("<hr/>")
@@ -8675,14 +8697,14 @@ class TriggerListWdg(BaseRefreshWdg):
 
             list_wdg.add_item(item_div)
 
- 
+
 
         return div
 
 
 
 class PipelineTaskTriggerCommitCbk(Command):
-    
+
     def execute(self):
 
         data_str = self.kwargs.get("data")
@@ -8691,7 +8713,7 @@ class PipelineTaskTriggerCommitCbk(Command):
             return
         if isinstance(data_str, basestring):
             data = jsonloads(data_str)
-        else:   
+        else:
             data = data_str
 
         from tactic.ui.filter import FilterData
@@ -8858,7 +8880,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         # 'cbjs_action': self.get_onload_js()
         # } )
 
-        
+
         # group
         # Making invisible to ensure that it still gets recorded if there.
         tr = table.add_row()
@@ -8875,7 +8897,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         if "completion" in properties:
             th = table.add_cell(text)
             th.add_style("height: 30px")
-            
+
             # completion (visibility depends on sType)
             table.add_row(css='status_completion')
             td = table.add_cell('Completion (0 to 100):')
@@ -8890,17 +8912,17 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             th.add_style("height: 30px")
 
 
-        if "task_pipeline" in properties: 
+        if "task_pipeline" in properties:
             # These searchs are needed for the task_pipeline select widget
             task_pipeline_search = Search('sthpw/pipeline')
             task_pipeline_search.add_filter('search_type', 'sthpw/task')
             task_pipeline_search.add_project_filter()
             task_pipelines = task_pipeline_search.get_sobjects()
-            
+
             normal_pipeline_search = Search('sthpw/pipeline')
             normal_pipeline_search.add_filter('search_type', 'sthpw/task', '!=')
             normal_pipelines = normal_pipeline_search.get_sobjects()
-           
+
 
             # task_pipeline  (visibility depends on sType)
             table.add_row(css='task_status_pipeline')
@@ -8910,11 +8932,11 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             text_name = "task_pipeline"
             select = SelectWdg(text_name)
 
-            
+
             for pipeline in task_pipelines:
                 label = '%s (%s)' %(pipeline.get_value('name'), pipeline.get_value('code'))
                 select.append_option(label, pipeline.get_value('code'))
-            
+
             select.add_empty_option('-- Select --')
             select.add_class(text_name)
             self.add_session_behavior(select, "select", "spt_pipeline_properties_top", text_name)
@@ -8922,11 +8944,11 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             th = table.add_cell(select)
             th.add_style("height: 40px")
 
-           
+
 
         # The search needed for the login_group select widgets
         login_group_search = Search('sthpw/login_group')
-        
+
         # assigned_group
         table.add_row()
         td = table.add_cell('Assigned Group:')
@@ -8941,7 +8963,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         th = table.add_cell(select)
         th.add_style("height: 40px")
-       
+
         if "supervisor_group" in properties:
             # supervisor_group
             table.add_row()
@@ -8956,7 +8978,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
             th = table.add_cell(select)
             th.add_style("height: 40px")
-        
+
         # duration
         table.add_row()
         td = table.add_cell('Default Start to End Duration:')
@@ -9016,7 +9038,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         # ---- Divider -----
         tr, td = table.add_row_cell()
         td.add("<hr/>")
-        
+
         # Color
         table.add_row()
         td = table.add_cell('Color:')
@@ -9051,7 +9073,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
             var color = bvr.src_el.value;
             spt.pipeline.set_node_property(node, "color", color);
-            
+
             var color1 = spt.css.modify_color_value(color, +10);
             var color2 = spt.css.modify_color_value(color, -10);
 
@@ -9064,7 +9086,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             node.getElement(".spt_content").setStyle("background", "linear-gradient("+angle+"deg, "+color1+", 70%, "+color2+")");
 
             spt.named_events.fire_event('pipeline|change', {});
- 
+
             '''
         } )
 
@@ -9292,7 +9314,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
             spt.named_events.fire_event('pipeline|change', {});
             '''
-            
+
         input_wdg.add_behavior(change_behavior)
 
 
@@ -9382,7 +9404,7 @@ class PipelineSaveCbk(Command):
             data['project_code'] = project_code
         if timestamp:
             data['timestamp'] = timestamp
-            
+
         if SearchType.column_exists("sthpw/pipeline", "data"):
             data['data'] = pipeline_data
 
@@ -9405,7 +9427,7 @@ class PipelineSaveCbk(Command):
 
 
         self.check_duplicates(process_nodes, xml)
-        
+
         self.description = "Updated workflow [%s]" % pipeline_code
 
         node_kwargs = self.kwargs.get("node_kwargs") or {}
@@ -9430,7 +9452,7 @@ class PipelineSaveCbk(Command):
                 process = search.get_sobject()
 
 
-            # else create a new one 
+            # else create a new one
             if not process:
                 process = SearchType.create("config/process")
                 process.set_value("process", process_name)
@@ -9446,21 +9468,21 @@ class PipelineSaveCbk(Command):
                 subpipeline_code = curr_settings.pop("subpipeline_code", None)
             if subpipeline_code or subpipeline_code == "":
                 process.set_value("subpipeline_code", subpipeline_code)
-            
+
             node_type = xml.get_attribute(node, "type")
 
             if curr_settings:
                 workflow = process.get_json_value("workflow", default={})
 
-                # On change of node type, clear the workflow data  
-                orig_node_type = workflow.get("node_type")  
+                # On change of node type, clear the workflow data
+                orig_node_type = workflow.get("node_type")
                 if orig_node_type and orig_node_type != node_type:
-                    workflow = curr_settings    
-                else:   
-                    workflow.update(curr_settings)  
-                workflow['node_type'] = node_type   
+                    workflow = curr_settings
+                else:
+                    workflow.update(curr_settings)
+                workflow['node_type'] = node_type
                 process.set_value("workflow", workflow)
-            
+
             process.commit()
 
             if node_type:
@@ -9479,7 +9501,7 @@ class PipelineSaveCbk(Command):
                     elif version is 2:
                         cmd = NewProcessInfoCmd(**kwargs)
                         cmd.execute()
-                    
+
 
 
     def check_duplicates(self, nodes, xml):
@@ -9492,7 +9514,7 @@ class PipelineSaveCbk(Command):
             else:
                 process_set.add(process_name)
 
-        
+
 
 
 class ProcessCopyCmd(Command):
@@ -9579,7 +9601,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             "group_level": 1,
             "title": "Uncategorized"
         },
-        {   
+        {
             "type": "sobject",
             "group_level": 2,
             "expression": "@SEARCH(sthpw/pipeline['begin']['category', 'is', 'NULL']['category', 'Uncategorized']['or']['@ORDER_BY','timestamp desc']['project_code', '%s'])" % (project_code)
@@ -9720,7 +9742,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 <table>
                     <element name="document_item" edit="false">
                         <display class="tactic.ui.tools.PipelineDocumentItemWdg">
-                            
+
                         </display>
                     </element>
                 </table>
@@ -9742,25 +9764,24 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
     def add_item_behaviors(self, el):
 
-        el.add_behavior({   
-            'type': 'listen',   
-            'event_name': 'reorderX|sthpw/pipeline',    
+        el.add_behavior({
+            'type': 'listen',
+            'event_name': 'reorderX|sthpw/pipeline',
             'cbjs_action': '''
 
-            var server = TacticServerStub.get_master(); 
+            var server = TacticServerStub.get_master();
 
             var on_complete = function() {
-                var projectCode = bvr.src_el.getAttribute("spt_project_code");  
-                var searchType = bvr.src_el.getAttribute("spt_search_type");   
+                var projectCode = bvr.src_el.getAttribute("spt_project_code");
+                var searchType = bvr.src_el.getAttribute("spt_search_type");
                 var doc = spt.document.export();
-                var document_cmd = "tactic.ui.panel.DocumentSaveCmd"   
-                var document_kwargs = { 
-                    view: "document",   
-                    document: doc,  
-                    search_type: searchType,    
-                    project_code: projectCode,  
-                }   
-                
+                var document_cmd = "tactic.ui.panel.DocumentSaveCmd"
+                var document_kwargs = {
+                    view: "document",
+                    document: doc,
+                    search_type: searchType,
+                    project_code: projectCode,
+                }
                 server.p_execute_cmd(document_cmd, document_kwargs);
             }
 
@@ -9774,19 +9795,19 @@ class PipelineDocumentWdg(BaseRefreshWdg):
 
                 var categoryGroup = spt.table.get_parent_groups(src_el, 1);
                 var category = categoryGroup.getAttribute("spt_group_name");
-                
+
                 var kwargs = {
                     category: category
                 }
 
                 server.update(search_key, kwargs, {}, on_complete);
 
-            }  
-            
-                
-            '''    
+            }
+
+
+            '''
         })
-  
+
 
 
         el.add_relay_behavior({
@@ -9850,7 +9871,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                         }
                         spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
                     });
-      
+
                 });
             }
 
@@ -9940,7 +9961,7 @@ class PipelineDocumentItem(BaseRefreshWdg):
                 var value =  bvr.firing_data.pipeline_code;
                 var title = bvr.firing_data.title;
 
-                
+
                 var text = top.getElement(".spt_pipeline_editor_current2");
 
                 var html = "<span class='hand spt_pipeline_link' spt_title='" + title + "' spt_pipeline_code='" + value + "'>" + title + "</span>";
@@ -9957,8 +9978,8 @@ class PipelineDocumentItem(BaseRefreshWdg):
                 spt.pipeline.set_current_group(value);
 
                 editor_top.removeClass("spt_has_changes");
-                
-                
+
+
                 spt.command.clear();
 
 
@@ -9970,7 +9991,7 @@ class PipelineDocumentItem(BaseRefreshWdg):
                 spt.pipeline.init_cbk(wrapper);
 
                 var group_name = spt.pipeline.get_current_group();
-                
+
                 var data = spt.pipeline.get_data();
                 var color = data.colors[group_name];
 
@@ -9984,21 +10005,21 @@ class PipelineDocumentItem(BaseRefreshWdg):
 
                 server = TacticServerStub.get();
                 spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
-                
+
                 var xml = spt.pipeline.export_group(group_name);
                 var search_key = server.build_search_key("sthpw/pipeline", group_name);
                 try {
                     var args = {
-                        search_key: search_key, 
-                        pipeline: xml, 
+                        search_key: search_key,
+                        pipeline: xml,
                         color: color,
-                        project_code: bvr.project_code, 
+                        project_code: bvr.project_code,
                         pipeline_data: pipeline_data
                     };
                     server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
                     spt.named_events.fire_event('pipeline|save', {});
 
-                    editor_top.removeClass("spt_has_changes");  
+                    editor_top.removeClass("spt_has_changes");
                     spt.command.clear();
                 } catch(e) {
                     spt.alert(spt.exception.handler(e));
@@ -10053,7 +10074,7 @@ class PipelineDocumentItemWdg(DocumentItemWdg):
             group_level = int(group_level)
         else:
             group_level = 0
-        
+
         name = sobject.get_value("name", no_exception=True) or "N/A"
 
         margin = group_level*12
@@ -10326,7 +10347,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                 }
                 spt.table.refresh_rows([row], null, {}, {on_complete, on_complete});
             });
-  
+
 
 
             '''
@@ -10677,7 +10698,7 @@ class PipelineProcessTypeWdg(BaseRefreshWdg):
         custom_nodes = search.get_sobjects()
 
 
-        # base nodes 
+        # base nodes
         base_nodes = ["manual", "action", "condition", "approval", "hierarchy", "dependency"]
         base_nodes.reverse()
         for base in base_nodes:
@@ -10876,7 +10897,7 @@ spt.process_tool.show_side_bar = function(activator) {
     var right = toolTop.getElement(".spt_pipeline_tool_right");
 
 /*
-    
+
     left.setStyle("margin-left", "0px");
     left.setStyle("opacity", "1");
     right.setStyle("margin-left", "250px");
@@ -10970,7 +10991,7 @@ spt.process_tool.show_side_bar = function(activator) {
                 node_wdg.add_class("spt_custom_node")
             else:
                 node_wdg = custom_node.get_display_widget("node", display_options)
-            
+
             if (view == 'asset_check') or (view == 'expression') or (view == 'simple_condition'):
                 node_scale.add_style("transform: scale(0.5, 0.5) translate(-50%, -50%)")
             else:
@@ -10979,8 +11000,8 @@ spt.process_tool.show_side_bar = function(activator) {
 
             node_scale.add(node_wdg)
             node_wdg.add_style("z-index: 0")
-            
-            
+
+
 
             item_div = DivWdg()
             custom_div.add(item_div)

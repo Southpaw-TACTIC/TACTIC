@@ -49,16 +49,16 @@ class WorkflowTest(unittest.TestCase):
             pipelines = search.get_sobjects()
             for pipeline in pipelines:
                 pipeline.delete()
- 
+
             search = Search("sthpw/message")
             search.add_filter("project_code", "unittest")
             sobjects = search.get_sobjects()
             for sobject in sobjects:
                 sobject.delete()
 
-           
- 
- 
+
+
+
     def _test_complete_trigger(self):
         cmd = WorkflowCmd()
         Command.execute_cmd(cmd)
@@ -109,7 +109,8 @@ class WorkflowCmd(Command):
             self._test_approval()
             self._test_dependency()
             self._test_projected_schedule()
-            
+            self._test_not_required()
+
 
         except Exception as e:
             print("Error: ", e)
@@ -156,6 +157,9 @@ class WorkflowCmd(Command):
                 ''' % process_name,
                 'on_complete': '''
                 sobject.set_value('%s', "complete")
+                ''' % process_name,
+                'on_not_required': '''
+                sobject.set_value('%s', "not_required")
                 ''' % process_name,
                 'on_approved': '''
                 sobject.set_value('%s', "approved")
@@ -346,7 +350,7 @@ class WorkflowCmd(Command):
             'on_complete': '''
             sobject.set_value('%s', "complete")
             '''
- 
+
         } )
         process.commit()
 
@@ -461,7 +465,7 @@ class WorkflowCmd(Command):
             "process": process
         }
         Trigger.call(self, "process|pending", output)
-       
+
         self.assertEquals( "complete", sobject.get_value("a"))
         self.assertEquals( "complete", sobject.get_value("b1"))
         self.assertEquals( "complete", sobject.get_value("b2"))
@@ -527,7 +531,7 @@ class WorkflowCmd(Command):
         }
         Trigger.call(self, "process|complete", output)
 
-       
+
         self.assertEquals( "complete", sobject.get_value("a"))
         self.assertEquals( "complete", sobject.get_value("b1"))
         self.assertEquals( "pending", sobject.get_value("b2"))
@@ -653,7 +657,7 @@ class WorkflowCmd(Command):
         sobject.set_value("a", False)
         sobject.set_value("b", False)
 
-   
+
 
         pipeline_xml = '''
         <pipeline>
@@ -725,7 +729,7 @@ class WorkflowCmd(Command):
                 ''' % process_name,
             } )
             process.commit()
- 
+
 
         task = Task.create(sobject, process="a", description="Test Task")
 
@@ -766,7 +770,7 @@ class WorkflowCmd(Command):
                 ''' % process_name,
             } )
             process.commit()
- 
+
 
         task = Task.create(sobject, process="a", description="Test Task")
         task2 = Task.create(sobject, process="a", description="Test Task 2")
@@ -826,7 +830,7 @@ class WorkflowCmd(Command):
         print("process: ", input.get("process"))
         ''')
         script.commit()
- 
+
         # Run the pipeline
         process = "a"
         output = {
@@ -953,71 +957,6 @@ class WorkflowCmd(Command):
         self.assertEquals( "complete", sobject.get_value("end"))
 
 
-    def _test_hierarchyx(self):
-
-        # create a dummy sobject
-        sobject = SearchType.create("unittest/person")
-
-        pipeline_xml = '''
-        <pipeline>
-          <process type="action" name="a"/>
-          <process type="hierarchy" name="b"/>
-          <process type="hierarchy" name="c"/>
-          <process type="action" name="d"/>
-          <connect from="a" to="b"/>
-          <connect from="b" to="c"/>
-          <connect from="c" to="d"/>
-        </pipeline>
-        '''
-        pipeline, processes = self.get_pipeline(pipeline_xml)
-
-
-        # create the sub pipeline
-        subpipeline_xml = '''
-        <pipeline>
-          <process type="action" name="start"/>
-          <process type="action" name="a"/>
-          <process type="action" name="b"/>
-          <process type="action" name="c"/>
-          <process type="action" name="end"/>
-          <connect from="start" to="a"/>
-          <connect from="a" to="b"/>
-          <connect from="b" to="c"/>
-          <connect from="c" to="end"/>
-        </pipeline>
-        '''
-        subpipeline, subprocesses = self.get_pipeline(subpipeline_xml)
-        #subpipeline.set_value("parent_process", parent_process.get_code())
-        subpipeline.commit()
-        subpipeline_code = subpipeline.get_code()
-
-        p = processes.get("b")
-        p.set_value("subpipeline_code", subpipeline_code)
-        p.commit()
-
-        p = processes.get("c")
-        p.set_value("subpipeline_code", subpipeline_code)
-        p.commit()
-
-        # Run the pipeline
-        process = "a"
-        output = {
-            "pipeline": pipeline,
-            "sobject": sobject,
-            "process": process
-        }
-        Trigger.call(self, "process|pending", output)
-
-        self.assertEquals( "complete", sobject.get_value("a"))
-        self.assertEquals( "complete", sobject.get_value("b"))
-        self.assertEquals( "complete", sobject.get_value("c"))
-        self.assertEquals( "complete", sobject.get_value("start"))
-        self.assertEquals( "complete", sobject.get_value("a"))
-        self.assertEquals( "complete", sobject.get_value("b"))
-        self.assertEquals( "complete", sobject.get_value("c"))
-        self.assertEquals( "complete", sobject.get_value("end"))
-
-
     def _test_dependency(self):
 
         # Diabled in this version
@@ -1115,7 +1054,8 @@ class WorkflowCmd(Command):
         city.commit()
 
 
-        tasks = Task.add_initial_tasks(city, namespace="city")
+        #tasks = Task.add_initial_tasks(city, namespace="city")
+        tasks = Task.add_initial_tasks(city)
 
 
 
@@ -1246,7 +1186,7 @@ class WorkflowCmd(Command):
             }
             Trigger.call(self, "process|complete", output)
 
-    
+
         # this should complete c3 and c4
         for person in people:
             self.assertEquals( "complete", person.get_value("p1") )
@@ -1254,7 +1194,7 @@ class WorkflowCmd(Command):
             self.assertEquals( "complete", person.get_value("p3") )
 
         """
-        TODO: sync the progress node c3 status to match p3. 
+        TODO: sync the progress node c3 status to match p3.
         Now, c3 stays as complete once it switches to complete.
         # let's set p3 to revise
         for person in people:
@@ -1265,8 +1205,8 @@ class WorkflowCmd(Command):
                 "process": process
             }
             Trigger.call(self, "process|revise", output)
-        
-           
+
+
 
         self.assertEquals( "complete", city.get_value("c1") )
         self.assertEquals( "complete", city.get_value("c2") )
@@ -1282,7 +1222,7 @@ class WorkflowCmd(Command):
                 "process": process
             }
             Trigger.call(self, "process|complete", output)
-        
+
         """
         self.assertEquals( "complete", city.get_value("c1") )
         self.assertEquals( "complete", city.get_value("c2") )
@@ -1355,7 +1295,7 @@ class WorkflowCmd(Command):
             self.assertEquals( "revise", person.get_value("p1") )
 
 
- 
+
 
 
     def _test_messaging(self):
@@ -1489,7 +1429,7 @@ class WorkflowCmd(Command):
         # Add initial tasks sets start date time to noon, why?
         start_date0 = "2019-01-01 00:00:00"
         start_date = "2019-01-01 12:00:00"
-                    
+
         # Why does schedule start at 12pm?
         # Why is there a day difference between end date and next start date?
         tasks = Task.add_initial_tasks(sobject, start_date=start_date0)
@@ -1506,8 +1446,8 @@ class WorkflowCmd(Command):
                 self.assertDateEquals("2019-01-16 12:00:00", task.get_value("bid_end_date"))
             tasks_by_process[task.get_process()] = task
 
-       
-        from tactic.ui.table import GetProjectedScheduleCmd 
+
+        from tactic.ui.table import GetProjectedScheduleCmd
         # Test if no tasks are complete but past first task due date
         today = "2019-01-08 12:00:00"
         cmd = GetProjectedScheduleCmd(sobject=sobject, start_date=start_date, today=today)
@@ -1528,7 +1468,7 @@ class WorkflowCmd(Command):
         first_task.set_value("status", "Complete")
         first_task.set_value("actual_end_date", "2019-01-08 12:00:00")
         first_task.commit()
-        
+
         cmd = GetProjectedScheduleCmd(sobject=sobject, start_date=start_date, today=today)
         virtual_tasks = cmd.execute().get("tasks")
         for task in virtual_tasks:
@@ -1541,13 +1481,13 @@ class WorkflowCmd(Command):
             elif task.get_process() == "c":
                 self.assertDateEquals("2019-01-15 12:00:00", task.get_value("bid_start_date"))
                 self.assertDateEquals("2019-01-18 12:00:00", task.get_value("bid_end_date"))
- 
+
         # Test if second task is complete before original bid end date
         second_task = tasks_by_process.get("b")
         second_task.set_value("status", "Complete")
         second_task.set_value("actual_end_date", "2019-01-09 12:00:00")
         second_task.commit()
-       
+
         today = "2019-01-09 12:00:00"
         cmd = GetProjectedScheduleCmd(sobject=sobject, start_date=start_date, today=today)
         virtual_tasks = cmd.execute().get("tasks")
@@ -1561,8 +1501,65 @@ class WorkflowCmd(Command):
             elif task.get_process() == "c":
                 self.assertDateEquals("2019-01-10 12:00:00", task.get_value("bid_start_date"))
                 self.assertDateEquals("2019-01-15 12:00:00", task.get_value("bid_end_date"))
-              
-        
+
+
+    def _test_not_required(self):
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/city")
+        sobject.set_value("code", "test")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process name="node0" type="manual"/>
+          <process name="node1" type="manual"/>
+          <process name="node2" type="condition"/>
+          <process name="node3" type="manual"/>
+          <process name="node4" type="manual"/>
+          <connect from="node0" to="node1"/>
+          <connect from="node1" to="node2"/>
+          <connect from="node2" to="node3"/>
+          <connect from="node3" to="node4"/>
+        </pipeline>
+        '''
+
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+        # create tasks
+        task0 = Task.create(sobject, process="node0", description="Test Task")
+        task1 = Task.create(sobject, process="node1", description="Test Task")
+        task3 = Task.create(sobject, process="node3", description="Test Task")
+        task4 = Task.create(sobject, process="node4", description="Test Task")
+
+        #Run the pipeline
+        process = "node0"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(self, "process|complete", output=output)
+
+        #Run the pipeline
+        process = "node1"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(self, "process|not_required", output=output)
+
+        self.assertEquals( "complete", sobject.get_value("node0"))
+        self.assertEquals( "not_required", sobject.get_value("node1"))
+        self.assertEquals( "not_required", sobject.get_value("node3"))
+        self.assertEquals( "not_required", sobject.get_value("node4"))
+        #print("node0", sobject.get_value("node0"))
+        #print("node1", sobject.get_value("node1"))
+        #print("node3", sobject.get_value("node3"))
+        #print("node4", sobject.get_value("node4"))
+
+
 
     def assertDateEquals(self, a, b):
         if isinstance(a, six.string_types):

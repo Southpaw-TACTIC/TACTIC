@@ -146,8 +146,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '07'
         },
-        'show_advanced_search': {
+        'show_search': {
             'description': 'Flag to determine whether or not to show the advanced Search button',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '18'
+        },
+        'advanced_search': {
+            'description': '(DEPRECATED) Use show_search instead',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
@@ -2947,7 +2954,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         open_icon = "FA_FOLDER_OPEN_O"
         closed_icon = "FA_FOLDER_O"
         group_icon_styles = ""
-        if extra_data:
+        if extra_data and isinstance(extra_data, basestring):
             try:
                 extra_data = jsonloads(extra_data)
             except:
@@ -8595,6 +8602,41 @@ spt.table.is_embedded = function(table){
     return is_embedded;
 }
 
+spt.table.simple_save_view = function (table, view_name, kwargs) {
+    try {
+        if (typeOf(table) == "string") {
+            table = document.id(table);
+        }
+
+        var top = table.getParent(".spt_view_panel");
+        var layout = top ? top.getAttribute('spt_layout'): null;
+        var search_wdg = kwargs.search_top? kwargs.search_top :  (top ? top.getElement(".spt_search"): null);
+
+        // save search view
+        if (search_wdg) {
+            var search_view = 'link_search:'+ view_name;
+            // auto generate a new search for this view
+            search_wdg.setAttribute("spt_search_view", search_view);
+            spt.table.save_search(search_wdg, search_view, {});
+        }
+
+
+        // save view
+
+        //raw and static_table layout has no checkbox in the first row
+        var first_idx = 1;
+        if (['raw_table','static_table'].contains(layout))
+            first_idx = 0;
+
+        spt.dg_table.get_size_info(table, view_name, null, first_idx, {extra_data: kwargs.extra_data, save_definitions: true});
+
+    } catch(e) {
+        spt.alert(spt.exception.handler(e));
+        return false;
+    }
+    return true;
+}
+
 spt.table.save_view = function(table, new_view, kwargs) {
 
     var server;
@@ -8623,7 +8665,6 @@ spt.table.save_view = function(table, new_view, kwargs) {
 
         var login = kwargs.login;
         var save_as_personal = (save_mode == 'save_my_views') ? true : false;
-        var extra_data = kwargs.extra_data;
 
 
         var side_bar_view = 'project_view';
@@ -8745,8 +8786,7 @@ spt.table.save_view = function(table, new_view, kwargs) {
             first_idx = 0;
 
         // create the view for this table
-        var update_data = extra_data;
-        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx, update_data);
+        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
          
         //if (side_bar_view && save_a_link) {
         if (save_mode != 'save_view_only') {
@@ -8808,12 +8848,23 @@ spt.table.get_search_values = function(search_top) {
         new_values.push(values);
 
         // find the table/simple search as well
-        var panel = search_top.getParent(".spt_view_panel");
-        var table_searches = panel.getElements(".spt_table_search");
-        for (var i = 0; i < table_searches.length; i++) {
-            var table_search = table_searches[i];
-            var values = spt.api.Utility.get_input_values(table_search,null,false);
-            new_values.push(values);
+        var panel;
+        var top_class = search_top.getAttribute("spt_top_class");
+        if (top_class) {
+            var top = search_top.getParent("." + top_class);
+            if (top) {
+                panel = top.getElement(".spt_view_panel");
+            }
+        }
+        panel = panel? panel : search_top.getParent(".spt_view_panel");
+
+        if (panel) {
+            var table_searches = panel.getElements(".spt_table_search");
+            for (var i = 0; i < table_searches.length; i++) {
+                var table_search = table_searches[i];
+                var values = spt.api.Utility.get_input_values(table_search,null,false);
+                new_values.push(values);
+            }
         }
     }
 
@@ -8946,8 +8997,7 @@ spt.table.export = function(mode) {
     }
     else if (bvr.mode=='export_displayed') {
         title = 'Export displayed items from "' + search_type + '" list ';
-        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
-        var tbodies = table.getElements(css);
+        var tbodies = table.getElements(".spt_table_row");
         for (var k=0; k < tbodies.length; k++) {
             if (tbodies[k].getStyle('display') == 'none'){
                 continue;
@@ -9312,6 +9362,13 @@ spt.table.export_document = function(kwargs) {
     }
     return document
 }
+
+
+
+
+
+
+
             '''
 
         if self.kwargs.get('temp') != True:
