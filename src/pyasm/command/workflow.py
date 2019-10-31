@@ -1615,7 +1615,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_complete(self):
-
+       
         #status = "complete"
         status = self.input.get("status") or "complete"
 
@@ -1648,7 +1648,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         is_complete = True
 
         if self.input.get("internal") == True:
-            tasks = Task.get_by_sobject(self.sobject, process=process)
+            full_process_name = self.get_full_process_name(process)
+            tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
             # Make sure all of the tasks are complete
             for task in tasks:
                 #self.log_message(self.sobject, self.process, status)
@@ -1678,7 +1679,6 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # store the state
         self.store_state()
-
         return super(WorkflowManualNodeHandler, self).handle_complete()
 
 
