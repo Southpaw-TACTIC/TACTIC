@@ -1958,9 +1958,8 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
         # use child process
         subpipeline_code = process_sobj.get_value("subpipeline_code")
-
         if not subpipeline_code:
-            workflow = process_sobj.get_value("workflow")
+            workflow = process_sobj.get_json_value("workflow", default={})
             default = workflow.get('default')
             if default:
                 subpipeline_code = default.get('subpipeline')

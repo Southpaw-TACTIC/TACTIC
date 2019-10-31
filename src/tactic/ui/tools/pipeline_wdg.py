@@ -7072,7 +7072,7 @@ class NewProcessInfoCmd(Command):
             cmd.execute()
             handled.add(cbk_class)
 
-        if node_type in ['manual', 'approval', 'action', 'condition', 'hierarchy', 'progress', 'dependancy']:
+        if node_type in ['manual', 'approval', 'action', 'condition', 'hierarchy', 'progress', 'dependency']:
             return
 
         # Get custom save cmd via node_type
