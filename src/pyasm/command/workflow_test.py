@@ -914,8 +914,8 @@ class WorkflowCmd(Command):
         <pipeline>
           <process type="action" name="start"/>
           <process type="action" name="suba"/>
-          <process type="manual" name="subb"/>
-          <process type="manual" name="subc"/>
+          <process type="action" name="subb"/>
+          <process type="action" name="subc"/>
           <process type="action" name="end"/>
           <connect from="start" to="suba"/>
           <connect from="suba" to="subb"/>
