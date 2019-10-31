@@ -679,6 +679,12 @@ class RowSelectWdg(BaseTableElementWdg):
 
 class AddPredefinedColumnWdg(BaseRefreshWdg):
 
+    def init(self):
+        self.is_refresh = False
+
+        if self.kwargs.get("is_refresh"):
+            self.is_refresh = True
+
     def get_args_keys(self):
         return {
             "element_names": "list of the element_names",
@@ -924,6 +930,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
     def get_display(self):
         top = self.top
+
+        if not self.is_refresh:
+            self.set_as_panel(top)
 
         width = self.kwargs.get("width") or 400
         top.add_style("width: %spx" % width)
