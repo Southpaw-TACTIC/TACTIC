@@ -34,7 +34,7 @@ class Upgrade(object):
 
         self.project_code = project_code
         self.quiet = quiet
-        self.site = site
+        self.site = site or "default"
 
         
     def execute(self):
@@ -109,9 +109,9 @@ class Upgrade(object):
 
             if not type:
                 type = 'default'
-
-            site_obj = Site.get(self.site)
-            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(), self.site, code)
+            
+            site_obj = Site.get()
+            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(self.site), self.site, code)
             output_file = '%s/upgrade_output.txt' % tmp_dir
             if not os.path.exists(tmp_dir):
                 os.makedirs(tmp_dir)
@@ -198,7 +198,7 @@ class Upgrade(object):
 
         # print the errors for each upgrade
         for cls_name, project_code, errors in error_list:
-            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(), self.site, code)
+            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(self.site), self.site, code)
             output_file = '%s/upgrade_output.txt' % tmp_dir
             if not os.path.exists(tmp_dir):
                 os.makedirs(tmp_dir)

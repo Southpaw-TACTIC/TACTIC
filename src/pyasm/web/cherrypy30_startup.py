@@ -305,7 +305,6 @@ class CherryPyStartup(CherryPyStartup20):
                     return html
             """
             loading_page = '''<div>Reloading</div>'''
-
             if Config.get_value("portal", "auto_upgrade") == 'true':
                 if need_upgrade[0] == True:
                     loading_page = self.site_upgrade_page(path)
@@ -465,10 +464,10 @@ class CherryPyStartup(CherryPyStartup20):
         search.add_filter("type", "resource", op="!=")
         projects = search.get_sobjects()
 
-
+        
         # find out if one of the projects is the root
         root_initialized = False
-
+        
         if not root_initialized:
             project_code = Project.get_default_project()
             if not project_code:
@@ -478,19 +477,17 @@ class CherryPyStartup(CherryPyStartup20):
                 cherrypy.root.tactic = SitePage(project_code)
                 cherrypy.root.projects = SitePage(project_code)
                 root_initialized = True
-
-
         if not root_initialized:
             # load in the base site at root
             from tactic_sites.default.context.Index import Index
             cherrypy.root.tactic = Index()
             cherrypy.root.projects = Index()
-
+            
         for project in projects:
             project_code = project.get_code()
             self.register_project(project_code, config)
         self.register_project("default", config)
-
+        
 
 
         site_obj = Site.get()
@@ -506,7 +503,6 @@ class CherryPyStartup(CherryPyStartup20):
 
 
     def register_project(self, project, config, site=None, need_upgrade=[False]):
-
         if Config.get_value("portal", "auto_upgrade") == 'true':
 
             from pyasm.common import Xml
@@ -516,23 +512,22 @@ class CherryPyStartup(CherryPyStartup20):
 
             sudo = Sudo()
 
-            db_update = False
+            db_update = []
             plugin_update = {}
 
-            if project != "default" and site:
+            if project != "default":
                 Site.set_site(site)
                 Project.set_project(project)
 
                 search = Search('config/plugin')
                 plugin_sobjects = search.get_sobjects()
-                
                 for plugin_sobject in plugin_sobjects:
                     code = plugin_sobject.get_value("code")
                     version = plugin_sobject.get_value("version")
-                    plugin_dir = '%s/%s' % (Environment.get_plugin_dir(), code)
+                    rel_dir = plugin_sobject.get_value("rel_dir")
+                    plugin_dir = '%s/%s' % (Environment.get_plugin_dir(), rel_dir)
                     manifest_path = "%s/manifest.xml" % plugin_dir
                     log_path = "%s/upgrade_log.txt" % plugin_dir
-                    
                     if os.path.exists(manifest_path):
                         f = open(manifest_path, 'r')
                         manifest = f.read()
@@ -553,48 +548,60 @@ class CherryPyStartup(CherryPyStartup20):
                             plugin_update[code] = [plugin_dir, latest_version]
                             need_upgrade[0] = True
 
-                project_version = Search.eval("@SOBJECT(sthpw/project['code', '%s'])" % project)[0].get_value("last_version_update")
-                newest_version = Environment.get_release_version()
+            project_versions = Search.eval("@SOBJECT(sthpw/project)")
 
-                if newest_version[0] == 'v':
-                    newest_version = newest_version[1: len(newest_version)]
+            newest_version = Environment.get_release_version()
+
+            if newest_version[0] == 'v':
+                newest_version = newest_version[1: len(newest_version)]
                 
-                if project_version:
-                    if project_version != newest_version:
-                        db_update = True
+            if project_versions:
+                for x in project_versions:
+                    if x.get_value("code") == 'admin':
+                        continue
+                    if x.get_value("last_version_update") != newest_version:
+                        db_update.append(x.get_value("code")) 
                         need_upgrade[0] = True
-                
-                tmp_dir = "%s/upgrade" % Environment.get_tmp_dir()
-                upgrade_status = "end"
-                if not os.path.exists(tmp_dir):
-                    os.makedirs(tmp_dir)
+                                
+            tmp_dir = "%s/upgrade" % Environment.get_tmp_dir()
+            upgrade_status = "end"
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            if site:
                 upgrade_status_path = "%s/upgrade_%s_%s.txt" % (tmp_dir, site, project)
-                if os.path.exists(upgrade_status_path):
-                    f = open(upgrade_status_path, 'r')
-                    upgrade_status = f.readline()
+            else:
+                upgrade_status_path = "%s/upgrade_default_%s.txt" % (tmp_dir, project)
+            if os.path.exists(upgrade_status_path):
+                f = open(upgrade_status_path, 'r')
+                upgrade_status = f.readline()
+                f.close()
 
-                    if upgrade_status == "start":
-                        need_upgrade[0] = True
+                if upgrade_status == "start":
+                    need_upgrade[0] = True
 
-                sudo.exit()
+            sudo.exit()
 
-                subprocess_kwargs = {
-                    'project_code': project,
-                    'login': Environment.get_user_name(),
-                    'command': "pyasm.command.SiteUpgradeCmd",
-                    'kwargs': {'project_code': project, 'site': site, 'db_update': db_update, 'plugin_update': plugin_update}
-                }
+            subprocess_kwargs = {
+                'project_code': project,
+                'login': Environment.get_user_name(),
+                'command': "pyasm.command.SiteUpgradeCmd",
+                'kwargs': {'project_code': project, 'site': site, 'db_update': db_update, 'plugin_update': plugin_update}
+            }
 
-                if need_upgrade[0] and upgrade_status != "start":
-                    subprocess_kwargs_str = jsondumps(subprocess_kwargs)
-                    install_dir = Environment.get_install_dir()
-                    python = Common.get_python()
-                    args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
-                    args.append(subprocess_kwargs_str)
-                    import subprocess
+            if need_upgrade[0] and upgrade_status != "start":
+                subprocess_kwargs_str = jsondumps(subprocess_kwargs)
+                install_dir = Environment.get_install_dir()
+                python = Common.get_python()
+                args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
+                args.append(subprocess_kwargs_str)
+                import subprocess
+                if site and site != 'default':
                     p = subprocess.Popen(args)
+                else:
+                    p = subprocess.call(args)
+
         
-        if need_upgrade[0]:
+        if need_upgrade[0] and site and site != "default":
             # During upgrade, project won't be registered. After project upgrade finishes, project registration can begin
             return
 

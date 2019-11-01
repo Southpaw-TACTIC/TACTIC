@@ -25,14 +25,20 @@ class SiteUpgradeCmd(Command):
         tmp_dir = "%s/upgrade" % Environment.get_tmp_dir()
         if not os.path.exists(tmp_dir):
             os.makedirs(tmp_dir)
-        update_status_path = "%s/upgrade_%s_%s.txt" % (tmp_dir, site, project_code)
-
+        if site:
+            update_status_path = "%s/upgrade_%s_%s.txt" % (tmp_dir, site, project_code)
+        else:
+            update_status_path = "%s/upgrade_default_%s.txt" % (tmp_dir, project_code)
         Site.set_site(site)
         Project.set_project(project_code)
 
-        if db_update and project_code and site:
+        if db_update:
             install_dir = Environment.get_install_dir()
-            os.system("python %s/src/bin/upgrade_db.py -y -f -p %s -s %s" % (install_dir, project_code, site))
+            for x in db_update:
+                if site:
+                    os.system("python %s/src/bin/upgrade_db.py -y -p %s -s %s" % (install_dir, x, site))
+                else:
+                    os.system("python %s/src/bin/upgrade_db.py -y -p %s -s default" % (install_dir, x))
 
         for code, data in plugin_update.items():
             update_status_f = open(update_status_path, 'w')

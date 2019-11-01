@@ -61,7 +61,7 @@ if __name__ == '__main__':
             quiet = True
         if o in ("-s", "--site"):
             site = a
-            print("site: ", site)
+           
    
 
     if len(args) == 0:
@@ -161,7 +161,6 @@ if __name__ == '__main__':
         sys.exit(0)
 
     version.replace('.', '_')
-    
     upgrade = Upgrade(version, is_forced, project_code=project_code, site=site, quiet=quiet, is_confirmed=is_confirmed)
     upgrade.execute()
 
