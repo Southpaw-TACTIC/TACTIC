@@ -59,7 +59,6 @@ class RestAPITest(unittest.TestCase):
             'login_ticket': login_ticket,
             'method': 'ping',
         }
->>>>>>> upstream/4.6-updates
 
         r = requests.post(rest_url, data=data)
         ret_val = r.json()

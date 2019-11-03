@@ -941,7 +941,6 @@ class GeneralFilterWdg(BaseFilterWdg):
 
         if filter_data_map.get("handler"):
 
-<<<<<<< HEAD
             handler_div = DivWdg()
             div.add(handler_div)
 

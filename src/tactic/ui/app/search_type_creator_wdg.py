@@ -1328,7 +1328,7 @@ class SearchTypeCreatorCmd(Command):
 
 
     def get_sobject(self):
-        return self.search_type_obj
+        return self.sobject
         
 
     def execute(self):
