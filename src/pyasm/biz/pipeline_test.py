@@ -18,7 +18,7 @@ from pyasm.security import Batch
 from pyasm.search import Search, SearchType, Transaction
 from pyasm.biz import Project
 
-from pipeline import *
+from .pipeline import *
 
 from pyasm.unittest import UnittestEnvironment
 
@@ -78,31 +78,31 @@ class ProcessTest(unittest.TestCase):
 
         # outputs
         processes = pipeline.get_output_processes("a")
-        self.assertEquals(1, len(processes))
+        self.assertEqual(1, len(processes))
 
         processes = pipeline.get_output_processes("b")
-        self.assertEquals(3, len(processes))
-        self.assertEquals("c", processes[0].get_name())
-        self.assertEquals("d", processes[1].get_name())
+        self.assertEqual(3, len(processes))
+        self.assertEqual("c", processes[0].get_name())
+        self.assertEqual("d", processes[1].get_name())
 
         # inputs
         processes = pipeline.get_input_processes("b")
-        self.assertEquals("a", processes[0].get_name())
+        self.assertEqual("a", processes[0].get_name())
 
 
         # output with attr
         processes = pipeline.get_output_processes("b", from_attr="success")
-        self.assertEquals(1, len(processes))
-        self.assertEquals("c", processes[0].get_name())
+        self.assertEqual(1, len(processes))
+        self.assertEqual("c", processes[0].get_name())
 
         processes = pipeline.get_output_processes("b", from_attr="fail")
-        self.assertEquals(2, len(processes))
-        self.assertEquals("d", processes[0].get_name())
+        self.assertEqual(2, len(processes))
+        self.assertEqual("d", processes[0].get_name())
 
 
         # input with attr
         processes = pipeline.get_input_processes("e", to_attr="revise")
-        self.assertEquals("b", processes[0].get_name())
+        self.assertEqual("b", processes[0].get_name())
 
 
 
@@ -111,7 +111,6 @@ class ProcessTest(unittest.TestCase):
         """
         Tests pipeline get_to_process and get_from_process function.
         """
-        return
 
         pipeline = Pipeline()
 
@@ -135,13 +134,13 @@ class ProcessTest(unittest.TestCase):
 
 
 
-        to_processes = pipeline.get_to_processes("supervisor")
-        for process in to_processes:
-            print(process)
+        input_processes = pipeline.get_input_processes("supervisor")
+        input_processes = [x.get_name() for x in input_processes]
+        self.assertEqual(['artist', 'director'], input_processes)
 
-        from_processes = pipeline.get_from_processes("supervisor")
-        for process in from_processes:
-            print(process)
+        output_processes = pipeline.get_output_processes("supervisor")
+        output_processes = [x.get_name() for x in output_processes]
+        self.assertEqual(['render', 'director', 'artist'], output_processes)
 
 
 
@@ -199,11 +198,11 @@ class ProcessTest(unittest.TestCase):
 
         pipeline1 = pipeline.save_version()
         version1 = pipeline1.get_value("version")
-        self.assertEquals(version1, 1)
+        self.assertEqual(version1, 1)
 
         pipeline2 = pipeline.save_version()
         version2 = pipeline2.get_value("version")
-        self.assertEquals(version2, 2)
+        self.assertEqual(version2, 2)
 
         """
         # an sobject can point to the latest version
