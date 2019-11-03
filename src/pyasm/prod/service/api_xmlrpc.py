@@ -80,10 +80,9 @@ def get_simple_cmd(self, meth, ticket, args):
             super(ApiClientCmd, self2).__init__(**kwargs)
             
             self2.print_info = False
-            
-            first_arg = args[0]
-
+           
             if meth.__name__ == 'get_widget':
+                first_arg = args[0]
                 if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
                     self2.print_info = True
             elif meth.__name__ == 'execute_cmd':

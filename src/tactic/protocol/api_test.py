@@ -19,18 +19,22 @@ from pyasm.unittest import UnittestEnvironment
 import unittest
 
 import requests
-import urllib2
 
 
 __all__ = ['TestCmd', 'TestUpdateCmd']
 
-SERVER_URL = "http://192.168.0.169"
+SERVER_URL = "http://192.168.56.105"
 PROJECT_CODE = "unittest"
-LOGIN_TICKET = "d63a5484afc59ef203a"
+LOGIN_TICKET = "25041f619db4b69a63af12859c71d6cc"
 
 
 class RestAPITest(unittest.TestCase):
 
+    def _get_rest_url(self):
+        project_code = PROJECT_CODE
+        url = SERVER_URL
+        rest_url = url + "/default/" + project_code + "/REST/"
+        return rest_url 
 
     def test_all(self):
 
@@ -51,9 +55,7 @@ class RestAPITest(unittest.TestCase):
 
     def _test_ping(self):
         login_ticket = LOGIN_TICKET
-        project_code = PROJECT_CODE
-        url = SERVER_URL
-        rest_url = url + "/" + project_code + "/REST/"
+        rest_url = self._get_rest_url()
 
         data = {
             'login_ticket': login_ticket,
@@ -64,7 +66,7 @@ class RestAPITest(unittest.TestCase):
         ret_val = r.json()
 
         # FIXME: This should return data structure
-        self.assertEquals(ret_val, "OK")
+        self.assertEqual(ret_val, "OK")
 
 
     def _test_args(self):
@@ -90,9 +92,7 @@ class RestAPITest(unittest.TestCase):
         args = jsondumps(args)
 
         login_ticket = LOGIN_TICKET
-        project_code = PROJECT_CODE
-        url = SERVER_URL
-        rest_url = url + "/" + project_code + "/REST/"
+        rest_url = self._get_rest_url()
 
         data = {
             'login_ticket': login_ticket,
@@ -103,7 +103,7 @@ class RestAPITest(unittest.TestCase):
         r = requests.post(rest_url, data=data)
         ret_val = r.json()
         updated_description = ret_val.get("description")
-        self.assertEquals(description, updated_description)
+        self.assertEqual(description, updated_description)
 
 
     def _test_execute_cmd(self):
@@ -118,9 +118,7 @@ class RestAPITest(unittest.TestCase):
         '''
 
         login_ticket = LOGIN_TICKET
-        project_code = PROJECT_CODE
-        url = SERVER_URL
-        rest_url = url + "/" + project_code + "/REST/"
+        rest_url = self._get_rest_url()
 
         bar =  '123'
         cmd_kwargs = {
@@ -141,7 +139,7 @@ class RestAPITest(unittest.TestCase):
         ret_val = r.json()
         info = ret_val.get("info")
         bar2 = info.get('bar2')
-        self.assertEquals(bar, bar2)
+        self.assertEqual(bar, bar2)
 
 
     def _test_kwargs(self):
@@ -167,10 +165,8 @@ class RestAPITest(unittest.TestCase):
         }
 
         login_ticket = LOGIN_TICKET
-        project_code = PROJECT_CODE
-        url = SERVER_URL
-        rest_url = url + "/" + project_code + "/REST/"
 
+        rest_url = self._get_rest_url()
         data = {
             'login_ticket': login_ticket,
             'method': 'update',
@@ -184,7 +180,7 @@ class RestAPITest(unittest.TestCase):
         ret_val = r.json()
 
         updated_description = ret_val.get("description")
-        self.assertEquals(updated_description, description)
+        self.assertEqual(updated_description, description)
 
 
 
@@ -208,7 +204,7 @@ class TestUpdateCmd(Command):
 
 
     def execute(self):
-        print self.kwargs
+        print(self.kwargs)
 
 
 
