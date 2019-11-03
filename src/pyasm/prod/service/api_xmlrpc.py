@@ -26,6 +26,8 @@ import random
 import datetime
 import time
 import six
+import requests
+
 basestring = six.string_types
 
 from pyasm.common import jsonloads, jsondumps
@@ -54,6 +56,13 @@ class ApiException(Exception):
     pass
 
 
+class RemoteApiException(Exception):
+
+    def __init__(self, error):
+        self.class_name = error.get('type')
+        self.message = error.get('message')
+        self.args = error.get('args')
+
 
 
 # methods that only query.  These do not need the overhead of a transaction
@@ -66,6 +75,25 @@ LAST_RSS = System().memory_usage().get('rss')
 def get_simple_cmd(self, meth, ticket, args):
     class ApiClientCmd(Command):
 
+
+        def __init__(self2, **kwargs):
+            super(ApiClientCmd, self2).__init__(**kwargs)
+            
+            self2.print_info = False
+            
+            first_arg = args[0]
+
+            if meth.__name__ == 'get_widget':
+                if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
+                    self2.print_info = True
+            elif meth.__name__ == 'execute_cmd':
+                first_arg = args[0]
+                if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.DynamicUpdateCmd") == -1:
+                    self2.print_info = True
+            else:
+                self2.print_info = True
+            
+            
         def get_title(self):
             return "Client API"
 
@@ -79,34 +107,27 @@ def get_simple_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
            
             if self.get_protocol() != "local":
-                print("request_id: ", request_id)
-                now = datetime.datetime.now()
                 
-                def print_info(self2, args):
+                def print_primary_info(self2, args):
+                    print("request_id: %s" % request_id)
+                    
                     from pyasm.security import Site
                     if Site.get_site():
-                        print("site: ", Site.get_site())
-                    print("timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S"))
-                    print("user: ", Environment.get_user_name())
-                    print("simple method: ", meth)
-                    print("ticket: ", ticket)
+                        print("site: %s" % Site.get_site())
+                    
+                    now = datetime.datetime.now()
+                    print("timestamp: %s" % now.strftime("%Y-%m-%d %H:%M:%S"))
+                    print("user: %s" % Environment.get_user_name())
+                    print("simple method: %s" % meth)
+                    print("ticket: %s" % ticket)
+                    
                     Container.put("CHECK", self2.check)
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
 
 
-                self.print_info = True
-                
-                if meth.__name__ == 'get_widget':
-                    first_arg = args[0]
-                    if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
-                        print_info(self2, args)
-                elif meth.__name__ == 'execute_cmd':
-                    if self.print_info == True:
-                        print_info(self2, args)
-                else:
-                    print_info(self2, args)
-                
+                if self2.print_info:
+                    print_primary_info(self2, args)
                 
             try:
 
@@ -123,15 +144,21 @@ def get_simple_cmd(self, meth, ticket, args):
                 self2.results = exec_meth(self, ticket, meth, args)
             finally:
                 if self.get_protocol() != "local":
+                    
+                    def print_secondary_info(duration, request_id, rss, increment):
+                        print("Duration: %0.3f seconds (request_id: %s)" % (duration, request_id))
+                        print("Memory: %s KB" % rss)
+                        print("Increment: %s KB" % increment)
+                        
                     duration = time.time() - self2.start_time
-                    print("Duration: %0.3f seconds (request_id: %s)" % (duration, request_id))
+                    
                     REQUEST_COUNT += 1
                     rss = System().memory_usage().get("rss")
                     increment = rss - LAST_RSS
-                    print("Memory: %s KB" % rss)
-                    print("Increment: %s KB" % increment)
-                    #print("Num SObjects: %s" % Container.get("NUM_SOBJECTS"))
                     LAST_RSS = rss
+                    
+                    if self2.print_info:
+                        print_secondary_info(duration, request_id, rss, increment)
 
 
 
@@ -290,6 +317,8 @@ QUERY_METHODS = {
     'get_upload_file_size': 0,
     'get_doc_link': 0,
     'get_interaction_count': 0,
+    'get_plugin_dir': 0,
+    'get_by_code': 0,
 }
 
 TRANS_OPTIONAL_METHODS = {
@@ -346,7 +375,6 @@ def xmlrpc_decorator(meth):
                 Container.put(data_key, state) 
 
 
-
     def new(self, original_ticket, *args, **kwargs):
         results = None
         try:
@@ -382,17 +410,37 @@ def xmlrpc_decorator(meth):
 
 
             try:
+                multi_site = Config.get_value("master", "enabled")
+
                 if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif meth.__name__ in TRANS_OPTIONAL_METHODS:
-                    idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
-                    if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                    cmd = None
+                    
+                    # If multi-site is enabled, redirect commands flagged as update.
+                    if multi_site and meth.__name__ == "execute_cmd" and args[0]:
+                        if args[0] != "tactic.ui.app.DynamicUpdateCmd": 
+                            cmd_class = Common.create_from_class_path(args[0], {}, {})
+                            if cmd_class.is_update() == True:
+                                #FIXME: Extra dict is appended to args list 
+                                result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                                return self.browser_res(meth, result)
+                         
                         cmd = get_simple_cmd(self, meth, ticket, args)
-                    else:
-                        cmd = get_full_cmd(self, meth, ticket, args)
+                        
+                    else:            
+                        idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
+                        if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                            cmd = get_simple_cmd(self, meth, ticket, args)
+                        else:
+                            cmd = get_full_cmd(self, meth, ticket, args)
 
                 else:
-                    cmd = get_full_cmd(self, meth, ticket, args)
+                    if multi_site:
+                        result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                        return self.browser_res(meth, result)
+                    else: 
+                        cmd = get_full_cmd(self, meth, ticket, args)
 
                 profile_flag = False
 
@@ -475,11 +523,7 @@ def xmlrpc_decorator(meth):
         try:
             # NOTE: add in a special requirement for get_widget() because
             # of the bizarre 4096 byte limitation on responseXML in the browser
-            web = WebContainer.get_web()
-            if (web and web.get_app_name() == "Browser" \
-                    and meth.__name__ not in ['get_widget'] \
-                    and self.get_language() == 'javascript'):
-                results = jsondumps(results)
+            results = self.browser_res(meth, results)
 
             # handle special cases for c#
             #elif self.get_language() == 'c#':
@@ -1071,6 +1115,46 @@ class ApiXMLRPC(BaseApiXMLRPC):
         log = DebugLog.log(level,message,category)
         return True
 
+
+
+    def browser_res(self, meth, result):
+
+        web = WebContainer.get_web()
+        if (web and web.get_app_name() == "Browser" \
+                and meth.__name__ not in ['get_widget'] \
+                and self.get_language() == 'javascript'):
+            result = jsondumps(result)
+
+        return result
+
+
+
+    def redirect_to_server(self, ticket, meth, args):
+        '''Uses REST call to redirect API call to remote server.'''
+
+        project_code = Config.get_value("master", "project_code")
+        url = Config.get_value("master", "url") 
+        rest_url = url + "/" + project_code + "/REST/"
+       
+ 
+        args = jsondumps(args)
+        data = {
+            'login_ticket': ticket,
+            'method': meth,
+            'args' : args
+        }
+       
+        r = requests.post(rest_url, data=data)
+        ret_val = r.json()
+       
+        error = None 
+        if isinstance(ret_val, dict):
+            error = ret_val.get("error")
+        
+        if error:
+            raise RemoteApiException(error)
+        else: 
+            return ret_val
 
 
 

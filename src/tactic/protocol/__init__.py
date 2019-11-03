@@ -12,4 +12,5 @@
 
 
 from .rest_handler import *
+from .api_test import *
 from .python_rest_handler import *
