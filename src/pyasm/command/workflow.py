@@ -1615,7 +1615,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_complete(self):
-
+       
         #status = "complete"
         status = self.input.get("status") or "complete"
 
@@ -1648,7 +1648,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         is_complete = True
 
         if self.input.get("internal") == True:
-            tasks = Task.get_by_sobject(self.sobject, process=process)
+            full_process_name = self.get_full_process_name(process)
+            tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
             # Make sure all of the tasks are complete
             for task in tasks:
                 #self.log_message(self.sobject, self.process, status)
@@ -1678,7 +1679,6 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # store the state
         self.store_state()
-
         return super(WorkflowManualNodeHandler, self).handle_complete()
 
 
@@ -1958,9 +1958,8 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
         # use child process
         subpipeline_code = process_sobj.get_value("subpipeline_code")
-
         if not subpipeline_code:
-            workflow = process_sobj.get_value("workflow")
+            workflow = process_sobj.get_json_value("workflow", default={})
             default = workflow.get('default')
             if default:
                 subpipeline_code = default.get('subpipeline')
@@ -2393,7 +2392,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
         else:
 
-            if isinstance(ret_val, basestring):
+            if isinstance(ret_val, six.string_types):
                 ret_val = [ret_val]
 
             output_processes = []

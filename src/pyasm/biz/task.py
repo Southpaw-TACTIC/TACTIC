@@ -1714,7 +1714,7 @@ class TaskGenerator(object):
         pipeline = self.pipeline
         handled_processes = self.handled_processes
         process_sobjects = self.process_sobjects
-
+        
         process_sobject = process_sobjects.get(process_name)
         process_obj = pipeline.get_process(process_name)
 
@@ -1742,10 +1742,9 @@ class TaskGenerator(object):
                 subpipeline_code = settings.get("subpipeline")
 
             else:
-                task_creation = properties.get("task_creation")
+                task_creation = properties.get("task_creation") or "subtasks_only"
                 subpipeline_code = process_sobject.get("subpipeline_code")
-
-
+            
             # subtasks_only, top_only, all, none
             subtasks = []
             if task_creation in ['subtasks_only', 'all']:
