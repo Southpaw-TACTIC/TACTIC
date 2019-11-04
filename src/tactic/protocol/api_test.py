@@ -23,7 +23,7 @@ import requests
 
 __all__ = ['TestCmd', 'TestUpdateCmd']
 
-SERVER_URL = "http://192.168.56.105"
+SERVER_URL = "http://192.168.0.195"
 PROJECT_CODE = "unittest"
 LOGIN_TICKET = "25041f619db4b69a63af12859c71d6cc"
 

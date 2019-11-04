@@ -97,6 +97,7 @@ class CryptoKey(object):
         else:
             hash = MD5.new(msg).digest()
             return self.key.verify(hash, signature)
+        
 
 
 
