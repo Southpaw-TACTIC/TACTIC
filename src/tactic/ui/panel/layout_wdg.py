@@ -783,6 +783,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             menu_item.add_style("display: flex")
             menu_item.add_style("align-items: center")
             menu_item.add_style("padding-left: 10px")
+            menu_item.add_style("width: 100%")
 
 
 
@@ -860,9 +861,11 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             target = self.kwargs.get("target") or None
 
             #menu_item.add_attr("title", full_title)
+
             menu_item.add(checkbox)
             menu_item.add("&nbsp;&nbsp;")
             menu_item.add(display_title)
+
             menu_item.add_behavior({
             'type': "click_up", 
             'target_id': self.target_id,
@@ -911,7 +914,72 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             menu_item.add_event("onmouseover", "this.style.background='%s'" % color)
             menu_item.add_event("onmouseout", "this.style.background=''")
 
-            elements_wdg.add(menu_item)
+            menu_item_container = DivWdg()
+            elements_wdg.add(menu_item_container)
+            menu_item_container.add(menu_item)
+
+            if (self.kwargs.get("edit") in ['true', True]):
+                button = IconButtonWdg(name="Edit", icon="FA_EDIT")
+                menu_item_container.add(button)
+                button.add_behavior( {
+                'type': 'click_up',
+                'target_id': self.target_id,
+                'target': target,
+                'element_name': element_name,
+                'cbjs_action': '''
+
+                var panel;
+
+                var popup = bvr.src_el.getParent(".spt_popup");
+
+                if (bvr.target) {
+                    var parent = bvr.src_el.getParent("."+bvr.target);
+                    panel = parent.getElement(".spt_layout");
+                }
+                else if (popup) {
+                    var panel = popup.panel;
+                    if (!panel) {
+                        var activator = popup.activator;
+                        if (activator) {
+                            panel = activator.getParent(".spt_layout");
+                        }
+                    }
+                }
+                if (!panel) {
+                    panel = document.id(bvr.target_id);
+                }
+
+
+                if (!panel) {
+                    spt.alert('Please re-open the Column Manager');
+                    return;
+                }
+                var table = panel.getElement(".spt_table");
+
+                var class_name = 'tactic.ui.manager.ElementDefinitionWdg'
+                var popup_id = 'edit_column_defn_wdg';
+                var title =  'Edit Column Definition';
+
+                var element_name = bvr.element_name;
+                var view = table.getAttribute("spt_view");
+                var search_type = table.getAttribute("spt_search_type");
+
+                var args = {
+                    'search_type': search_type,
+                    'view': view,
+                    'element_name': element_name
+                };
+
+                spt.panel.load_popup(title, class_name, args=args);
+                '''
+                } )
+
+            menu_item_container.add_style("display: flex")
+            menu_item_container.add_style("justify-content: space-between")
+            menu_item_container.add_style("align-items: center")
+            menu_item_container.add_class("spt_column_container")
+            menu_item_container.add_attr("spt_element_name", element_name)
+            elements_wdg.add(menu_item_container)
 
         if not count:
             return None
