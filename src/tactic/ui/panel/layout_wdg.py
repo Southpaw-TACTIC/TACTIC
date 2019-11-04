@@ -679,12 +679,6 @@ class RowSelectWdg(BaseTableElementWdg):
 
 class AddPredefinedColumnWdg(BaseRefreshWdg):
 
-    def init(self):
-        self.is_refresh = False
-
-        if self.kwargs.get("is_refresh"):
-            self.is_refresh = True
-
     def get_args_keys(self):
         return {
             "element_names": "list of the element_names",
@@ -1174,7 +1168,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         #popup_wdg.add(context_menu, "content")
         #return popup_wdg
 
-        if self.is_refresh:
+        if self.kwargs.get("is_refresh"):
             return top
         else:
             return container
