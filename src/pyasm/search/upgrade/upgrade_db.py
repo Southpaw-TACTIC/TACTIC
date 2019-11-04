@@ -102,7 +102,8 @@ class Upgrade(object):
         if not self.site or self.site == "default":
             site_tmp_dir = Environment.get_tmp_dir()
         else:
-            site_tmp_dir = Site.get_site_dir(self.site)
+            site = Site.get()
+            site_tmp_dir = site.get_site_dir(self.site)
 
         for project in projects:
             

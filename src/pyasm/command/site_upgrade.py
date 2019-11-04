@@ -43,7 +43,7 @@ class SiteUpgradeCmd(Command):
 
             for x in db_update:          
                 args = [python, upgrade_db_path, "-y", "-p", x, "-s", site]
-                subprocess.run(args)
+                subprocess.call(args)
                 
         for code, data in plugin_update.items():
             update_status_f = open(update_status_path, 'w')

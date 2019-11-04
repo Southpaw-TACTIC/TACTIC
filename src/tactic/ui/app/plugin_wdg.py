@@ -2700,7 +2700,7 @@ class PluginDirListActionCbk(Command):
                 raise Exception("Cannot alter file outside of plugin")
 
             f = open(file_path, 'wb')
-            f.write(content)
+            f.write(content.encode())
             f.close()
 
         elif action == 'delete':
