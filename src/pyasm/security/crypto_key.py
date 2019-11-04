@@ -16,8 +16,10 @@ __all__ = ['CryptoKey']
 import os, binascii
 
 try:
-    from Cryptodome.Hash import MD5
+    from Cryptodome.Signature import pkcs1_15
+    from Cryptodome.Hash import MD5, SHA256
     from Cryptodome.PublicKey import RSA
+    from Cryptodome.Cipher import PKCS1_OAEP
 except ImportError:
     from Crypto.Hash import MD5
     from Crypto.PublicKey import RSA
@@ -67,34 +69,56 @@ class CryptoKey(object):
 
 
     def get_signature(self, msg):
-        hash = MD5.new(msg).digest()
-        signature = self.key.sign(hash, "")
+        try:
+            hash = MD5.new(msg.encode()).digest()
+            signature = self.key.sign(hash, "")
+        except (TypeError, NotImplementedError) as e:
+            msg = msg.encode('utf-8')
+            h = SHA256.new(msg)
+            signature = pkcs1_15.new(self.key).sign(h)
+        
         return signature
 
 
     def verify(self, msg, signature):
-        hash = MD5.new(msg).digest()
-        return self.key.verify(hash, signature)
+        try:
+            hash = MD5.new(msg).digest()
+            return self.key.verify(hash, signature)
+        except (TypeError, NotImplementedError) as e:
+            msg = msg.encode('utf-8')
+            h = SHA256.new(msg)
+            try:
+                pkcs1_15.new(self.key).verify(h, signature)
+                return True
+            except ValueError as e:
+                return False
 
 
 
     def encrypt(self, msg):
-        k = 84744 # A random parameter (for compatibility only. This value will be ignored) 
-        coded = self.key.encrypt(msg.encode(), k) # encode required for Python3
-        #hex = binascii.hexlify(str(coded))
-        hex = binascii.hexlify(coded[0])
-        return hex
+        try:
+            k = 84744 # A random parameter (for compatibility only. This value will be ignored) 
+            coded = self.key.encrypt(msg.encode(), k) # encode required for Python3
+            hex = binascii.hexlify(coded[0])
+            return hex
+        except NotImplementedError:
+            encryptor = PKCS1_OAEP.new(self.key)
+            encrypted = encryptor.encrypt(msg.encode())
+            return encrypted
 
-        #f = open("password", "w")
-        #f.write(hex)
-        #f.close()
 
 
 
-    def decrypt(self, hex):
-        uncoded = binascii.unhexlify(hex)
-        decrypt = self.key.decrypt(uncoded)
-        decrypt = decrypt.decode('ascii')
-        return decrypt
+    def decrypt(self, ciphertext):
+        try:
+            uncoded = binascii.unhexlify(ciphertext)
+            decrypt = self.key.decrypt(uncoded)
+            decrypt = decrypt.decode('ascii')
+            return decrypt
+        except binascii.Error as e:
+            cipher = PKCS1_OAEP.new(self.key)
+            decrypt = cipher.decrypt(ciphertext)
+            decrypt = decrypt.decode()
+            return decrypt
 
 
