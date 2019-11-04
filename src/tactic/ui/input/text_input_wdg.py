@@ -1515,7 +1515,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 from tactic.command import PythonCmd
                 kwargs = {'value' : value}
                 cmd = PythonCmd(script_path=script_path, **kwargs)
-                Command.execute_cmd(cmd)
+                results = cmd.execute()
         
             except Exception as e:
                 print(e)
@@ -1523,8 +1523,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             else:
 
-                results = cmd.get_info()
-                
                 # expect it to return a tuple of 2 lists or a single list
                 if isinstance(results, tuple):
                     display_results = results[0]

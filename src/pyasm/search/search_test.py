@@ -16,10 +16,10 @@ from pyasm.security import *
 from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 from pyasm.common.spt_date import SPTDate
 
-from sql import *
-from search import *
-from transaction import *
-from database_impl import *
+from .sql import *
+from .search import *
+from .transaction import *
+from .database_impl import *
 from pyasm.unittest import *
 from pyasm.biz import Project
 import unittest
@@ -129,13 +129,13 @@ class SearchTest(unittest.TestCase):
         sobject.set_value("name", "Cindy")
         sobject.commit()
         first_id = sobject.get_id()
-        self.assertEquals(first_id, sobject.get_value("test_id"))
+        self.assertEqual(first_id, sobject.get_value("test_id"))
 
         sobject = SearchType.create("unittest/no_id")
         sobject.set_value("name", "Mike")
         sobject.commit()
         second_id = sobject.get_id()
-        self.assertEquals(second_id, sobject.get_value("test_id"))
+        self.assertEqual(second_id, sobject.get_value("test_id"))
 
         # test update
         sobject.set_value("name", "Michael")
@@ -145,9 +145,9 @@ class SearchTest(unittest.TestCase):
         # test search
         search = Search("unittest/no_id")
         sobjects = search.get_sobjects()
-        self.assertEquals( 2, len(sobjects) )
+        self.assertEqual( 2, len(sobjects) )
         for sobject in sobjects:
-            self.assertEquals( True, sobject.get_id() in [first_id, second_id])
+            self.assertEqual( True, sobject.get_id() in [first_id, second_id])
 
 
 
@@ -170,39 +170,39 @@ class SearchTest(unittest.TestCase):
         for x in sobjects2:
              name = x.get_value('name_last')
              name_list2.append(name)
-        self.assertEquals(name_list,['e','d','b','c','a'])
-        self.assertEquals(name_list1,['a','c','b','d','e'])
-        self.assertEquals(name_list2,['e','d','c','b','a'])
+        self.assertEqual(name_list,['e','d','b','c','a'])
+        self.assertEqual(name_list1,['a','c','b','d','e'])
+        self.assertEqual(name_list2,['e','d','c','b','a'])
 
 
         search = Search('unittest/city')
         search.add_order_by('name')
         statement = search.get_statement()
-        self.assertEquals(statement, '''SELECT %s"city".* FROM %s"city" ORDER BY "city"."name"''' % (self.prefix, self.prefix))
+        self.assertEqual(statement, '''SELECT %s"city".* FROM %s"city" ORDER BY "city"."name"''' % (self.prefix, self.prefix))
 
 
         search = Search('unittest/person')
         search.add_order_by('unittest/city.unittest/country.code')
         statement = search.get_statement()
-        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "country"."code"''' % (self.prefix, self.prefix, self.prefix, self.prefix))
+        self.assertEqual(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "country"."code"''' % (self.prefix, self.prefix, self.prefix, self.prefix))
 
 
         search = Search('unittest/person')
         search.add_order_by('unittest/city.id')
         statement = search.get_statement()
-        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id"''' % (self.prefix, self.prefix, self.prefix))
+        self.assertEqual(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id"''' % (self.prefix, self.prefix, self.prefix))
 
 
         search = Search('unittest/person')
         search.add_order_by('unittest/city.id desc')
         statement = search.get_statement()
-        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc''' % (self.prefix, self.prefix, self.prefix))
+        self.assertEqual(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc''' % (self.prefix, self.prefix, self.prefix))
 
 
         # with the built-in order-by logic, order by code is added
         search.get_sobjects()
         statement = search.get_statement()
-        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc, "person"."code"''' % (self.prefix, self.prefix, self.prefix))
+        self.assertEqual(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" ORDER BY "city"."id" desc, "person"."code"''' % (self.prefix, self.prefix, self.prefix))
 
 
     def _test_get_by_statement(self):
@@ -242,14 +242,14 @@ class SearchTest(unittest.TestCase):
 
         # This assumes these users actually exist in the database, which they
         # often don't
-        #self.assertEquals(len(logins), 3)
+        #self.assertEqual(len(logins), 3)
 
 
         if db_type =='Sqlite':
-            self.assertEquals(statement, """SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'admin' union all SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'ben' union all SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'beth'""".format(self.sthpw_prefix))
+            self.assertEqual(statement, """SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'admin' union all SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'ben' union all SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'beth'""".format(self.sthpw_prefix))
         else:
 
-            self.assertEquals(statement, '''(SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'admin' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'ben' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'beth' ORDER BY "login"."login")'''.format(self.sthpw_prefix))
+            self.assertEqual(statement, '''(SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'admin' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'ben' ORDER BY "login"."login") union all (SELECT {0}"login".* FROM {0}"login" WHERE "login"."login" = 'beth' ORDER BY "login"."login")'''.format(self.sthpw_prefix))
 
 
     def _test_add_column_search(self):
@@ -258,16 +258,16 @@ class SearchTest(unittest.TestCase):
         search.add_column('id')
         search.add_column('timestamp')
         sobject = search.get_sobject()
-        self.assertEquals(len(sobject.data), 2)
-        self.assertEquals(True, sobject.has_value('timestamp'))
+        self.assertEqual(len(sobject.data), 2)
+        self.assertEqual(True, sobject.has_value('timestamp'))
 
         search = Search('sthpw/task')
         search.add_filter('status','Assignment')
         sobject = search.get_sobject()
 
-        #self.assertEquals(len(sobject.data), 27)
-        self.assertEquals(True, sobject.has_value('assigned'))
-        self.assertEquals(True, sobject.has_value('process'))
+        #self.assertEqual(len(sobject.data), 27)
+        self.assertEqual(True, sobject.has_value('assigned'))
+        self.assertEqual(True, sobject.has_value('process'))
 
     def _test_child_search(self):
 
@@ -295,8 +295,8 @@ class SearchTest(unittest.TestCase):
         search3.add_relationship_search_filter(task_search)
         persons_fast = search3.get_sobjects()
 
-        self.assertEquals(SObject.get_values(persons, 'id'), SObject.get_values(persons_fast, 'id'))
-        self.assertEquals(SObject.get_values(persons_fast, 'name_first'), ['pete','jamie'])
+        self.assertEqual(SObject.get_values(persons, 'id'), SObject.get_values(persons_fast, 'id'))
+        self.assertEqual(SObject.get_values(persons_fast, 'name_first'), ['pete','jamie'])
 
         # if I retire all the tasks for person2
         for task in tasks:
@@ -314,17 +314,17 @@ class SearchTest(unittest.TestCase):
         search2.add_relationship_filters(tasks)
         persons = search2.get_sobjects()
 
-        self.assertEquals(SObject.get_values(persons, 'id'), SObject.get_values(persons_fast, 'id'))
-        self.assertEquals(SObject.get_values(persons_fast, 'name_first'), ['pete'])
+        self.assertEqual(SObject.get_values(persons, 'id'), SObject.get_values(persons_fast, 'id'))
+        self.assertEqual(SObject.get_values(persons_fast, 'name_first'), ['pete'])
 
         # test add_filters() with an empty array
         task_search = Search('sthpw/task')
         task_search.add_filters('process', [])
         tasks = task_search.get_sobjects()
-        self.assertEquals(tasks, [])
+        self.assertEqual(tasks, [])
         expected = '''SELECT %s"task".* FROM %s"task" WHERE "task"."id" is NULL AND ("task"."s_status" != 'retired' or "task"."s_status" is NULL) ORDER BY "task"."search_type", "task"."search_code"'''%(self.sthpw_prefix, self.sthpw_prefix)
         statement = task_search.get_statement()
-        self.assertEquals(statement, expected)
+        self.assertEqual(statement, expected)
 
 
 
@@ -354,7 +354,7 @@ class SearchTest(unittest.TestCase):
         search3.add_relationship_search_filter(person_search)
         tasks2 = search3.get_sobjects()
 
-        self.assertEquals(SObject.get_values(tasks, 'id'), SObject.get_values(tasks2, 'id'))
+        self.assertEqual(SObject.get_values(tasks, 'id'), SObject.get_values(tasks2, 'id'))
 
 
 
@@ -383,10 +383,10 @@ class SearchTest(unittest.TestCase):
         search2 = Search("prod/asset?project=sample3d")
         search2.add_filter("pipeline_code", "model")
         sobjects = search2.get_sobjects()
-        self.assertEquals(True, len(sobjects) > 0 )
-        self.assertEquals("model", sobjects[0].get_value('pipeline_code'))
-        self.assertEquals("sample3d", sobjects[0].get_database())
-        self.assertEquals("sample3d", sobjects[1].get_database())
+        self.assertEqual(True, len(sobjects) > 0 )
+        self.assertEqual("model", sobjects[0].get_value('pipeline_code'))
+        self.assertEqual("sample3d", sobjects[0].get_database())
+        self.assertEqual("sample3d", sobjects[1].get_database())
 
         search3 = Search("prod/asset?project=sample3d")
         search3.add_regex_filter("pipeline_code", "model|cg_asset")
@@ -397,13 +397,13 @@ class SearchTest(unittest.TestCase):
             sobject.commit()
 
             updated_sobject = search3.get_sobject(redo=True)
-            self.assertEquals("some char", updated_sobject.get_value('description'))
+            self.assertEqual("some char", updated_sobject.get_value('description'))
 
         search4 = Search("prod/asset?project=sample3d")
         search4.add_regex_filter("pipeline_code", "cg_asset's")
 
         sobject = search4.get_sobject()
-        self.assertEquals(sobject, None)
+        self.assertEqual(sobject, None)
 
 
 
@@ -420,7 +420,7 @@ class SearchTest(unittest.TestCase):
         search.add_filter("name_first", "XXX")
         search.add_filter("name_last", "Smith")
         person = search.get_sobject()
-        self.assertEquals("XXX", person.get_value("name_first") )
+        self.assertEqual("XXX", person.get_value("name_first") )
 
         xxx_id = person.get_id()
 
@@ -436,20 +436,20 @@ class SearchTest(unittest.TestCase):
 
         yyy_id = person2.get_id()
 
-        self.assertEquals( xxx_id, yyy_id )
+        self.assertEqual( xxx_id, yyy_id )
 
 
         # test attributes
         name_first = person.get_attr_value("name_first")
-        self.assertEquals("YYY", name_first )
+        self.assertEqual("YYY", name_first )
 
         name_last = person.get_attr_value("name_last")
-        self.assertEquals("Cowser", name_last )
+        self.assertEqual("Cowser", name_last )
 
         # test related search
         sto_search = Search('prod/shot?project=sample3d')
         sobjects = sto_search.get_sobjects()
-        self.assertEquals(len(sobjects) > 1, True)
+        self.assertEqual(len(sobjects) > 1, True)
 
         search = Search('sthpw/login')
 
@@ -466,7 +466,7 @@ class SearchTest(unittest.TestCase):
         #search_type = SearchType.get("prod/asset")
         sobject = SearchType.create("unittest/person")
         key = sobject.get_search_type()
-        self.assertEquals(key, "unittest/person?project=unittest")
+        self.assertEqual(key, "unittest/person?project=unittest")
 
 
 
@@ -476,7 +476,7 @@ class SearchTest(unittest.TestCase):
 
         # get metadata that does not exist
         cow = person.get_metadata_value("cow")
-        self.assertEquals("", cow)
+        self.assertEqual("", cow)
 
         # json dict doesn't have this method
         #person.get_metadata_xml().clear_xpath_cache()
@@ -484,7 +484,7 @@ class SearchTest(unittest.TestCase):
         # set the value
         person.set_metadata_value("cow", "angus")
         cow = person.get_metadata_value("cow")
-        self.assertEquals("angus", cow)
+        self.assertEqual("angus", cow)
 
         # add a whole bunch of entries:
         data = {
@@ -496,19 +496,19 @@ class SearchTest(unittest.TestCase):
 
         color = person.get_metadata_value("color")
         height = person.get_metadata_value("height")
-        self.assertEquals("blue", color)
-        self.assertEquals("195cm", height)
+        self.assertEqual("blue", color)
+        self.assertEqual("195cm", height)
 
         # replace the entire structure
         person.add_metadata(data, replace=True)
         cow = person.get_metadata_value("cow")
-        self.assertEquals("", cow)
+        self.assertEqual("", cow)
 
         # if someone set it with non-json data, it should still return as is
         person.metadata = None
         person.set_value('metadata','testing==OK')
         meta_dict = person.get_metadata_dict()
-        self.assertEquals('testing==OK', meta_dict)
+        self.assertEqual('testing==OK', meta_dict)
 
 
 
@@ -523,7 +523,7 @@ class SearchTest(unittest.TestCase):
             search = Search(SearchType.SEARCH_TYPE)
             search.add_filter('search_type', st)
             sobjects = search.get_sobjects()
-            self.assertEquals(len(sobjects), 1)
+            self.assertEqual(len(sobjects), 1)
 
 
 
@@ -533,29 +533,29 @@ class SearchTest(unittest.TestCase):
         search_key = "prod/asset?project=sample3d&code=chr001"
 
         search_type = SearchKey.extract_base_search_type(search_key)
-        self.assertEquals("prod/asset", search_type)
+        self.assertEqual("prod/asset", search_type)
 
         project = SearchKey.extract_project(search_key)
-        self.assertEquals("sample3d", project)
+        self.assertEqual("sample3d", project)
 
         code = SearchKey.extract_code(search_key)
-        self.assertEquals("chr001", code)
+        self.assertEqual("chr001", code)
 
         # test a long one
         search_key = "prod/asset?project=sample3d&db=postgres&code=chr001"
 
         search_type = SearchKey.extract_base_search_type(search_key)
-        self.assertEquals("prod/asset", search_type)
+        self.assertEqual("prod/asset", search_type)
 
         database = SearchKey.extract_database(search_key)
-        self.assertEquals("postgres", database)
+        self.assertEqual("postgres", database)
 
 
         project = SearchKey.extract_project(search_key)
-        self.assertEquals("sample3d", project)
+        self.assertEqual("sample3d", project)
 
         code = SearchKey.extract_code(search_key)
-        self.assertEquals("chr001", code)
+        self.assertEqual("chr001", code)
 
 
         #eval(@GET(prod/asset.code))
@@ -570,7 +570,7 @@ class SearchTest(unittest.TestCase):
         sobject = search.get_sobject()
 
         search_key = SearchKey.get_by_sobject(sobject)
-        self.assertEquals("sthpw/project?code=unittest", search_key)
+        self.assertEqual("sthpw/project?code=unittest", search_key)
 
 
 
@@ -591,18 +591,18 @@ class SearchTest(unittest.TestCase):
         Project.set_project("sthpw")
 
         sobject = SearchType.create('prod/shot?project=sample3d', columns=['code', 'sequence_code', 'pipeline_code'], result=['S001','HT001','shot'])
-        self.assertEquals("prod/shot?project=sample3d", sobject.get_search_type())
+        self.assertEqual("prod/shot?project=sample3d", sobject.get_search_type())
 
         if sql.database_exists('sample3d'):
             db_resource = Project.get_db_resource_by_search_type('prod/bin?project=sample3d')
             exists= sql.table_exists(  db_resource ,'bin')
             if exists:
                 search = Search('prod/bin', project_code='sample3d')
-                self.assertEquals("prod/bin?project=sample3d", search.get_search_type())
+                self.assertEqual("prod/bin?project=sample3d", search.get_search_type())
         # check that a search type is properly created
         search_type = SearchType.get("prod/shot?project=sample3d")
         base_key = search_type.get_base_key()
-        self.assertEquals("prod/shot", base_key)
+        self.assertEqual("prod/shot", base_key)
 
 
         # NOTE: search_type get_full_key() method is deprecated.
@@ -612,7 +612,7 @@ class SearchTest(unittest.TestCase):
         # test that the sobject maintains the search type
         sobject = SearchType.create("prod/shot?project=sample3d")
         search_type = sobject.get_search_type()
-        self.assertEquals("prod/shot?project=sample3d", search_type)
+        self.assertEqual("prod/shot?project=sample3d", search_type)
 
         # set it back to unittest
         Project.set_project("unittest")
@@ -620,7 +620,7 @@ class SearchTest(unittest.TestCase):
         # test current project is added when there is not project set
         sobject = SearchType.create("prod/shot")
         search_type = sobject.get_search_type()
-        self.assertEquals("prod/shot?project=unittest", search_type)
+        self.assertEqual("prod/shot?project=unittest", search_type)
 
 
         # test current project is added when there is not project set, even
@@ -628,13 +628,13 @@ class SearchTest(unittest.TestCase):
         sobject = SearchType.create("prod/shot")
 
         search_type = sobject.get_search_type()
-        self.assertEquals("prod/shot?project=unittest", search_type)
+        self.assertEqual("prod/shot?project=unittest", search_type)
 
         if sql.database_exists('sample3d'):
             Project.set_project("sample3d")
 
             project_code = Project.get_project_code()
-            self.assertEquals("sample3d", project_code)
+            self.assertEqual("sample3d", project_code)
 
         # set it back to unittest project
         Project.set_project("unittest")
@@ -644,20 +644,20 @@ class SearchTest(unittest.TestCase):
             search_type = "prod/shot?project=sample3d"
             search = Search(search_type)
             project_code = search.get_project_code()
-            self.assertEquals("sample3d", project_code)
+            self.assertEqual("sample3d", project_code)
 
             # test the search project code even though the project has hanved
             search_type = "prod/shot?project=sample3d"
             search = Search(search_type)
             project_code = search.get_project_code()
-            self.assertEquals("sample3d", project_code)
+            self.assertEqual("sample3d", project_code)
 
             Project.set_project("admin")
             project_code = search.get_project_code()
-            self.assertEquals("sample3d", project_code)
+            self.assertEqual("sample3d", project_code)
 
             project_code = Project.get_project_code()
-            self.assertEquals("admin", project_code)
+            self.assertEqual("admin", project_code)
 
         # set it back to unittest project
         Project.set_project("unittest")
@@ -671,7 +671,7 @@ class SearchTest(unittest.TestCase):
         statement = search.get_statement()
         expected = """SELECT %s"person".* FROM %s"person" WHERE "person"."name_first" = 'YYY' AND "person"."name_last" = 'Cowser'""" % (self.prefix, self.prefix)
 
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
         search2 = Search("unittest/city")
         search2.add_search_filter("id", search)
@@ -679,7 +679,7 @@ class SearchTest(unittest.TestCase):
         statement = search2.get_statement()
         expected = """SELECT {0}"city".* FROM {0}"city" WHERE "city"."id" in ( SELECT {0}"person".* FROM {0}"person" WHERE "person"."name_first" = 'YYY' AND "person"."name_last" = 'Cowser' )""".format(self.prefix)
 
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
         search = Search("unittest/person")
         search.add_op('begin')
@@ -690,7 +690,7 @@ class SearchTest(unittest.TestCase):
         statement = search.get_statement()
         expected = """SELECT {0}"person".* FROM {0}"person" WHERE ( "person"."name_first" = 'YYY' OR "person"."name_last" = 'Cowser' ) AND "person"."city_code" = 'YYZ'""".format(self.prefix)
 
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
 
         # mix "is not" with "is" logic
@@ -720,7 +720,7 @@ class SearchTest(unittest.TestCase):
         expected = """SELECT {0}"person".* FROM {0}"person" WHERE ( "person"."name_first" ~ 'T' OR "person"."name_first" ~ 'U' ) AND ( "person"."nationality" != 'canadian' OR "person"."nationality" is NULL ) AND ( "person"."name_first" = 'YYY' OR "person"."name_last" = 'Cowser' OR "person"."city_code" = 'YYZ' )""".format(self.prefix)
 
         statement = search.get_statement()
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
 
         # old style without begin
@@ -731,7 +731,7 @@ class SearchTest(unittest.TestCase):
 
         expected = """SELECT {0}"login".* FROM {0}"login" WHERE "login"."license_type" = \'user\' OR "login"."license_type" is NULL""".format(self.sthpw_prefix)
         statement = search.get_statement()
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
 
         # extra dangling begin, default back to AND
@@ -744,7 +744,7 @@ class SearchTest(unittest.TestCase):
 
         expected = """SELECT {0}"login".* FROM {0}"login" WHERE "login"."license_type" = \'user\' AND "login"."license_type" is NULL""".format(self.sthpw_prefix)
         statement = search.get_statement()
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
         # extra dangling begin, with 2 ORs applied already
         search = Search('sthpw/login')
@@ -761,7 +761,7 @@ class SearchTest(unittest.TestCase):
 
         expected = """SELECT {0}"login".* FROM {0}"login" WHERE ( "login"."license_type" = \'user\' OR "login"."license_type" is NULL ) AND "login"."license_type" = \'float\'""".format(self.sthpw_prefix)
         statement = search.get_statement()
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
         # extra dangling begin, with 2 ORs applied already
         search = Search('sthpw/login')
@@ -780,7 +780,7 @@ class SearchTest(unittest.TestCase):
 
         expected = """SELECT {0}"login".* FROM {0}"login" WHERE "login"."namespace" = \'sample3d\' OR ( "login"."license_type" = \'user\' OR "login"."license_type" is NULL ) OR "login"."license_type" = \'float\'""".format(self.sthpw_prefix)
         statement = search.get_statement()
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
 
         # triple ands on level 0, OR on level 1
@@ -809,7 +809,7 @@ class SearchTest(unittest.TestCase):
 
 
         statement = search.get_statement()
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
         # test is NULL and is not NULL
         search = Search("unittest/person")
@@ -817,7 +817,7 @@ class SearchTest(unittest.TestCase):
 
         statement = search.get_statement()
         expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."name_first" is NULL""".format(self.prefix)
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
         # lowercase null treated as string
         search = Search("unittest/person")
@@ -825,14 +825,14 @@ class SearchTest(unittest.TestCase):
 
         statement = search.get_statement()
         expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."name_first" is 'null'""".format(self.prefix)
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
         search = Search("unittest/person")
         search.add_op_filters([("name_last", 'is not', 'NULL')])
 
         statement = search.get_statement()
         expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."name_last" is not NULL""".format(self.prefix)
-        self.assertEquals(expected, statement)
+        self.assertEqual(expected, statement)
 
     def _test_relationship_filter(self):
 
@@ -859,7 +859,7 @@ class SearchTest(unittest.TestCase):
         search = Search("unittest/person")
         search.add_date_range_filter("birth_date", "2010-01-01", "2010-02-01")
         expected = """SELECT {0}"person".* FROM {0}"person" WHERE "person"."birth_date" >= '{1}' AND "person"."birth_date" < '{2}'""".format(self.prefix, start_range, end_range)
-        self.assertEquals(expected, search.get_statement() )
+        self.assertEqual(expected, search.get_statement() )
 
         search = Search("unittest/person")
         search.add_dates_overlap_filter("birth_date", "birth_date", "2010-01-01", "2010-02-01")
@@ -867,7 +867,7 @@ class SearchTest(unittest.TestCase):
         expected += '''WHERE ( "person"."birth_date" <= '{0}' AND "person"."birth_date" >= '{0}' ) '''.format(start_range)
         expected += '''OR ( "person"."birth_date" >= '{0}' AND "person"."birth_date" <= '{0}' ) '''.format(end_range)
         expected += '''OR ( "person"."birth_date" >= '{0}' AND "person"."birth_date" <= '{1}' ))'''.format(start_range, end_range)
-        self.assertEquals(expected, search.get_statement() )
+        self.assertEqual(expected, search.get_statement() )
 
     def _test_commit(self):
 
@@ -891,7 +891,7 @@ class SearchTest(unittest.TestCase):
         search.add_filter('process','unittest_commit')
         search.set_limit(1)
         note = search.get_sobject()
-        self.assertEquals(note.get_value('note'), "3 slashes \\\\\\")
+        self.assertEqual(note.get_value('note'), "3 slashes \\\\\\")
 
 
     def _test_set_value(self):
@@ -900,7 +900,7 @@ class SearchTest(unittest.TestCase):
         update.set_database('sthpw')
         update.set_table('task')
         update.set_value('timestamp','2012-12-12')
-        self.assertEquals( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = '2012-12-12'""".format(self.sthpw_prefix))
+        self.assertEqual( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = '2012-12-12'""".format(self.sthpw_prefix))
 
         update = Update()
         update.set_database('sthpw')
@@ -917,9 +917,9 @@ class SearchTest(unittest.TestCase):
         value = update.impl.process_date(value)
 
         update.set_value('timestamp', value)
-        self.assertEquals( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = convert(datetime2, \'2012-12-12\', 0)""".format(self.sthpw_prefix))
+        self.assertEqual( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = convert(datetime2, \'2012-12-12\', 0)""".format(self.sthpw_prefix))
         update.set_value('timestamp','NOW')
-        self.assertEquals( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = getdate()""".format(self.sthpw_prefix))
+        self.assertEqual( update.get_statement(), """UPDATE {0}"task" SET "timestamp" = getdate()""".format(self.sthpw_prefix))
 
         from pyasm.biz import Project
         database_type = Project.get_by_code("unittest").get_database_type()
@@ -942,12 +942,12 @@ class SearchTest(unittest.TestCase):
         #     update.set_value('timestamp', value)
         #     update.set_value('description','')
         #     if db_type == 'SQLServer':
-        #         self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
+        #         self.assertEqual( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = N\'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
         #     else:
-        #         self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
+        #         self.assertEqual( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = \'\'"""% (self.sthpw_prefix, time_dict.get(db_type)))
 
         #     update.set_value('description',None)
-        #     self.assertEquals( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (self.sthpw_prefix, time_dict.get(db_type)))
+        #     self.assertEqual( update.get_statement(), """UPDATE %s"task" SET "timestamp" = %s, "description" = NULL"""% (self.sthpw_prefix, time_dict.get(db_type)))
 
 
 
@@ -961,10 +961,10 @@ class SearchTest(unittest.TestCase):
         task.set_value('timestamp', input_time)
         task.set_value('description', 'search_test')
         output_time = task.get_datetime_value('timestamp')
-        self.assertEquals(input_time, output_time)
+        self.assertEqual(input_time, output_time)
         task.commit()
         output_time = task.get_datetime_value('timestamp')
-        self.assertEquals(input_time, output_time)
+        self.assertEqual(input_time, output_time)
 
         # timestamp without timezone: set value with timezone conversion
 
@@ -975,10 +975,10 @@ class SearchTest(unittest.TestCase):
 
         task1.set_value('timestamp', tz_input_time)
         output_time = task1.get_datetime_value('timestamp')
-        self.assertEquals(SPTDate.convert_to_timezone(tz_input_time, 'UTC'), output_time)
+        self.assertEqual(SPTDate.convert_to_timezone(tz_input_time, 'UTC'), output_time)
         task1.commit()
         output_time = task1.get_datetime_value('timestamp')
-        self.assertEquals(input_time1, output_time)
+        self.assertEqual(input_time1, output_time)
 
 	    # search for task using both timestamps
 
@@ -986,13 +986,13 @@ class SearchTest(unittest.TestCase):
         search.add_filter('description', 'search_test')
         search.add_filter('timestamp', input_time)
         search_result = search.get_sobject()
-        self.assertEquals(task.get_code(), search_result.get_code())
+        self.assertEqual(task.get_code(), search_result.get_code())
 
         search = Search('sthpw/task')
         search.add_filter('description', 'search_test')
         search.add_filter('timestamp', tz_input_time)
         search_result = search.get_sobject()
-        self.assertEquals(task.get_code(), search_result.get_code())
+        self.assertEqual(task.get_code(), search_result.get_code())
 
         # timestamp with timezone: set value without timezone conversion
 
@@ -1004,10 +1004,10 @@ class SearchTest(unittest.TestCase):
         ticket.set_value('ticket', 'search_test')
         ticket.set_value('expiry', input_time)
         output_time = ticket.get_datetime_value('timestamp')
-        self.assertEquals(input_time, output_time)
+        self.assertEqual(input_time, output_time)
         ticket.commit()
         output_time = ticket.get_datetime_value('timestamp')
-        self.assertEquals(input_time, output_time)
+        self.assertEqual(input_time, output_time)
 
 
         # timestamp with timezone: set value with timezone conversion
@@ -1022,10 +1022,10 @@ class SearchTest(unittest.TestCase):
         ticket1.set_value('ticket', 'test2')
         ticket1.set_value('expiry', tz_input_time)
         output_time = ticket1.get_datetime_value('timestamp')
-        self.assertEquals(SPTDate.convert_to_timezone(tz_input_time, 'UTC'), output_time)
+        self.assertEqual(SPTDate.convert_to_timezone(tz_input_time, 'UTC'), output_time)
         ticket1.commit()
         output_time = ticket1.get_datetime_value('timestamp')
-        self.assertEquals(input_time1, output_time)
+        self.assertEqual(input_time1, output_time)
 
 	    # search ticket using both timestamps
 
@@ -1033,13 +1033,13 @@ class SearchTest(unittest.TestCase):
         search.add_filter('ticket', 'search_test')
         search.add_filter('timestamp', input_time)
         search_result = search.get_sobject()
-        self.assertEquals(ticket.get_code(), search_result.get_code())
+        self.assertEqual(ticket.get_code(), search_result.get_code())
 
         search = Search('sthpw/ticket')
         search.add_filter('ticket', 'search_test')
         search.add_filter('timestamp', tz_input_time)
         search_result = search.get_sobject()
-        self.assertEquals(ticket.get_code(), search_result.get_code())
+        self.assertEqual(ticket.get_code(), search_result.get_code())
 
         # test set_value, get_value with string date
 
@@ -1052,10 +1052,10 @@ class SearchTest(unittest.TestCase):
         ticket.set_value('ticket', 'set_test')
         ticket.set_value('expiry', input_time_string)
         output_time = ticket.get_datetime_value('timestamp')
-        self.assertEquals(input_time_date, output_time)
+        self.assertEqual(input_time_date, output_time)
         ticket.commit()
         output_time = ticket.get_datetime_value('timestamp')
-        self.assertEquals(input_time_date, output_time)
+        self.assertEqual(input_time_date, output_time)
 
         #Test set_value, get_value with timezoned string date
 
@@ -1069,10 +1069,10 @@ class SearchTest(unittest.TestCase):
         ticket.set_value('ticket', 'set_test_tz')
         ticket.set_value('expiry', input_time_string_tz)
         output_time = ticket.get_datetime_value('timestamp')
-        self.assertEquals(input_time_date_tz, output_time)
+        self.assertEqual(input_time_date_tz, output_time)
         ticket.commit()
         output_time = ticket.get_datetime_value('timestamp')
-        self.assertEquals(input_time_date_utc, output_time)
+        self.assertEqual(input_time_date_utc, output_time)
 
 
     def _test_multi_db_subselect(self):
@@ -1107,7 +1107,7 @@ class SearchTest(unittest.TestCase):
         search_task.add_filter("process", "subselect")
 
         sobjects = search_person.get_sobjects()
-        self.assertEquals(len(sobjects), 3)
+        self.assertEqual(len(sobjects), 3)
 
 
         # find people by carin that have a task "subselect", using
@@ -1118,7 +1118,7 @@ class SearchTest(unittest.TestCase):
         search_task.add_filter("process", "subselect")
 
         sobjects = search_person.get_sobjects()
-        self.assertEquals(len(sobjects), 3)
+        self.assertEqual(len(sobjects), 3)
 
 
         # find task that carin has
@@ -1143,12 +1143,12 @@ class SearchTest(unittest.TestCase):
 
         if can_join:
             expected = '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"task" ON "person"."code" = "task"."search_code" WHERE "task"."search_type" = 'unittest/person?project=unittest' ORDER BY "task"."status" desc''' % (self.prefix, self.prefix, self.sthpw_prefix)
-            self.assertEquals(expected, statement)
+            self.assertEqual(expected, statement)
 
             sobjects = search_person.get_sobjects()
             names = [x.get_value("name_first") for x in sobjects]
             expected = ['carin3','carint2','carin']
-            self.assertEquals(expected, names)
+            self.assertEqual(expected, names)
 
 
 
@@ -1161,8 +1161,8 @@ class SearchTest(unittest.TestCase):
         sobject.set_value('timestamp','2012-12-12')
         sobject.set_value('description', '')
         sobject.commit(triggers=False)
-        self.assertEquals( sobject.data.get('description'), None)
-        self.assertEquals( sobject.get_value('description'), '')
+        self.assertEqual( sobject.data.get('description'), None)
+        self.assertEqual( sobject.get_value('description'), '')
 
 
 
@@ -1192,8 +1192,8 @@ class SearchTest(unittest.TestCase):
         search = Search("unittest/sports_car")
         sports_cars = search.get_sobjects()
 
-        self.assertEquals(3, len(cars))
-        self.assertEquals(2, len(sports_cars))
+        self.assertEqual(3, len(cars))
+        self.assertEqual(2, len(sports_cars))
 
         #for sports_car in sports_cars:
         #    sports_car.set_value("top_speed", "200mph")

@@ -24,7 +24,7 @@ from pyasm.search import Search, SearchType
 from pyasm.biz import Task
 from pyasm.command import Command, Trigger
 
-from workflow import Workflow
+from .workflow import Workflow
 
 from pyasm.security import Batch
 
@@ -74,9 +74,12 @@ class WorkflowCmd(Command):
 
         try:
             Workflow().init()
-
-
             
+            
+            self._test_hierarchy()
+            self._test_double_hierarchy()
+
+
             self._test_namespace_dependency()
 
 
@@ -97,7 +100,6 @@ class WorkflowCmd(Command):
             self._test_custom_status()
             self._test_messaging()
             
-            self._test_hierarchy()
             #self._test_js()
             
             
@@ -111,13 +113,12 @@ class WorkflowCmd(Command):
             self._test_projected_schedule()
             self._test_not_required()
 
-
         except Exception as e:
             print("Error: ", e)
             raise
 
 
-    def get_pipeline(self, pipeline_xml, add_tasks=False, search_type=None):
+    def get_pipeline(self, pipeline_xml, add_tasks=False, search_type=None, sobject=None, clear_processes=True):
 
         pipeline = SearchType.create("sthpw/pipeline")
         pipeline.set_pipeline(pipeline_xml)
@@ -136,12 +137,13 @@ class WorkflowCmd(Command):
 
         process_names = pipeline.get_process_names()
 
-        # delete the processes
-        search = Search("config/process")
-        search.add_filters("process", process_names)
-        processes = search.get_sobjects()
-        for process in processes:
-            process.delete()
+        if clear_processes:
+            # delete the processes
+            search = Search("config/process")
+            search.add_filters("process", process_names)
+            processes = search.get_sobjects()
+            for process in processes:
+                process.delete()
 
         # create new processes
         processes_dict = {}
@@ -181,7 +183,7 @@ class WorkflowCmd(Command):
 
             # Note: we don't have an sobject yet
             if add_tasks:
-                task = SaerchType.create("sthpw/task")
+                task = SearchType.create("sthpw/task")
                 task.set_parent(sobject)
                 task.set_value("process", process_name)
                 task.commit()
@@ -889,8 +891,94 @@ class WorkflowCmd(Command):
         self.assertEquals( "complete", sobject.get_value("c"))
 
 
-
     def _test_hierarchy(self):
+        '''Test hierarchy node messaging to and from subpipeline with manual nodes'''
+        sobject = SearchType.create("unittest/person")
+
+        pipeline_xml = '''
+        <pipeline>
+          <process type="manual" name="a"/>
+          <process type="hierarchy" name="b"/>
+          <process type="manual" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+
+        
+        # create the sub pipeline
+        subpipeline_xml = '''
+        <pipeline>
+          <process type="manual" name="a"/>
+          <process type="manual" name="b"/>
+          <process type="manual" name="c"/>
+          <connect from="a" to="b"/>
+          <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        
+        subpipeline, subprocesses = self.get_pipeline(subpipeline_xml, clear_processes=False)
+        subpipeline_code = subpipeline.get_code()
+
+        p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+        
+        # Create tasks
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+
+        tasks = Task.add_initial_tasks(sobject) 
+        
+        # Test that sub tasks were created
+        # subtasks only is the default
+        self.assertEquals(len(tasks), 5)
+
+        # Run the pipeline
+        process = "a"
+        output = {
+            "pipeline": pipeline,
+            "sobject": sobject,
+            "process": process
+        }
+        Trigger.call(self, "process|pending", output)
+
+        # Test status call
+        tasks = Task.get_by_sobject(sobject, process="a")
+        task = tasks[0]
+        status = task.get_value("status")
+        self.assertEquals(status, "Pending")
+
+        # Test In Progress status of hierarchy node
+        # and Pending status of first subtask
+        task.set_value("status", "Complete")
+        task.commit()
+        
+        tasks = Task.get_by_sobject(sobject, process="b/a")
+        task = tasks[0]
+        status = task.get_value("status")
+        self.assertEquals(status, "Pending")
+  
+       
+        # Test messaging back to parent pipeline
+        task.set_value("status", "Complete")
+
+        tasks = Task.get_by_sobject(sobject, process="b/b")
+        tasks[0].set_value("status", "Complete")
+        tasks[0].commit()
+        
+        tasks = Task.get_by_sobject(sobject, process="b/c")
+        tasks[0].set_value("status", "Complete")
+        tasks[0].commit()
+
+        tasks = Task.get_by_sobject(sobject, process="c")
+        self.assertEquals(tasks[0].get_value("status"), "Pending")
+  
+
+
+    def _test_double_hierarchy(self):
+        '''Tests double hierarchy node with action nodes'''
 
         # create a dummy sobject
         sobject = SearchType.create("unittest/person")
@@ -924,7 +1012,6 @@ class WorkflowCmd(Command):
         </pipeline>
         '''
         subpipeline, subprocesses = self.get_pipeline(subpipeline_xml)
-        #subpipeline.set_value("parent_process", parent_process.get_code())
         subpipeline.commit()
         subpipeline_code = subpipeline.get_code()
 

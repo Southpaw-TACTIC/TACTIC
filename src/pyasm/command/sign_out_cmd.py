@@ -27,6 +27,8 @@ class SignOutCmd(Command):
         self.login_name = ''
         super(SignOutCmd, self).__init__(**kwargs)
 
+        self.update = True
+
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
