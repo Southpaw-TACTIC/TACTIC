@@ -55,7 +55,7 @@ def get_app_server():
         @cherrypy.expose()
         def default(self, *vpath, **kwargs):
             self.hash = vpath
-            return self.get_display()
+            return self.get_display().encode()
 
 
 

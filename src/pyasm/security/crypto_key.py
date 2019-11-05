@@ -16,14 +16,21 @@ __all__ = ['CryptoKey']
 import os, binascii
 
 try:
-    from Cryptodome.Hash import MD5
     from Cryptodome.PublicKey import RSA
+    from Cryptodome.Signature import pkcs1_15
+    from Cryptodome.Hash import MD5, SHA256
+    from Cryptodome.Cipher import PKCS1_OAEP
+    HAS_CRYPTODOME = True
 except ImportError:
     from Crypto.Hash import MD5
     from Crypto.PublicKey import RSA
+    HAS_CRYPTODOME = False
+except ImportError:
+    raise Exception("Must install Python Cryptodome library")
 
 
 class CryptoKey(object):
+    
     def __init__(self):
         self.key = None
         self.private_key = None
@@ -67,34 +74,57 @@ class CryptoKey(object):
 
 
     def get_signature(self, msg):
-        hash = MD5.new(msg).digest()
-        signature = self.key.sign(hash, "")
+        if HAS_CRYPTODOME:
+            msg = msg.encode('utf-8')
+            h = SHA256.new(msg)
+            signature = pkcs1_15.new(self.key).sign(h)
+        else:
+            hash = MD5.new(msg.encode()).digest()
+            signature = self.key.sign(hash, "")
+        
         return signature
 
 
     def verify(self, msg, signature):
-        hash = MD5.new(msg).digest()
-        return self.key.verify(hash, signature)
+        if HAS_CRYPTODOME:
+            msg = msg.encode('utf-8')
+            h = SHA256.new(msg)
+            try:
+                pkcs1_15.new(self.key).verify(h, signature)
+                return True
+            except ValueError as e:
+                return False
+        else:
+            hash = MD5.new(msg).digest()
+            return self.key.verify(hash, signature)
+        
 
 
 
     def encrypt(self, msg):
-        k = 84744 # A random parameter (for compatibility only. This value will be ignored) 
-        coded = self.key.encrypt(msg.encode(), k) # encode required for Python3
-        #hex = binascii.hexlify(str(coded))
-        hex = binascii.hexlify(coded[0])
-        return hex
+        if HAS_CRYPTODOME:
+            encryptor = PKCS1_OAEP.new(self.key)
+            encrypted = encryptor.encrypt(msg.encode())
+            return encrypted
+        else:
+            k = 84744 # A random parameter (for compatibility only. This value will be ignored) 
+            coded = self.key.encrypt(msg.encode(), k) # encode required for Python3
+            hex = binascii.hexlify(coded[0])
+            return hex
 
-        #f = open("password", "w")
-        #f.write(hex)
-        #f.close()
 
 
 
-    def decrypt(self, hex):
-        uncoded = binascii.unhexlify(hex)
-        decrypt = self.key.decrypt(uncoded)
-        decrypt = decrypt.decode('ascii')
-        return decrypt
+    def decrypt(self, ciphertext):
+        if HAS_CRYPTODOME:
+            cipher = PKCS1_OAEP.new(self.key)
+            decrypt = cipher.decrypt(ciphertext)
+            decrypt = decrypt.decode()
+            return decrypt
+        else:
+            uncoded = binascii.unhexlify(ciphertext)
+            decrypt = self.key.decrypt(uncoded)
+            decrypt = decrypt.decode('ascii')
+            return decrypt
 
 
