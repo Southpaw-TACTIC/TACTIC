@@ -186,6 +186,8 @@ class Upgrade(object):
             
             if project.has_value('last_version_update'):
                 last_version = project.get_value('last_version_update')
+                last_version = last_version.split("_")
+                last_version = ".".join(last_version)
                 if self.to_version > last_version:
                     project.set_value("last_version_update", self.to_version)
             else: 
