@@ -18,7 +18,6 @@ from pyasm.web import DivWdg, HtmlElement, WebContainer, Table, Widget
 from pyasm.widget import IconWdg, HiddenWdg, PasswordWdg, SelectWdg, TextWdg, ProdIconSubmitWdg
 from pyasm.command import Command, CommandException
 from pyasm.search import FileUndo
-from pyasm.security import CryptoKey
 
 from tactic.ui.common import BaseRefreshWdg
 

@@ -16,13 +16,14 @@ __all__ = ["SecurityTest"]
 import tacticenv
 
 
-from pyasm.common import Environment, SecurityException, Xml
+from pyasm.common import Environment, SecurityException, Xml, Config
 from pyasm.search import *
 from pyasm.unittest import *
 from pyasm.biz import Project, ExpressionParser
 from pyasm.security import Login
 
 from .security import *
+from .drupal_password_hasher import DrupalPasswordHasher
 from .access_manager import *
 from .batch import *
 from .crypto_key import *
@@ -50,16 +51,19 @@ class SecurityTest(unittest.TestCase):
 
 
         # IF Portal
-        try:
-            site = Site.set_site("default")
+        portal_enabled = Config.get_value("portal", "enabled") == "true"
+        if portal_enabled:
+            try:
+                site = Site.set_site("default")
 
-            # create the user
-            login = SObjectFactory.create("portal/client")
-            login.set_value("login", self.user)
-            login.set_value("password", self.encrypted)
-            login.commit()
-        finally:
-            Site.pop_site()
+                # create the user
+                login = SObjectFactory.create("portal/client")
+                login.set_value("login", self.user)
+                login.set_value("password", self.encrypted)
+                login.commit()
+            
+            finally:
+                Site.pop_site()
 
 
 
@@ -186,6 +190,7 @@ class SecurityTest(unittest.TestCase):
             self._setup()
 
             self._test_crypto()
+            self._test_drupal()
 
             self._test_security_fail()
             self._test_security_pass()
@@ -206,7 +211,16 @@ class SecurityTest(unittest.TestCase):
             raise
 
 
+    def _test_drupal(self):
+        password = "tactic"
+        salt = "DPRNKWLY"
+        new = DrupalPasswordHasher().encode(password, salt, 'D')
+        encoded = "$S$DDPRNKWLY5IwB.aQlCm/OLRrFxZmpa7Rk/kjm/J45bGNGTXUsRxq"
+        self.assertEqual(new, encoded)
 
+        verify = DrupalPasswordHasher().verify("tactic", encoded)
+        self.assertEqual(True, verify)
+        
 
     def _test_security_fail(self):
 

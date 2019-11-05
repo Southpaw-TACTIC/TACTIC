@@ -121,32 +121,14 @@ class DrupalPasswordHasher(object):
         return "$%s" % longhashed[:54]
 
     def verify(self, password, encoded):
-        print("encoded: ", encoded)
-        print("len: ", len(encoded))
         hash = encoded.split("$S$")[1]
         iter_code = hash[0]
         salt = hash[1:1 + self.salt_length]
-        print("salt: ", salt)
         tt = self.encode(password, salt, iter_code)
-        print("tt: ", tt)
-        print("len: ", len(tt))
 
         return encoded == self.encode(password, salt, iter_code)
 
-if __name__ == '__main__':
-    password = "tactic123"
-    salt = "DPRNKWLY"
-    print("\n")
-    new = DrupalPasswordHasher().encode(password, salt, 'D')
-    print("new: ", new)
-    print("\n")
 
-    encoded = "$S$DPRNKWLYLKhGKUekMHmHDafAT.6NzngYR53Vhp2l4WoQyEINLbLo"
-    print("enc: ", encoded)
-    print("\n")
-    print("verify: ", new == encoded)
-    print("\n")
-    print( DrupalPasswordHasher().verify("123", encoded))
 
 
 
