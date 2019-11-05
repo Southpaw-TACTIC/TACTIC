@@ -383,6 +383,9 @@ class ChartBuilderWdg(BaseRefreshWdg):
         let top = bvr.src_el.getParent(".spt_chart_builder");
         let chart = top.getElement(".spt_chart");
         let values = spt.api.get_input_values(top);
+        
+        if (values.expression) values.y_axis = values.expression;
+
         let y_axis = values.y_axis.join();
         let chart_type = values.chart_type.join();
 
