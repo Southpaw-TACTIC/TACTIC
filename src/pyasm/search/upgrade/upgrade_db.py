@@ -99,6 +99,12 @@ class Upgrade(object):
                 exec("%s = module.%s" % (class_name, class_name) )
 
 
+        if not self.site or self.site == "default":
+            site_tmp_dir = Environment.get_tmp_dir()
+        else:
+            site = Site.get()
+            site_tmp_dir = site.get_site_dir(self.site)
+
         for project in projects:
             
             code = project.get_code()
@@ -109,14 +115,19 @@ class Upgrade(object):
 
             if not type:
                 type = 'default'
+                
+            # if the project is admin, the just ignore for now
+            if code == 'admin':
+                continue
+
             
-            site_obj = Site.get()
-            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(self.site), self.site, code)
+            tmp_dir = '%s/upgrade/%s' % (site_tmp_dir, code)
             output_file = '%s/upgrade_output.txt' % tmp_dir
             if not os.path.exists(tmp_dir):
                 os.makedirs(tmp_dir)
             elif os.path.exists(output_file):
                 os.unlink(output_file)
+                
             ofile = open(output_file, 'w')
 
             import datetime
@@ -126,9 +137,7 @@ class Upgrade(object):
                 print(project.get_code(), type)
                 print("-"*30)
 
-            # if the project is admin, the just ignore for now
-            if code == 'admin':
-                continue
+
             
             if not project.database_exists():
                 ofile.write("*" * 80 + '\n')
@@ -196,11 +205,14 @@ class Upgrade(object):
                 return
             project.commit(triggers=False)
 
+            if not self.quiet:
+                print("Upgrade output file saved in [%s]" %output_file)
+
 
 
         # print the errors for each upgrade
         for cls_name, project_code, errors in error_list:
-            tmp_dir = '%s/upgrade_db_log/%s/%s' % (site_obj.get_site_dir(self.site), self.site, code)
+            tmp_dir = '%s/upgrade/%s' % (site_tmp_dir, project_code)
             output_file = '%s/upgrade_output.txt' % tmp_dir
             if not os.path.exists(tmp_dir):
                 os.makedirs(tmp_dir)
