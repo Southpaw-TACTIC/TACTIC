@@ -223,6 +223,7 @@ class ChartJsWdg(BaseRefreshWdg):
                 widget.set_chart_type(widget_chart_type)
 
             data = widget.get_data()
+
             color = widget.get_color()
 
             label = widget.get_label()
@@ -234,6 +235,7 @@ class ChartJsWdg(BaseRefreshWdg):
                 'backgroundColor': color
             }
 
+
             if chart_type in ["pie", "doughnut"]:
                 dataset['borderWidth'] = 2
             else:
@@ -242,7 +244,7 @@ class ChartJsWdg(BaseRefreshWdg):
 
             datasets.append(dataset)
 
- 
+
 
         if chart_type == "horizontalBar":
             for item in datasets:
@@ -367,6 +369,7 @@ options.plugins = {
 
 
 var ctx = bvr.src_el.getContext('2d');
+
 window.myBar = new Chart(ctx, {
     type: chart_type,
     data: barChartData,
@@ -378,6 +381,5 @@ window.myBar = new Chart(ctx, {
 
 
         return top
-
 
 

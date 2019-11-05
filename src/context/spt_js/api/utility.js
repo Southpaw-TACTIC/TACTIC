@@ -68,6 +68,9 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
     else
         input_list = document.getElements(filter);
 
+    // if input is hidden in the DOM, remove from list
+    input_list = input_list.filter(function(el) { return el.offsetParent; });
+
     //for multple select
     var get_multi = function (obj) { 
         var selected = [];

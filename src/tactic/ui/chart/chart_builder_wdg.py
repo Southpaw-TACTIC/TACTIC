@@ -138,7 +138,6 @@ class ChartBuilderWdg(BaseRefreshWdg):
         let top = bvr.src_el.getParent(".spt_chart_builder"); 
         let detail = top.getElement(".spt_bar_chart_detail");
         
-        detail.index = 0;
         '''
         } )
         
@@ -149,9 +148,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         let select = top.getElement(".spt_chart_column_select");
         let detail = top.getElement(".spt_bar_chart_detail");
         
-        detail.index += 1;
         let clone = spt.behavior.clone(select);
-        clone.index = detail.index;
         detail.appendChild(clone);
         '''
         } )
@@ -165,13 +162,10 @@ class ChartBuilderWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': '''
         let top = bvr.src_el.getParent(".spt_chart_builder"); 
-        let detail = top.getElement(".spt_bar_chart_detail");
         let selects = top.getElementsByClassName("spt_chart_column_select");
       
         if (selects.length > 1) {
             spt.behavior.destroy(selects[selects.length - 1]);
-            top.y_axis.pop();
-            detail.index -= 1;
         }
         '''
         } )
@@ -185,18 +179,10 @@ class ChartBuilderWdg(BaseRefreshWdg):
         onchange_action = '''
         let top = bvr.src_el.getParent(".spt_chart_builder");
         let expr = top.getElement(".spt_expression_div");
-        let detail = top.getElement(".spt_bar_chart_detail");
-
-        bvr.src_el.index = bvr.src_el.index || 0
 
         if (bvr.src_el.value == "expression") {
             if (expr.hasClass("hidden")) expr.removeClass("hidden");
         } else {
-            if (top.y_axis) {
-                top.y_axis[bvr.src_el.index] = bvr.src_el.value;
-            } else {
-                top.y_axis = [bvr.src_el.value];
-            }
             if (!expr.hasClass("hidden")) expr.addClass("hidden");
         }
         '''
@@ -230,13 +216,6 @@ class ChartBuilderWdg(BaseRefreshWdg):
         column_select_div.set_option("values", self.columns)
         column_select_div.add_empty_option("-- Select --")
 
-        onchange_action = '''
-        let top = bvr.src_el.getParent(".spt_chart_builder");
-        top.y_axis = bvr.src_el.value;
-        '''
-        column_select_div.set_option("onchange", onchange_action)
-
-
         detail_div.add(column_select_div)
         
         return detail_div
@@ -254,11 +233,6 @@ class ChartBuilderWdg(BaseRefreshWdg):
         column_select_div.set_option("values", self.columns)
         column_select_div.add_empty_option("-- Select --")
 
-        onchange_action = '''
-        let top = bvr.src_el.getParent(".spt_chart_builder");
-        top.y_axis = bvr.src_el.value;
-        '''
-        column_select_div.set_option("onchange", onchange_action)
         detail_div.add(column_select_div)
         
         return detail_div
@@ -406,25 +380,18 @@ class ChartBuilderWdg(BaseRefreshWdg):
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        var top = bvr.src_el.getParent(".spt_chart_builder");
-        var chart = top.getElement(".spt_chart");
-        //var values = spt.api.get_input_values(top);
+        let top = bvr.src_el.getParent(".spt_chart_builder");
+        let chart = top.getElement(".spt_chart");
+        let values = spt.api.get_input_values(top);
+        let y_axis = values.y_axis.join();
+        let chart_type = values.chart_type.join();
 
-        if (!top.y_axis || !top.chart_type) {
-            console.log(top.y_axis, top.chart_type);
+        if (!y_axis || y_axis[y_axis.length - 1] == ',' || !chart_type) {
             spt.alert("Select all options before refreshing.");
             return;
         }
 
-        let values = {
-            chart_type: top.chart_type,
-            y_axis: top.y_axis
-        }
-
-        console.log(values);
-
         spt.panel.refresh(chart, values);
-        
         '''
         } )
 
@@ -439,8 +406,8 @@ class ChartBuilderWdg(BaseRefreshWdg):
         }
 
         chart_div = DivWdg()
-        chart = BarChartWdg(**kwargs)
 
+        chart = BarChartWdg(**kwargs)
         chart_div.add(chart)
         top.add(chart_div)
 
