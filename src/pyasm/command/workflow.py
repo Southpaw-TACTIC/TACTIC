@@ -759,15 +759,16 @@ class BaseProcessTrigger(Trigger):
             process = self.input.get("process")
 
         #TODO: use process_state (instead of messaging)
-        message = ""
+        status = ""
         key = "%s|%s|status" % (sobject.get_search_key(), process)
         search = Search("sthpw/message")
         search.add_filter('code', key)
         message_sobj = search.get_sobject()
         if message_sobj:
             message = message_sobj.get_json_value("message")
+            status = message
 
-        return message
+        return status
 
 
 
