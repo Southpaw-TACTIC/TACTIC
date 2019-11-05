@@ -771,6 +771,7 @@ class CustomCreateViewCbk(Command):
 
         self.description = "Created view [%s] for search_type [%s]" % (view, search_type)
 
+# DEPRECATED: moved to tactic/ui/widget/data_export_wdg.py
 class CsvDownloadWdg(BaseRefreshWdg):
     '''Dynamically generates a csv file to download'''
 

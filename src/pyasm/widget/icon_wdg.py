@@ -514,7 +514,7 @@ class IconWdg(DivWdg):
     get_icons_def = staticmethod(get_icons_def)
 
     def get_icons_keys():
-        keys = IconWdg.icons.keys()
+        keys = list(IconWdg.icons.keys())
         keys.sort()
         return keys
     get_icons_keys = staticmethod(get_icons_keys)

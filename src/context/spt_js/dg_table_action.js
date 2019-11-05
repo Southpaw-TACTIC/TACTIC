@@ -131,9 +131,11 @@ spt.dg_table_action.get_popup_wdg2 = function( evt, bvr )
 }
 
 
-
+// DEPRECATED: this callback has been brough inline to the button of CsvExportWdg
 spt.dg_table_action.csv_export = function( evt, bvr )
 {
+
+    alert("DEPRECATED: spt.dg_table_action.csv_export");
 
     var my_search_type = bvr.search_type;
     var my_is_export_all = bvr.is_export_all;
@@ -190,19 +192,6 @@ spt.dg_table_action.csv_export = function( evt, bvr )
         return;
     }
         
-    
-    /*
-
-    var csv_file_name = encodeURIComponent(rtn_file_name);
-    var param_dict = {};
-    class_name = "pyasm.widget.CsvGenerator";
-    param_dict['dynamic_file'] = "true";
-    param_dict['widget'] = class_name;
-    param_dict['filepath'] = csv_file_name;
-
-    var url = spt.Environment.get().get_widget_server_url(param_dict);
-
-    */
     
     document.location = rtn_file_path;
 

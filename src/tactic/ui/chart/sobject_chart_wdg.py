@@ -1,4 +1,4 @@
-###########################################################
+############################################################
 #
 # Copyright (c) 2005, Southpaw Technology
 #                     All Rights Reserved
@@ -22,7 +22,10 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types
 
-from .chart_wdg import ChartWdg as ChartWdg
+
+#from .chart_wdg import ChartWdg as ChartWdg
+from .chart_js_wdg import ChartJsWdg as ChartWdg
+
 from .chart_wdg import ChartData as ChartData
 
 import six
@@ -357,27 +360,41 @@ class SObjectChartWdg(BaseChartWdg):
             msg_div.add_style("text-align: center")
 
 
-        chart = ChartWdg(
-            width=width,
-            height=height,
-            chart_type='bar',
-            #legend=self.elements,
-            labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)],
-            rotate_x_axis = self.kwargs.get("rotate_x_axis")
-        )
+        # Draw Chart
+        chart = self.draw_chart(chart_div, "bar", chart_labels, chart_values)
+        top.add(chart)
+
+        return top
+
+
+    def draw_chart(self, chart_div, chart_type, chart_labels, chart_values):
+
+        div = DivWdg()
+
+        kwargs = {
+            "chart_type": 'bar',
+            "width": width,
+            "height": height,
+            #"legend": self.elements,
+            "labels": chart_labels,
+            "label_values": [i+0.5 for i,x in enumerate(chart_labels)],
+            "rotate_x_axis": self.kwargs.get("rotate_x_axis")
+        }
+
+       
+        chart = ChartWdg(**kwargs)
         chart_div.add(chart)
 
-        top.add(chart_div)
-        top.add_color("background", "background")
-        top.add_color("color", "color")
+        div.add(chart_div)
+        div.add_color("background", "background")
+        div.add_color("color", "color")
 
 
 
         # draw a legend
         from .chart_wdg import ChartLegend
         legend = ChartLegend(labels=self.elements)
-        top.add(legend)
+        div.add(legend)
         #legend.add_style("width: 200px")
         legend.add_style("position: absolute")
         legend.add_style("top: 0px")
@@ -403,7 +420,7 @@ class SObjectChartWdg(BaseChartWdg):
             chart.add(chart_data)
 
 
-        return top
+        return div
 
 
 
@@ -732,7 +749,7 @@ class CalendarChartWdg(BaseChartWdg):
         top.add(table)
         table.add_row()
         table.center()
-        table.add_style("width: 1%")
+        #table.add_style("width: 1%")
 
 
         if y_title:
@@ -754,16 +771,19 @@ class CalendarChartWdg(BaseChartWdg):
         rotate_x_axis = self.kwargs.get("rotate_x_axis")
         y_axis_mode = self.kwargs.get("y_axis_mode")
 
-        chart = ChartWdg(
-            width=width,
-            height=height,
-            chart_type='bar',
-            #legend=self.elements,
-            labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)],
-            rotate_x_axis=rotate_x_axis,
-            y_axis_mode=y_axis_mode
-        )
+
+        kwargs = {
+            "width": width,
+            "height": height,
+            "chart_type": 'bar',
+            #"legend": self.elements,
+            "labels": chart_labels,
+            "label_values": [i+0.5 for i,x in enumerate(chart_labels)],
+            "rotate_x_axis": rotate_x_axis,
+            "y_axis_mode": y_axis_mode
+        }
+
+        chart = ChartWdg(**kwargs)
         table.add_cell(chart)
 
 

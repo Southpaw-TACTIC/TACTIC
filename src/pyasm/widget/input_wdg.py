@@ -1884,7 +1884,7 @@ class ThumbInputWdg(BaseInputWdg):
             column = "snapshot"
             #return 'No icon'
 
-        from file_wdg import ThumbWdg
+        from .file_wdg import ThumbWdg
         icon = ThumbWdg()
         icon.set_name(column)
         icon.set_show_orig_icon(True)

@@ -22,10 +22,10 @@ from pyasm.unittest import *
 from pyasm.biz import Project, ExpressionParser
 from pyasm.security import Login
 
-from security import *
-from access_manager import *
-from batch import *
-from crypto_key import *
+from .security import *
+from .access_manager import *
+from .batch import *
+from .crypto_key import *
 
 import unittest
 

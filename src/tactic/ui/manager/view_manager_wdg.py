@@ -649,7 +649,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         if view in ["definition", "custom_definition"]:
             kwargs['recurse'] = "false"
 
-        from view_section_wdg import ViewSectionWdg
+        from .view_section_wdg import ViewSectionWdg
         section_wdg = ViewSectionWdg(**kwargs)
         class_path = Common.get_full_class_name(section_wdg)
 

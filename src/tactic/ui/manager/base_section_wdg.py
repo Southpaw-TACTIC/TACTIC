@@ -22,6 +22,7 @@ from pyasm.widget import WidgetConfig, WidgetConfigView
 from tactic.ui.container import RoundedCornerDivWdg, LabeledHidableWdg, PopupWdg
 from tactic.ui.common import BaseRefreshWdg
 
+import six
 
 class BaseSectionWdg(BaseRefreshWdg):
    
@@ -110,7 +111,7 @@ class BaseSectionWdg(BaseRefreshWdg):
         content_div.add_class("spt_side_bar_content")
         content_div.add_attr("spt_view", view)
 
-        if isinstance(view, types.StringTypes):
+        if isinstance(view, six.string_types):
             view = [view]
 
         view_margin_top = '4px'

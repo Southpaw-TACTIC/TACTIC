@@ -53,7 +53,8 @@ if __name__ == '__main__':
         if o in ("-f", "--force"):
             is_forced = True
         if o in ("-h", "--help"):
-            print("python upgrade_db.py [-fy] [%s]" % tacticversion)
+            python = Common.get_python()
+            print("%s upgrade_db.py [-fy] [%s]" % (python, tacticversion))
             sys.exit(0)
         if o in ("-p", "--project"):
             project_code = a
@@ -157,7 +158,7 @@ if __name__ == '__main__':
         print(" ") 
         print("Version pattern is invalid. Examples for version are 2.0.0 or 2.0.0.rc02. If you are just upgrading to the current version, just run: ")
         print(" ")
-        print("python upgrade_db.py")
+        print("%s upgrade_db.py" % Common.get_python())
         sys.exit(0)
 
     version.replace('.', '_')
