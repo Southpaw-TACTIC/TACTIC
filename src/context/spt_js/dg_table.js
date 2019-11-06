@@ -1172,6 +1172,15 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
 
     // change view attribute of table
     table.setAttribute("spt_view", view);
+    layout.setAttribute("spt_view", view);
+
+    var layout_top = layout.getParent(".spt_layout_top");
+    layout_top.setAttribute("spt_view", view);
+
+    var panel = layout_top.getParent(".spt_view_panel_top");
+    if (panel) {
+        panel.setAttribute("spt_view", view);
+    }
 
     return config;
    

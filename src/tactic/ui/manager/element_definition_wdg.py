@@ -312,6 +312,11 @@ class ElementDefinitionWdg(BaseRefreshWdg):
                     }
                 }
                 if (pop)
+                    var popup_id = pop.id;
+                    var options = {
+                        new_element : inputs.name
+                    };
+                    spt.named_events.fire_event('preclose_' + popup_id, {options: options});
                     spt.popup.close(pop);
 
             }
