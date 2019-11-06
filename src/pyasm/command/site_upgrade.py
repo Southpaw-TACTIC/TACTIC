@@ -1,12 +1,12 @@
 from pyasm.command import Command
-from pyasm.common import Environment
+from pyasm.common import Environment, Common
 from pyasm.biz import Project
 from pyasm.security import Sudo, Site
 from pyasm.search import Search
 
 import datetime
 import os
-
+import subprocess
 
 __all__ = ['SiteUpgradeCmd']
 
@@ -34,12 +34,17 @@ class SiteUpgradeCmd(Command):
 
         if db_update:
             install_dir = Environment.get_install_dir()
-            for x in db_update:
-                if site:
-                    os.system("python %s/src/bin/upgrade_db.py -y -p %s -s %s" % (install_dir, x, site))
-                else:
-                    os.system("python %s/src/bin/upgrade_db.py -y -p %s -s default" % (install_dir, x))
+            upgrade_db_path = "%s/src/bin/upgrade_db.py" % install_dir
 
+            python = Common.get_python()
+
+            if not site:
+                site = "default"
+
+            for x in db_update:          
+                args = [python, upgrade_db_path, "-y", "-p", x, "-s", site]
+                subprocess.call(args)
+                
         for code, data in plugin_update.items():
             update_status_f = open(update_status_path, 'w')
             update_status_f.write("start")

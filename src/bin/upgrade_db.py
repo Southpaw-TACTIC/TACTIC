@@ -167,11 +167,7 @@ if __name__ == '__main__':
 
     if not quiet:
         print("Upgrade to version [%s] finished." % version)
-    tmp_dir = Environment.get_tmp_dir()
-    tmp_dir = '%s/upgrade_db_log/%s/%s' % (tmp_dir, site, project_code)
-    output_file = '%s/upgrade_output.txt' %tmp_dir
-    if not quiet:
-        print("Upgrade output file saved in [%s]" %output_file)
+    
     
 
 
