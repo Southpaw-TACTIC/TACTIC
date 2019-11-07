@@ -5833,6 +5833,10 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         nodes = spt.pipeline.get_nodes_by_group(group_name);
     }
 
+    if (nodes.length == 0) {
+        var nodes = spt.pipeline.get_all_folders();
+    }
+
 
     // fint the to left node
     var top = null;
