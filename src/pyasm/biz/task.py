@@ -1084,6 +1084,8 @@ class Task(SObject):
 
 
         # New task generator
+
+
         use_new_generator = True
         if use_new_generator and not processes:
             task_generator = TaskGenerator()
@@ -1484,6 +1486,7 @@ class TaskGenerator(object):
         self.generate_mode = kwargs.get("generate_mode")
         self.completion_date = None
 
+
     def update_completion_date(self, date=None):
         ''' If date is greater then completion date, use new date as completion.'''
         if not date:
@@ -1711,7 +1714,7 @@ class TaskGenerator(object):
         pipeline = self.pipeline
         handled_processes = self.handled_processes
         process_sobjects = self.process_sobjects
-
+        
         process_sobject = process_sobjects.get(process_name)
         process_obj = pipeline.get_process(process_name)
 
@@ -1732,13 +1735,16 @@ class TaskGenerator(object):
         if process_type in ['hierarchy']:
             if version_2:
                 settings = workflow.get("default")
+                if not settings:
+                    return
+
                 task_creation = settings.get("task_creation")
                 subpipeline_code = settings.get("subpipeline")
+
             else:
-                task_creation = properties.get("task_creation")
+                task_creation = properties.get("task_creation") or "subtasks_only"
                 subpipeline_code = process_sobject.get("subpipeline_code")
-
-
+            
             # subtasks_only, top_only, all, none
             subtasks = []
             if task_creation in ['subtasks_only', 'all']:
@@ -1749,7 +1755,7 @@ class TaskGenerator(object):
                     subpipeline = Pipeline.get_by_code(subpipeline_code)
 
                     if subpipeline:
-                        generator = TaskGenerator(self.generate_mode)
+                        generator = TaskGenerator(generate_mode=self.generate_mode)
                         subtasks = generator.execute(
                             self.sobject, 
                             subpipeline, 

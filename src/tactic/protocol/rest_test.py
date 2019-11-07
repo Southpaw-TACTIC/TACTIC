@@ -32,7 +32,7 @@ class RestTest(unittest.TestCase):
 
 
         self.server = "http://localhost"
-        self.server = "http://192.168.205.180"
+        self.server = "http://192.168.56.105"
 
         try:
             self._setup()
@@ -91,7 +91,7 @@ class RestTest(unittest.TestCase):
     def _setup(self):
 
         url = SearchType.create("config/url")
-        url.set_value("url", "/rest/{code}")
+        url.set_value("url", "/rest0/{code}")
         url.set_value('widget', '''
         <element widget="true">
           <display class='tactic.protocol.PythonRestHandler'>
@@ -172,7 +172,7 @@ else:
 
 
         # try json
-        url = "%s/tactic/default/unittest/rest" % self.server
+        url = "%s/tactic/default/unittest/rest0" % self.server
         headers = {
             "Accept": "application/json"
         }
@@ -181,7 +181,7 @@ else:
 
 
         # try xml
-        url = "%s/tactic/default/unittest/rest" % self.server
+        url = "%s/tactic/default/unittest/rest0" % self.server
         headers = {
             "Accept": "application/xml"
         }
@@ -192,7 +192,7 @@ else:
 
 
         # try json
-        url = "%s/tactic/default/unittest/rest/CODE0123" % self.server
+        url = "%s/tactic/default/unittest/rest0/CODE0123" % self.server
         headers = {
             "Accept": "application/json"
         }
@@ -205,7 +205,7 @@ else:
     def _test_method(self):
 
         # try json
-        url = "%s/tactic/default/unittest/rest" % self.server
+        url = "%s/tactic/default/unittest/rest0" % self.server
         headers = {
             "Accept": "application/json",
             "Method": "POST"

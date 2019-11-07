@@ -2959,7 +2959,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         open_icon = "FA_FOLDER_OPEN_O"
         closed_icon = "FA_FOLDER_O"
         group_icon_styles = ""
-        if extra_data:
+        if extra_data and isinstance(extra_data, basestring):
             try:
                 extra_data = jsonloads(extra_data)
             except:
@@ -9002,8 +9002,7 @@ spt.table.export = function(mode) {
     }
     else if (bvr.mode=='export_displayed') {
         title = 'Export displayed items from "' + search_type + '" list ';
-        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
-        var tbodies = table.getElements(css);
+        var tbodies = table.getElements(".spt_table_row");
         for (var k=0; k < tbodies.length; k++) {
             if (tbodies[k].getStyle('display') == 'none'){
                 continue;
@@ -9368,6 +9367,13 @@ spt.table.export_document = function(kwargs) {
     }
     return document
 }
+
+
+
+
+
+
+
             '''
 
         if self.kwargs.get('temp') != True:

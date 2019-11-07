@@ -514,6 +514,15 @@ class ChartData(BaseRefreshWdg):
         self.chart_type = chart_type
 
 
+    def get_color(self):
+        return self.kwargs.get("color")
+
+    def get_label(self):
+        return self.kwargs.get("label")
+
+
+
+
     def get_data(self):
         return self.data
 

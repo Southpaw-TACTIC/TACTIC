@@ -53,7 +53,8 @@ if __name__ == '__main__':
         if o in ("-f", "--force"):
             is_forced = True
         if o in ("-h", "--help"):
-            print("python upgrade_db.py [-fy] [%s]" % tacticversion)
+            python = Common.get_python()
+            print("%s upgrade_db.py [-fy] [%s]" % (python, tacticversion))
             sys.exit(0)
         if o in ("-p", "--project"):
             project_code = a
@@ -61,7 +62,7 @@ if __name__ == '__main__':
             quiet = True
         if o in ("-s", "--site"):
             site = a
-            print("site: ", site)
+           
    
 
     if len(args) == 0:
@@ -157,20 +158,16 @@ if __name__ == '__main__':
         print(" ") 
         print("Version pattern is invalid. Examples for version are 2.0.0 or 2.0.0.rc02. If you are just upgrading to the current version, just run: ")
         print(" ")
-        print("python upgrade_db.py")
+        print("%s upgrade_db.py" % Common.get_python())
         sys.exit(0)
 
     version.replace('.', '_')
-    
-    upgrade = Upgrade(version, is_forced, project_code=project_code, quiet=quiet, is_confirmed=is_confirmed)
+    upgrade = Upgrade(version, is_forced, project_code=project_code, site=site, quiet=quiet, is_confirmed=is_confirmed)
     upgrade.execute()
 
     if not quiet:
         print("Upgrade to version [%s] finished." % version)
-    tmp_dir = Environment.get_tmp_dir()
-    output_file = '%s/upgrade_output.txt' %tmp_dir
-    if not quiet:
-        print("Upgrade output file saved in [%s]" %output_file)
+    
     
 
 

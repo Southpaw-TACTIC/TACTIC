@@ -28,7 +28,6 @@ from chart_data import ChartData, ChartElement
 
 # DEPRECATED
 
-
 class SampleChartWdg(BaseRefreshWdg):
 
     def get_display(self):

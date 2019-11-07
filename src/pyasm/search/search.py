@@ -4805,7 +4805,7 @@ class SObject(object):
         self.set_value(retire_col,"retired")
         self.commit()
 
-        from sobject_log import RetireLog
+        from .sobject_log import RetireLog
         RetireLog.create(self.get_search_type(), search_code=self.get_code() )
 
         # remember the data

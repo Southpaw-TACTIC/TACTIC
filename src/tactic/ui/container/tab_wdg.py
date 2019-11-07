@@ -975,7 +975,10 @@ spt.tab.save_state = function() {
         kwargs_list: kwargs_list,
         save_state: save_state
     };
-    server.execute_cmd(command, kwargs, {}, { on_complete: function() {} });
+    server.execute_cmd(command, kwargs, {}, { 
+        on_complete: function(ret_val) {console.log(ret_val)}, 
+        on_error: function(err) {console.log(err)} 
+    });
 
 }
 
@@ -1866,31 +1869,21 @@ spt.tab.view_definition = function(bvr) {
                 content_top.add_style("min-height: 500px")
 
 
-
         width = self.kwargs.get("width")
         if not width:
-            content_top.add_style("min-width: 500px")
-        else:
+            width = self.kwargs.get("min_width")
+        
+        if width:
             try:
                 width = int(width)
                 width = str(width) + "px"
             except ValueError:
                 pass
             content_top.add_style("min-width: %s" % width)
+        else:
+            content_top.add_style("width: 100%")
 
-        min_width = self.kwargs.get("min_width")
-        if min_width:
-            try:
-                min_width = int(min_width)
-                min_width = str(min_width) + "px"
-            except ValueError:
-                pass
-            content_top.add_style("min-width", min_width)
-
-
-
-
-
+ 
         content_top.add_class("tab_content_top")
 
         color_mode = self.kwargs.get("color_mode")
@@ -2644,7 +2637,6 @@ spt.tab.view_definition = function(bvr) {
 
             state = self.kwargs.get("state") or {}
             search_key = state.get("search_key")
-
             if not search_key:
                 search_key = self.kwargs.get("search_key")
 
@@ -2680,7 +2672,7 @@ spt.tab.view_definition = function(bvr) {
         #     #title_div.add_style("width: auto")
 
 
-        title_div.add_class("spt_tab_header_label");
+        title_div.add_class("spt_tab_header_label")
         display_title = title
         title_div.add(display_title)
         header.add(title_div)
@@ -2950,6 +2942,13 @@ class TabRenameWdg(BaseRefreshWdg):
 
 from pyasm.command import Command
 class TabSaveStateCmd(Command):
+    
+
+    def __init__(self, **kwargs):
+        super(TabSaveStateCmd, self).__init__(**kwargs)
+        self.update = True
+
+
     def execute(self):
 
         class_names = self.kwargs.get("class_names")

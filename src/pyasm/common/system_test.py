@@ -45,18 +45,18 @@ class SystemTest(unittest.TestCase):
             os.removedirs(dir)
 
         System().makedirs(dir)
-        self.assertEquals( True, os.path.exists(dir) )
+        self.assertEqual( True, os.path.exists(dir) )
 
         exists = System().exists(dir)
-        self.assertEquals( True, exists )
+        self.assertEqual( True, exists )
 
         if os.path.exists(dir):
             os.removedirs(dir)
-        self.assertEquals( False, os.path.exists(dir) )
+        self.assertEqual( False, os.path.exists(dir) )
 
         # test existance
         exists = System().exists(dir)
-        self.assertEquals( False, exists )
+        self.assertEqual( False, exists )
 
 
 

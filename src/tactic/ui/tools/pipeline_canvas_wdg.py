@@ -379,6 +379,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
 
             parent.innerHTML = html.join(" / ");
+            spt.command.clear();
+            spt.pipeline.fit_to_canvas();
             '''
         } )
 
@@ -502,7 +504,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if self.kwargs.get("show_border") not in [False, 'false']:
             outer.add_border()
 
-        
+
 
         # set the size limit
         width = self.width
@@ -553,7 +555,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
 
         } )
- 
+
         outer.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''
@@ -642,7 +644,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var scale = 1.5;
                 spt.pipeline.set_scale(scale);
             }
- 
+
             else if (key == "backspace" || key == "delete") {
                 spt.pipeline.delete_selected();
 
@@ -661,7 +663,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var right = toolTop.getElement(".spt_pipeline_tool_right");
                 var show_button = toolTop.getElement(".spt_show_sidebar");
                 var hide_button = toolTop.getElement(".spt_hide_sidebar");
-                
+
                 if (right.classList.contains("spt_left_toggle")){
                     right.removeClass("spt_left_toggle");
 
@@ -690,11 +692,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                     hide_button.setStyle("display", "none");
                     show_button.setStyle("display", "");
                 }
-                
+
 
             } else if (key == "q") {
                 spt.process_tool.show_side_bar(bvr.src_el);
- 
+
             } else if (key == "w") {
                 var container = spt.pipeline.take_snapshot();
                 var scale = spt.pipeline.get_scale();
@@ -981,7 +983,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             is_editable = "true"
         else:
             is_editable = 'false'
-        
+
         # add custom canvas behaviors on the canvas div instead
 
         canvas.add_behavior( {
@@ -992,7 +994,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
-        
+
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -1657,7 +1659,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             var subpipeline = null;
             if (process) { 
-                var subpipeline_code = process.subpipeline_code;
+                var subpipeline_code = node.properties.settings.default.subpipeline;
                 if (subpipeline_code) {
                     subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
                 } else {
@@ -1705,7 +1707,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
             else {
                 subpipeline_code = subpipeline.code;
-
+                
                 spt.pipeline.clear_canvas();
                 spt.pipeline.import_pipeline(subpipeline_code);
 
@@ -1728,7 +1730,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         for node_behavior in node_behaviors:
             node.add_behavior( node_behavior )
 
-        
+
         if (self.add_node_behaviors):
             self.add_default_node_behaviors(node, text)
 
@@ -1985,7 +1987,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.init(bvr);
 
         var node = bvr.src_el;
-        spt.pipeline.select_node(node); 
+        spt.pipeline.select_node(node);
 
         var select_output_nodes = function(nodes) {
             for (let i = 0; i < nodes.length; i++) {
@@ -1993,7 +1995,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 if (cur_node.spt_is_selected == true) {
                     break;
                 }
-                spt.pipeline.select_node(cur_node); 
+                spt.pipeline.select_node(cur_node);
                 let cur_output_nodes = spt.pipeline.get_output_nodes(cur_node);
                 if (cur_output_nodes.length > 0) {
                     select_output_nodes(cur_output_nodes);
@@ -2007,7 +2009,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 if (cur_node.spt_is_selected == true) {
                     break;
                 }
-                spt.pipeline.select_node(cur_node); 
+                spt.pipeline.select_node(cur_node);
                 let cur_input_nodes = spt.pipeline.get_input_nodes(cur_node);
                 if (cur_input_nodes.length > 0) {
                     select_input_nodes(cur_input_nodes);
@@ -2941,7 +2943,7 @@ spt.pipeline.get_screen_nodes = function() {
     }
     return screen_nodes;
 }
- 
+
 
 spt.pipeline.get_ctx = function() {
     return spt.pipeline.get_data().ctx;
@@ -3403,8 +3405,8 @@ spt.pipeline.select_nodes_by_box = function(TL, BR) {
             right: node.spt_xpos + size.x
         }
 
-        var intersect = !(r2.left > r1.right || 
-                          r2.right < r1.left || 
+        var intersect = !(r2.left > r1.right ||
+                          r2.right < r1.left ||
                           r2.top > r1.bottom ||
                           r2.bottom < r1.top);
 
@@ -3771,7 +3773,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     new_node.properties = kwargs.properties || {};
 
     // BACKWARDS COMPATIBILITY
-    if (new_node.properties.settings && new_node.properties.settings.version == 1) 
+    if (new_node.properties.settings && new_node.properties.settings.version == 1)
         new_node[node_type] = { description: kwargs.description || "" }
 
 
@@ -4089,6 +4091,7 @@ spt.pipeline.get_node_kwargs = function(node) {
     var type = spt.pipeline.get_node_type(node);
     type = "settings";
     var property = node.properties;
+
     if (property) return property[type] || {};
     return {};
 }
@@ -4118,8 +4121,9 @@ spt.pipeline.add_node_on_save = function(node, name, value) {
 }
 
 // Supports both kwargs and multi kwargs
-spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4129,8 +4133,9 @@ spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4154,8 +4159,9 @@ spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4165,8 +4171,9 @@ spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4418,7 +4425,6 @@ spt.pipeline.get_all_folders = function() {
 }
 
 spt.pipeline.add_folder = function(group_name, color, title) {
-
     if (typeof(color) == 'undefined') {
         color = '#999';
     }
@@ -4629,7 +4635,7 @@ spt.pipeline.node_drag_setup = function( evt, bvr, mouse_411) {
 
 spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
 
-    
+
     // slow down the drawwing a bit (seems to slow down on big workflows);
     if (spt.pipeline.draw_skip != 5) {
         spt.pipeline.draw_skip += 1;
@@ -5632,7 +5638,7 @@ spt.pipeline._existing_connector_drag_action = function(evt, bvr, mouse_411) {
     bvr.connector = spt.pipeline.canvas_drag_connector;
     spt.pipeline.drag_connector_action(evt, bvr, mouse_411);
 
-    // It looks like the bvr object is actually reused by the behvior.  We set the 
+    // It looks like the bvr object is actually reused by the behvior.  We set the
     // src el back to the original canvas after the drag operation
     var canvas = spt.pipeline.get_canvas();
     bvr.src_el = canvas;
@@ -6502,7 +6508,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         this.is_selected = false;
     }
 
- 
+
 
     this.set_from_node = function(from_node) {
         this.from_node = from_node;
@@ -6784,6 +6790,14 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         processes[name] = process_sobj;
     }
 
+    // get all the triggers for the processes from the pipeline.
+    var trigger_sobjs = server.eval("@SOBJECT(config/trigger['process', @GET(config/process['pipeline_code', '"+pipeline_code+"'].code)])")
+    triggers = {}
+    for (var i = 0; i < trigger_sobjs.length; i++) {
+        var trigger_sobj = trigger_sobjs[i];
+        var process_code = trigger_sobj.process;
+        triggers[process_code] = trigger_sobj;
+    }
 
     var pipeline_xml = pipeline.pipeline;
     var pipeline_stype = pipeline.search_type;
@@ -6851,6 +6865,23 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             } else if (typeof(settings) == "string") {
                 settings = JSON.parse(settings);
             }
+
+            // Add the triggers to settings. Note this is necessary only for version 1.
+            // Version 2 will have settings.version set to 2.
+            if (!settings.version) {
+                var trigger = triggers[process.code];
+                if (trigger != null) {
+                    if (trigger.class_name) settings['command'] = { 'on_action_class' : trigger.class_name, 'execute_mode': trigger.mode, 'action':'command' }
+                    if (trigger.script_path) {
+                        settings['script_path_folder'] = trigger.script_path;
+                        settings['script_path_title'] = process.code;
+                        settings['action'] = 'script_path';
+
+                        if (trigger.mode) settings['execute_mode'] = trigger.mode;
+                    }
+                }
+            }
+
 
             // add the process name
             if (process.subpipeline_code) settings['subpipeline_code'] = process.subpipeline_code;
@@ -7363,7 +7394,7 @@ spt.pipeline.set_status_color = function(search_key) {
                 `
             } )
         }
- 
+
     } );
 
     return;
@@ -7624,8 +7655,10 @@ spt.pipeline.export_group = function(group_name) {
             throw(msg);
         }
         for (var key in attrs) {
-            if (['from','to'].contains(key))
-                continue;
+            
+            
+            if (["from", "to", "from_node", "to_node"].indexOf(key) > -1) continue;
+            
             xml += ' '+key+'="'+attrs[key]+'"';
         }
 
@@ -7643,6 +7676,7 @@ spt.pipeline.export_group = function(group_name) {
         }
         xml += '/>\n';
     }
+
     xml += '</'+group_type+'>\n';
 
     return xml;
@@ -7772,7 +7806,7 @@ class PipelineGetStatusColorsCmd(Command):
                     color = default_color
 
             process_colors[process] = color
-        
+
         self.info['process_colors'] = process_colors
         self.info['task_search_keys'] = task_search_keys
 
@@ -7841,7 +7875,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             input_top.rename = function () {
                 var inp = this.getElement(".spt_node_name_input");
                 var name = inp.value;
-                
+
                 var node = popup.activator;
                 spt.pipeline.set_node_name(node, name);
 
@@ -7865,7 +7899,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             var top = node.getParent(".spt_pipeline_top");
 
             if (!top.hot_key_state) return;
-            
+
             top.hot_key_state = false;
             document.activeElement.blur();
             bvr.src_el.focus();

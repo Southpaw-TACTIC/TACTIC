@@ -2274,7 +2274,8 @@ class SearchTypeElementWdg(BaseTableElementWdg):
         submission_id_list = sorted(set(submission_id_list))
         submissions = Search.get_by_id(search_type, submission_id_list)
         self.info = SObject.get_dict(submissions)
-        from file_wdg import ThumbWdg
+        
+        from .file_wdg import ThumbWdg
         self.thumb = ThumbWdg()
         self.thumb.set_show_filename(True)
         self.thumb.set_icon_size(30)

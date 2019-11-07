@@ -539,7 +539,13 @@ class ExpressionElementWdg(TypeTableElementWdg):
         '''for csv export'''
         self.sobject = self.get_current_sobject()
 
-        #self.init_kwargs()
+
+        # expressions won't work on virtual sobjects
+        if self.sobject.get_base_search_type() == "sthpw/virtual":
+            return self.sobject.get_value( self.get_name() )
+
+
+
         if not self.expression and not self.alt_expression: 
             return super(ExpressionElementWdg, self).get_display()
 

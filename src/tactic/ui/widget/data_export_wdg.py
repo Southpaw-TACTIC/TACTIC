@@ -11,11 +11,12 @@
 #
 
 
-__all__ = ['CsvExportWdg', 'CsvImportWdg']
+__all__ = ['CsvExportWdg', 'CsvDownloadWdg', 'CsvImportWdg']
 
 import csv, os
 import string
 import datetime
+import shutil
 
 from pyasm.biz import CsvParser, File, Project
 from pyasm.search import Search, SObjectFactory, SearchType, SearchKey
@@ -35,11 +36,12 @@ from .swap_display_wdg import SwapDisplayWdg
 class CsvExportWdg(BaseRefreshWdg):
 
     def get_args_keys(self):
-        return {'search_type': 'Search Type', \
-                'view': 'View of the search type', \
+        return {'search_type': 'Search Type',
+                'view': 'View of the search type',
                 'related_view': 'Related View of search type',
-                'mode': 'export mode',\
+                'mode': 'export mode',
                 'selected_search_keys': 'Selected Search Keys',
+                'document': 'document to be exported',
                 'search_class': 'Custom search class used',
                 }
 
@@ -65,6 +67,7 @@ class CsvExportWdg(BaseRefreshWdg):
         self.search_type_list = []
         self.is_test = self.kwargs.get('test') == True
         self.table = None
+        self.document = self.kwargs.get("document")
 
     def check(self):
         if self.mode == 'export_matched':
@@ -148,11 +151,12 @@ class CsvExportWdg(BaseRefreshWdg):
         div.add_style("margin: 5px")
         
         div.add_styles('max-height: 350px; overflow: auto')
-        table = Table( css='minimal')
+        table = Table()
         table.add_color("color", "color")
         div.add(table)
         table.set_id('csv_export_table')
         table.center()
+        table.add_style("width: 70%")
         
         
         cb_name = 'csv_column_name'
@@ -175,7 +179,7 @@ class CsvExportWdg(BaseRefreshWdg):
         tr = table.add_row()
         tr.add_style('border-bottom: 1px groove #777')
         td = table.add_cell(master_cb)
-        td.add_style("padding: 5px 0px")
+        td.add_style("padding: 10px 0px")
         label = HtmlElement.i('toggle all')
         label.add_style('color: #888')
         td = table.add_cell(label)
@@ -231,15 +235,23 @@ class CsvExportWdg(BaseRefreshWdg):
             cb = CheckboxWdg(cb_name)
             cb.set_option('value', column)
             cb.set_checked()
-            table.add_cell(cb)
+            td = table.add_cell(cb)
+            td.add_style("padding: 5px 0px")
             
             
             title = titles[idx]
-            td = table.add_cell('<b>%s</b> (%s) '%(title, column))
+            #td = table.add_cell('<b>%s</b> (%s) '%(title, column))
+            td = table.add_cell('<b>%s</b>'%(title))
             td.add_style("padding: 3px")
 
-        action_div = DivWdg()
+
+
         widget = DivWdg()
+
+        show_include_id = self.kwargs.get("show_include_id")
+        if show_include_id in ['false', False]:
+            widget.set_style("display: none")
+
         table.add_row_cell(widget)
         widget.add_style("margin: 20px 0 10px 0px")
         cb = CheckboxWdg('include_id', label=" Include ID")
@@ -249,18 +261,86 @@ class CsvExportWdg(BaseRefreshWdg):
         widget.add(" ")
         widget.add(hint)
 
+
+
+
+
         label = string.capwords(self.mode.replace('_', ' '))
         button = ActionButtonWdg(title=label, size='l')
         is_export_all  = self.mode == 'export_all'
+
         button.add_behavior({
-            'type': "click_up",
-            'cbfn_action': 'spt.dg_table_action.csv_export',
-            'element': 'csv_export',
-            'column_names': 'csv_column_name',
-            'search_type': self.search_type,
-            'view': self.view,
-            'search_keys' : self.selected_search_keys,
-            'is_export_all' : is_export_all
+        'type': "click_up",
+        'element': 'csv_export',
+        'column_names': 'csv_column_name',
+        'search_type': self.search_type,
+        'view': self.view,
+        'search_keys' : self.selected_search_keys,
+        'document': self.document,
+        'is_export_all' : is_export_all,
+        'cbfn_action': '''
+        //spt.dg_table_action.csv_export
+
+        var my_search_type = bvr.search_type;
+        var my_is_export_all = bvr.is_export_all;
+        var filename = my_search_type.replace(/[\/\?\=]/g,"_") + "_" + bvr.view + ".csv";
+        //var class_name = "pyasm.widget.CsvDownloadWdg";
+        var class_name = "tactic.ui.widget.CsvDownloadWdg";
+        var column_name_vals = spt.api.Utility.get_input_values('csv_export_table', 'input[name=' + bvr.column_names+']');
+        var selected_search_keys = '';
+        if (my_is_export_all != 'true')
+            selected_search_keys = bvr.search_keys;
+
+        var column_names = column_name_vals[bvr.column_names];
+        var no_column_name = true;
+
+        for (var k=0;  k<column_names.length; k++){
+            if(column_names[k] != '') {
+                no_column_name = false;
+                break;
+            }
+        }
+        var my_include_id = spt.api.Utility.get_input('csv_export_action',
+            'include_id').checked;
+
+        if ( no_column_name && !my_include_id) {
+            alert('Please select at least 1 column or just the "Include ID" checkbox')
+            return;
+        }
+
+        var options = {
+            search_type: my_search_type,
+            view: bvr.view,
+            filename: filename,
+            column_names: column_names,
+            search_keys: selected_search_keys,
+            document: bvr.document,
+            include_id: my_include_id
+        };
+        var popup = bvr.src_el.getParent('.spt_popup');
+        // this is assgined in spt.dg_table.gear_smenu_export_cbk
+        var values = popup.values_dict;
+
+        var server = TacticServerStub.get();
+
+
+        var kwargs = {'args': options, 'values': values};
+        var rtn_file_path = '';
+        try {
+            rtn_file_path = server.get_widget(class_name, kwargs);
+        } catch(e) {
+            spt.error(spt.exception.handler(e));
+            return;
+        }
+        if (rtn_file_path.length > 200 ) {
+            spt.alert("Error exporting one of the widgets:\\n" + rtn_file_path, {type: 'html'} );
+            return;
+        }
+
+
+        document.location = rtn_file_path;
+
+        ''',
             
         })
 
@@ -273,6 +353,15 @@ class CsvExportWdg(BaseRefreshWdg):
             })
 
 
+
+
+        top.add(div)
+        top.add(HtmlElement.br())
+
+        action_div = DivWdg()
+        top.add(action_div)
+
+
         table = Table()
         action_div.add(table)
         table.center()
@@ -283,10 +372,6 @@ class CsvExportWdg(BaseRefreshWdg):
 
         action_div.add("<br clear='all'/>")
 
-        top.add(div)
-        top.add(HtmlElement.br())
-        top.add(action_div)
-
         if self.is_test:
             rtn_data = {'columns': self.element_names, 'count': len(self.selected_search_keys)}
             if self.mode == 'export_matched':
@@ -296,6 +381,77 @@ class CsvExportWdg(BaseRefreshWdg):
             return rtn_data
 
         return top
+
+
+class CsvDownloadWdg(BaseRefreshWdg):
+    '''Dynamically generates a csv file to download'''
+
+    def get_args_keys(self):
+        return {'table_id': 'Table Id', 'search_type': 'Search Type',
+                'close_cbfn': 'Cbk function',
+                'view': 'View of search type',
+                'column_names': 'Column Names to export',
+                'filename': 'filename to export',
+                'search_keys': 'True if it is in title mode',
+                'search_type': 'Selected Search Keys',
+                'document': 'Document to be exported',
+                'include_id': 'Include an id in export'}
+
+    def init(self):
+        self.filename = self.kwargs.get("filename")
+        self.column_names = self.kwargs.get('column_names')
+        self.view = self.kwargs.get('view')
+        self.search_type = self.kwargs.get('search_type')
+        self.close_cbfn = self.kwargs.get('close_cbfn')
+        self.include_id = self.kwargs.get('include_id')
+        self.search_keys = self.kwargs.get('search_keys')
+        self.document = self.kwargs.get('document')
+        #if self.search_keys:
+        #    self.search_keys = self.search_keys.split(',')
+
+
+    def get_display(self):
+        web = WebContainer.get_web()
+
+        column_names = self.column_names
+        column_names = [ x for x in column_names if x ]
+        # create the file path
+        tmp_dir = web.get_upload_dir()
+
+        env = Environment.get()
+        asset_dir = env.get_asset_dir()
+        web_dir = env.get_web_dir()
+        tmp_dir = env.get_tmp_dir()
+
+        ticket = Environment.get_ticket()
+        link = "%s/temp/%s/%s" % (web_dir, ticket, self.filename)
+
+        file_path = "%s/%s" % (tmp_dir, self.filename)
+
+        from pyasm.command import CsvExportCmd
+
+        cmd = CsvExportCmd(self.search_type, self.view, column_names, file_path, document=self.document)
+        if self.search_keys:
+            cmd.set_search_keys(self.search_keys)
+
+        cmd.set_include_id(self.include_id)
+        try:
+            cmd.execute()
+        except Exception as e:
+            raise
+
+        asset_download_dir = "%s/temp/%s" % (asset_dir, ticket)
+        if not os.path.exists(asset_download_dir):
+            os.makedirs(asset_download_dir)
+        download_path = "%s/%s" % (asset_download_dir, self.filename)
+        if os.path.exists(download_path):
+            os.remove(download_path)
+        shutil.move(file_path, asset_download_dir)
+
+        return link
+
+
+
 
 
 class CsvImportWdg(BaseRefreshWdg):

@@ -12,7 +12,6 @@
 
 __all__ = ["ChartBuilderWdg"]
 
-# DEPRECATED
 
 from pyasm.common import Environment, Common, jsonloads
 from pyasm.biz import Project
@@ -20,12 +19,12 @@ from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Table
 from pyasm.widget import SelectWdg, TextWdg
 from pyasm.search import Search, SearchType
 from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.input import TextInputWdg
 
 import types
 
 from .bar_chart_wdg import BarChartWdg
 
-# DEPRECATED
 
 class ChartBuilderWdg(BaseRefreshWdg):
     '''class that builds a chart from tabular data in a TableLayoutWdg'''
@@ -36,7 +35,8 @@ class ChartBuilderWdg(BaseRefreshWdg):
     'x_axis': 'the x-axis element',
     'y_axis': 'the y-axis elements',
     'kwargs': 'JSON formatted data which will be translated into kwargs',
-    'search_keys': 'list of search keys to display'
+    'search_keys': 'list of search keys to display',
+    'document': 'document to be charted',
     }
 
     def get_display(self):
@@ -63,12 +63,16 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         # get any search keys if any are passed in
         self.search_keys = self.kwargs.get("search_keys")
+        self.document = self.kwargs.get("document")
 
 
         top = DivWdg()
         top.add_class("spt_chart_builder")
         top.add_color("background", "background")
         top.add_border()
+
+        top.add_style("min-width: 600px")
+        top.add_style("min-height: 400px")
 
 
 
@@ -95,8 +99,9 @@ class ChartBuilderWdg(BaseRefreshWdg):
         build_div.add_style("margin-bottom: 5px")
         build_div.add_style("height: 25px")
         build_div.add_style("padding-top: 5px")
-        build_div.add_gradient("background", "background", -10)
         build_div.add_color("color", "color")
+
+        build_div.add("<hr/>")
 
 
         build_div.add_class("hand")
@@ -115,7 +120,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         spec_div = DivWdg()
         spec_div.add_color("color", "color3")
-        spec_div.add_color("background", "background3")
+        spec_div.add_color("background", "background", -3)
         spec_div.add_class("spt_chart_spec")
         spec_div.add_border()
         spec_div.add_style("padding: 10px")
@@ -132,7 +137,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         table.add_cell("Search Type: ")
 
         search_type_div = DivWdg()
-        search_type_select = TextWdg("search_type")
+        search_type_select = TextInputWdg(name="search_type")
         search_type_select.set_value(self.search_type)
         #search_type_select.set_option("values", search_types)
         search_type_div.add(search_type_select)
@@ -145,7 +150,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         type_div = DivWdg()
         #type_div.add_style("padding: 3px")
         type_select = SelectWdg("chart_type")
-        type_select.set_option("values", "line|bar|area")
+        type_select.set_option("values", "line|bar|stacked|stacked_horizontal|horizontalBar|pie|doughnut")
         if self.chart_type:
             type_select.set_value(self.chart_type)
         type_div.add(type_select)
@@ -157,7 +162,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         # need to find all expression widgets or use get_text_value()?
         x_axis_div = DivWdg()
-        x_axis_text = TextWdg("x_axis")
+        x_axis_text = TextInputWdg(name="x_axis")
         x_axis_text.set_value("code")
         x_axis_div.add(x_axis_text)
         table.add_cell(x_axis_div)
@@ -170,7 +175,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
 
         y_axis_div = DivWdg()
-        #y_axis_text = TextWdg("y_axis")
+        #y_axis_text = TextInputWdg(name="y_axis")
         #if self.y_axis:
         #    y_axis_text.set_value(self.y_axis)
         #y_axis_div.add(y_axis_text)
@@ -180,7 +185,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         from tactic.ui.container import DynamicListWdg
         list_wdg = DynamicListWdg()
         for value in self.y_axis.split("|"):
-            item = TextWdg("y_axis")
+            item = TextInputWdg(name="y_axis")
             item.set_value(value, set_form_value=False)
             list_wdg.add_item(item)
         y_axis_div.add(list_wdg)
@@ -249,7 +254,8 @@ class ChartBuilderWdg(BaseRefreshWdg):
             'chart_type': self.chart_type,
             'search_type': self.search_type,
             'width': width,
-            'search_keys': self.search_keys
+            'search_keys': self.search_keys,
+            'document': self.document,
         }
 
         chart_div = DivWdg()

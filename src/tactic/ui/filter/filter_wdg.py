@@ -1353,7 +1353,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         columns = columns[:]
         columns.append("_expression")
         labels = labels[:]
-        labels.append("**Expression")
+        labels.append("> Expression")
 
         column_select.add_style("max-width: 120px")
         column_select.set_option("values", columns)
@@ -1609,10 +1609,10 @@ class GeneralFilterWdg(BaseFilterWdg):
             filter_span.add(" ")
 
             op_filter = SelectWdg("%s_op" % self.prefix)
-            op_filter.set_option("labels", "have|do not have|match (slow)|do not match (slow)")
+            op_filter.set_option("labels", "Items have|Items do not have|Items match (slow)|Items do not match (slow)")
             op_filter.set_option("values", "in|not in|match|do not match")
             op_filter.add_style("float", "left")
-            op_filter.add_style("width: 80px")
+            op_filter.add_style("width: 110px")
             self.set_filter_value(op_filter, filter_index)
             filter_span.add(op_filter)
             filter_span.add(" ")
