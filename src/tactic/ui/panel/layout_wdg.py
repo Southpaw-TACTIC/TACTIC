@@ -773,6 +773,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
         count = 0
+        static_elements = self.kwargs.get("static_element_names") or []
+
         for element_name in element_names:
 
             count += 1
@@ -918,7 +920,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             elements_wdg.add(menu_item_container)
             menu_item_container.add(menu_item)
 
-            if (self.kwargs.get("edit") in ['true', True]):
+            if (self.kwargs.get("edit") in ['true', True]) and (element_name not in static_elements):
                 button = IconButtonWdg(name="Edit", icon="FA_EDIT")
                 menu_item_container.add(button)
                 button.add_behavior( {
