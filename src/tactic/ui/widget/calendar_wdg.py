@@ -353,6 +353,7 @@ class CalendarWdg(BaseRefreshWdg):
         table.add_color("color", "color")
         table.add_style("width: 100%")
         table.add_style("table-layout: fixed")
+        table.add_style("font-size: inherit")
 
         #table.add_style("margin-left: auto")
         #table.add_style("margin-right: auto")

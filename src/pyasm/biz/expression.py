@@ -158,6 +158,15 @@ class ExpressionParser(object):
                 self.vars['PROJECT_URL'] = "%s/tactic/%s" % (base_url, project)
 
 
+
+        # preprocess multi-line expressions
+        if self.expression.find("\n") != -1:
+            parts = self.expression.split("\n")
+            parts = [x.strip() for x in parts]
+            self.expression = "".join(parts)
+
+
+
         # replace all of the variables: Note that this replaces even in the
         # string area ... not sure if this is what we want
         keys = self.vars.keys()

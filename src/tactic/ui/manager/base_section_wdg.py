@@ -11,7 +11,7 @@
 #
 __all__ = ["BaseSectionWdg"]
 
-import os, types
+import os, types, six
 
 from pyasm.common import Common, Environment, Container, Xml, XmlException
 from pyasm.biz import Project
