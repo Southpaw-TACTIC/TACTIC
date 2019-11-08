@@ -294,7 +294,7 @@ class Xml(Base):
         try:
             nodes = self._evaluate(xpath)
         except Exception as e:
-            raise XmlException('XPath Error for [%s]: %s'% (xpath, e.message))
+            raise XmlException('XPath Error for [%s]: %s'% (xpath, str(e)))
         return nodes
 
     def get_nodes_attr(self, xpath, attr):
