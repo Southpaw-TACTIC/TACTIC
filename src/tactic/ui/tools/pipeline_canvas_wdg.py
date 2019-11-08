@@ -379,6 +379,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
 
             parent.innerHTML = html.join(" / ");
+            spt.command.clear();
+            spt.pipeline.fit_to_canvas();
             '''
         } )
 

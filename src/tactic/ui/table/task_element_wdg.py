@@ -904,13 +904,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         'bvr_match_class': "spt_task_element_assigned",
         "cbjs_action": '''
         var all_top_el = bvr.src_el.getParent(".spt_all_task_top");
-        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_status_select', false);
+        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_element_assigned', false);
         var value_wdg = all_top_el.getElement(".spt_data");
         value_wdg.value = JSON.stringify(values);
         spt.dg_table.edit.widget = all_top_el;
         spt.dg_table.inline_edit_cell_cbk( value_wdg, {} );
         '''
-        } ) 
+        } )
 
         if self.show_link_task_menu:
             self.menu.set_activator_over(layout, "spt_task_element_assigned")
@@ -1019,7 +1019,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.value = '';
                     var rnd = Math.floor(Math.random()*100001)
                     select.name = select.name + rnd;
-                    
                     spt.task_element.status_change_cbk(evt, {src_el: select});
                 }
                 else {

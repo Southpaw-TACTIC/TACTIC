@@ -37,4 +37,6 @@ from .workflow import *
 
 from .subprocess_trigger import *
 
+from .site_upgrade import *
+
 
