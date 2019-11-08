@@ -62,7 +62,7 @@ if __name__ == '__main__':
             quiet = True
         if o in ("-s", "--site"):
             site = a
-            print("site: ", site)
+           
    
 
     if len(args) == 0:
@@ -162,16 +162,12 @@ if __name__ == '__main__':
         sys.exit(0)
 
     version.replace('.', '_')
-    
-    upgrade = Upgrade(version, is_forced, project_code=project_code, quiet=quiet, is_confirmed=is_confirmed)
+    upgrade = Upgrade(version, is_forced, project_code=project_code, site=site, quiet=quiet, is_confirmed=is_confirmed)
     upgrade.execute()
 
     if not quiet:
         print("Upgrade to version [%s] finished." % version)
-    tmp_dir = Environment.get_tmp_dir()
-    output_file = '%s/upgrade_output.txt' %tmp_dir
-    if not quiet:
-        print("Upgrade output file saved in [%s]" %output_file)
+    
     
 
 
