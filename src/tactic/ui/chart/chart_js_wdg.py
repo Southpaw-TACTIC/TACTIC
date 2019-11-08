@@ -286,6 +286,20 @@ class ChartJsWdg(BaseRefreshWdg):
             else:
                 chart_type = "horizontalBar"
 
+        elif chart_type in ["line"]:
+
+            options["fill"] = False,
+            options["scales"] = {
+                "xAxes": [{
+                    "type": 'time',
+                    "display": True,
+                    "scaleLabel": {
+                        "display": True,
+                        "labelString": "Date",
+                    }
+                }],
+            }
+
 
         # initialize the canvas
         canvas.add_behavior( {

@@ -45,8 +45,7 @@ class BarChartWdg(BaseRefreshWdg):
         self.max_value = 0
         self.min_value = 0
         self.steps = 0
-        self.category_charts = ['pie', 'doughnut']
-        self.time_scale_charts = ['line']
+        self.category_charts = ['pie', 'doughnut', 'line']
 
         web = WebContainer.get_web()
         self.width = web.get_form_value("width")
@@ -275,4 +274,4 @@ class BarChartWdg(BaseRefreshWdg):
 
         return top
 
-        
+

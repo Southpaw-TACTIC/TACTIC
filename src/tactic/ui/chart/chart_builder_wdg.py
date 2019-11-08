@@ -78,7 +78,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
     def get_chart_type_select(self, category=None):
 
         category_type_dict = {'Simple': "bar|horizontalBar|stacked|stacked_horizontal",
-                              'Time Scale': "line|bar",
+                              'Time Scale': "line",
                               'Categorization': "pie|doughnut" }
         chart_type_div = DivWdg()
         chart_type_div.add_class("hidden")
@@ -172,7 +172,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         container.add(minus_button)
 
         column_select_div = SelectWdg("y_axis")
-        column_select_div.set_option("values", self.columns)
+        column_select_div.set_option("values", self.columns + "expression")
         column_select_div.add_empty_option("-- Select --")
         column_select_div.add_class("spt_chart_column_select")
 
@@ -227,7 +227,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         detail_div = DivWdg()
         detail_div.add_class("spt_chart_detail")
         detail_div.add_class("spt_time_scale_chart_detail")
-        detail_div.add("<p class='spt_graph_option'>Category:</p>")
+        detail_div.add("<p class='spt_graph_option'>Column:</p>")
 
         column_select_div = SelectWdg("y_axis")
         column_select_div.set_option("values", self.columns)
@@ -266,7 +266,6 @@ class ChartBuilderWdg(BaseRefreshWdg):
         cols_str = ""
         for col in columns:
             cols_str = cols_str + col + "|"
-        cols_str += "expression"
         self.columns = cols_str
 
         top = DivWdg()
