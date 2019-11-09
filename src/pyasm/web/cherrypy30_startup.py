@@ -526,7 +526,6 @@ class CherryPyStartup(CherryPyStartup20):
                     rel_dir = plugin_sobject.get_value("rel_dir")
                     plugin_dir = '%s/%s' % (Environment.get_plugin_dir(), rel_dir)
                     manifest_path = "%s/manifest.xml" % plugin_dir
-                    log_path = "%s/upgrade_log.txt" % plugin_dir
                     if os.path.exists(manifest_path):
                         f = open(manifest_path, 'r')
                         manifest = f.read()
@@ -571,21 +570,25 @@ class CherryPyStartup(CherryPyStartup20):
                         db_update.append(x.get_value("code")) 
                         need_upgrade[0] = True
                                 
-            tmp_dir = "%s/upgrade" % Environment.get_tmp_dir()
-            upgrade_status = "end"
-            if not os.path.exists(tmp_dir):
-                os.makedirs(tmp_dir)
-            if site:
-                upgrade_status_path = "%s/upgrade_%s_%s.txt" % (tmp_dir, site, project)
+            
+            # Determine upgrade_status_path
+            if not site or site == "default":
+                site_tmp_dir = Environment.get_tmp_dir()
             else:
-                upgrade_status_path = "%s/upgrade_default_%s.txt" % (tmp_dir, project)
+                site_obj = Site.get()
+                site_tmp_dir = site_obj.get_site_dir(site)
+            if not os.path.exists(site_tmp_dir):
+                os.makedirs(site_tmp_dir)
+            upgrade_status_path = "%s/upgrade_status.txt" % site_tmp_dir
+            
+            # Get the upgrade_status
+            upgrade_status = "end"
             if os.path.exists(upgrade_status_path):
                 f = open(upgrade_status_path, 'r')
                 upgrade_status = f.readline()
                 f.close()
                 if upgrade_status == "start":
                     need_upgrade[0] = True
-
             
             sudo.exit()
 
@@ -593,7 +596,13 @@ class CherryPyStartup(CherryPyStartup20):
                 'project_code': project,
                 'login': Environment.get_user_name(),
                 'command': "pyasm.command.SiteUpgradeCmd",
-                'kwargs': {'project_code': project, 'site': site, 'db_update': db_update, 'plugin_update': plugin_update}
+                'kwargs': {
+                    'project_code': project, 
+                    'site': site, 
+                    'db_update': db_update, 
+                    'plugin_update': plugin_update,
+                    'upgrade_status_path': upgrade_status_path    
+                }
             }
 
             if need_upgrade[0] and upgrade_status != "start":
@@ -609,7 +618,6 @@ class CherryPyStartup(CherryPyStartup20):
                 else:
                     p = subprocess.call(args)
 
-        
         if need_upgrade[0] and site and site != "default":
             # During upgrade, project won't be registered. After project upgrade finishes, project registration can begin
             return
