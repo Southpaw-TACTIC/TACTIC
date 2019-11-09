@@ -95,7 +95,6 @@ class CherryPyStartup(CherryPyStartup20):
 
         styles = HtmlElement.style('''
             .spt_upgrade_top {
-                height: 100%;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
@@ -547,6 +546,15 @@ class CherryPyStartup(CherryPyStartup20):
                         elif version != latest_version:
                             plugin_update[code] = [plugin_dir, latest_version]
                             need_upgrade[0] = True
+                   
+                        # Get coplugins
+                        # TODO: Currently assuming code = plugin_dir
+                        coplugins = xml.get_value("manifest/data/coplugins") or None
+                        coplugins = coplugins.split("|")
+                        for coplugin in coplugins:
+                            coplugin_dir = "%s/%s" % (Environment.get_plugin_dir(), coplugin)
+                            plugin_update[coplugin] = [coplugin_dir, latest_version]
+
 
             project_versions = Search.eval("@SOBJECT(sthpw/project)")
 
@@ -554,7 +562,7 @@ class CherryPyStartup(CherryPyStartup20):
 
             if newest_version[0] == 'v':
                 newest_version = newest_version[1: len(newest_version)]
-                
+               
             if project_versions:
                 for x in project_versions:
                     if x.get_value("code") == 'admin':
@@ -575,10 +583,10 @@ class CherryPyStartup(CherryPyStartup20):
                 f = open(upgrade_status_path, 'r')
                 upgrade_status = f.readline()
                 f.close()
-
                 if upgrade_status == "start":
                     need_upgrade[0] = True
 
+            
             sudo.exit()
 
             subprocess_kwargs = {
@@ -595,6 +603,7 @@ class CherryPyStartup(CherryPyStartup20):
                 args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
                 args.append(subprocess_kwargs_str)
                 import subprocess
+                
                 if site and site != 'default':
                     p = subprocess.Popen(args)
                 else:
