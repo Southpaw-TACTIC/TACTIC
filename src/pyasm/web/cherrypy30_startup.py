@@ -549,10 +549,11 @@ class CherryPyStartup(CherryPyStartup20):
                         # Get coplugins
                         # TODO: Currently assuming code = plugin_dir
                         coplugins = xml.get_value("manifest/data/coplugins") or None
-                        coplugins = coplugins.split("|")
-                        for coplugin in coplugins:
-                            coplugin_dir = "%s/%s" % (Environment.get_plugin_dir(), coplugin)
-                            plugin_update[coplugin] = [coplugin_dir, latest_version]
+                        if coplugins:
+                            coplugins = coplugins.split("|")
+                            for coplugin in coplugins:
+                                coplugin_dir = "%s/%s" % (Environment.get_plugin_dir(), coplugin)
+                                plugin_update[coplugin] = [coplugin_dir, latest_version]
 
 
             project_versions = Search.eval("@SOBJECT(sthpw/project)")

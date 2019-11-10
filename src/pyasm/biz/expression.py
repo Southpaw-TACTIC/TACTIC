@@ -20,7 +20,7 @@ from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 import calendar
 import datetime
 
-from pyasm.common import TacticException, Environment, Container, FormatValue, Config, SPTDate, Common
+from pyasm.common import TacticException, Environment, Container, FormatValue, Config, SPTDate, Common, SecurityException
 from pyasm.search import Search, SObject, SearchKey, SearchType
 from pyasm.security import Site
 
@@ -1294,6 +1294,14 @@ class MethodMode(ExpressionParser):
                 raise SyntaxError("Method @%s can only have one argument, found [%s] in expression [%s]" % (method, len(args), self.expression))
 
         elif method == 'PYTHON':
+            if Config.get_value("security", "api_cmd_restricted") == "true":
+                security = Environment.get_security()
+                #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
+                class_name = "tactic.command.PythonCmd"
+                access = security.check_access("api_cmd", class_name, "allow", default="allow")
+                if not access:
+                   raise SecurityException("Access denied") 
+            
             if len(args) :
                 from tactic.command import PythonCmd
                 first_arg = args[0]
@@ -1676,6 +1684,11 @@ class MethodMode(ExpressionParser):
 
 
         elif method == 'UPDATE':
+
+            api_mode = Config.get_value("security", "api_mode")
+            if api_mode in query or closed:
+                raise SecurityExpresion("Access denied")
+
             # the first argument is sobjects
             expression = args[0]
             if expression == "sobject":
