@@ -265,8 +265,8 @@ class Search(Base):
             return
 
         # Commented our for testing
-        #if user in ['admin']:
-        #    return
+        if user in ['admin']:
+            return
 
         if Sudo.is_sudo():
             return
