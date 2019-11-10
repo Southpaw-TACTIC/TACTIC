@@ -159,7 +159,7 @@ class TextInputWdg(BaseInputWdg):
         else:
             self.readonly = False
             bgcolor = self.kwargs.get("background") or self.text.get_color("background")
-            self.text.add_style("background", bgcolor)
+            #self.text.add_style("background", bgcolor)
 
         self.icon_wdg = SpanWdg()
 
@@ -192,7 +192,7 @@ class TextInputWdg(BaseInputWdg):
                     //bvr.src_el.setStyle("background", bvr.bgcolor2);
                 }
                 else {
-                    bvr.src_el.setStyle("background", bvr.bgcolor);
+                    //bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
 
                 bvr.src_el.setAttribute("spt_last_value", value);
@@ -280,6 +280,7 @@ class TextInputWdg(BaseInputWdg):
 
 
     def add_style(self, name, value=None):
+        
         if not name:
             return
 

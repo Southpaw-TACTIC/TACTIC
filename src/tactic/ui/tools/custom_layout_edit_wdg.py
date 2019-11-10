@@ -1083,6 +1083,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
+
             hidden = HiddenWdg("selected")
             view_wdg.add(hidden)
             #selected = web.get_form_value("selected")

@@ -21,14 +21,11 @@
  */
 
 body {
-    font-family: sans-serif, times;
     font-size: 12px;
-    /*text-align: center;*/
 }
 
 
 label {
-    font-family: sans-serif, times;
     font-size: 12px;
 }
 
@@ -42,106 +39,6 @@ table {
 
 
 /* Set some standard properties for various elements. */
-
-
-div {
-    margin: 0px 0px 0px 0px;
-    border-width: 1px;
-    box-sizing: content-box;
-    -webkit-box-sizing: content-box;
-}
-
-
-li {
-    box-sizing: content-box;
-    -webkit-box-sizing: content-box;
-}
-
-span {
-    vertical-align: bottom;
-}
-
-img {
-    vertical-align: middle;
-}
-
-h2 {
-    font-size: 18px;  
-    font-weight: bold;
-}
-h3 
-{
-    font-size: 16px;  
-    font-weight: bold;
-}
-h4 
-{
-    font-size: 14px;  
-    font-weight: bold;
-}
-h5
-{
-    font-size: 12px;
-    font-weight: bold;
-}
-
-hr
-{
-    height: 1px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-
-/* various styles used to do simple specific things.  Mostly alignment */
-
-
-.warning
-{
-    font-size: 1.1em;
-    font-weight: 600;    
-    color: #720f0f;
-}
-
-
-.hidden {
-    display: none;
-}
-
-.smaller {
-    font-size: smaller;
-}
-
-.larger {
-    font-size: larger;
-}
-
-.center
-{
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.vcenter
-{
-    margin-top: auto;
-    margin-bottom: auto;
-}
-
-.left_content 
-{
-    text-align: left;
-}
-
-.right_content 
-{
-    text-align: right;
-}
-
-.center_content
-{
-    text-align: center;
-}
 
 .hand
 {
