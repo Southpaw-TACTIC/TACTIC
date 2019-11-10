@@ -318,8 +318,9 @@ class Project(SObject):
         assert not isinstance(search_type, SearchType)
 
         project_code = cls.extract_project_code(search_type)
-        assert project_code != "__NONE__"
-
+        if project_code == "__NONE__":
+            return cls.get()
+        #assert project_code != "__NONE__"
 
         project = cls.get_by_code(project_code)
         return project
@@ -642,11 +643,16 @@ class Project(SObject):
 
 
         project_code = cls.get_database_by_search_type(search_type)
-        project = Project.get_by_code(project_code)
+
+        if project_code == "__NONE__":
+            project = Project.get()
+        else:
+            project = Project.get_by_code(project_code)
+
         if not project:
             raise Exception("Error: Project [%s] does not exist" % project_code)
 
-
+        #TEST
         if search_type.startswith("salesforce/"):
             db_resource_code = "Salesforce"
             db_resource = DbResource.get_by_code(db_resource_code, project_code)

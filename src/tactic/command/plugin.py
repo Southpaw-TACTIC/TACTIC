@@ -251,7 +251,7 @@ class PluginBase(Command):
         code = self.xml.get_attribute(node, "code")
 
         try:
-            search_type = SearchType.get(search_type)
+            search_type_sobj = SearchType.get(search_type)
         except SearchException as e:
             return []
 
@@ -293,7 +293,7 @@ class PluginBase(Command):
 
             # have some specific attributes for specific search types
             # can use wildcards like % and *
-            if search_type.get_base_key() == 'config/widget_config':
+            if search_type_sobj.get_base_key() == 'config/widget_config':
                 view = Xml.get_attribute(node, "view")
                 if view:
                     ignore_columns = 'id,code'
