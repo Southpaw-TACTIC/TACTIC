@@ -773,6 +773,13 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
         count = 0
+
+        # column edit option pass-throughs
+        simple_view_only = self.kwargs.get("simple_view_only") or "false"
+        column_config_view = self.kwargs.get("column_config_view")
+        show_title_details = self.kwargs.get("show_title_details") or "false"
+
+        # column edit exclusions
         static_elements = self.kwargs.get("static_element_names") or []
 
         for element_name in element_names:
@@ -927,6 +934,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'target_id': self.target_id,
                 'target': target,
+                'column_config_view': column_config_view,
+                'simple_view_only': simple_view_only,
+                'show_title_details': show_title_details,
                 'element_name': element_name,
                 'cbjs_action': '''
 
@@ -966,11 +976,18 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 var view = table.getAttribute("spt_view");
                 var search_type = table.getAttribute("spt_search_type");
 
+                // TO DO make this take in dict
                 var args = {
                     'search_type': search_type,
                     'view': view,
-                    'element_name': element_name
+                    'element_name': element_name,
+                    'show_title_details': bvr.show_title_details,
+                    'simple_view_only': bvr.simple_view_only
                 };
+
+                if (bvr.column_config_view) {
+                  args.column_config_view = bvr.column_config_view;
+                }
 
                 spt.panel.load_popup(title, class_name, args=args);
                 '''
