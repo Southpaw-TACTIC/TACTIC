@@ -222,6 +222,7 @@ class ChartJsWdg(BaseRefreshWdg):
                 widget_chart_type = default_chart_type
                 widget.set_chart_type(widget_chart_type)
 
+
             data = widget.get_data()
 
             color = widget.get_color()
@@ -243,7 +244,6 @@ class ChartJsWdg(BaseRefreshWdg):
                 dataset['borderColor'] = '#666'
 
             datasets.append(dataset)
-
 
 
         if chart_type == "horizontalBar":
@@ -381,6 +381,8 @@ options.plugins = {
     }
 }
 
+
+if (!barChartData['datasets'][0]['label']) options['legend']['display'] = false;
 
 var ctx = bvr.src_el.getContext('2d');
 

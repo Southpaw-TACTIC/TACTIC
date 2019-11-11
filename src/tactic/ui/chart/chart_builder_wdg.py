@@ -381,7 +381,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         'cbjs_action': '''
         let top = bvr.src_el.getParent(".spt_chart_builder");
         let chart = top.getElement(".spt_chart");
-        let values = spt.api.get_input_values(top);
+        let values = spt.api.get_input_values(top, null, null, null, null, false);
         
         if (values.expression) values.y_axis = values.expression;
 
