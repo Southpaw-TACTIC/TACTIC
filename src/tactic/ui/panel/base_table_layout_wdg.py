@@ -1350,8 +1350,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( {'wdg': keyword_div} )
             keyword_div.add_style("margin-left: 0px")
 
+        # defaults to true
+        show_search_button = self.get_setting("search_button")
 
-        if self.kwargs.get("show_refresh") != 'false':
+        if self.kwargs.get("show_refresh") != 'false' and show_search_button:
             button_div = DivWdg()
             #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
 
