@@ -4,7 +4,6 @@ from pyasm.biz import Project
 from pyasm.security import Sudo, Site
 from pyasm.search import Search
             
-from tactic.command import PluginUninstaller, PluginInstaller
 
 import datetime
 import os
@@ -17,6 +16,7 @@ class SiteUpgradeCmd(Command):
     
     def execute(self):
         '''Update the Plugins and Database of this project'''
+        from tactic.command import PluginUninstaller, PluginInstaller
         
         project_code = self.kwargs.get("project_code") or None
         site = self.kwargs.get("site") or "default"

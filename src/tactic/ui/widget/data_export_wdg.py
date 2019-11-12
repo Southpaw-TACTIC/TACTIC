@@ -26,7 +26,6 @@ from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenW
 from pyasm.common import Common, Environment, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.container import DialogWdg
 
 from .misc_input_wdg import SearchTypeSelectWdg
 from .upload_wdg import SimpleUploadWdg
@@ -1362,6 +1361,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 options_form.add("<br clear='all'/>")
 
                 offset = {'x':10, 'y': 0}
+                from tactic.ui.container import DialogWdg
                 dialog = DialogWdg(offset=offset)
                 dialog.add(options_form, name="content")
                 dialog.set_as_activator(column_option_div)
