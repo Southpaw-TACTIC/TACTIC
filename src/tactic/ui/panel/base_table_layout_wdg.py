@@ -1343,7 +1343,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if widget:
                 wdg_list.append( { 'wdg': widget } )
             else:
-                print("WARNING: badge view '%s' not defined" % custom_shelf_view)
+                print("WARNING: badge view '%s' not defined" % badge_view)
  
 
         if keyword_div:

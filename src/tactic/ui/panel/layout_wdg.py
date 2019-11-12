@@ -1019,6 +1019,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         top = DivWdg()
         container.add(top)
 
+
         width = self.kwargs.get("width") or 400
         top.add_style("width: %spx" % width)
 
@@ -1040,7 +1041,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             self.is_admin = False
         else:
             self.is_admin = Environment.get_security().is_admin()
-        self.is_admin = False
 
 
 

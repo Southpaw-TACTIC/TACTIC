@@ -543,7 +543,7 @@ class SearchWdg(BaseRefreshWdg):
 
             .spt_search_top {
                 position: relative;
-                overflow-x: hidden;
+                overflow: visible;
             }
 
             .spt_search_top .spt_search_container {
