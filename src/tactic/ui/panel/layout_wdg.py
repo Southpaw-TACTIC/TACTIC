@@ -1114,8 +1114,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         context_menu.add_style("overflow-x: hidden")
 
 
-
-        self.config = WidgetConfigView.get_by_search_type(search_type, "definition")
+        element_view = self.kwargs.get("element_view") or "definition"
+        self.config = WidgetConfigView.get_by_search_type(search_type, element_view)
 
         predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()
