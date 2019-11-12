@@ -13,7 +13,7 @@
 
 __all__ = ["BaseChartWdg", "SObjectChartWdg", "CalendarChartWdg"]
 
-from pyasm.common import Environment, Common, jsonloads, jsondumps
+from pyasm.common import Environment, Common, jsonloads, jsondumps, SPTDate
 from pyasm.biz import Project
 from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Table
 from pyasm.widget import SelectWdg, TextWdg, TextAreaWdg
@@ -621,6 +621,11 @@ class CalendarChartWdg(BaseChartWdg):
             min_date = start_date
             max_date = end_date
 
+        if min_date.tzinfo is not None and min_date.tzinfo.utcoffset(min_date) is not None:
+            min_date = SPTDate.convert(min_date)
+
+        if max_date.tzinfo is not None and max_date.tzinfo.utcoffset(max_date) is not None:
+            max_date = SPTDate.convert(max_date)
 
         for sobject in sobjects:
             timestamp = sobject.get_value(self.column)
