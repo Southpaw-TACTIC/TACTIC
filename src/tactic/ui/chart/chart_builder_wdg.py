@@ -188,12 +188,10 @@ class ChartBuilderWdg(BaseRefreshWdg):
         let input_div = bvr.src_el.getParent(".spt_input_div");
         let expr = input_div.getElement(".spt_expression_div");
 
-        if (!bvr.src_el.hasClass("clone")) {
-            if (bvr.src_el.value == "expression") {
-                if (expr.hasClass("hidden")) expr.removeClass("hidden");
-            } else {
-                if (!expr.hasClass("hidden")) expr.addClass("hidden");
-            }
+        if (bvr.src_el.value == "expression") {
+            if (expr.hasClass("hidden")) expr.removeClass("hidden");
+        } else {
+            if (!expr.hasClass("hidden")) expr.addClass("hidden");
         }
         '''
 
