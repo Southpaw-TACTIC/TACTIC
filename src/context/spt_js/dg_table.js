@@ -2201,6 +2201,12 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var view = null;
     if (view == '' || view == null) {
         view = table.getAttribute("spt_view");
+        var class_name = target.getAttribute("spt_class_name");
+        if (class_name == 'tactic.ui.panel.CustomLayoutWdg') {
+            if (!view.includes(".")) {
+                view = target.getAttribute("spt_view");
+            }
+        }
     }
 
     // get all of the search input values
@@ -2336,6 +2342,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var element_names;
     var column_widths = [];
     var search_keys = [];
+    var custom_views = target.getAttribute("spt_custom_views") || "{}";
     
     if (version == "2") {
         if (bvr.element_names) {
@@ -2425,6 +2432,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'extra_data': extra_data,
         'default_data': default_data,
         'window_resize_offset': window_resize_offset,
+        'custom_views': custom_views,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -2446,7 +2454,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
     if (extra_keys) {
         args['extra_keys'] = extra_keys;
         extra_keys = extra_keys.split(",");
-        console.log(extra_keys);
         for (var k = 0; k < extra_keys.length; k++) {
             var key = extra_keys[k];
             args[key] = target.getAttribute("spt_"+key) || "";

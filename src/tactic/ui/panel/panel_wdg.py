@@ -3265,6 +3265,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         badge_view = self.kwargs.get("badge_view")
         filter_view = self.kwargs.get("filter_view")
         extra_data = self.kwargs.get("extra_data")
+        layout_switcher_custom_views = self.kwargs.get("layout_switcher_custom_views")
+        default_views = self.kwargs.get("default_views")
+        name = self.kwargs.get("name")
+
         if extra_data:
             if isinstance(extra_data, dict):
                 extra_data = jsondumps(extra_data)
@@ -3385,7 +3389,10 @@ class ViewPanelWdg(BaseRefreshWdg):
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,
             "collapse_default": collapse_default,
-            "collapse_level": collapse_level
+            "collapse_level": collapse_level,
+            "layout_switcher_custom_views": layout_switcher_custom_views,
+            "default_views": default_views,
+            "name": name
         }
 
 
@@ -3523,7 +3530,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 extra_keys = []
 
             for key in extra_keys:
-                kwargs[key] = self.kwargs.get(key)
+                kwargs[key] = self.kwargs.get(key) or None
             kwargs['extra_keys'] = ",".join(extra_keys)
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 

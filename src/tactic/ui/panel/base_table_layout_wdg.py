@@ -1994,8 +1994,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
         layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
+        custom_views = self.kwargs.get("layout_switcher_custom_views") or None
+        default_views = self.kwargs.get("default_views") or None
+        name = self.kwargs.get("name")
 
-        SwitchLayoutMenu(search_type=self.search_type, view=self.view, activator=layout.get_button_wdg())
+
+        if isinstance(custom_views, basestring):
+            custom_views = jsonloads(custom_views)
+        
+        SwitchLayoutMenu(search_type=self.search_type, view=name, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
         return layout
 
 
