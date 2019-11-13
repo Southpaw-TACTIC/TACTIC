@@ -776,14 +776,16 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         # column edit option pass-throughs
         edit_options = self.kwargs.get("edit_options")
-        if isinstance(edit_options, basestring):
-            edit_options = jsonloads(edit_options)
+
+        if isinstance(edit_options, six.string_types):
+            try:
+                # hack taken from gear_settings kwarg in ui.panel.BaseTableLayoutWdg
+                edit_options = edit_options.replace("'", '"')
+                edit_options = jsonloads(edit_options)
+            except ValueError:
+                edit_options = None
         if not isinstance(edit_options, dict):
             edit_options = None
-
-        simple_view_only = self.kwargs.get("simple_view_only") or "false"
-        column_config_view = self.kwargs.get("column_config_view")
-        show_title_details = self.kwargs.get("show_title_details") or "false"
 
         # column edit exclusions
         static_elements = self.kwargs.get("static_element_names") or []
