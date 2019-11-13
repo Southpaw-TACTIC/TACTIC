@@ -29,8 +29,8 @@ spt.api.get_server_url = function() {
 
 
 // Methods to retrieve input information
-spt.api.get_input_values = function(element, filter, return_array, return_labels) {
-    return spt.api.Utility.get_input_values(element, filter, return_array, return_labels);
+spt.api.get_input_values = function(element, filter, return_array, return_labels, kwargs, get_hidden=true) {
+    return spt.api.Utility.get_input_values(element, filter, return_array, return_labels, kwargs, get_hidden);
 
 }
 

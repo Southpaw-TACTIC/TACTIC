@@ -37,10 +37,11 @@ spt.api.Utility = new Class( {
 //  kwargs - cb_boolean: force a checked checkbox to return true as value
 //           retreive: support non INPUT type element and also use the retrieve/store method 
 //                     to get the spt_input_value
+//  get_hidden: fetch input values from input elements not visible in the DOM
 // @return
 //  dict: of all the name values pairs found under element_id
 //
-spt.api.Utility.get_input_values = function(element_id, filter, return_array, return_labels, kwargs) {
+spt.api.Utility.get_input_values = function(element_id, filter, return_array, return_labels, kwargs, get_hidden=true) {
 
     if (filter == undefined || filter == null)
         filter = ".spt_input";
@@ -67,6 +68,9 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
 
     else
         input_list = document.getElements(filter);
+
+    // if input is hidden in the DOM, remove from list    
+    if (!get_hidden) input_list = input_list.filter(function(el) { return el.offsetParent; });
 
     //for multple select
     var get_multi = function (obj) { 
