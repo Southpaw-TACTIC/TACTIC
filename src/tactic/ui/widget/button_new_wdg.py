@@ -272,7 +272,6 @@ class ButtonWdg(BaseRefreshWdg):
 
         self.is_disabled = self.kwargs.get("is_disabled") in [True,"true"]
 
-
         if not Container.get_dict("JSLibraries", "spt_button"):
             doc_top = Container.get("TopWdg::top")
             if doc_top:
@@ -351,9 +350,6 @@ class ButtonWdg(BaseRefreshWdg):
     def set_attr(self, attr, name):
         self.hit_wdg.set_attr(attr, name)
 
-
-    
-
     def add_arrow_behavior(self, behavior):
         self.arrow_menu.add_behavior(behavior)
         self.show_arrow_menu = True
@@ -394,7 +390,6 @@ class ButtonWdg(BaseRefreshWdg):
         is_disabled = self.kwargs.get("is_disabled")
 
         button = DivWdg()
-        button.add_style("float: left")
         
         self.inner = button
         top.add(button)
@@ -402,19 +397,13 @@ class ButtonWdg(BaseRefreshWdg):
 
         button.add_class("spt_button_top")
         button.add_style("position: relative")
-
-        #img = "<img src='%s/MainButtonSlices_button.png'/>" % base
-        #img_div = DivWdg(img)
-        #button.add(img_div)
-        #img_div.add_style("opacity", ALPHA)
+        button.add_style("float: left")
 
         img_div = DivWdg()
         button.add(img_div)
         img_div.add_style("width: 30px")
         img_div.add_style("height: 35px")
        
-       
-
         over_div = DivWdg()
         button.add(over_div)
         over_div.add_class("spt_button_over")
@@ -435,7 +424,6 @@ class ButtonWdg(BaseRefreshWdg):
         click_div.add_style("top: 0px")
         click_div.add_style("left: 0px")
         click_div.add_style("display: none")
-
 
         title = self.kwargs.get("title")
        
@@ -507,28 +495,6 @@ class ButtonWdg(BaseRefreshWdg):
         self.hit_wdg.add_attr("title", tip)
 
 
-        """
-        self.hit_wdg.add_behavior( {
-        'type': 'hover',
-        'cbjs_action_over': '''
-            var top = bvr.src_el.getParent(".spt_button_top")
-            var over = top.getElement(".spt_button_over");
-            var click = top.getElement(".spt_button_click");
-            over.setStyle("display", "");
-            click.setStyle("display", "none");
-        ''',
-        'cbjs_action_out': '''
-            var top = bvr.src_el.getParent(".spt_button_top")
-            var over = top.getElement(".spt_button_over");
-            var click = top.getElement(".spt_button_click");
-            over.setStyle("display", "none");
-            click.setStyle("display", "none");
-        '''
-        } )
-        """
-
-
-
         # add a second arrow widget
         if self.show_arrow_menu:
             self.inner.add(self.arrow_div)
@@ -537,10 +503,6 @@ class ButtonWdg(BaseRefreshWdg):
             self.arrow_div.add_style("top: 11px")
             self.arrow_div.add_style("left: 20px")
             self.arrow_div.add(self.arrow_menu)
-
-
-
-
 
 
         if self.dialog:
@@ -1256,21 +1218,24 @@ class ActionButtonWdg(DivWdg):
             button.add_style("top: 6px")
 
         # BOOTSTRAP
-        color = self.kwargs.get("color")
-        button.add_class('btn')
-        if color:
-            if color.startswith("#"):
-                button.add_style("background", color)
+        if self._use_bootstrap():
+            button.add_class("btn btn-md btn-block btn-outline-primary")
+        else:
+            color = self.kwargs.get("color")
+            button.add_class('btn')
+            if color:
+                if color.startswith("#"):
+                    button.add_style("background", color)
+                else:
+                    button.add_class('btn-%s' % color)
             else:
-                button.add_class('btn-%s' % color)
-        else:
-            button.add_class('btn-default')
+                button.add_class('btn-default')
 
-        if size == 'b':
-            button.add_class('btn-block')
-        else:
-            button.add_class('btn-sm')
-        button.add_style("top: 0px")
+            if size == 'b':
+                button.add_class('btn-block')
+            else:
+                button.add_class('btn-sm')
+            button.add_style("top: 0px")
 
 
         button.add_attr('spt_text_label', title)
@@ -1477,6 +1442,37 @@ class IconButtonWdg(DivWdg):
 
 
         return super(IconButtonWdg, self).get_display()
+
+__all__.append("IconButtonNewWdg")
+class IconButtonNewWdg(DivWdg):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        
+        from pyasm.web import ButtonWdg
+        self.button = ButtonWdg()
+        
+        icon_str = self.kwargs.get("icon")        
+        title = self.kwargs.get("title")
+        icon = IconWdg(title, icon_str)
+        self.icon = icon
+        
+        
+        super(IconButtonNewWdg, self).__init__()
+
+    def add_behavior(self, behavior):
+        self.button.add_behavior(behavior)
+
+    def get_display(self):
+        
+        self.button.add_class("btn btn-primary bmd-btn-icon")
+        self.button.add(self.icon)
+
+
+        return self.button
+
+
+
 
 
 from tactic.ui.common import BaseTableElementWdg

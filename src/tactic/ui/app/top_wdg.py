@@ -548,9 +548,10 @@ class TopWdg(Widget):
         head = HtmlElement("head")
         html.add(head)
 
+
         head.add('<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>\n')
         head.add('<meta http-equiv="X-UA-Compatible" content="IE=edge"/>\n')
-
+ 
         # Add the tactic favicon
         head.add('<link rel="shortcut icon" href="/context/favicon.ico" type="image/x-icon"/>')
 
@@ -1088,7 +1089,8 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
 
         # first load context css
-        Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
+        if not self._use_bootstrap():
+            Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
 
 

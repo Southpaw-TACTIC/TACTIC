@@ -30,9 +30,11 @@ from tactic.ui.panel import FastTableLayoutWdg
 from pyasm.widget import SwapDisplayWdg
 
 from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, CheckboxWdg, HiddenWdg, SelectWdg, TextAreaWdg
+        
 
 from tactic.ui.container import DialogWdg, TabWdg, SmartMenu, Menu, MenuItem, ResizableTableWdg
-from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
+from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg, IconButtonNewWdg
+from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 from tactic.ui.input import TextInputWdg, ColorInputWdg, LookAheadTextInputWdg, ColorContainerWdg
 from tactic.ui.panel import DocumentWdg, DocumentItemWdg, DocumentSaveCmd
 
@@ -43,6 +45,67 @@ from .pipeline_canvas_wdg import PipelineCanvasWdg
 class PipelineToolWdg(BaseRefreshWdg):
     '''This is the entire tool, including the sidebar and tabs, used to
     edit the various pipelines that exists'''
+
+    ARGS_KEYS = {
+        "pipeline": {
+            'description': "Code of pipeline that will display on load. If no code is specified, shows message to create new pipeline.",
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Display' 
+        },
+        "show_help": {
+            'description': "Show or hide help button.",
+            'type': 'SelectWdg',
+            'order': 2,
+            'category': 'Display',
+            'values': 'true|false',
+            'labels': 'True|False',
+            'default': 'true'
+        },
+        "show_gear": {
+            'description': "Show or hide gear menu button.",
+            'type': 'SelectWdg',
+            'order': 3,
+            'category': 'Display',
+            'values': 'true|false',
+            'labels': 'True|False',
+            'default': 'true'
+        },
+        "show_save": {
+            'description': "Show or hide save button.",
+            'type': 'SelectWdg',
+            'order': 4,
+            'category': 'Display',
+            'values': 'true|false',
+            'labels': 'True|False',
+            'default': 'true'
+        },
+        "show_wrench": {
+            'description': "Show or hide wrench node panel toggle button.",
+            'type': 'SelectWdg',
+            'order': 5,
+            'category': 'Display',
+            'values': 'true|false',
+            'labels': 'True|False',
+            'default': 'true'
+        },
+        "left_sidebar_default": {
+            'description': "Default display for left sidebar.",
+            'type': 'SelectWdg',
+            'order': 6,
+            'category': 'Display',
+            'values': 'nodes|pipelines',
+            'labels': 'Node Types|Pipelines',
+            'default': 'pipelines'
+        },
+        "window_resize_offset": {
+            'description': "Vertical resize offset",
+            'type': 'TextWdg',
+            'order': 7,
+            'category': 'Display',
+        },
+
+    }
 
     def init(self):
         # to display pipelines of a certain search_type on load
@@ -661,7 +724,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             #### document toolbar content
             toolbar_icons = DivWdg()
             toolbar.add(toolbar_icons)
-            toolbar_icons.add_class("spt_toolbar_icons spt_toolbar_content selected")
+            toolbar_icons.add_class("spt_toolbar_icons spt_toolbar_content")
 
             toggle_button = PipelineDocumentGroupLabel.get_button_wdg("spt_pipeline_toggle_btn", "Toggle Workflow List", "fa-list-ul")
             toolbar_icons.add(toggle_button)
@@ -683,7 +746,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 }
 
                 '''
-                })
+            })
 
             #### process select toolbar content
             type_search = HtmlElement.text()
@@ -716,6 +779,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             left.add(pipeline_list_top)
             pipeline_list_top.add_class("spt_pipeline_list_top")
 
+
             window_resize_offset = self.kwargs.get("window_resize_offset") or None
             if window_resize_offset:
                 pipeline_list_top.add_class("spt_window_resize")
@@ -746,19 +810,28 @@ class PipelineToolWdg(BaseRefreshWdg):
                 })
 
 
-            use_document_pipeline = ProjectSetting.get_value_by_key("document_pipeline")
-            if use_document_pipeline in [True, "true"]:
-                pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
-                pipeline_list_content.add_attr("mode", "document")
-            else:
-                pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression, window_resize_offset=window_resize_offset )
-                pipeline_list_content.add_attr("mode", "list")
+	    pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
+	    pipeline_list_content.add_attr("mode", "document")
+            
+            # By default, show pipeline document    
+            #pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression, window_resize_offset=window_resize_offset )
+            #pipeline_list_content.add_attr("mode", "list")
             pipeline_list_content.add(pipeline_list)
 
-            widget = PipelineProcessTypeWdg(window_resize_offset=window_resize_offset)
-            widget.add_class("spt_pipeline_nodes")
-            widget.add_style("display: none")
-            left.add(widget)
+            process_type_widget = PipelineProcessTypeWdg(window_resize_offset=window_resize_offset)
+            process_type_widget.add_class("spt_pipeline_nodes")
+            left.add(process_type_widget)
+                
+            if self.kwargs.get("left_sidebar_default") == "pipelines":
+                process_type_widget.add_style("display: none")
+
+                toolbar_icons.add_class("selected")
+            
+            elif self.kwargs.get("left_sidebar_default") in [None, "nodes"]:
+                pipeline_list_top.add_style("display", "none")
+
+                type_search.add_class("selected")
+            
 
 
 
@@ -769,7 +842,16 @@ class PipelineToolWdg(BaseRefreshWdg):
         width = self.kwargs.get("width")
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
         width = "100%"
-        pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'), window_resize_offset=window_resize_offset)
+        pipeline_wdg = PipelineEditorWdg(
+            height=self.kwargs.get('height'), 
+            width=width, 
+            save_new_event=save_new_event, 
+            show_help=show_help, 
+            show_gear=self.kwargs.get('show_gear'),
+            show_save=self.kwargs.get("show_save"),
+            show_wrench=self.kwargs.get("show_wrench"), 
+            window_resize_offset=window_resize_offset
+        )
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
@@ -3169,7 +3251,7 @@ class ProcessInfoWdg(BaseRefreshWdg):
         node_type = self.kwargs.get("node_type")
 
         top = self.top
-        top.add_class(".spt_process_info_top")
+        top.add_class("spt_process_info_top container")
         top.add_behavior({
             'type': 'unload',
             'cbjs_action': '''
@@ -3245,14 +3327,15 @@ class BaseInfoWdg(BaseRefreshWdg):
 
     def get_description_wdg(self):
         desc_div = DivWdg()
-        desc_div.add_style("margin: 20px 10px")
-        desc_div.add("<div><b>Details:</b></div>")
-        text = TextAreaWdg()
-        desc_div.add(text)
-        text.add_style("width: 100%")
-        text.add_style("height: 60px")
-        text.add_style("padding: 10px")
+       
+        desc_div.add_class("form-group")
 
+        text = TextAreaWdg()
+        text.set_unique_id()
+
+        desc_div.add("<label class='bmd-label-floating' for='%s'>Description</label>" % text.get_id())
+        desc_div.add(text)
+        
         text.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
@@ -3313,53 +3396,21 @@ class BaseInfoWdg(BaseRefreshWdg):
 
     def get_title_wdg(self, process, node_type, show_node_type_select=True):
 
-        div = DivWdg()
-        div.add_style("margin-top: -15px")
-
-        table = Table()
-        table.add_style("width: 100%")
-        div.add(table)
-        table.add_row()
-
-        """
-        from tactic.ui.panel import ThumbWdg2
-        icon_cell = table.add_cell()
-        thumb = ThumbWdg2()
-        icon_cell.add(thumb)
-        search = Search("config/process")
-        search.add_filter("process", process)
-        process_sobj = search.get_sobject()
-        thumb.set_sobject(process_sobj)
-        thumb.add_style("width: 45px")
-        thumb.add_style("height: 45px")
-        thumb.add_style("border-radius: 30px")
-        thumb.add_style("border: solid 1px #DDD")
-        thumb.add_style("overflow: hidden")
-        """
-
-
-
-
-        left = table.add_cell()
-        left.add_style("vertical-align: top")
-        left.add_style("padding-left: 10px")
-
-        left.add("<b>Name: </b>")
 
         title_wdg = DivWdg()
-        left.add(title_wdg)
 
-        title_wdg.add_style("margin: 0px 0px 0px 0px")
-        title_wdg.add_class("spt_title_top")
-        title_wdg.add_style("font-size: 16px")
-        title_wdg.add_style("padding: 0px 10px 0px 0px")
-
-
+        form_group = DivWdg()
+        title_wdg.add(form_group)
+        
+        form_group.add_class("form-group")
+        
         title_edit_text = TextInputWdg(name="process", height="30px")
-        title_wdg.add(title_edit_text)
+        title_edit_text.set_unique_id()
+        
+        form_group.add('<label for="%s" class="bmd-label-floating">Process name</label>' % title_edit_text.get_id())
+        form_group.add(title_edit_text)
+
         title_edit_text.add_class("spt_title_edit")
-        title_edit_text.add_style("width: auto")
-        #title_edit_text.add_style("border: none")
 
         title_edit_text.add_behavior( {
             'type': 'load',
@@ -3371,7 +3422,6 @@ class BaseInfoWdg(BaseRefreshWdg):
 
             '''
         } )
-
 
         title_edit_text.add_behavior( {
             'type': 'focus',
@@ -3388,8 +3438,6 @@ class BaseInfoWdg(BaseRefreshWdg):
             }
             '''
         } )
-
-
 
 
         title_edit_text.add_behavior( {
@@ -3423,16 +3471,18 @@ class BaseInfoWdg(BaseRefreshWdg):
             else:
                 select.set_value(node_type)
 
-
         else:
+          
+            form_group = DivWdg()
+            title_wdg.add(form_group)
 
-            right = table.add_cell()
-            right.add_style("vertical-align: top")
-
-            right.add("<b>Type: </b>")
-
+            form_group.add_class("form-group")
+            
             select = SelectWdg("node_type")
-            right.add(select)
+            select.set_unique_id()
+
+            form_group.add("<label class='bmd-label-floating' for='%s'>Node Type</label>" % select.get_id())
+            form_group.add(select)
 
             node_types = [
                 'manual',
@@ -3459,7 +3509,6 @@ class BaseInfoWdg(BaseRefreshWdg):
             select.set_option("values", node_types)
             select.set_option("labels", labels)
 
-            select.add_style("width: 100px")
             if node_type == "node":
                 select.set_value("manual")
             else:
@@ -3523,13 +3572,8 @@ class BaseInfoWdg(BaseRefreshWdg):
 
                 '''
             } )
-            select.add_style("position: relative")
-            select.add_style("z-index: 10")
 
-        div.add("<br clear='all'/>")
-        div.add("<hr/>")
-
-        return div
+        return title_wdg
 
 
 
@@ -3666,7 +3710,7 @@ class BaseInfoWdg(BaseRefreshWdg):
 
 
 class DefaultInfoWdg(BaseInfoWdg):
-
+    '''Process info panel for manual nodes.'''
 
 
     def get_display(self):
@@ -3704,86 +3748,34 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         search_type = pipeline.get_value("search_type")
 
-        top.add_style("padding: 20px 0px")
-        top.add_color("background", "background")
-        top.add_style("min-width: 300px")
-
-
-
         title_wdg = self.get_title_wdg(process, node_type)
         top.add( title_wdg )
 
-        # if not process_sobj:
-        #     msg = DivWdg()
-        #     top.add(msg)
-        #     msg.add("No process found.  Please save")
-        #     msg.add_style("margin: 30px auto")
-        #     msg.add_style("text-align: center")
-        #     msg.add_style("width: 80%")
-        #     msg.add_style("padding: 20px")
-        #     return top
-
-
-        info_div = DivWdg()
-        top.add(info_div)
-        info_div.add("A manual process is a process where work is done by a person.  The status of the process is determined by tasks added to this process which must be manually set to complete when finished")
-        info_div.add_style("margin: 10px 10px 20px 10px")
+        top.add("<p>A manual process is a process where work is done by a person.  The status of the process is determined by tasks added to this process which must be manually set to complete when finished<p>")
 
 
         desc_div = self.get_description_wdg()
         top.add(desc_div)
 
 
+        button = ActionButtonWdg(title="Task Setup", size="block")
+        top.add(button)
+        button.add_behavior( {
+            'type': 'click_up',
+            'kwargs': self.kwargs,
+            'cbjs_action': '''
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
-        #show error message if the node has not been registered
-        # if not process_sobj:
-        #     warning_div = DivWdg()
-        #     #width = 16 makes the icon smaller
-        #     warning_icon = IconWdg("Warning",IconWdg.WARNING, width=16)
-        #     warning_msg = "This process node has not been registered in the process table, please save your changes."
-
-        #     warning_div.add(warning_icon)
-        #     warning_div.add(warning_msg)
-        #     top.add(warning_div)
-        #     warning_div.add_style("padding: 20px 30px")
-        #     warning_div.add_style("font-size: 15px")
-
-        #     return top
-
-
-
-        has_tasks = True
-        if has_tasks:
-            div = DivWdg()
-            top.add(div)
-            div.add_style("padding: 10px")
-            div.add("<b>Task Setup</b><br/>")
-            div.add("Task options allow you to control various default properties of tasks.")
-
-            #process_key = process_sobj.get_search_key()
-
-            div.add("<br/>"*2)
-
-            button = ActionButtonWdg(title="Task Setup", size="block")
-            div.add(button)
-            button.add_class("btn-clock")
-            button.add_behavior( {
-                'type': 'click_up',
-                'kwargs': self.kwargs,
-                #'search_key': process_sobj.get_search_key(),
-                'cbjs_action': '''
-                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-                spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
-                var class_name = "tactic.ui.tools.PipelinePropertyWdg";
-                var popup = spt.panel.load_popup("Task Setup", class_name, bvr.kwargs);
+            var class_name = "tactic.ui.tools.PipelinePropertyWdg";
+            var popup = spt.panel.load_popup("Task Setup", class_name, bvr.kwargs);
                 popup.activator = bvr.src_el;
 
                 var nodes = spt.pipeline.get_selected_nodes();
                 var node = nodes[0];
                 //spt.pipeline_properties.show_properties2(popup, node);
                 '''
-            } )
+        } )
 
 
 
@@ -4457,29 +4449,25 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         inner.add(script_wdg)
 
 
-
-        inner.add("<br/>")
-
-
         # Execute mode
 
-        cmd_title = DivWdg("Execute Mode")
-        cmd_title.add_style('margin-bottom: 3px')
-        inner.add(cmd_title)
-
+        form_wdg = DivWdg()
+        inner.add(form_wdg)
+        form_wdg.add_class("form-group")
+ 
         execute_mode = self.kwargs.get("execute_mode")
-
+        
         cmd_text = SelectWdg(name="execute_mode")
         cmd_text.set_option("labels", "In Process|Blocking Separate Process|Non-Blocking Separate Process|Queued")
         cmd_text.set_option("values", "same process,same transaction|separate process,blocking|separate process,non-blocking|separate process,queued")
-        cmd_text.add_style("width: 100%")
         if execute_mode:
             cmd_text.set_value(execute_mode)
+        
+        cmd_text.set_unique_id()
+        form_wdg.add('<label class="bmd-label-floating" for="%s">Execute Mode</label>' % cmd_text.get_id())
+        form_wdg.add(cmd_text)
 
         self.add_session_behavior(cmd_text, "select", "spt_action_info_top", "execute_mode")
-
-        inner.add(cmd_text)
-
 
         if is_refresh:
             return inner
@@ -4965,7 +4953,6 @@ class ActionInfoWdg(BaseInfoWdg):
 
         top = self.top
         top.add_class('spt_action_info_top')
-        top.add_style("padding: 20px 0px")
         self.initialize_session_behavior(top)
 
 
@@ -4974,11 +4961,7 @@ class ActionInfoWdg(BaseInfoWdg):
 
 
 
-        info_div = DivWdg()
-        top.add(info_div)
-        info_div.add("A action process is a automated process which can execute a script or Python command when invoded from a previous process.")
-        info_div.add_style("margin: 10px 10px 20px 10px")
-
+        top.add("<p>A action process is an automated process which can execute a script or command when called from a previous process.</p>")
 
         desc_div = self.get_description_wdg()
         top.add(desc_div)
@@ -4991,26 +4974,31 @@ class ActionInfoWdg(BaseInfoWdg):
 
         form_wdg = DivWdg()
         top.add(form_wdg)
-        form_wdg.add_style("padding: 10px")
         form_wdg.add_class("spt_form_top")
+        form_wdg.add_class("form-group")
 
         is_admin = Environment.get_security().is_admin()
 
+        
+        select = SelectWdg("action")
+        select.set_unique_id()
+
         if node_type == "action":
-            form_wdg.add("<b>Action:</b><br/>")
-            form_wdg.add("This will be the automatically executed action for this process.")
+            label = '<label class="bmd-label-floating" for="%s">Action Source</label>' % select.get_id()
+            form_wdg.add(label)
+
+            help_text = "This will be the automatically executed action for this process."
+            form_wdg.add('<span class="bmd-help">%s</span>' % help_text)
 
         else:
-            form_wdg.add("<b>Check Condition</b><br/>")
-            form_wdg.add("This will be executed on the completion event of an input process.  The condition check should either return True or False or a list of the output streams.")
+            label = '<label class="bmd-label-floating" for="%s">Condition Source</label>' % select.get_id()
+            form_wdg.add(label)
+
+            help_text = "This will be executed on the completion event of an input process.  The condition check should either return True or False or a list of the output streams."
+            form_wdg.add('<span class="bmd-help">%s</span>' % help_text)
 
 
-        form_wdg.add("<br/>")
-        form_wdg.add("<br/>")
 
-
-
-        form_wdg.add("Select which action to take:")
         select_container = DivWdg()
         form_wdg.add(select_container)
         form_wdg.add_class("spt_section_top")
@@ -5063,7 +5051,6 @@ class ActionInfoWdg(BaseInfoWdg):
 
             ''')
 
-        select = SelectWdg("action")
         select_container.add(select)
         select.add_class("spt_action_select")
 
@@ -5085,7 +5072,6 @@ class ActionInfoWdg(BaseInfoWdg):
         select.set_option("values", options)
         if self.action:
             select.set_value(self.action)
-        form_wdg.add("<br/>")
 
         select.add_behavior( {
             'type': 'load',
@@ -5175,9 +5161,6 @@ class ActionInfoWdg(BaseInfoWdg):
             execute_mode=self.execute_mode
         )
         form_wdg.add(script_wdg)
-
-
-        form_wdg.add("<br clear='all'/>")
 
         return top
 
@@ -6469,94 +6452,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             '''
         } )
 
-        # settings_wdg.add(color_div)
-        # color_input = ColorInputWdg("color")
-        # color_input.add_behavior( {
-        #     'type': 'load',
-        #     'cbjs_action': '''
-
-        #     var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-        #     spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
-        #     var node = spt.pipeline.get_info_node();
-        #     var color = spt.pipeline.get_node_property(node, "color");
-        #     bvr.src_el.value = color;
-        #     bvr.src_el.setStyle("background", color);
-
-        #     '''
-        # } )
-
-        # color_input.add_behavior( {
-        #     'type': 'blur',
-        #     'cbjs_action': '''
-
-        #     var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-        #     spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-
-        #     var node = spt.pipeline.get_info_node();
-        #     var color = bvr.src_el.value;
-        #     spt.pipeline.set_node_property(node, "color", color);
-
-        #     spt.named_events.fire_event('pipeline|change', {});
-
-        #     '''
-        # } )
-        # color_input.set_value(color)
-        # settings_wdg.add(color_input)
-
-        settings_wdg.add("<br/>")
-
-        save_button = ActionButtonWdg(title="Save", color="primary")
-        #settings_wdg.add(save_button)
-        save_button.add_style("float: right")
-        save_button.add_style("padding-top: 3px")
-        save_button.add_behavior( {
-            'type': 'click_up',
-            'process': process,
-            'pipeline_code': pipeline_code,
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_status_top");
-            var values = spt.api.get_input_values(top, null, false);
-            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
-            var kwargs = values;
-            values['node_type'] = 'status';
-            values['process'] = bvr.process;
-            values['pipeline_code'] = bvr.pipeline_code;
-
-            // Update process sObject
-            var server = TacticServerStub.get();
-            server.execute_cmd( class_name, values);
-
-            // Update pipeline sObject xml
-            color = values['color'];
-            var node = spt.pipeline.get_selected_node();
-            if (!node) {
-                node = spt.pipeline.get_node_by_name(bvr.process);
-            }
-            node.properties['color'] = color;
-
-            var groups = spt.pipeline.get_groups();
-            for (group_name in groups) {
-                var xml = spt.pipeline.export_group(group_name);
-                var search_key = server.build_search_key("sthpw/pipeline", group_name);
-                try {
-                    // Refresh the canvas to display new color.
-                    spt.pipeline.remove_group(group_name);
-                    spt.pipeline.unselect_all_nodes();
-                    results = server.insert_update(search_key, {'pipeline': xml});
-                } catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-                spt.pipeline.import_pipeline(group_name);
-            }
-
-
-            '''
-        } )
-
-
-
-
         return top
 
 
@@ -7648,60 +7543,127 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
     def get_buttons_wdg(self, show_gear):
-        from pyasm.widget import IconWdg
-        from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 
-        button_row = ButtonRowWdg(show_title=True)
-        button_row.add_style("margin-left: 16px;")
+
+        button_row = DivWdg()
 
         project_code = Project.get_project_code()
 
 
-        button = ButtonNewWdg(title="Toggle workflow list mode", icon="FA_LIST_UL")
-        #button_row.add(button)
-        button.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
+        if self.kwargs.get("show_wrench") not in [False, "false"]:
+            button = ButtonNewWdg(title="Add node", icon="FA_WRENCH", sub_icon="FA_PLUS")
+            button_row.add(button)
 
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var left = top.getElement(".spt_pipeline_tool_left");
-            var content = left.getElement(".spt_pipeline_tool_left_content");
-
-            if (content.getAttribute("mode") == "list") {
-                content.setAttribute("mode", "document");
-                spt.panel.load(content, 'tactic.ui.tools.PipelineDocumentWdg');
-            } else if (content.getAttribute("mode") == "document") {
-                content.setAttribute("mode", "list");
-                spt.panel.load(content, 'tactic.ui.tools.PipelineListWdg', content.list_kwargs);
-            }
-
-            '''
-
-            })
+            button.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+                    spt.process_tool.toggle_side_bar(bvr.src_el);
+                '''
+            } )
 
 
+        if self.kwargs.get("show_save") not in [False, "false"]:
+            button = self.get_save_button()
+            button_row.add(button) 
+	
 
-        button = ButtonNewWdg(title="Add node", icon="FA_WRENCH", sub_icon="FA_PLUS")
+
+        expr = "@GET(sthpw/pipeline['code','like','%/__TEMPLATE__'].config/process.process)"
+        processes = Search.eval(expr)
+        processes.sort()
+
+
+
+        button = IconButtonNewWdg(title="Delete Selected", icon="FA_TRASH")
         button_row.add(button)
 
-        button.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
-            spt.process_tool.toggle_side_bar(bvr.src_el);
-            '''
+        button.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+        // Add edited flag
+        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
+        editor_top.addClass("spt_has_changes");
+
+        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
+        spt.pipeline.init_cbk(wrapper);
+
+
+        var nodes = spt.pipeline.get_selected_nodes();
+
+        spt.pipeline.remove_nodes(nodes);
+
+        // this targets connectors only
+        spt.pipeline.delete_selected();
+
+        '''
         } )
 
 
 
 
 
-        button = ButtonNewWdg(title="Save Current Workflow", icon="FA_SAVE")
+
+        if show_gear not in ['false', False]:
+            button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
+            button_row.add(button)
+
+            tab = PipelineTabWdg()
+            menu = tab.get_extra_tab_menu()
+
+            menus = [menu.get_data()]
+            SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
+            SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
+
+
+        button = IconButtonNewWdg(title="Show workflow info", icon="FA_INFO")
         button_row.add(button)
+        button.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            var info = toolTop.getElement(".spt_pipeline_tool_info");
+
+            if (!info) return;
+
+            var nodes = spt.pipeline.get_all_nodes();
+            for (var i=0; i<nodes.length; i++) {
+                var node = nodes[i];
+                spt.pipeline.unselect_node(node);
+            }
+
+            var group_name = spt.pipeline.get_current_group();
+
+            var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+            var kwargs = {
+                pipeline_code: group_name,
+            }
+
+            var callback = function() {
+                spt.named_events.fire_event('pipeline|show_info', {});
+            }
+            spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
+
+
+            '''
+
+            })
+
+        button_row.add_class("d-flex")
+
+        return button_row
+
+    def get_save_button(self):
+        
+        project_code = Project.get_project_code()
+        
+        button = ButtonNewWdg(title="Save Current Workflow", icon="FA_SAVE")
 
         button.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
-        spt.named_events.fire_event('pipeline|save_button', bvr );
+            spt.named_events.fire_event('pipeline|save_button', bvr );
         '''
         } )
 
@@ -7845,438 +7807,15 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         icon.add_named_listener('pipeline|save', unglow_action)
 
-
-
-        # DEPRECATED: never really used
-        #button.set_show_arrow_menu(True)
-        menu = Menu(width=200)
-
-
-        menu_item = MenuItem(type='action', label='Save as Site Wide Workflow')
-        menu.add(menu_item)
-        # no project code here
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-
-            spt.alert('This feature is disabled. Saving project-specific Workflow using the disk button is preferred.');
-
-
-        /*
-        var act = spt.smenu.get_activator(bvr);
-
-
-
-        var editor_top = act.getParent(".spt_pipeline_editor_top");
-
-        editor_top.removeClass("spt_has_changes");
-        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-
-        spt.pipeline.init_cbk(wrapper);
-
-        var group_name = spt.pipeline.get_current_group();
-        if (group_name == 'default') {
-            var xml = spt.pipeline.export_group(group_name);
-
-           var class_name = 'tactic.ui.panel.EditWdg';
-            var kwargs = {
-                search_type: 'sthpw/pipeline',
-                view: 'insert',
-                show_header: false,
-                single: true,
-                default: {
-                    pipeline: xml
-                }
-            }
-            spt.api.load_popup("Add New Workflow", class_name, kwargs);
-        }
-        else {
-            var data = spt.pipeline.get_data();
-            var color = data.colors[group_name];
-
-            server = TacticServerStub.get();
-            spt.app_busy.show("Saving pipeline ["+group_name+"]",null);
-
-            var xml = spt.pipeline.export_group(group_name);
-            var search_key = server.build_search_key("sthpw/pipeline", group_name);
-            try {
-                var args = {search_key: search_key, pipeline:xml, color:color, project_code: '__SITE_WIDE__'};
-                server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
-            } catch(e) {
-                spt.alert(spt.exception.handler(e));
-            }
-            spt.named_events.fire_event('pipeline|save', {});
-        }
-        spt.app_busy.hide();
-        */
-        '''
-        } )
-
-        menu_item = MenuItem(type='action', label='Save All Workflows')
-        menu.add(menu_item)
-        # no project code here
-        menu_item.add_behavior( {
-            'cbjs_action': '''
-
-            var cancel = null;
-            var ok = function() {
-            var act = spt.smenu.get_activator(bvr);
-
-            var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-            editor_top.removeClass("spt_has_changes");
-            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-
-            spt.pipeline.init_cbk(wrapper);
-
-            server = TacticServerStub.get();
-            var groups = spt.pipeline.get_groups();
-
-            for (group_name in groups) {
-                var data = spt.pipeline.get_data();
-                var color = data.colors[group_name];
-
-                server = TacticServerStub.get();
-                spt.app_busy.show("Saving All Workflows ["+group_name+"]",null);
-                var xml = spt.pipeline.export_group(group_name);
-                var search_key = server.build_search_key("sthpw/pipeline", group_name);
-                try {
-                    var args = {search_key: search_key, pipeline:xml, color:color};
-                    server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
-                } catch(e) {
-                    spt.alert(spt.exception.handler(e));
-                }
-            }
-            spt.app_busy.hide();
-            }
-            spt.confirm("Saving all workflows does not make new workflows project specific. Continue?", ok, cancel );
-        '''
-        } )
-
-        menus = [menu.get_data()]
-        SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
-        SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
-
-
-        version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled") != "false"
-
-        button = ButtonNewWdg(title="Add Process", icon="FA_PLUS")
-        #button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'version_2_enabled': version_2_enabled,
-        'cbjs_action': '''
-
-        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-        var node = spt.pipeline.add_node();
-        // BACKWARDS COMPATIBILITY
-        if (bvr.version_2_enabled)
-            spt.pipeline.set_node_kwarg(node, "version", 2);
-
-        // Add edited flag
-        spt.named_events.fire_event('pipeline|change', {});
-
-        '''
-        } )
-
-
-
-        button.set_show_arrow_menu(True)
-        menu = Menu(width=200)
-
-
-        menu_item = MenuItem(type='action', label='Add Action')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'version_2_enabled': version_2_enabled,
-            'cbjs_action': '''
-            var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
-            spt.pipeline.init_cbk(wrapper);
-            var node = spt.pipeline.add_node(null, null, null, {node_type: 'action'});
-            // BACKWARDS COMPATIBILITY
-            if (bvr.version_2_enabled)
-                spt.pipeline.set_node_kwarg(node, "version", 2);
-
-            top.addClass("spt_has_changes");
-            '''
-        } )
-
-        menu_item = MenuItem(type='action', label='Add Condition')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'version_2_enabled': version_2_enabled,
-            'cbjs_action': '''
-            var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
-            spt.pipeline.init_cbk(wrapper);
-            var node = spt.pipeline.add_node(null, null, null, {node_type: 'condition'});
-            // BACKWARDS COMPATIBILITY
-            if (bvr.version_2_enabled)
-                spt.pipeline.set_node_kwarg(node, "version", 2);
-
-            top.addClass("spt_has_changes");
-            '''
-        } )
-
-
-        menu_item = MenuItem(type='action', label='Add Approval')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'version_2_enabled': version_2_enabled,
-            'cbjs_action': '''
-            var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
-            spt.pipeline.init_cbk(wrapper);
-            var node = spt.pipeline.add_node(null, null, null, {node_type: 'approval'});
-            // BACKWARDS COMPATIBILITY
-            if (bvr.version_2_enabled)
-                spt.pipeline.set_node_kwarg(node, "version", 2);
-
-            top.addClass("spt_has_changes");
-            '''
-        } )
-
-
-
-        menu_item = MenuItem(type='action', label='Add Sub-workflow')
-        menu.add(menu_item)
-        menu_item.add_behavior( {
-            'version_2_enabled': version_2_enabled,
-            'cbjs_action': '''
-            var act = spt.smenu.get_activator(bvr);
-            var top = act.getParent(".spt_pipeline_editor_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
-            spt.pipeline.init_cbk(wrapper);
-            var node = spt.pipeline.add_node(null, null, null, {node_type: 'hierarchy'});
-            // BACKWARDS COMPATIBILITY
-            if (bvr.version_2_enabled)
-                spt.pipeline.set_node_kwarg(node, "version", 2);
-
-            top.addClass("spt_has_changes");
-            '''
-        } )
-
-
-
-        menu_item = MenuItem(type='separator')
-        menu.add(menu_item)
-
-        expr = "@GET(sthpw/pipeline['code','like','%/__TEMPLATE__'].config/process.process)"
-        processes = Search.eval(expr)
-        processes.sort()
-
-
-
-        #processes = [x.get("process") for x in process_sobjs]
-        for process in processes:
-            menu_item = MenuItem(type='action', label='Add "%s"' % process)
-            menu.add(menu_item)
-            menu_item.add_behavior( {
-            'process': process,
-            'version_2_enabled': version_2_enabled,
-            'cbjs_action': '''
-            var act = spt.smenu.get_activator(bvr);
-            // Add edited flag
-            var editor_top = act.getParent(".spt_pipeline_editor_top");
-            editor_top.addClass("spt_has_changes");
-
-            var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-            spt.pipeline.init_cbk(wrapper);
-
-            var process = bvr.process;
-            var node = spt.pipeline.add_node(process);
-            // BACKWARDS COMPATIBILITY
-            if (bvr.version_2_enabled)
-                spt.pipeline.set_node_kwarg(node, "version", 2);
-
-            top.addClass("spt_has_changes");
-
-
-            '''
-            } )
-
-        menus = [menu.get_data()]
-        SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
-        SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
-
-
-
-        button = ButtonNewWdg(title="Show Notifications", icon="BS_ENVELOPE")
-        #button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-
-        spt.pipeline.load_triggers();
-
-        editor_top.addClass("spt_has_changes");
-        '''
-        } )
-
-
-
-
-
-
-        button = ButtonNewWdg(title="Delete Selected", icon="FA_TRASH")
-        button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        // Add edited flag
-        var editor_top = bvr.src_el.getParent(".spt_pipeline_editor_top");
-        editor_top.addClass("spt_has_changes");
-
-        var wrapper = editor_top.getElement(".spt_pipeline_wrapper");
-        spt.pipeline.init_cbk(wrapper);
-
-
-        var nodes = spt.pipeline.get_selected_nodes();
-
-        spt.pipeline.remove_nodes(nodes);
-
-        // this targets connectors only
-        spt.pipeline.delete_selected();
-
-        '''
-        } )
-
-
-
-
-
-
-        if show_gear not in ['false', False]:
-            button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
-            button_row.add(button)
-
-            menu = Menu(width=200)
-
-            menu_item = MenuItem(type='action', label='TEST')
-            menu.add(menu_item)
-            # no project code here
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                alert("test");
-                '''
-            } )
-
-
-            tab = PipelineTabWdg()
-            menu = tab.get_extra_tab_menu()
-
-            menus = [menu.get_data()]
-            SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'DG_BUTTON_CTX': menus } )
-            SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
-
-
-        button = ButtonNewWdg(title="Show workflow info", icon="FA_INFO")
-        button_row.add(button)
-        button.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
-
-            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-            var info = toolTop.getElement(".spt_pipeline_tool_info");
-
-            if (!info) return;
-
-            var nodes = spt.pipeline.get_all_nodes();
-            for (var i=0; i<nodes.length; i++) {
-                var node = nodes[i];
-                spt.pipeline.unselect_node(node);
-            }
-
-            var group_name = spt.pipeline.get_current_group();
-
-            var class_name = 'tactic.ui.tools.PipelineInfoWdg';
-            var kwargs = {
-                pipeline_code: group_name,
-            }
-
-            var callback = function() {
-                spt.named_events.fire_event('pipeline|show_info', {});
-            }
-            spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
-
-
-            '''
-
-            })
-
-
-
-        """
-        button = ButtonNewWdg(title="Show Process Types", icon="FA_INFO")
-        button_row.add(button)
-        button.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.tools.PipelineProcessTypeWdg';
-            var kwargs = {
-
-            };
-            spt.panel.load_popup("Process Types", class_name, kwargs);
-            '''
-        } )
-        """
-
-        # hide this for now
-        button = ButtonNewWdg(title="Default app template", icon="FA_FILE")
-        #button_row.add(button)
-
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-
-        var right = bvr.src_el.getParent(".spt_pipeline_tool_right");
-        var el = right.getElement(".spt_app_template_input_container");
-
-        var position_args = {
-            position: 'upperleft',
-            relativeTo: bvr.src_el,
-            offset: {
-                y:40
-            }
-        }
-        el.position(position_args);
-
-        spt.show(el);
-        spt.body.add_focus_element(el);
-
-        '''
-        } )
-
-
-
-
-        return button_row
-
+        return button
 
     def get_zoom_buttons_wdg(self):
-        from pyasm.widget import IconWdg
-        from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg, IconButtonWdg, SingleButtonWdg
 
         button_row = DivWdg()
-        #button_row.add_border()
-        #button_row.set_round_corners(5)
-        button_row.add_style("padding: 3px 10px 3px 5px")
-        button_row.add_style("padding: 6px 10px 0px 5px")
-        button_row.add_style("overflow: hidden")
+        button_row.add_class("d-flex")
 
-
-        button = SingleButtonWdg(title="Undo", icon="FA_UNDO", show_out=False)
+        button = IconButtonNewWdg(title="Undo", icon="FA_UNDO", show_out=False)
         button_row.add(button)
-        button.add_style("float: left")
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -8285,9 +7824,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Redo", icon="FA_REPEAT", show_out=False)
+        button = IconButtonNewWdg(title="Redo", icon="FA_REPEAT", show_out=False)
         button_row.add(button)
-        button.add_style("float: left")
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -8295,9 +7833,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
 
-        button = SingleButtonWdg(title="Zoom In", icon="FA_SEARCH_PLUS", show_out=False)
+        button = IconButtonNewWdg(title="Zoom In", icon="FA_SEARCH_PLUS", show_out=False)
         button_row.add(button)
-        button.add_style("float: left")
         button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -8313,9 +7850,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Zoom Out", icon="FA_SEARCH_MINUS", show_out=False)
+        button = IconButtonNewWdg(title="Zoom Out", icon="FA_SEARCH_MINUS", show_out=False)
         button_row.add(button)
-        button.add_style("float: left")
 
         button.add_behavior( {
         'type': 'click_up',
@@ -8331,14 +7867,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
         select = SelectWdg("zoom")
-        select.add_style("width: 85px")
-        select.add_style("margin-top: -3px")
-        select.add_style("height: 26px")
+        select.add_class("form-control")
         select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit To Canvas"])
         select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_canvas"])
         select.add_empty_option("Zoom")
         button_row.add(select)
-        #select.set_value("1.0")
         select.add_behavior( {
         'type': 'change',
         'cbjs_action': '''
@@ -8370,8 +7903,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
     def get_schema_buttons_wdg(self):
-        from pyasm.widget import IconWdg
-        from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg, SingleButtonWdg
 
         button_row = DivWdg()
         button_row.add_style("padding-top: 5px")
@@ -8939,7 +8470,13 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
         # The search needed for the login_group select widgets
-        login_group_search = Search('sthpw/login_group')
+       
+        from pyasm.security import Sudo
+        sudo = Sudo()
+        try:
+            login_group_search = Search('sthpw/login_group')
+        finally:
+            sudo.exit()
 
         # assigned_group
         table.add_row()

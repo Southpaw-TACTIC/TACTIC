@@ -159,7 +159,7 @@ class TextInputWdg(BaseInputWdg):
         else:
             self.readonly = False
             bgcolor = self.kwargs.get("background") or self.text.get_color("background")
-            self.text.add_style("background", bgcolor)
+            #self.text.add_style("background", bgcolor)
 
         self.icon_wdg = SpanWdg()
 
@@ -280,6 +280,7 @@ class TextInputWdg(BaseInputWdg):
 
 
     def add_style(self, name, value=None):
+        
         if not name:
             return
 
