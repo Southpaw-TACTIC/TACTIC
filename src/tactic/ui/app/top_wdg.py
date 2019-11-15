@@ -1089,8 +1089,7 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
 
         # first load context css
-        if not self._use_bootstrap():
-            Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
+        Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
 
 

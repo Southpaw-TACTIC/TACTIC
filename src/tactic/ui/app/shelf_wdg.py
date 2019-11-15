@@ -975,37 +975,38 @@ class AceEditorWdg(BaseRefreshWdg):
         self.text_area.add_style("height: %s" % height)
 
 
+        show_bottom = self.kwargs.get("show_bottom")
+        if show_bottom == None:
+            show_bottom = True
+        if show_bottom in [True, "true"]:
+            bottom_div = DivWdg()
+            top.add(bottom_div)
+            bottom_div.add_color("background", "background3")
+            bottom_div.add_border()
+            bottom_div.add_style("text-align: center")
+            bottom_div.add_style("padding: 2px")
+            bottom_div.add_style("height: 20px")
 
-        bottom_div = DivWdg()
-        top.add(bottom_div)
-        bottom_div.add_color("background", "background3")
-        bottom_div.add_border()
-        bottom_div.add_style("text-align: center")
-        bottom_div.add_style("padding: 2px")
-        bottom_div.add_style("height: 20px")
+            bottom_title = "Script Editor"
+            bottom_div.add(bottom_title)
 
-        bottom_title = "Script Editor"
-        bottom_div.add(bottom_title)
+            icon = IconWdg("Resize Editor", IconWdg.RESIZE_CORNER)
+            bottom_div.add(icon)
+            icon.add_style("float: right")
+            icon.add_style("margin-right: -4px")
+            icon.add_style("cursor: se-resize")
+            icon.add_behavior( {
+                'type': 'drag',
+                "cb_set_prefix": 'spt.ace_editor.drag_resize',
+            } )
 
-        icon = IconWdg("Resize Editor", IconWdg.RESIZE_CORNER)
-        bottom_div.add(icon)
-        icon.add_style("float: right")
-        icon.add_style("margin-right: -4px")
-        icon.add_style("cursor: se-resize")
-        icon.add_behavior( {
-            'type': 'drag',
-            "cb_set_prefix": 'spt.ace_editor.drag_resize',
-        } )
-
-
-        #hidden = HiddenWdg("size")
-        hidden = TextWdg("size")
-        bottom_div.add(hidden)
-        hidden.add_style("width: 85px")
-        hidden.add_style("text-align: center")
-        hidden.add_style("float: right")
-        hidden.add_class("spt_size")
-        hidden.set_value("%s,%s" % (width, height))
+            hidden = TextWdg("size")
+            bottom_div.add(hidden)
+            hidden.add_style("width: 85px")
+            hidden.add_style("text-align: center")
+            hidden.add_style("float: right")
+            hidden.add_class("spt_size")
+            hidden.set_value("%s,%s" % (width, height))
 
         theme = top.get_theme()
         if theme == 'dark':
@@ -1227,7 +1228,7 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
    
 
     var ace_setup =  function() {
-        var editor = ace.edit(bvr.unique_id);
+        var editor = ace.edit(bvr.unique_id, {'minLines': 10});
         spt.ace_editor.editor = editor;
 
         // put the editor into the dom
@@ -1248,8 +1249,8 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
 
      var js_files = [
-        "/context/spt_js/ace/ace-1.2.3/src/ace.js",
-        //"ace/ace-1.2.3/src/ace-uncompressed.js",
+        "/context/spt_js/ace/ace-1.4.7/src/ace.js",
+        //"ace/ace-1.4.7/src/ace-uncompressed.js",
     ];
 
    
@@ -1260,17 +1261,17 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         ace; require; define; 
 
         var core_js_files = [
-            "/context/spt_js/ace/ace-1.2.3/src/mode-javascript.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-xml.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-python.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-html.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-css.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-twilight.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-textmate.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-vibrant_ink.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-merbivore.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-clouds.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-eclipse.js"
+            "/context/spt_js/ace/ace-1.4.7/src/mode-javascript.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-xml.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-python.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-html.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-css.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-twilight.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-textmate.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-vibrant_ink.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-merbivore.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-clouds.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-eclipse.js"
         ];
         
         //require(core_js_files, ace_setup);
@@ -1288,7 +1289,7 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
 }
 else {
-    var editor = ace.edit(bvr.unique_id);
+    var editor = ace.edit(bvr.unique_id, {'minLines': 10});
     editor.setTheme("ace/theme/" +  bvr.theme);
     var JavaScriptMode = require("ace/mode/javascript").Mode;
    

@@ -2187,7 +2187,7 @@ class WebLoginWdg2(BaseSignInWdg):
             else:
                 admin_login = SearchType.create('sthpw/login')
                 admin_login.set_value('login','admin')
-                admin_login.commit()
+                #admin_login.commit()
                 change_admin = True
                 # recreate the admin_login
                 

@@ -37,6 +37,7 @@ from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg, Ic
 from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 from tactic.ui.input import TextInputWdg, ColorInputWdg, LookAheadTextInputWdg, ColorContainerWdg
 from tactic.ui.panel import DocumentWdg, DocumentItemWdg, DocumentSaveCmd
+from tactic.ui.app import AceEditorWdg
 
 from client.tactic_client_lib import TacticServerStub
 
@@ -810,8 +811,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 })
 
 
-	    pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
-	    pipeline_list_content.add_attr("mode", "document")
+            pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
+            pipeline_list_content.add_attr("mode", "document")
             
             # By default, show pipeline document    
             #pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression, window_resize_offset=window_resize_offset )
@@ -822,15 +823,19 @@ class PipelineToolWdg(BaseRefreshWdg):
             process_type_widget.add_class("spt_pipeline_nodes")
             left.add(process_type_widget)
                 
-            if self.kwargs.get("left_sidebar_default") == "pipelines":
-                process_type_widget.add_style("display: none")
 
-                toolbar_icons.add_class("selected")
+            sidebar_default = self.kwargs.get("left_sidebar_default")
+            if not sidebar_default:
+                sidebar_default == "pipelines"
             
-            elif self.kwargs.get("left_sidebar_default") in [None, "nodes"]:
+            if sidebar_default == "nodes":
                 pipeline_list_top.add_style("display", "none")
 
                 type_search.add_class("selected")
+            else:
+                process_type_widget.add_style("display: none")
+
+                toolbar_icons.add_class("selected")
             
 
 
@@ -4107,13 +4112,9 @@ class ScriptEditWdg(BaseRefreshWdg):
             script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
 
         script_path_div = DivWdg()
-        script_path_div.add_style("width: 100%")
-        script_path_div.add_style("height: 60px")
-        script_path_div.add_style("margin-top: 10px")
         div.add(script_path_div)
-        run_title = DivWdg("Script Path (Folder / Title):")
-        run_title.add_style('margin-bottom: 3px')
-        script_path_div.add(run_title)
+        script_path_div.add_class("form-group")
+        script_path_div.add('<label class="bmd-label-floating">Script path</label>')
         #script_path_div.add()
         filters = ""
 
@@ -4124,6 +4125,7 @@ class ScriptEditWdg(BaseRefreshWdg):
 
         if not is_admin:
             filters = '[["language","server_js"]]'
+        
         script_path_folder_text = LookAheadTextInputWdg(name="script_path_folder", search_type="config/custom_script", column="folder", filters=filters)
         script_path_folder_text.add_class("spt_script_path_folder")
         script_path_div.add(script_path_folder_text)
@@ -4477,23 +4479,21 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
 
     def get_command_script_wdg(self, on_action_class):
-        cmd_div = DivWdg()
-        cmd_div.add_style('margin-bottom: 20px')
-        cmd_div.add_style('margin-top: 20px')
 
-        cmd_title = DivWdg("Python Command Class (eg: tactic.command.MyCommand)")
-        cmd_title.add_style('margin-bottom: 3px')
-        cmd_div.add(cmd_title)
+        form_wdg = DivWdg()
+        form_wdg.add_class("form-group")
+
+        form_wdg.add('<label class="bmd-label-floating">Python Command Class</label>')
 
         cmd_text = TextInputWdg(name="on_action_class")
-        cmd_text.add_style("width: 100%")
         if on_action_class:
             cmd_text.set_value(on_action_class)
 
+        form_wdg.add(cmd_text)
+
         self.add_session_behavior(cmd_text, "text", "spt_action_info_top", "on_action_class")
 
-        cmd_div.add(cmd_text)
-        return cmd_div
+        return form_wdg
 
 
 
@@ -4512,23 +4512,16 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         if script_path:
             script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
 
+        script_path_form = DivWdg()
+        div.add(script_path_form)
+        script_path_form.add_class("form-group")
+        
         script_path_div = DivWdg()
-        div.add(script_path_div)
-        script_path_div.add_style("width: 100%")
-        script_path_div.add_style("margin-top: 20px")
-        script_path_div.add_style("margin-bottom: 20px")
+        script_path_form.add('<label class="bmd-label-floating">Script Path</label>')
+        script_path_form.add(script_path_div)
+        script_path_div.add_class("input-group")
 
-
-        if not is_admin:
-            script_path_div.add_style("display: none")
-
-
-        run_title = DivWdg("Script Path (Folder / Title):")
-        run_title.add_style('margin-bottom: 3px')
-        script_path_div.add(run_title)
-        #script_path_div.add()
         filters = ""
-
 
         if not is_admin:
             filters = '[["language","server_js"]]'
@@ -4674,20 +4667,20 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         } )
 
         if language == "python":
-            div.add("Language: <b class='spt_script_language'>Python</b>")
+            div.add("<p>Language: <b class='spt_script_language'>Python</b></p>")
         else:
-            div.add("Language: <b class='spt_script_language'>Server Javascript</b>")
+            div.add("<p>Language: <b class='spt_script_language'>Server Javascript</b></p>")
 
-        #if script_path:
-
-        script_editor = DivWdg()
-        div.add(script_editor)
-        script_editor.add_class("spt_script_editor")
 
         edit_label = "Click to enable Edit"
 
         enable_edit_button = DivWdg()
+        
+        script_editor = DivWdg()
+        div.add(script_editor)
+        script_editor.add_class("spt_script_editor")
         script_editor.add(enable_edit_button)
+        
         enable_edit_button.add(edit_label)
         enable_edit_button.add_class("hand")
         enable_edit_button.add_style("text-decoration: underline")
@@ -4703,7 +4696,9 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             '''
         } )
 
-
+ 
+        ###############################################################
+        
         script_text = TextAreaWdg("script")
         script_text.add_style('padding-top: 10px')
         script_text.add_style('margin-top: 10px')
@@ -4712,17 +4707,18 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_text.add_style("background", "#EEE")
         script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
+        script_editor.add_style("display", "none")
         script_editor.add(script_text)
-
+        
         if script_obj:
             script = script_obj.get_value("script")
             script_text.set_value(script)
         else:
             script_editor.add_style("display: none")
-
+        
         script_text.add_style("height: 300px")
         script_text.add_style("width: 100%")
-
+        
         self.add_session_behavior(script_text, "text", "spt_action_info_top", "script")
         script_editor.add_behavior({
             'type': 'load',
@@ -4743,6 +4739,33 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
             '''
             })
+ 
+        # TO be removed 
+        #################################################################
+
+        script = None
+        if script_obj:
+            script = script_obj.get_value("script")
+        
+        script_ace_editor = AceEditorWdg(
+            width="100%", 
+            language="javascript", 
+            code=script, 
+            show_options=False, 
+            editor_id='custom_layout_behavior',
+            dynamic_height=True,
+            show_bottom=False
+        )
+        
+        if not script:
+            script_ace_editor.add_style("display", "none")
+
+        script_ace_editor.add_class("form-group")
+
+        div.add(script_ace_editor)
+
+
+
 
 
         return div
@@ -4754,33 +4777,26 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         div = DivWdg()
 
 
-        if is_admin:
-            div.add("Language:")
+        if is_admin: 
+            form_wdg = DivWdg()
+            div.add(form_wdg)
+            form_wdg.add_class("form-group")
+
             select = SelectWdg("language")
-            div.add(select)
             select.set_option("labels", "Python|Server Javascript")
             select.set_option("values", "python|server_js")
+            select.set_unique_id()
+
+            form_wdg.add('<label class="bmd-label-floating" for="%s">Lanuage</label>' % select.get_id())
+            form_wdg.add(select)
 
             self.add_session_behavior(select, "select", "spt_action_info_top", "language")
-
         else:
-            div.add("Language: <b>Server Javascript</b>")
+            div.add("<p>Language: <b class='spt_script_language'>Server Javascript</b></p>")
 
 
-            div.add("<br/>")
-            div.add("<br/>")
-            div.add("<br/>")
-
-
-
-
-        run_title = DivWdg("Enter new script_code")
-        run_title.add_style('margin-bottom: 3px')
-        run_title.add_style('margin-top: 10px')
-        div.add(run_title)
-
-
-
+        ########################################
+        # REMOVE
         script_text = TextAreaWdg("script")
         script_text.add_style('padding-top: 10px')
         script_text.add_class("form-control")
@@ -4791,7 +4807,26 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
         self.add_session_behavior(script_text, "text", "spt_action_info_top", "script")
 
+        script_text.add_style("display", "none")
         div.add(script_text)
+        ####################################
+
+        code = ("// Enter script here\n"
+        "var server = TACTIC.get();")
+
+        script_ace_editor = AceEditorWdg(
+            width="100%", 
+            language="javascript", 
+            code=code,
+            show_options=False, 
+            editor_id='custom_layout_behavior',
+            dynamic_height=True,
+            show_bottom=False
+        )
+        
+        script_ace_editor.add_class("form-group")
+
+        div.add(script_ace_editor)
 
         return div
 
@@ -4966,48 +5001,42 @@ class ActionInfoWdg(BaseInfoWdg):
         desc_div = self.get_description_wdg()
         top.add(desc_div)
 
-
-
-        #input_output_wdg = self.get_input_output_wdg(pipeline, process)
-        #top.add(input_output_wdg)
-
+        form_top = DivWdg()
+        form_top.add_class("spt_form_top")
+        top.add(form_top)
+        
 
         form_wdg = DivWdg()
-        top.add(form_wdg)
-        form_wdg.add_class("spt_form_top")
+        form_top.add(form_wdg)
+        form_wdg.add_class("spt_section_top")
         form_wdg.add_class("form-group")
 
-        is_admin = Environment.get_security().is_admin()
 
         
         select = SelectWdg("action")
+        select.add_class("spt_action_select")
         select.set_unique_id()
 
         if node_type == "action":
             label = '<label class="bmd-label-floating" for="%s">Action Source</label>' % select.get_id()
             form_wdg.add(label)
-
+            form_wdg.add(select)
             help_text = "This will be the automatically executed action for this process."
             form_wdg.add('<span class="bmd-help">%s</span>' % help_text)
 
         else:
             label = '<label class="bmd-label-floating" for="%s">Condition Source</label>' % select.get_id()
             form_wdg.add(label)
-
+            form_wdg.add(select)
             help_text = "This will be executed on the completion event of an input process.  The condition check should either return True or False or a list of the output streams."
             form_wdg.add('<span class="bmd-help">%s</span>' % help_text)
 
 
 
-        select_container = DivWdg()
-        form_wdg.add(select_container)
-        form_wdg.add_class("spt_section_top")
-
-        SessionalProcess.add_relay_session_behavior(select_container, post_processing='''
-
+        SessionalProcess.add_relay_session_behavior(form_wdg, post_processing='''
+ 
             var top = bvr.src_el.getParent(".spt_form_top");
             var script_el = top.getElement(".spt_script_edit");
-
             var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
@@ -5046,13 +5075,11 @@ class ActionInfoWdg(BaseInfoWdg):
             }
 
             spt.pipeline.add_node_on_save(node, "script", on_save);
-
+            
             spt.panel.refresh_element(script_el, {action: value});
 
-            ''')
+        ''')
 
-        select_container.add(select)
-        select.add_class("spt_action_select")
 
 
         options = []
@@ -5064,6 +5091,7 @@ class ActionInfoWdg(BaseInfoWdg):
         labels.append("Create New Script")
         options.append("create_new")
 
+        is_admin = Environment.get_security().is_admin()
         if is_admin:
             labels.append("Use Python Command Class")
             options.append("command")
@@ -5126,10 +5154,9 @@ class ActionInfoWdg(BaseInfoWdg):
             spt.pipeline.add_node_on_save(node, "script", on_save);
 
             spt.panel.refresh_element(script_el, {action: bvr.src_el.value});
-            '''
-            })
+        '''})
 
-        select_container.add_relay_behavior( {
+        form_wdg.add_relay_behavior( {
             'type': 'change',
             'bvr_match_class': 'spt_action_select',
             'cbjs_action': '''
@@ -5160,7 +5187,7 @@ class ActionInfoWdg(BaseInfoWdg):
             language=self.language,
             execute_mode=self.execute_mode
         )
-        form_wdg.add(script_wdg)
+        form_top.add(script_wdg)
 
         return top
 
