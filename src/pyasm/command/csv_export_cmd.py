@@ -19,6 +19,7 @@ from pyasm.common import Common
 from pyasm.search import SObjectFactory, SearchType, Search, SearchKey
 
 from .command import *
+import six
 
 
 class CsvExportCmd(Command):
