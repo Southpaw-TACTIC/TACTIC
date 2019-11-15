@@ -124,6 +124,7 @@ class ResizableTableWdg(BaseRefreshWdg):
             icon = IconWdg("Drag to Resize", IconWdg.RESIZE_VERTICAL)
             td.add(icon)
             td.add_style("text-align: center")
+            td.add_style("padding-left: 1px")
 
         content_tr = self.table.add_row()
 

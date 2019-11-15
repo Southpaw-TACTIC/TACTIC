@@ -13,7 +13,7 @@
 
 __all__ = ["BaseChartWdg", "SObjectChartWdg", "CalendarChartWdg"]
 
-from pyasm.common import Environment, Common, jsonloads, jsondumps
+from pyasm.common import Environment, Common, jsonloads, jsondumps, SPTDate
 from pyasm.biz import Project
 from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Table
 from pyasm.widget import SelectWdg, TextWdg, TextAreaWdg
@@ -144,9 +144,9 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
-        self.search_type = web.get_form_value("search_type")
-        if not self.search_type:
-            self.search_type = self.kwargs.get("search_type")
+        #self.search_type = web.get_form_value("search_type")
+        #if not self.search_type:
+        self.search_type = self.kwargs.get("search_type")
 
         self.search_keys = self.kwargs.get("search_keys")
 
@@ -226,7 +226,10 @@ class SObjectChartWdg(BaseChartWdg):
                 expr = element.strip("{}")
                 value = Search.eval(expr, sobject, single=True)
                 labels.append(element)
-
+            elif element.startswith("@"):
+                expr = element
+                value = Search.eval(expr, sobject, single=True)
+                labels.append(element)
             else:
 
                 options = self.config.get_display_options(element)
@@ -332,9 +335,11 @@ class SObjectChartWdg(BaseChartWdg):
         width = self.kwargs.get("width")
         if not width:
             width = '800px'
+            width = ''
         height = self.kwargs.get("height")
         if not height:
             height = '500px'
+            height = ''
 
 
         chart_div = DivWdg()
@@ -359,22 +364,24 @@ class SObjectChartWdg(BaseChartWdg):
             msg_div.add_style("z-index: 100")
             msg_div.add_style("text-align: center")
 
+        chart_type = self.kwargs.get("chart_type") or "bar"
+
 
         # Draw Chart
-        chart = self.draw_chart(chart_div, "bar", chart_labels, chart_values)
+        chart = self.draw_chart(chart_div, chart_type, chart_labels, element_data)
         top.add(chart)
 
         return top
 
 
-    def draw_chart(self, chart_div, chart_type, chart_labels, chart_values):
+    def draw_chart(self, chart_div, chart_type, chart_labels, element_data):
 
         div = DivWdg()
 
         kwargs = {
-            "chart_type": 'bar',
-            "width": width,
-            "height": height,
+            "chart_type": chart_type,
+            #"width": width,
+            #"height": height,
             #"legend": self.elements,
             "labels": chart_labels,
             "label_values": [i+0.5 for i,x in enumerate(chart_labels)],
@@ -394,7 +401,7 @@ class SObjectChartWdg(BaseChartWdg):
         # draw a legend
         from .chart_wdg import ChartLegend
         legend = ChartLegend(labels=self.elements)
-        div.add(legend)
+        #div.add(legend)
         #legend.add_style("width: 200px")
         legend.add_style("position: absolute")
         legend.add_style("top: 0px")
@@ -405,7 +412,7 @@ class SObjectChartWdg(BaseChartWdg):
         for i, key in enumerate(element_data.keys()):
 
             if self.colors:
-                color = self.colors[i]
+                color = self.colors[i%len(self.colors)]
             else:
                 color = 'rgba(128, 0, 0, 1.0)'
 
@@ -614,6 +621,11 @@ class CalendarChartWdg(BaseChartWdg):
             min_date = start_date
             max_date = end_date
 
+        if min_date.tzinfo is not None and min_date.tzinfo.utcoffset(min_date) is not None:
+            min_date = SPTDate.convert(min_date)
+
+        if max_date.tzinfo is not None and max_date.tzinfo.utcoffset(max_date) is not None:
+            max_date = SPTDate.convert(max_date)
 
         for sobject in sobjects:
             timestamp = sobject.get_value(self.column)

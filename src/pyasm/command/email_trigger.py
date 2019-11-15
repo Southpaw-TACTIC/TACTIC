@@ -19,6 +19,7 @@ import smtplib
 import types
 import datetime
 import six
+import os
 from dateutil.relativedelta import relativedelta
 
 try:

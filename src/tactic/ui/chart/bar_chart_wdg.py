@@ -24,8 +24,9 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types, six
 
-
 from .chart_data import ChartData, ChartElement
+from .chart_js_wdg import ChartJsWdg as XXChartWdg
+from .chart_wdg import ChartData as XXChartData
 
 class BarChartWdg(BaseRefreshWdg):
     ''' '''
@@ -44,6 +45,7 @@ class BarChartWdg(BaseRefreshWdg):
         self.max_value = 0
         self.min_value = 0
         self.steps = 0
+        self.category_charts = ['pie', 'doughnut', 'line']
 
         web = WebContainer.get_web()
         self.width = web.get_form_value("width")
@@ -83,13 +85,9 @@ class BarChartWdg(BaseRefreshWdg):
             else:
                 self.elements = []
 
-
-
-
         self.search_type = web.get_form_value("search_type")
         if not self.search_type:
             self.search_type = self.kwargs.get("search_type")
-
 
         self.search_keys = self.kwargs.get("search_keys")
         self.document = self.kwargs.get("document")
@@ -137,8 +135,9 @@ class BarChartWdg(BaseRefreshWdg):
         if not self.config:
             return values, labels
 
-
         for element in self.elements:
+
+            group_val = None
 
             if (element.startswith("{") and element.endswith("}")) or element.startswith("@"):
                 expr = element.strip("{}")
@@ -165,6 +164,7 @@ class BarChartWdg(BaseRefreshWdg):
 
                 try:
                     value = widget.get_text_value()
+                    group_val = value
                     if value:
                         value = float(value)
                 except:
@@ -179,17 +179,13 @@ class BarChartWdg(BaseRefreshWdg):
             if not value:
                 value = 0
 
-            #expression = options.get("expression")
-            #if not expression:
-            #    value = 0
-            #else:
-            #    value = Search.eval(expression, sobject, single=True)
-
             if value > self.max_value:
                 self.max_value = value
 
-            values.append(value)        
-
+            if self.chart_type in self.category_charts:
+                values.append(group_val)  
+            else:
+                values.append(value)        
 
         return values, labels
 
@@ -219,8 +215,13 @@ class BarChartWdg(BaseRefreshWdg):
         element_data = []
         labels = []
         element_values = []
+
+        from collections import defaultdict
+        group = defaultdict(int)
+
         for sobject in self.sobjects:
             values, labels = self.get_data(sobject)
+            group[values[0]] += 1
 
             for i, value in enumerate(values):
                 if i >= len(element_data):
@@ -231,6 +232,11 @@ class BarChartWdg(BaseRefreshWdg):
 
                 element_values.append(value)
 
+        if self.chart_type in self.category_charts:
+            key ,values = zip(*group.items())
+            chart_labels = list(key)
+            element_values = list(values)
+            element_data = [element_values]
 
         self.colors = self.kwargs.get("colors")
         if not self.colors:
@@ -243,14 +249,6 @@ class BarChartWdg(BaseRefreshWdg):
                 'rgba(255,0,255,0.5)',
             ]
  
-
-
-        #from .chart_wdg import ChartWdg as XXChartWdg
-        from .chart_js_wdg import ChartJsWdg as XXChartWdg
-
-        from .chart_wdg import ChartData as XXChartData
-
-
         chart = XXChartWdg(
             height="400px",
             width="600px",
@@ -274,22 +272,6 @@ class BarChartWdg(BaseRefreshWdg):
             chart.add(data)
             count += 1
 
-        """
-        data = XXChartData(
-            color="rgba(0, 128, 0, 1.0)",
-            chart_type='line',
-            data=element_values,
-            x_data=[i+0.5 for i,x in enumerate(chart_labels)]
-        )
-        chart.add(data)
-        """
-
-
         return top
-
-        
-
-
-
 
 

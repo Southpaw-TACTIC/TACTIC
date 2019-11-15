@@ -29,6 +29,7 @@ import re
 import datetime
 import sys
 from dateutil.relativedelta import relativedelta
+from dateutil import parser
 
 from pyasm.common import Common, TacticException, SetupException, Date
 from pyasm.biz import Project
@@ -1346,6 +1347,12 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         if not start_date and not end_date:
             return
 
+        if isinstance(start_date, six.string_types) and start_date.startswith("$"):
+            start_date = parser.parse( Search.eval(start_date) )
+
+        if isinstance(end_date, six.string_types) and end_date.startswith("$"):
+            end_date = parser.parse( Search.eval(end_date) )
+
         from pyasm.common import SPTDate
         start_date = SPTDate.add_local_timezone(start_date)
         start_date = SPTDate.convert(start_date)
@@ -1353,8 +1360,6 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         end_date = SPTDate.convert(end_date)
 
         
-        from pyasm.search import Search
-
         # use the expression only if 1 or more search_types defined in column
         if search_types:
             expr = "@SEARCH(%s)"%search_type
@@ -1481,7 +1486,6 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
         if operator != 'not in':
             operator = 'in'
 
-        from pyasm.search import Search
     
         # use the expression only if 1 or more search_types defined in column
         if search_types:

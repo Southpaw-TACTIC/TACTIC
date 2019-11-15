@@ -13,6 +13,7 @@
 __all__ = ["CsvParser", "AsciiEncodeException"]
 
 import csv, os
+import tacticenv
 from pyasm.common import Common
 
 class AsciiEncodeException(Exception):
@@ -85,12 +86,24 @@ class CsvParser(object):
             for row in csv_reader:
                 yield row
         #return csv_reader
-    
+  
+
+    def simple_csv_parser(self):
+        with open(self.file_path) as csvfile:
+            spamreader = csv.reader(csvfile, dialect=csv.excel)
+            for row in spamreader:
+                yield row
+
+
     def parse(self):
 
-        input_file = open(self.file_path, 'rU') 
-        csvreader = self.unicode_csv_reader(input_file, encoder=self.encoder)
-
+        if Common.IS_Pv3:
+            input_file = None
+            csvreader = self.simple_csv_parser()
+        else:
+            input_file = open(self.file_path, 'rU') 
+            csvreader = self.unicode_csv_reader(input_file, encoder=self.encoder)
+        
         for row_count, row in enumerate(csvreader):
             # parse title: all titles must be filled
             if self.has_title_row and not self.titles:
@@ -127,13 +140,13 @@ class CsvParser(object):
             for i in range(0, len(self.data[0]) ):
                 self.titles.append("")
 
-        input_file.close()
+        if input_file:
+            input_file.close()
 
 if __name__ == '__main__':
-    import tacticenv
     from pyasm.security import Batch
     batch = Batch(login_code='admin')
-    parser = CsvParser('/home/apache/data.csv')
+    parser = CsvParser('/home/tactic/customer_data.csv')
     parser.set_encoder('utf-8')
     parser.parse()
     data = parser.get_data()

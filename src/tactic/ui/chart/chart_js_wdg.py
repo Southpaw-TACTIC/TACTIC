@@ -222,7 +222,9 @@ class ChartJsWdg(BaseRefreshWdg):
                 widget_chart_type = default_chart_type
                 widget.set_chart_type(widget_chart_type)
 
+
             data = widget.get_data()
+
             color = widget.get_color()
 
             label = widget.get_label()
@@ -234,6 +236,7 @@ class ChartJsWdg(BaseRefreshWdg):
                 'backgroundColor': color
             }
 
+
             if chart_type in ["pie", "doughnut"]:
                 dataset['borderWidth'] = 2
             else:
@@ -242,7 +245,6 @@ class ChartJsWdg(BaseRefreshWdg):
 
             datasets.append(dataset)
 
- 
 
         if chart_type == "horizontalBar":
             for item in datasets:
@@ -283,6 +285,20 @@ class ChartJsWdg(BaseRefreshWdg):
                 chart_type = "bar"
             else:
                 chart_type = "horizontalBar"
+
+        elif chart_type in ["line"]:
+
+            options["fill"] = False,
+            options["scales"] = {
+                "xAxes": [{
+                    "type": 'time',
+                    "display": True,
+                    "scaleLabel": {
+                        "display": True,
+                        "labelString": "Date",
+                    }
+                }],
+            }
 
 
         # initialize the canvas
@@ -366,7 +382,10 @@ options.plugins = {
 }
 
 
+if (!barChartData['datasets'][0]['label']) options['legend']['display'] = false;
+
 var ctx = bvr.src_el.getContext('2d');
+
 window.myBar = new Chart(ctx, {
     type: chart_type,
     data: barChartData,
@@ -378,6 +397,5 @@ window.myBar = new Chart(ctx, {
 
 
         return top
-
 
 
