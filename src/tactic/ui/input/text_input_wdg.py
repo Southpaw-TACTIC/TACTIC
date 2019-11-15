@@ -192,7 +192,7 @@ class TextInputWdg(BaseInputWdg):
                     //bvr.src_el.setStyle("background", bvr.bgcolor2);
                 }
                 else {
-                    bvr.src_el.setStyle("background", bvr.bgcolor);
+                    //bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
 
                 bvr.src_el.setAttribute("spt_last_value", value);

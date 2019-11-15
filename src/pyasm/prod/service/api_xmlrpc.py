@@ -389,8 +389,8 @@ def xmlrpc_decorator(meth):
 
                 security = Environment.get_security()
                 user_name = security.get_user_name()
-                #if user_name == "admin":
-                #    allowed = True
+                if user_name == "admin":
+                    allowed = True
 
                 meth_name = meth.__name__
                 if api_mode == "open":

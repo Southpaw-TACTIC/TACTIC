@@ -4115,14 +4115,12 @@ class ScriptEditWdg(BaseRefreshWdg):
         div.add(script_path_div)
         script_path_div.add_class("form-group")
         script_path_div.add('<label class="bmd-label-floating">Script path</label>')
-        #script_path_div.add()
-        filters = ""
 
         if action != "script_path":
             script_path_div.add_style("display: none")
 
 
-
+        filters = ""
         if not is_admin:
             filters = '[["language","server_js"]]'
         
@@ -4508,7 +4506,6 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             script_path_folder, script_path_title = os.path.split(script_path)
 
         script_obj = None
-
         if script_path:
             script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
 
@@ -4522,12 +4519,16 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_path_div.add_class("input-group")
 
         filters = ""
-
         if not is_admin:
             filters = '[["language","server_js"]]'
+
+
         script_path_folder_text = LookAheadTextInputWdg(name="script_path_folder", search_type="config/custom_script", column="folder", filters=filters)
         script_path_folder_text.add_class("spt_script_path_folder")
         script_path_div.add(script_path_folder_text)
+
+        """
+        # DEPRECATED beacuse this script tries to do to much with just the script folder.
 
         script_path_folder_text.add_behavior( {
             'type': 'blur',
@@ -4568,6 +4569,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
             '''
         } )
+        """
 
         self.add_session_behavior(script_path_folder_text, "text", "spt_action_info_top", "script_path_folder")
 
@@ -4590,6 +4592,11 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_path_title_text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
+
+            /* On blur of script path title input, if script obj exists,
+            load script into ace editor and set node kwargs.
+            Else, clear ace editor and clear node kwargs. */
+
             setTimeout( function() {
 
                 var script_path_title = bvr.src_el.value;
@@ -4600,8 +4607,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
                 var script_path_folder = top.getElement(".spt_script_path_folder").value;
                 var script_path = script_path_folder + '/' + script_path_title;
-                var editor = top.getElement(".spt_script_editor");
-                var el = top.getElement(".spt_python_script_text");
+                var editor = top.getElement(".spt_ace_editor_top");
                 var script = '';
                 if (script_path_folder && script_path_title) {
                     var popup = false;
@@ -4613,18 +4619,19 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
                     if (script) {
                         editor.setStyle("display", "");
-                        spt.show(el);
 
                         var node = spt.pipeline.get_info_node();
                         spt.pipeline.set_node_multi_kwarg(node, "script", script);
-                        spt.pipeline.set_input_value_from_kwargs(node, "script", el);
+                        //spt.pipeline.set_input_value_from_kwargs(node, "script", editor);
                     }
                     else {
                         editor.setStyle("display", "none");
 
                         var node = spt.pipeline.get_info_node();
                         spt.pipeline.set_node_multi_kwarg(node, "script", "");
-                        spt.pipeline.set_input_value_from_kwargs(node, "script", el);
+                        //spt.pipeline.set_input_value_from_kwargs(node, "script", editor);
+
+                        spt.alert("No script found.");
                     }
                     spt.named_events.fire_event('pipeline|change', {});
                 }
@@ -4634,8 +4641,6 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
             '''
         } )
-
-        script_path_div.add("<br clear='all'/>")
 
         self.add_session_behavior(script_path_title_text, "text", "spt_action_info_top", "script_path_title")
 
@@ -4700,11 +4705,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         ###############################################################
         
         script_text = TextAreaWdg("script")
-        script_text.add_style('padding-top: 10px')
-        script_text.add_style('margin-top: 10px')
-        script_text.add_style('font-size: 1.2em')
         script_text.set_option("read_only", "true")
-        script_text.add_style("background", "#EEE")
         script_text.add_class("form-control")
         script_text.add_class("spt_python_script_text")
         script_editor.add_style("display", "none")
@@ -4716,8 +4717,6 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         else:
             script_editor.add_style("display: none")
         
-        script_text.add_style("height: 300px")
-        script_text.add_style("width: 100%")
         
         self.add_session_behavior(script_text, "text", "spt_action_info_top", "script")
         script_editor.add_behavior({
@@ -4738,7 +4737,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             else bvr.src_el.setStyle("display", "none");
 
             '''
-            })
+        })
  
         # TO be removed 
         #################################################################
@@ -4746,13 +4745,15 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script = None
         if script_obj:
             script = script_obj.get_value("script")
-        
+       
+        unique_id = Common.generate_random_key()
+
         script_ace_editor = AceEditorWdg(
             width="100%", 
-            language="javascript", 
+            language=language, 
             code=script, 
             show_options=False, 
-            editor_id='custom_layout_behavior',
+            editor_id=unique_id,
             dynamic_height=True,
             show_bottom=False
         )
@@ -4814,12 +4815,13 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         code = ("// Enter script here\n"
         "var server = TACTIC.get();")
 
+        unique_id = Common.generate_random_key()
         script_ace_editor = AceEditorWdg(
             width="100%", 
             language="javascript", 
             code=code,
             show_options=False, 
-            editor_id='custom_layout_behavior',
+            editor_id=unique_id,
             dynamic_height=True,
             show_bottom=False
         )
@@ -4869,13 +4871,14 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             '''
 
         input_wdg.add_behavior(load_behavior)
-
-
-        # On change behavior, stores sessional value
+        
+        
         change_behavior = {
             'top_class': top_class,
             'arg_name': arg_name,
-            'cbjs_action': '''
+        }
+
+        change_cbjs_action = """
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
             if (version && version != 1)
@@ -4890,15 +4893,22 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             spt.pipeline.set_node_multi_kwarg(node, bvr.arg_name, input[bvr.arg_name]);
 
             spt.named_events.fire_event('pipeline|change', {});
-            '''
-        }
+        """
 
-        if input_type == "text":
-            change_behavior['type'] = 'blur'
-        elif input_type == "select":
-            change_behavior['type'] = 'change'
-        elif input_type == "radio":
-            change_behavior['type'] = 'change'
+        if input_type == "ace_editor":
+            change_behavior['cbjs_action'] = """
+
+
+
+            """
+        else:
+            change_behavior['cbjs_action'] = change_cbjs_action
+            if input_type == "text":
+                change_behavior['type'] = 'blur'
+            elif input_type == "select":
+                change_behavior['type'] = 'change'
+            elif input_type == "radio":
+                change_behavior['type'] = 'change'
 
         input_wdg.add_behavior(change_behavior)
 
@@ -7225,115 +7235,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         shelf_wdg = self.get_shelf_wdg()
         inner.add(shelf_wdg)
 
-        node_search = HtmlElement.text()
-        shelf_wdg.add(node_search)
-        node_search.add_class("spt_node_search")
-        node_search.add_class("search-box")
-        node_search.add_attr("placeholder", "Find node by name")
-
-
-        node_search.add_behavior({
-            'type': 'click_up',
-            'cbjs_action': '''
-
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var results = top.getElement(".spt_node_search_results");
-
-            results.setStyle("display", "");
-            spt.body.add_focus_element(results);
-
-            '''
-            })
-
-
-        node_search.add_behavior({
-            'type': 'keyup',
-            'cbjs_action': '''
-
-            var key = evt.key;
-
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var results = top.getElement(".spt_node_search_results");
-            var template = results.getElement(".search-result-template");
-
-            results.setStyle("display", "");
-            spt.body.add_focus_element(results);
-
-            var oldItems = results.getElements(".spt_node_search_result");
-
-            if (key == "down") {
-                // down selection
-
-                var selectedItem = results.getElement(".selected");
-                if (selectedItem) {
-                    var nextItem = selectedItem.nextSibling;
-                    if (nextItem) if (nextItem.hasClass("search-result-template")) nextItem = nextItem.nextSibling;
-                    selectedItem.removeClass("selected");
-                }
-
-                if (!nextItem) nextItem = oldItems[0];
-                if (!nextItem) return;
-
-                nextItem.addClass("selected");
-                nextItem.scrollIntoView(false);
-
-            } else if (key == "up") {
-                // up selection
-
-                var selectedItem = results.getElement(".selected");
-                if (selectedItem) {
-                    var nextItem = selectedItem.previousSibling;
-                    if (nextItem) if (nextItem.hasClass("search-result-template")) nextItem = nextItem.previousSibling;
-                    selectedItem.removeClass("selected");
-                }
-
-                if (!nextItem) nextItem = oldItems[oldItems.length-1];
-                if (!nextItem) return;
-
-                nextItem.addClass("selected");
-                nextItem.scrollIntoView(false);
-
-            } else if (key == "enter") {
-                // check if theres a selected item, if so click
-
-                var selectedItem = results.getElement(".selected");
-                if (selectedItem) selectedItem.click();
-
-            } else if (key == "esc") {
-                // blur search
-
-                bvr.src_el.blur();
-                results.on_complete(results);
-
-            } else {
-                // Load in new search results
-
-                oldItems.forEach(function(oldItem){
-                    oldItem.remove();
-                });
-
-                spt.pipeline.set_top(top.getElement(".spt_pipeline_top"));
-                var nodes = spt.pipeline.get_all_nodes();
-
-                nodes.forEach(function(node){
-                    var title = node.getAttribute("title");
-                    if (!title.toLowerCase().contains(bvr.src_el.value.toLowerCase())) return;
-
-                    var item = spt.behavior.clone(template);
-                    item.removeClass("search-result-template");
-                    item.addClass("spt_node_search_result");
-                    item.innerText = title;
-                    results.appendChild(item);
-                });
-
-
-
-            }
-
-            '''
-            })
-
-
         self.width = self.kwargs.get("width")
         if not self.width:
             #self.width = "1300"
@@ -7459,16 +7360,145 @@ class PipelineEditorWdg(BaseRefreshWdg):
         else:
             return top
 
+    def get_node_search_wdg(self):
+
+        node_search_wdg = DivWdg()
+
+        node_search = HtmlElement.text()
+        node_search_wdg.add(node_search)
+        
+        node_search.add_class("spt_node_search")
+        node_search.add_class("search-box")
+        node_search.add_attr("placeholder", "Find node by name")
+
+
+        node_search.add_behavior({
+            'type': 'click_up',
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var results = top.getElement(".spt_node_search_results");
+
+            results.setStyle("display", "");
+            spt.body.add_focus_element(results);
+
+            '''
+            })
+
+
+        node_search.add_behavior({
+            'type': 'keyup',
+            'cbjs_action': '''
+
+            var key = evt.key;
+
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            var results = top.getElement(".spt_node_search_results");
+            var template = results.getElement(".search-result-template");
+
+            results.setStyle("display", "");
+            spt.body.add_focus_element(results);
+
+            var oldItems = results.getElements(".spt_node_search_result");
+
+            if (key == "down") {
+                // down selection
+
+                var selectedItem = results.getElement(".selected");
+                if (selectedItem) {
+                    var nextItem = selectedItem.nextSibling;
+                    if (nextItem) if (nextItem.hasClass("search-result-template")) nextItem = nextItem.nextSibling;
+                    selectedItem.removeClass("selected");
+                }
+
+                if (!nextItem) nextItem = oldItems[0];
+                if (!nextItem) return;
+
+                nextItem.addClass("selected");
+                nextItem.scrollIntoView(false);
+
+            } else if (key == "up") {
+                // up selection
+
+                var selectedItem = results.getElement(".selected");
+                if (selectedItem) {
+                    var nextItem = selectedItem.previousSibling;
+                    if (nextItem) if (nextItem.hasClass("search-result-template")) nextItem = nextItem.previousSibling;
+                    selectedItem.removeClass("selected");
+                }
+
+                if (!nextItem) nextItem = oldItems[oldItems.length-1];
+                if (!nextItem) return;
+
+                nextItem.addClass("selected");
+                nextItem.scrollIntoView(false);
+
+            } else if (key == "enter") {
+                // check if theres a selected item, if so click
+
+                var selectedItem = results.getElement(".selected");
+                if (selectedItem) selectedItem.click();
+
+            } else if (key == "esc") {
+                // blur search
+
+                bvr.src_el.blur();
+                results.on_complete(results);
+
+            } else {
+                // Load in new search results
+
+                oldItems.forEach(function(oldItem){
+                    oldItem.remove();
+                });
+
+                spt.pipeline.set_top(top.getElement(".spt_pipeline_top"));
+                var nodes = spt.pipeline.get_all_nodes();
+
+                nodes.forEach(function(node){
+                    var title = node.getAttribute("title");
+                    if (!title.toLowerCase().contains(bvr.src_el.value.toLowerCase())) return;
+
+                    var item = spt.behavior.clone(template);
+                    item.removeClass("search-result-template");
+                    item.addClass("spt_node_search_result");
+                    item.innerText = title;
+                    results.appendChild(item);
+                });
+
+
+
+            }
+
+            '''
+        })
+
+
+        if self.kwargs.get("show_help") not in ['false', False]:
+
+            help_button = HtmlElement.button("?")
+            node_search_wdg.add(help_button)
+            help_button.add_class("btn-default btn spt_label hand btn-sm")
+            help_button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                spt.help.set_top();
+                spt.help.load_alias("project-workflow|project-workflow-introduction|pipeline-process-options");
+                '''
+            } )
+
+        return node_search_wdg
+
+
 
     def get_shelf_wdg(self):
 
         shelf_wdg = DivWdg()
         shelf_wdg.add_class("spt_pipeline_editor_shelf")
-        # shelf_wdg.add_style("padding: 5px")
-        shelf_wdg.add_style("overflow-x: hidden")
-        shelf_wdg.add_style("min-width: 400px")
-        shelf_wdg.add_style("border: 1px solid #ccc")
-        shelf_wdg.add_style("border-width: 0 1 0 1")
+        shelf_wdg.add_class("d-flex justify-content-between")
+        
+        # FIXME: Would prefer not to hardcode height
+        shelf_wdg.add_style("height: 33px")
 
         show_shelf = self.kwargs.get("show_shelf")
         show_shelf = True
@@ -7480,44 +7510,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
             shelf_wdg.add_style("display: none")
 
 
-        spacing_divs = []
-        for i in range(0, 3):
-            spacing_div = DivWdg()
-            spacing_divs.append(spacing_div)
-            spacing_div.add_style("height: 32px")
-            spacing_div.add_style("width: 2px")
-            spacing_div.add_style("margin: 0 10 0 20")
-            spacing_div.add_style("border-style: solid")
-            spacing_div.add_style("border-width: 0 0 0 1")
-            spacing_div.add_style("border-color: %s" % spacing_div.get_color("border"))
-            spacing_div.add_style("float: left")
-
-
         show_gear = self.kwargs.get("show_gear")
         button_div = self.get_buttons_wdg(show_gear)
-        button_div.add_style("float: left")
         shelf_wdg.add(button_div)
-
-        shelf_wdg.add(spacing_divs[0])
-
-        #group_div = self.get_pipeline_select_wdg();
-        #group_div.add_style("float: left")
-        #group_div.add_style("margin-top: 1px")
-        #group_div.add_style("margin-left: 10px")
-        #shelf_wdg.add(group_div)
-        #shelf_wdg.add(spacing_divs[1])
 
         button_div = self.get_zoom_buttons_wdg()
-        button_div.add_style("margin-left: 10px")
-        button_div.add_style("margin-right: 15px")
-        button_div.add_style("float: left")
         shelf_wdg.add(button_div)
 
-        # Show schema for reference.  This does not work very well.
-        # Disabling
         """
-        shelf_wdg.add(spacing_divs[2])
-
         button_div = self.get_schema_buttons_wdg();
         button_div.add_style("margin-left: 10px")
         button_div.add_style("float: left")
@@ -7525,19 +7525,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         """
 
 
-        if self.kwargs.get("show_help") not in ['false', False]:
-            help_button = HtmlElement.button("?")
-            help_button.add_class("btn-default btn spt_label hand btn-sm")
-            shelf_wdg.add(help_button)
-            help_button.add_styles("padding-top: 4px;height: 33px;width: 40px;")
-            help_button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                spt.help.set_top();
-                spt.help.load_alias("project-workflow|project-workflow-introduction|pipeline-process-options");
-                '''
-            } )
-
+        node_search_wdg = self.get_node_search_wdg()
+        shelf_wdg.add(node_search_wdg)
 
         return shelf_wdg
 
@@ -7895,6 +7884,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         select = SelectWdg("zoom")
         select.add_class("form-control")
+        select.add_class("form-control-sm")
         select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit To Canvas"])
         select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_canvas"])
         select.add_empty_option("Zoom")
