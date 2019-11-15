@@ -258,6 +258,8 @@ class CellEditWdg(BaseRefreshWdg):
         search_type = self.kwargs['search_type']
         layout_version = self.kwargs['layout_version']
 
+        config_xml = self.kwargs['config_xml']
+
         configs = Container.get("CellEditWdg:configs")
         if not configs:
             configs = {}
@@ -271,6 +273,11 @@ class CellEditWdg(BaseRefreshWdg):
 
             self.config = WidgetConfigView.get_by_search_type(search_type, view)
             configs[key] = self.config
+
+            # get the base configs
+            if config_xml:
+                extra_config = WidgetConfig.get(view="edit", xml=config_xml)
+                self.config.get_configs().insert(0, extra_config)
 
             # add an override if it exists
             view = "edit_item"
