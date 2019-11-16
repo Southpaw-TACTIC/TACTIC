@@ -7660,6 +7660,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
         preview_button.add_behavior({
             'type': 'click',
             'cbjs_action': '''
+            var toolTop = bvr.src_el.getParent('.spt_pipeline_tool_top');
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
             pipeline_code = spt.pipeline.get_current_group()
             kwargs = {
                 pipeline_code: pipeline_code

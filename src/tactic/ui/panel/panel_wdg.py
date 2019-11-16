@@ -3268,6 +3268,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         layout_switcher_custom_views = self.kwargs.get("layout_switcher_custom_views")
         default_views = self.kwargs.get("default_views")
         name = self.kwargs.get("name")
+        column_widths = self.kwargs.get("column_widths")
 
         if extra_data:
             if isinstance(extra_data, dict):
@@ -3392,7 +3393,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "collapse_level": collapse_level,
             "layout_switcher_custom_views": layout_switcher_custom_views,
             "default_views": default_views,
-            "name": name
+            "name": name,
+            "column_widths": column_widths
         }
 
 
