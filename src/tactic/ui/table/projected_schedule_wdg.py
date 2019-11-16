@@ -10,18 +10,140 @@
 #
 #
 
-__all__ = ['ProjectedCompletionWdg', 'GetProjectedScheduleCmd']
+__all__ = ['ProjectedCompletionWdg', 'GetProjectedScheduleCmd', 'WorkflowSchedulePreviewWdg']
 
 import six
 from dateutil import parser
 from datetime import datetime
-from pyasm.biz import TaskGenerator, Pipeline
-from pyasm.common import SPTDate
+from pyasm.biz import TaskGenerator, Pipeline, Project
+from pyasm.common import SPTDate, Environment
 from pyasm.command import Command
-from pyasm.web import DivWdg
-from pyasm.search import Search
+from pyasm.web import DivWdg, HtmlElement
+from pyasm.search import Search, SearchType
 
-from tactic.ui.common import BaseTableElementWdg
+from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
+
+from tactic.ui.panel import ViewPanelWdg
+import datetime
+
+
+class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
+    '''Create a schedule preview for workflow created'''
+    ARGS_KEYS = {
+        'pipeline_code': {
+            'description': 'the code of the pipeline that is previewing',
+            'type': 'string'
+        }
+    }
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.pipeline_code = self.kwargs.get("pipeline_code")
+
+    def get_styles(self):
+        style = HtmlElement.style('''
+        .spt_schedule_preview_top {
+            padding: 3px 5px;
+
+        }
+
+        .spt_schedule_preview_title {
+            font-size: 25px;
+            padding: 5px 0px 0px 10px;
+            font-weight: bold
+        }
+        ''')
+
+        return style
+    
+    def get_display(self):
+        top = DivWdg()
+        style = self.get_styles()
+        top.add(style)
+        top.add_class("spt_schedule_preview_top")
+        title = DivWdg("Schedule Preview")
+        title.add_class("spt_schedule_preview_title")
+        top.add(title)
+        top.add("<hr/>")
+
+        search = Search('sthpw/pipeline')
+        search.add_filter("code", self.pipeline_code)
+        self.pipeline = search.get_sobject()
+
+        process_s = Search("config/process")
+        process_s.add_filter("pipeline_code", self.pipeline_code)
+        processes = process_s.get_sobjects()
+
+        processes = {x.get_value("process"): x for x in processes}
+
+        today = datetime.datetime.today()
+        login = Environment.get_user_name()
+
+        job = SearchType.create('workflow/job')
+        job.set_value("pipeline_code", self.pipeline_code)
+        job.set_value('job_code', 'TMP00001')
+        job.set_value('login', login)
+        
+        generator = TaskGenerator(generate_mode="schedule")
+        tasks = generator.execute(
+            job,
+            self.pipeline, 
+            start_date=today,
+            today=today,
+            process_sobjects=processes
+        )
+        completion_date = generator.get_completion_date()
+
+
+        start_date = today
+        due_date = completion_date
+
+        special_days = []
+        if start_date:
+            special_days.append({
+                "name": "Start Date",
+                "date": start_date.strftime("%Y-%m-%d"),
+                "color": "rgba(255,0,0,0.1)",
+            })
+        if due_date:
+            special_days.append({
+                "name": "Due Date",
+                "date": due_date.strftime("%Y-%m-%d"),
+                "color": "rgba(255,0,0.1)",
+            })
+
+        milestones = Search.eval("@SOBJECT(sthpw/milestone['project_code','$PROJECT'])")
+        for milestone in milestones:
+            special_days.append( {
+                "name": milestone.get_value("description"),
+                "date": milestone.get_datetime_value("due_date").strftime("%Y-%m-%d"),
+                "color": "rgba(0,255,0,0.1)"
+            } )
+
+        kwargs = {
+            'layout': 'spt.tools.gantt.GanttLayoutWdg',
+            'mode': 'preview',
+            'search_type': 'sthpw/task',
+            'settings': 'keyword_search|save|search_limit',
+            'simple_search_view': 'task_filter',
+            'sobjects': tasks,
+            'show_context_menu': False,
+            'show_layout_switcher': False,
+            'show_help': False,
+            'order_by': 'search_code,bid_start_date,bid_end_date',
+            'search_view': 'link_search:job_tasks',
+            'element_names': 'process,status,assigned,days_due,description',
+            'extra_data': {"single_line": "true"},
+            'special_days': special_days,
+            'init_load_num': len(tasks),
+            'processes': processes
+        }
+        table = ViewPanelWdg(**kwargs)
+
+        top.add(table)
+
+
+        return top
 
 
 class ProjectedCompletionWdg(BaseTableElementWdg):

@@ -3556,7 +3556,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         #layout_table.search_container_wdg.add(search_wdg)
 
         search_keys = self.kwargs.get("search_keys")
-        if search_keys:
+        sobjects = self.kwargs.get("sobjects")
+        if sobjects:
+            self.sobjects = sobjects
+        elif search_keys:
             self.sobjects = Search.get_by_search_keys(search_keys)
 
 

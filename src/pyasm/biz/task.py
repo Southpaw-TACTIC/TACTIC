@@ -1941,6 +1941,8 @@ class TaskGenerator(object):
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
             pipeline_code = (properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")) or process_obj.get_task_pipeline()
+            if self.generate_mode == 'schedule':
+                pipeline_code = pipeline.get_value('code')
 
 
             for context in output_contexts:
