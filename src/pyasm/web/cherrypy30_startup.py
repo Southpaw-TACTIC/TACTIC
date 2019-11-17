@@ -313,7 +313,7 @@ class CherryPyStartup(CherryPyStartup20):
             # reloading in 3 seconds
             html_response = []
             html_response.append('''<html>''')
-            html_response.append('''<body style='color: #000; background: #DDDDDD'>%s''' % loading_page)
+            html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'>%s''' % loading_page)
             if need_upgrade[0] == False:
                 html_response.append('''<script>document.location = "%s";</script>''' % path )
             html_response.append('''</body>''')

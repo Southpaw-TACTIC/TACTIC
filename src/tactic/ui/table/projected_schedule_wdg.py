@@ -16,7 +16,7 @@ import six
 from dateutil import parser
 from datetime import datetime
 from pyasm.biz import TaskGenerator, Pipeline, Project, ProjectSetting
-from pyasm.common import SPTDate, Environment, jsonloads
+from pyasm.common import SPTDate, Environment, jsonloads, Common
 from pyasm.command import Command
 from pyasm.web import DivWdg, HtmlElement
 from pyasm.search import Search, SearchType
@@ -159,7 +159,7 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         else:
             for i, x in enumerate(tasks):
                 x.set_value("status", "Assignment")
-                code = "TASK00000101" + str(i)
+                code = Common.generate_random_key()
                 x.set_value("code", code)
                 x.set_value("id", "1")
                 task_processes[x.get_value("process")] = x
