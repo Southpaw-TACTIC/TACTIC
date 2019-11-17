@@ -750,17 +750,27 @@ class AceEditorWdg(BaseRefreshWdg):
         from pyasm.web import HtmlElement
         self.text_area = HtmlElement.div()
         self.text_area.add_class("spt_ace_editor")
-        self.unique_id = self.text_area.set_unique_id("ace_editor")
+
+        self.editor_id = self.kwargs.get("editor_id")
+        if self.editor_id:
+            self.unique_id = self.text_area.set_id(self.editor_id)
+        else:
+            self.unique_id = self.text_area.set_unique_id()
+            self.editor_id = self.unique_id
 
 
     def get_editor_id(self):
-        return self.unique_id
+        return self.editor_id
 
     def get_display(self):
         web = WebContainer.get_web()
 
         top = self.top
         top.add_class("spt_ace_editor_top")
+        
+        form_element_name = self.kwargs.get("form_element_name")
+        if form_element_name:
+            top.add_attr("spt_ace_element_name", form_element_name)
 
         script = self.kwargs.get("custom_script")
         if script:
@@ -952,13 +962,8 @@ class AceEditorWdg(BaseRefreshWdg):
 
 
 
-        self.text_area.add_style("margin-top: -1px")
-        self.text_area.add_style("margin-bottom: 0px")
-        self.text_area.add_style("font-family: courier new")
         self.text_area.add_border()
         editor_div.add(self.text_area)
-        self.text_area.add_style("position: relative")
-        #text_area.add_style("margin: 20px")
 
 
         size = web.get_form_value("size")
@@ -1016,7 +1021,7 @@ class AceEditorWdg(BaseRefreshWdg):
 
         top.add_behavior( {
             'type': 'load',
-            'unique_id': self.unique_id,
+            'unique_id': self.get_editor_id(),
             'theme': theme,
             'cbjs_action': '''
 

@@ -11,9 +11,7 @@
 #
 
 __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk',
-'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptEditWdg', 'ScriptCreateWdg',
-'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg',
-'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg', 'NewConnectorInfoWdg']
+'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg', 'NewConnectorInfoWdg']
 
 import re
 import os
@@ -2249,11 +2247,6 @@ class PipelineInfoWdg(BaseRefreshWdg):
 
         search_type = pipeline.get_value("search_type")
 
-        top.add_style("padding: 20px 0px")
-        top.add_color("background", "background")
-        top.add_style("min-width: 300px")
-
-
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
         top.add(title_wdg)
@@ -2540,7 +2533,6 @@ class ConnectorInfoWdg(BaseRefreshWdg):
 
         top.add_class("spt_pipeline_connector_info")
 
-        top.add_style("padding: 20px 0px")
         top.add_color("background", "background")
         top.add_style("min-width: 300px")
 
@@ -3602,7 +3594,10 @@ class BaseInfoWdg(BaseRefreshWdg):
             'kwargs': kwargs,
             'properties': properties,
             'cbjs_action': '''
+            
+            console.log("hello", bvr.kwargs, bvr.properties);
             var node = spt.pipeline.get_info_node();
+            
             var version = spt.pipeline.get_node_kwarg(node, 'version');
             if (version && version != 1)
                 return;
@@ -4054,364 +4049,6 @@ class DefaultInfoWdg(BaseInfoWdg):
 
 
 
-# DEPRECATED
-class ScriptEditWdg(BaseRefreshWdg):
-    ''' Text area for Existing Script Edit '''
-    def get_display(self):
-
-        script = self.kwargs.get('script')
-        script_path = self.kwargs.get('script_path')
-        on_action_class = self.kwargs.get('on_action_class')
-        is_admin = self.kwargs.get('is_admin') in ['true', True]
-
-        action = self.kwargs.get("action") or "script_path"
-        language = self.kwargs.get("language")
-
-        show_language = self.kwargs.get("show_language") not in ['false', False]
-
-
-        div = self.top
-        self.set_as_panel(div)
-        div.add_class("spt_script_edit")
-
-
-
-
-        # Python command class
-        if action == "command":
-            cmd_div = DivWdg()
-            div.add(cmd_div)
-            cmd_title = DivWdg("Python Command Class (eg: tactic.command.MyCommand)")
-            cmd_title.add_style('margin-bottom: 3px')
-            cmd_div.add_style('margin-bottom: 20px')
-            cmd_div.add(cmd_title)
-
-            cmd_text = TextInputWdg(name="on_action_class")
-            cmd_text.add_style("width: 100%")
-            if on_action_class:
-                cmd_text.set_value(on_action_class)
-
-            cmd_div.add(cmd_text)
-
-
-            return div
-
-
-
-
-
-        script_path_folder = ''
-        script_path_title = ''
-
-        if script_path:
-            script_path_folder, script_path_title = os.path.split(script_path)
-
-        script_obj = None
-
-        if script_path:
-            script_obj = Search.eval("@SOBJECT(config/custom_script['folder','%s']['title','%s'])"%(script_path_folder, script_path_title), single=True)
-
-        script_path_div = DivWdg()
-        div.add(script_path_div)
-        script_path_div.add_class("form-group")
-        script_path_div.add('<label class="bmd-label-floating">Script path</label>')
-
-        if action != "script_path":
-            script_path_div.add_style("display: none")
-
-
-        filters = ""
-        if not is_admin:
-            filters = '[["language","server_js"]]'
-        
-        script_path_folder_text = LookAheadTextInputWdg(name="script_path_folder", search_type="config/custom_script", column="folder", filters=filters)
-        script_path_folder_text.add_class("spt_script_path_folder")
-        script_path_div.add(script_path_folder_text)
-
-        script_path_folder_text.add_behavior( {
-            'type': 'blur',
-            'cbjs_action': '''
-             setTimeout( function() {
-
-                var script_path_folder = bvr.src_el.value;
-                var code;
-                if (script_path_folder) {
-                    var server = TacticServerStub.get();
-                    code = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].code)", {single: true});
-                }
-
-                var top = bvr.src_el.getParent(".spt_script_edit");
-                var script_path_title = top.getElement(".spt_script_path_title");
-                var is_read_only = script_path_title.getAttribute('readonly');
-
-                //var bkgd = script_path_title.getStyle('background');
-
-                if (code) {
-                    if (is_read_only) {
-                        buttons_div = top.getElement(".spt_script_edit_buttons");
-                        if (buttons_div.getAttribute('edit') != 'true' )
-                            script_path_title.removeAttribute('readonly');
-                    }
-                } else {
-                    script_path_title.setAttribute('readonly','readonly');
-                }
-             }, 250);
-            '''
-        } )
-        slash = DivWdg('/')
-        slash.add_styles('font-size: 1.7em; margin: 4px 5px 0 3px; float: left')
-        script_path_div.add(slash)
-        script_path_folder_text.add_styles("width: 120px; float: left")
-        if script_obj:
-            script_path_folder_text.set_value(script_path_folder)
-
-        script_path_title_text = LookAheadTextInputWdg(name="script_path_title", search_type="config/custom_script", column="title", filters=filters, width='190')
-        script_path_title_text.add_class("spt_script_path_title")
-
-        script_path_div.add(script_path_title_text)
-
-        script_path_title_text.add_style("float: left")
-        if script_obj:
-            script_path_title_text.set_value(script_path_title)
-        script_path_title_text.add_behavior( {
-            'type': 'blur',
-            'cbjs_action': '''
-             setTimeout( function() {
-
-                var script_path_title = bvr.src_el.value;
-                var top = bvr.src_el.getParent(".spt_script_edit");
-                var buttons_div = top.getElement(".spt_script_edit_buttons");
-
-                spt.show(buttons_div);
-
-                var script_path_folder = top.getElement(".spt_script_path_folder").value;
-                var script_path = script_path_folder + '/' + script_path_title;
-                var el = top.getElement(".spt_python_script_text");
-                var script = '';
-                if (script_path_folder && script_path_title) {
-                    var popup = false;
-                    script = spt.CustomProject.get_script_by_path(script_path, popup);
-                }
-                if (script_path_folder && script_path_title) {
-                    if (script) {
-                        el.value = script;
-                        spt.show(el);
-                    }
-                    else {
-                        el.value = '';
-                    }
-                }
-
-
-
-
-             }, 250);
-            '''
-        } )
-
-
-
-
-
-
-
-
-        can_edit = True
-        if script_obj:
-            script = script_obj.get_value('script')
-            language = script_obj.get_value('language')
-            if not is_admin and language == 'python':
-                can_edit = False
-
-
-        if show_language:
-            div.add("Language:")
-            select = SelectWdg("language")
-            div.add(select)
-            select.set_option("labels", "Python|Server Javascript")
-            select.set_option("values", "python|server_js")
-            select.set_value(language)
-
-
-        div.add("<br/>")
-
-
-
-        # in case the script obj is deleted, it will just let you create new
-        if script_path and script_obj:
-            edit_mode = True
-            edit_label = "Click to enable Edit"
-            show_script = True
-
-            create_edit_button = DivWdg()
-            create_edit_button.add(edit_label)
-            create_edit_button.add_class("hand")
-            create_edit_button.add_style("text-decoration: underline")
-            create_edit_button.add_style("margin-bottom: -20px")
-
-
-            #create_edit_button = ActionButtonWdg(title=edit_label, tip="%s script"%edit_label, width="300")
-
-        else:
-            if on_action_class:
-                show_script = False
-            else:
-                show_script = True
-
-            edit_mode = False
-            edit_label = "Or Create a New Script"
-            script_path_title_text.set_readonly(True)
-
-            create_edit_button = DivWdg()
-            create_edit_button.add(edit_label)
-            create_edit_button.add_class("hand")
-            create_edit_button.add_style("text-decoration: underline")
-
-            #create_edit_button = ActionButtonWdg(title=edit_label, tip="%s script"%edit_label, width="300", color="warning")
-            #create_edit_button.add_style("margin: 20px auto")
-
-
-
-        buttons_div = DivWdg(css='spt_script_edit_buttons')
-        div.add(buttons_div)
-
-        if (can_edit and edit_mode == True) or edit_mode == False:
-            buttons_div.add(create_edit_button)
-
-        create_edit_button.add_behavior( {
-            'type': 'click_up',
-            'edit_mode': edit_mode,
-            'can_edit': can_edit,
-
-            'cbjs_action': '''
-            var trigger_top = bvr.src_el.getParent(".spt_script_edit");
-            var script_editor = trigger_top.getElement(".spt_python_script_text");
-            var buttons_div = trigger_top.getElement(".spt_script_edit_buttons");
-
-            if (!bvr.can_edit) {
-                spt.info("You don't have the administrative right to edit this script.");
-                return;
-            }
-            var title_input = trigger_top.getElement(".spt_script_path_title");
-            var folder_input = trigger_top.getElement(".spt_script_path_folder");
-
-            if (!bvr.edit_mode) {
-                title_input.value = '';
-                folder_input.value = '';
-                script_editor.value = '';
-            }
-
-            // Displayor Hide the script editor
-            if (bvr.edit_mode) {
-                buttons_div.setAttribute('edit','true');
-
-                script_editor.setStyle("display", "");
-                // In edit mode, need to remove read only attribute and grey backround
-                script_editor.removeProperty("readonly")
-                script_editor.setStyle("background", "#FFFFFF");
-
-                // made script path text field readonly
-                folder_input.setAttribute('readonly','readonly');
-                title_input.setAttribute('readonly','readonly');
-            } else {
-                script_editor.setStyle("display", "none");
-                buttons_div.setStyle("display", "none");
-                spt.tab.set_tab_top_from_child(bvr.src_el);
-                spt.tab.add_new('create_new_script' , 'Create New', 'tactic.ui.tools.ScriptCreateWdg');
-            }
-
-
-
-            '''
-        } )
-
-        # expected script path should not match the existing script_path.
-        # if they do, there is no point to show Create New
-        expected_script_path = self.kwargs.get('expected_script_path')
-
-        if script_path and script_path != expected_script_path and show_script:
-            create_new_button = ActionButtonWdg(title="Create New", tip="Create New Script", width=200)
-            create_new_button.add_style("margin: 10px auto")
-            buttons_div.add(create_new_button)
-
-            create_new_button.add_behavior( {
-                'type': 'click_up',
-                'edit_mode': False,
-
-                'cbjs_action': '''
-                trigger_top = bvr.src_el.getParent(".spt_script_edit");
-                script_editor = trigger_top.getElement(".spt_python_script_text");
-                buttons_div = trigger_top.getElement(".spt_script_edit_buttons");
-
-                if (!bvr.edit_mode) {
-                    var title_input = trigger_top.getElement(".spt_script_path_title");
-                    var folder_input = trigger_top.getElement(".spt_script_path_folder");
-                    title_input.value = '';
-                    folder_input.value = '';
-                    script_editor.value = '';
-                }
-
-                // Hide the script editor and button controls
-                script_editor.setStyle("display", "none");
-                buttons_div.setStyle("display", "none");
-
-                spt.tab.set_tab_top_from_child(bvr.src_el);
-                spt.tab.add_new('create_new_script' , 'Create New', 'tactic.ui.tools.ScriptCreateWdg');
-                '''
-            } )
-
-        div.add(HtmlElement.br(2))
-
-
-        script_text = TextAreaWdg("script")
-        script_text.add_style('padding-top: 10px')
-        if edit_mode:
-            script_text.set_option("read_only", "true")
-        else:
-            script_text.add_style("display", "none")
-        script_text.add_class("form-control")
-        script_text.add_class("spt_python_script_text")
-        div.add(script_text)
-
-        if script:
-            script_text.set_value(script)
-        script_text.add_style("height: 300px")
-        script_text.add_style("width: 100%")
-
-        return div
-
-
-
-class ScriptCreateWdg(BaseRefreshWdg):
-    ''' Blank Text area for New Script Creation '''
-
-    '''This is still used in the trigger interface for process nodes '''
-    def get_display(self):
-
-        script_path = ''
-        div = DivWdg()
-        div.add(HtmlElement.br())
-        title = DivWdg('Add Script Code to be executed:')
-        title.add_style('padding: 2px')
-
-        div.add(title)
-        div.add_style('padding: 5px')
-
-
-
-        script_text = TextAreaWdg("script_new")
-        script_text.add_style('padding-top: 10px')
-
-        script_text.add_class("form-control")
-        script_text.add_class("spt_python_script_text")
-        div.add(script_text)
-
-        script_text.add_style("height: 300px")
-        script_text.add_style("width: 100%")
-
-        return div
-
-
 class ScriptSettingsWdg(BaseRefreshWdg):
 
     def get_display(self):
@@ -4527,41 +4164,24 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         script_path_folder_text.add_class("spt_script_path_folder")
         script_path_div.add(script_path_folder_text)
 
-        """
-        # DEPRECATED beacuse this script tries to do to much with just the script folder.
-
         script_path_folder_text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
 
             setTimeout( function() {
-
-                var script_path_folder = bvr.src_el.value;
-                var code;
-                if (script_path_folder) {
-                    var server = TacticServerStub.get();
-                    code = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].code)", {single: true});
-                    language = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].language)", {single: true});
-                }
-
-                var top = bvr.src_el.getParent(".spt_script_edit");
-                var script_path_title = top.getElement(".spt_script_path_title");
-                var is_read_only = script_path_title.getAttribute('readonly');
-                var script_language = top.getElement(".spt_script_language");
-
-                //var bkgd = script_path_title.getStyle('background');
-
-                if (code) {
-                    script_path_title.removeAttribute('readonly');
-                    script_language.innerText = language;
-                }
-
+                
                 var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
+                // Set the node script_path_folder, reset the script_path_title
                 var node = spt.pipeline.get_info_node();
+                var script_path_folder = bvr.src_el.value;
+                spt.pipeline.set_node_multi_kwarg(node, "script_path_folder", script_path_folder);
+                
+                var top = bvr.src_el.getParent(".spt_script_edit");
+                var script_title_el = top.getElement(".spt_script_path_title");
+                script_title_el.value = "";
                 spt.pipeline.set_node_multi_kwarg(node, "script_path_title", "");
-                spt.pipeline.set_input_value_from_kwargs(node, "script_path_title", script_path_title);
 
                 spt.named_events.fire_event('pipeline|change', {});
 
@@ -4569,7 +4189,6 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
             '''
         } )
-        """
 
         self.add_session_behavior(script_path_folder_text, "text", "spt_action_info_top", "script_path_folder")
 
@@ -4599,32 +4218,39 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 
             setTimeout( function() {
 
+                // Get the script code and language
                 var script_path_title = bvr.src_el.value;
                 var top = bvr.src_el.getParent(".spt_script_edit");
-                var buttons_div = top.getElement(".spt_script_edit_buttons");
-
-                spt.show(buttons_div);
-
                 var script_path_folder = top.getElement(".spt_script_path_folder").value;
-                var script_path = script_path_folder + '/' + script_path_title;
-                var editor = top.getElement(".spt_ace_editor_top");
-                var script = '';
                 if (script_path_folder && script_path_title) {
-                    var popup = false;
-                    script = spt.CustomProject.get_script_by_path(script_path, popup);
+                    var server = TacticServerStub.get();
+                    var script = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].code)", {single: true});
+                    var language = server.eval("@GET(config/custom_script['folder', '" + script_path_folder + "'].language)", {single: true});
+                } else {
+                    return;
                 }
+                
+                var buttons_div = top.getElement(".spt_script_edit_buttons");
+                spt.show(buttons_div);
+                
+                var script_language = top.getElement(".spt_script_language");
+                var editor = top.getElement(".spt_ace_editor_top");
+                
                 if (script_path_folder && script_path_title) {
                     var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
                     spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
                     if (script) {
+                        // Show language, show editor, set script in ace editor, set node kwargs
+                        script_language.innerText = language;
                         editor.setStyle("display", "");
 
                         var node = spt.pipeline.get_info_node();
                         spt.pipeline.set_node_multi_kwarg(node, "script", script);
                         //spt.pipeline.set_input_value_from_kwargs(node, "script", editor);
-                    }
-                    else {
+                    } else {
+                        // Reset language, Hide editor, reset ace editor, set node kwargs
+                        script_language.innerText = "";
                         editor.setStyle("display", "none");
 
                         var node = spt.pipeline.get_info_node();
@@ -4755,7 +4381,8 @@ class ScriptSettingsWdg(BaseRefreshWdg):
             show_options=False, 
             editor_id=unique_id,
             dynamic_height=True,
-            show_bottom=False
+            show_bottom=False,
+            form_element_name="script"
         )
         
         if not script:
@@ -4812,20 +4439,28 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         div.add(script_text)
         ####################################
 
-        code = ("// Enter script here\n"
-        "var server = TACTIC.get();")
+        language = self.kwargs.get("language")
+        if not language:
+            language = "javascript"
+
+
+        script = self.kwargs.get("script") 
+        if not script:
+            script = ("// Enter script here\n"
+            "var server = TACTIC.get();")
 
         unique_id = Common.generate_random_key()
         script_ace_editor = AceEditorWdg(
             width="100%", 
-            language="javascript", 
-            code=code,
+            language=language, 
+            code=script,
             show_options=False, 
             editor_id=unique_id,
             dynamic_height=True,
-            show_bottom=False
+            show_bottom=False,
+            form_element_name="script"
         )
-        
+                
         script_ace_editor.add_class("form-group")
 
         div.add(script_ace_editor)
@@ -4842,14 +4477,15 @@ class ScriptSettingsWdg(BaseRefreshWdg):
         }
 
         cbjs_action_default = '''
+        
+        var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
         var node = spt.pipeline.get_info_node();
+        
         var version = spt.pipeline.get_node_kwarg(node, 'version');
         if (version && version != 1)
             return;
-
-        var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
-        spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
         '''
 
@@ -4919,7 +4555,7 @@ class ScriptSettingsWdg(BaseRefreshWdg):
 class ActionInfoWdg(BaseInfoWdg):
 
     def get_display(self):
-
+        
         process = self.kwargs.get("process")
         pipeline_code = self.kwargs.get("pipeline_code")
         node_type = self.kwargs.get("node_type")
@@ -4940,27 +4576,23 @@ class ActionInfoWdg(BaseInfoWdg):
         self.workflow = workflow
 
 
-        pipeline = Pipeline.get_by_code(pipeline_code)
-
-        # get the pipeline
-        search = Search("sthpw/pipeline")
-        search.add_filter("code", pipeline_code)
-        pipeline = search.get_sobject()
-
-
         event = "process|action"
 
-        self.language = ""
-
+         
+        settings = properties.get("settings") or {}
+        default = settings.get("default") or {}
         # get the trigger
-        self.script = None
+        self.script = default.get("script") or ""
+        self.language = default.get("language") or ""
         self.script_path = ""
         self.process_code = ""
         self.on_action_class = ""
         self.action = ""
         self.execute_mode = ""
 
+        """
         if process_sobj:
+            raise
             process_code = process_sobj.get_code()
             search = Search("config/trigger")
             search.add_filter("process", process_code)
@@ -4992,6 +4624,8 @@ class ActionInfoWdg(BaseInfoWdg):
                     if custom_script:
                         self.script = custom_script.get("script")
                         self.language = custom_script.get("language")
+        """
+
 
         if not self.action:
             self.action = "create_new"
@@ -5005,24 +4639,21 @@ class ActionInfoWdg(BaseInfoWdg):
         top.add(title_wdg)
 
 
-
+        # FIXME: Add description for condition node.
         top.add("<p>A action process is an automated process which can execute a script or command when called from a previous process.</p>")
 
         desc_div = self.get_description_wdg()
         top.add(desc_div)
 
         form_top = DivWdg()
+        form_top.add_class("spt_section_top")
         form_top.add_class("spt_form_top")
         top.add(form_top)
         
-
         form_wdg = DivWdg()
         form_top.add(form_wdg)
-        form_wdg.add_class("spt_section_top")
         form_wdg.add_class("form-group")
 
-
-        
         select = SelectWdg("action")
         select.add_class("spt_action_select")
         select.set_unique_id()
@@ -5040,7 +4671,6 @@ class ActionInfoWdg(BaseInfoWdg):
             form_wdg.add(select)
             help_text = "This will be executed on the completion event of an input process.  The condition check should either return True or False or a list of the output streams."
             form_wdg.add('<span class="bmd-help">%s</span>' % help_text)
-
 
 
         SessionalProcess.add_relay_session_behavior(form_wdg, post_processing='''
@@ -5327,7 +4957,6 @@ class UnknownInfoWdg(BaseInfoWdg):
 
 
         top = self.top
-        top.add_style("padding: 20px 0px")
         top.add_class("spt_approval_info_top")
 
         process = self.kwargs.get("process")
@@ -5382,7 +5011,6 @@ class ApprovalInfoWdg(BaseInfoWdg):
         self.workflow = workflow
 
         top = self.top
-        top.add_style("padding: 20px 0px")
         top.add_class("spt_approval_info_top")
         self.initialize_session_behavior(top)
 
@@ -5612,7 +5240,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
             self.workflow = {}
 
         top = self.top
-        top.add_style("padding: 20px 0px")
         top.add_class("spt_hierarchy_top")
         self.initialize_session_behavior(top)
 
@@ -5742,7 +5369,6 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
         top = self.top
-        top.add_style("padding: 20px 0px")
         top.add_class("spt_dependency_top")
 
         top.add_class("spt_section_top")
@@ -5957,7 +5583,6 @@ class ProgressInfoWdg(BaseInfoWdg):
         related_wait = workflow.get("wait")
 
         top = self.top
-        top.add_style("padding: 20px 0px")
         top.add_class("spt_progress_top")
         self.initialize_session_behavior(top)
 
@@ -6359,7 +5984,6 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             self.workflow = {}
 
         top = self.top
-        top.add_style("padding: 20px 0px")
         top.add_class("spt_status_top")
         self.initialize_session_behavior(top)
 
@@ -8717,6 +8341,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             'type': 'load',
             'kwargs': kwargs,
             'cbjs_action': '''
+            
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
 
@@ -10617,12 +10242,12 @@ class SessionalProcess:
             'type': 'load',
             'section_name': section_name,
             'cbjs_action': '''
-
+           
             var top = bvr.src_el.hasClass("spt_section_top") ? bvr.src_el : bvr.src_el.getParent(".spt_section_top");
             if (!top) return;
 
             let node = spt.pipeline.get_info_node();
-
+            
             top.update_data = function() {
                 var version = spt.pipeline.get_node_kwarg(node, 'version');
                 if (version != 2)
@@ -10636,9 +10261,9 @@ class SessionalProcess:
 
                 spt.named_events.fire_event('pipeline|change', {});
             }
+            
 
-            '''
-            })
+        '''})
 
         # data loading and processing
         section.add_behavior({
@@ -10684,13 +10309,23 @@ class SessionalProcess:
             'bvr_match_class': 'spt_input',
             'cbjs_action': '''
 
+                var top = bvr.src_el.getParent(".spt_section_top");
+                if (top) {
+                    top.update_data();
+                }
+
+        '''})
+
+        section.add_relay_behavior({
+            'type': 'change',
+            'bvr_match_class': 'ace_text-input',
+            'cbjs_action': '''
+
             var top = bvr.src_el.getParent(".spt_section_top");
             if (top)
                 top.update_data();
 
-            '''
-            })
-
+        '''})
 
         section.add_relay_behavior({
             'type': 'change',
@@ -10701,8 +10336,7 @@ class SessionalProcess:
             if (top)
                 top.update_data();
 
-            '''
-            })
+        '''})
 
     add_relay_session_behavior = staticmethod(add_relay_session_behavior)
 
