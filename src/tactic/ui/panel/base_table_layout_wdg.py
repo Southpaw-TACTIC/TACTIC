@@ -169,6 +169,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             
             # handle element names explicitly set
             self.element_names = self.kwargs.get("element_names")
+            mode = self.kwargs.get("mode")
             if self.element_names:
                 config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
                 if isinstance(self.element_names, basestring):
@@ -177,7 +178,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
                 for element_name in self.element_names:
-                    config_xml += "<element name='%s'/>" % element_name
+                    if mode == "preview":
+                        config_xml += "<element name='%s' mode='preview'/>" % element_name
+                    else:
+                        config_xml += "<element name='%s' mode='preview'/>" % element_name
                 config_xml += "</custom></config>"
                 # self.view is changed for a reason, since a dynamic config supercedes all here
                 # We don't want to change the overall view ... just the
@@ -1996,13 +2000,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
         custom_views = self.kwargs.get("layout_switcher_custom_views") or None
         default_views = self.kwargs.get("default_views") or None
-        name = self.kwargs.get("name")
+        view = self.view
 
 
         if isinstance(custom_views, basestring):
             custom_views = jsonloads(custom_views)
         
-        SwitchLayoutMenu(search_type=self.search_type, view=name, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
+        if isinstance(custom_views, dict):
+            if view not in custom_views.keys():
+                for key, val in custom_views.items():
+                    if view in val:
+                        view = val[0]
+                        break
+                
+        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
         return layout
 
 

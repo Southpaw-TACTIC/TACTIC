@@ -7656,23 +7656,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         project_code = Project.get_project_code()
 
-        preview_button = ButtonNewWdg(title="Workflow Schedule Preview", icon="FA_PLAY")
-        preview_button.add_behavior({
-            'type': 'click',
-            'cbjs_action': '''
-            var toolTop = bvr.src_el.getParent('.spt_pipeline_tool_top');
-            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-            pipeline_code = spt.pipeline.get_current_group()
-            kwargs = {
-                pipeline_code: pipeline_code
-            }
-            spt.panel.load_popup("Workflow Schedule Preview", 'tactic.ui.table.WorkflowSchedulePreviewWdg', kwargs);
-            '''
-        })
-
-        button_row.add(preview_button)
-        
-
 
         button = ButtonNewWdg(title="Toggle workflow list mode", icon="FA_LIST_UL")
         #button_row.add(button)
@@ -8272,6 +8255,25 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         '''
         } )
+
+        preview_button = ButtonNewWdg(title="Workflow Schedule Preview", icon="FA_PLAY")
+        preview_button.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+            var toolTop = bvr.src_el.getParent('.spt_pipeline_tool_top');
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            pipeline_code = spt.pipeline.get_current_group()
+            args = {
+                pipeline_code: pipeline_code
+            }
+            kwargs = {
+                width: 900
+            }
+            spt.panel.load_popup("Workflow Schedule Preview", 'tactic.ui.table.WorkflowSchedulePreviewWdg', args, kwargs);
+            '''
+        })
+
+        button_row.add(preview_button)
 
 
 

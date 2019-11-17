@@ -2892,6 +2892,19 @@ class ViewPanelWdg(BaseRefreshWdg):
             "order": '21',
             'category': 'Display'
         },
+        "default_views": {
+            'description': "determines whether or not showing the default layout switching options",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'default': 'true (displays the default layout switching options)',
+            'category': 'Optional'
+        },
+        "layout_switcher_custom_views": {
+            'description': "an optional dictionary containing all the information of the custom layout switchin options",
+            'type': 'TextWdg',
+            'values': '{"view": ["display_name", "class_name", "layout", "element_names"]}',
+            'category': 'Optional'
+        }
 
     }
 

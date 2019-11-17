@@ -231,7 +231,6 @@ class GanttElementWdg(BaseTableElementWdg):
 
         self.end_sobj_dates = []
         self.start_sobj_dates = []
-
         # fill in keys for all sobjects
         self.range_data = {}
         for sobject in self.sobjects:

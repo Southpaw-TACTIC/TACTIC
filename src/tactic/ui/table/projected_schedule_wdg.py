@@ -85,40 +85,44 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
 
         start_date = today
         due_date = completion_date
-        task_processes = {x.get_value("process"): x for x in tasks}
-        layout = ProjectSetting.get_value_by_key("workflow/workflow_schedule_preview") or 'spt.tools.gantt.GanttLayoutWdg'
-        layout = 'spt.tools.gantt.GanttLayoutWdg'
+        task_processes = {}
 
-        if layout == 'spt.tools.gantt.GanttLayoutWdg':
-            kwargs = {
-                'layout': layout,
-                'show_shelf': False,
-                'mode': 'preview',
-                'search_type': 'sthpw/task',
-                'sobjects': tasks,
-                'order_by': 'search_code,bid_start_date,bid_end_date',
-                'element_names': 'process,status,assigned,days_due,description',
-                'extra_data': {"single_line": "true"},
-                'init_load_num': len(tasks),
-                'processes': task_processes,
-                'edit': False
-            }
-        else:
-            kwargs = {
-                'view': "table",
+        layout = ProjectSetting.get_value_by_key("workflow/workflow_schedule_preview") or 'spt.tools.gantt.GanttLayoutWdg'
+        # layout = 'spt.tools.gantt.GanttLayoutWdg'
+
+        kwargs = {
                 'mode': 'preview',
                 'search_type': 'sthpw/task',
                 'show_shelf': 'false',
                 'sobjects': tasks,
-                'column_widths': "75,75,75,75,300",
-                'width': 600,
+                'height': 400,
                 'order_by': 'search_code,bid_start_date,bid_end_date',
-                'element_names': 'process,status,assigned,days_due,schedule',
                 'extra_data': {"single_line": "true"},
                 'init_load_num': len(tasks),
                 'processes': task_processes,
-                'edit': False
+                'edit': False,
+                'admin_edit': False,
+                'is_editable': False
             }
+        
+        if layout == 'spt.tools.gantt.GanttLayoutWdg':
+            for i, x in enumerate(tasks):
+                x.set_value("status", "Assignment")
+                task_processes[x.get_value("process")] = x
+            kwargs['layout'] = layout
+            kwargs['element_names'] = 'process,status,assigned,days_due,description'
+            kwargs['gantt_width'] = 400
+        else:
+            for i, x in enumerate(tasks):
+                x.set_value("status", "Assignment")
+                code = "TASK00000101" + str(i)
+                x.set_value("code", code)
+                task_processes[x.get_value("process")] = x
+            kwargs['view'] = "table"
+            kwargs['column_widths'] = "75,75,75,75,300"
+            kwargs['element_names'] = 'process,status,assigned,days_due,schedule'
+
+        
         table = ViewPanelWdg(**kwargs)
 
         top.add(table)

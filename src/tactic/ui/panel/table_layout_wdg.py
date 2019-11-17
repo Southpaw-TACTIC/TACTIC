@@ -868,6 +868,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 default_width = -1
 
             width = self.attributes[i].get("width")
+            
 
             if i >= len(column_widths):
                 # default width
@@ -878,8 +879,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             elif not column_widths[i]:
                 column_widths[i] = default_width
-
-
+            
         # resize the widths so that the last one is free
         expand_full_width = True
         default_width = 120
@@ -899,8 +899,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     continue
                 else:
                     item_width = int(float(item_width))
-
-
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -3157,6 +3155,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
+        mode = self.kwargs.get("mode") or None
 
         if self.subscribed_search_keys.get(sobject.get_search_key()):
             tr.set_attr("spt_is_subscribed","true")
@@ -3165,7 +3164,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             background = tr.add_color("background-color", "background", [20, -10, -10])
             tr.set_attr("spt_widget_is_retired","true")
 
-        elif sobject.is_insert():
+        elif sobject.is_insert() and mode != "preview":
             background = tr.add_color("background-color", "background", [10, -10, -10])
         elif row % 2:
             background = tr.add_style("background-color", bgcolor1)
