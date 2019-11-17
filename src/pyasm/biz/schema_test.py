@@ -22,7 +22,7 @@ from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 from pyasm.search import SearchType, Search, Transaction
 from pyasm.biz import Project
-from schema import Schema
+from .schema import Schema
 
 class SchemaTest(unittest.TestCase):
 

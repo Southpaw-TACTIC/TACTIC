@@ -38,6 +38,7 @@ import six
 basestring = six.string_types
 
 IS_Pv3 = sys.version_info[0] > 2
+DICT_KEYS_TYPE = type({}.keys())
 
 from .base import Base
 
@@ -73,6 +74,9 @@ except ImportError:
         def default(self, obj):
             if isinstance(obj, (datetime.date, datetime.datetime)):
                 return obj.isoformat()
+            elif IS_Pv3 and isinstance(obj, DICT_KEYS_TYPE):
+                obj = list(obj)
+                return json.JSONEncoder.default(self, obj)
             elif ObjectId and isinstance(obj, ObjectId):
                 return str(obj)
             else:
@@ -93,7 +97,7 @@ class Common(Base):
 
     def get_python(cls):
         from .config import Config
-        python = Config.get_value("services", "python3")
+        python = Config.get_value("services", "python")
 
         if not python:
             python = os.environ.get('PYTHON')

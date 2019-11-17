@@ -55,7 +55,7 @@ class SearchBoxPopupWdg(BaseRefreshWdg):
         self.state  = self.kwargs.get('state')
 
         # 
-        filter_view = slef.kwargs.get("filter_view")
+        filter_view = self.kwargs.get("filter_view")
         filter_view = "job_filter"
 
         
@@ -296,11 +296,11 @@ class SearchWdg(BaseRefreshWdg):
             if isinstance(filter, str):
                 filter = jsonloads(filter)
 
-            if type(filter) == types.DictType:
+            if isinstance(filter, dict):
                 self.config = self.get_default_filter_config()
                 filter_data = FilterData([filter])
                 filter_data.set_to_cgi()
-            elif type(filter) == types.ListType:
+            elif isinstance(filter, list):
                 self.config = self.get_default_filter_config()
                 filter_data = FilterData(filter)
                 filter_data.set_to_cgi()
@@ -328,14 +328,9 @@ class SearchWdg(BaseRefreshWdg):
 
         
         # NOTE: this is only used to maintain backwards compatibility
-        # plus it is needed for link_search: which contains the filter_config (old way of doing it)
-        if not self.config:# and self.view:
-            """
-            if ':' in self.view: # avoid view of a SearchWdg like link_search:<search_type>:<view>
-                search_view = custom_search_view
-            else:
-                search_view = self.view
-            """
+        # plus it is needed for link_search, which contains the filter_config
+        # (old way of doing it)
+        if not self.config:
             search_view = custom_search_view
             config_view = WidgetConfigView.get_by_search_type(self.search_type, view=search_view)
             # get the self.config first for the display of SearchWdg
@@ -401,8 +396,12 @@ class SearchWdg(BaseRefreshWdg):
         element_names = self.config.get_element_names()
         #element_names = ["Keywords", "Related"]
 
+        extra_options = {
+            "search_type": self.search_type,
+        }
+
         for element_name in element_names:
-            filter = self.config.get_display_widget(element_name)
+            filter = self.config.get_display_widget(element_name, extra_options=extra_options)
 
             if filter and filter.is_visible():
                 self.filters.append(filter)
@@ -544,7 +543,7 @@ class SearchWdg(BaseRefreshWdg):
 
             .spt_search_top {
                 position: relative;
-                overflow-x: hidden;
+                overflow: visible;
             }
 
             .spt_search_top .spt_search_container {
@@ -596,7 +595,7 @@ class SearchWdg(BaseRefreshWdg):
                 display: flex;
                 align-items: center;
 
-                padding: 5px 20px;
+                padding: 5px 10px;
             }
 
             .spt_search_top .spt_match_filter select{
@@ -615,6 +614,9 @@ class SearchWdg(BaseRefreshWdg):
         # if no filters are defined, then display nothing
         if not self.filters:
             return Widget()
+
+
+        top_class = self.kwargs.get("top_class")
 
         top = self.top
         top.add_class("spt_search_top")
@@ -645,19 +647,22 @@ class SearchWdg(BaseRefreshWdg):
         filter_top.add_color("color", "color")
         self.set_as_panel(filter_top)
 
-        # Saved Searches
-        saved_item_action = self.kwargs.get("saved_item_action")
-        saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action)
-        container.add(saved_searches)
+        hide_saved_searches = self.kwargs.get("hide_saved_searches")
 
-        # Save widget
-        overlay = DivWdg()
-        top.add(overlay)
-        overlay.add_class("overlay")
-        overlay.add_style("display: none")
+        if hide_saved_searches not in ['true', True]:
+            # Saved Searches
+            saved_item_action = self.kwargs.get("saved_item_action")
+            saved_searches = AdvancedSearchSavedSearchesWdg(search_type=self.search_type, saved_item_action=saved_item_action, top_class=top_class)
+            container.add(saved_searches)
 
-        save_top = AdvancedSearchSaveWdg(search_type=self.search_type)
-        top.add(save_top)
+            # Save widget
+            overlay = DivWdg()
+            top.add(overlay)
+            overlay.add_class("overlay")
+            overlay.add_style("display: none")
+
+            save_top = AdvancedSearchSaveWdg(search_type=self.search_type)
+            top.add(save_top)
 
         # Styles
         top.add(self.get_styles())
@@ -740,6 +745,7 @@ class SearchWdg(BaseRefreshWdg):
         else:
             select.set_option("labels", "all|any|Compound")
             select.set_option("values", "and|or|custom")
+        select.add_style("height: 25px")
         #select.set_option("labels", "all|any")
         #select.set_option("values", "and|or")
 
@@ -775,10 +781,6 @@ class SearchWdg(BaseRefreshWdg):
         match_div.add("of the following rules")
 
         match_div.add_color("color", "color2")
-
-        # search_wdg.add_style("margin-left: 5px")
-        # filter_div.add( search_wdg)
-        # search_wdg.add_style("float: left")
 
         filter_div.add( match_div)
         filter_div.add_style("padding-top: 5px")
@@ -846,12 +848,9 @@ class SearchWdg(BaseRefreshWdg):
             else:
                 div.add_style("display: block")
 
-            #div.add_style("background-color: #333")
             div.add_color("background", "background")
             div.add_style("padding: 10px 8px")
             div.add_style("margin-top: -1px")
-            #div.add_style("margin-left: 20px")
-            #div.add_style("width: 660")
             div.add(filter)
             filters_div.add(div)
 
@@ -860,7 +859,7 @@ class SearchWdg(BaseRefreshWdg):
         buttons_div = DivWdg()
         search_action = self.kwargs.get("search_action")
         save_mode = "save_as" if self.filter else "save"
-        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type)
+        search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class, hide_save_buttons=hide_saved_searches)
         buttons_div.add(search_wdg)
         filter_div.add(buttons_div)
 
@@ -941,6 +940,7 @@ class SearchWdg(BaseRefreshWdg):
         return filter_div
 
 
+    # DEPRECATED?
     def get_search_wdg(self):
         filter_div = DivWdg()
         filter_div.add_style("width: 300px")

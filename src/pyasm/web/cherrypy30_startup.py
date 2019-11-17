@@ -17,11 +17,14 @@ import cherrypy
 
 from pyasm.web.app_server import AppServer
 
-from pyasm.common import Environment, Container, Config
-from pyasm.web import WebEnvironment
+from pyasm.common import Environment, Container, Config, Common
+from pyasm.web import WebEnvironment, WebContainer, DivWdg, HtmlElement
 from pyasm.biz import Project
+from pyasm.security import Site
+from pyasm.command import SiteUpgradeCmd
 
 from .cherrypy_startup import CherryPyStartup as CherryPyStartup20
+from .cherrypy30_adapter import CherryPyAdapter
 
 
 
@@ -46,7 +49,6 @@ class TacticIndex:
         request = cherrypy.request
         path = request.path_info
 
-        from pyasm.security import Site
         default_project = Site.get().get_default_project()
         if not default_project:
             path = "/"
@@ -73,6 +75,7 @@ class CherryPyStartup(CherryPyStartup20):
         #except:
         #    pass
 
+ 
 
         cherrypy.config.update( self.config )
 
@@ -83,6 +86,57 @@ class CherryPyStartup(CherryPyStartup20):
         cherrypy.engine.block()
 
 
+    def site_upgrade_page(self, path):
+
+        # clear the buffer
+        WebContainer.clear_buffer()
+        adapter = CherryPyAdapter()
+        WebContainer.set_web(adapter)
+
+        styles = HtmlElement.style('''
+            .spt_upgrade_top {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .spt_upgrade_title {
+                display: block;
+                font-size: 30px;
+                text-align:center;
+                font-weight: bold;
+            }
+
+            .spt_upgrade_text {
+                display:block;
+                text-align: center;
+            }
+        ''')
+
+        script = '''
+        <script>
+
+        setInterval(function(){
+            window.location.replace("%s")
+        }, 10000);
+
+        </script>
+        ''' % path
+
+        top = DivWdg()
+        top.add_class("spt_upgrade_top")
+        top.add(styles)
+        top.add(script)
+        title_div = DivWdg()
+        title_div.add_class("spt_upgrade_title")
+        title_div.add("Your TACTIC project is Upgrading")
+        top.add(title_div)
+        describe_div = DivWdg()
+        describe_div.add_class("spt_upgrade_text")
+        describe_div.add("Please wait for a few seconds. Once the upgrade finishes, we will redirect you to the project.")
+        top.add(describe_div)
+        
+        return top.get_buffer_display()
 
 
     def error_page(self, status, message, traceback, version):
@@ -91,13 +145,13 @@ class CherryPyStartup(CherryPyStartup20):
         response = cherrypy.response
         request = cherrypy.request
         path = request.path_info
+        need_upgrade = [False]
 
         parts = path.split("/")
         if len(parts) < 3:
             cherrypy.response.body = '<meta http-equiv="refresh" content="0;url=/tactic" />'
             return
 
-        from pyasm.security import Site
         site_obj = Site.get()
         path_info = site_obj.break_up_request_path(path)
 
@@ -141,14 +195,11 @@ class CherryPyStartup(CherryPyStartup20):
         if has_site and project_code in ['default']:
             startup = cherrypy.startup
             config = startup.config
-            startup.register_project(project_code, config, site=site)
+            startup.register_project(project_code, config, site=site, need_upgrade=need_upgrade)
 
             if path.endswith("/UploadServer/"):
                 from pyasm.widget import UploadServerWdg
                 try:
-                    from pyasm.web import WebContainer
-                    from .cherrypy30_adapter import CherryPyAdapter
-
                     # clear the buffer
                     WebContainer.clear_buffer()
                     adapter = CherryPyAdapter()
@@ -202,7 +253,7 @@ class CherryPyStartup(CherryPyStartup20):
             # register the project
             startup = cherrypy.startup
             config = startup.config
-            startup.register_project(project_code, config, site=site)
+            startup.register_project(project_code, config, site=site, need_upgrade=need_upgrade)
 
             # This is an issue ... if the project is not registered, then on a web
             # page, it is simple just to refresh, but on requests like REST, this is not
@@ -252,13 +303,19 @@ class CherryPyStartup(CherryPyStartup20):
                 if html:
                     return html
             """
+            loading_page = '''<div>Reloading</div>'''
+            if Config.get_value("portal", "auto_upgrade") == 'true':
+                if need_upgrade[0] == True:
+                    loading_page = self.site_upgrade_page(path)
+
 
             # either refresh ... (LATER: or recreate the page on the server end)
             # reloading in 3 seconds
             html_response = []
             html_response.append('''<html>''')
-            html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'><div>Reloading ...</div>''')
-            html_response.append('''<script>document.location = "%s";</script>''' % path )
+            html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'>%s''' % loading_page)
+            if need_upgrade[0] == False:
+                html_response.append('''<script>document.location = "%s";</script>''' % path )
             html_response.append('''</body>''')
             html_response.append('''</html>''')
             html_response = "\n".join(html_response)
@@ -271,10 +328,7 @@ class CherryPyStartup(CherryPyStartup20):
 
         # return 404 error
         try:
-
-            from pyasm.web import WebContainer, DivWdg
             from pyasm.widget import Error404Wdg
-            from cherrypy30_adapter import CherryPyAdapter
 
             # clear the buffer
             WebContainer.clear_buffer()
@@ -409,10 +463,10 @@ class CherryPyStartup(CherryPyStartup20):
         search.add_filter("type", "resource", op="!=")
         projects = search.get_sobjects()
 
-
+        
         # find out if one of the projects is the root
         root_initialized = False
-
+        
         if not root_initialized:
             project_code = Project.get_default_project()
             if not project_code:
@@ -422,21 +476,19 @@ class CherryPyStartup(CherryPyStartup20):
                 cherrypy.root.tactic = SitePage(project_code)
                 cherrypy.root.projects = SitePage(project_code)
                 root_initialized = True
-
-
         if not root_initialized:
             # load in the base site at root
             from tactic_sites.default.context.Index import Index
             cherrypy.root.tactic = Index()
             cherrypy.root.projects = Index()
-
+            
         for project in projects:
             project_code = project.get_code()
             self.register_project(project_code, config)
         self.register_project("default", config)
+        
 
 
-        from pyasm.security import Site
         site_obj = Site.get()
         site_obj.register_sites(self, config)
 
@@ -449,7 +501,128 @@ class CherryPyStartup(CherryPyStartup20):
 
 
 
-    def register_project(self, project, config, site=None):
+    def register_project(self, project, config, site=None, need_upgrade=[False]):
+        if Config.get_value("portal", "auto_upgrade") == 'true':
+
+            from pyasm.common import Xml
+            from pyasm.security import Sudo
+            from pyasm.search import Search
+            from pyasm.common import jsondumps
+
+            sudo = Sudo()
+
+            db_update = []
+            plugin_update = {}
+
+            if project != "default":
+                Site.set_site(site)
+                Project.set_project(project)
+
+                search = Search('config/plugin')
+                plugin_sobjects = search.get_sobjects()
+                for plugin_sobject in plugin_sobjects:
+                    code = plugin_sobject.get_value("code")
+                    version = plugin_sobject.get_value("version")
+                    rel_dir = plugin_sobject.get_value("rel_dir")
+                    plugin_dir = '%s/%s' % (Environment.get_plugin_dir(), rel_dir)
+                    manifest_path = "%s/manifest.xml" % plugin_dir
+                    if os.path.exists(manifest_path):
+                        f = open(manifest_path, 'r')
+                        manifest = f.read()
+                        f.close()
+
+                        xml = Xml()
+                        xml.read_string(manifest)
+                        auto_upgrade = xml.get_value("manifest/data/auto_upgrade") or None
+                        if (not auto_upgrade) or (auto_upgrade in ['false', 'False']):
+                            continue
+                        latest_version = xml.get_value("manifest/data/version") or None
+                        if not latest_version:
+                            continue
+                        elif not version:
+                            plugin_update[code] = [plugin_dir, latest_version]
+                            need_upgrade[0] = True
+                        elif version != latest_version:
+                            plugin_update[code] = [plugin_dir, latest_version]
+                            need_upgrade[0] = True
+                   
+                        # Get coplugins
+                        # TODO: Currently assuming code = plugin_dir
+                        coplugins = xml.get_value("manifest/data/coplugins") or None
+                        coplugins = coplugins.split("|")
+                        for coplugin in coplugins:
+                            coplugin_dir = "%s/%s" % (Environment.get_plugin_dir(), coplugin)
+                            plugin_update[coplugin] = [coplugin_dir, latest_version]
+
+
+            project_versions = Search.eval("@SOBJECT(sthpw/project)")
+
+            newest_version = Environment.get_release_version()
+
+            if newest_version[0] == 'v':
+                newest_version = newest_version[1: len(newest_version)]
+               
+            if project_versions:
+                for x in project_versions:
+                    if x.get_value("code") == 'admin':
+                        continue
+                    if x.get_value("last_version_update") != newest_version:
+                        db_update.append(x.get_value("code")) 
+                        need_upgrade[0] = True
+                                
+            
+            # Determine upgrade_status_path
+            if not site or site == "default":
+                site_tmp_dir = Environment.get_tmp_dir()
+            else:
+                site_obj = Site.get()
+                site_tmp_dir = site_obj.get_site_dir(site)
+            if not os.path.exists(site_tmp_dir):
+                os.makedirs(site_tmp_dir)
+            upgrade_status_path = "%s/upgrade_status.txt" % site_tmp_dir
+            
+            # Get the upgrade_status
+            upgrade_status = "end"
+            if os.path.exists(upgrade_status_path):
+                f = open(upgrade_status_path, 'r')
+                upgrade_status = f.readline()
+                f.close()
+                if upgrade_status == "start":
+                    need_upgrade[0] = True
+            
+            sudo.exit()
+
+            subprocess_kwargs = {
+                'project_code': project,
+                'login': Environment.get_user_name(),
+                'command': "pyasm.command.SiteUpgradeCmd",
+                'kwargs': {
+                    'project_code': project, 
+                    'site': site, 
+                    'db_update': db_update, 
+                    'plugin_update': plugin_update,
+                    'upgrade_status_path': upgrade_status_path    
+                }
+            }
+
+            if need_upgrade[0] and upgrade_status != "start":
+                subprocess_kwargs_str = jsondumps(subprocess_kwargs)
+                install_dir = Environment.get_install_dir()
+                python = Common.get_python()
+                args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
+                args.append(subprocess_kwargs_str)
+                import subprocess
+                
+                if site and site != 'default':
+                    p = subprocess.Popen(args)
+                else:
+                    p = subprocess.call(args)
+
+        if need_upgrade[0] and site and site != "default":
+            # During upgrade, project won't be registered. After project upgrade finishes, project registration can begin
+            return
+
+
 
         # if there happend to be . in the project name, convert to _
         project = project.replace(".", "_")
@@ -512,8 +685,7 @@ class CherryPyStartup(CherryPyStartup20):
         else:
             context_dir = Environment.get_site_dir().replace("\\", "/")
             context_dir = "%s/sites/%s/context" % (context_dir, project)
-
-
+                
 
         if not os.path.exists(context_dir):
             return
@@ -531,7 +703,7 @@ class CherryPyStartup(CherryPyStartup20):
 
             context = context_dir.replace(".py", "")
             contexts.append(context)
-
+        
         for context in contexts:
             try:
 

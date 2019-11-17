@@ -1502,7 +1502,6 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     // this is needed as bvr turns null on error
     var src_el = bvr.src_el;
     try {
-
         var ret_val = server.execute_cmd(class_name, args, values);
         var info = ret_val.info;
 

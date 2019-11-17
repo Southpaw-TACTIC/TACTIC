@@ -163,9 +163,10 @@ class Config(Base):
                 raise e
 
             value = jsondumps(value)
-        elif not Common.IS_Pv3:
-            value = unicode(value, errors='ignore').encode('utf-8')
-        
+        else:
+            if not Common.IS_Pv3:
+                value = unicode(value, errors='ignore').encode('utf-8')
+
         xml_data.set_node_value(node, value)
 
         data = Container.get(Config.CONFIG_KEY)
@@ -224,7 +225,7 @@ class Config(Base):
 
     def get_default_config_path():
         # use the default
-        from environment import Environment
+        from .environment import Environment
         install_dir = Environment.get_install_dir()
         if os.name == 'nt':
             filename = "standalone_win32-conf.xml"
@@ -267,7 +268,7 @@ class Config(Base):
 
         # The only reason to set the tmp config is because there is something
         # wrong with the database connection
-        from environment import Environment
+        from .environment import Environment
         data_dir = Environment.get_data_dir()
         if data_dir and not os.path.exists(data_dir):
             os.makedirs(data_dir)
@@ -280,7 +281,7 @@ class Config(Base):
     set_tmp_config = staticmethod(set_tmp_config)
 
     def unset_tmp_config():
-        from environment import Environment
+        from .environment import Environment
         try:
             os.environ.pop("TACTIC_TMP_CONFIG_PATH")
         except:

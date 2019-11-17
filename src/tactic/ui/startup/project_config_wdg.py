@@ -494,7 +494,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="View", icon=IconWdg.ZOOM)
+            button = IconButtonWdg(title="View", icon="FA_SEARCH")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -549,7 +549,7 @@ class SearchTypePanel(BaseRefreshWdg):
             SwitchLayoutMenu(search_type=search_type, activator=arrow_button, cbk=cbk, is_refresh=False)
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Add", icon=IconWdg.ADD)
+            button = IconButtonWdg(title="Add", icon="FA_PLUS")
             td.add(button)
             button.add_behavior( {
                 'type': 'listen',
@@ -632,7 +632,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Import", icon=IconWdg.IMPORT)
+            button = IconButtonWdg(title="Import", icon="FA_UPLOAD")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -653,7 +653,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Custom Columns", icon=IconWdg.COLUMNS)
+            button = IconButtonWdg(title="Custom Columns", icon="FA_COLUMNS")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -674,7 +674,8 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Workflow", icon=IconWdg.PIPELINE)
+            button = IconButtonWdg(title="Workflow", icon="FA_SITEMAP")
+            button.add_class("fa-rotate-270")
             button.add_style("float: left")
             td.add(button)
 
@@ -706,7 +707,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Notifications", icon=IconWdg.MAIL)
+            button = IconButtonWdg(title="Notifications", icon="FA_ENVELOPE")
             button.add_style("float: left")
             td.add(button)
 
@@ -741,7 +742,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Triggers", icon=IconWdg.ARROW_OUT)
+            button = IconButtonWdg(title="Triggers", icon="FA_BOLT")
             td.add(button)
             button.add_style("float: left")
 
@@ -775,7 +776,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Edit Searchable Type", icon=IconWdg.EDIT)
+            button = IconButtonWdg(title="Edit Searchable Type", icon="FA_EDIT")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -832,7 +833,7 @@ class UserPanelWdg(BaseRefreshWdg):
         show_search_limit = self.kwargs.get("show_search_limit") or True
         show_help = self.kwargs.get("show_help") or True
 
-        show_toolbar = self.kwargs.get("show_toolbar") or False
+        show_toolbar = self.kwargs.get("show_toolbar") or True
 
         project = Project.get().get_code()
 
@@ -857,7 +858,7 @@ class UserPanelWdg(BaseRefreshWdg):
         tool_div.add_style('display','inline-flex')
         tool_div.add_style('width','50%')
         tool_div.add_style('margin-bottom','-4px')
-
+     
         if show_add not in ['false', False]:
             button = ActionButtonWdg(title="Add", tip="Add New User")
             button.add_style('align-self: flex-end')
@@ -947,9 +948,8 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
         if show_toolbar in ['true', True]:
-            #top.add(tool_div)
-            #top.add(tool_div2)
-            pass
+            top.add(tool_div)
+            top.add(tool_div2)
 
         br = HtmlElement.br(clear=True)
         top.add(br)
@@ -991,11 +991,11 @@ class UserPanelWdg(BaseRefreshWdg):
         if not view:
             view = "manage_user"
 
-
         expr = "@SEARCH(%s)" %expr_filter
         panel = ViewPanelWdg(
                 search_type='sthpw/login',
                 view=view,
+                show_shelf=False,
                 show_insert='true',
                 show_gear='false',
                 show_select='false',

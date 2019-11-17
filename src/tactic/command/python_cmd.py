@@ -79,7 +79,6 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
 ''' % code
  
 
-        #template = Template(code, output_encoding='utf-8', input_encoding='utf-8')
         try:
             template = Template(code)
             template.render(server=server,spt_mako_results=spt_mako_results, kwargs=self.kwargs,**self.kwargs)

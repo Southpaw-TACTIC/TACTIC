@@ -14,7 +14,7 @@ __all__ = ['LayoutSwitcherWdg']
 
 
 from pyasm.common import Common
-from pyasm.web import WidgetSettings, DivWdg, Table, HtmlElement
+from pyasm.web import WidgetSettings, DivWdg, Table, HtmlElement, SpanWdg
 from pyasm.widget import WidgetConfig, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
@@ -36,7 +36,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
         styles = HtmlElement.style('''
 
             .spt_switcher_top .dropdown-toggle {
-                width: 160px;
+                width: 100%;
             }
 
             ''')
@@ -107,13 +107,20 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             title = "Switch Layout"
 
         mode = self.kwargs.get("mode")
+        badge_count = self.kwargs.get("badge_count") or None
         if mode == "button":
             color = self.kwargs.get("color") or "default"
-            activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
+            if badge_count:
+                activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='spt_task_count badge spt_update'>%s</span> <span class='caret'></span></button>" % (color, title, badge_count))
+            else:
+                activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
         elif mode == "div":
             color = self.kwargs.get("color") or ""
             background = self.kwargs.get("background") or "transparent"
-            activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (background, color, title))
+            if badge_count:
+                activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='spt_task_count badge spt_update'>%s</span> <span class='caret'></span></button>" % (background, color, title, badge_count))
+            else:
+                activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (background, color, title))
 
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
@@ -257,7 +264,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 item_div.add_class("spt_switcher_item")
                 item_div.add_class("tactic_hover")
 
-                item_div.add_style("width: 100%")
+                # item_div.add_style("width: 100%")
 
                 hidden = attrs.get("hidden") == "true"
                 if hidden:
@@ -284,6 +291,13 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
                 item_div.add(title)
                 item_div.add_attr("spt_title", title)
+
+                badge_count = attrs.get("badge_count")
+                if badge_count:
+                    badge = SpanWdg(badge_count)
+                    badge.add_class("badge")
+                    badge.add_class("spt_task_count")
+                    item_div.add(badge)
 
                 target = attrs.get("target")
                 if not target:
@@ -342,10 +356,16 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         top.removeClass("spt_selected");
 
                         var title = bvr.src_el.getAttribute("spt_title");
+                        var badge_count = bvr.src_el.getAttribute("badge_count");
 
                         var title_el = top.getElement(".spt_title");
                         if (title_el && !bvr.hidden)
                             title_el.innerHTML = title
+                        
+                        var badge_el = top.getElement(".spt_task_count");
+                        if (badge_el && !bvr.hidden){
+                            badge_el.innerHTML = badge_count;
+                        }
 
                         if (bvr.save_state) {
                             var server = TacticServerStub.get()
@@ -390,8 +410,11 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 }
 
 .spt_switcher_menu .spt_switcher_item {
-  padding: 10px 0px;
+  padding: 10px 5px;
   cursor: pointer;
+}
+.spt_switcher_menu .spt_task_count {
+    margin-left: 5px;
 }
 
         ''')

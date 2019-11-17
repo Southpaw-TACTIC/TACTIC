@@ -134,7 +134,10 @@ class BaseNodeWdg(BaseRefreshWdg):
 
         top.add_style("margin: 0px auto")
 
+
+
         shape = self.get_shape()
+
         if shape == "star":
             self.set_star_shape()
 
@@ -152,6 +155,21 @@ class BaseNodeWdg(BaseRefreshWdg):
             top.add_style("transform: rotate(-45deg)")
             top.add_style("width", str(height)+"px")
 
+        elif shape == "image":
+
+            icon = self.get_icon()
+
+            if icon.startswith("fa-"):
+                top.add("<div style='position: absolute; top: 0px; left: 0px'><i class='fa %s fa-5x'> </i></div>" % icon)
+                top.add_attr("spt_border_color", "transparent")
+                top.add_style("border-color: transparent")
+            else:
+                top.add("<div style=''><img style='width: 100%%' src='%s'/></div>" % icon)
+                top.add_style("overflow: hidden")
+                top.add_style("border-radius: %spx" % border_radius)
+
+            top.add_style("background: transparent")
+
         else:
             top.add_style("border-radius: %spx" % border_radius)
 
@@ -162,6 +180,10 @@ class BaseNodeWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_style("overflow: hidden")
         top.add(content_div)
+
+
+        if shape == "image":
+            content_div.add_style("display: none")
 
         content = self.get_content()
         content_div.add(content)
@@ -329,7 +351,8 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas_title.add_style("position: absolute")
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
-        canvas_title.add_style("left: 0px")
+        canvas_title.add_style("left: 50%")
+        canvas_title.add_style('transform: translateX(-50%)')
         canvas_title.add_style("z-index: 150")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
@@ -356,8 +379,11 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
 
             parent.innerHTML = html.join(" / ");
+            spt.command.clear();
+            spt.pipeline.fit_to_canvas();
             '''
         } )
+
         canvas_title.add_relay_behavior( {
             'type': 'mouseover',
             'bvr_match_class': 'spt_pipeline_link',
@@ -478,7 +504,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if self.kwargs.get("show_border") not in [False, 'false']:
             outer.add_border()
 
-        
+
 
         # set the size limit
         width = self.width
@@ -529,7 +555,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
 
         } )
- 
+
         outer.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''
@@ -618,16 +644,59 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 var scale = 1.5;
                 spt.pipeline.set_scale(scale);
             }
- 
+
             else if (key == "backspace" || key == "delete") {
                 spt.pipeline.delete_selected();
 
             } else if (key == "t") {
                 spt.process_tool.toggle_side_bar(bvr.src_el);
+                var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                if (top) {
+                    var search_el = top.getElement(".spt_pipeline_type_search");
+                    // FIXME: focus not working when using the hot key
+                    search_el.focus();
+                }
+
+            } else if (key == "h") {
+                var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+                var left = toolTop.getElement(".spt_pipeline_tool_left");
+                var right = toolTop.getElement(".spt_pipeline_tool_right");
+                var show_button = toolTop.getElement(".spt_show_sidebar");
+                var hide_button = toolTop.getElement(".spt_hide_sidebar");
+
+                if (right.classList.contains("spt_left_toggle")){
+                    right.removeClass("spt_left_toggle");
+
+                    left.setStyle("margin-left", "0px");
+                    left.setStyle("opacity", "1");
+                    right.setStyle("margin-left", "20.3%");
+                    right.setStyle("width", "79%");
+                    left.gone = false;
+                    setTimeout(function(){
+                        left.setStyle("z-index", "");
+                    }, 250);
+
+                    hide_button.setStyle("display", "");
+                    show_button.setStyle("display", "none");
+                } else {
+                    right.addClass("spt_left_toggle");
+                    left.setStyle("margin-left", "-21%");
+                    left.setStyle("opacity", "0");
+                    right.setStyle("margin-left", "0px");
+                    right.setStyle("width", "100%");
+                    left.gone = true;
+                    setTimeout(function(){
+                        left.setStyle("z-index", "-1");
+                    }, 250);
+
+                    hide_button.setStyle("display", "none");
+                    show_button.setStyle("display", "");
+                }
+
 
             } else if (key == "q") {
                 spt.process_tool.show_side_bar(bvr.src_el);
- 
+
             } else if (key == "w") {
                 var container = spt.pipeline.take_snapshot();
                 var scale = spt.pipeline.get_scale();
@@ -906,12 +975,21 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
+            canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
             #canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
             canvas_size_wdg.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+
+        if self.is_editable:
+            is_editable = "true"
+        else:
+            is_editable = 'false'
+
+        # add custom canvas behaviors on the canvas div instead
 
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
+        "is_editable": is_editable,
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
@@ -943,7 +1021,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             '''
             } )
 
-
         canvas.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
@@ -959,7 +1036,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         # add custom canvas behaviors on the canvas div instead
         self.canvas_behaviors = self.get_canvas_behaviors()
         for canvas_behavior in self.canvas_behaviors:
-            canvas.add_behavior( canvas_behavior )
+            outer.add_behavior( canvas_behavior )
 
 
         #paint.add_style("border: solid 1px blue");
@@ -972,6 +1049,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         paint.add_behavior( {
         "type": 'drag',
         "mouse_btn": 'LMB',
+        "is_editable": is_editable,
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
@@ -1190,10 +1268,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         screen_div.add_behavior( {
         "type": 'drag',
+        "is_editable": is_editable,
         "mouse_btn": 'LMB',
         "drag_el": '@',
         "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
+
+        self.canvas_behaviors = self.get_canvas_behaviors()
+        for canvas_behavior in self.canvas_behaviors:
+            behavior_type = canvas_behavior.get("type")
+            behavior_action = canvas_behavior.get("cbjs_action")
+            screen_div.add_behavior({
+                "type": behavior_type,
+                "cbjs_action": '''
+                %s
+                ''' % behavior_action
+            })
 
 
         if self.kwargs.get("use_mouse_wheel") in [True, 'true']:
@@ -1210,6 +1300,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 }
             '''
             } )
+
+
+        # add custom canvas behaviors on the canvas div instead
+        # NOTE: at the momen the screen_div is at the top, we need to add the behaviors
+        # here.
+        self.canvas_behaviors = self.get_canvas_behaviors()
+        for canvas_behavior in self.canvas_behaviors:
+            screen_div.add_behavior( canvas_behavior )
 
 
         return top
@@ -1253,9 +1351,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.init(bvr);
         '''
         } )
-
-
-
 
 
         return canvas
@@ -1562,14 +1657,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
             var process = server.eval(expr, {single: true});
 
-            var subpipeline_code = process.subpipeline_code;
-            if (subpipeline_code) {
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
-            }
-            else {
-                var process_code = process.code;
-
-                var subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+            var subpipeline = null;
+            if (process) { 
+                var subpipeline_code = node.properties.settings.default.subpipeline;
+                if (subpipeline_code) {
+                    subpipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+subpipeline_code+"'])", {single: true});
+                } else {
+                    var process_code = process.code;
+                    subpipeline = server.eval("@SOBJECT(sthpw/pipeline['parent_process','"+process_code+"'])", {single: true});
+                }
             }
 
             var top = spt.pipeline.top;
@@ -1578,13 +1674,14 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             if (text) {
                 var root_html = text.innerHTML;
                 bvr.breadcrumb = root_html;
-            }
-            else {
+            } else {
                 var root_html = "";
             }
 
 
-            if (!subpipeline) {
+            if (!subpipeline && !process) {
+                spt.alert("Save workflow before creating subpipeline.");
+            } else if (!subpipeline) {
                 spt.confirm( "Create new workflow?", function() {
                     // create the pipeline
                     var data = {
@@ -1610,7 +1707,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             }
             else {
                 subpipeline_code = subpipeline.code;
-
+                
                 spt.pipeline.clear_canvas();
                 spt.pipeline.import_pipeline(subpipeline_code);
 
@@ -1634,7 +1731,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             node.add_behavior( node_behavior )
 
 
-        
         if (self.add_node_behaviors):
             self.add_default_node_behaviors(node, text)
 
@@ -1891,7 +1987,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.init(bvr);
 
         var node = bvr.src_el;
-        spt.pipeline.select_node(node); 
+        spt.pipeline.select_node(node);
 
         var select_output_nodes = function(nodes) {
             for (let i = 0; i < nodes.length; i++) {
@@ -1899,7 +1995,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 if (cur_node.spt_is_selected == true) {
                     break;
                 }
-                spt.pipeline.select_node(cur_node); 
+                spt.pipeline.select_node(cur_node);
                 let cur_output_nodes = spt.pipeline.get_output_nodes(cur_node);
                 if (cur_output_nodes.length > 0) {
                     select_output_nodes(cur_output_nodes);
@@ -1913,7 +2009,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 if (cur_node.spt_is_selected == true) {
                     break;
                 }
-                spt.pipeline.select_node(cur_node); 
+                spt.pipeline.select_node(cur_node);
                 let cur_input_nodes = spt.pipeline.get_input_nodes(cur_node);
                 if (cur_input_nodes.length > 0) {
                     select_input_nodes(cur_input_nodes);
@@ -1964,6 +2060,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         spt.pipeline.set_current_position(node);
         '''
         } )
+
 
 
 
@@ -2846,7 +2943,7 @@ spt.pipeline.get_screen_nodes = function() {
     }
     return screen_nodes;
 }
- 
+
 
 spt.pipeline.get_ctx = function() {
     return spt.pipeline.get_data().ctx;
@@ -3308,8 +3405,8 @@ spt.pipeline.select_nodes_by_box = function(TL, BR) {
             right: node.spt_xpos + size.x
         }
 
-        var intersect = !(r2.left > r1.right || 
-                          r2.right < r1.left || 
+        var intersect = !(r2.left > r1.right ||
+                          r2.right < r1.left ||
                           r2.top > r1.bottom ||
                           r2.bottom < r1.top);
 
@@ -3662,10 +3759,10 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     var label = new_node.getElement(".spt_label");
     var input = new_node.getElement(".spt_input");
     if (label) {
-            label.innerHTML = label_str;
+        label.innerHTML = label_str;
     }
     if (input) {
-            input.value = label_str;
+        input.value = label_str;
     }
     new_node.setAttribute("spt_element_name", name);
     new_node.spt_name = name;
@@ -3676,7 +3773,7 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     new_node.properties = kwargs.properties || {};
 
     // BACKWARDS COMPATIBILITY
-    if (new_node.properties.settings && new_node.properties.settings.version == 1) 
+    if (new_node.properties.settings && new_node.properties.settings.version == 1)
         new_node[node_type] = { description: kwargs.description || "" }
 
 
@@ -3750,7 +3847,15 @@ spt.pipeline._add_node = function(name,x, y, kwargs){
     if (spt.pipeline.top.getAttribute("version_2_enabled") != "false")
         spt.pipeline.set_node_kwarg(new_node, "version", 2);
 
-    new_node.has_changes = true;
+
+    if (kwargs.is_loading) {
+        new_node.has_changes = false;
+    }
+    else {
+        new_node.has_changes = true;
+    }
+
+
     spt.named_events.fire_event('pipeline|change', {});
 
     // if folder hide folder
@@ -3986,6 +4091,7 @@ spt.pipeline.get_node_kwargs = function(node) {
     var type = spt.pipeline.get_node_type(node);
     type = "settings";
     var property = node.properties;
+
     if (property) return property[type] || {};
     return {};
 }
@@ -4015,8 +4121,9 @@ spt.pipeline.add_node_on_save = function(node, name, value) {
 }
 
 // Supports both kwargs and multi kwargs
-spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4026,8 +4133,9 @@ spt.pipeline.set_input_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4051,8 +4159,9 @@ spt.pipeline.set_select_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4062,8 +4171,9 @@ spt.pipeline.set_radio_value_from_kwargs = function(node, name, input_el) {
     }
 }
 
-spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el) {
+spt.pipeline.set_checkbox_value_from_kwargs = function(node, name, input_el, properties=null) {
     var kwargs = spt.pipeline.get_node_kwargs(node);
+    if (properties) kwargs = properties;
     if (kwargs) {
         var value = kwargs[name];
         if (!value && kwargs.multi) {
@@ -4315,7 +4425,6 @@ spt.pipeline.get_all_folders = function() {
 }
 
 spt.pipeline.add_folder = function(group_name, color, title) {
-
     if (typeof(color) == 'undefined') {
         color = '#999';
     }
@@ -4526,7 +4635,7 @@ spt.pipeline.node_drag_setup = function( evt, bvr, mouse_411) {
 
 spt.pipeline.node_drag_motion = function( evt, bvr, mouse_411) {
 
-    
+
     // slow down the drawwing a bit (seems to slow down on big workflows);
     if (spt.pipeline.draw_skip != 5) {
         spt.pipeline.draw_skip += 1;
@@ -4660,6 +4769,7 @@ spt.pipeline.drag_connector_setup = function(evt, bvr, mouse_411) {
 
 
     spt.pipeline.last_connector.set_from_node(from_node);
+    spt.named_events.fire_event('pipeline|change', {});
 }
 
 
@@ -4768,7 +4878,6 @@ spt.pipeline.detect_cycle = function() {
 }
 
 spt.pipeline.drag_connector_action = function(evt, bvr, mouse_411) {
-
     var drop_on_el = spt.get_event_target(evt);
     var to_node = drop_on_el.getParent(".spt_pipeline_node");
     var from_node = bvr.src_el.getParent(".spt_pipeline_node");
@@ -5397,6 +5506,9 @@ spt.pipeline.canvas_drag_motion = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
+        if (bvr.is_editable == 'false') {
+            return;
+        }
         if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
             return;
         }
@@ -5451,6 +5563,9 @@ spt.pipeline.canvas_drag_action = function(evt, bvr, mouse_411) {
 
 
     if ( spt.pipeline.canvas_drag_mode == "connector" ) {
+        if (bvr.is_editable == 'false') {
+            return;
+        }
         spt.pipeline.canvas_drag_init = false;
 
         spt.pipeline.canvas_drag_mode = "canvas";
@@ -5523,7 +5638,7 @@ spt.pipeline._existing_connector_drag_action = function(evt, bvr, mouse_411) {
     bvr.connector = spt.pipeline.canvas_drag_connector;
     spt.pipeline.drag_connector_action(evt, bvr, mouse_411);
 
-    // It looks like the bvr object is actually reused by the behvior.  We set the 
+    // It looks like the bvr object is actually reused by the behvior.  We set the
     // src el back to the original canvas after the drag operation
     var canvas = spt.pipeline.get_canvas();
     bvr.src_el = canvas;
@@ -5716,6 +5831,10 @@ spt.pipeline.fit_to_canvas = function(group_name) {
     }
     else {
         nodes = spt.pipeline.get_nodes_by_group(group_name);
+    }
+
+    if (nodes.length == 0) {
+        var nodes = spt.pipeline.get_all_folders();
     }
 
 
@@ -6393,7 +6512,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         this.is_selected = false;
     }
 
- 
+
 
     this.set_from_node = function(from_node) {
         this.from_node = from_node;
@@ -6675,6 +6794,14 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         processes[name] = process_sobj;
     }
 
+    // get all the triggers for the processes from the pipeline.
+    var trigger_sobjs = server.eval("@SOBJECT(config/trigger['process', @GET(config/process['pipeline_code', '"+pipeline_code+"'].code)])")
+    triggers = {}
+    for (var i = 0; i < trigger_sobjs.length; i++) {
+        var trigger_sobj = trigger_sobjs[i];
+        var process_code = trigger_sobj.process;
+        triggers[process_code] = trigger_sobj;
+    }
 
     var pipeline_xml = pipeline.pipeline;
     var pipeline_stype = pipeline.search_type;
@@ -6742,6 +6869,23 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
             } else if (typeof(settings) == "string") {
                 settings = JSON.parse(settings);
             }
+
+            // Add the triggers to settings. Note this is necessary only for version 1.
+            // Version 2 will have settings.version set to 2.
+            if (!settings.version) {
+                var trigger = triggers[process.code];
+                if (trigger != null) {
+                    if (trigger.class_name) settings['command'] = { 'on_action_class' : trigger.class_name, 'execute_mode': trigger.mode, 'action':'command' }
+                    if (trigger.script_path) {
+                        settings['script_path_folder'] = trigger.script_path;
+                        settings['script_path_title'] = process.code;
+                        settings['action'] = 'script_path';
+
+                        if (trigger.mode) settings['execute_mode'] = trigger.mode;
+                    }
+                }
+            }
+
 
             // add the process name
             if (process.subpipeline_code) settings['subpipeline_code'] = process.subpipeline_code;
@@ -7025,6 +7169,7 @@ spt.pipeline.import_nodes = function(group, xml_nodes) {
             select_node: false,
             node_type: node_type,
             new: false,
+            is_loading: true,
         }
 
         // split the name
@@ -7222,7 +7367,8 @@ spt.pipeline.set_status_color = function(search_key) {
     }
     server.p_execute_cmd(cmd, kwargs)
     .then( function(ret_val) {
-        var info = ret_val.info;
+        var info = ret_val.info.process_colors;
+        var search_keys = ret_val.info.task_search_keys;
         var group_name = spt.pipeline.get_current_group();
         var nodes = spt.pipeline.get_nodes_by_group(group_name);
 
@@ -7238,8 +7384,21 @@ spt.pipeline.set_status_color = function(search_key) {
                 node.setStyle("opacity", "0.5");
             }
             spt.pipeline.set_color(node, color);
+
+
+            spt.update.add( node, {
+                search_key: search_keys[process],
+                return: "sobject",
+                cbjs_action: `
+                    var server = TacticServerStub.get();
+                    var status_colors = server.get_task_status_colors().task;
+                    var status = bvr.value.status;
+                    var color = status_colors[status];
+                    spt.pipeline.set_color(bvr.src_el, color);
+                `
+            } )
         }
- 
+
     } );
 
     return;
@@ -7299,7 +7458,6 @@ spt.pipeline.set_status_color = function(search_key) {
 
 
 spt.pipeline.set_task_color = function(group_name) {
-
     if (!group_name) {
         group_name = spt.pipeline.get_current_group();
     }
@@ -7501,8 +7659,10 @@ spt.pipeline.export_group = function(group_name) {
             throw(msg);
         }
         for (var key in attrs) {
-            if (['from','to'].contains(key))
-                continue;
+            
+            
+            if (["from", "to", "from_node", "to_node"].indexOf(key) > -1) continue;
+            
             xml += ' '+key+'="'+attrs[key]+'"';
         }
 
@@ -7520,6 +7680,7 @@ spt.pipeline.export_group = function(group_name) {
         }
         xml += '/>\n';
     }
+
     xml += '</'+group_type+'>\n';
 
     return xml;
@@ -7601,11 +7762,14 @@ class PipelineGetStatusColorsCmd(Command):
 
         # get all of the tass for this sobject
         tasks = Task.get_by_sobject(sobject)
+        task_search_keys = {}
 
-        tasks_dict = {};
+        tasks_dict = {}
         for task in tasks:
             process = task.get_value("process")
             tasks_dict[process] = task
+            task_search_key = task.get_search_key()
+            task_search_keys[process] = (task_search_key)
 
         pipeline_code = sobject.get("pipeline_code")
         pipeline = Pipeline.get_by_sobject(sobject)
@@ -7647,7 +7811,8 @@ class PipelineGetStatusColorsCmd(Command):
 
             process_colors[process] = color
 
-        return process_colors
+        self.info['process_colors'] = process_colors
+        self.info['task_search_keys'] = task_search_keys
 
 
 
@@ -7714,7 +7879,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             input_top.rename = function () {
                 var inp = this.getElement(".spt_node_name_input");
                 var name = inp.value;
-                
+
                 var node = popup.activator;
                 spt.pipeline.set_node_name(node, name);
 
@@ -7738,7 +7903,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             var top = node.getParent(".spt_pipeline_top");
 
             if (!top.hot_key_state) return;
-            
+
             top.hot_key_state = false;
             document.activeElement.blur();
             bvr.src_el.focus();
@@ -7754,6 +7919,7 @@ class NodeRenameWdg(BaseRefreshWdg):
             if (key == 'enter') {
                 var top = bvr.src_el.getParent(".spt_rename_node");
                 top.rename();
+                spt.named_events.fire_event('pipeline|change', {});
             }
 
             '''
@@ -7768,6 +7934,7 @@ class NodeRenameWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_rename_node");
             top.rename();
+            spt.named_events.fire_event('pipeline|change', {});
 
             '''
             })

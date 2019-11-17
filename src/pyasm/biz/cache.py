@@ -245,7 +245,7 @@ class CustomCache(BaseCache):
         '''do the cache'''
         self.mtime = datetime.datetime.now()
         self.caches = self.action()
-        assert type(self.caches) == types.DictType
+        assert isinstance(self.caches, dict)
 
 
 

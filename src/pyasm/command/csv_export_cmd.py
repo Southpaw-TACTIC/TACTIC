@@ -15,15 +15,17 @@ __all__ = ["CsvExportCmd"]
 import os, csv
 import shutil
 import re
+from pyasm.common import Common
 from pyasm.search import SObjectFactory, SearchType, Search, SearchKey
 
 from .command import *
+import six
 
 
 class CsvExportCmd(Command):
 
 
-    def __init__(self, search_type, view, column_names, file_path):
+    def __init__(self, search_type, view, column_names, file_path, document=None):
         self.search_type = search_type
         self.view = view
         self.file_path = file_path
@@ -31,6 +33,8 @@ class CsvExportCmd(Command):
         self.search_keys = []
         self.column_names = column_names
         self.include_id = True
+        self.document = document
+        self.document_column = "data"
 
     def get_title(self):
         return "CSV Export"
@@ -66,22 +70,26 @@ class CsvExportCmd(Command):
             search.add_filters("id", self.search_ids)
             sobjects = search.get_sobjects()
         elif self.search_keys:
-
             sobjects = Search.get_by_search_keys(self.search_keys, keep_order=True)
-            """
-            search_codes = [SearchKey.extract_code(i) for i in self.search_keys if SearchKey.extract_code(i) ]
-            if search_codes:
-                search.add_filters("code", search_codes)
-            else:
-                search_ids = [SearchKey.extract_id(i) for i in self.search_keys if SearchKey.extract_id(i) ]
-                search.add_filters("id", search_ids)
-            """
+        elif self.document:
+            from tactic.ui.panel import Document
+            sobjects = Document().get_sobjects_from_document(self.document)
+
         else:
             sobjects = search.get_sobjects()
 
         from pyasm.widget import WidgetConfigView
         from pyasm.web import Widget
         config = WidgetConfigView.get_by_search_type(self.search_type, self.view)
+
+
+        search = Search("config/widget_config")
+        search.add_filter("view", self.view)
+        search.add_filter("category", "ElementDefinitionWdg")
+        element_config = search.get_sobject()
+        if element_config:
+            config.add_config(element_config)
+
         
         columns = []
         if self.column_names:
@@ -98,7 +106,7 @@ class CsvExportCmd(Command):
             columns.insert(0, "id")
 
         # create the csv file
-        org_file = file(self.file_path, 'w')
+        org_file = open(self.file_path, 'w')
         csvwriter = csv.writer(org_file, quoting=csv.QUOTE_NONNUMERIC)
 
         # write the titles
@@ -122,7 +130,7 @@ class CsvExportCmd(Command):
                 value = element.get_text_value()
                 if isinstance(value, Widget):
                     value = value.get_buffer_display()
-                elif isinstance(value, basestring):
+                elif not Common.IS_Pv3 and isinstance(value, six.string_types):
                     if isinstance(value, unicode):
                         value = value.encode('UTF-8', 'ignore')
                 else:

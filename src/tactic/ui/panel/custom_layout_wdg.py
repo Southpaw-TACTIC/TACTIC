@@ -1520,6 +1520,32 @@ class CustomLayoutCbk(Command):
 
         callback = self.kwargs.get("callback")
 
+        callback_kwargs = self.kwargs.get("kwargs") or {}
+
+        key = None
+        if callback.startswith("$"):
+            key = callback.lstrip("$")
+            tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+            path = "%s/key_%s" % (tmp_dir,key)
+            if not os.path.exists(path):
+                print("ERROR: Command path [%s] not found" % path)
+                raise Exception("Command key not valid")
+
+            f = open(path, 'r')
+            data = f.read()
+            f.close()
+            data = jsonloads(data)
+            callback = data.get("class_name")
+            static_kwargs = data.get("kwargs") or {}
+            if static_kwargs:
+                for n, v in static_kwargs.items():
+                    callback_kwargs[n] = v
+
+            login = data.get("login")
+            current_login = Environment.get_user_name()
+            if login != current_login:
+                raise Exception("Permission Denied: wrong user")
+
         search = Search("config/widget_config")
         search.add_filter("view", view)
         search.add_filter("category", "CustomLayoutWdg")
@@ -1529,10 +1555,12 @@ class CustomLayoutCbk(Command):
 
         callback_code = config.get_value("config//callback[@class='%s']" % callback)
 
-        callback_kwargs = self.kwargs.get("kwargs") or {}
 
         from tactic.command import PythonCmd
         cmd = PythonCmd(code=callback_code, **callback_kwargs)
+
+        if cmd.requires_key() and not key:
+            raise Exception("Permission Denied: command requires key")
 
         results = cmd.execute()
 

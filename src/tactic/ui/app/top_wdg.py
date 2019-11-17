@@ -584,11 +584,7 @@ class TopWdg(Widget):
         body = self.body
         html.add( body )
 
-        if web.is_admin_page():
-            body.add_event('onload', 'spt.onload_startup(admin=true)')
-        else:
-            body.add_event('onload', 'spt.onload_startup(admin=false)')
-
+ 
         body.add_style('overflow', 'hidden')
 
 
@@ -596,14 +592,14 @@ class TopWdg(Widget):
 
         # Add a NOSCRIPT tag block here to provide a warning message on browsers where 'Enable JavaScript'
         # is not checked ... TODO: clean up and re-style to make look nicer
-        top.add( """
+        top.add( '''
         <NOSCRIPT>
         <div style="border: 2px solid black; background-color: #FFFF99; color: black; width: 600px; height: 70px; padding: 20px;">
         <img src="%s" style="border: none;" /> <b>Javascript is not enabled on your browser!</b>
         <p>This TACTIC powered, web-based application requires JavaScript to be enabled in order to function. In your browser's options/preferences, please make sure that the 'Enable JavaScript' option is checked on, click OK to accept the settings change, and then refresh this web page.</p>
         </div>
         </NOSCRIPT>
-        """ % ( IconWdg.get_icon_path("ERROR") ) )
+        ''' % ( IconWdg.get_icon_path("ERROR") ) )
 
 
 
@@ -622,7 +618,6 @@ class TopWdg(Widget):
         # instantiated
         #content_div.add(button)
 
-        
         from tactic.ui.widget import CalendarWdg
         cal_wdg = CalendarWdg(css_class='spt_calendar_template_top')
         cal_wdg.top.add_style('display: none')
@@ -790,34 +785,61 @@ class TopWdg(Widget):
         '''} )
 
 
-
         # deal with the palette defined in /index which can override the palette
-        if self.kwargs.get("hash") == ():
+
+        # tactic_kbd is only true for standard TACTIC index
+        tactic_kbd = True
+
+        hash = self.kwargs.get("hash")
+        if isinstance(hash, tuple) and len(hash) > 0:
+            key = hash[0]
+            if key == "link":
+                key = "index"
+        elif hash == ():
             key = "index"
+        else:
+            key = None
+        
+        url = None
+        if key:
             search = Search("config/url")
             search.add_filter("url", "/%s/%%"%key, "like")
             search.add_filter("url", "/%s"%key)
             search.add_where("or")
             url = search.get_sobject()
-            if url:
-                xml = url.get_xml_value("widget")
-                palette_key = xml.get_value("element/@palette")
+            
+        if url:
+            xml = url.get_xml_value("widget")
 
-                # look up palette the expression for index
-                from pyasm.web import Palette
-                palette = Palette.get()
+            palette_key = xml.get_value("element/@palette")
 
-                palette.set_palette(palette_key)
-                colors = palette.get_colors()
-                colors = jsondumps(colors)
+            # Assume no TACTIC kbd functions for custom index
+            tactic_kbd = False
+            if xml.get_value("element/@tactic_kbd") in [True, "true"]:
+                tactic_kbd = True
 
-                script = HtmlElement.script('''
-                    var env = spt.Environment.get();
-                    env.set_colors(%s);
-                    env.set_palette('%s');
-                    ''' % (colors, palette_key)
-                )
-                top.add(script)
+            # look up palette the expression for index
+            from pyasm.web import Palette
+            palette = Palette.get()
+
+            palette.set_palette(palette_key)
+            colors = palette.get_colors()
+            colors = jsondumps(colors)
+
+            script = HtmlElement.script('''
+                var env = spt.Environment.get();
+                env.set_colors(%s);
+                env.set_palette('%s');
+                ''' % (colors, palette_key)
+            )
+            top.add(script)
+    
+        
+        if tactic_kbd == True:
+            body.add_event('onload', 'spt.onload_startup(admin=true)')
+        else:
+            body.add_event('onload', 'spt.onload_startup(admin=false)')
+        
 
 
         env = Environment.get()
@@ -837,16 +859,23 @@ class TopWdg(Widget):
         site = Site.get_site()
 
         master_enabled = Config.get_value("master", "enabled")
-        master_site = ProdSetting.get_value_by_key("master/site")
+        forwarding_type = Config.get_value("master", "forwarding_type")
+        if forwarding_type == "xmlrpc_only":
+            master_enabled = "false"
+        
+        master_site = Config.get_value("master", "site")
+        master_project_code = Config.get_value("master", "project_code")
+        
         master_url = Config.get_value("master", "url")
-        master_url = "http://" + master_url + "/tactic/default/Api/"
+        master_url = master_url + "/tactic/default/Api/"
+        
         security = Environment.get_security()
         ticket = security.get_ticket()
         if ticket:
-            master_login_ticket = ticket.get_value("ticket")
+            login_ticket = ticket.get_value("ticket")
         else:
-            master_login_ticket = ""
-        master_project_code = Config.get_value("master", "project_code")
+            login_ticket = ""
+        
         user_timezone = PrefSetting.get_value_by_key('timezone')
 
         kiosk_mode = Config.get_value("look", "kiosk_mode")
@@ -871,7 +900,9 @@ class TopWdg(Widget):
         env.set_master_site('%s');
         env.set_user_timezone('%s');
         ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
-		master_enabled, master_url, master_login_ticket, master_project_code, master_site, user_timezone))
+		master_enabled, master_url, login_ticket, master_project_code, master_site, user_timezone))
+        
+        
         top.add(script)
 
 
@@ -991,18 +1022,68 @@ class TopWdg(Widget):
 
         version = Environment.get_release_version()
 
-        # Bootstrap
-        use_bootstrap = True
-        if use_bootstrap:
+        #ui_library = "bootstrap_material"
+        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "default"
+        if ui_library == "default":
             Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
+
+        elif ui_library == "bootstrap":
+
+            # TEST: new version of bootstrap
+            widget.add('''
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        ''')
+
+            widget.add('''
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+            ''')
+
+
+
+        elif ui_library == "bootstrap_material":
+            # TEST bootstrap material design
+            widget.add('''
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!-- Material Design for Bootstrap fonts and icons -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+
+<!-- Material Design for Bootstrap CSS -->
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+            ''')
+            widget.add('''
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+
+<script src="/plugins/arrive.min.js"></script>
+
+            ''')
+
+
+            self.body.add('''
+<script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
+            ''')
 
 
         Container.append_seq("Page:css", "%s/spt_js/font-awesome-4.7.0/css/font-awesome.css?ver=%s" % (context_url, version))
 
 
 
-        # add the color wheel css
-        Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
+        # add the color wheel css (DEPRECATED)
+        #Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooDialog/css/MooDialog.css" % context_url)
         Container.append_seq("Page:css", "%s/spt_js/mooScrollable/Scrollable.css" % context_url)
 
@@ -1036,6 +1117,7 @@ class TopWdg(Widget):
             include = include.strip()
             if include:
                 widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
+
         return widget
 
 
@@ -1060,13 +1142,16 @@ class JavascriptImportWdg(BaseRefreshWdg):
         Container.append_seq("Page:js", "%s/moment-timezone.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/html2canvas.js" % spt_js_url)
         
-        Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
         # viewer.js from pdfjs may not be needed in the future. For now,
         # it was added for KYC, which requires this. (added 2019-02)
+        Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
         Container.append_seq("Page:js", "/plugins/pdfjs/web/viewer.js")
 
         if not web.is_admin_page():
-            Container.append_seq("Page:js", "%s/require.js" % spt_js_url)
+            use_require = ProjectSetting.get_value_by_key("js_libraries/require")
+            if use_require == "true":
+                Container.append_seq("Page:js", "%s/require.js" % spt_js_url)
+
             use_jquery = ProjectSetting.get_value_by_key("js_libraries/jquery")
             if use_jquery == "true":
                 Container.append_seq("Page:js", "%s/jquery.js" % spt_js_url)
@@ -1074,6 +1159,7 @@ class JavascriptImportWdg(BaseRefreshWdg):
 
         for include in JSIncludes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
+
 
         all_js_path = JSIncludes.get_compact_js_filepath()
 
@@ -1484,8 +1570,7 @@ class CustomTopWdg(BaseRefreshWdg):
         else:
             from tactic.ui.panel import HashPanelWdg 
             hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
-
-
+ 
         # Really, the hash widget should determine what is returned, but
         # should take the Accept into account.  It is not up to this
         # class to determine what is or isn't implemented, nor is it the

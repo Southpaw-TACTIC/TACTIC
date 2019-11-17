@@ -121,48 +121,68 @@ class APIRestHandler(BaseRestHandler):
         web = WebContainer.get_web()
 
         method = web.get_form_value("method")
-        print("method: ", method)
+        print("method: %s" % method)
 
         # make sure there are no special characters in there ie: ()
         p = re.compile('^\w+$')
         if not re.match(p, method):
-            raise Exception("Mathod [%s] does not exist" % method)
+            raise Exception("Method [%s] does not exist" % method)
 
 
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
 
         if not eval("server.%s" % method):
-            raise Exception("Mathod [%s] does not exist" % method)
-
+            raise Exception("Method [%s] does not exist" % method)
 
         keys = web.get_form_keys()
 
-        kwargs = {}
-
-
-        for key in keys:
-
-            if key in ["method", "login_ticket", "password", "domain"]:
-                continue
-
-            if key == 'kwargs':
-                args = web.get_form_value(key)
+        args = None
+        call = None
+        if 'args' in keys:
+            args = web.get_form_value('args')
+            try:
                 args = jsonloads(args)
-                for name, value in args.items():
-                    kwargs[name] = value
-            else:
-                kwargs[key] = web.get_form_value(key)
+            except ValueError:
+                pass
+           
+            if isinstance(args, list):
+                print("args: %s" % args)
+                call = "server.%s(*args)" % method
+            
 
-        print("kwargs: ", kwargs)
-        call = "server.%s(**kwargs)" % method
-        print("call: ", call)
+        if not call:
+            kwargs = {}
 
+            for key in keys:
 
-        return eval(call)
+                if key in ["method", "login_ticket", "password", "domain"]:
+                    continue
 
+                if key == 'kwargs':
+                    args = web.get_form_value(key)
+                    args = jsonloads(args)
+                    for name, value in args.items():
+                        kwargs[name] = value
+                else:
+                    kwargs[key] = web.get_form_value(key)
 
+            print("kwargs: %s" % kwargs)
+            call = "server.%s(**kwargs)" % method
 
+        print("call: %s" % call)
+        try:
+            return eval(call)
+        except Exception as e:
+            import cherrypy
+            cherrypy.response.status = "405"
+            return {
+                "error": {
+                    "args": e.args,
+                    "message": e.message,
+                    "type": e.__class__.__name__
+                }
+            }
 
 
 

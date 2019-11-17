@@ -801,6 +801,11 @@ bvr.src_el.addEvent('change:relay(.spt_task_status_select)',
     function(evt, src_el) {
         spt.task_element.status_change_cbk(evt, {src_el: src_el} );
     } )
+    
+bvr.src_el.addEvent('change:relay(.spt_task_assigned_select)',
+    function(evt, src_el) {
+        spt.task_element.status_change_cbk(evt, {src_el: src_el} );
+    } )
 
 spt.task_element.status_change_cbk = function(evt, bvr) {
 
@@ -899,13 +904,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         'bvr_match_class': "spt_task_element_assigned",
         "cbjs_action": '''
         var all_top_el = bvr.src_el.getParent(".spt_all_task_top");
-        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_status_select', false);
+        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_element_assigned', false);
         var value_wdg = all_top_el.getElement(".spt_data");
         value_wdg.value = JSON.stringify(values);
         spt.dg_table.edit.widget = all_top_el;
         spt.dg_table.inline_edit_cell_cbk( value_wdg, {} );
         '''
-        } ) 
+        } )
 
         if self.show_link_task_menu:
             self.menu.set_activator_over(layout, "spt_task_element_assigned")
@@ -1014,7 +1019,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.value = '';
                     var rnd = Math.floor(Math.random()*100001)
                     select.name = select.name + rnd;
-
                     spt.task_element.status_change_cbk(evt, {src_el: select});
                 }
                 else {
@@ -2342,6 +2346,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             var el_context = el.getAttribute("spt_context");
                             if (el_context == context) {
                                 el.value = value;
+                                el.style.background = status_colors[value];
                                 spt.task_element.status_change_cbk(evt, {src_el: el});
                             }
                         }
@@ -2481,7 +2486,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         assignee = self.assignee
                         assignee_labels = self.assignee_labels
 
-                    select.add_class('spt_task_status_select')
+                    select.add_class('spt_task_assigned_select')
+                    select.add_attr("spt_context", context)
                     select.add_empty_option('-- Assigned --')
                     select.set_option('values', assignee) 
                     select.set_option('labels', assignee_labels) 
@@ -2539,9 +2545,37 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             '''
                     select.add_update(update)
 
+                    # TODO: while convenient, this is extremely heavy
+                    select.add_behavior( {
+                        'type': 'change',
+                        'color': status_colors,
+                        'cbjs_action': '''
+                        var status_colors = bvr.color;
+                        var value = bvr.src_el.value;
+                        bvr.src_el.style.background = status_colors[value];
+                        var context = bvr.src_el.getAttribute("spt_context");
+                        var layout = bvr.src_el.getParent(".spt_layout");
+                        spt.table.set_layout(layout);
+                        var rows = spt.table.get_selected_rows();
+                        for (var i = 0; i < rows.length; i++) {
+                            var row = rows[i];
+                            var elements = row.getElements(".spt_task_assigned_select");
+                            for (var j = 0; j < elements.length; j++) {
+                                var el = elements[j];
+                                if (el == bvr.src_el) {
+                                    continue;
+                                }
 
-
-
+                                var el_context = el.getAttribute("spt_context");
+                                if (el_context == context) {
+                                    el.value = value;
+                                    spt.task_element.status_change_cbk(evt, {src_el: el});
+                                }
+                            }
+                        }
+    
+                        '''
+                    } )
 
                 else:
                     

@@ -21,7 +21,7 @@ from pyasm.biz import Project
 from pyasm.search import Search, SearchType, WidgetDbConfig
 from pyasm.web import DivWdg, SpanWdg, Table, WebContainer, HtmlElement, Widget
 from pyasm.widget import SelectWdg, HiddenWdg, WidgetConfigView, WidgetConfig, TextAreaWdg, TextWdg, ProdIconButtonWdg, CheckboxWdg, IconWdg, SwapDisplayWdg
-from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
+from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler, TableElementClassHandler
 from tactic.ui.filter import FilterData
 from tactic.ui.container import TabWdg
 from tactic.ui.input import TextInputWdg
@@ -71,6 +71,12 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             self.is_insert = 'true'
         else:
             self.is_insert = 'false'
+
+        simple_view_only = self.kwargs.get("simple_view_only")
+        if simple_view_only in ['true', True]:
+            self.simple_view_only = 'true'
+        else:
+            self.simple_view_only = 'false'
 
 
         search_type = self.kwargs.get("search_type")
@@ -124,6 +130,13 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         </tab>
         </config>'''%{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': self.is_insert}
         else:
+            show_title_details = self.kwargs.get("show_title_details")
+            if show_title_details in [False, 'false']:
+                show_title_details = 'false'
+            else:
+                show_title_details = 'true'
+
+
             config_xml = '''
             <config>
             <tab>
@@ -133,7 +146,9 @@ class ElementDefinitionWdg(BaseRefreshWdg):
                     <view>%(view)s</view>
                     <element_name>%(element_name)s</element_name>
                     <is_insert>%(is_insert)s</is_insert>
+                    <simple_view_only>%(simple_view_only)s</simple_view_only>
                     <is_edit_layout>false</is_edit_layout>
+                    <show_title_details>%(show_title_details)s</show_title_details>
                 </display>
               </element>
               <element name='Edit Mode' load='true'>
@@ -147,13 +162,22 @@ class ElementDefinitionWdg(BaseRefreshWdg):
               </element>
             </tab>
             </config>
-            ''' %{'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': self.is_insert}
+            ''' % {'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': self.is_insert, 'simple_view_only': self.simple_view_only, 'show_title_details': show_title_details}
        
+        config = WidgetConfig.get(view='tab', xml=config_xml)
 
-        if self.is_insert =='true':
+        if self.simple_view_only == 'true':
+            column_config_view = self.kwargs.get("column_config_view")
+
+            table_display = config.get_display_widget('View Mode', extra_options={"column_config_view": column_config_view })
+
+            inner_div.add(table_display)
+            submit_input = self.get_submit_input()
+            inner_div.add(submit_input)
+
+        elif self.is_insert =='true':
             from tactic.ui.container import WizardWdg
             wizard = WizardWdg(title="none")
-            config = WidgetConfig.get(view='tab', xml=config_xml)
             table_display = config.get_display_widget('View Mode')
             wizard.add(table_display, "View Mode")
 
@@ -164,6 +188,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             wizard.add_submit_button(submit_input)
 
             inner_div.add(wizard)
+
         else:
             tab = TabWdg(config_xml=config_xml, show_add=False, tab_offset=5, show_remove=False , allow_drag=False)
             inner_div.add(tab) 
@@ -173,10 +198,26 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         return top
 
     def get_submit_input(self):
-        submit_input = ActionButtonWdg(title='Create >>', tip="Create New Column")
+
+        if self.simple_view_only == 'true':
+            view = self.kwargs.get("view")
+        else:
+            view = "definition"
+
+        if self.is_insert == 'true':
+            title = "Create >>"
+            tip = "Create New Column"
+        else:
+            title = "Save >>"
+            tip = "Save Column"
+
+        submit_input = ActionButtonWdg(title=title, tip=tip)
 
         behavior = {
-            'type':         'click_up',
+            'type': 'click_up',
+            'is_insert': self.is_insert,
+            'search_type': self.search_type,
+            'view': view,
             'cbjs_action': self._get_save_cbjs_action()
         }
         submit_input.add_behavior(behavior)
@@ -219,8 +260,14 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             
             var widget_key = inputs['xxx_option|widget_key'];
             var is_continue = true;
-            var is_insert = %s;
+            var is_insert = bvr.is_insert;
             var is_edit_layout = '%s';
+
+            var search_type = bvr.search_type;
+            var view = bvr.view;
+            if (!view) {
+                view = 'definition';
+            }
 
             if (widget_key && !widget_key[0]  && is_insert==true) {
                 if (!confirm('You are about to create a Widget Column without a database column. Continue?')){
@@ -232,8 +279,8 @@ class ElementDefinitionWdg(BaseRefreshWdg):
             if (is_continue){
                 var class_name = 'tactic.ui.manager.SimpleElementDefinitionCbk';
                 var args = {
-                    search_type: '%s',
-                    view: 'definition',
+                    search_type: search_type,
+                    view: view,
                     is_insert: is_insert,
                     is_edit_layout: is_edit_layout
                 };
@@ -276,6 +323,11 @@ class ElementDefinitionWdg(BaseRefreshWdg):
                     }
                 }
                 if (pop)
+                    var popup_id = pop.id;
+                    var options = {
+                        new_element : inputs.name
+                    };
+                    spt.named_events.fire_event('preclose_' + popup_id, {options: options});
                     spt.popup.close(pop);
 
             }
@@ -285,7 +337,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
                 throw(e)
                 spt.alert('Definition modified. Please refresh this table manually');
             }
-            '''%(self.is_insert, self.is_edit_layout, self.search_type)
+            '''%(self.is_edit_layout)
 
     
 
@@ -333,7 +385,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             
             var widget_key = inputs['xxx_option|widget_key'];
             var is_continue = true;
-            var is_insert = %s;
+            var is_insert = '%s';
             var is_edit_layout = '%s';
             if (widget_key && !widget_key[0] && mode.value=='form' && is_insert==true) {
                 if (!confirm('You are about to create a Widget Column without a database column. Continue?')){
@@ -410,6 +462,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         else:
             self.is_insert = False
 
+        self.simple_view_only = self.kwargs.get("simple_view_only") in ['true', True]
         element_name = self.kwargs.get('element_name')
         search_type = self.kwargs.get('search_type')
         self.search_type = search_type
@@ -422,7 +475,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
         edit_config_view = WidgetConfigView.get_by_search_type(search_type, "edit")
 
-        if not self.is_insert:
+        if self.is_insert in ['false', False]:
 
             display_class = config_view.get_display_handler(element_name)
             widget_key = config_view.get_widget_key(element_name,'display')
@@ -540,11 +593,12 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         # add the save button
         from tactic.ui.widget import ActionButtonWdg
         save_button = ActionButtonWdg( title='Save', tip='Save To Definition' )
-        save_button.add_style("margin-left: 5px")
-        save_button.add_style("margin-top: -5px")
+        save_button.add_style("margin: 3px 3px 5px 3px")
         save_button.add_style("float: right")
         save_button.add_behavior( {
         'type': 'click_up',
+        'is_insert': self.is_insert,
+        'search_type': self.search_type,
         'cbjs_action': self._get_save_cbjs_action()
         } )
 
@@ -563,7 +617,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         else:
             title_div.add("Edit Column Definition")
 
-        if not self.is_insert:
+        if (not self.is_insert) and (not self.simple_view_only):
             title_div.add(mode_wdg)
             gear = self.get_gear_menu(view)
             gear.add_style("float: right")
@@ -650,9 +704,19 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         } )
 
 
+        show_title_details = self.kwargs.get("show_title_details") or True
+        if show_title_details in ['false', False]:
+            show_title_details = False
+        else:
+            show_title_details = True
+
+
 
         # add in the name widget
-        attr_table.add_row()
+        tr = attr_table.add_row()
+        if not show_title_details:
+            tr.add_style("display: none")
+
         td = attr_table.add_cell("Name: ")
         td.add_style("padding: 5px")
         td = attr_table.add_cell()
@@ -710,7 +774,11 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
  
         # add the width
-        attr_table.add_row()
+        tr = attr_table.add_row()
+
+        if not show_title_details:
+            tr.add_style("display: none")
+
         td = attr_table.add_cell("Width: ")
         td.add_style("padding: 5px")
         width_text = TextWdg("attr|width")
@@ -724,7 +792,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         attr_table.add_cell(width_text)
 
  
-        if not self.is_insert:
+        if not self.is_insert and not self.simple_view_only:
 
             tr, td = attr_table.add_row_cell()
             span = DivWdg("Enable Colors: ")
@@ -778,11 +846,25 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             if not display_class:
                 display_class = self.kwargs.get('display_handler')
 
-            # add the widget information
-            class_labels = ['Empty', 'Raw Data', 'Default', 'Formatted', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', 'Python', '-- Class Path --']
-            class_values = ['', 'raw_data', 'default', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', 'python', '__class__']
-            default_class='format'
-            widget_class_wdg = WidgetClassSelectorWdg(widget_key=widget_key, display_class=display_class, display_options=display_options,class_labels=class_labels,class_values=class_values, prefix='option', default_class=default_class, show_action=False, element_name=element_name)
+
+            column_config_view = self.kwargs.get("column_config_view")
+
+            if column_config_view:
+                class_labels = None
+                class_values = None
+
+                default_class=''
+
+            else:
+
+                # add the widget information
+                class_labels = ['Empty', 'Raw Data', 'Default', 'Formatted Value', 'Expression', 'Expression Value', 'Button', 'Link', 'Gantt', 'Hidden Row', 'Drop Item', 'Completion', 'Custom Layout', 'Python', '-- Class Path --']
+                class_values = ['', 'raw_data', 'default', 'format', 'expression', 'expression_value', 'button', 'link', 'gantt', 'hidden_row', 'drop_item', 'completion', 'custom_layout', 'python', '__class__']
+
+
+                default_class='format'
+
+            widget_class_wdg = WidgetClassSelectorWdg(widget_key=widget_key, display_class=display_class, display_options=display_options,class_labels=class_labels,class_values=class_values, prefix='option', default_class=default_class, show_action=False, element_name=element_name, column_config_view=column_config_view)
             attr_wdg.add(widget_class_wdg)
 
 
@@ -792,7 +874,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         td.add(HtmlElement.br())
 
    
-        if not self.is_insert:
+        if not self.is_insert and not self.simple_view_only:
             tr, td = table.add_row_cell()
 
             title_wdg = DivWdg()
@@ -1534,6 +1616,8 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
         save_button.add_style("float: right")
         save_button.add_behavior( {
         'type': 'click_up',
+        'is_insert': self.is_insert,
+        'search_type': self.search_type,
         'cbjs_action': self._get_save_cbjs_action()
         } )
            
@@ -1789,6 +1873,7 @@ class EditElementDefinitionWdg(ViewElementDefinitionWdg):
 
 
 
+
 __all__.append('WidgetClassSelectorWdg')
 class WidgetClassSelectorWdg(BaseRefreshWdg):
     ''' Choice of Table Layout, Tile Layout, Custom Layout'''
@@ -1807,12 +1892,36 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         # display extra options (ie: CustomLayoutElementWdg)
         element_name = self.kwargs.get("element_name")
 
-        class_labels = self.kwargs.get("class_labels")
-        class_values = self.kwargs.get("class_values")
+        class_labels = self.kwargs.get("class_labels") or []
+        class_values = self.kwargs.get("class_values") or []
         default_class = self.kwargs.get("default_class")
         prefix = self.kwargs.get("prefix")
         if not prefix:
             prefix = 'option'
+
+
+
+        column_config_view = self.kwargs.get("column_config_view")
+        if column_config_view:
+            search = Search("config/widget_config")
+            search.add_filter("view", column_config_view)
+            search.add_filter("category", "ElementDefinitionWdg")
+            column_config = search.get_sobject()
+
+            if column_config:
+                element_names = column_config.get_element_names()
+
+                class_values = []
+                for element_name in element_names:
+                    handler = column_config.get_display_handler(element_name)
+                    if not handler:
+                        class_values.append(element_name)
+                    else:
+                        class_values.append(handler)
+
+
+                class_labels = column_config.get_element_titles()
+
 
         if default_class and not widget_key and not display_class:
             widget_key = default_class
@@ -1837,7 +1946,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
         td = table.add_cell()
 
-        td.add("Widget: ")
+        td.add("Widget Type: ")
         td.add_style("padding: 5px")
         td.add_style("padding-left: 14px")
 
@@ -1854,6 +1963,8 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         load_event = False
         if widget_key:
             widget_select.set_value(widget_key)
+        elif display_class in class_values:
+            widget_select.set_value(display_class)
         elif display_class:
             widget_select.set_value('__class__')
         elif default_class:
@@ -1989,7 +2100,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
         # add the class
         tr = table.add_row()
-        if widget_key or not display_class or view:
+        if widget_key or (display_class in class_values) or (not display_class) or view:
             tr.add_style("display: none")
         tr.add_class("spt_widget_selector_class")
         td = table.add_cell()
@@ -2079,7 +2190,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         #if not display_class:
         #    display_class = "pyasm.widget.SimpleTableElementWdg"
         #display_class = "tactic.ui.panel.ViewPanelWdg"
-        widget_options_wdg = WidgetClassOptionsWdg(widget_key=widget_key, display_class=display_class, display_options=display_options, prefix=prefix, element_name=element_name)
+        widget_options_wdg = WidgetClassOptionsWdg(widget_key=widget_key, display_class=display_class, display_options=display_options, prefix=prefix, element_name=element_name, column_config_view=column_config_view)
         table.add_row()
         td = table.add_cell()
         td.add(widget_options_wdg)
@@ -2305,14 +2416,44 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             prefix = 'option'
 
 
+
+
         # introspect the widget
         web = WebContainer.get_web()
         widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
         display_class = ''
         #if widget_key and widget_key not in ['__class__', 'custom_layout']:
+
+
         if widget_key and widget_key not in ['__class__']:
-            handler = WidgetClassHandler()
-            display_class = handler.get_display_handler(widget_key)
+
+            if widget_key.find(".") != -1:
+                # This is really a class
+                display_class = widget_key
+
+            else:
+                display_class = ""
+
+                # get from a config xml
+                #config_view = "custom_config"
+                #config = WidgetConfig.get(view, xml=xml)
+
+                column_config_view = self.kwargs.get("column_config_view")
+                if column_config_view:
+                    search = Search("config/widget_config")
+                    search.add_filter("view", column_config_view)
+                    search.add_filter("category", "ElementDefinitionWdg")
+                    column_config = search.get_sobject()
+
+                    if column_config:
+                        display_class = column_config.get_display_handler(widget_key)
+
+
+                if not display_class:
+                    # or get from the central class handler
+                    handler = TableElementClassHandler()
+                    display_class = handler.get_display_handler(widget_key)
+
 
         if not display_class:
             display_class = web.get_form_value("xxx_%s|display_class" % prefix)
@@ -2324,22 +2465,20 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
 
 
-
-
-        display_options = self.kwargs.get("display_options")
+        display_options = self.kwargs.get("display_options") or {}
 
         import types
-        if (isinstance(display_options, list)):
+        if isinstance(display_options, list):
             try:
                 display_options = eval(display_options)
             except:
                 # !!!! Lost the options
                 display_options = {}
-        elif (isinstance(display_options, basestring)):
+        elif isinstance(display_options, basestring):
             display_options = display_options.replace("'", '"')
             display_options = jsonloads(display_options)
 
-        if (not display_options):
+        if not display_options:
             display_options = {}
 
 
@@ -2371,9 +2510,6 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 
 
 
-
-
-
         if not class_options:
             class_options = {}
             import_stmt = Common.get_import_from_class_path(display_class)
@@ -2391,6 +2527,7 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                 error = DivWdg()
                 error.add_style('color: red')
                 error.add("WARNING: %s" % str(e) )
+                top.add(error)
 
             else:            
                 try:
@@ -3009,9 +3146,15 @@ class SimpleElementDefinitionCbk(Command):
 
 
         # create the display_node
+        # FIXME: only admin should be allowed to save here
         display_node = element_xml.create_element("display")
         if widget_key and widget_key != '__class__':
-            element_xml.set_attribute(display_node, "widget", widget_key)
+
+            # HACK: if there is a "." in the key, this this is really a class
+            if widget_key.find(".") != -1:
+                element_xml.set_attribute(display_node, "class", widget_key)
+            else:
+                element_xml.set_attribute(display_node, "widget", widget_key)
             element_xml.append_child(root, display_node)
         elif display_class:
             element_xml.set_attribute(display_node, "class", display_class)

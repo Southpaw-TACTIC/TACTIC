@@ -102,7 +102,7 @@ class ProcessSelectWdg(SelectWdg):
         if self.has_empty:
             self.add_first_option()
         else:
-            from asset_filter_wdg import ProcessFilterWdg
+            from .asset_filter_wdg import ProcessFilterWdg
             if ProcessFilterWdg.has_restriction():
                 is_group_restricted = True
 

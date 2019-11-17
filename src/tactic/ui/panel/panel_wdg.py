@@ -2170,8 +2170,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         widget_key = options.get("widget_key")
         if widget_key:
 
-            if not widget_key.isalnum():
-                widget_key = "code"
+            #if not widget_key.isalnum():
+            #    widget_key = "code"
             
             class_name = WidgetClassHandler().get_display_handler(widget_key)
             options['class_name'] = class_name
@@ -2884,10 +2884,22 @@ class ViewPanelWdg(BaseRefreshWdg):
             'values': 'top|bottom',
             'order' : 20,
             'category': 'Display'
-        }
+        },
+        "show_save": {
+            'description': "determines whether or not to show the save button",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '21',
+            'category': 'Display'
+        },
 
     }
 
+
+    def __init__(self, **kwargs):
+        if not kwargs.get("search_type"):
+            raise Exception("No search type provided")
+        return super(ViewPanelWdg, self).__init__(**kwargs)
 
 
     def get_display(self):
@@ -3071,6 +3083,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         else:
             use_last_search = True
         
+        # Advanced search is shown by default
         show_search = self.kwargs.get('show_search')
         if show_search in [False,'false']:
             show_search = 'false'
@@ -3219,6 +3232,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_select = self.kwargs.get("show_select")
         show_refresh = self.kwargs.get("show_refresh")
         show_gear = self.kwargs.get("show_gear")
+        show_save = self.kwargs.get("show_save")
         show_expand = self.kwargs.get("show_expand")
         show_shelf = self.kwargs.get("show_shelf")
         show_header = self.kwargs.get("show_header")
@@ -3249,6 +3263,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         gear_settings = self.kwargs.get("gear_settings")
         shelf_view = self.kwargs.get("shelf_view")
         badge_view = self.kwargs.get("badge_view")
+        filter_view = self.kwargs.get("filter_view")
         extra_data = self.kwargs.get("extra_data")
         if extra_data:
             if isinstance(extra_data, dict):
@@ -3315,6 +3330,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
+            "show_save": show_save,
             "show_expand": show_expand,
             "show_shelf": show_shelf,
             "show_header": show_header,
@@ -3352,6 +3368,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "keywords": keywords,
             "keywords_columns": keywords_columns,
             "filter": filter,
+            "filter_view": filter_view,
             "expand_mode": expand_mode,
             "data_mode": data_mode,
             "show_name_hover": show_name_hover,
@@ -3707,96 +3724,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
     def get_display(self):
        
-        js_action = "spt.dg_table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
-
-        js_actionX = '''
-
-    var table_id = bvr.table_id;
-    var table = document.id(table_id);
-    var top = table.getParent(".spt_view_panel");
-    // it may not always be a View Panel top
-    if (!top) top = table.getParent(".spt_table_top");
-    
-    var view_info = top.getElement(".spt_save_top");
-
-    var values = spt.api.Utility.get_input_values(view_info , null, false);
-
-    // rename view
-    var new_view = values["save_view_name"];
-    var new_title = values["save_view_title"];
-    var same_as_title = values["same_as_title"] == 'on';
-    //var save_a_link = values["save_a_link"] == 'on';
-  
-    var save_mode = values['save_mode'];
-    if (!save_mode) {
-        var save_project_views = values['save_project_views'] == 'on';
-        if (save_project_views) {
-            save_mode = 'save_project_views';
-        }
-        var save_my_views = values['save_my_views'] == 'on';
-        if (save_my_views) {
-            save_mode = 'save_my_views';
-        }
-        var save_view_only = values['save_view_only'] == 'on';
-        if (save_view_only) {
-            save_mode = 'save_view_only';
-        }
-    }
-
-    if (same_as_title) {
-        new_view = new_title;
-    }
-
-    if (spt.input.has_special_chars(new_view)) {
-        spt.alert("The name contains special characters. Do not use empty spaces.");  
-        return;
-    }
-    if (new_view == "") {
-        spt.alert("Empty view name not permitted");
-        return;
-    }
-    
-    if ((/^(saved_search|link_search)/i).test(new_view)) {
-        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
-        return;
-    }
-    var table = document.getElementById(table_id);
-    if (!table) {
-        spt.alert('This command requires a Table in the main viewing area');
-        return;
-    }
-    var table_search_type = table.getAttribute("spt_search_type");
-    var table_view = table.getAttribute("spt_view");
-    var last_element = top.getAttribute("spt_element_name");
-
-
-    var kwargs = {
-        'new_title' : new_title, 
-        'element_name': new_view,
-        'last_element_name': last_element,
-        'save_mode': save_mode,
-    } 
-
-
-    var class_name = 'tactic.ui.panel.ViewPanelSaveCbk';
-    var server = TacticServerStub.get();
-    var rtn = server.execute_cmd(class_name, kwargs);
-
-
-    if (!rtn)
-        return;
-
-
-    spt.hide(document.id(bvr.dialog_id));
-    var top = bvr.src_el.getParent(".spt_new_view_top");
-    spt.api.Utility.clear_inputs(top);
-    
-    return true;
-
-
-        '''
-
-
+        js_action = "spt.table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
 
         # create the buttons
         save_button = ActionButtonWdg(title='Save')
@@ -3804,7 +3732,6 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         'type': 'click_up',
         'dialog_id': self.kwargs.get("dialog_id"),
         'table_id': self.table_id,
-        #'cbjs_action': js_action,
         'cbjs_action':  '''
             var ret_val = %s;
             if (ret_val) {
@@ -3835,6 +3762,8 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         div.add_style("width: 280px")
         div.add_style("padding: 15px")
         div.add_color("color", "color")
+
+        div.add_style("display", "block")
 
         title_div = DivWdg("View Title: ")
         title_div.add_style('width: 100px')

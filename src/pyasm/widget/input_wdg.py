@@ -1223,7 +1223,7 @@ class SelectWdg(BaseInputWdg):
   
 
     def _set_append_widget(self, search_id, data_dict):
-        from web_wdg import ProdSettingLinkWdg
+        from .web_wdg import ProdSettingLinkWdg
         prod_setting_link = ProdSettingLinkWdg(search_id)
         prod_setting_link.set_value_dict(data_dict) 
 
@@ -1884,7 +1884,7 @@ class ThumbInputWdg(BaseInputWdg):
             column = "snapshot"
             #return 'No icon'
 
-        from file_wdg import ThumbWdg
+        from .file_wdg import ThumbWdg
         icon = ThumbWdg()
         icon.set_name(column)
         icon.set_show_orig_icon(True)

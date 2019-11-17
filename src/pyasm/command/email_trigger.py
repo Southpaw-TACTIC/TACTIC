@@ -19,6 +19,7 @@ import smtplib
 import types
 import datetime
 import six
+import os
 from dateutil.relativedelta import relativedelta
 
 try:
@@ -840,8 +841,7 @@ class EmailTriggerThread(threading.Thread):
 
     def run(self):
         try:
-            s = smtplib.SMTP()
-            s.connect(self.mailserver, self.port)
+            s = smtplib.SMTP(self.mailserver, self.port)
 
             if self.mail_tls_enabled:
                 s.ehlo()
@@ -889,19 +889,25 @@ class EmailTriggerTestCmd(Command):
         self.recipient_emails = self.kwargs.get('recipient_emails')
         message = self.kwargs.get('msg')
 
-        is_unicode = False
-        st = 'plain'
-        charset = 'us-ascii'
+        
+
         subject = "Email Test"
         new_subject = self.kwargs.get('subject')
         if new_subject:
             subject = new_subject
+        
+        charset = 'us-ascii'
+        st = 'plain'
+        is_uni = False
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
-            is_unicode = True
+            is_uni = True
+        elif Common.IS_Pv3:
+            charset = 'utf-8'
+            is_uni = True
 
         msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
@@ -911,7 +917,7 @@ class EmailTriggerTestCmd(Command):
         msg.add_header('Date', formatdate(localtime=True))
 
 
-        if is_unicode:
+        if is_uni:
             msg.add_header('html_encoding', 'base64')
         self.msg = msg
 
@@ -941,8 +947,7 @@ class EmailTriggerTestCmd(Command):
 
     def execute(self):
         try:
-            s = smtplib.SMTP()
-            s.connect(self.mailserver, self.port)
+            s = smtplib.SMTP(self.mailserver, self.port)
 
             if self.mail_tls_enabled:
                 s.ehlo()
@@ -1048,33 +1053,7 @@ class EmailTriggerTest(EmailTrigger2):
                 cls.add_email(total_bcc_emails, email)
         total_cc_emails = total_cc_emails - to_emails
         total_bcc_emails = total_bcc_emails - to_emails - total_cc_emails
-        """
-        charset = 'us-ascii'
-        if type(message) == types.UnicodeType:
-            message = Common.process_unicode_string(message)
-            charset = 'utf-8'
-
-        if "</html>" in message:
-            st = 'html'
-        else:
-            st = 'plain'
-        msg = MIMEText(message, _subtype=st, _charset=charset)
-
-        msg['Subject'] = subject
-        msg['From'] = user_email
-        msg['Reply-To'] = user_email
-        msg['To'] = ", ".join(to_emails)
-        msg['Cc'] = ','.join(total_cc_emails)
-        msg['Bcc'] = ','.join(total_bcc_emails)
-
-        '''
-        msg.add_header('Subject', subject)
-        msg.add_header('From', user_email)
-        msg.add_header('Reply-To', user_email)
-        msg.add_header('To', ", ".join(to_emails))
-        msg.add_header('Cc', ", ".join(cc_emails))
-        '''
-        """
+        
         recipient_emails =  total_bcc_emails|total_cc_emails|to_emails|sender
         email = EmailTriggerTestCmd(sender_email=user_email, \
                 recipient_emails=recipient_emails, msg=message)

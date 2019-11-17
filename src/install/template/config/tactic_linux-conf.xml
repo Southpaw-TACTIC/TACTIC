@@ -16,7 +16,7 @@
 <!-- directory pointing to the temp and log files of Tactic -->
 <install>
     <hostname>localhost</hostname>
-    <tmp_dir>/home/apache/tactic_temp</tmp_dir>
+    <tmp_dir>/opt/tactic/tactic_temp</tmp_dir>
     <log_type>file</log_type>
 </install>
 
@@ -73,7 +73,7 @@
 
 
 <checkin>
-    <asset_base_dir>/home/apache/assets</asset_base_dir>
+    <asset_base_dir>/opt/tactic/assets</asset_base_dir>
     <web_base_dir>/assets</web_base_dir>
     <win32_local_base_dir>C:/spt</win32_local_base_dir>
     <linux_local_base_dir>/tmp/sthpw</linux_local_base_dir>

@@ -1352,6 +1352,16 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
+        # default event order is mousedown>blur>mouseup
+        # we don't want a blur preceding mouseup
+        results_div.add_relay_behavior( {
+            'type': "mousedown",
+            'bvr_match_class': 'spt_input_text_result',
+            'cbjs_action': '''
+            evt.preventDefault();
+            '''
+        } )
+
         # this is when the user clicks on a result item
         # it doesn't do a search right away, it fires the lookahead|<sType> event
         results_div.add_relay_behavior( {
@@ -1505,7 +1515,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 from tactic.command import PythonCmd
                 kwargs = {'value' : value}
                 cmd = PythonCmd(script_path=script_path, **kwargs)
-                Command.execute_cmd(cmd)
+                results = cmd.execute()
         
             except Exception as e:
                 print(e)
@@ -1513,8 +1523,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             else:
 
-                results = cmd.get_info()
-                
                 # expect it to return a tuple of 2 lists or a single list
                 if isinstance(results, tuple):
                     display_results = results[0]

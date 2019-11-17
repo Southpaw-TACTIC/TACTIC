@@ -12,7 +12,7 @@
 
 
 __all__ = ['HtmlException', 'HtmlElement', 'DivWdg', 'FloatDivWdg', 
-        'SpanWdg', 'Tbody', 'Table', 'Canvas', 'Video']
+        'SpanWdg', 'ButtonWdg', 'Tbody', 'Table', 'Canvas', 'Video']
 
 import os
 import re
@@ -579,7 +579,7 @@ class HtmlElement(Widget):
         if self.behaviors == None:
             self.behaviors = []
 
-        if type(new_bvr) != types.DictType:
+        if not isinstance(new_bvr, dict):
             raise Exception( "Behavior specification should be a dictionary, %s spec is not supported." %
                              type(new_bvr) )
         if self.behaviors:
@@ -1482,6 +1482,16 @@ class SpanWdg(HtmlElement):
     '''Basic SPAN element'''
     def __init__(self,string=None, css=None, id=None):
         super(SpanWdg,self).__init__("span", css=css, id=id)
+        if string:
+            self.add(string)
+
+
+            
+
+class ButtonWdg(HtmlElement):
+    '''Basic SPAN element'''
+    def __init__(self,string=None, css=None, id=None):
+        super(ButtonWdg,self).__init__("span", css=css, id=id)
         if string:
             self.add(string)
 

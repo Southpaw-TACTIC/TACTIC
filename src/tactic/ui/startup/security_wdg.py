@@ -712,7 +712,7 @@ class SecurityWdg(BaseRefreshWdg):
 
 
 
-        from misc_wdg import MainShelfWdg
+        from .misc_wdg import MainShelfWdg
         shelf_wdg = MainShelfWdg(top_class='spt_dashboard_top', list_class='spt_dashboard_list', height=207)
         top.add(shelf_wdg)
 

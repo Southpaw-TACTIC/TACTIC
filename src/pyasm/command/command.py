@@ -58,7 +58,7 @@ class Command(Base):
         self.kwargs = kwargs
 
         self.transaction = None
-
+        self.update = None
 
     '''
     already defined as a cls method below
@@ -94,6 +94,9 @@ class Command(Base):
 
     def get_sobjects(self):
         return self.sobjects
+
+    def is_update(self):
+        return self.update 
 
 
     ###########
@@ -210,14 +213,13 @@ class Command(Base):
                     return
             except TacticException as e:
                 if not isinstance(e, CommandExitException):
-                    if not Common.IS_Pv3:
+                    if IS_Pv3:
+                        error = str(e)
+                    else:
                         if isinstance(e.message, unicode):
                             error = e.message.encode('utf-8')
                         else:
                             error = unicode(e.message, errors='ignore').encode('utf-8')
-                    else:
-                        message = str(e)
-                        error = message
                     cmd.errors.append(error)
                 raise
 

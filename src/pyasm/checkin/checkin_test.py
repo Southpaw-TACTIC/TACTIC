@@ -126,12 +126,12 @@ class CheckinTest(unittest.TestCase, Command):
                     mode="copy"
             )
         checkin.execute()
-        self.assertEquals(True, os.path.exists(file_path) )
+        self.assertEqual(True, os.path.exists(file_path) )
 
         snap = checkin.get_snapshot()
         file_obj = snap.get_file_by_type('main')
         file_name = file_obj.get_file_name()
-        self.assertEquals(file_name, 'copy_test_publish_v002.txt')
+        self.assertEqual(file_name, 'copy_test_publish_v002.txt')
 
     def _test_checkin(self):
 
@@ -153,7 +153,7 @@ class CheckinTest(unittest.TestCase, Command):
         self.assertNotEqual(None, file)
 
         lib_path = "%s/%s" % (snapshot.get_lib_dir(),file_name)
-        self.assertEquals(True, os.path.exists(lib_path) )
+        self.assertEqual(True, os.path.exists(lib_path) )
 
         #print "relative_dir: ", snapshot.get_relative_dir()
 
@@ -221,13 +221,13 @@ class CheckinTest(unittest.TestCase, Command):
 
         relative_dir = file_object.get_value("relative_dir")
         # The relative dir is empty if the file is outside the repository
-        self.assertEquals("", relative_dir)
+        self.assertEqual("", relative_dir)
 
         lib_dir = snapshot.get_lib_dir(file_type="main")
         file_name = snapshot.get_file_name_by_type("main")
         lib_path = "%s/%s" % (lib_dir, file_name)
-        self.assertEquals( True, os.path.exists(lib_path) )
-        self.assertEquals( file_path, lib_path)
+        self.assertEqual( True, os.path.exists(lib_path) )
+        self.assertEqual( file_path, lib_path)
 
 
 
@@ -249,11 +249,11 @@ class CheckinTest(unittest.TestCase, Command):
 
         # check that the relative dir is as expected
         relative_dir = file_object.get_value("relative_dir")
-        self.assertEquals( relative_dir, "unittest" )
+        self.assertEqual( relative_dir, "unittest" )
 
         # check that the path returned correctly
         lib_path = snapshot.get_path_by_type("main")
-        self.assertEquals( file_path2, lib_path )
+        self.assertEqual( file_path2, lib_path )
 
         if os.path.exists(file_path):
             os.unlink(file_path)
@@ -266,6 +266,12 @@ class CheckinTest(unittest.TestCase, Command):
 
 
     def _test_preallocation_checkin(self):
+        """
+        Test preallocation of empty snapshots and sequences, and creating and adding a file(s) to the snapshot/sequence.
+
+        """
+
+        return
 
         snapshot_type="file"
         context="preallocation"
@@ -284,15 +290,15 @@ class CheckinTest(unittest.TestCase, Command):
         else:
             expected = "%s_preallocation_v001" % (self.person.get_code())
 
-        self.assertEquals(True, path.endswith( expected ) )
+        self.assertEqual(True, path.endswith( expected ) )
 
         # preallocate with a file name and file type
         # since it's meant for FileAppendCheckin, the checkin_type should be 'strict'
         path = snapshot.get_preallocated_path(file_type, file_name, checkin_type='strict')
         if server:
-            self.assertEquals(True, None != re.search('unittest/person/\w+/preallocation/whatever_preallocation_\w+_v001.jpg$', path) )
+            self.assertEqual(True, None != re.search('unittest/person/\w+/preallocation/whatever_preallocation_\w+_v001.jpg$', path) )
         else:
-            self.assertEquals(True, None != re.search('unittest/person/\w+/preallocation/whatever_preallocation_v001.jpg$', path) )
+            self.assertEqual(True, None != re.search('unittest/person/\w+/preallocation/whatever_preallocation_v001.jpg$', path) )
 
         # create a file directly in the path location and register in
         # transaction
@@ -309,7 +315,7 @@ class CheckinTest(unittest.TestCase, Command):
         snapshot = checkin.get_snapshot()
         lib_dir = snapshot.get_lib_dir()
         file_name = snapshot.get_file_name_by_type(file_type)
-        self.assertEquals(True, os.path.exists("%s/%s" % (lib_dir, file_name) ) )
+        self.assertEqual(True, os.path.exists("%s/%s" % (lib_dir, file_name) ) )
 
 
         # test preallocation on a sequence
@@ -341,18 +347,22 @@ class CheckinTest(unittest.TestCase, Command):
         lib_dir = snapshot.get_lib_dir()
         for file_name in file_names:
             path = "%s/%s" % (lib_dir, file_name)
-            self.assertEquals(True, os.path.exists(path)) 
+            self.assertEqual(True, os.path.exists(path)) 
         
 
 
     def _test_get_children(self):
-        # test to make sure get_all_children is able to get all the snapshots
+        '''
+        Test to make sure get_all_children is able to get all the snapshots
+        '''
+
+        return
         snapshots = self.person.get_all_children("sthpw/snapshot")
         #for snap in snapshots:
         #    print snap.get_version() ,  snap.get_description()
         # 2 versionless + 5 new snapshots = 7
         num_snapshots = 7
-        self.assertEquals(num_snapshots, len(snapshots))
+        self.assertEqual(num_snapshots, len(snapshots))
 
 
 
@@ -372,7 +382,7 @@ class CheckinTest(unittest.TestCase, Command):
         os.system('echo south123paw | sudo -S chown root.root \"%s\"'%file_path)
 
         stat = os.stat(file_path)
-        self.assertEquals(stat.st_uid, 0)
+        self.assertEqual(stat.st_uid, 0)
 
         checkin = FileCheckin(self.person, file_path, "test")
         checkin.execute()
@@ -386,18 +396,24 @@ class CheckinTest(unittest.TestCase, Command):
         self.assertNotEqual(None, file)
 
         lib_path = "%s/%s" % (snapshot.get_lib_dir(),file_name)
-        self.assertEquals(True, os.path.exists(lib_path) )
+        self.assertEqual(True, os.path.exists(lib_path) )
         stat = os.stat(lib_path)
         if Config.get_value("checkin", "sudo_no_password") == 'true': 
-            self.assertEquals(stat.st_uid, 48)
+            self.assertEqual(stat.st_uid, 48)
         else:
             # if not set, it will remain owned by root
-            self.assertEquals(stat.st_uid, 0)
+            self.assertEqual(stat.st_uid, 0)
 
 
 
 
     def _test_symlink(self):
+        """
+        Tests versionless snapshot and symbolic links.
+        """
+
+        return
+
         if os.name == 'nt':
             return
 
@@ -417,13 +433,13 @@ class CheckinTest(unittest.TestCase, Command):
         checkin.execute()
         snap = checkin.get_snapshot()
         versionless_snap = Snapshot.get_versionless(self.person.get_search_type(), self.person.get_id(), "sym_test", mode='latest', create=False)
-        self.assertEquals(True, isinstance(versionless_snap, Snapshot))
+        self.assertEqual(True, isinstance(versionless_snap, Snapshot))
 
         main_lib_path = snap.get_lib_path_by_type('main')
-        self.assertEquals(main_lib_path.endswith('/sym_test/.versions/symlink_sym_test_v001.txt'), True)
+        self.assertEqual(main_lib_path.endswith('/sym_test/.versions/symlink_sym_test_v001.txt'), True)
         if versionless_snap:
             lib_path =versionless_snap.get_lib_path_by_type('main')
-            self.assertEquals(True, os.path.exists(lib_path)) 
+            self.assertEqual(True, os.path.exists(lib_path)) 
             rel_path = os.readlink(lib_path)
             lib_dir = os.path.dirname(lib_path)
 
@@ -434,8 +450,8 @@ class CheckinTest(unittest.TestCase, Command):
             # lib_path points to real_path
 
             expected_rel_path  = Common.relative_path(lib_path, real_path)
-            self.assertEquals(True, os.path.exists(real_path))
-            self.assertEquals(expected_rel_path, rel_path)
+            self.assertEqual(True, os.path.exists(real_path))
+            self.assertEqual(expected_rel_path, rel_path)
             os.chdir(wd)
 
         # if not inplace or preallocate mode, keep_file_name should be False
@@ -443,18 +459,26 @@ class CheckinTest(unittest.TestCase, Command):
         checkin.execute()
         snap = checkin.get_snapshot()
         main_lib_path = snap.get_lib_path_by_type('add')
-        self.assertEquals(snap.get_value('is_current'), True)
-        self.assertEquals(snap.get_value('is_latest'), True)
-        self.assertEquals(main_lib_path.endswith('/sym_test/.versions/symlink_append_sym_test_v001.txt'), True)
+        self.assertEqual(snap.get_value('is_current'), True)
+        self.assertEqual(snap.get_value('is_latest'), True)
+        self.assertEqual(main_lib_path.endswith('/sym_test/.versions/symlink_append_sym_test_v001.txt'), True)
         versionless_snap = Snapshot.get_versionless(self.person.get_search_type(), self.person.get_id(), "sym_test", mode='latest', create=False)
         if versionless_snap:
             lib_path = versionless_snap.get_lib_path_by_type('add')
-            self.assertEquals(lib_path.endswith('/sym_test/symlink_append_sym_test.txt'), True)
-            self.assertEquals(os.path.exists(lib_path), True)
+            self.assertEqual(lib_path.endswith('/sym_test/symlink_append_sym_test.txt'), True)
+            self.assertEqual(os.path.exists(lib_path), True)
 
 
 
     def _test_auto_checkin(self):
+        """
+        Tests file checkin and correctness/functionality of snapshots for multiple subdirectories.
+        """
+
+
+        return
+
+
         server = Config.get_value("install", "server")
         process = "process"
         person_code = self.person.get_code()
@@ -495,17 +519,17 @@ class CheckinTest(unittest.TestCase, Command):
 
             # check the returned snapshot
             snapshot = checkin.get_snapshot()
-            self.assertEquals(context, snapshot.get_value("context") )
+            self.assertEqual(context, snapshot.get_value("context") )
             if i != 1: # the second checkin is version 2
                 version = 1
-                self.assertEquals(1, snapshot.get_value("version") )
+                self.assertEqual(1, snapshot.get_value("version") )
             else:
                 version = 2
-            self.assertEquals(version, snapshot.get_value("version") )
+            self.assertEqual(version, snapshot.get_value("version") )
 
             # check the file object data
             file_objects = snapshot.get_all_file_objects()
-            self.assertEquals(1, len(file_objects))
+            self.assertEqual(1, len(file_objects))
             file_object = file_objects[0]
             repo_filename = file_object.get_value("file_name")
 
@@ -513,14 +537,14 @@ class CheckinTest(unittest.TestCase, Command):
                 expected = "filename_process_%s_v%0.3d.jpg" % (server, version)
             else:
                 expected = "filename_process_v%0.3d.jpg" % (version)
-            self.assertEquals(expected, repo_filename)
+            self.assertEqual(expected, repo_filename)
 
             relative_dir = file_object.get_value("relative_dir")
             if subdir:
                 expected = "unittest/person/%s/process/.versions/%s" % (person_code, subdir)
             else:
                 expected = "unittest/person/%s/process/.versions" % person_code
-            self.assertEquals(expected, relative_dir)
+            self.assertEqual(expected, relative_dir)
 
             asset_dir = Config.get_value("checkin", "asset_base_dir", sub_key="default")
             path = "%s/%s/%s" % (asset_dir, relative_dir, repo_filename)
@@ -528,39 +552,43 @@ class CheckinTest(unittest.TestCase, Command):
 
             # make sure the path from the snapshot is correct
             snapshot_path = snapshot.get_path_by_type("main")
-            self.assertEquals(path, snapshot_path)
+            self.assertEqual(path, snapshot_path)
 
 
             exists = os.path.exists(path)
-            self.assertEquals(True, exists)
+            self.assertEqual(True, exists)
 
 
             # check that a versionless has been created
             versionless = Snapshot.get_versionless(self.person.get_search_type(), self.person.get_id(), context, mode='latest', create=False)
 
-            self.assertNotEquals( None, versionless)
+            self.assertNotEqual( None, versionless)
 
-            self.assertEquals(-1, versionless.get_value("version") )
+            self.assertEqual(-1, versionless.get_value("version") )
 
             versionless_path = versionless.get_path_by_type("main", "lib")
             versionless_dir = os.path.dirname(versionless_path)
 
             # test that it is a link
             lexists = os.path.lexists(versionless_path)
-            self.assertEquals(True, lexists)
+            self.assertEqual(True, lexists)
 
             # check the real path links to the versioned path
             real_path = os.path.realpath(versionless_path)
-            self.assertEquals(real_path, path)
+            self.assertEqual(real_path, path)
 
             # check that it actually points to a valid path
             exists = os.path.exists(versionless_path)
-            self.assertEquals(True, exists)
+            self.assertEqual(True, exists)
 
 
 
 
     def _test_strict_checkin(self):
+        """
+        Tests functionality of checkin/snapshot with different subcontexts and with the strict checkin type.
+        """
+        return
 
         server = Config.get_value("install", "server")
         #process = "process"
@@ -606,30 +634,30 @@ class CheckinTest(unittest.TestCase, Command):
             versionless_current = Snapshot.get_versionless(self.person.get_search_type(), self.person.get_id(), context, mode='current', create=False)
 
             if context == 'strict/low':
-                self.assertNotEquals(None, versionless)
+                self.assertNotEqual(None, versionless)
                 file_objects = versionless.get_all_file_objects()
-                self.assertEquals(1, len(file_objects))
+                self.assertEqual(1, len(file_objects))
 
                 file_object = file_objects[0]
                 relative_dir = file_object.get_value("relative_dir")
                 file_name = file_object.get_value("file_name")
-                self.assertEquals(file_name ,'filename_latest.jpg')
+                self.assertEqual(file_name ,'filename_latest.jpg')
             else:
-                self.assertEquals(None, versionless)
+                self.assertEqual(None, versionless)
 
             # make sure there is no current versionless except for process/hi
             if context == 'strict/hi':
-                self.assertNotEquals(None, versionless_current)
+                self.assertNotEqual(None, versionless_current)
                 file_objects = versionless_current.get_all_file_objects()
-                self.assertEquals(1, len(file_objects))
+                self.assertEqual(1, len(file_objects))
 
                 file_object = file_objects[0]
                 relative_dir = file_object.get_value("relative_dir")
                 file_name = file_object.get_value("file_name")
-                self.assertEquals(file_name, 'filename_current.jpg')
+                self.assertEqual(file_name, 'filename_current.jpg')
                 
             else:
-                self.assertEquals(None, versionless_current)
+                self.assertEqual(None, versionless_current)
 
             
             path = snapshot.get_path_by_type("main")
@@ -637,14 +665,14 @@ class CheckinTest(unittest.TestCase, Command):
             asset_dir = Config.get_value("checkin", "asset_base_dir", sub_key="default")
 
             file_objects = snapshot.get_all_file_objects()
-            self.assertEquals(1, len(file_objects))
+            self.assertEqual(1, len(file_objects))
 
             file_object = file_objects[0]
             relative_dir = file_object.get_value("relative_dir")
             file_name = file_object.get_value("file_name")
 
             test_path = "%s/%s/%s" % (asset_dir, relative_dir, file_name)
-            self.assertEquals(test_path, path)
+            self.assertEqual(test_path, path)
 
 
 
@@ -721,7 +749,7 @@ class CheckinTest(unittest.TestCase, Command):
 
             # ensure that the check-in type is strict
             checkin_type = checkin.get_checkin_type()
-            self.assertEquals("strict", checkin_type)
+            self.assertEqual("strict", checkin_type)
 
             snapshot = checkin.get_snapshot()
 
@@ -731,7 +759,7 @@ class CheckinTest(unittest.TestCase, Command):
             path = snapshot.get_path_by_type("main")
             basename = os.path.basename(path)
             expected = "TESTfilename_v001.jpg"
-            self.assertEquals(expected, basename)
+            self.assertEqual(expected, basename)
 
 
         # create a new test.txt file
@@ -753,15 +781,15 @@ class CheckinTest(unittest.TestCase, Command):
         });
         asset_dict = Environment.get_asset_dirs()
         default_dir = asset_dict.get("default")
-        self.assertEquals( "/tmp/tactic/default", default_dir)
+        self.assertEqual( "/tmp/tactic/default", default_dir)
 
         aliases = asset_dict.keys()
         # "plugins" is assumed in some branch 
         if 'plugins' in aliases:
-            self.assertEquals( 4, len(aliases))
+            self.assertEqual( 4, len(aliases))
         else:
-            self.assertEquals( 3, len(aliases))
-        self.assertNotEquals( None, "alias" in aliases )
+            self.assertEqual( 3, len(aliases))
+        self.assertNotEqual( None, "alias" in aliases )
 
         # create a naming
         naming = SearchType.create("config/naming")
@@ -797,11 +825,11 @@ class CheckinTest(unittest.TestCase, Command):
 
             lib_dir = snapshot.get_lib_dir()
             expected = "/tmp/tactic/%s/%s" % (context, context)
-            self.assertEquals(expected, lib_dir)
+            self.assertEqual(expected, lib_dir)
 
             path = "%s/text.txt" % (lib_dir)
             exists = os.path.exists(path)
-            self.assertEquals(True, exists)
+            self.assertEqual(True, exists)
 
         # manually remove this from this pseudo asset_base_dir as we
         # clean up using the default asset_base_dir at the end

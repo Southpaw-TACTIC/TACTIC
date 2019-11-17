@@ -921,7 +921,6 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             'cbjs_action':  '''
 
            
-
             var top = bvr.src_el.getParent(".spt_create_search_type_top");
 
             var options = bvr.options;
@@ -929,13 +928,17 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             var values = spt.api.Utility.get_input_values(top, null, false);
 
             var search_type = values.search_type_name;
-            options.search_type = search_type[0];
+            if (typeOf(search_type) == 'array') {
+                options.search_type = search_type[0];
+            } else {
+                options.search_type = search_type;
+            }
 
            
             var yes = function(){
                 spt.app_busy.show("Registering sType");
                 var server = TacticServerStub.get();
-                server.start({title: "Registered new sType", 'description': 'Registered new sType [' + search_type + ']'})
+                server.start({title: "Registered new sType", 'description': 'Registered new sType [' + search_type + ']'});
                 try {
                     var response = server.execute_cmd(class_name, options, values);
 
@@ -953,7 +956,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                     var event_name = "stype|create";
                     spt.named_events.fire_event(event_name, bvr );
 
-                    server.finish()
+                    server.finish();
                     
                     spt.panel.refresh("side_bar");
 
@@ -970,9 +973,9 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             if (search_type[0].test(/^sthpw/) )
                 spt.confirm('sthpw is designed for internal use. If you need to create an sType to be shared by other projects, you can create such sType with a different prefix. Do you still want to continue creating this sType in the sthpw database?', yes, null);
 
-            else
+            else {
                 yes();
-
+            }
             ''',
         }
         submit_input.add_behavior(behavior)
@@ -1323,13 +1326,13 @@ class SearchTypeCreatorCmd(Command):
 
         return value
 
-
+    def get_search_type_obj(self):
+        return self.search_type_obj
 
 
     def get_sobject(self):
         return self.sobject
         
-
 
     def execute(self):
         if not self.database or not self.schema:
@@ -1371,12 +1374,12 @@ class SearchTypeCreatorCmd(Command):
         #self.asset_description = web.get_form_value("asset_description")
         self.asset_description = self.get_value("asset_description")
         if self.asset_description == "":
-            self.asset_description == "No description"
+            self.asset_description = "No description"
 
         #self.asset_title = web.get_form_value("asset_title")
         self.asset_title = self.get_value("asset_title")
         if self.asset_title == "":
-            self.asset_title == "No title"
+            self.asset_title = "No title"
 
         #copy_from_template = web.get_form_value("copy_from_template")
         copy_from_template = self.get_value("copy_from_template")
@@ -1513,7 +1516,7 @@ class SearchTypeCreatorCmd(Command):
     
 
     def create_config(self):
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         columns = SearchType.get_columns(search_type)
         #if self.has_pipeline:
         #    columns.remove("pipeline_code")
@@ -1757,7 +1760,7 @@ class SearchTypeCreatorCmd(Command):
             pass
         else:
             create.commit(sql)
-            TableUndo.log(self.search_type_obj.get_base_key(), database, table)
+            TableUndo.log(self.search_type_obj.get_value("search_type"), database, table)
         '''
             # add columns 
             db_resource = Project.get_db_resource_by_search_type(search_type)
@@ -1775,7 +1778,7 @@ class SearchTypeCreatorCmd(Command):
 
     def add_sidebar_views(self):
 
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         namespace, table = search_type.split("/")
         title = self.search_type_obj.get_title()
 
@@ -1850,7 +1853,7 @@ class SearchTypeCreatorCmd(Command):
         if not self.has_pipeline:
             return
 
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         namespace, table = search_type.split("/")
         project_code = Project.get_project_code()
 
@@ -1999,15 +2002,12 @@ class SearchTypeCreatorCmd(Command):
 
         naming.set_value("file_naming", file_naming_expr)
 
-
         naming.set_value("checkin_type", "auto")
 
-        search_type = self.search_type_obj.get_base_key()
+        search_type = self.search_type_obj.get_value("search_type")
         naming.set_value("search_type", search_type)
 
-
         naming.commit()
-
 
         self.folder_naming = naming_expr
         self.file_naming = file_naming_expr

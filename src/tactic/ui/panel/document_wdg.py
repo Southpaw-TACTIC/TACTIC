@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['DocumentWdg', 'DocumentItemWdg', 'DocumentSaveCmd']
+__all__ = ['Document', 'DocumentWdg', 'DocumentItemWdg', 'DocumentSaveCmd']
 
 
 from pyasm.common import Common, jsonloads, jsondumps
@@ -23,6 +23,222 @@ from pyasm.web import DivWdg, HtmlElement
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg, SimpleTableElementWdg
 from tactic.ui.panel import ViewPanelWdg
+
+
+
+class Document(object):
+
+    def set_document(self, document):
+        self.document = document
+
+
+    def __init__(self, **kwargs):
+
+        self.kwargs = kwargs
+
+        self.document = {}
+        self.document['content'] = []
+
+        if self.kwargs.get("type"):
+            self.document["type"] = self.kwargs.get("type")
+
+        if self.kwargs.get("document"):
+            self.document = jsonloads(self.kwargs.get("document") )
+
+
+    def get_sobjects_from_document(self, document):
+
+        content = document.get("content") or []
+
+        sobjects = []
+
+        for item in content:
+            self._get_sobjects_from_item(item, sobjects)
+
+        # we have a list of sobjects
+        gstack = []
+        for sobject in sobjects:
+
+            if sobject.get_value("is_group"):
+                group_level = sobject.get_value("group_level") or 0
+
+                # keep track of the group stack
+                if group_level < len(gstack):
+                    if group_level == 0:
+                        gstack = []
+                    else:
+                        gstack = gstack[:group_level]
+
+                gstack.append(sobject)
+
+                continue
+
+            else:
+                for item in gstack:
+                    item.sobjects.append(sobject)
+
+        return sobjects
+
+
+
+    def _get_sobjects_from_item(self, item, sobjects):
+        item_type = item.get("type")
+
+        title = item.get("title")
+
+        group_level = item.get("group_level") or 0
+        search_key = item.get("search_key")
+        expression = item.get("expression")
+
+
+        if item_type == "sobject":
+            sobject = item.get("sobject")
+            if sobject.get("__search_key__"):
+                search_key = sobject.get("__search_key__")
+                if not search_key:
+                    search_key = "sthpw/virtual?id=%s" % sobject.get("id")
+
+            if sobject or search_key:
+
+                if search_key and search_key.startswith("sthpw/virtual"):
+                    pass
+                elif not sobject and search_key:
+                    sobject = Search.get_by_search_key(search_key)
+
+                if not sobject:
+                    return
+
+
+                if isinstance(sobject, dict):
+
+                    search_type = self.kwargs.get("search_type")
+                    if not search_type:
+                        search_type = "sthpw/virtual"
+
+                    s = SearchType.create(search_type)
+                    for n, v in sobject.items():
+                        s.set_value(n,v)
+                    sobject = s
+                    SObject.cache_sobject(sobject.get_search_key(), s, search_type=search_type)
+
+                name = sobject.get_value("name", no_exception=True)
+                if not name:
+                    name = sobject.get_value("code", no_exception=True)
+                if not name:
+                    name = sobject.get_value("id")
+
+                title = name
+                sobject.set_value("title", title)
+
+                sobject.set_value("is_group", False)
+                sobject.set_value("group_level", group_level)
+
+                sobjects.append(sobject)
+
+
+
+            elif expression:
+                new_sobjects = Search.eval(expression)
+                if not isinstance(new_sobjects, list):
+                    new_sobjects = new_sobjects.get_sobjects()
+
+                for sobject in new_sobjects:
+
+                    name = sobject.get_value("name", no_exception=True)
+                    if not name:
+                        name = sobject.get("code")
+
+
+                    title = name
+                    sobject.set_value("title", title)
+
+                    sobject.set_value("is_group", False)
+                    sobject.set_value("group_level", group_level)
+
+
+                    sobjects.append(sobject)
+            else:
+
+                return
+
+        else:
+            children = item.get("children")
+
+            if expression:
+                search = Search.eval(expression)
+                new_sobjects = search.get_sobjects()
+            elif search_key:
+                new_sobject = Search.get_by_search_key(search_key)
+                new_sobjects = [new_sobject]
+            else:
+
+                #sobject = SearchType.create(self.search_type)
+                sobject = SearchType.create("sthpw/virtual")
+                sobject.set_id(1)
+                sobject.set_value("id", 1)
+                name = item.get("title")
+                if not title:
+                    return
+                sobject.set_value("code", name)
+                sobject.set_value("name", name)
+
+                new_sobjects = [sobject]
+
+
+            for sobject in new_sobjects:
+                sobject.set_value("is_group", True)
+                sobject.set_value("group_level", group_level)
+                if children:
+                    sobject.set_value("children", children)
+
+
+                # need to put this in here because groups in TableLayoutWdg depends on it
+                sobject.sobjects = []
+
+                # some dummy dates
+                sobject.set_value("bid_start_date", "2018-03-15")
+                sobject.set_value("bid_end_date", "2018-03-15")
+
+                name = sobject.get_value("name")
+                title = name
+
+                sobject.set_value("title", title)
+
+                sobjects.append(sobject)
+
+
+            if children:
+                search = Search.eval(children)
+                child_sobjects = search.get_sobjects()
+
+                for child_sobject in child_sobjects:
+                    item = {
+                        "type":"sobject",
+                        "group_level": group_level + 1,
+                        #"search_key": child_sobject.get_search_key(),
+                        "sobject": child_sobject,
+                    }
+
+                    self._get_sobjects_from_item(item, sobjects)
+
+
+
+    def generate_document(self, sobjects, element_names=[]):
+
+        content = self.document.get("content")
+
+        for sobject in sobjects:
+
+            item = {}
+            content.append(item)
+            item['type'] = "sobject"
+
+            sobject_dict = sobject.get_sobject_dict()
+
+            item['sobject'] = sobject_dict
+
+
+        return self.document
 
 
 

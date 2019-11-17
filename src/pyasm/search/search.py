@@ -589,7 +589,7 @@ class Search(Base):
 
 
 
-                if op == "in between":
+                if op in ["in between", "between"]:
                     self.add_date_range_filter(name, start, end, table=table)
 
 
@@ -1209,6 +1209,30 @@ class Search(Base):
                         self.add_filters("code", values, op=op)
                     else:
                         self.add_filters("id", values, op=op)
+
+        elif relationship in ['instance']:
+
+            # add_relationship_filter(self, search, op='in', delay_null=False, use_multidb=None)
+
+            from_col = attrs['from_col']
+            to_col = attrs['to_col']
+
+            instance_type = attrs.get("instance_type")
+            assert instance_type
+
+            self.add_join(instance_type, search_type)
+            self.add_join(related_type, instance_type)
+
+            search_type_obj = SearchType.get(search_type)
+            related_type_obj = SearchType.get(related_type)
+
+            table = search_type_obj.get_table()
+            related_table = related_type_obj.get_table()
+            self.add_column("*", table=table)
+            self.add_column("code", table=related_table, as_column="_related_code")
+
+            s_values = search.get_sobject_codes()
+            self.add_filters(to_col, s_values, table=related_table)
 
         else:
             raise SearchException("Relationship [%s] not supported" % relationship)
@@ -3311,7 +3335,7 @@ class SObject(object):
         return info
 
 
-    def set_value(self, name, value, quoted=True, temp=False):
+    def set_value(self, name, value, quoted=True, temp=False, no_exception=False):
         '''set the value of this sobject. It is
         not commited to the database'''
 
@@ -3352,7 +3376,10 @@ class SObject(object):
 
         # explicitly test for None (empty string is ok)
         if value == None:
-            raise SObjectException("Value for [%s] is None" % name)
+            if no_exception == False:
+                raise SObjectException("Value for [%s] is None" % name)
+            else:
+                return
 
         # convert an xml object to its string value
         if isinstance(value, Xml):
@@ -4785,7 +4812,7 @@ class SObject(object):
         self.set_value(retire_col,"retired")
         self.commit()
 
-        from sobject_log import RetireLog
+        from .sobject_log import RetireLog
         RetireLog.create(self.get_search_type(), search_code=self.get_code() )
 
         # remember the data
@@ -5731,7 +5758,9 @@ class SObject(object):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
 
         if self.get_base_search_type() == "sthpw/virtual":
-            columns = self.data.keys()
+            columns = set(self.data.keys())
+            columns.update( self.update_data.keys() )
+            columns = list(columns)
         elif not columns:
             columns = SearchType.get_columns(self.get_search_type())
 
@@ -6100,7 +6129,7 @@ class SearchType(SObject):
 
         # right now, the type is the table type
         type = column_info.get("data_type")
-        size = column_info.get("size")
+        size = column_info.get("size") or 256
 
         if type == "varchar" and size > 256:
             type = "text"

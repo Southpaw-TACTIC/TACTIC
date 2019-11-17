@@ -521,7 +521,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         left_div.add_relay_behavior( { 
-            'type': 'mouseup',
+            'type': 'click',
             'bvr_match_class': 'spt_custom_layout_item',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
@@ -587,7 +587,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         left_div.add_style("width: 100%")
 
 
-        web = WebContainer.get_web();
+        web = WebContainer.get_web()
         #folder_states = web.get_form_value("folder_states")
         folder_states = self.kwargs.get("folder_state")
         if folder_states:
@@ -1304,6 +1304,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     if i == 0:
                         tr.add_class("spt_behavior_template")
                         tr.add_style("display: none")
+                        tr.add_class("SPT_TEMPLATE")
                     else:
                         tr.add_class("spt_behavior_item")
                        

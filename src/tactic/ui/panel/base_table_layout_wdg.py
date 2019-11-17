@@ -235,7 +235,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
-
                 self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
                 parser = ExpressionParser() 
                 related = parser.get_plain_related_types(expression)
@@ -575,6 +574,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
 
+        # Not sure if filter_view should ever be simple_search_view (this is how it was before)
+        filter_view = self.kwargs.get('filter_view') or self.simple_search_view
 
 
         # don't set the view here, it affects the logic in SearchWdg
@@ -599,7 +600,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=self.simple_search_view)
+            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=filter_view)
 
         
         search = self.search_wdg.get_search()
@@ -1342,13 +1343,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if widget:
                 wdg_list.append( { 'wdg': widget } )
             else:
-                print("WARNING: badge view '%s' not defined" % custom_shelf_view)
+                print("WARNING: badge view '%s' not defined" % badge_view)
  
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
             keyword_div.add_style("margin-left: 0px")
-
 
         if self.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
@@ -1647,7 +1647,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
+                var search_type = top.getAttribute("spt_search_type");
+
                 var kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,
@@ -1885,7 +1886,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.filter_num_div = None
         # Search button
         search_dialog_id = self.kwargs.get("search_dialog_id")
-        show_search = self.get_setting("advanced_search")
+        
+        show_search = self.get_setting("show_search")
+        if show_search is None:
+            # advanced_search is deprecated as of 4.7
+            show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
             div = DivWdg()

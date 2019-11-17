@@ -1023,6 +1023,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
             /* Saved searches */
             .spt_saved_searches_top {
+                background: #F9F9F9
 
             }
 
@@ -1227,6 +1228,8 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         saved_searches_container = DivWdg()
         saved_top.add(saved_searches_container)
         saved_searches_container.add_class("spt_saved_searches_container")
+
+        saved_searches_container.add_class("SPT_TEMPLATE")
 
         saved_searches_category_container = DivWdg()
         saved_searches_container.add(saved_searches_category_container)
@@ -1703,6 +1706,7 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        hide_save_buttons = self.kwargs.get("hide_save_buttons")
         prefix = self.kwargs.get("prefix")
         mode = self.kwargs.get("mode")
 
@@ -1710,26 +1714,27 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
         buttons_container.add_class("spt_advanced_search_buttons")
         self.add_relay_behaviors(buttons_container)
 
-        # Save buttons
-        save_buttons = DivWdg()
-        buttons_container.add(save_buttons)
-        save_buttons.add_class("save-buttons")
+        if hide_save_buttons not in ["true", True]:
+            # Save buttons
+            save_buttons = DivWdg()
+            buttons_container.add(save_buttons)
+            save_buttons.add_class("save-buttons")
 
-        save_button = DivWdg("Save")
-        save_buttons.add(save_button)
-        save_button.add_class("spt_save_button spt_save save-button enabled hand")
-        save_button.add_style("margin-right: 5px;")
+            save_button = DivWdg("Save")
+            save_buttons.add(save_button)
+            save_button.add_class("spt_save_button spt_save save-button enabled hand")
+            save_button.add_style("margin-right: 5px;")
 
-        save_as_button = DivWdg("Save As")
-        save_buttons.add(save_as_button)
-        save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand ")
-        save_as_button.add_attr("spt_action", "save_as")
+            save_as_button = DivWdg("Save As")
+            save_buttons.add(save_as_button)
+            save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand ")
+            save_as_button.add_attr("spt_action", "save_as")
 
-        if mode == "save":
-            save_button.add_attr("spt_action", "save_as")
-            save_as_button.add_style("display: none")
-        else:
-            save_button.add_attr("spt_action", "save")
+            if mode == "save":
+                save_button.add_attr("spt_action", "save_as")
+                save_as_button.add_style("display: none")
+            else:
+                save_button.add_attr("spt_action", "save")
 
         # Search button
         search_button = DivWdg("Search")
@@ -1737,12 +1742,28 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
         search_button.add_class("spt_search_button")
         search_button.add_class("hand")
 
-        search_action = self.kwargs.get("search_action") or 'spt.dg_table.search_cbk(evt, bvr)'
+        search_action = self.kwargs.get("search_action")
+        if not search_action:
+            top_class = self.kwargs.get("top_class")
+            if top_class:
+                search_action = '''
+                var top = bvr.src_el.getParent(".%s");
+                var panel = top.getElement(".spt_view_panel");
+                bvr.panel = panel;
+                spt.dg_table.search_cbk(evt, bvr);
+                ''' % top_class
+            else:
+                search_action = '''
+                spt.dg_table.search_cbk(evt, bvr);
+                '''
+
+
+
         search_button.add_behavior({
                 'type':         'click_up',
                 'new_search':   True,
                 'cbjs_action':  search_action,
-                'panel_id':     prefix,
+                #'panel_id':     prefix,
                 
             })
 

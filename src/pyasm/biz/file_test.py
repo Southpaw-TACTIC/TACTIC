@@ -19,7 +19,7 @@ import unittest
 
 from pyasm.security import *
 
-from file import FileRange
+from .file import FileRange
 
 
 class FileTest(unittest.TestCase):

@@ -146,8 +146,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '07'
         },
-        'advanced_search': {
+        'show_search': {
             'description': 'Flag to determine whether or not to show the advanced Search button',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '18'
+        },
+        'advanced_search': {
+            'description': '(DEPRECATED) Use show_search instead',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
@@ -477,6 +484,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             is_viewable = security.check_access('element', access_keys, "view", default=def_default_access)
             is_editable = security.check_access('element', access_keys, "edit", default=def_default_access)
 
+            # hide columns with hidden="true", except when this is a temporary table for dynamic operations
+            is_hidden = (self.kwargs.get("temp") != True) and (attrs.get("hidden") in ['true', True])
+
+            is_viewable = is_viewable and (not is_hidden)
+
             if not is_viewable:
                 # don't remove while looping, it disrupts the loop
                 #self.widgets.remove(widget)
@@ -569,7 +581,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 self.view_editable = True
 
 
-
         self.color_maps = self.get_color_maps()
 
         from pyasm.web import WebContainer
@@ -604,6 +615,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         for sobject in self.sobjects:
             self.sobject_levels.append(0)
 
+        self.edit_config_xml = self.kwargs.get("edit_config_xml")
 
         # Force the mode to widget because raw does work with FastTable
         # anymore (due to fast table constantly asking widgets for info)
@@ -837,6 +849,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         column_widths = self.kwargs.get("column_widths")
         if not column_widths:
             column_widths = []
+        else:
+            if isinstance(column_widths, basestring):
+                column_widths = column_widths.split(",")
 
 
 
@@ -876,14 +891,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         default_width = 120
         min_width = 45
         #expand_full_width = False
+
         for i, item_width in enumerate(reversed(column_widths)):
 
             if item_width == "auto":
                 continue
 
             if isinstance(item_width, basestring):
-                item_width = item_width.replace("px", "")
-                item_width = int(item_width)
+                if item_width.endswith("px"):
+                    item_width = item_width.replace("px", "")
+                    item_width = int(float(item_width))
+                elif item_width.endswith("%"):
+                    continue
+                else:
+                    item_width = int(float(item_width))
 
 
             if i == 0 and expand_full_width:
@@ -1105,6 +1126,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         init_load_num = self.kwargs.get('init_load_num')
 
         if not init_load_num:
+            init_load_num = 4
+        elif init_load_num == 'null':
             init_load_num = 4
         else:
             init_load_num = int(init_load_num)
@@ -1654,13 +1677,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_layout");
                     var version = top.getAttribute("spt_version");
-                    if (version == "2") {
-                        spt.table.set_layout(top);
-                        spt.table.run_search();
-                    }
-                    else {
-                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                    }
+                    spt.table.set_layout(top);
+                    spt.table.run_search();
                 '''
             } )
 
@@ -1837,6 +1855,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             spt.table.set_table(bvr.src_el);
             var row = bvr.src_el.getParent(".spt_table_row");
+
             if (row.hasClass("spt_table_selected")) {
                 spt.table.unselect_row(row);
             }
@@ -1994,7 +2013,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             is_editable = False
             self.view_editable = False
-
 
         if is_editable:
             table.add_relay_behavior( {
@@ -2942,7 +2960,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         open_icon = "FA_FOLDER_OPEN_O"
         closed_icon = "FA_FOLDER_O"
         group_icon_styles = ""
-        if extra_data:
+        if extra_data and isinstance(extra_data, basestring):
             try:
                 extra_data = jsonloads(extra_data)
             except:
@@ -3082,6 +3100,35 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 "drag_el": '@',
                 "cb_set_prefix": 'spt.document.drag_row'
             } )
+
+            tr.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                 var row = bvr.src_el;
+                 row.addClass("spt_table_selected");
+
+                 var item = bvr.src_el.getElement(".spt_document_item");
+                 var pipeline_code = item.getAttribute("spt_pipeline_code");
+                 var title = item.getAttribute("spt_title");
+                 var event = "pipeline_" + pipeline_code + "|click";
+
+                 var temp = {
+                     "pipeline_code": pipeline_code,
+                     "title" : title,
+                 }
+
+                 var kwargs = {};
+                 kwargs.options = temp;
+
+                 spt.named_events.fire_event(event, kwargs);
+                 spt.command.clear();
+                 spt.pipeline.fit_to_canvas();
+
+                 '''
+                 })
+
+
 
 
 
@@ -3268,7 +3315,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                             if (!layout.isVisible()) return;
                             spt.table.set_layout(layout);
-
+                            
                             var rows = spt.table.get_all_rows();
                             for (var i = 0; i < rows.length; i++) {
 
@@ -3753,7 +3800,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 if editable == True:
                     from .layout_wdg import CellEditWdg
-                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version())
+                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version(), config_xml=self.edit_config_xml)
                     edit_wdgs[name] = edit
                     # now set up any validations on this edit cell,
                     # if any have been configured on it
@@ -4389,17 +4436,20 @@ spt.table.get_group_cells = function(element_name, tr) {
 spt.table.last_selected_row = null;
 
 spt.table.select_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
     }
-
-    var current_color = row.getAttribute("spt_hover_background");
-
-    if (!current_color) {
-        current_color = row.getStyle("background-color")
+    
+    var current_color = row.getAttribute("spt_last_background");
+    if (!current_color){
+        current_color = row.getAttribute("spt_hover_background");
+        if (!current_color){
+            current_color = row.getStyle("background-color");
+        }
     }
+    
     if (!spt.has_class(row,'spt_table_selected')) {
 
         row.setAttribute("spt_last_background", current_color);
@@ -4412,7 +4462,7 @@ spt.table.select_row = function(row) {
 
 
 spt.table.unselect_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box_selected");
         cell.addClass("look_dg_row_select_box");
@@ -4889,28 +4939,27 @@ spt.table.add_new_item = function(kwargs) {
 
     var search_type = layout.getAttribute("spt_search_type");
 
-    var row;
-    var position;
     var table = spt.table.get_table();
     if (kwargs.row) {
-        row = kwargs.row;
-        position = "after";
+        var row = kwargs.row;
+        var position = "after";
     }
     else if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
-            row = table.getElement(".spt_table_header_row");
+            var row = table.getElement(".spt_table_header_row");
         }
         else {
-            row = rows[rows.length-1];
+            var row = rows[rows.length-1];
         }
-        position = "after";
+        var position = "after";
 
     }
     else {
-        row = table.getElement(".spt_table_row");
-        position = "before";
+        var row = table.getElement(".spt_table_row");
+        var position = "before";
     }
+
 
 
 
@@ -4973,8 +5022,10 @@ spt.table.add_new_item = function(kwargs) {
 
     // fire a client event
     var tableId = spt.table.layout.getAttribute("spt_table_id");
+
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
+
 
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
@@ -6829,6 +6880,10 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // behaviors are only process when in the actual dom
             //spt.behavior.replace_inner_html(dummy, widget_html);
             dummy.innerHTML = widget_html;
+            
+            // HACK for tile layout 
+            dummy = spt.behavior.clone(dummy);
+
 
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
@@ -6904,6 +6959,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     if (kw.json)
         kwargs.values['json'] = kw.json;
+    
     server.async_get_widget(class_name, kwargs);
 }
 
@@ -8434,6 +8490,448 @@ spt.table.load_search = function(search_view, kwargs) {
 }
 
 
+
+/*
+ * Saving views
+ */
+
+
+
+// Callback that gets executed when "Save My/Project View As" is selected
+spt.table.save_view_cbk = function(table_id, login) {
+   
+    var table = document.id(table_id);
+    var top = table.getParent(".spt_view_panel");
+    // it may not always be a View Panel top
+    if (!top) top = table.getParent(".spt_table_top");
+    
+    //var search_wdg = top.getElement(".spt_search");
+
+    // TODO: Will this break on embedded tables now?????  Maybe not
+    // because the first instance is probably what we want ... however,
+    // a little tenous
+    //var view_info = top.getElement(".spt_save_top");
+    var view_info = top.getElement(".spt_new_view_top");
+
+    var values;
+    if (view_info != null) {
+        values = spt.api.Utility.get_input_values(view_info , null, false);
+    }
+    else {
+        // NOTE: this is deprecated
+        var aux_content = top.getElement(".spt_table_aux_content")
+        values = spt.api.Utility.get_input_values(aux_content , null, false);
+    }
+    // rename view
+    var new_view = values["save_view_name"];
+    var new_title = values["save_view_title"];
+    var same_as_title = values["same_as_title"] == 'on';
+    //var save_a_link = values["save_a_link"] == 'on';
+  
+    var save_mode = values['save_mode'];
+    if (!save_mode) {
+        var save_project_views = values['save_project_views'] == 'on';
+        if (save_project_views) {
+            save_mode = 'save_project_views';
+        }
+        var save_my_views = values['save_my_views'] == 'on';
+        if (save_my_views) {
+            save_mode = 'save_my_views';
+        }
+        var save_view_only = values['save_view_only'] == 'on';
+        if (save_view_only) {
+            save_mode = 'save_view_only';
+        }
+    }
+
+    if (same_as_title) {
+        new_view = new_title;
+    }
+
+    if (spt.input.has_special_chars(new_view)) {
+        spt.alert("The name contains special characters. Do not use empty spaces.");  
+        return;
+    }
+    if (new_view == "") {
+        spt.alert("Empty view name not permitted");
+        return;
+    }
+    
+    if ((/^(saved_search|link_search)/i).test(new_view)) {
+        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
+        return;
+    }
+    var table = document.getElementById(table_id);
+    if (!table) {
+        spt.alert('This command requires a Table in the main viewing area');
+        return;
+    }
+    var table_search_type = table.getAttribute("spt_search_type");
+    var table_view = table.getAttribute("spt_view");
+    var last_element = top.getAttribute("spt_element_name");
+
+
+    var kwargs = {'login' : login, 'new_title' : new_title, 
+        'element_name': new_view,
+        'last_element_name': last_element,
+        'save_mode': save_mode,
+    } 
+
+    spt.app_busy.show( 'Saving View', new_title );
+    var rtn = spt.table.save_view(table_id, table_view, kwargs);
+    spt.app_busy.hide();
+
+    if (!rtn)
+        return;
+    
+    return true;
+}
+
+//verify matching spt_view
+// NOTE: this is not really used anymore
+spt.table.is_embedded = function(table){
+    var top = table.getParent(".spt_view_panel");
+    // top is null if it's a pure Table Layout
+    if (!top) return false;
+
+    var panel_table_view = top.getAttribute('spt_view');
+    var table_view = table.getAttribute('spt_view');
+    var panel_search_type = top.getAttribute("spt_search_type");
+    var table_search_type = table.getAttribute("spt_search_type");
+     
+    var is_embedded = false;
+    if (panel_table_view != table_view || panel_search_type != table_search_type) {
+        //spt.alert('Embedded table view saving not supported yet');
+        is_embedded = true;
+       
+    }
+    return is_embedded;
+}
+
+spt.table.simple_save_view = function (table, view_name, kwargs) {
+    try {
+        if (typeOf(table) == "string") {
+            table = document.id(table);
+        }
+
+        var top = table.getParent(".spt_view_panel");
+        var layout = top ? top.getAttribute('spt_layout'): null;
+        var search_wdg = kwargs.search_top? kwargs.search_top :  (top ? top.getElement(".spt_search"): null);
+
+        // save search view
+        if (search_wdg) {
+            var search_view = 'link_search:'+ view_name;
+            // auto generate a new search for this view
+            search_wdg.setAttribute("spt_search_view", search_view);
+            spt.table.save_search(search_wdg, search_view, {});
+        }
+
+
+        // save view
+
+        //raw and static_table layout has no checkbox in the first row
+        var first_idx = 1;
+        if (['raw_table','static_table'].contains(layout))
+            first_idx = 0;
+
+        spt.dg_table.get_size_info(table, view_name, null, first_idx, {extra_data: kwargs.extra_data, save_definitions: true});
+
+    } catch(e) {
+        spt.alert(spt.exception.handler(e));
+        return false;
+    }
+    return true;
+}
+
+spt.table.save_view = function(table, new_view, kwargs) {
+
+    var server;
+    try {
+        if (typeOf(table) == "string") {
+            table = document.id(table);
+        }
+
+        var top = table.getParent(".spt_view_panel");
+        var search_wdg = top ? top.getElement(".spt_search"): null;
+
+        var save_mode = kwargs['save_mode'];
+ 
+        if (spt.table.is_embedded(table)) {
+            //spt.alert('Embedded table view saving not supported yet');
+            var login = kwargs.login;
+            spt.dg_table.get_size_info(table, new_view, login);
+            return false;
+        }
+        
+        var table_search_type = table.getAttribute("spt_search_type");
+
+
+        var dis_options = {};
+
+
+        var login = kwargs.login;
+        var save_as_personal = (save_mode == 'save_my_views') ? true : false;
+
+
+        var side_bar_view = 'project_view';
+        if (save_as_personal) {
+            side_bar_view = 'my_view_' + login;
+        }
+
+        // start a transaction
+        var server = TacticServerStub.get();
+        var title = side_bar_view + " updated from: " + new_view;
+        server.start({"title": "Saving View", "description": "Saving View: " +  title});
+      
+        var element_name = new_view;
+        var unique = kwargs.unique;
+
+        // Save My View allows to save over the current view if it is already a personal view
+        // or if the user is admin, he can save over anything
+        if (kwargs.element_name ) {
+            element_name = kwargs.element_name;
+        }
+        var new_title = kwargs.new_title;
+
+
+        var last_element_name = kwargs.last_element_name;
+
+        // If it is saving as a new personal view, we try to append login name
+        if (save_as_personal) {
+            //only do this to search_view to make it easier to retrieve a search for my_view_<user>
+            if (login && !(/\./).test(element_name) ) {
+                element_name = login + '.' + element_name;
+            }
+        }
+
+        var custom_search_view = null;
+        if (search_wdg) {
+            var search_view = 'link_search:'+ element_name;
+            // auto generate a new search for this view
+            search_wdg.setAttribute("spt_search_view", search_view);
+            spt.table.save_search(search_wdg, search_view, {'unique': kwargs.unique, 'personal': save_as_personal});
+
+            custom_search_view = search_wdg.getAttribute('spt_custom_search_view');
+        }
+        // add to the project views
+        var search_type = "SideBarWdg";
+        var class_name = "LinkWdg";
+       
+        var simple_search_view = top ? top.getAttribute('spt_simple_search_view'): null;
+        var insert_view = top ? top.getAttribute('spt_insert_view'): null;
+        var edit_view = top ? top.getAttribute('spt_edit_view'): null;
+        var layout = top ? top.getAttribute('spt_layout'): null;
+      
+      
+        dis_options['search_type'] = table_search_type;
+        dis_options['view'] = element_name;
+        dis_options['search_view'] = search_view;
+        if (custom_search_view)
+            dis_options['custom_search_view'] = custom_search_view;
+        if (simple_search_view)
+            dis_options['simple_search_view'] = simple_search_view;
+        if (insert_view)
+            dis_options['insert_view'] = insert_view;
+        if (edit_view)
+            dis_options['edit_view'] = edit_view;
+        if (layout)
+            dis_options['layout'] = layout;
+        
+        // redefine kwargs
+        var kwargs = {};
+        kwargs['login'] = null;
+        if (save_as_personal) 
+            kwargs['login'] = login;
+        kwargs['class_name'] = class_name; 
+        kwargs['display_options'] = dis_options;
+        
+        kwargs['unique'] = unique;
+
+
+        // these are the server oprations
+
+
+        // Copy the value of the "icon" attribute from the previous XML widget
+        // config.
+        var icon = null;
+        var widget_config_before = server.get_config_definition(search_type, "definition", last_element_name);
+        // Skip if there is no previous matching XML widget config.
+        if (widget_config_before != "") {
+            xmlDoc = spt.parse_xml(widget_config_before);
+            var elem_nodes = xmlDoc.getElementsByTagName("element");
+
+            if (elem_nodes.length > 0) {
+                var attr_node = elem_nodes[0].getAttributeNode("icon")
+
+                // Skip if there is no icon to copy over from the old link.
+                if (attr_node != null) {
+                    icon = attr_node.nodeValue;
+                }
+
+                // keep title
+                if ( save_mode == 'save_view_only' ) {
+                    var title_node = elem_nodes[0].getAttributeNode("title")
+                    if (title_node)
+                        new_title = title_node.nodeValue;
+                }
+
+            }
+        }
+
+
+        if (new_title)
+            kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
+
+        // add the definiton to the list
+        var info = server.add_config_element(search_type, "definition", element_name, kwargs);
+        var unique_el_name = info['element_name'];
+        
+        //raw and static_table layout has no checkbox in the first row
+        var first_idx = 1;
+        if (['raw_table','static_table'].contains(layout))
+            first_idx = 0;
+
+        // create the view for this table
+        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
+         
+        //if (side_bar_view && save_a_link) {
+        if (save_mode != 'save_view_only') {
+            var kwargs2 = save_as_personal ? {'login': login } : {};
+           
+            server.add_config_element(search_type, side_bar_view, unique_el_name, kwargs2);
+        }
+        server.finish();
+
+        spt.panel.refresh("side_bar");
+    } catch(e) {
+        if (server) server.abort();
+        
+        spt.alert(spt.exception.handler(e));
+        return false;
+    }
+    return true;
+    
+}
+
+
+spt.table.get_search_values = function(search_top) {
+
+
+    // get all of the search input values
+    var new_values = [];
+    if (search_top) {
+        var search_containers = search_top.getElements('.spt_search_filter')
+        for (var i = 0; i < search_containers.length; i++) {
+            var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+            new_values.push(values);
+        }
+
+        var ops = search_top.getElements(".spt_op");
+
+        // special code for ops
+        var results = [];
+        var levels = [];
+        var modes = [];
+        var op_values = [];
+        for (var i = 0; i < ops.length; i++) {
+            var op = ops[i];
+            var level = op.getAttribute("spt_level");
+            level = parseInt(level);
+            var op_value = op.getAttribute("spt_op");
+            results.push( [level, op_value] );
+            var op_mode = op.getAttribute("spt_mode");
+            levels.push(level);
+            op_values.push(op_value);
+            modes.push(op_mode);
+
+        }
+        var values = {
+            prefix: 'search_ops',
+            levels: levels,
+            ops: op_values,
+            modes: modes
+        };
+        new_values.push(values);
+
+        // find the table/simple search as well
+        var panel;
+        var top_class = search_top.getAttribute("spt_top_class");
+        if (top_class) {
+            var top = search_top.getParent("." + top_class);
+            if (top) {
+                panel = top.getElement(".spt_view_panel");
+            }
+        }
+        panel = panel? panel : search_top.getParent(".spt_view_panel");
+
+        if (panel) {
+            var table_searches = panel.getElements(".spt_table_search");
+            for (var i = 0; i < table_searches.length; i++) {
+                var table_search = table_searches[i];
+                var values = spt.api.Utility.get_input_values(table_search,null,false);
+                new_values.push(values);
+            }
+        }
+    }
+
+    // convert to json
+    var json_values = JSON.stringify(new_values);
+    return json_values;
+
+}
+
+
+
+spt.table.save_search = function(search_wdg, search_view, kwargs) {
+
+    var json_values = spt.table.get_search_values(search_wdg);
+
+    // build the search view
+    var search_type = search_wdg.getAttribute("spt_search_type");
+
+    /*
+    var view_text = document.id('save_search_text');
+    if (search_view == undefined) {
+        search_view = view_text.value;
+    }
+    */
+    if (search_view == "") {
+        search_view = search_wdg.getAttribute("spt_search_view");
+    }
+
+    if (search_view == "") {
+        spt.alert("No name specified for saved search");
+        return;
+    }
+
+
+    var options = {
+        'search_type': search_type,
+        'display': 'block',
+        'view': search_view,
+        'unique': kwargs.unique,
+        'personal': kwargs.personal
+    };
+
+    // replace the search widget
+    var server = TacticServerStub.get();
+
+    var class_name = "tactic.ui.app.SaveSearchCbk";
+    server.execute_cmd(class_name, options, json_values);
+
+    /*
+    if (document.id('save_search_wdg'))
+        document.id('save_search_wdg').style.display = 'none';
+    */
+
+
+}
+
+
+
+
+
+
 /*
  * Export to CSV tools
  */
@@ -8449,7 +8947,6 @@ spt.table.export = function(mode) {
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
     var search_values_dict;
-
     spt.table.set_layout(layout);
     var header = spt.table.get_header_row();
     // include header input for widget specific settings
@@ -8500,14 +8997,13 @@ spt.table.export = function(mode) {
             return;
         }
 
-        var search_values = spt.dg_table.get_search_values(search_wdg);
+        var search_values = spt.table.get_search_values(search_wdg);
         search_values_dict['json'] = search_values;
 
     }
     else if (bvr.mode=='export_displayed') {
         title = 'Export displayed items from "' + search_type + '" list ';
-        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
-        var tbodies = table.getElements(css);
+        var tbodies = table.getElements(".spt_table_row");
         for (var k=0; k < tbodies.length; k++) {
             if (tbodies[k].getStyle('display') == 'none'){
                 continue;
@@ -8525,10 +9021,7 @@ spt.table.export = function(mode) {
 
     else {
         title = 'Export Selected items from "' + search_type + '" list ';
-        if (version == 2)
-            var selected_rows = spt.table.get_selected_rows();
-        else
-            var selected_rows = spt.dg_table.get_selected(table,  {'include_embedded_tables': true} );
+        var selected_rows = spt.table.get_selected_rows();
         var sel_search_keys = [];
 
         related_views = []
@@ -8542,7 +9035,6 @@ spt.table.export = function(mode) {
                 related_views.push(parent_view);
         }
 
-        //var sel_tr_list = spt.dg_table.get_selected( table.get('id') );
         if( sel_search_keys.length == 0 ) {
             spt.alert('No rows selected for exporting to CSV ... skipping "Export Selected" action.');
             return;
@@ -8598,7 +9090,6 @@ spt.table.load_data = function(sobjects) {
   for (var i = 0; i < r_sobjects.length; i++) {
 
     var sobject = sobjects[i];
-
     var row = spt.table.add_new_item();
     var insert_row = spt.table.get_insert_row();
 
@@ -8711,6 +9202,174 @@ spt.table.open_ingest_tool = function(search_type) {
     };
     spt.panel.load_popup("Ingest "+search_type, class_name, kwargs);
 }
+
+
+// Document export (imported from document api)
+spt.table.export_document = function(kwargs) {
+
+    if (!kwargs) {
+        kwargs = {};
+    }
+
+    max_group_level = kwargs.max_group_level;
+    if (typeof(max_group_level) == 'undefined') {
+        max_group_level = -1;
+    }
+
+
+    var min_group_level = kwargs.min_group_level;
+    if (typeof(min_group_level) == 'undefined') {
+        min_group_level = 0;
+    }
+
+
+    var table = spt.table.get_table()
+    var rows = table.getElements(".spt_table_row_item");
+
+    var document = {};
+    document['type'] = 'table';
+
+    // may not be necessary outside of PipeLineWdg?
+    document['new_group_count'] = 0;
+
+    var content = [];
+    document['content'] = content;
+
+    for (var i = 0; i < rows.length; i++) {
+
+        var row = rows[i];
+
+        // Check for clone row
+        if (row.hasClass("spt_clone")) {
+            break;
+        }
+
+        // Check for dynamic row
+        if (row.getAttribute("spt_dynamic") == "true") continue;
+        if (row.getAttribute("spt_deleted") == "true") continue;
+
+        var group_level = row.getAttribute("spt_group_level");
+        if (max_group_level != -1 && group_level > max_group_level) {
+            continue;
+        }
+        if (group_level < min_group_level) {
+            continue;
+        }
+
+
+
+
+
+        var item = {};
+
+        if (row.hasClass("spt_table_group_row")) {
+            var row_type = "group";
+        }
+        else if (row.hasClass("spt_table_row")) {
+            var row_type = "item";
+        }
+        else if (row.hasClass("spt_table_insert_row")) {
+            var row_type = "item";
+            item["new"] = true;
+        }
+        else if (row.hasClass("spt_table_group_insert_row")) {
+            var row_type = "group";
+            item["new"] = true;
+        }
+
+
+        var children = row.getAttribute("spt_children");
+        if (children) {
+            item["children"] = children;
+        }
+
+
+        if (!group_level) {
+            group_level = 0;
+        }
+        item["group_level"] = parseInt(group_level);
+
+        if (row_type == "group") {
+            if (row.getAttribute("spt_deleted") == "true") {
+                break;
+            }
+
+            item["type"] = "group";
+
+            var swap_top = row.getElement(".spt_swap_top");
+            var state = swap_top.getAttribute("spt_state");
+            item["state"] = state;
+
+            var title_wdg = row.getElement(".spt_table_group_title");
+            if (title_wdg) {
+                var label_wdg = title_wdg.getElement(".spt_group_label");
+                if (label_wdg) {
+                    item["title"] = label_wdg.innerHTML;
+                }
+                else {
+                    item["title"] = title_wdg.innerHTML;
+                }
+            }
+        } else {
+
+            if (kwargs.mode == "report") {
+                var element_names = spt.table.get_element_names();
+                var cells = row.getElements(".spt_cell_edit");
+                var index = 0;
+                var data = {};
+                data["id"] = i;
+                cells.forEach( function(cell) {
+                    var element_name = element_names[index];
+                    var value = cell.getAttribute("spt_report_value");
+                    if (value == null) {
+                        value = cell.getAttribute("spt_input_value");
+                    }
+                    data[element_name] = value;
+                    index += 1;
+                } );
+                item["type"] = "sobject";
+                item["sobject"] = data;
+            }
+            else {
+                var search_key = row.getAttribute("spt_search_key_v2");
+                item["type"] = "sobject";
+                item["search_key"] = search_key;
+            }
+
+
+        }
+
+        content.push(item);
+
+    }
+
+
+    // export state
+
+    var layout = spt.table.get_layout();
+    var els = layout.getElements(".spt_state_save");
+
+    if (els.length != 0) {
+        document.state = {};
+    }
+
+    for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var state_name = el.getAttribute("spt_state_name");
+        var state_data = el.getAttribute("spt_state_data");
+        if (state_data != null) {
+            state_data = JSON.parse(state_data);
+        }
+        else {
+            state_data = {};
+        }
+
+        document.state[state_name] = state_data;
+    }
+    return document
+}
+
+
 
 
 

@@ -258,6 +258,8 @@ class CellEditWdg(BaseRefreshWdg):
         search_type = self.kwargs['search_type']
         layout_version = self.kwargs['layout_version']
 
+        config_xml = self.kwargs['config_xml']
+
         configs = Container.get("CellEditWdg:configs")
         if not configs:
             configs = {}
@@ -271,6 +273,11 @@ class CellEditWdg(BaseRefreshWdg):
 
             self.config = WidgetConfigView.get_by_search_type(search_type, view)
             configs[key] = self.config
+
+            # get the base configs
+            if config_xml:
+                extra_config = WidgetConfig.get(view="edit", xml=config_xml)
+                self.config.get_configs().insert(0, extra_config)
 
             # add an override if it exists
             view = "edit_item"
@@ -455,7 +462,7 @@ class CellEditWdg(BaseRefreshWdg):
         # main element
         if self.sobject.has_value(column):
             value = self.sobject.get_value(column)
-            if self.element_type == 'time' and value and type(value) in types.StringTypes:
+            if self.element_type == 'time' and value and isinstance(value, six.string_types):
                 # FIXME: this should use date util
                 try:
                     tmp, value = value.split(" ")
@@ -773,6 +780,23 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
         count = 0
+
+        # column edit option pass-throughs
+        edit_options = self.kwargs.get("edit_options")
+
+        if isinstance(edit_options, six.string_types):
+            try:
+                # hack taken from gear_settings kwarg in ui.panel.BaseTableLayoutWdg
+                edit_options = edit_options.replace("'", '"')
+                edit_options = jsonloads(edit_options)
+            except ValueError:
+                edit_options = None
+        if not isinstance(edit_options, dict):
+            edit_options = None
+
+        # column edit exclusions
+        static_elements = self.kwargs.get("static_element_names") or []
+
         for element_name in element_names:
 
             count += 1
@@ -783,6 +807,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             menu_item.add_style("display: flex")
             menu_item.add_style("align-items: center")
             menu_item.add_style("padding-left: 10px")
+            menu_item.add_style("width: 100%")
 
 
 
@@ -849,16 +874,22 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 title = title
 
 
-            full_title = "%s &nbsp; <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % ( title, element_name)
-            display_title = full_title
+            #full_title = "%s &nbsp; <i style='opacity: 0.3; font-size: 0.8em'>(%s)</i>" % ( title, element_name)
+            #display_title = full_title
+            full_title = "%s (%s)" % ( title, element_name)
+            display_title = title
+            menu_item.add_attr("title", full_title)
+
             
 
             target = self.kwargs.get("target") or None
 
             #menu_item.add_attr("title", full_title)
+
             menu_item.add(checkbox)
             menu_item.add("&nbsp;&nbsp;")
             menu_item.add(display_title)
+
             menu_item.add_behavior({
             'type': "click_up", 
             'target_id': self.target_id,
@@ -907,7 +938,79 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             menu_item.add_event("onmouseover", "this.style.background='%s'" % color)
             menu_item.add_event("onmouseout", "this.style.background=''")
 
-            elements_wdg.add(menu_item)
+            menu_item_container = DivWdg()
+            elements_wdg.add(menu_item_container)
+            menu_item_container.add(menu_item)
+
+            if (self.kwargs.get("edit") in ['true', True]) and (element_name not in static_elements):
+                button = IconButtonWdg(name="Edit", icon="FA_EDIT")
+                menu_item_container.add(button)
+                button.add_behavior( {
+                'type': 'click_up',
+                'target_id': self.target_id,
+                'target': target,
+                'element_name': element_name,
+                'edit_options': edit_options or {},
+                'cbjs_action': '''
+
+                var panel;
+
+                var popup = bvr.src_el.getParent(".spt_popup");
+
+                if (bvr.target) {
+                    var parent = bvr.src_el.getParent("."+bvr.target);
+                    panel = parent.getElement(".spt_layout");
+                }
+                else if (popup) {
+                    var panel = popup.panel;
+                    if (!panel) {
+                        var activator = popup.activator;
+                        if (activator) {
+                            panel = activator.getParent(".spt_layout");
+                        }
+                    }
+                }
+                if (!panel) {
+                    panel = document.id(bvr.target_id);
+                }
+
+
+                if (!panel) {
+                    spt.alert('Please re-open the Column Manager');
+                    return;
+                }
+                var table = panel.getElement(".spt_table");
+
+                var class_name = 'tactic.ui.manager.ElementDefinitionWdg'
+                var popup_id = 'edit_column_defn_wdg';
+                var title =  'Edit Column Definition';
+
+                var element_name = bvr.element_name;
+                var view = table.getAttribute("spt_view");
+                var search_type = table.getAttribute("spt_search_type");
+
+                var args = {
+                    'search_type': search_type,
+                    'view': view,
+                    'element_name': element_name,
+                    'is_insert': "false"
+                };
+                var edit_options = bvr.edit_options;
+
+                for (var key in edit_options) {
+                    args[key] = edit_options[key];
+                }
+
+                spt.panel.load_popup(title, class_name, args=args);
+                '''
+                } )
+
+            menu_item_container.add_style("display: flex")
+            menu_item_container.add_style("justify-content: space-between")
+            menu_item_container.add_style("align-items: center")
+            menu_item_container.add_class("spt_column_container")
+            menu_item_container.add_attr("spt_element_name", element_name)
+            elements_wdg.add(menu_item_container)
 
         if not count:
             return None
@@ -919,7 +1022,12 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
     def get_display(self):
-        top = self.top
+        # top container is a panel
+        container = self.top
+        self.set_as_panel(container)
+        top = DivWdg()
+        container.add(top)
+
 
         width = self.kwargs.get("width") or 400
         top.add_style("width: %spx" % width)
@@ -942,7 +1050,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             self.is_admin = False
         else:
             self.is_admin = Environment.get_security().is_admin()
-        self.is_admin = False
 
 
 
@@ -1016,8 +1123,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         context_menu.add_style("overflow-x: hidden")
 
 
-
-        self.config = WidgetConfigView.get_by_search_type(search_type, "definition")
+        element_view = self.kwargs.get("element_view") or "definition"
+        self.config = WidgetConfigView.get_by_search_type(search_type, element_view)
 
         predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()
@@ -1069,6 +1176,9 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
             defined_element_names.extend(config_element_names)
 
+
+        # remove duplicate elements
+        self.all_element_names = list(set(self.all_element_names))
 
         if self.all_element_names:
             self.all_element_names.sort()
@@ -1156,7 +1266,11 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
  
         #popup_wdg.add(context_menu, "content")
         #return popup_wdg
-        return top
+
+        if self.kwargs.get("is_refresh"):
+            return top
+        else:
+            return container
 
 
     def get_finger_menu(self):
