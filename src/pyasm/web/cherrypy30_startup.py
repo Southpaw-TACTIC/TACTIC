@@ -314,7 +314,7 @@ class CherryPyStartup(CherryPyStartup20):
             # reloading in 3 seconds
             html_response = []
             html_response.append('''<html>''')
-            html_response.append('''<body style='color: #000; min-height: 1200px; background: #DDDDDD'>%s''' % loading_page)
+            html_response.append('''<body style='color: #000; background: #DDDDDD'>%s''' % loading_page)
             if need_upgrade[0] == False:
                 html_response.append('''<script>document.location = "%s";</script>''' % path )
             html_response.append('''</body>''')
@@ -514,6 +514,7 @@ class CherryPyStartup(CherryPyStartup20):
 
             db_update = []
             plugin_update = {}
+            plugin_order = {}
 
             if project != "default":
                 Site.set_site(site)
@@ -536,6 +537,8 @@ class CherryPyStartup(CherryPyStartup20):
                         xml = Xml()
                         xml.read_string(manifest)
                         auto_upgrade = xml.get_value("manifest/data/auto_upgrade") or None
+                        order = xml.get_value("manifest/data/order") or '9'
+                        order = int(order)
                         if (not auto_upgrade) or (auto_upgrade in ['false', 'False']):
                             continue
                         latest_version = xml.get_value("manifest/data/version") or None
@@ -543,9 +546,15 @@ class CherryPyStartup(CherryPyStartup20):
                             continue
                         elif not version:
                             plugin_update[code] = [plugin_dir, latest_version]
+                            if not plugin_order.get(order):
+                                plugin_order[order] = []
+                            plugin_order[order].append(code)
                             need_upgrade[0] = True
                         elif version != latest_version:
                             plugin_update[code] = [plugin_dir, latest_version]
+                            if not plugin_order.get(order):
+                                plugin_order[order] = []
+                            plugin_order[order].append(code)
                             need_upgrade[0] = True
 
             project_versions = Search.eval("@SOBJECT(sthpw/project)")
@@ -559,7 +568,10 @@ class CherryPyStartup(CherryPyStartup20):
                 for x in project_versions:
                     if x.get_value("code") == 'admin':
                         continue
-                    if x.get_value("last_version_update") != newest_version:
+                    last_version_update = x.get_value("last_version_update")
+                    last_version_update = last_version_update.split("_")
+                    last_version_update = ".".join(last_version_update)
+                    if last_version_update != newest_version:
                         db_update.append(x.get_value("code")) 
                         need_upgrade[0] = True
                                 
@@ -585,7 +597,7 @@ class CherryPyStartup(CherryPyStartup20):
                 'project_code': project,
                 'login': Environment.get_user_name(),
                 'command': "pyasm.command.SiteUpgradeCmd",
-                'kwargs': {'project_code': project, 'site': site, 'db_update': db_update, 'plugin_update': plugin_update}
+                'kwargs': {'project_code': project, 'site': site, 'db_update': db_update, 'plugin_update': plugin_update, 'plugin_order': plugin_order}
             }
 
             if need_upgrade[0] and upgrade_status != "start":
