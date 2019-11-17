@@ -26,7 +26,6 @@ from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenW
 from pyasm.common import Common, Environment, TacticException
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.container import DialogWdg
 
 from .misc_input_wdg import SearchTypeSelectWdg
 from .upload_wdg import SimpleUploadWdg
@@ -873,12 +872,19 @@ class CsvImportWdg(BaseRefreshWdg):
         #option_div.add( HtmlElement.br() )
         option_div.add(SpanWdg("Use Title Row: ", css='med'))
         title_row_checkbox = CheckboxWdg("has_title")
+        
+        # Has title is default true
         title_row_checkbox.set_default_checked()
+        title_row_checkbox.set_checked()
+        self.has_title = True
 
-        title_row_checkbox.add_behavior({'type' : 'click_up',
-                    'propagate_evt': 'true',
-                    'cbjs_action': "spt.panel.refresh('preview_data',\
-                    spt.api.Utility.get_input_values('csv_import_main'))"})
+        title_row_checkbox.add_behavior({
+            'type' : 'click_up',
+            'propagate_evt': 'true',
+            'cbjs_action': """
+                spt.panel.refresh('preview_data', spt.api.Utility.get_input_values('csv_import_main'));
+            """
+        })
         option_div.add(title_row_checkbox)
         option_div.add( HintWdg("Set this to use the first row as a title row to match up columns in the database") )
         
@@ -970,7 +976,6 @@ class CsvImportWdg(BaseRefreshWdg):
 
         div.add(option_div_top)
 
-        self.has_title = title_row_checkbox.is_checked()
         
         
         # need to somehow specify defaults for columns
@@ -998,9 +1003,13 @@ class PreviewDataWdg(BaseRefreshWdg):
         self.search_type_obj = SearchType.get(self.search_type)
         web = WebContainer.get_web()
         self.encoder = web.get_form_value('encoder')
-        title_row_checkbox = CheckboxWdg("has_title")
 
-        self.has_title = title_row_checkbox.is_checked()
+        if self.is_refresh in [True, "true"]:
+            has_title = web.get_form_value("has_title")
+        else:
+            has_title = True
+        self.has_title = has_title
+
 
         lowercase_title_checkbox = CheckboxWdg("lowercase_title")
 
@@ -1026,7 +1035,7 @@ class PreviewDataWdg(BaseRefreshWdg):
     def get_column_preview(self, div):
         # parse the first fow
         csv_parser = CsvParser(self.file_path)
-        if self.has_title:
+        if self.has_title in [True, "true", "on"]:
             csv_parser.set_has_title_row(True)
         else:
             csv_parser.set_has_title_row(False)
@@ -1352,6 +1361,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 options_form.add("<br clear='all'/>")
 
                 offset = {'x':10, 'y': 0}
+                from tactic.ui.container import DialogWdg
                 dialog = DialogWdg(offset=offset)
                 dialog.add(options_form, name="content")
                 dialog.set_as_activator(column_option_div)

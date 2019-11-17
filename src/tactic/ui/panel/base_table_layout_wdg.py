@@ -1343,13 +1343,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if widget:
                 wdg_list.append( { 'wdg': widget } )
             else:
-                print("WARNING: badge view '%s' not defined" % custom_shelf_view)
+                print("WARNING: badge view '%s' not defined" % badge_view)
  
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
             keyword_div.add_style("margin-left: 0px")
-
 
         if self.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()

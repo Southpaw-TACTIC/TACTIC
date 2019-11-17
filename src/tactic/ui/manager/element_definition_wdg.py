@@ -67,12 +67,16 @@ class ElementDefinitionWdg(BaseRefreshWdg):
        
 
         is_insert = self.kwargs.get("is_insert")
-        if is_insert == "view_only":
-            self.is_insert = 'view_only'
-        elif is_insert in ['true', True]:
+        if is_insert in ['true', True]:
             self.is_insert = 'true'
         else:
             self.is_insert = 'false'
+
+        simple_view_only = self.kwargs.get("simple_view_only")
+        if simple_view_only in ['true', True]:
+            self.simple_view_only = 'true'
+        else:
+            self.simple_view_only = 'false'
 
 
         search_type = self.kwargs.get("search_type")
@@ -142,6 +146,7 @@ class ElementDefinitionWdg(BaseRefreshWdg):
                     <view>%(view)s</view>
                     <element_name>%(element_name)s</element_name>
                     <is_insert>%(is_insert)s</is_insert>
+                    <simple_view_only>%(simple_view_only)s</simple_view_only>
                     <is_edit_layout>false</is_edit_layout>
                     <show_title_details>%(show_title_details)s</show_title_details>
                 </display>
@@ -157,11 +162,20 @@ class ElementDefinitionWdg(BaseRefreshWdg):
               </element>
             </tab>
             </config>
-            ''' % {'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': self.is_insert, 'show_title_details': show_title_details}
+            ''' % {'search_type': search_type, 'view': view, 'element_name': element_name, 'is_insert': self.is_insert, 'simple_view_only': self.simple_view_only, 'show_title_details': show_title_details}
        
         config = WidgetConfig.get(view='tab', xml=config_xml)
 
-        if self.is_insert =='true':
+        if self.simple_view_only == 'true':
+            column_config_view = self.kwargs.get("column_config_view")
+
+            table_display = config.get_display_widget('View Mode', extra_options={"column_config_view": column_config_view })
+
+            inner_div.add(table_display)
+            submit_input = self.get_submit_input()
+            inner_div.add(submit_input)
+
+        elif self.is_insert =='true':
             from tactic.ui.container import WizardWdg
             wizard = WizardWdg(title="none")
             table_display = config.get_display_widget('View Mode')
@@ -175,17 +189,6 @@ class ElementDefinitionWdg(BaseRefreshWdg):
 
             inner_div.add(wizard)
 
-        elif self.is_insert == 'view_only':
-
-            column_config_view = self.kwargs.get("column_config_view")
-            #column_config_view = "login_report_columns"
-            #column_config_view = "job_report_columns"
-
-            table_display = config.get_display_widget('View Mode', extra_options={"column_config_view": column_config_view })
-
-            inner_div.add(table_display)
-            submit_input = self.get_submit_input()
-            inner_div.add(submit_input)
         else:
             tab = TabWdg(config_xml=config_xml, show_add=False, tab_offset=5, show_remove=False , allow_drag=False)
             inner_div.add(tab) 
@@ -195,12 +198,20 @@ class ElementDefinitionWdg(BaseRefreshWdg):
         return top
 
     def get_submit_input(self):
-        submit_input = ActionButtonWdg(title='Create >>', tip="Create New Column")
 
-        if self.is_insert == "view_only":
+        if self.simple_view_only == 'true':
             view = self.kwargs.get("view")
         else:
             view = "definition"
+
+        if self.is_insert == 'true':
+            title = "Create >>"
+            tip = "Create New Column"
+        else:
+            title = "Save >>"
+            tip = "Save Column"
+
+        submit_input = ActionButtonWdg(title=title, tip=tip)
 
         behavior = {
             'type': 'click_up',
@@ -448,11 +459,10 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         
         if self.is_insert in ['true', True]:
             self.is_insert = True
-        elif self.is_insert in ['view_only']:
-            pass
         else:
             self.is_insert = False
 
+        self.simple_view_only = self.kwargs.get("simple_view_only") in ['true', True]
         element_name = self.kwargs.get('element_name')
         search_type = self.kwargs.get('search_type')
         self.search_type = search_type
@@ -607,7 +617,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         else:
             title_div.add("Edit Column Definition")
 
-        if not self.is_insert:
+        if (not self.is_insert) and (not self.simple_view_only):
             title_div.add(mode_wdg)
             gear = self.get_gear_menu(view)
             gear.add_style("float: right")
@@ -782,7 +792,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         attr_table.add_cell(width_text)
 
  
-        if not self.is_insert:
+        if not self.is_insert and not self.simple_view_only:
 
             tr, td = attr_table.add_row_cell()
             span = DivWdg("Enable Colors: ")
@@ -864,7 +874,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
         td.add(HtmlElement.br())
 
    
-        if not self.is_insert:
+        if not self.is_insert and not self.simple_view_only:
             tr, td = table.add_row_cell()
 
             title_wdg = DivWdg()
@@ -1953,6 +1963,8 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         load_event = False
         if widget_key:
             widget_select.set_value(widget_key)
+        elif display_class in class_values:
+            widget_select.set_value(display_class)
         elif display_class:
             widget_select.set_value('__class__')
         elif default_class:
@@ -2088,7 +2100,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
         # add the class
         tr = table.add_row()
-        if widget_key or not display_class or view:
+        if widget_key or (display_class in class_values) or (not display_class) or view:
             tr.add_style("display: none")
         tr.add_class("spt_widget_selector_class")
         td = table.add_cell()
@@ -2453,20 +2465,20 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
 
 
-        display_options = self.kwargs.get("display_options")
+        display_options = self.kwargs.get("display_options") or {}
 
         import types
-        if (isinstance(display_options, list)):
+        if isinstance(display_options, list):
             try:
                 display_options = eval(display_options)
             except:
                 # !!!! Lost the options
                 display_options = {}
-        elif (isinstance(display_options, basestring)):
+        elif isinstance(display_options, basestring):
             display_options = display_options.replace("'", '"')
             display_options = jsonloads(display_options)
 
-        if (not display_options):
+        if not display_options:
             display_options = {}
 
 

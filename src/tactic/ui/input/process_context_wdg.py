@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['ProcessInputWdg', 'SubContextInputWdg', 'SubContextAction']
+__all__ = ['ProcessInputWdg', 'SubContextInputWdg', 'SubContextAction', 'ReviewProcessInputWdg']
 
 from pyasm.search import Search, SearchKey
 from pyasm.biz import Pipeline
@@ -259,6 +259,59 @@ class SubContextAction(DatabaseAction):
         self.sobject.commit()
 
 
+class ReviewProcessInputWdg(SelectWdg):
+    '''This widget display a drop down for processes from a pipeline.'''
 
+
+    def get_display(self):
+
+        show_context = self.get_option('context') == 'true'
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+
+        #print("pipeline_code:", pipeline_code)
+
+        values = []
+        labels = []
+
+        if pipeline_code:
+            search = Search("sthpw/pipeline")
+            search.add_filter("code", pipeline_code)
+            pipeline = search.get_sobject()
+            processes = pipeline.get_processes(recurse=True, type=["manual","approval","node"])
+
+            for process in processes:
+                is_sub_pipeline = False
+                if process.is_from_sub_pipeline():
+                    process_name  = process.get_full_name()
+                    is_sub_pipeline = True
+                else:
+                    process_name  = process.get_name()
+
+                # show context instead
+                if show_context:
+                    output_contexts = pipeline.get_output_contexts(process.get_name())
+                    for context in output_contexts:
+                        if context not in values:
+                            values.append(context)
+                            if is_sub_pipeline:
+                                #label = process_name
+                                label = context
+                            else:
+                                label = context
+                            labels.append(label)
+                else:
+                    #if name not in values:
+                    values.append(process_name)
+                    labels.append(process_name)
+
+        #print("values:", values)
+        #print("labels:", labels)
+
+        self.add_empty_option(label="--- Select ---")
+        self.set_option("values", "|".join(values))
+        self.set_option("labels", "|".join(labels))
+
+        return super(ReviewProcessInputWdg,self).get_display()
 
 

@@ -62,7 +62,11 @@ class ProjectSetting(SObject):
         project = Project.get_project_code() 
         dict_key = '%s:%s' %(key, search_type)
 
-        search = Search(cls.SEARCH_TYPE, project_code=project)
+        try:
+            search = Search(cls.SEARCH_TYPE, project_code=project)
+        except:
+            return None
+
         search.add_filter("key", key)
         if search_type:
             search.add_filter("search_type", search_type)

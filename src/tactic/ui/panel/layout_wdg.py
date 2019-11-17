@@ -293,6 +293,8 @@ class CellEditWdg(BaseRefreshWdg):
         search_type = self.kwargs['search_type']
         layout_version = self.kwargs['layout_version']
 
+        config_xml = self.kwargs['config_xml']
+
         configs = Container.get("CellEditWdg:configs")
         if not configs:
             configs = {}
@@ -306,6 +308,11 @@ class CellEditWdg(BaseRefreshWdg):
 
             self.config = WidgetConfigView.get_by_search_type(search_type, view)
             configs[key] = self.config
+
+            # get the base configs
+            if config_xml:
+                extra_config = WidgetConfig.get(view="edit", xml=config_xml)
+                self.config.get_configs().insert(0, extra_config)
 
             # add an override if it exists
             view = "edit_item"
@@ -808,6 +815,23 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
         count = 0
+
+        # column edit option pass-throughs
+        edit_options = self.kwargs.get("edit_options")
+
+        if isinstance(edit_options, six.string_types):
+            try:
+                # hack taken from gear_settings kwarg in ui.panel.BaseTableLayoutWdg
+                edit_options = edit_options.replace("'", '"')
+                edit_options = jsonloads(edit_options)
+            except ValueError:
+                edit_options = None
+        if not isinstance(edit_options, dict):
+            edit_options = None
+
+        # column edit exclusions
+        static_elements = self.kwargs.get("static_element_names") or []
+
         for element_name in element_names:
 
             count += 1
@@ -952,7 +976,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             elements_wdg.add(menu_item_container)
             menu_item_container.add(menu_item)
 
-            if (self.kwargs.get("edit") in ['true', True]):
+            if (self.kwargs.get("edit") in ['true', True]) and (element_name not in static_elements):
                 button = IconButtonWdg(name="Edit", icon="FA_EDIT")
                 menu_item_container.add(button)
                 button.add_behavior( {
@@ -960,6 +984,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 'target_id': self.target_id,
                 'target': target,
                 'element_name': element_name,
+                'edit_options': edit_options or {},
                 'cbjs_action': '''
 
                 var panel;
@@ -1001,8 +1026,14 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 var args = {
                     'search_type': search_type,
                     'view': view,
-                    'element_name': element_name
+                    'element_name': element_name,
+                    'is_insert': "false"
                 };
+                var edit_options = bvr.edit_options;
+
+                for (var key in edit_options) {
+                    args[key] = edit_options[key];
+                }
 
                 spt.panel.load_popup(title, class_name, args=args);
                 '''
@@ -1031,6 +1062,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         top = DivWdg()
         container.add(top)
 
+
         width = self.kwargs.get("width") or 400
         top.add_style("width: %spx" % width)
 
@@ -1052,7 +1084,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             self.is_admin = False
         else:
             self.is_admin = Environment.get_security().is_admin()
-        self.is_admin = False
 
 
 
@@ -1126,8 +1157,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         context_menu.add_style("overflow-x: hidden")
 
 
-
-        self.config = WidgetConfigView.get_by_search_type(search_type, "definition")
+        element_view = self.kwargs.get("element_view") or "definition"
+        self.config = WidgetConfigView.get_by_search_type(search_type, element_view)
 
         predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()

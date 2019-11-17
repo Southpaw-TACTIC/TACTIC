@@ -484,6 +484,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             is_viewable = security.check_access('element', access_keys, "view", default=def_default_access)
             is_editable = security.check_access('element', access_keys, "edit", default=def_default_access)
 
+            # hide columns with hidden="true", except when this is a temporary table for dynamic operations
+            is_hidden = (self.kwargs.get("temp") != True) and (attrs.get("hidden") in ['true', True])
+
+            is_viewable = is_viewable and (not is_hidden)
+
             if not is_viewable:
                 # don't remove while looping, it disrupts the loop
                 #self.widgets.remove(widget)
@@ -610,6 +615,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         for sobject in self.sobjects:
             self.sobject_levels.append(0)
 
+        self.edit_config_xml = self.kwargs.get("edit_config_xml")
 
         # Force the mode to widget because raw does work with FastTable
         # anymore (due to fast table constantly asking widgets for info)
@@ -3791,7 +3797,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 if editable == True:
                     from .layout_wdg import CellEditWdg
-                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version())
+                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version(), config_xml=self.edit_config_xml)
                     edit_wdgs[name] = edit
                     # now set up any validations on this edit cell,
                     # if any have been configured on it
