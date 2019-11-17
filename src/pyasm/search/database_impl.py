@@ -304,7 +304,7 @@ class DatabaseImpl(DatabaseImplInterface):
             # cache it for repeated use
             Container.put("Sql:database_exists:%s"%db_resource.get_key(), True)
         except Exception as e:
-            #print("Error: ", str(e))
+            print("Error: ", str(e))
             return False
         else:
             return True
