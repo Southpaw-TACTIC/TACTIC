@@ -3155,8 +3155,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
-        mode = self.kwargs.get("mode") or None
-
         if self.subscribed_search_keys.get(sobject.get_search_key()):
             tr.set_attr("spt_is_subscribed","true")
 
@@ -3164,7 +3162,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             background = tr.add_color("background-color", "background", [20, -10, -10])
             tr.set_attr("spt_widget_is_retired","true")
 
-        elif sobject.is_insert() and mode != "preview":
+        elif sobject.is_insert():
             background = tr.add_color("background-color", "background", [10, -10, -10])
         elif row % 2:
             background = tr.add_style("background-color", bgcolor1)

@@ -8256,15 +8256,17 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
 
-        preview_button = ButtonNewWdg(title="Workflow Schedule Preview", icon="FA_PLAY")
+        preview_button = ButtonNewWdg(title="Workflow Schedule Preview", icon="FA_EYE")
         preview_button.add_behavior({
             'type': 'click',
             'cbjs_action': '''
             var toolTop = bvr.src_el.getParent('.spt_pipeline_tool_top');
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
-            pipeline_code = spt.pipeline.get_current_group()
+            var pipeline_code = spt.pipeline.get_current_group();
+            var pipeline_xml = spt.pipeline.export_group(pipeline_code);
             args = {
-                pipeline_code: pipeline_code
+                pipeline_code: pipeline_code,
+                pipeline_xml: pipeline_xml
             }
             kwargs = {
                 width: 900

@@ -16,7 +16,7 @@ import six
 from dateutil import parser
 from datetime import datetime
 from pyasm.biz import TaskGenerator, Pipeline, Project, ProjectSetting
-from pyasm.common import SPTDate, Environment
+from pyasm.common import SPTDate, Environment, jsonloads
 from pyasm.command import Command
 from pyasm.web import DivWdg, HtmlElement
 from pyasm.search import Search, SearchType
@@ -39,6 +39,7 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.pipeline_code = self.kwargs.get("pipeline_code")
+        self.pipeline_xml = self.kwargs.get("pipeline_xml")
 
     def get_styles(self):
         style = HtmlElement.style('''
@@ -49,6 +50,44 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         ''')
 
         return style
+
+
+    def _create_virtual_pipeline(self, pipeline_xml, process_sobjects=None):
+        new_process_sobjects = []
+        pipeline = self.pipeline
+        pipeline.set_pipeline(pipeline_xml)
+        xml = pipeline.get_pipeline_xml()
+        process_nodes = xml.get_nodes("/pipeline/process")
+        for process_node in process_nodes:
+            process_name = xml.get_attribute(process_node, "name")
+            if process_sobjects:
+                process_sobject = process_sobjects.get(process_name)
+                if process_sobject:
+                    new_process_sobjects.append(process_sobject)
+            else:
+                settings = xml.get_attribute(process_node, "settings")
+                if settings:
+                    settings = jsonloads(settings)
+                    if isinstance(settings, basestring):
+                        try:
+                            import ast
+                            settings = ast.literal_eval(settings)
+                        except:
+                            print("WARNING: could not process settings for %s.") % process_name
+                            continue
+                    subpipeline_code = settings.get("subpipeline_code")
+                else:
+                    subpipeline_code = None
+                    settings = ""
+                process_sobj = SearchType.create("config/process")
+                process_sobj.set_value("process", process_name)
+                process_sobj.set_value("pipeline_code", self.pipeline_code)
+                if subpipeline_code:
+                    process_sobj.set_value("subpipeline_code", subpipeline_code)
+                process_sobj.set_value("workflow", settings)
+                new_process_sobjects.append(process_sobj)
+        return new_process_sobjects
+
     
     def get_display(self):
         top = DivWdg()
@@ -58,10 +97,13 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         search = Search('sthpw/pipeline')
         search.add_filter("code", self.pipeline_code)
         self.pipeline = search.get_sobject()
-
+        
         process_s = Search("config/process")
         process_s.add_filter("pipeline_code", self.pipeline_code)
         processes = process_s.get_sobjects()
+
+        if not processes:
+            processes = self._create_virtual_pipeline(self.pipeline_xml)
 
         processes = {x.get_value("process"): x for x in processes}
 
@@ -88,7 +130,6 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         task_processes = {}
 
         layout = ProjectSetting.get_value_by_key("workflow/workflow_schedule_preview") or 'spt.tools.gantt.GanttLayoutWdg'
-        # layout = 'spt.tools.gantt.GanttLayoutWdg'
 
         kwargs = {
                 'mode': 'preview',
@@ -108,19 +149,23 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         if layout == 'spt.tools.gantt.GanttLayoutWdg':
             for i, x in enumerate(tasks):
                 x.set_value("status", "Assignment")
+                x.set_value("id", "1")
+                x.set_value("description", "")
+                x.set_value("data", "")
                 task_processes[x.get_value("process")] = x
             kwargs['layout'] = layout
-            kwargs['element_names'] = 'process,status,assigned,days_due,description'
+            kwargs['element_names'] = 'process,status,days_due'
             kwargs['gantt_width'] = 400
         else:
             for i, x in enumerate(tasks):
                 x.set_value("status", "Assignment")
                 code = "TASK00000101" + str(i)
                 x.set_value("code", code)
+                x.set_value("id", "1")
                 task_processes[x.get_value("process")] = x
             kwargs['view'] = "table"
-            kwargs['column_widths'] = "75,75,75,75,300"
-            kwargs['element_names'] = 'process,status,assigned,days_due,schedule'
+            kwargs['column_widths'] = "75,75,75,300"
+            kwargs['element_names'] = 'process,status,days_due,schedule'
 
         
         table = ViewPanelWdg(**kwargs)
