@@ -210,10 +210,14 @@ class Command(Base):
                     return
             except TacticException as e:
                 if not isinstance(e, CommandExitException):
-                    if isinstance(e.message, unicode):
-                        error = e.message.encode('utf-8')
+                    if not Common.IS_Pv3:
+                        if isinstance(e.message, unicode):
+                            error = e.message.encode('utf-8')
+                        else:
+                            error = unicode(e.message, errors='ignore').encode('utf-8')
                     else:
-                        error = unicode(e.message, errors='ignore').encode('utf-8')
+                        message = str(e)
+                        error = message
                     cmd.errors.append(error)
                 raise
 
