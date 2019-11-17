@@ -129,7 +129,7 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         due_date = completion_date
         task_processes = {}
 
-        layout = ProjectSetting.get_value_by_key("workflow/workflow_schedule_preview") or 'spt.tools.gantt.GanttLayoutWdg'
+        layout = ProjectSetting.get_value_by_key("workflow/workflow_schedule_preview") or 'open src'
 
         kwargs = {
                 'mode': 'preview',
