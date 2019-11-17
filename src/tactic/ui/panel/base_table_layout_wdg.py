@@ -478,7 +478,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
-                    search.add_order_by(tmp_order_element, direction)
+                    tmp_order_element_list = tmp_order_element.split(".")
+                    if 'parent' in tmp_order_element_list:
+                        i = tmp_order_element_list.index('parent')
+                        sobject = search.get_sobjects()[0]
+                        parent = sobject.get_parent()
+                        parent_search_type = parent.get_search_type()
+                        
+                        parent_search_type = parent_search_type + "." + tmp_order_element_list[1 + i]
+
+                        search.add_order_by(parent_search_type, direction)
+                    else:
+                        search.add_order_by(tmp_order_element, direction)
 
             self.show_retired_element = group_values.get("show_retired")
             if self.show_retired_element == "true":
