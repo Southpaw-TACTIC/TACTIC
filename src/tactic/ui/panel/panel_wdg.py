@@ -3219,6 +3219,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         #show_view_select = self.kwargs.get("show_view_select")
         schema_default_view = self.kwargs.get("schema_default_view")
         show_keyword_search = self.kwargs.get("show_keyword_search")
+        show_search_button = self.kwargs.get("show_search_button")
         show_search_limit = self.kwargs.get("show_search_limit")
         search_limit_mode = self.kwargs.get("search_limit_mode")
         show_layout_switcher = self.kwargs.get("show_layout_switcher")
@@ -3316,6 +3317,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "schema_default_view": schema_default_view,
             "show_search": show_search,
             "show_keyword_search": show_keyword_search,
+            "show_search_button": show_search_button,
             "show_search_limit": show_search_limit,
             "search_limit_mode": search_limit_mode,
             "show_layout_switcher": show_layout_switcher,
