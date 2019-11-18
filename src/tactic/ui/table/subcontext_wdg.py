@@ -159,8 +159,7 @@ class ProcessElementWdg(SimpleTableElementWdg):
 
                 name = sobject.get_value("description")
                 top.add(name)
-
-            else:
+            elif task_type and task_type != "activity":
                 top.add("<i class='fa fa-angle-right'> </i> &nbsp; ")
 
                 """
@@ -222,8 +221,12 @@ class ProcessElementWdg(SimpleTableElementWdg):
                 } )
 
                 top.add_style("margin-left: 5px")
-
                 top.add(parts[1])
+
+            else:
+                name = sobject.get_value("process")
+                top.add(name)
+
         else:
             top.add(value)
 
