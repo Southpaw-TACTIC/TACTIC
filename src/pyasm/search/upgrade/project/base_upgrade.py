@@ -77,7 +77,9 @@ class BaseUpgrade(Command):
         # database
         project = Project.get()
         self.version_update = project.get_value("last_version_update", no_exception=True)
-
+        # This is a fix for versions that contains underscores, versions should be decimals
+        self.version_update = self.version_update.replace("_", ".")
+        
         if not self.version_update:
             self.version_update = "2.5.0.v01"
 
