@@ -196,8 +196,8 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
                 spt.ace_editor.set_editor_top(editor_top); 
                 editor = spt.ace_editor.get_editor();
                 value = editor.getValue();
-                element_name = ace_top.getAttribute("spt_ace_element_name") || "code";
-                values[element_name] = [value] 
+                element_name = ace_top.getAttribute("spt_ace_element_name");
+                if (element_name) values[element_name] = [value] 
             });
         }
     }

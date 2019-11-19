@@ -5559,7 +5559,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
             #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
-            access = security.check_access("api_cmd", class_name, "allow", default="allow")
+            access = security.check_access("api_cmd", class_name, "allow", default="deny")
             if not access:
                raise ApiException("Access denied") 
         
