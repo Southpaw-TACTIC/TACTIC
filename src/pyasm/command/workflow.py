@@ -754,6 +754,23 @@ class BaseProcessTrigger(Trigger):
         return process_state
 
 
+    def get_process_status(self, sobject, process=None):
+        if not process:
+            process = self.input.get("process")
+
+        #TODO: use process_state (instead of messaging)
+        status = ""
+        key = "%s|%s|status" % (sobject.get_search_key(), process)
+        search = Search("sthpw/message")
+        search.add_filter('code', key)
+        message_sobj = search.get_sobject()
+        if message_sobj:
+            message = message_sobj.get_json_value("message")
+            status = message
+
+        return status
+
+
 
     def log_message(self, sobject, process, status):
 
@@ -1261,16 +1278,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         for output_process in output_processes:
             output_process = output_process.get_name()
 
-            # if output_process is already in not_required_status, skip.
-            key = "%s|%s|status" % (self.sobject.get_search_key(), output_process)
-            search = Search("sthpw/message")
-            search.add_filter('code', key)
-            message_sobj = search.get_sobject()
-            if message_sobj:
-                message = message_sobj.get_json_value("message")
-                if message in ["not_required"]:
-                    return
-
+            # if output_process is already in not_required or complete status, skip.
+            if self.get_process_status(self.sobject, output_process) in ["not_required", "complete"]:
+                return
 
 
             #if self.process_parts:
@@ -1615,7 +1625,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_complete(self):
-       
+
         #status = "complete"
         status = self.input.get("status") or "complete"
 
@@ -1701,6 +1711,11 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         version_2 = version in [2, '2']
 
         properties = workflow.get("properties") or {}
+
+        # we need to check if the process is already complete. if so, just return.
+        if self.get_process_status(self.sobject, process) in ["not_required", "complete"]:
+            return
+
 
         # build a standard output package
         self.packages = self.get_output_packages()

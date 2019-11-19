@@ -1089,6 +1089,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
     config += '>\n';
     // go through each header cell and get the element name
     // skip the first selection 
+    var table_elements = [];
     for( var c=first_idx; c < row.cells.length; c++ ) {
         var cell = row.cells[c];
         var name = cell.getAttribute("spt_element_name");
@@ -1096,9 +1097,28 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
             continue;
         }
         var width = spt.get_element_width(cell);
-        config += '    <element name="'+ name +'" width="'+ width +'"/>\n';
+        config += '    <element name="'+ name +'" hidden="false" width="'+ width +'"/>\n';
+        table_elements.push(name);
     }
 
+    // if saving definitions, add elements not present in table from view, setting them as hidden
+    var server = TacticServerStub.get()
+    var definitions;
+    var definition_elements;
+    if (kwargs.save_definitions) {
+        definitions = server.eval("@GET(config/widget_config['search_type', '" + search_type + "']['view', '" + definition_view + "'].config)", {single: true});
+        if (definitions) {
+            var definition_xml = spt.parse_xml(definitions);
+            definition_elements = Array.prototype.slice.call(definition_xml.getElementsByTagName("element"), 0);
+            for (var i = 0; i < definition_elements.length; i++) {
+                var name = definition_elements[i].getAttribute("name");
+
+                if (table_elements.indexOf(name) == -1) {
+                    config += '    <element name="'+ name +'" hidden="true"/>\n';
+                }
+            }
+        }
+    }
     if (view.test(/@/)) 
         config += '  </view>\n';
     else
@@ -1107,48 +1127,40 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
 
     config += '</config>\n';
 
-
-    var server = TacticServerStub.get();
-
     // copy definitions
-    if (kwargs.save_definitions) {
-        var definitions = server.eval("@GET(config/widget_config['search_type', '" + search_type + "']['view', '" + definition_view + "'].config)", {single: true});
+    if (definitions) {
+        // work with XML doc for convenience
+        var config_xml = spt.parse_xml(config);
 
-        if (definitions) {
-            // work with XML docs for convenience
-            var definition_xml = spt.parse_xml(definitions);
-            var config_xml = spt.parse_xml(config);
+        // get all elements to check for definitions, and all available definitions respectively
+        var config_elements = config_xml.getElementsByTagName("element");
 
-            // get all elements to check for definitions, and all available definitions respectively
-            var config_elements = config_xml.getElementsByTagName("element");
-            var definition_elements = Array.prototype.slice.call(definition_xml.getElementsByTagName("element"), 0);
+        // for each element in the new config, copy the element definition
+        for (var i = 0; i < config_elements.length; i++) {
 
-            // for each element in the new config, copy the element definition
-            for (var i = 0; i < config_elements.length; i++) {
+            // check if a definition with the same name exists
+            var definition_element = definition_elements.filter(function(el) {
+                return config_elements[i].getAttribute("name") == el.getAttribute("name");
+            });
 
-                // check if a definition with the same name exists
-                var definition_element = definition_elements.filter(function(el) {
-                    return config_elements[i].getAttribute("name") == el.getAttribute("name");
-                });
+            // copy only the first definition found
+            if (definition_element.length > 0) {
+                definition_element = definition_element[0];
 
-                if (definition_element.length > 0) {
-                    definition_element = definition_element[0];
+                // copy over the definition, prioritizing newly defined attribute values (just "width"
+                // and "hidden" for now) and using the unmodified ones from the definition
+                var attributes = config_elements[i].getAttributeNames();
 
-                    // copy over the definition, prioritizing newly defined attribute values (just width for now) and using the unmodified ones from the
-                    // definition
-                    var attributes = config_elements[i].getAttributeNames();
-
-                    for (var j = 0; j < attributes.length; j++) {
-                        definition_element.setAttribute(attributes[j], config_elements[i].getAttribute(attributes[j]))
-                    }
-
-                    config_elements[i].outerHTML = definition_element.outerHTML;
+                for (var j = 0; j < attributes.length; j++) {
+                    definition_element.setAttribute(attributes[j], config_elements[i].getAttribute(attributes[j]))
                 }
-            }
 
-            // re-serialize the config with the definitions
-            config = new XMLSerializer().serializeToString(config_xml);
+                config_elements[i].outerHTML = definition_element.outerHTML;
+            }
         }
+
+        // re-serialize the config with the definitions
+        config = new XMLSerializer().serializeToString(config_xml);
     }
 
     var config_search_type = 'config/widget_config';
