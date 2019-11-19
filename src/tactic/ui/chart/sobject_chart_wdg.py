@@ -621,10 +621,11 @@ class CalendarChartWdg(BaseChartWdg):
             min_date = start_date
             max_date = end_date
 
-        if min_date.tzinfo is not None and min_date.tzinfo.utcoffset(min_date) is not None:
-            min_date = SPTDate.convert(min_date)
 
-        if max_date.tzinfo is not None and max_date.tzinfo.utcoffset(max_date) is not None:
+        if min_date and min_date.tzinfo is not None and min_date.tzinfo.utcoffset(min_date) is not None:
+                min_date = SPTDate.convert(min_date)
+
+        if max_date and max_date.tzinfo is not None and max_date.tzinfo.utcoffset(max_date) is not None:
             max_date = SPTDate.convert(max_date)
 
         for sobject in sobjects:
