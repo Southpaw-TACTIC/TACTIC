@@ -1686,8 +1686,8 @@ class MethodMode(ExpressionParser):
         elif method == 'UPDATE':
 
             api_mode = Config.get_value("security", "api_mode")
-            if api_mode in query or closed:
-                raise SecurityExpresion("Access denied")
+            if api_mode in ["query", "closed"]:
+                raise SecurityException("Access denied")
 
             # the first argument is sobjects
             expression = args[0]
