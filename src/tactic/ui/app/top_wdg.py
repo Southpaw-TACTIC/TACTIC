@@ -194,18 +194,6 @@ class TopWdg(Widget):
         } )
 
         web = WebContainer.get_web()
-        self.body.add_color("color", "color")
-
-        #if web.is_title_page():
-        #    self.body.add_gradient("background", "background", 0, -20)
-        #else:
-        #    self.body.add_gradient("background", "background", 0, -15)
-        self.body.add_color("background", "background")
-
-        self.body.add_style("background-attachment: fixed !important")
-        self.body.add_style("margin: 0px")
-        self.body.add_style("padding: 0px")
-
 
         # ensure that any elements that force the default menu over any TACTIC right-click context menus has the
         # 'force_default_context_menu' flag reset for the next right click that occurs ...
@@ -586,9 +574,6 @@ class TopWdg(Widget):
         html.add( body )
 
  
-        body.add_style('overflow', 'hidden')
-
-
         top = self.top
 
         # Add a NOSCRIPT tag block here to provide a warning message on browsers where 'Enable JavaScript'
@@ -1329,10 +1314,6 @@ class IndexWdg(Widget):
 
         top = self.top
         top.set_id('top_of_application')
-        top.add_style("height: 100%")
-        top.add_style("width: 100%")
-        top.add_style("overflow-x: auto")
-        top.add_style("overflow-y: auto")
 
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)

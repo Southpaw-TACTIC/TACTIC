@@ -1463,6 +1463,9 @@ class IconButtonNewWdg(DivWdg):
     def add_behavior(self, behavior):
         self.button.add_behavior(behavior)
 
+    def add_class(self, cls):
+        self.button.add_class(cls)
+
     def get_display(self):
         
         self.button.add_class("btn btn-primary bmd-btn-icon")

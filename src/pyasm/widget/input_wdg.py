@@ -765,9 +765,11 @@ class TextAreaWdg(BaseTextWdg):
 
     def handle_styles(self):
         
-        if not self._use_bootstrap():
+        if False:
+        #if not self._use_bootstrap():
             self.add_color("background", "background", 10)
             self.add_color("color", "color")
+            web = WebContainer.get_web()
             
             browser = web.get_browser()
             if not width and not cols:

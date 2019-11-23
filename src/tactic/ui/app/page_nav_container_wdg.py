@@ -253,9 +253,13 @@ class PageNavContainerWdg(BaseRefreshWdg):
         return html
 
 
-
-
     def get_display(self):
+    
+        hash = self.kwargs.get("hash")
+        if hash == "/admin/link/_startup":
+            from tactic.ui.bootstrap_app import BootstrapIndexWdg
+            return BootstrapIndexWdg().get_display()
+
         is_admin_project = Project.get().is_admin()
         security = Environment.get_security() 
         if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
