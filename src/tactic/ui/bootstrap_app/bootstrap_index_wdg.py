@@ -473,4 +473,10 @@ class BootstrapIndexPage(BaseRefreshWdg):
 
     def get_display(self):
 
-        return "Hello World"
+        top = self.top
+        top.add_class("container")
+        from tactic.ui.panel import ViewPanelWdg
+ 
+        wdg = ViewPanelWdg(search_type="config/widget_config", show_border=False)
+        top.add(wdg)
+        return top

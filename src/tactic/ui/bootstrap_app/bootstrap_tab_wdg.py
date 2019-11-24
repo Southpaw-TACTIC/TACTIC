@@ -26,7 +26,7 @@ class BootstrapTabWdg(BaseRefreshWdg):
             </tab>
         </config>'''
         config = WidgetConfig.get(view=view, xml=config_xml)
-        self.tab = TabWdg(config=config, view=view, mode="hidden")
+        self.tab = TabWdg(config=config, view=view, use_default_style=False)
         
         for widget in self.widgets:
             tab.add(widget)
@@ -34,22 +34,6 @@ class BootstrapTabWdg(BaseRefreshWdg):
     def get_display(self):
 
         top = self.top
-        
-        top.add("""<ul class="nav nav-tabs">
-  <li class="nav-item">
-    <a class="nav-link active" href="#">Active</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Link</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Another link</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link disabled" href="#">Disabled</a>
-  </li>
-</ul>""")
-
         top.add(self.tab)
 
 

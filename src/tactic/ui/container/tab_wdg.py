@@ -1288,10 +1288,6 @@ spt.tab.view_definition = function(bvr) {
             }
 
 
-            .spt_tab_content_body {
-            }
-
-
             ''' % data)
 
 
@@ -1380,6 +1376,19 @@ spt.tab.view_definition = function(bvr) {
                 bottom: 0;
                 max-height: 100%;
                 opacity: 0.3;
+            }
+
+            .spt_tab_content_top {
+                border-bottom-left-radius: 5px;
+                color: #000;
+                border-bottom-right-radius: 5px;
+                margin-top: -1px;
+                min-height: 500px;
+                width: 100%;
+                z-index: 1;
+                background: #FFFFFF;
+                border-top-right-radius: 5px;
+                border: 1px solid #BBB;
             }
 
             ''')
@@ -1548,10 +1557,12 @@ spt.tab.view_definition = function(bvr) {
             } )
 
 
-        header_div = DivWdg()
+        #header_div = DivWdg()
+        header_div = HtmlElement.ul()
         inner.add(header_div)
 
         header_div.add_class("spt_tab_header_top")
+        header_div.add_class("nav nav-tabs")
         self.header_id = header_div.set_unique_id()
         # header_div.add_style("height: auto")
         # header_div.add_style("float: left")
@@ -1637,6 +1648,9 @@ spt.tab.view_definition = function(bvr) {
                 var offset = bvr.offset;
 
                 setInterval( function() {
+
+                    // FIXME
+                    return;
 
                     if (!top.isVisible() ) {
                         return;
@@ -1823,18 +1837,6 @@ spt.tab.view_definition = function(bvr) {
 
         content_top = DivWdg()
         content_top.add_class("spt_tab_content_top")
-        content_top.add_style("z-index: 1")
-        content_top.add_style("margin-top: -1px")
-
-
-        # add a div so that it breaks correctly
-        if self.mode == 'default':
-            content_top.set_round_corners(5, corners=['TR','BR','BL'])
-            border = self.kwargs.get("border_color")
-            if not border:
-                palette = content_top.get_palette()
-                border = palette.color("border")
-            content_top.add_style("border: 1px solid %s" % border)
 
         inner.add(content_top)
 
@@ -1864,11 +1866,6 @@ spt.tab.view_definition = function(bvr) {
                 content_top.add_style("min-height: %s" % height)
 
 
-            else:
-                # TODO: make this configurable
-                content_top.add_style("min-height: 500px")
-
-
         width = self.kwargs.get("width")
         if not width:
             width = self.kwargs.get("min_width")
@@ -1894,20 +1891,6 @@ spt.tab.view_definition = function(bvr) {
             content_top.add_color("background", "background")
 
 
-        """
-        content_top.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-            new Scrollable(bvr.src_el);
-            '''
-        } )
-        content_top.add_style("overflow: hidden")
-        content_top.add_style("height: 300px")
-        content_top.add_style("padding-right: 15px" )
-        """
-
-
-
         # put in a content box for each element
         for element_name in element_names:
             content_div = DivWdg()
@@ -1926,8 +1909,6 @@ spt.tab.view_definition = function(bvr) {
 
             
             content_div.add_style("width: 100%")
-            # content_div.add_style("height: 100%")
-            #content_div.add_style("box-sizing: border_box")
             content_div.add_style("text-align: left")
             
             is_loaded = loaded_dict.get(element_name)
@@ -2529,8 +2510,10 @@ spt.tab.view_definition = function(bvr) {
 
         web = WebContainer.get_web()
 
-        header = DivWdg()
+        #header = DivWdg()
+        header = HtmlElement.li()
         header.add_class("spt_tab_header")
+        header.add_class("nav-item")
         header.add_attr("spt_tab_id", self.unique_id)
         header.add_class("hand")
 
@@ -2661,18 +2644,8 @@ spt.tab.view_definition = function(bvr) {
 
 
 
-        #if self.use_default_style:
-        # if True:
-        #     title_div.add_style("text-align: left")
-        #     title_div.add_style("overflow: hidden")
-        #     title_div.add_style("text-overflow: ellipsis")
-        #     title_div.add_style("white-space", "nowrap");
-        #     #title_div.add_style("float: left")
-        #     title_div.add_style("z-index: 1")
-        #     #title_div.add_style("width: auto")
-
-
         title_div.add_class("spt_tab_header_label")
+        title_div.add_class("nav-link")
         display_title = title
         title_div.add(display_title)
         header.add(title_div)
@@ -2738,7 +2711,7 @@ spt.tab.view_definition = function(bvr) {
             "cb_set_prefix": 'spt.tab.header_drag'
             } )
 
-        header.add("&nbsp;")
+        #header.add("&nbsp;")
 
 
         return header
