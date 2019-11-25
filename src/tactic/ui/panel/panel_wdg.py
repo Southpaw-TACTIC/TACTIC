@@ -80,15 +80,6 @@ class SideBarPanelWdg(BaseRefreshWdg):
         views = self.get_views()
 
         top = self.top
-
-
-        # TEST: NEW LAYOUT
-        if Config.get_value("install", "layout") == "fixed":
-            top.add_style("position: fixed")
-            top.add_style("top: 34px")
-            top.add_style("z-index: -1")
-            top.add_style("width: 185")
-
         top.add( self.get_subdisplay(views) )
         return top
 
@@ -102,9 +93,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
         div.add_class("spt_window_resize")
         div.add_attr("spt_window_resize_offset", "35")
-        div.add_color("background", "background3")
-
-
+        
         # remove the default round corners by making this div the same color
         div.add_color("background", "background3")
 
@@ -174,7 +163,6 @@ class SideBarPanelWdg(BaseRefreshWdg):
         section_div = DivWdg()
         section_div.add_style("display: block")
 
-        
         section_wdg = SideBarBookmarkMenuWdg(**kwargs)
         section_div.add(section_wdg)
         return section_div
@@ -1420,6 +1408,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         return "main_body"
 
 
+
     def get_display(self):
         self.config_search_type = self.kwargs.get("config_search_type")
         if not self.config_search_type:
@@ -1979,10 +1968,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
     def generate_section( self, config, subsection_div, info, base_path="", personal=False, use_same_config=False ):
 
+
         title = self.kwargs.get('title')
         view = self.kwargs.get('view')
         parent_view = self.kwargs.get('parent_view')
         sortable = self.kwargs.get('sortable')
+
 
         base_path_flag = True
         if not base_path:
@@ -2050,7 +2041,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 #    continue
 
 
-
+            options = config.get_display_options(element_name)
             if display_class == "SeparatorWdg":
                 options = config.get_display_options(element_name)
                 div = self.get_separator_wdg(element_name, config, options)
