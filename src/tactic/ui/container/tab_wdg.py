@@ -1293,7 +1293,6 @@ spt.tab.view_definition = function(bvr) {
 
 
     def get_styles(self):
-
         styles = HtmlElement.style('''
 
             /* NEW */
@@ -1648,9 +1647,6 @@ spt.tab.view_definition = function(bvr) {
                 var offset = bvr.offset;
 
                 setInterval( function() {
-
-                    // FIXME
-                    return;
 
                     if (!top.isVisible() ) {
                         return;

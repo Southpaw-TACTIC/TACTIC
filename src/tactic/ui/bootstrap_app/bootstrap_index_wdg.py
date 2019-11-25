@@ -60,6 +60,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg):
     def get_styles(self):
 
         style = HtmlElement.style("""
+
 .spt_bs_top_nav .spt_logo img { 
     width: 10em;
     filter: invert(100%);
@@ -76,7 +77,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg):
         styles = self.get_styles()
         top_nav_wdg.add(styles)
 
-        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top bg-dark")
+        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top bg-spt-blue")
         
         nav_header = DivWdg()
         top_nav_wdg.add(nav_header)
@@ -157,26 +158,56 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
     DEMO STYLE
 */
 
+/* -------------------------------------------------
+    GLOBAL OVERRIDES
+---------------------------------------------------*/
+
+body {
+    overflow-y: hidden;
+}
+
+.bg-spt-blue {
+    background: #114e8a
+}
+
+.bg-spt-blue-fade {
+    background: linear-gradient(0deg, #629bd3 40%, #114e8a 80%);
+}
+
+.nav-pills .nav-link, .nav-tabs .nav-link {
+    padding: .5em .8575em;
+    font-size: 12px;
+    height: 40px;
+}
+
+.spt_tab_selected {
+    border-bottom: solid 2px #114e8a;
+}
+
+.nav-tabs .spt_tab_selected .nav-link {
+    color: rgba(0,0,0,.87);
+}
+
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
 .spt_bs_left_sidebar a, a:hover, a:focus {
     color: inherit;
     text-decoration: none;
     transition: all 0.3s;
 }
 
-/* ---------------------------------------------------
-    SIDEBAR STYLE
------------------------------------------------------ */
-
 .spt_bs_left_sidebar {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 175px;
+    max-width: 175px;
     color: #fff;
     transition: all 0.3s;
     z-index: 1;
     border: 0;
     border-radius: 0;
     box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
-    padding-top: 60px;
+    padding-top: 40px;
 }
 
 .spt_bs_left_sidebar.active {
@@ -248,7 +279,7 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
 }
 
 .spt_bs_left_sidebar ul li a:hover {
-    color: #424242;
+    color: #114e8a;
     background: #fff;
 }
 
@@ -258,7 +289,7 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
 
 .spt_bs_left_sidebar ul li.active>a, a[aria-expanded="true"] {
     color: #fff;
-    background: #262525;
+    background: #114e8a;
 }
 
 .spt_bs_left_sidebar a[data-toggle="collapse"] {
@@ -276,7 +307,7 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
 .spt_bs_left_sidebar ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
-    background: #262525;
+    background: #114e8a;
 }
 
 .spt_bs_left_sidebar ul.CTAs {
@@ -306,7 +337,7 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
 ----------------------------------------------------- */
 
 .spt_bs_content {
-    padding-top: 56px;
+    width: 100%;
     transition: all 0.3s;
 }
 
@@ -314,10 +345,30 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
     MEDIAQUERIES
 ----------------------------------------------------- */
 
+.spt_tab_content_top {
+    overflow-y: auto;
+}
+
 @media (min-width: 575.98px) {
+
+    .spt_bs_content {
+        padding-top: 40px
+    }
+
+    .spt_bs_top_nav {
+        height: 40px;
+    }
+
+    .spt_bs_top_nav.navbar {
+        padding: 0rem 1rem;
+    }
 
     .spt_bs_top_nav_content {
         display: none !important;
+    }
+
+    .spt_tab_content_top {
+        height: calc(100vh - 80px);
     }
 
 
@@ -327,14 +378,20 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
     .spt_bs_left_sidebar {
         display: none;
     }
+    
+    .spt_bs_content {
+        padding-top: 56px;
+    }
+    
+    .spt_tab_content_top {
+        height: calc(100vh - 96px);
+    }
 
 }
 
 
 @media (max-width: 768px) {
    
-
-
     .spt_bs_left_sidebar {
         min-width: 80px;
         max-width: 80px;
@@ -391,7 +448,7 @@ class BootstrapSidebarPanelWdg(BaseRefreshWdg):
     def get_display(self):
         nav = HtmlElement("nav")
         nav.set_id("sidebar")
-        nav.add_class("spt_bs_left_sidebar bg-dark") 
+        nav.add_class("spt_bs_left_sidebar bg-spt-blue-fade") 
         """
         TODO: Recreate sidebarpanelwdg with bootstrap like components
         # create the elements
