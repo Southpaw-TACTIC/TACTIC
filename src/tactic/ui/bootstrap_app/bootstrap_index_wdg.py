@@ -14,151 +14,6 @@ from .bootstrap_tab_wdg import *
 
 __all__ = ['BootstrapIndexWdg', 'BootstrapIndexPage']
 
-class BootstrapIndexWdg(PageNavContainerWdg):
-
-    def get_display(self):
-        
-        top = self.top
-        top.add_class("d-flex")
-        top.add_class("spt_bootstrap_top")
-
-        
-        is_admin_project = Project.get().is_admin()
-        security = Environment.get_security() 
-        if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
-            return Error403Wdg()
-                
-
-        sidebar_wdg = BootstrapSideBarPanelWdg()
-        top.add(sidebar_wdg)
-
-        content_wdg = self.get_content_wdg()
-        top.add(content_wdg)
-        
-        
-        return top
-
-    def get_content_wdg(self):
-        main_body_panel = DivWdg()
-        main_body_panel.set_id("main_body")
-        main_body_panel.add_class("spt_main_panel")
-        main_body_panel.add_class("spt_bs_content")
-
-        top_nav_wdg = BootstrapTopNavWdg()
-        main_body_panel.add(top_nav_wdg)
-
-        tab = BootstrapTabWdg()
-        tab.add(self.widget)
-        main_body_panel.add(tab)
-
-        return main_body_panel
-
-
-
-
-class BootstrapTopNavWdg(BaseRefreshWdg):
-
-    def get_styles(self):
-
-        style = HtmlElement.style("""
-
-.spt_bs_top_nav .spt_logo img { 
-    width: 10em;
-    filter: invert(100%);
-    margin: .5rem 1rem;
-}""")
-
-        return style
-
-
-    def get_display(self):
-        
-        top_nav_wdg =  HtmlElement("nav")
-        
-        styles = self.get_styles()
-        top_nav_wdg.add(styles)
-
-        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top bg-spt-blue")
-        
-        nav_header = DivWdg()
-        top_nav_wdg.add(nav_header)
-        nav_header.add_class("d-flex")
-
-
-        toggle_div = DivWdg()
-        nav_header.add(toggle_div)
-        toggle_div.add_class("spt_toggle_sidebar")
-
-        toggle_div.add("""
-        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" 
-             aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"> </span>
-        </button>""")
-      
-        toggle_div.add_behavior({
-            'type': 'click',
-            'cbjs_action': """
-                var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
-                var sidebar = app_top.getElement(".spt_bs_left_sidebar");
-                sidebar.toggleClass("active");
-            """
-        })
-
-        toggle_div.add_behavior( {
-            'type': 'listen',
-            'event_name': 'side_bar|toggle',
-            'cbjs_action': '''
-            var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
-            var sidebar = app_top.getElement(".spt_bs_left_sidebar");
-            sidebar.toggleClass("active");
-            '''
-        } )
-
-        
-        brand_div = DivWdg()
-        nav_header.add(brand_div)
-        brand_div.add_class("spt_logo")
-        brand_div.add("""
-        <a>
-            <img src="/tactic/plugins/community/theme/media/TACTIC_logo.svg"> 
-        </a>""")
-       
-        right_wdg = self.get_right_wdg()
-        top_nav_wdg.add(right_wdg)
-
-
-
-        top_nav_wdg.add("""
-        <div class="spt_bs_top_nav_content collapse navbar-collapse" id="navbarCollapse">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" href="#">Disabled</a>
-            </li>
-          </ul>
-          <form class="form-inline mt-2 mt-md-0">
-            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-          </form>
-        </div>
-      """)
-        return top_nav_wdg
-
-
-    def get_right_wdg(self):
-        right_wdg = DivWdg()
-
-        button = IconButtonNewWdg(title="Show workflow info", icon="FA_USER")
-        right_wdg.add(button)
-        button.add_class("bg-light")
-
-        return right_wdg
-
 
 from tactic.ui.panel import SideBarPanelWdg, SideBarBookmarkMenuWdg
 class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
@@ -219,7 +74,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 continue
 
             # make up a title
-            title = DivWdg()
+            title = HtmlElement.li()
 
             view_attrs = config.get_view_attributes()
             tt = view_attrs.get("title")
@@ -230,9 +85,9 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                     tt = view_item.replace("_", " ");
                 tt = tt.capitalize()
 
-            title_label = DivWdg()
+            title_label = HtmlElement("a")
             title.add( title_label )
-            title_label.add( tt )
+            title_label.add("""<h6>%s</h6>""" % tt)
 
             content_div.add( title )
             if sortable:
@@ -319,6 +174,8 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         outer_div.add_attr("spt_element_name", element_name)
         outer_div.add_attr("spt_title", title)
 
+        outer_div.add_class("nav_item")
+
         # add an invisible drop widget
         outer_div.add(self.get_drop_wdg())
 
@@ -330,6 +187,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         s_link_div.add_attr("data-toggle", "collapse")
         s_link_div.add_attr("aria-expanded", "false")
         s_link_div.add_class("dropdown-toggle")
+        s_link_div.add_class("nav-link")
         
         
         s_content_div = HtmlElement.ul()
@@ -416,7 +274,8 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         link_wdg.add_class("spt_side_bar_element")
         link_wdg.add_class("spt_side_bar_link")
         link_wdg.add_class("hand")
-
+ 
+        link_wdg.add_class("nav-item")
 
         # add the mouseover color change
         link_wdg.add_class("SPT_DTS")
@@ -428,6 +287,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         span = HtmlElement("a")
         span.add_class("spt_side_bar_title")
+        span.add_class("nav-link")
 
         """
         # add an icon
@@ -827,6 +687,202 @@ body {
         
         return section_wdg
 
+
+
+class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
+
+    def get_bootstrap_styles(self):
+
+        style = HtmlElement.style("""
+
+.spt_bs_top_nav .spt_logo img { 
+    width: 10em;
+    filter: invert(100%);
+    margin: .5rem 1rem;
+}""")
+
+        return style
+
+    """
+    def get_subdisplay(self, views):
+
+        div = DivWdg()
+        div.add_class("bg-spt-blue-fade")
+        div.add_class("spt_bs_left_sidebar")
+        div.set_attr('spt_class_name', Common.get_full_class_name(self))
+        div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+        } )
+
+        # add the down button
+        down = DivWdg()
+        down.set_id("side_bar_scroll_down")
+        down.add_class("hand")
+        down.add_looks("navmenu_scroll")
+        down.add_style("display: none")
+        down.add_style("height: 10px")
+        down.add("<div style='margin-bottom: 4px; text-align: center'>" \
+                 "<img class='spt_order_icon' src='/context/icons/common/order_array_up_1.png'></div>")
+        down.add_event("onclick", "new Fx.Tween('side_bar_scroll').start('margin-top', 0);" \
+                       "document.id(this).setStyle('display', 'none');")
+        div.add(down)
+
+
+        outer_div = DivWdg()
+
+        div.add(outer_div)
+
+        inner_div = DivWdg()
+        inner_div.set_id("side_bar_scroll")
+        outer_div.add(inner_div)
+
+        behavior = {
+            'type': 'wheel',
+            'cbjs_action': 'spt.side_bar.scroll(evt,bvr)',
+        }
+        inner_div.add_behavior(behavior)
+
+        styles = self.get_bootstrap_styles()
+        inner_div.add(styles)
+
+        inner_div.add(HtmlElement.br())
+
+        return div
+    """
+
+
+    def get_subdisplay(self, views):
+        
+        top_nav_wdg =  HtmlElement("nav")
+        
+        styles = self.get_bootstrap_styles()
+        top_nav_wdg.add(styles)
+
+        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top bg-spt-blue")
+        
+        nav_header = DivWdg()
+        top_nav_wdg.add(nav_header)
+        nav_header.add_class("d-flex")
+
+
+        toggle_div = DivWdg()
+        nav_header.add(toggle_div)
+        toggle_div.add_class("spt_toggle_sidebar")
+
+        toggle_div.add("""
+        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" 
+             aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"> </span>
+        </button>""")
+      
+        toggle_div.add_behavior({
+            'type': 'click',
+            'cbjs_action': """
+                var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
+                var sidebar = app_top.getElement(".spt_bs_left_sidebar");
+                sidebar.toggleClass("active");
+            """
+        })
+
+        toggle_div.add_behavior( {
+            'type': 'listen',
+            'event_name': 'side_bar|toggle',
+            'cbjs_action': '''
+            var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
+            var sidebar = app_top.getElement(".spt_bs_left_sidebar");
+            sidebar.toggleClass("active");
+            '''
+        } )
+
+        
+        brand_div = DivWdg()
+        nav_header.add(brand_div)
+        brand_div.add_class("spt_logo")
+        brand_div.add("""
+        <a>
+            <img src="/tactic/plugins/community/theme/media/TACTIC_logo.svg"> 
+        </a>""")
+       
+        right_wdg = self.get_right_wdg()
+        top_nav_wdg.add(right_wdg)
+
+        hidden_nav = DivWdg()
+        hidden_nav.add_class("spt_bs_top_nav_content")
+        hidden_nav.add_class("collapse")
+        hidden_nav.add_class("navbar-collapse")
+        hidden_nav.set_id("navbarCollapse")
+        
+        hidden_nav.add(self.get_bookmark_menu_wdg("", None, views))
+        top_nav_wdg.add(hidden_nav)
+        """
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Disabled</a>
+            </li>
+          </ul>
+          <form class="form-inline mt-2 mt-md-0">
+            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
+        """
+
+        return top_nav_wdg
+
+    def get_right_wdg(self):
+        right_wdg = DivWdg()
+
+        button = IconButtonNewWdg(title="Show workflow info", icon="FA_USER")
+        right_wdg.add(button)
+        button.add_class("bg-light")
+
+        return right_wdg
+
+
+class BootstrapIndexWdg(PageNavContainerWdg):
+
+    def get_display(self):
+        
+        top = self.top
+        top.add_class("d-flex")
+        top.add_class("spt_bootstrap_top")
+
+        
+        is_admin_project = Project.get().is_admin()
+        security = Environment.get_security() 
+        if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
+            return Error403Wdg()
+                
+
+        sidebar_wdg = BootstrapSideBarPanelWdg()
+        top.add(sidebar_wdg)
+
+        content_wdg = self.get_content_wdg()
+        top.add(content_wdg)
+        
+        
+        return top
+
+    def get_content_wdg(self):
+        main_body_panel = DivWdg()
+        main_body_panel.set_id("main_body")
+        main_body_panel.add_class("spt_main_panel")
+        main_body_panel.add_class("spt_bs_content")
+
+        top_nav_wdg = BootstrapTopNavWdg()
+        main_body_panel.add(top_nav_wdg)
+
+        tab = BootstrapTabWdg()
+        tab.add(self.widget)
+        main_body_panel.add(tab)
+
+        return main_body_panel
 
 
 
